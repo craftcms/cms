@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
+  import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
-  import type {SelectItem, Site, SiteGroup} from '@/common/types';
+  import type {Site, SiteGroup} from '@/common/types';
   import ModalForm from '@/common/components/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
@@ -12,8 +13,7 @@
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
-  import InputCombobox from '@/common/form/InputCombobox.vue';
-  import Pane from '@/common/components/Pane.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import Empty from '@/common/components/Empty.vue';
@@ -21,10 +21,11 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
+    title: string;
     group: SiteGroup | null;
     groups: Array<SiteGroup>;
     sites: Array<Site>;
-    nameSuggestions?: Array<SelectItem>;
+    nameTextExpanderTriggers?: TextExpanderTriggers;
     flash: {
       success: string | null;
       error: string | null;
@@ -203,22 +204,14 @@
     }
   }
 
-  const pageTitle = computed(() => {
-    if (props.group?.name) {
-      return props.group.name;
-    }
-
-    return t('Sites');
-  });
-
-  useAppLayout(() => ({fullWidth: true, title: pageTitle.value}));
+  useAppLayout(() => ({title: props.title}));
 </script>
 
 <template>
   <LayoutSlot name="title">
     <div class="flex gap-2 items-center">
       <h1 class="title text-xl">
-        {{ pageTitle }}
+        {{ title }}
       </h1>
 
       <craft-action-menu v-if="group?.id && !readOnly">
@@ -263,7 +256,7 @@
     </div>
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -272,7 +265,6 @@
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
-      spacing="relaxed"
       @reorder="handleReorder"
     >
       <template #empty-row>
@@ -289,7 +281,7 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 
   <ModalForm
     :is-active="modalActive"
@@ -303,10 +295,10 @@
     <craft-input
       name="id"
       id="id"
-      v-model="form.id"
-      type="hidden"
+      :model-value="form.id ?? ''"
+      hidden-input
     ></craft-input>
-    <Deferred data="nameSuggestions">
+    <Deferred data="nameTextExpanderTriggers">
       <template #fallback>
         <craft-input
           readonly
@@ -321,7 +313,7 @@
               class="p-0"
               icon="lightbulb"
             >
-              {{ t('This can begin with an environment variable.') }}
+              {{ t('Type `$` to choose an environment variable.') }}
               <a
                 href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
                 >{{ t('Learn more') }}</a
@@ -330,40 +322,30 @@
           </div>
         </craft-input>
       </template>
-      <craft-input
+      <CraftInput
         :label="t('Group Name')"
         id="name"
         name="name"
         required
         :help-text="t('What this group will be called in the control panel.')"
-        :has-feedback-for="form.errors?.name ? 'error' : ''"
+        :text-expander-triggers="nameTextExpanderTriggers"
+        v-model="form.name"
+        :error="form.errors?.name"
       >
-        <InputCombobox
-          :options="nameSuggestions"
-          v-model="form.name"
-          slot="input"
-        />
-        <div slot="after">
-          <craft-callout
-            variant="info"
-            appearance="plain"
-            class="p-0"
-            icon="lightbulb"
+        <craft-callout
+          slot="after"
+          variant="info"
+          appearance="plain"
+          class="p-0"
+          icon="lightbulb"
+        >
+          {{ t('Type `$` to choose an environment variable.') }}
+          <a
+            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+            >{{ t('Learn more') }}</a
           >
-            {{ t('This can begin with an environment variable.') }}
-            <a
-              href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-              >{{ t('Learn more') }}</a
-            >
-          </craft-callout>
-        </div>
-
-        <div slot="feedback">
-          <ul class="error-list" v-if="form.errors?.name">
-            <li>{{ form.errors.name }}</li>
-          </ul>
-        </div>
-      </craft-input>
+        </craft-callout>
+      </CraftInput>
     </Deferred>
   </ModalForm>
 </template>

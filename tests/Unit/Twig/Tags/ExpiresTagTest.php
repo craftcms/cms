@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\SetHeaders;
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 function renderAndApplyExpiresHeaders(string $template): Response
 {
-    app(TwigRenderer::class)->renderString($template);
+    app(TemplateManager::class)->renderString($template);
 
     return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
 }
@@ -41,7 +41,7 @@ it('supports hours', function () {
 });
 
 it('renders body content alongside setting headers', function () {
-    $result = $this->renderer->renderString('Before{% expires in 1 day %}After');
+    $result = $this->manager->renderString('Before{% expires in 1 day %}After');
 
     expect(trim((string) $result))->toBe('BeforeAfter');
 });

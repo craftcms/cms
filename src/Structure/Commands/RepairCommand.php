@@ -23,6 +23,7 @@ use Tpetry\QueryExpressions\Value\Value;
 
 abstract class RepairCommand extends Command
 {
+    /** @param Collection<int, ElementInterface>|ElementQueryInterface $query */
     protected function repairStructure(int $structureId, ElementQueryInterface|Collection $query): int
     {
         $structure = Structures::getStructureById($structureId);

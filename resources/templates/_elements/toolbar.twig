@@ -1,5 +1,10 @@
 {% from "_includes/forms" import text -%}
 
+{# Inherited quirks: no caller has ever passed `idPrefix` or
+   `isAdministrative` (in Craft 5 they resolved to undefined→empty/falsy).
+   Defaulting them keeps that exact output under strict variables. #}
+{% set idPrefix = idPrefix ?? '' %}
+{% set isAdministrative = isAdministrative ?? false %}
 
 {% hook 'cp.elements.toolbar' %}
 

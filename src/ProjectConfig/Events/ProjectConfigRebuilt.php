@@ -21,6 +21,7 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  */
 class ProjectConfigRebuilt
 {
+    /** @param array<string, mixed> $config */
     public function __construct(
         public array $config,
     ) {}

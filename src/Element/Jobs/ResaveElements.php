@@ -31,6 +31,7 @@ class ResaveElements extends BatchedElementJob
      * @param  bool  $ifEmpty  Only set if the attribute is empty.
      * @param  bool  $ifInvalid  Only set if the current value is invalid.
      * @param  bool  $touch  Whether to update the dateUpdated timestamp.
+     * @param  string[]  $withFields
      */
     public function __construct(
         protected string $elementType,
@@ -43,10 +44,12 @@ class ResaveElements extends BatchedElementJob
         public bool $ifEmpty = false,
         public bool $ifInvalid = false,
         public bool $touch = false,
-        public int $batchSize = 100,
+        int $batchSize = 100,
         protected ?string $description = null,
     ) {
         parent::__construct();
+
+        $this->batchSize = $batchSize;
     }
 
     protected function processElement(ElementInterface $element): void

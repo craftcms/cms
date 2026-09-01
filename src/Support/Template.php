@@ -15,8 +15,8 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ViewErrorBag;
 use RuntimeException;
 use Stringable;
@@ -34,6 +34,7 @@ class Template
     /** @var array<string, mixed> */
     protected static array $_fallbacks = [];
 
+    /** @param array<string, mixed> $context */
     public static function resolveVariable(string $name, array $context, bool $strict, int $lineno = -1, ?Source $source = null): mixed
     {
         if (isset($context[$name]) || array_key_exists($name, $context)) {
@@ -51,11 +52,13 @@ class Template
         return null;
     }
 
+    /** @param array<string, mixed> $context */
     public static function variableExists(string $name, array $context): bool
     {
         return array_key_exists($name, $context) || static::fallbackValueExists($name);
     }
 
+    /** @param array<array-key, mixed> $arguments */
     public static function attribute(
         Environment $env,
         Source $source,
@@ -160,6 +163,7 @@ class Template
         return new Markup($value, 'UTF-8');
     }
 
+    /** @param array<string, mixed> $options */
     public static function css(string $css, array $options = [], ?string $key = null): void
     {
         if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || Url::isAbsoluteUrl($css)) {
@@ -180,7 +184,11 @@ class Template
         HtmlStack::html($html, $position);
     }
 
-    /** @throws RuntimeException */
+    /**
+     * @param  array<string, mixed>  $options
+     *
+     * @throws RuntimeException
+     */
     public static function js(string $js, array $options = [], ?string $key = null): void
     {
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || Url::isAbsoluteUrl($js)) {
@@ -202,11 +210,21 @@ class Template
         HtmlStack::script($script, $position);
     }
 
+    /**
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
+     */
     public static function contextWithoutTemplate(array $context): array
     {
         return array_filter($context, fn ($value) => ! $value instanceof TwigTemplate && ! $value instanceof TemplateWrapper);
     }
 
+    /**
+     * @param  string[]  $handles
+     * @param  array<array-key, mixed>|null  $context
+     *
+     * @param-out array<array-key, mixed>|null $context
+     */
     public static function preloadSingles(array $handles, ?array &$context = null): void
     {
         $globals = Twig::get()->getGlobals();
@@ -226,9 +244,9 @@ class Template
         $context += $singles;
     }
 
-    public static function paginateQuery($query): array
+    /** @return array{Paginate, list<mixed>} */
+    public static function paginateQuery(Builder $query): array
     {
-        /** @var Builder $query */
         $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
         $paginator->appends(Arr::except(request()->query(), $pageParam));
 

@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\ElementTypesResolving;
+use CraftCms\Cms\Element\ElementTypes;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User as UserModel;
-use Illuminate\Support\Facades\Event;
 
 test('returns element types by id uid and key', function () {
     $entry = EntryModel::factory()->createElement();
@@ -26,10 +24,11 @@ test('returns element types by id uid and key', function () {
 
 test('returns null when an element type cannot be found', function () {
     $elementTypes = app(Elements::class);
+    $missingId = ((int) ElementModel::withTrashed()->max('id')) + 1;
 
-    expect($elementTypes->getElementTypeById(9999))->toBeNull()
+    expect($elementTypes->getElementTypeById($missingId))->toBeNull()
         ->and($elementTypes->getElementTypeByUid('missing-uid'))->toBeNull()
-        ->and($elementTypes->getElementTypeByKey('id', 9999))->toBeNull()
+        ->and($elementTypes->getElementTypeByKey('id', $missingId))->toBeNull()
         ->and($elementTypes->getElementTypeByKey('uid', 'missing-uid'))->toBeNull();
 });
 
@@ -49,23 +48,6 @@ test('returns distinct element types for ids', function () {
             EntryElement::class,
             UserElement::class,
         ]);
-});
-
-test('returns all built-in element types and registered element types', function () {
-    Event::listen(ElementTypesResolving::class, function (ElementTypesResolving $event) {
-        $event->types[] = TestRegisteredElementType::class;
-    });
-
-    $types = (app(Elements::class))->getAllElementTypes();
-
-    expect($types)->toHaveCount(5)
-        ->toContain(
-            Address::class,
-            Asset::class,
-            EntryElement::class,
-            UserElement::class,
-            TestRegisteredElementType::class,
-        );
 });
 
 test('matches ref handles case-insensitively', function () {
@@ -89,22 +71,17 @@ test('returns null for unknown ref handles', function () {
     expect((app(Elements::class))->getElementTypeByRefHandle('missing-ref-handle'))->toBeNull();
 });
 
-test('caches resolved ref handles', function () {
-    $listenerCalls = 0;
-
-    Event::listen(ElementTypesResolving::class, function (ElementTypesResolving $event) use (&$listenerCalls) {
-        $listenerCalls++;
-        $event->types[] = TestRegisteredElementType::class;
-    });
+test('reflects element type registration changes in resolved ref handles', function () {
+    $registry = app(ElementTypes::class);
+    $registry->register(TestRegisteredElementType::class);
 
     $elementTypes = app(Elements::class);
 
     expect($elementTypes->getElementTypeByRefHandle('test-registered-element'))->toBe(TestRegisteredElementType::class);
 
-    Event::forget(ElementTypesResolving::class);
+    $registry->remove(TestRegisteredElementType::class);
 
-    expect($elementTypes->getElementTypeByRefHandle('test-registered-element'))->toBe(TestRegisteredElementType::class)
-        ->and($listenerCalls)->toBe(1);
+    expect($elementTypes->getElementTypeByRefHandle('test-registered-element'))->toBeNull();
 });
 
 class TestRegisteredElementType extends BaseElement

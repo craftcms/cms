@@ -138,7 +138,7 @@ describe('validation', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
             'handle' => 'test',
-            'format' => 'bmp',
+            'format' => 'pdf',
         ]);
 
         expect($transform->validate())->toBeFalse()
@@ -159,6 +159,12 @@ describe('validation', function () {
         'png' => ['png'],
         'webp' => ['webp'],
         'avif' => ['avif'],
+        'bmp' => ['bmp'],
+        'heic' => ['heic'],
+        'ico' => ['ico'],
+        'jp2' => ['jp2'],
+        'jxl' => ['jxl'],
+        'tiff' => ['tiff'],
     ]);
 
     test('accepts null format', function () {

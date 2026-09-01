@@ -71,6 +71,25 @@ it('resolves unpublished drafts by id when no canonical element exists', functio
         ->and($element->getIsUnpublishedDraft())->toBeTrue();
 });
 
+it('does not redirect when a non-strict request resolves the element in the requested site', function () {
+    $entry = EntryModel::factory()->createElement([
+        'title' => 'Kitchen Sink',
+    ]);
+
+    // Mirrors an Inertia navigation: Accept: text/html (not JSON), so the
+    // controller resolves the element with strictSite disabled.
+    $request = ElementRequest::create('/', 'GET');
+    $request->setUserResolver(fn () => currentUser());
+
+    app()->instance('request', $request);
+    app(RequestedSite::class)->reset();
+
+    $element = $request->element(['id' => $entry->id], strictSite: false);
+
+    expect($element)->toBeInstanceOf(Entry::class)
+        ->and($element->id)->toBe($entry->id);
+});
+
 it('resolves unpublished drafts by uid when no canonical element exists', function () {
     $entryType = EntryType::factory()->create();
     $section = Section::factory()->withEntryTypes($entryType)->create();

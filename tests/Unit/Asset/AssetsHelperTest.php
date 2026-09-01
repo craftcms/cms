@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
@@ -399,8 +400,6 @@ describe('getFileKinds', function () {
     });
 
     test('it merges in extraFileKinds', function () {
-        AssetsHelper::clear();
-
         Cms::config()->extraFileKinds = [
             'stylesheet' => [
                 'label' => 'Stylesheet',
@@ -409,6 +408,17 @@ describe('getFileKinds', function () {
         ];
 
         expect(AssetsHelper::getFileKinds())->toHaveKey('stylesheet');
+    });
+
+    test('it includes registered file kinds', function () {
+        app(AssetFileKinds::class)->register('stylesheet', [
+            'label' => 'Stylesheet',
+            'extensions' => ['css'],
+        ]);
+
+        expect(AssetsHelper::getFileKinds())
+            ->toHaveKey('stylesheet')
+            ->and(AssetsHelper::getFileKinds()['stylesheet']['extensions'])->toBe(['css']);
     });
 });
 

@@ -165,6 +165,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         return [$minBytes, $maxBytes];
     }
 
+    /** @return array<string, bool|float|int|string|null> */
     #[Override]
     public function getConfig(): array
     {

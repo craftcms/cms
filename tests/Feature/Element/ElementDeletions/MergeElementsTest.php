@@ -19,6 +19,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -213,16 +214,68 @@ test('deletes duplicate structure rows when the prevailing element is already in
             ->value('elementId'))->toBe($this->prevailingEntry->id);
 });
 
+test('bounds duplicate relation and structure queries', function () {
+    $sourceEntries = collect([
+        createRelatedEntrySource($this->section, $this->entryType, $this->fieldLayout),
+        createRelatedEntrySource($this->section, $this->entryType, $this->fieldLayout),
+    ]);
+    $now = now();
+
+    DB::table(Table::RELATIONS)->insert($sourceEntries->map(fn (EntryElement $source) => [
+        'fieldId' => $this->field->id,
+        'sourceId' => $source->id,
+        'sourceSiteId' => $source->siteId,
+        'targetId' => $this->mergedEntry->id,
+        'sortOrder' => 1,
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
+        'uid' => Str::uuid()->toString(),
+    ])->all());
+
+    $structureIds = collect(range(1, 2))->map(fn () => DB::table(Table::STRUCTURES)->insertGetId([
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
+        'uid' => Str::uuid()->toString(),
+    ]));
+
+    DB::table(Table::STRUCTUREELEMENTS)->insert($structureIds->map(fn (int $structureId) => [
+        'elementId' => $this->mergedEntry->id,
+        'structureId' => $structureId,
+        'lft' => 1,
+        'rgt' => 2,
+        'level' => 0,
+        'uid' => Str::uuid()->toString(),
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
+    ])->all());
+
+    $duplicateQueryCount = 0;
+
+    DB::listen(function (QueryExecuted $query) use (&$duplicateQueryCount): void {
+        if (str_starts_with($query->sql, 'select exists') && (str_contains($query->sql, Table::RELATIONS) || str_contains($query->sql, Table::STRUCTUREELEMENTS))) {
+            $duplicateQueryCount++;
+        }
+    });
+
+    Queue::fake();
+
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
+
+    expect($duplicateQueryCount)->toBeLessThanOrEqual(2);
+});
+
 test('dispatches find and replace jobs for entry reference tags', function () {
     Queue::fake();
 
     app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     Queue::assertPushed(FindAndReplace::class, fn (FindAndReplace $job) => $job->find === '{entry:'.$this->mergedEntry->id.':'
-        && $job->replace === '{entry:'.$this->prevailingEntry->id.':');
+        && $job->replace === '{entry:'.$this->prevailingEntry->id.':'
+        && $job->afterCommit === true);
 
     Queue::assertPushed(FindAndReplace::class, fn (FindAndReplace $job) => $job->find === '{entry:'.$this->mergedEntry->id.'}'
-        && $job->replace === '{entry:'.$this->prevailingEntry->id.'}');
+        && $job->replace === '{entry:'.$this->prevailingEntry->id.'}'
+        && $job->afterCommit === true);
 
     Queue::assertPushed(FindAndReplace::class, 2);
 });

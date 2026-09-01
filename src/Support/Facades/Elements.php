@@ -16,7 +16,7 @@ use Override;
  * @method static string|null getElementTypeByRefHandle(string $refHandle)
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface createElement(string|array $config)
  * @method static \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface createElementQuery(string $elementType)
- * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementById(int $elementId, string|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null|\CraftCms\Cms\Element\Contracts\ElementInterface|null getElementById(int $elementId, string|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementByUid(string $uid, string|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementByUri(string $uri, int|null $siteId = null, bool $enabledOnly = false)
  * @method static string|null getElementUriForSite(int $elementId, int $siteId)
@@ -45,7 +45,7 @@ use Override;
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface[] getPlaceholderElements()
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getPlaceholderElement(int $sourceId, int $siteId)
  * @method static \CraftCms\Cms\Element\Data\EagerLoadPlan[] createEagerLoadingPlans(array|string $with)
- * @method static void eagerLoadElements(string $elementType, \CraftCms\Cms\Element\Contracts\ElementInterface[] $elements, array|string $with)
+ * @method static void eagerLoadElements(string $elementType, \CraftCms\Cms\Element\Contracts\ElementInterface[]|\Illuminate\Support\Collection $elements, array|string $with)
  *
  * @see \CraftCms\Cms\Element\Elements
  */

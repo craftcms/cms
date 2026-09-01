@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -154,6 +155,15 @@ interface PluginInterface
 
     public function uninstall(): void;
 
+    /** @internal */
+    public function bootPlugin(Plugins $plugins): void;
+
+    /** @internal */
+    public function publishAssets(): void;
+
+    /** @internal */
+    public function removeAssets(): void;
+
     /**
      * @return Migrator The plugin’s migrator
      */
@@ -220,7 +230,7 @@ interface PluginInterface
     /**
      * Sets the plugin settings
      *
-     * @param  array  $settings  The plugin settings that should be set on the settings model
+     * @param  array<string, mixed>  $settings  The plugin settings that should be set on the settings model
      */
     public function setSettings(array $settings): void;
 
@@ -283,6 +293,7 @@ interface PluginInterface
      * @see PluginTrait::$hasCpSection
      * @see Navigation::getItems()
      */
+    /** @return NavItem|array<string, mixed>|null */
     public function getCpNavItem(): NavItem|array|null;
 
     // Editions
@@ -344,6 +355,7 @@ interface PluginInterface
     /**
      * Creates and returns a new plugin instance based on a passed config
      */
+    /** @param array<string, mixed> $config */
     public static function create(array $config): self;
 
     /**

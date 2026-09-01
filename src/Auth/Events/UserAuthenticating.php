@@ -9,6 +9,7 @@ use SensitiveParameter;
 
 class UserAuthenticating
 {
+    /** @param array{password?: string|null} $credentials */
     public function __construct(
         #[SensitiveParameter]
         public array $credentials = [],

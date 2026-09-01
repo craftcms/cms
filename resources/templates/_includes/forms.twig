@@ -217,7 +217,7 @@
 {% endmacro %}
 
 
-{% macro copytextField(config) %}
+{% macro copyTextField(config) %}
     {% set config = config|merge({id: config.id ?? "copytext#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/copytext') }}
 {% endmacro %}
@@ -374,7 +374,10 @@
 
 
 {% macro editableTableField(config) %}
-    {% set config = config|merge({id: config.id ?? "editabletable#{random()}"}) %}
+  {% set config = config|merge({
+    id: config.id ?? "editabletable#{random()}",
+    width: config.width ?? 'full',
+  }) %}
     {{ _self.field(config, 'template:_includes/forms/editableTable') }}
 {% endmacro %}
 
@@ -420,10 +423,6 @@
                     class: 'go',
                     text: 'Learn more'|t('app'),
                 }),
-            }) %}
-        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') %}
-            {% set config = config|merge({
-                warning: 'The `@web` alias is not recommended.'|t('app'),
             }) %}
         {% endif %}
     {% endif %}

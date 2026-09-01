@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {elevatedSessionManager} from './manager';
 import './index';
 
@@ -8,17 +8,19 @@ describe('legacy elevated-session adapter', () => {
   });
 
   it('maps successful confirmation to the legacy callback', async () => {
-    vi.spyOn(elevatedSessionManager, 'require').mockResolvedValue(true);
+    const requireSpy = vi
+      .spyOn(elevatedSessionManager, 'require')
+      .mockResolvedValue(true);
     const onSuccess = vi.fn();
     const onCancel = vi.fn();
 
-    await (window as any).Craft.elevatedSessionManager.requireElevatedSession(
+    await window.Craft.elevatedSessionManager.requireElevatedSession(
       onSuccess,
       onCancel,
       20
     );
 
-    expect(elevatedSessionManager.require).toHaveBeenCalledWith({
+    expect(requireSpy).toHaveBeenCalledWith({
       minimumRemainingSeconds: 20,
     });
     expect(onSuccess).toHaveBeenCalledOnce();
@@ -30,7 +32,7 @@ describe('legacy elevated-session adapter', () => {
     const onSuccess = vi.fn();
     const onCancel = vi.fn();
 
-    await (window as any).Craft.elevatedSessionManager.requireElevatedSession(
+    await window.Craft.elevatedSessionManager.requireElevatedSession(
       onSuccess,
       onCancel
     );

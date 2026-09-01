@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
@@ -11,6 +10,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\swap;
@@ -24,34 +24,39 @@ beforeEach(function () {
 });
 
 dataset('routes', [
-    [RemoveController::class, 'index'],
-    [RemoveController::class, 'precheck'],
-    [RemoveController::class, 'recheckComposer'],
-    [RemoveController::class, 'composerInstall'],
-    [RemoveController::class, 'composerRemove'],
-    [RemoveController::class, 'finish'],
+    'index',
+    'precheck',
+    'recheckComposer',
+    'composerInstall',
+    'composerRemove',
+    'finish',
 ]);
 
-it('requires authentication, adminChanges and admin for all routes', function (string $controller, string $action) {
+it('uses normal CP routes', function (string $action) {
+    expect(parse_url(action([RemoveController::class, $action]), PHP_URL_PATH))
+        ->toStartWith(parse_url(cp_url('pluginstore/remove'), PHP_URL_PATH));
+})->with('routes');
+
+it('requires authentication, adminChanges and admin for all routes', function (string $action) {
     auth()->logout();
 
-    postJson(action([$controller, $action]))->assertUnauthorized();
+    postJson(action([RemoveController::class, $action]))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
     actingAs(User::find()->one());
 
-    postJson(action([$controller, $action]))->assertForbidden();
+    postJson(action([RemoveController::class, $action]))->assertForbidden();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
     actingAs(User::find()->one());
     Cms::config()->allowAdminChanges(false);
 
-    postJson(action([$controller, $action]))->assertForbidden();
+    postJson(action([RemoveController::class, $action]))->assertForbidden();
 })->with('routes');
 
-test('all routes validate data', function (string $controller, string $action) {
+test('all routes validate data', function (string $action) {
     if ($action === 'index') {
-        postJson(action([$controller, $action]))
+        postJson(action([RemoveController::class, $action]))
             ->assertJsonValidationErrors([
                 'packageName',
             ]);
@@ -59,7 +64,7 @@ test('all routes validate data', function (string $controller, string $action) {
         return;
     }
 
-    postJson(action([$controller, $action]), [
+    postJson(action([RemoveController::class, $action]), [
         'data' => 'invalid-data',
     ])->assertJsonValidationErrors([
         'data',
@@ -72,6 +77,8 @@ test('index', function () {
     ])
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('updater/Index')
+            ->where('initialState.nextUrl', action([RemoveController::class, 'precheck']))
+            ->where('initialState.finishUrl', action([RemoveController::class, 'finish']))
         );
 });
 
@@ -90,7 +97,7 @@ test('composer-remove', function () {
         'data' => $this->hashedData,
     ])->assertJsonFragment([
         'status' => 'The plugin was removed successfully.',
-        'nextAction' => BaseUpdaterController::ACTION_FINISH,
+        'nextUrl' => action([RemoveController::class, 'finish']),
     ]);
 });
 

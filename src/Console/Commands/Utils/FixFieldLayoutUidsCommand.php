@@ -11,10 +11,15 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Override;
 
+/**
+ * @phpstan-type ConfigArray array<array-key, mixed>
+ * @phpstan-type Uids array<string, true>
+ */
 class FixFieldLayoutUidsCommand extends Command
 {
     use CraftCommand;
 
+    /** @var array<string, list<string>> */
     private array $topLevelUids = [];
 
     #[Override]
@@ -51,6 +56,10 @@ class FixFieldLayoutUidsCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @param  ConfigArray  $config
+     * @param  Uids  $uids
+     */
     private function fixUids(
         array $config,
         int &$count,
@@ -80,6 +89,10 @@ class FixFieldLayoutUidsCommand extends Command
         }
     }
 
+    /**
+     * @param  ConfigArray  $config
+     * @param  Uids  $uids
+     */
     private function fixFieldLayouts(
         array $config,
         int &$count,
@@ -123,6 +136,10 @@ class FixFieldLayoutUidsCommand extends Command
         $this->saveConfig($projectConfig, $path, $config, 'fieldLayouts', $useExternalConfig);
     }
 
+    /**
+     * @param  ConfigArray  $config
+     * @param  Uids  $uids
+     */
     private function fixFieldLayout(
         array $config,
         int &$count,
@@ -156,6 +173,10 @@ class FixFieldLayoutUidsCommand extends Command
         $this->saveConfig($projectConfig, $path, $config, 'fieldLayout', $useExternalConfig);
     }
 
+    /**
+     * @param  ConfigArray  $fieldLayoutConfig
+     * @param  Uids  $uids
+     */
     private function fixUidsInLayout(
         array &$fieldLayoutConfig,
         int &$count,
@@ -195,11 +216,15 @@ class FixFieldLayoutUidsCommand extends Command
         unset($tabConfig);
     }
 
+    /**
+     * @param  ConfigArray  $config
+     * @param  Uids  $uids
+     */
     private function checkUid(array &$config, int &$count, array &$uids, bool &$modified, string $path): void
     {
         $uid = $config['uid'] ?? null;
 
-        if (empty($uid)) {
+        if (! is_string($uid) || $uid === '') {
             $reason = 'Missing UUID found at';
         } elseif (isset($uids[$uid])) {
             $reason = 'Duplicate UUID at';
@@ -276,6 +301,7 @@ class FixFieldLayoutUidsCommand extends Command
         return $path !== '' ? "$path.$suffix" : $suffix;
     }
 
+    /** @param ConfigArray $config */
     private function saveConfig(ProjectConfig $projectConfig, string $path, array $config, string $rootKey, bool $useExternalConfig): void
     {
         if ($path === '') {

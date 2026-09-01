@@ -213,6 +213,7 @@ class Site extends Component implements Chippable, Stringable
         return I18N::getLocaleById($this->language);
     }
 
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         return [
@@ -228,6 +229,7 @@ class Site extends Component implements Chippable, Stringable
         ];
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
     {

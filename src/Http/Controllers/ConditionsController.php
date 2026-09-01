@@ -63,15 +63,19 @@ readonly class ConditionsController
             ]);
         }
 
-        if (! is_subclass_of($config['class'], ConditionInterface::class)) {
+        $conditionClass = $config['class'];
+
+        if (! is_subclass_of($conditionClass, ConditionInterface::class)) {
             throw ValidationException::withMessages([
                 "$name.class" => [t('The selected condition class is invalid.')],
             ]);
         }
 
+        $config['class'] = $conditionClass;
+
         $newRuleType = Arr::pull($config, 'new-rule-type');
 
-        $this->condition = $this->conditions->createCondition($config);
+        $this->condition = $this->createCondition($conditionClass, $config);
 
         Typecast::configure($this->condition, Arr::except($baseConfig, 'class'));
 
@@ -81,6 +85,15 @@ readonly class ConditionsController
             $rule->setAutofocus();
             $this->condition->addConditionRule($rule);
         }
+    }
+
+    /**
+     * @param  class-string<ConditionInterface>  $conditionClass
+     * @param  array<string, mixed>  $config
+     */
+    private function createCondition(string $conditionClass, array $config): ConditionInterface
+    {
+        return $this->conditions->createCondition(['class' => $conditionClass] + $config);
     }
 
     public function show(): string

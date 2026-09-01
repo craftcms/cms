@@ -22,6 +22,7 @@ interface Statusable
      * - **`label`** – The human-facing status label.
      * - **`color`** – The status color. See {@see Color} for possible values.
      */
+    /** @return array<string, string|array{label: string, color?: Color|string}> */
     public static function statuses(): array;
 
     /**

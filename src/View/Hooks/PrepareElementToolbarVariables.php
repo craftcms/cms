@@ -13,6 +13,7 @@ readonly class PrepareElementToolbarVariables
         private Sites $sites,
     ) {}
 
+    /** @param array<string, mixed> $context */
     public function __invoke(array &$context): void
     {
         /** @var class-string<ElementInterface> $elementType */

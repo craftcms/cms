@@ -43,6 +43,8 @@ interface ElementContainerFieldInterface extends FieldInterface
      * - `propagate` (boolean) – Whether the element should be propagated to this site on save (`true` by default)
      * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
      *   (`true` by default)
+     *
+     * @return list<int|array{siteId: int, propagate?: bool, enabledByDefault?: bool}>
      */
     public function getSupportedSitesForElement(NestedElementInterface $element): array;
 

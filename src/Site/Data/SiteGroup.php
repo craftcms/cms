@@ -47,7 +47,7 @@ class SiteGroup extends Component
     }
 
     /**
-     * @return Collection<Site>
+     * @return Collection<int, Site>
      */
     public function getSites(): Collection
     {
@@ -55,13 +55,14 @@ class SiteGroup extends Component
     }
 
     /**
-     * @return Collection<int>
+     * @return Collection<int, int>
      */
     public function getSiteIds(): Collection
     {
         return $this->getSites()->pluck('id');
     }
 
+    /** @return array<string, string> */
     public function getConfig(): array
     {
         return [
@@ -69,6 +70,7 @@ class SiteGroup extends Component
         ];
     }
 
+    /** @return array<string, mixed> */
     #[\Override]
     public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
     {

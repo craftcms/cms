@@ -26,6 +26,7 @@ trait SavableComponent
         return ! $this->id || (is_string($this->id) && str_starts_with($this->id, 'new'));
     }
 
+    /** @param callable|array{class-string|object, string}|string $callback */
     public static function onBeforeSave(QueuedClosure|callable|array|string $callback): void
     {
         self::listenForComponentEvent(ComponentSaving::class, $callback);
@@ -38,6 +39,7 @@ trait SavableComponent
         return $event->isValid;
     }
 
+    /** @param callable|array{class-string|object, string}|string $callback */
     public static function onAfterSave(QueuedClosure|callable|array|string $callback): void
     {
         self::listenForComponentEvent(ComponentSaved::class, $callback);
@@ -48,6 +50,7 @@ trait SavableComponent
         event(new ComponentSaved($this, $isNew));
     }
 
+    /** @param callable|array{class-string|object, string}|string $callback */
     public static function onBeforeDelete(QueuedClosure|callable|array|string $callback): void
     {
         self::listenForComponentEvent(ComponentDeleting::class, $callback);
@@ -60,6 +63,7 @@ trait SavableComponent
         return $event->isValid;
     }
 
+    /** @param callable|array{class-string|object, string}|string $callback */
     public static function onBeforeApplyDelete(QueuedClosure|callable|array|string $callback): void
     {
         self::listenForComponentEvent(ComponentDeleteApplying::class, $callback);
@@ -70,6 +74,7 @@ trait SavableComponent
         event(new ComponentDeleteApplying($this));
     }
 
+    /** @param callable|array{class-string|object, string}|string $callback */
     public static function onAfterDelete(QueuedClosure|callable|array|string $callback): void
     {
         self::listenForComponentEvent(ComponentDeleted::class, $callback);
@@ -82,6 +87,7 @@ trait SavableComponent
 
     /**
      * @param  class-string  $event
+     * @param  callable|array{class-string|object, string}|string  $callback
      */
     private static function listenForComponentEvent(string $event, QueuedClosure|callable|array|string $callback): void
     {

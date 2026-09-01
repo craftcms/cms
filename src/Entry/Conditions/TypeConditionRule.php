@@ -36,7 +36,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     }
 
     #[Override]
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values, bool $safeOnly = true): void
     {
         if (array_key_exists('entryTypeUid', $values)) {
             $values['values'] = array_filter([$values['entryTypeUid']]);
@@ -53,9 +53,9 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
             ->all();
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         $query->typeId($this->paramValue(fn ($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
     }
 

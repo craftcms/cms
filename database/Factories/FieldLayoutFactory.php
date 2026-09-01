@@ -7,9 +7,11 @@ namespace CraftCms\Cms\Database\Factories;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
+use CraftCms\Cms\FieldLayout\FieldLayout as FieldLayoutConfig;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class FieldLayoutFactory extends Factory
@@ -24,30 +26,23 @@ class FieldLayoutFactory extends Factory
         ];
     }
 
-    public function withContentTab(array $elements = [], string $name = 'Content'): self
+    /** @param  FieldLayoutElement[]  $elements */
+    public function withContentTab(array $elements = [], ?string $name = null): self
     {
-        return $this->state(fn () => [
-            'config' => [
-                'tabs' => [
-                    [
-                        'uid' => Str::uuid()->toString(),
-                        'name' => $name,
-                        'elements' => $elements,
-                    ],
-                ],
-            ],
-        ]);
+        return $this->state(function (array $attributes) use ($elements, $name) {
+            $layout = FieldLayoutConfig::make($attributes['type']);
+            $layout->tab($name ?? FieldLayoutConfig::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(...$elements));
+
+            return ['config' => $layout->getConfig()];
+        });
     }
 
     public function forField(Field|FieldModel $field, bool $required = false): self
     {
-        return $this->withContentTab([
-            [
-                'uid' => Str::uuid()->toString(),
-                'type' => CustomField::class,
-                'fieldUid' => $field->uid,
-                'required' => $required,
-            ],
-        ]);
+        $element = $field instanceof FieldModel
+            ? new CustomField(config: ['fieldUid' => $field->uid])
+            : CustomField::make($field);
+
+        return $this->withContentTab([$element->required($required)]);
     }
 }

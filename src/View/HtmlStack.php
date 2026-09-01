@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\Data\ResourceEntry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use Illuminate\Container\Attributes\Scoped;
@@ -38,6 +39,10 @@ class HtmlStack
         'linkTags',
         'icons',
     ];
+
+    public function __construct(
+        private readonly RegisteredClientAssets $clientAssets,
+    ) {}
 
     /** @var array<int, array<string, string>> */
     private array $js = [];
@@ -112,6 +117,7 @@ class HtmlStack
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting JS.
      */
+    /** @param list<mixed> $vars */
     public function jsWithVars(callable $fn, array $vars, Position $position = Position::Ready, ?string $key = null): void
     {
         $this->js(Html::jsWithVars($fn, $vars), $position, $key);
@@ -128,12 +134,26 @@ class HtmlStack
      * @param  array  $options  HTML attributes and options. A `position` key sets the page position.
      * @param  string|null  $key  A unique key for deduplication. Defaults to `$url`.
      */
+    /** @param array<string, mixed> $options */
     public function jsFile(string $url, array $options = [], ?string $key = null): void
     {
+        $key ??= $url;
+
+        // Skip files the browser reported as already loaded (Craft 5's
+        // registered-JS-files mechanism); see RegisteredClientAssets.
+        if ($this->clientAssets->hasJsFile($key)) {
+            return;
+        }
+
+        $this->clientAssets->trackJsFile($key);
+
         $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::BodyEnd->value)) ?? Position::BodyEnd;
 
         $entries = $this->jsFiles[$position->value] ?? [];
-        $this->registerEntry($entries, $key ?? $url, Html::javaScriptFile($url, $options));
+        $this->registerEntry($entries, $key, new ResourceEntry(
+            Html::javaScriptFile($url, $options),
+            [$url, $options],
+        ));
         $this->jsFiles[$position->value] = $entries;
     }
 
@@ -146,10 +166,14 @@ class HtmlStack
      * @param  array  $options  HTML attributes to add to the `<link>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to `$url`.
      */
+    /** @param array<string, mixed> $options */
     public function cssFile(string $url, array $options = [], ?string $key = null): void
     {
         $entries = $this->cssFiles;
-        $this->registerEntry($entries, $key ?? $url, Html::cssFile($url, $options));
+        $this->registerEntry($entries, $key ?? $url, new ResourceEntry(
+            Html::cssFile($url, $options),
+            [$url, $options],
+        ));
         $this->cssFiles = $entries;
     }
 
@@ -162,10 +186,14 @@ class HtmlStack
      * @param  array  $options  HTML attributes to add to the `<style>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$css`.
      */
+    /** @param array<string, mixed> $options */
     public function css(string $css, array $options = [], ?string $key = null): void
     {
         $entries = $this->css;
-        $this->registerEntry($entries, $key ?? md5($css), Html::style($css, $options));
+        $this->registerEntry($entries, $key ?? md5($css), new ResourceEntry(
+            Html::style($css, $options),
+            [$css, $options],
+        ));
         $this->css = $entries;
     }
 
@@ -180,10 +208,14 @@ class HtmlStack
      * @param  array  $options  HTML attributes to add to the `<script>` tag (e.g. `['type' => 'application/ld+json']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$script`.
      */
+    /** @param array<string, mixed> $options */
     public function script(string $script, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
         $entries = $this->scripts[$position->value] ?? [];
-        $this->registerEntry($entries, $key ?? md5($script), Html::script($script, $options));
+        $this->registerEntry($entries, $key ?? md5($script), new ResourceEntry(
+            Html::script($script, $options),
+            [$script, $options],
+        ));
         $this->scripts[$position->value] = $entries;
     }
 
@@ -198,6 +230,10 @@ class HtmlStack
      * @param  Position  $position  Where on the page the tag should appear.
      * @param  array  $options  HTML attributes to add to the `<script>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting script.
+     */
+    /**
+     * @param  list<mixed>  $vars
+     * @param  array<string, mixed>  $options
      */
     public function scriptWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
@@ -256,10 +292,14 @@ class HtmlStack
      * @param  array  $attributes  The HTML attributes for the `<meta>` tag (e.g. `['name' => 'description', 'content' => '...']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the serialized attributes.
      */
+    /** @param array<string, mixed> $attributes */
     public function metaTag(array $attributes, ?string $key = null): void
     {
         $entries = $this->metaTags;
-        $this->registerEntry($entries, $key ?? md5(serialize($attributes)), Html::tag('meta', attributes: $attributes));
+        $this->registerEntry($entries, $key ?? md5(serialize($attributes)), new ResourceEntry(
+            Html::tag('meta', attributes: $attributes),
+            $attributes,
+        ));
         $this->metaTags = $entries;
     }
 
@@ -271,6 +311,7 @@ class HtmlStack
      * @param  array  $attributes  The HTML attributes for the `<link>` tag (e.g. `['rel' => 'canonical', 'href' => '...']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the serialized attributes.
      */
+    /** @param array<string, mixed> $attributes */
     public function linkTag(array $attributes, ?string $key = null): void
     {
         $entries = $this->linkTags;
@@ -373,6 +414,15 @@ class HtmlStack
      */
     public function bodyEndHtml(bool $clear = true): string
     {
+        // Record what this request registered onto the `Craft` global so the
+        // JS action clients can report it back on XHR renders. Skipped for
+        // the XHR renders themselves (internally ajax-gated) and for fragment
+        // captures, whose drains run with asset events suppressed; see
+        // RegisteredClientAssets.
+        if (! $this->suppressAssetRenderingEvents) {
+            app(RegisteredClientAssets::class)->registerSyncJs($this);
+        }
+
         $this->dispatchAssetsRenderingEvent();
 
         $body = Position::BodyEnd->value;
@@ -435,6 +485,7 @@ class HtmlStack
      *
      * @param  array|string  $keys  The property names to buffer (e.g. `'js'`, `['css', 'cssFiles']`).
      */
+    /** @param list<string>|string $keys */
     public function startBuffer(array|string $keys): void
     {
         foreach (Arr::wrap($keys) as $key) {
@@ -456,6 +507,7 @@ class HtmlStack
      *
      * @see startBuffer()
      */
+    /** @param list<string>|string $keys */
     public function clearBuffer(array|string $keys): mixed
     {
         $captured = [];
@@ -573,7 +625,7 @@ class HtmlStack
      *
      * @param  bool  $scriptTag  Whether the returned code should be wrapped in a `<script>` tag.
      * @param  bool  $combine  Whether all positions should be combined into a single blob (position info is lost).
-     * @return string|array The captured JS — a string when combined, or an array keyed by position value when not.
+     * @return string|array<int, list<string>|string> The captured JS — a string when combined, or an array keyed by position value when not.
      *
      * @see startJsBuffer()
      */
@@ -766,6 +818,7 @@ class HtmlStack
         $this->scripts = [];
     }
 
+    /** @return Collection<int, string> */
     private function getAssetsForPosition(Position $position): Collection
     {
         return collect()

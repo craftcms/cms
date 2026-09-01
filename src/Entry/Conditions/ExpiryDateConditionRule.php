@@ -25,9 +25,9 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
         return ['expiryDate'];
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         $query->expiryDate($this->queryParamValue());
     }
 

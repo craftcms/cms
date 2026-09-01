@@ -1,4 +1,4 @@
-import {ref, watch, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
+import {ref, watch, toValue, type MaybeRefOrGetter} from 'vue';
 
 // `Craft.ui` is part of the legacy `Craft.UI` global and isn't described by the
 // ambient `CraftStatic` type, so narrow it locally the same way the legacy
@@ -21,10 +21,7 @@ export type IconState = 'idle' | 'success' | 'error' | 'fetching';
  */
 export function useAsyncIcon(
   icon: MaybeRefOrGetter<string | null | undefined>
-): {
-  html: Ref<string | null>;
-  state: Ref<IconState>;
-} {
+) {
   const html = ref<string | null>(null);
   const state = ref<IconState>('idle');
 

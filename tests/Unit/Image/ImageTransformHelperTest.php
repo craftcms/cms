@@ -515,6 +515,13 @@ describe('normalizeTransform', function () {
         'non-numeric height' => [['width' => 800, 'height' => 'abc'], 800, null],
     ]);
 
+    test('rejects arrays with a class key', function () {
+        expect(fn () => ImageTransformHelper::normalizeTransform([
+            'width' => 800,
+            'class' => 'SomeClass',
+        ]))->toThrow(InvalidArgumentException::class, 'Invalid transform config.');
+    });
+
     test('creates transform from object', function () {
         $obj = (object) [
             'width' => 800,

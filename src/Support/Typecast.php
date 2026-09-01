@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Support;
 use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use CraftCms\Cms\Component\Component;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
@@ -45,12 +46,16 @@ class Typecast
 
     private const string TYPE_DATETIMEINTERFACE = DateTimeInterface::class;
 
+    /** @var array<class-string, array<string, array{string, bool}>> */
     private static array $types = [];
 
+    /** @var array<class-string, array<string, array{string, bool}|false|null>> */
     private static array $setterTypes = [];
 
+    /** @var array<class-string, array<string, string>> */
     private static array $setters = [];
 
+    /** @var array<class-string, array<string, bool>> */
     private static array $assignableProperties = [];
 
     /**
@@ -59,7 +64,7 @@ class Typecast
      * @template T of object
      *
      * @param  T  $object  the object to be configured
-     * @param  array  $properties  the property initial values given in terms of name-value pairs.
+     * @param  array<string, mixed>  $properties  the property initial values given in terms of name-value pairs.
      * @return T the object itself
      */
     final public static function configure(object $object, array $properties = []): object
@@ -75,6 +80,10 @@ class Typecast
                     $object->$setter($value);
                 }
 
+                continue;
+            }
+
+            if ($object instanceof Component && ! $object->canSetProperty($name)) {
                 continue;
             }
 
@@ -115,7 +124,7 @@ class Typecast
      * Typecasts the given property values based on their type declarations.
      *
      * @param  class-string  $class  The class name
-     * @param  array  $properties  The property values
+     * @param  array<string, mixed>  $properties  The property values
      */
     public static function properties(string $class, array &$properties): void
     {
@@ -211,9 +220,7 @@ class Typecast
 
                 return;
             case self::TYPE_ARRAY:
-                if ($value === null) {
-                    $value = [];
-                }
+                $value ??= [];
                 if (is_array($value)) {
                     return;
                 }
@@ -238,7 +245,6 @@ class Typecast
             case self::TYPE_CARBONINTERFACE:
             case self::TYPE_DATETIME:
             case self::TYPE_DATETIMEINTERFACE:
-                /** @phpstan-ignore-next-line */
                 $expected = match ($typeName) {
                     self::TYPE_CARBON => Carbon::class,
                     self::TYPE_CARBONINTERFACE => CarbonInterface::class,
@@ -267,6 +273,7 @@ class Typecast
         }
     }
 
+    /** @return array{string, bool}|false */
     private static function propertyType(string $class, string $property): array|false
     {
         if (! isset(self::$types[$class])) {
@@ -372,6 +379,7 @@ class Typecast
         return true;
     }
 
+    /** @return array{string, bool}|false|null */
     private static function resolveParameterType(ReflectionParameter $parameter): array|false|null
     {
         $type = $parameter->getType();
@@ -391,6 +399,7 @@ class Typecast
         return null;
     }
 
+    /** @return array{string, bool}|false */
     private static function resolveUnionType(ReflectionUnionType $type): array|false
     {
         $names = array_map(fn (ReflectionNamedType $t) => $t->getName(), $type->getTypes());

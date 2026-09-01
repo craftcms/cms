@@ -44,7 +44,7 @@ readonly class Drafts
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
      *
-     * @return Collection<ElementInterface>
+     * @return Collection<array-key,ElementInterface|array<string,mixed>>
      */
     public function getEditableDrafts(ElementInterface $element, ?string $permission = null): Collection
     {
@@ -77,7 +77,7 @@ readonly class Drafts
      * @param  int|null  $creatorId  The user ID that the draft should be attributed to
      * @param  string|null  $name  The draft name
      * @param  string|null  $notes  The draft notes
-     * @param  array  $newAttributes  any attributes to apply to the draft
+     * @param  array<string,mixed>  $newAttributes  any attributes to apply to the draft
      * @param  bool  $provisional  Whether to create a provisional draft
      * @return T The new draft
      *
@@ -214,7 +214,7 @@ readonly class Drafts
      * @template T of ElementInterface
      *
      * @param  T  $draft  The draft
-     * @param  array  $newAttributes  Any attributes to apply to the canonical element
+     * @param  array<string,mixed>  $newAttributes  Any attributes to apply to the canonical element
      * @return T The canonical element with the draft applied to it
      *
      * @throws Throwable

@@ -33,7 +33,7 @@ readonly class RoutesController
         return new CpScreenResponse()
             ->title(t('Routes'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Routes')],
             ])
             ->inertiaPage('settings/routes/Index', [
@@ -98,8 +98,8 @@ readonly class RoutesController
         return new CpScreenResponse()
             ->title($title)
             ->crumbs([
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Routes'), 'url' => Url::cpUrl('settings/routes')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Routes'), 'href' => Url::cpUrl('settings/routes')],
                 ['label' => $title],
             ])
             ->redirectUrl('settings/routes')
@@ -112,6 +112,7 @@ readonly class RoutesController
             ]);
     }
 
+    /** @return list<array{label:string, value:string}> */
     private function tokenProps(): array
     {
         return collect($this->routes->tokens)
@@ -123,6 +124,7 @@ readonly class RoutesController
             ->all();
     }
 
+    /** @return list<array{label:string, value:string}> */
     private function siteProps(): array
     {
         return collect([[

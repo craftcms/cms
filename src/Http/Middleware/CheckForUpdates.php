@@ -8,7 +8,6 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Update\Updates;
@@ -73,6 +72,10 @@ readonly class CheckForUpdates
 
     private function processUpdate(Request $request, Closure $next): mixed
     {
+        if ($request->routeIs('craft.cp.updates.*')) {
+            return $next($request);
+        }
+
         if ($request->isCpRequest() && (! $request->isActionRequest() || str_contains($request->path(), 'users/login'))) {
             if ($this->updates->wasCraftBreakpointSkipped()) {
                 throw new RuntimeException(t('You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
@@ -92,9 +95,8 @@ readonly class CheckForUpdates
             $actionSegments = $request->actionSegments();
 
             if (
-                Arr::first($actionSegments) === 'updater' ||
                 $actionSegments === ['app', 'health-check'] ||
-                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {
                 return $this->handleActionRequest->handle($request, $next);

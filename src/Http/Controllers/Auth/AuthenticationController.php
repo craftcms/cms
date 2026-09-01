@@ -64,13 +64,16 @@ abstract readonly class AuthenticationController
         CraftUser $user,
         bool $remember,
         bool $skipTwoFactor = false,
+        ?CraftUser $loginUser = null,
     ): Response {
+        $loginUser ??= $user;
+
         if (! $skipTwoFactor && ! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
-            $this->auth->setUser($user);
+            $this->auth->setUser($user, $remember, $loginUser);
 
             if (! $request->isCpRequest() && ! $request->wantsJson()) {
                 if (! $loginPath = $this->generalConfig->getLoginPath()) {
-                    $request->session()->forget('user.id');
+                    $this->auth->setUser(null);
                     throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
                 }
 
@@ -83,7 +86,7 @@ abstract readonly class AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->completeLogin($request, $user, $remember);
+        return $this->completeLogin($request, $loginUser, $remember);
     }
 
     protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?CraftUser $user = null): Response
@@ -99,6 +102,10 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
+    /**
+     * @param  array<string, mixed>|null  $inertiaProps
+     * @param  array<string, mixed>  $data
+     */
     protected function renderViewWithFallback(string $inertiaComponent, ?array $inertiaProps = null, array $data = []): View|InertiaResponse|Response
     {
         $request = request();
@@ -124,6 +131,7 @@ abstract readonly class AuthenticationController
         );
     }
 
+    /** @return Response|array{User, string, string} */
     protected function processTokenRequest(Request $request): Response|array
     {
         $request->validate([

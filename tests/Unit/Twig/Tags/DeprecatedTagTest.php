@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Deprecator\Deprecator;
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('logs a deprecation warning and continues rendering', function () {
@@ -23,7 +23,7 @@ it('logs a deprecation warning and continues rendering', function () {
 
     app()->scoped(Deprecator::class, fn () => $mock);
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% deprecated "This feature is deprecated" %}Still renders',
     );
 
@@ -37,7 +37,7 @@ it('continues rendering after the deprecation tag', function () {
     $mock->shouldReceive('log');
     app()->scoped(Deprecator::class, fn () => $mock);
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         'Before {% deprecated "old" %}After',
     );
 

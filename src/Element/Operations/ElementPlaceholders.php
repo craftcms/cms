@@ -12,8 +12,10 @@ use InvalidArgumentException;
 #[Scoped]
 class ElementPlaceholders
 {
+    /** @var array<int, array<int, ElementInterface>>|null */
     private ?array $elements = null;
 
+    /** @var array<string, array<int, ElementInterface>> */
     private array $uris = [];
 
     public function setPlaceholderElement(ElementInterface $element): void

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateManager;
 use Twig\Error\RuntimeError;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 describe('requireAdmin', function () {
     it('renders normally when user is an admin', function () {
         actingAs(User::find()->one());
 
-        $result = $this->renderer->renderString('{% requireAdmin %}Admin content');
+        $result = $this->manager->renderString('{% requireAdmin %}Admin content');
 
         expect(trim($result))->toBe('Admin content');
     });
@@ -25,7 +25,7 @@ describe('requireAdmin', function () {
         $user = CraftCms\Cms\User\Models\User::factory()->create(['admin' => false])->asElement();
         actingAs($user);
 
-        $this->renderer->renderString('{% requireAdmin %}');
+        $this->manager->renderString('{% requireAdmin %}');
     })->throws(RuntimeError::class);
 });
 
@@ -34,13 +34,13 @@ describe('requirePermission', function () {
         $user = CraftCms\Cms\User\Models\User::factory()->create(['admin' => false])->asElement();
         actingAs($user);
 
-        $this->renderer->renderString('{% requirePermission "editEntries" %}');
+        $this->manager->renderString('{% requirePermission "editEntries" %}');
     })->throws(RuntimeError::class);
 
     it('renders normally when user is admin', function () {
         actingAs(User::find()->one());
 
-        $result = $this->renderer->renderString('{% requirePermission "editEntries" %}Allowed');
+        $result = $this->manager->renderString('{% requirePermission "editEntries" %}Allowed');
 
         expect(trim($result))->toBe('Allowed');
     });

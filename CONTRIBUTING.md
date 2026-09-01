@@ -69,7 +69,7 @@ If you would like to work on a new core feature or improvement, first create a [
 
 ## Control Panel Front End
 
-In order to work on the control panel front end, run `npm run dev`. On first run, this ensures the build artifacts the dev server depends on exist (building them if they don't), then starts the Vite development server together with the `@craftcms/cp` watcher, with output from each prefixed so you can tell them apart.
+In order to work on the control panel front end, run `npm run dev`. On first run, this ensures the build artifacts the dev server depends on exist (building them if they don't), then starts the Vite development server together with the `@craftcms/ui` watcher, with output from each prefixed so you can tell them apart.
 
 That covers most control panel work. If you also need to edit files under `packages/craftcms-legacy`, run `npm run dev:legacy` instead, which additionally starts the legacy webpack watcher.
 
@@ -86,15 +86,15 @@ npm run dev
 npm run build
 ```
 
-### `@craftcms/cp` package
+### `@craftcms/ui` package
 
-The control panel is largely backed by web components that live in the `@craftcms/cp` package within the `packages/craftcms-cp` directory. Like other packages, it has its own build process that can be run independently of the control panel.
+The control panel is largely backed by web components that live in the `@craftcms/ui` package within the `packages/craftcms-ui` directory. Like other packages, it has its own build process that can be run independently of the control panel.
 ```shell
 # Run the build in watch mode. Assets will be rebuilt on every change
-npm run dev:cp
+npm run dev:ui
 
 # Run the build for production
-npm run build:cp
+npm run build:ui
 ```
 
 In practice, you rarely work on one without the other, which is why `npm run dev` runs both together.

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import Pane from '@/common/components/Pane.vue';
+  import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
@@ -50,18 +49,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteVolume(volume: VolumeData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}?', {
-          name: volume.name,
-        })
-      )
-    ) {
-      router.delete(destroy({volumeId: volume.id}));
-    }
-  }
-
   const volumeIds = ref(props.volumes.map((volume) => volume.id));
   const volumes = computed((): VolumeData[] => {
     return (volumeIds.value ?? [])
@@ -109,12 +96,17 @@
       header: t('Name'),
       props: ({row}) => ({
         href: edit({volumeId: row.original.id}).url,
-        inertia: false,
+        inertia: true,
       }),
     }),
     columnHelper.handle('handle'),
     columnHelper.actions(({row}) => [
-      h(DeleteButton, {onClick: () => deleteVolume(row.original)}),
+      h(DeleteButton, {
+        confirm: t('Are you sure you want to delete “{name}?', {
+          name: row.original.name,
+        }),
+        onClick: () => router.delete(destroy({volumeId: row.original.id})),
+      }),
     ]),
   ]);
 
@@ -134,7 +126,7 @@
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
-  useAppLayout({title: props.title, fullWidth: true});
+  useAppLayout({title: props.title});
 </script>
 
 <template>
@@ -143,14 +135,13 @@
       appearance="button"
       :href="create().url"
       variant="accent"
-      :inertia="false"
       icon="plus"
     >
       {{ t('New volume') }}
     </CpLink>
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable
       :table="table"
       :reorderable="true"
@@ -161,5 +152,5 @@
         <Empty :label="t('No volumes exist yet.')" icon="light/files" />
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

@@ -83,7 +83,7 @@ class ComponentHelper
      *
      * @template T of ComponentInterface
      *
-     * @param  class-string<T>|array  $config  The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param  class-string<T>|array<string, mixed>  $config  The component’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @param  class-string<T>|null  $instanceOf  The class or interface that the component must be an instance of.
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>,__class?:string} $config
@@ -123,6 +123,10 @@ class ComponentHelper
     /**
      * Extracts settings from a given component config, and returns a new config array with the settings merged in.
      */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     public static function mergeSettings(array $config): array
     {
         if (($settings = Arr::pull($config, 'settings')) === null) {
@@ -143,6 +147,7 @@ class ComponentHelper
     /**
      * Return all DateTime attributes for given model.
      */
+    /** @return list<string> */
     public static function datetimeAttributes(object $model): array
     {
         $datetimeAttributes = [];

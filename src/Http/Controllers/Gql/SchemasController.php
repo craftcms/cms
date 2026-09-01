@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -31,14 +32,14 @@ readonly class SchemasController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index()
+    public function index(): \Inertia\Response
     {
         // Ensure the public schema exists so the table stays aligned with the legacy UI.
         $this->gql->getPublicSchema();
 
         return Inertia::render('graphql/schemas/Index', [
             'crumbs' => fn () => [
-                ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/schemas')],
+                ['label' => t('GraphQL'), 'href' => Url::cpUrl('graphql/schemas')],
                 ['label' => t('Schemas')],
             ],
             'title' => t('GraphQL Schemas'),
@@ -113,6 +114,7 @@ readonly class SchemasController extends GqlController
         return $this->asSuccess(t('Schema saved.'));
     }
 
+    /** @return array{GqlSchema, GqlToken|null} */
     private function resolveSchema(string|int $schemaId): array
     {
         if ($schemaId === 'public') {
@@ -143,7 +145,7 @@ readonly class SchemasController extends GqlController
             ->title($title)
             ->selectedSubnavItem('schemas')
             ->crumbs([
-                ['label' => t('GraphQL Schemas'), 'url' => 'graphql/schemas'],
+                ['label' => t('GraphQL Schemas'), 'href' => Url::cpUrl('graphql/schemas')],
                 ['label' => $title],
             ])
             ->redirectUrl('graphql/schemas')
@@ -183,24 +185,32 @@ readonly class SchemasController extends GqlController
         return $this->permissionGroups($schemaComponents['queries'])
             ->merge($this->permissionGroups($schemaComponents['mutations']))
             ->push(new PermissionGroup(
-                t('Optional Features'),
-                $this->permissionList($optionalPermissions),
+                handle: 'optionalFeatures',
+                heading: t('Optional Features'),
+                permissions: $this->permissionList($optionalPermissions),
             ));
     }
 
-    /** @return Collection<int, PermissionGroup> */
+    /**
+     * @param  array<string, array<string, array<string, mixed>>>  $categories
+     * @return Collection<int, PermissionGroup>
+     */
     private function permissionGroups(array $categories): Collection
     {
         return collect($categories)
             ->filter()
             ->map(fn (array $permissions, string $heading) => new PermissionGroup(
-                $heading,
-                $this->permissionList($permissions),
+                handle: Str::toHandle($heading),
+                heading: $heading,
+                permissions: $this->permissionList($permissions),
             ))
             ->values();
     }
 
-    /** @return Collection<int, Permission> */
+    /**
+     * @param  array<string, array<string, mixed>>  $permissions
+     * @return Collection<int, Permission>
+     */
     private function permissionList(array $permissions): Collection
     {
         return collect($permissions)

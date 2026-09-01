@@ -6,6 +6,8 @@ export {
   coerceElements,
   getElement,
   hasAttr,
+  nearestSibling,
+  closestRegistered,
   getOffset,
   getOuterWidth,
   getOuterHeight,
@@ -73,6 +75,7 @@ export {
   isArray,
   isPlainObject,
   isTextNode,
+  deferUntil,
   log,
   handleActivatingKeypress,
 } from './misc';

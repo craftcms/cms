@@ -10,10 +10,12 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
 use CraftCms\Cms\Support\Facades\Gql;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
 class ContentBlock extends Element
 {
     #[Override]
@@ -47,6 +49,7 @@ class ContentBlock extends Element
         return 'ContentBlockInterface';
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     #[Override]
     public static function getFieldDefinitions(): array
     {

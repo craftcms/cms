@@ -16,7 +16,7 @@ class ElementRendering
     /**
      * @param  ElementInterface  $element  The element being rendered
      * @param  array{template:string,priority:int}[]  $templates  The template paths to check when rendering the element's partial template
-     * @param  array  $variables  Additional variables to be passed to the template
+     * @param  array<string, mixed>  $variables  Additional variables to be passed to the template
      * @param  string|null  $output  The output of the event (if set, short-circuits template rendering)
      */
     public function __construct(

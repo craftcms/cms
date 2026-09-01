@@ -40,6 +40,8 @@ readonly class ElementDuplicates
     ) {}
 
     /**
+     * @param  array<string, mixed>  $newAttributes
+     *
      * @throws UnsupportedSiteException
      * @throws InvalidElementException
      * @throws HttpException
@@ -267,7 +269,7 @@ readonly class ElementDuplicates
 
                     foreach ($supportedSites as $siteId => $siteInfo) {
                         if (! isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
-                            $siteClone = $element->getIsDraft() && ! $element->getIsUnpublishedDraft() ? null : false;
+                            $siteClone = $element->getIsDerivative() ? null : false;
                             if (! $this->elementWrites->propagate($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 throw $siteClone
                                     ? new InvalidElementException($siteClone,

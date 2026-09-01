@@ -57,13 +57,7 @@
       >
         <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue" />
 
-        <template v-if="isPluginInstalled">
-          <!-- Switch -->
-          <input type="hidden" name="action" value="plugins/switch-edition" />
-          <input type="hidden" name="pluginHandle" :value="plugin.handle" />
-          <input type="hidden" name="edition" :value="edition.handle" />
-        </template>
-        <template v-else>
+        <template v-if="!isPluginInstalled">
           <!-- Install -->
           <input type="hidden" name="action" value="pluginstore/install" />
           <input type="hidden" name="packageName" :value="plugin.packageName" />

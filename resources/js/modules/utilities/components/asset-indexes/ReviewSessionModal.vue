@@ -1,13 +1,15 @@
 <script setup lang="ts">
   import ModalForm from '@/common/components/ModalForm.vue';
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
   import {computed, reactive} from 'vue';
-  import {escapeHtml} from '@craftcms/cp/utilities/escapeHtml';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
-  import type {FinishIndexingParams} from '@craftcms/cp/services/AssetIndexer';
+  import type {FinishIndexingParams} from '@craftcms/ui/services/AssetIndexer';
   import {router} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
+
+  type TranslationParams = NonNullable<Parameters<typeof t>[1]>;
 
   withDefaults(
     defineProps<{
@@ -68,7 +70,7 @@
     ],
   });
 
-  function missingItemsHeading(type: string, params: Record<any, any>) {
+  function missingItemsHeading(type: string, params: TranslationParams) {
     if (type === 'folders' && reviewSession.value?.listEmptyFolders) {
       return t('Missing or empty {items}', params);
     }
@@ -76,7 +78,7 @@
     return t('Missing {items}', params);
   }
 
-  function missingItemsCopy(type: string, params: Record<any, any>) {
+  function missingItemsCopy(type: string, params: TranslationParams) {
     if (type === 'files' && reviewSession.value?.listEmptyFolders) {
       return t(
         'The following {items} could not be found or are empty. Should they be deleted from the index?',

@@ -32,40 +32,6 @@ body {
     cursor: move !important;
     cursor: grabbing !important;
   }
-
-  :focus {
-    outline-style: solid;
-    outline-color: transparent;
-  }
-
-  :focus-visible {
-    box-shadow: var(--focus-ring);
-  }
-}
-
-.skip-link {
-  position: absolute;
-  margin: 5px;
-  inset-inline-start: -10000px;
-  inset-block-start: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  z-index: $sidebarZIndex + 1;
-
-  &:focus {
-    inset-inline-start: unset;
-    inset-inline-start: 0;
-    width: auto;
-    height: auto;
-    background-color: var(--gray-100) !important;
-  }
-}
-
-.skip-link--global {
-  @media only screen and (min-width: $minFullUiWidth) {
-    @include mixins.two-color-focus-ring;
-  }
 }
 
 #global-container {

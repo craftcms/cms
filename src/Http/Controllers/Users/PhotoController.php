@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
+use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
@@ -16,6 +17,7 @@ use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -42,6 +44,18 @@ readonly class PhotoController
     public function upload(Request $request): Response
     {
         $user = $this->authorizeUserPhotoTarget($request);
+
+        $request->validate([
+            'photo' => [
+                'nullable',
+                'file',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if ($value instanceof UploadedFile && $value->getSize() > AssetsHelper::getMaxUploadSize()) {
+                        $fail(t('The uploaded file exceeds the maximum allowed size.'));
+                    }
+                },
+            ],
+        ]);
 
         if (! $request->hasFile('photo')) {
             return new JsonResponse;

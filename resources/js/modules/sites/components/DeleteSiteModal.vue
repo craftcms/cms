@@ -4,7 +4,7 @@
   import {computed} from 'vue';
   import {destroy} from '@actions/Settings/SitesController';
   import type {Site} from '@/common/types';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
 
   const emit = defineEmits<{
     (e: 'close'): void;

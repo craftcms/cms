@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -14,15 +15,21 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\VariableNode;
+use CraftCms\Cms\Support\File;
+use GraphQL\Error\Error;
+use GraphQL\Executor\Values;
+use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\NonNull;
+use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use GraphQL\Utils\AST;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class GqlHelper
 {
@@ -53,6 +60,7 @@ class GqlHelper
      * @param  string  $action  The action for which the entities should be extracted. Defaults to "read".
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
+    /** @return array<string, list<string>> */
     public static function extractAllowedEntitiesFromSchema(string $action = 'read', ?GqlSchema $schema = null): array
     {
         try {
@@ -87,6 +95,7 @@ class GqlHelper
     /**
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
+    /** @return list<string> */
     public static function extractEntityAllowedActions(string $entity, ?GqlSchema $schema = null): array
     {
         try {
@@ -161,11 +170,11 @@ class GqlHelper
 
     /**
      * @param  string  $typeName  The union type name.
-     * @param  array  $includedTypes  The type the union should include
+     * @param  list<ObjectType>  $includedTypes  The types the union should include
      * @param  callable|null  $resolveFunction  The resolver function to use to resolve a specific type. If not provided,
      *                                          a default one will be used that is able to resolve Craft elements.
      */
-    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
+    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): UnionType
     {
         $resolveFunction ??= fn (ElementInterface $value) => $value->getGqlTypeName();
 
@@ -236,13 +245,7 @@ class GqlHelper
                 continue;
             }
 
-            $arguments = [];
-
-            if (isset($directive->arguments[0])) {
-                foreach ($directive->arguments as $argument) {
-                    $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
-                }
-            }
+            $arguments = Values::getArgumentValues($directiveEntity, $directive, $resolveInfo->variableValues, $resolveInfo->schema);
 
             $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
         }
@@ -250,11 +253,51 @@ class GqlHelper
         return $value;
     }
 
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>|string
+     */
     public static function prepareTransformArguments(array $arguments): array|string
     {
-        unset($arguments['immediately']);
+        $handle = $arguments['handle'] ?? null;
 
-        return $arguments['handle'] ?? $arguments;
+        if ($handle === null) {
+            return $arguments;
+        }
+
+        unset($arguments['handle']);
+        $arguments['transform'] = $handle;
+
+        return $arguments;
+    }
+
+    /**
+     * @param  array<string, mixed>|string  $definition
+     */
+    public static function resolveAssetTransform(
+        Asset $asset,
+        array|string $definition,
+        string $field,
+    ): mixed {
+        $transformer = is_array($definition) ? Arr::pull($definition, 'transformer') : null;
+
+        if ($transformer !== null && ! is_string($transformer)) {
+            throw new InvalidArgumentException('The Asset Transformer handle must be a string.');
+        }
+
+        return match ($field) {
+            'format' => File::getExtensionByMimeType($asset->transform($definition, $transformer)->mimeType),
+            'height' => $asset->transform($definition, $transformer)->height,
+            'mimeType' => $asset->transform($definition, $transformer)->mimeType,
+            'url' => $asset->transform($definition, $transformer)->url,
+            'width' => $asset->transform($definition, $transformer)->width,
+            default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
+        };
+    }
+
+    public static function isAssetTransformField(string $field): bool
+    {
+        return in_array($field, ['format', 'height', 'mimeType', 'url', 'width'], true);
     }
 
     /**
@@ -301,19 +344,7 @@ class GqlHelper
             ->all();
     }
 
-    private static function _convertArgumentValue(mixed $value, array $variableValues = []): mixed
-    {
-        if ($value instanceof VariableNode) {
-            return $variableValues[$value->name->value];
-        }
-
-        if ($value instanceof ListValueNode) {
-            return array_map(fn ($node) => self::_convertArgumentValue($node), iterator_to_array($value->values));
-        }
-
-        return $value->value;
-    }
-
+    /** @param array{conditionBuilder?: ElementQueryConditionBuilder}|null $context */
     public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, ?array $context): string
     {
         // $resolveInfo->path is either an array or not set, so we need to check if it's set
@@ -449,5 +480,16 @@ class GqlHelper
         $tok = trim($tok);
 
         return in_array($tok, ['__schema', '__type']);
+    }
+
+    public static function isMutation(string $query, ?string $operationName = null): bool
+    {
+        try {
+            $document = Parser::parse($query);
+        } catch (Error) {
+            return false;
+        }
+
+        return AST::getOperationAST($document, $operationName)?->operation === 'mutation';
     }
 }

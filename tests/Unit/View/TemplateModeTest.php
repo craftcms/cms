@@ -3,12 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
-use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Once;
 
 it('defaults to site mode for non-cp requests', function () {
     Context::forgetHidden(TemplateMode::class);
@@ -116,19 +112,4 @@ it('returns correct private template trigger for site with custom config', funct
 it('has the correct backing values', function () {
     expect(TemplateMode::Cp->value)->toBe('cp');
     expect(TemplateMode::Site->value)->toBe('site');
-});
-
-it('dispatches the correct event for template roots', function () {
-    Once::flush();
-    Event::fake([CpTemplateRootsResolving::class, SiteTemplateRootsResolving::class]);
-
-    TemplateMode::Cp->templateRoots();
-
-    Event::assertDispatched(CpTemplateRootsResolving::class);
-    Event::assertNotDispatched(SiteTemplateRootsResolving::class);
-
-    TemplateMode::Site->templateRoots();
-
-    Event::assertDispatchedOnce(CpTemplateRootsResolving::class);
-    Event::assertDispatchedOnce(SiteTemplateRootsResolving::class);
 });

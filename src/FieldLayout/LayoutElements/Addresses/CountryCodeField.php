@@ -9,7 +9,10 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
@@ -60,6 +63,23 @@ class CountryCodeField extends BaseNativeField
         return true;
     }
 
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        if (! $context->element instanceof Address) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
+        }
+
+        $options = collect(app(Addresses::class)->getCountryList(app()->getLocale()))
+            ->map(fn (string $label, string $value): array => compact('label', 'value'))
+            ->values()
+            ->all();
+
+        return Choice::make($this->attribute())
+            ->options($options)
+            ->value($context->element->countryCode);
+    }
+
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Country');
@@ -105,6 +125,7 @@ class CountryCodeField extends BaseNativeField
         return $value;
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

@@ -13,6 +13,12 @@ class ImageEditorSaving
 
     public ?int $newAssetId = null;
 
+    /**
+     * @param  array<string,mixed>  $cropData
+     * @param  array<string,mixed>|null  $focalPoint
+     * @param  array<string,mixed>  $imageDimensions
+     * @param  array<string,mixed>|null  $flipData
+     */
     public function __construct(
         public readonly Asset $asset,
         public readonly bool $replace,

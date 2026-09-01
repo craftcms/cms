@@ -98,7 +98,7 @@ trait HasActions
      * Defines the available bulk element actions for a given source.
      *
      * @param  string  $source  The selected source's key, if any.
-     * @return array The available bulk element actions.
+     * @return array<array-key,mixed> The available bulk element actions.
      *
      * @see actions()
      */

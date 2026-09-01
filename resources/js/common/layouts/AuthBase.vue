@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import {Head} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
-  import craftCmsLogoUrl from '@public/images/craftcms.svg';
-  import {t} from '@craftcms/cp';
+  import craftCmsLogoUrl from '/images/craftcms.svg';
+  import {t} from '@craftcms/ui';
+  import LiveRegion from '@/common/components/LiveRegion.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -19,6 +20,7 @@
 <template>
   <Head :title="props.title"></Head>
   <main class="cp-login">
+    <LiveRegion />
     <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">
         <img
@@ -82,7 +84,7 @@
   .cp-login__powered-by {
     display: block;
     margin-block-start: calc(70rem / 16);
-    opacity: 0.8;
+    opacity: 0.92;
     text-align: center;
 
     &:hover,

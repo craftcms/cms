@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Events\ElementCardAttributesResolving;
@@ -79,7 +78,7 @@ trait DisplayedInIndex
     /**
      * Returns the attributes that should not be duplicated when bulk duplicating elements.
      *
-     * @return array The attribute names (as keys) and their replacement values
+     * @return array<string,mixed> The attribute names (as keys) and their replacement values
      */
     public static function baseBulkDuplicateAttributes(): array
     {
@@ -108,7 +107,7 @@ trait DisplayedInIndex
      *
      * @param  ElementQueryInterface  $elementQuery  The element query
      * @param  int[]|null  $disabledElementIds  The disabled element IDs
-     * @param  array  $viewState  The view state
+     * @param  array<string,mixed>  $viewState  The view state
      * @param  string|null  $sourceKey  The source key
      * @param  string|null  $context  The context
      * @param  bool  $includeContainer  Whether to include the container
@@ -126,6 +125,52 @@ trait DisplayedInIndex
         bool $selectable,
         bool $sortable,
     ): string|Stringable {
+        $variables = static::indexData(
+            elementQuery: $elementQuery,
+            disabledElementIds: $disabledElementIds,
+            viewState: $viewState,
+            sourceKey: $sourceKey,
+            context: $context,
+            selectable: $selectable,
+            sortable: $sortable,
+        );
+
+        if (empty($variables['elements']) && ! $includeContainer) {
+            // load-more request
+            return '';
+        }
+
+        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
+
+        return template($template, $variables);
+    }
+
+    /**
+     * Builds the data (template variables) for the element index view.
+     *
+     * This applies the index's ordering and table-attribute preparation to the
+     * given query, resolves the resulting elements, and returns the variables
+     * that {@see indexHtml()} renders — letting callers (e.g. Inertia
+     * controllers) consume the same data without rendering the template.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  int[]|null  $disabledElementIds  The disabled element IDs
+     * @param  array<string,mixed>  $viewState  The view state
+     * @param  string|null  $sourceKey  The source key
+     * @param  string|null  $context  The context
+     * @param  bool  $selectable  Whether the elements are selectable
+     * @param  bool  $sortable  Whether the elements are sortable
+     * @return array<string,mixed> The template variables
+     */
+    public static function indexData(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $selectable,
+        bool $sortable,
+    ): array {
         $static = $viewState['static'] ?? false;
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -214,11 +259,6 @@ trait DisplayedInIndex
 
         $elements = static::indexElements($elementQuery, $sourceKey);
 
-        if (empty($elements) && ! $includeContainer) {
-            // load-more request
-            return '';
-        }
-
         // See if there are any provisional changes we should show
         Drafts::loadProvisionalChanges($elements);
 
@@ -236,14 +276,14 @@ trait DisplayedInIndex
         }
 
         $variables['elements'] = $elements;
-        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 
-        return template($template, $variables);
+        return $variables;
     }
 
     /**
      * Applies a normalized element index ordering to the element query.
      */
+    /** @param array<array-key,mixed>|ExpressionInterface $orderBy */
     private static function applyIndexOrderBy(ElementQueryInterface $elementQuery, ExpressionInterface|array $orderBy): void
     {
         foreach (Arr::wrap($orderBy) as $column => $direction) {
@@ -333,7 +373,7 @@ trait DisplayedInIndex
      * @param  string|null  $sourceKey  The source key
      * @return ElementInterface[] The elements
      */
-    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    public static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         return $elementQuery->all();
     }
@@ -353,6 +393,7 @@ trait DisplayedInIndex
     /**
      * Returns the available view modes for the element index.
      */
+    /** @return array<array-key,mixed> */
     public static function indexViewModes(): array
     {
         return array_values(array_filter([
@@ -367,6 +408,7 @@ trait DisplayedInIndex
         ]));
     }
 
+    /** @return array<array-key,mixed> */
     public static function sortOptions(): array
     {
         $sortOptions = static::defineSortOptions();
@@ -388,7 +430,7 @@ trait DisplayedInIndex
     /**
      * Returns the sort options for the element type.
      *
-     * @return array The attributes that elements can be sorted by
+     * @return array<array-key,mixed> The attributes that elements can be sorted by
      *
      * @see sortOptions()
      */
@@ -400,6 +442,7 @@ trait DisplayedInIndex
             ->all();
     }
 
+    /** @return array<string,array<string,mixed>> */
     public static function tableAttributes(): array
     {
         event($event = new ElementTableAttributesResolving(
@@ -413,7 +456,7 @@ trait DisplayedInIndex
     /**
      * Defines all of the available columns that can be shown in table views.
      *
-     * @return array The table attributes.
+     * @return array<string,array<string,mixed>> The table attributes.
      *
      * @see tableAttributes()
      */
@@ -477,7 +520,7 @@ trait DisplayedInIndex
      * Returns the card attributes for the element type.
      *
      * @param  FieldLayout|null  $fieldLayout  The field layout
-     * @return array The card attributes
+     * @return array<string,array<string,mixed>> The card attributes
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
@@ -493,7 +536,7 @@ trait DisplayedInIndex
     /**
      * Defines all the available attributes that can be shown in card views along with their default placeholder values.
      *
-     * @return array The card attributes.
+     * @return array<string,array<string,mixed>> The card attributes.
      *
      * @see cardAttributes()
      */
@@ -542,7 +585,7 @@ trait DisplayedInIndex
     /**
      * Returns the preview HTML for a card attribute.
      *
-     * @param  array  $attribute  The attribute configuration
+     * @param  array<string,mixed>  $attribute  The attribute configuration
      * @return mixed The preview HTML
      */
     public static function attributePreviewHtml(array $attribute): mixed
@@ -590,7 +633,7 @@ trait DisplayedInIndex
      * @param  string  $sourceKey  The source key
      * @param  string  $attribute  The attribute to sort by
      * @param  string  $dir  The sort direction ('asc' or 'desc')
-     * @return ExpressionInterface|array|false The order by clause
+     * @return ExpressionInterface|array<array-key,mixed>|false The order by clause
      */
     private static function _indexOrderBy(
         string $sourceKey,
@@ -614,9 +657,9 @@ trait DisplayedInIndex
     /**
      * Normalizes order by columns with their sort directions.
      *
-     * @param  array  $columns  The columns to normalize
+     * @param  array<array-key,mixed>  $columns  The columns to normalize
      * @param  int  $defaultDirection  The default sort direction
-     * @return array The normalized columns with directions
+     * @return array<array-key,int> The normalized columns with directions
      */
     private static function normalizeOrderByColumns(array $columns, int $defaultDirection): array
     {
@@ -648,7 +691,7 @@ trait DisplayedInIndex
      * @param  string  $sourceKey  The source key
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction (SORT_ASC or SORT_DESC)
-     * @return ExpressionInterface|bool|array|string The columns
+     * @return ExpressionInterface|bool|array<array-key,mixed>|string The columns
      */
     private static function _indexOrderByColumns(
         string $sourceKey,
@@ -677,7 +720,7 @@ trait DisplayedInIndex
      *
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction
-     * @return ExpressionInterface|array|string|false The orderBy value
+     * @return ExpressionInterface|array<array-key,mixed>|string|false The orderBy value
      */
     private static function resolveSortOption(string $attribute, int $dir): ExpressionInterface|array|string|false
     {

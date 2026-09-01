@@ -14,10 +14,12 @@ use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
 use CraftCms\Cms\Support\Facades\Gql;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
 class Asset extends Element
 {
     #[Override]
@@ -51,6 +53,7 @@ class Asset extends Element
         return 'AssetInterface';
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     #[Override]
     public static function getFieldDefinitions(): array
     {
@@ -210,6 +213,7 @@ class Asset extends Element
         ]), self::getName());
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     protected static function getConditionalFields(): array
     {
         if (GqlHelper::canQueryAllUsers()) {

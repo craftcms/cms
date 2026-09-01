@@ -12,6 +12,7 @@ use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -36,7 +37,7 @@ use function CraftCms\Cms\t;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property ElementRules $ruleset
+ * @property ElementRules<static> $ruleset
  */
 #[Ruleset(ElementRules::class)]
 abstract class Element extends Component implements AllowableInSandbox, ElementInterface
@@ -188,6 +189,37 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return t('Element');
     }
 
+    #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        $suggestions = [
+            'id' => t('ID'),
+            'uid' => t('UID'),
+            'title' => t('Title'),
+            'slug' => t('Slug'),
+            'uri' => t('URI'),
+            'dateCreated' => t('Date Created'),
+            'dateUpdated' => t('Date Updated'),
+            'site.handle' => t('Site Handle'),
+            'site.name' => t('Site Name'),
+            'site.language' => t('Site Language'),
+        ];
+
+        if (! is_a(static::class, NestedElementInterface::class, true)) {
+            return $suggestions;
+        }
+
+        return [
+            ...$suggestions,
+            'owner.id' => t('Owner ID'),
+            'owner.uid' => t('Owner UID'),
+            'owner.title' => t('Owner Title'),
+            'owner.slug' => t('Owner Slug'),
+            'owner.uri' => t('Owner URI'),
+            'owner.site.handle' => t('Owner Site Handle'),
+        ];
+    }
+
     public static function lowerDisplayName(): string
     {
         return mb_strtolower(static::displayName());
@@ -226,19 +258,12 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return null;
     }
 
-    /**
-     * @var array<string,int>|null
-     *
-     * @see validate()
-     */
-    private ?array $_attributeNames = null;
-
     private bool $_trackDirtyFields = false;
 
     /**
      * @see toArray()
      */
-    private $_serializeFields = false;
+    private bool $_serializeFields = false;
 
     public function __construct($config = [])
     {
@@ -297,7 +322,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @return bool Whether the property is set
      */
     #[Override]
-    public function __isset($name): bool
+    public function __isset(string $name): bool
     {
         // Is this the "field:handle" syntax?
         if (str_starts_with($name, 'field:')) {
@@ -324,7 +349,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     }
 
     #[Override]
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         // Is $name a set of eager-loaded elements?
         if ($this->hasEagerLoadedElements($name) && ! ($this->_lazyEagerLoadedElements[$name] ?? false)) {
@@ -332,8 +357,8 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         }
 
         // Is this the "field:handle" syntax?
-        if (str_starts_with((string) $name, 'field:')) {
-            return $this->getFieldValue(substr((string) $name, 6));
+        if (str_starts_with($name, 'field:')) {
+            return $this->getFieldValue(substr($name, 6));
         }
 
         // If this is a field, make sure the value has been normalized before returning it
@@ -345,7 +370,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
             return $this->getCustomFieldRawValue($name);
         }
 
-        if (isset($this->_generatedFieldValues) && array_key_exists((string) $name, $this->_generatedFieldValues)) {
+        if (isset($this->_generatedFieldValues) && array_key_exists($name, $this->_generatedFieldValues)) {
             return $this->_generatedFieldValues[$name];
         }
 
@@ -357,7 +382,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     }
 
     #[Override]
-    public function __set(string $name, $value): void
+    public function __set(string $name, mixed $value): void
     {
         // Is this the "field:handle" syntax?
         if (str_starts_with($name, 'field:')) {
@@ -378,6 +403,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         }
     }
 
+    /** @param array<array-key,mixed> $params */
     #[Override]
     public function __call($name, $params)
     {
@@ -416,11 +442,8 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return false;
     }
 
-    /**
-     * @TODO: Remove parameters once Element no longer extends Yii Model
-     */
     #[Override]
-    public function validationData($names = null, $except = []): array
+    public function validationData(): array
     {
         $attributes = $this->attributes();
         $values = [];
@@ -437,6 +460,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return $values;
     }
 
+    /** @return string[] */
     public function attributes(): array
     {
         $names = array_flip(Utils::getPublicAttributes($this));
@@ -516,6 +540,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return $fields;
     }
 
+    /** @return array<string,mixed> */
     #[Override]
     public function toArray(array $fields = [], array $expand = [], $recursive = true): array
     {
@@ -715,11 +740,13 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return is_string($offset) && app(Fields::class)->isKnownFieldHandle($offset);
     }
 
+    /** @param array<string,mixed> $values */
     public function setAttributesFromRequest(array $values): void
     {
         $this->setAttributes($values);
     }
 
+    /** @return string[] */
     public function safeAttributes(): array
     {
         return array_values(array_diff(array_keys($this->ruleset->rules()), [

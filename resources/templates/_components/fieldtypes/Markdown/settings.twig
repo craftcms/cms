@@ -1,19 +1,21 @@
 {% import "_includes/forms" as forms %}
 
-<div id="markdown-flavor-settings" class="{{ field.encode ? 'hidden' }}">
-    {{ forms.selectField({
-        label: 'Markdown Flavor'|t('app'),
-        instructions: 'The Markdown flavor that should be used when rendering this field.'|t('app'),
-        id: 'flavor',
-        name: 'flavor',
-        options: flavorOptions,
-        value: field.flavor,
-        errors: field.errors.get('flavor'),
-        disabled: readOnly,
-    }) }}
-</div>
+<craft-field-group>
 
-{{ forms.lightswitchField({
+  <div id="markdown-flavor-settings" class="{{ field.encode ? 'hidden' }}">
+    {{ forms.selectField({
+      label: 'Markdown Flavor'|t('app'),
+      instructions: 'The Markdown flavor that should be used when rendering this field.'|t('app'),
+      id: 'flavor',
+      name: 'flavor',
+      options: flavorOptions,
+      value: field.flavor,
+      errors: field.errors.get('flavor'),
+      disabled: readOnly,
+    }) }}
+  </div>
+
+  {{ forms.lightswitchField({
     label: 'Inline Only'|t('app'),
     instructions: 'Whether the field should only render inline Markdown, without wrapping paragraphs.'|t('app'),
     id: 'inlineOnly',
@@ -21,9 +23,9 @@
     on: field.inlineOnly,
     errors: field.errors.get('inlineOnly'),
     disabled: readOnly,
-}) }}
+  }) }}
 
-{{ forms.lightswitchField({
+  {{ forms.lightswitchField({
     label: 'Show Toolbar'|t('app'),
     instructions: 'Whether the editor toolbar should be visible.'|t('app'),
     id: 'showToolbar',
@@ -32,22 +34,22 @@
     toggle: 'toolbar-button-settings',
     errors: field.errors.get('showToolbar'),
     disabled: readOnly,
-}) }}
+  }) }}
 
-<div id="toolbar-button-settings" class="{{ not field.showToolbar ? 'hidden' }}">
+  <div id="toolbar-button-settings" class="{{ not field.showToolbar ? 'hidden' }}">
     {{ forms.checkboxSelectField({
-        label: 'Toolbar Buttons'|t('app'),
-        instructions: 'Choose which buttons should be available in the editor toolbar.'|t('app'),
-        id: 'toolbarButtons',
-        name: 'toolbarButtons',
-        options: toolbarButtonOptions,
-        values: field.toolbarButtons,
-        errors: field.errors.get('toolbarButtons'),
-        disabled: readOnly,
+      label: 'Toolbar Buttons'|t('app'),
+      instructions: 'Choose which buttons should be available in the editor toolbar.'|t('app'),
+      id: 'toolbarButtons',
+      name: 'toolbarButtons',
+      options: toolbarButtonOptions,
+      values: field.toolbarButtons,
+      errors: field.errors.get('toolbarButtons'),
+      disabled: readOnly,
     }) }}
-</div>
+  </div>
 
-{{ forms.lightswitchField({
+  {{ forms.lightswitchField({
     label: 'Show Stats'|t('app'),
     instructions: 'Whether the editor should show character, word, and line counts.'|t('app'),
     id: 'showStats',
@@ -55,9 +57,9 @@
     on: field.showStats,
     errors: field.errors.get('showStats'),
     disabled: readOnly,
-}) }}
+  }) }}
 
-{{ forms.textField({
+  {{ forms.textField({
     label: "Placeholder Text"|t('app'),
     instructions: "The text that will be shown if the field doesn’t have a value."|t('app'),
     id: 'placeholder',
@@ -65,9 +67,9 @@
     value: field.placeholder,
     errors: field.errors.get('placeholder'),
     disabled: readOnly,
-}) }}
+  }) }}
 
-{{ forms.textField({
+  {{ forms.textField({
     label: "Initial Rows"|t('app'),
     id: 'initialRows',
     name: 'initialRows',
@@ -75,73 +77,75 @@
     size: 3,
     errors: field.errors.get('initialRows'),
     disabled: readOnly,
-}) }}
+  }) }}
 
-{% embed '_includes/forms/field' with {
+  {% embed '_includes/forms/field' with {
     label: 'Field Limit'|t('app'),
     instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
     id: 'fieldLimit',
     errors: field.errors.get(field.byteLimit ? 'byteLimit' : 'charLimit'),
     disabled: readOnly,
-} %}
+  } %}
     {% import "_includes/forms" as forms %}
     {% block input %}
-        <div class="flex">
-            {{ forms.text({
-                id: 'fieldLimit',
-                name: 'fieldLimit',
-                value: field.charLimit ?? field.byteLimit,
-                size: 3,
-                disabled: readOnly,
-            }) }}
-            {{ forms.select({
-                id: 'limitUnit',
-                name: 'limitUnit',
-                options: [
-                    { value: 'chars', label: 'Characters'|t('app') },
-                    { value: 'bytes', label: 'Bytes'|t('app') },
-                ],
-                value: field.byteLimit ? 'bytes' : 'chars',
-                disabled: readOnly,
-            }) }}
-        </div>
-    {% endblock %}
-{% endembed %}
-
-<hr>
-
-<a class="fieldtoggle" data-target="links">{{ 'Links'|t('app') }}</a>
-<div id="links" class="hidden">
-    <div class="indent">
-        {% include '_components/fieldtypes/Link/link-settings' with linkSettings only %}
-    </div>
-</div>
-
-<hr>
-
-<a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>
-<div id="assets" class="hidden">
-    {% if volumeOptions|length %}
-        {{ forms.checkboxSelectField({
-            label: 'Available Volumes'|t('app'),
-            instructions: 'The volumes that should be available when selecting assets.'|t('app'),
-            id: 'availableVolumes',
-            name: 'availableVolumes',
-            options: volumeOptions,
-            values: field.availableVolumes,
-            showAllOption: true,
-            errors: field.errors.get('availableVolumes'),
-            disabled: readOnly,
+      <div class="flex">
+        {{ forms.text({
+          id: 'fieldLimit',
+          name: 'fieldLimit',
+          value: field.charLimit ?? field.byteLimit,
+          size: 3,
+          disabled: readOnly,
         }) }}
-    {% else %}
-        {{ forms.field({
-            label: 'Available Volumes'|t('app'),
-            instructions: 'The volumes that should be available when selecting assets.'|t('app'),
-            id: 'availableVolumes',
-        }, '<p class="error">' ~ 'No volumes exist yet.'|t('app') ~ '</p>') }}
-    {% endif %}
+        {{ forms.select({
+          id: 'limitUnit',
+          name: 'limitUnit',
+          options: [
+            { value: 'chars', label: 'Characters'|t('app') },
+            { value: 'bytes', label: 'Bytes'|t('app') },
+          ],
+          value: field.byteLimit ? 'bytes' : 'chars',
+          disabled: readOnly,
+        }) }}
+      </div>
+    {% endblock %}
+  {% endembed %}
 
-    {{ forms.lightswitchField({
+  <hr>
+
+  <craft-disclosure
+    label="{{ 'Links'|t('app') }}"
+    class="justify-self-start"
+  >
+    <div slot="content">
+      {% include '_components/fieldtypes/Link/link-settings' with linkSettings only %}
+    </div>
+  </craft-disclosure>
+
+  <hr>
+
+  <craft-disclosure label="{{ 'Assets'|t('app') }}" class="justify-self-start">
+    <craft-field-group slot="content">
+      {% if volumeOptions|length %}
+        {{ forms.checkboxSelectField({
+          label: 'Available Volumes'|t('app'),
+          instructions: 'The volumes that should be available when selecting assets.'|t('app'),
+          id: 'availableVolumes',
+          name: 'availableVolumes',
+          options: volumeOptions,
+          values: field.availableVolumes,
+          showAllOption: true,
+          errors: field.errors.get('availableVolumes'),
+          disabled: readOnly,
+        }) }}
+      {% else %}
+        {{ forms.field({
+          label: 'Available Volumes'|t('app'),
+          instructions: 'The volumes that should be available when selecting assets.'|t('app'),
+          id: 'availableVolumes',
+        }, '<p class="error">' ~ 'No volumes exist yet.'|t('app') ~ '</p>') }}
+      {% endif %}
+
+      {{ forms.lightswitchField({
         label: 'Show unpermitted volumes'|t('app'),
         instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
         id: 'showUnpermittedVolumes',
@@ -149,9 +153,9 @@
         on: field.showUnpermittedVolumes,
         errors: field.errors.get('showUnpermittedVolumes'),
         disabled: readOnly,
-    }) }}
+      }) }}
 
-    {{ forms.lightswitchField({
+      {{ forms.lightswitchField({
         label: 'Show unpermitted files'|t('app'),
         instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
         id: 'showUnpermittedFiles',
@@ -159,27 +163,37 @@
         on: field.showUnpermittedFiles,
         errors: field.errors.get('showUnpermittedFiles'),
         disabled: readOnly,
-    }) }}
+      }) }}
 
-    {% if volumeOptions|length %}
+      {% if volumeOptions|length %}
         {{ forms.selectField({
-            label: 'Upload Volume'|t('app'),
-            instructions: 'The volume where pasted or dropped files should be uploaded.'|t('app'),
-            id: 'uploadVolume',
-            name: 'uploadVolume',
-            options: [{ label: 'No uploads'|t('app'), value: '' }]|merge(volumeOptions),
-            value: field.uploadVolume,
-            errors: field.errors.get('uploadVolume'),
-            disabled: readOnly,
+          label: 'Upload Volume'|t('app'),
+          instructions: 'The volume where pasted or dropped files should be uploaded.'|t('app'),
+          id: 'uploadVolume',
+          name: 'uploadVolume',
+          options: [{ label: 'No uploads'|t('app'), value: '' }]|merge(volumeOptions),
+          value: field.uploadVolume,
+          errors: field.errors.get('uploadVolume'),
+          disabled: readOnly,
         }) }}
-    {% endif %}
-</div>
+      {% endif %}
+    </craft-field-group>
+  </craft-disclosure>
 
-<hr>
+  <hr>
 
-<a class="fieldtoggle" data-target="advanced">{{ 'Advanced'|t('app') }}</a>
-<div id="advanced" class="hidden">
-    {{ forms.lightswitchField({
+  <craft-disclosure>
+    <craft-button
+      type="button"
+      variant="plain"
+      class="justify-self-start"
+      icon="chevron-down"
+      slot="invoker"
+    >{{ 'Advanced'|t('app') }}</craft-button>
+
+    <craft-field-group slot="content">
+
+      {{ forms.lightswitchField({
         label: 'Encode HTML'|t('app'),
         instructions: 'Whether HTML should be encoded before rendering the Markdown.'|t('app'),
         warning: 'Enabling this will enforce the Original Markdown flavor.'|t('app'),
@@ -189,9 +203,9 @@
         reverseToggle: 'markdown-flavor-settings',
         errors: field.errors.get('encode'),
         disabled: readOnly,
-    }) }}
+      }) }}
 
-    {{ forms.lightswitchField({
+      {{ forms.lightswitchField({
         label: 'Sanitize HTML'|t('app'),
         instructions: 'Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'|t('app'),
         warning: 'Disable this at your own risk!'|t('app'),
@@ -201,21 +215,23 @@
         toggle: 'html-sanitizer-settings',
         errors: field.errors.get('sanitizeHtml'),
         disabled: readOnly,
-    }) }}
+      }) }}
 
-    <div id="html-sanitizer-settings" class="{{ not field.sanitizeHtml ? 'hidden' }}">
+      <div id="html-sanitizer-settings" class="{{ not field.sanitizeHtml ? 'hidden' }}">
         {{ forms.selectField({
-            label: 'HTML Sanitizer'|t('app'),
-            instructions: 'You can register custom HTML sanitizers as {ext} files in {path}.'|t('app', {
-                ext: '`.php`',
-                path: '`config/craft/sanitizers/`',
-            }),
-            id: 'htmlSanitizer',
-            name: 'htmlSanitizer',
-            options: htmlSanitizerOptions,
-            value: field.htmlSanitizer ?? 'default',
-            errors: field.errors.get('htmlSanitizer'),
-            disabled: readOnly,
+          label: 'HTML Sanitizer'|t('app'),
+          instructions: 'You can register custom HTML sanitizers as {ext} files in {path}.'|t('app', {
+            ext: '`.php`',
+            path: '`config/craft/sanitizers/`',
+          }),
+          id: 'htmlSanitizer',
+          name: 'htmlSanitizer',
+          options: htmlSanitizerOptions,
+          value: field.htmlSanitizer ?? 'default',
+          errors: field.errors.get('htmlSanitizer'),
+          disabled: readOnly,
         }) }}
-    </div>
-</div>
+      </div>
+    </craft-field-group>
+  </craft-disclosure>
+</craft-field-group>

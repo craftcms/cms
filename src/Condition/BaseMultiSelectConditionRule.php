@@ -25,6 +25,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     private array $_values = [];
 
+    /** @var string[] */
     public array $values {
         get => $this->getValues();
         set {
@@ -48,6 +49,8 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the operators that should be allowed for this rule.
+     *
+     * @return string[]
      */
     #[Override]
     protected function operators(): array
@@ -84,6 +87,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         }
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {
@@ -134,6 +138,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      * Returns the rule’s value, prepped for {@see QueryParam::parse} based on the selected operator.
      *
      * @param  callable|null  $normalizeValue  Method for normalizing a given selected value.
+     * @return string|string[]|null
      */
     protected function paramValue(?callable $normalizeValue = null): string|array|null
     {

@@ -99,6 +99,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {
@@ -244,6 +245,8 @@ JS,
 
     /**
      * Returns the available range type options for the rule.
+     *
+     * @return array<string, string>
      */
     protected function rangeTypeOptions(): array
     {
@@ -266,6 +269,8 @@ JS,
 
     /**
      * Returns the available period type options for the rule.
+     *
+     * @return array<string, string>
      */
     protected function periodTypeOptions(): array
     {
@@ -295,6 +300,8 @@ JS,
 
     /**
      * Returns the rule’s value, prepped for {@see QueryParam::parse()}.
+     *
+     * @return array<int, string>|string|null
      */
     protected function queryParamValue(): array|string|null
     {

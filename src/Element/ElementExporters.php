@@ -69,6 +69,10 @@ class ElementExporters
     /**
      * @param  iterable<ElementExporterInterface>  $exporters
      */
+    /**
+     * @param  iterable<array-key,ElementExporterInterface>  $exporters
+     * @return array<array-key,mixed>
+     */
     public function serializeExporters(iterable $exporters): array
     {
         $data = [];
@@ -146,6 +150,10 @@ class ElementExporters
     /**
      * @param  iterable<mixed>  $data
      */
+    /**
+     * @param  iterable<array-key,mixed>  $data
+     * @return array<int,array<array-key,mixed>>
+     */
     private function normalizeRows(iterable $data): array
     {
         $rows = [];
@@ -157,6 +165,7 @@ class ElementExporters
         return $rows;
     }
 
+    /** @param array<int,array<array-key,mixed>> $data */
     private function formattedResponse(string $format, array $data, string $filename, string $rootTag): Response
     {
         return match ($format) {
@@ -271,6 +280,7 @@ class ElementExporters
     /**
      * @param  callable(Spreadsheet):BaseWriter  $writerFactory
      */
+    /** @param array<int,array<array-key,mixed>> $data */
     private function spreadsheetContent(array $data, callable $writerFactory): string|false
     {
         [$headers, $rows] = $this->spreadsheetRows($data);
@@ -311,6 +321,7 @@ class ElementExporters
     }
 
     /**
+     * @param  array<int,array<array-key,mixed>>  $data
      * @return array{0:array<int|string>,1:array<int, array<int, string>>}
      */
     private function spreadsheetRows(array $data): array

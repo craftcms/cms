@@ -1,9 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import {onMounted} from 'vue';
+  import {t} from '@craftcms/ui';
+  import {computed, onMounted} from 'vue';
   import {usePost} from '@/common/composables/useFetch';
   import {install as installAction} from '@actions/InstallController';
-  import Pane from '@/common/components/Pane.vue';
 
   type InstallResponse = {
     redirect: string;
@@ -26,6 +25,9 @@
       }, 1000);
     },
   });
+  const errorMessage = computed(() =>
+    error.value instanceof Error ? error.value.message : String(error.value)
+  );
 
   onMounted(async () => {
     await install(props.data);
@@ -33,7 +35,7 @@
 </script>
 
 <template>
-  <Pane class="max-w-[80ch] mx-auto">
+  <craft-pane class="max-w-[80ch] mx-auto">
     <template v-if="isLoading">
       <div class="content">
         <h2>{{ t('Installing Craft CMS…') }}</h2>
@@ -61,11 +63,11 @@
         <div
           class="text-left border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"
         >
-          {{ error.message }}
+          {{ errorMessage }}
         </div>
       </div>
     </template>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss">

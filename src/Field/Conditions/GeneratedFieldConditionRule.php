@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Query;
 use Override;
 use RuntimeException;
@@ -22,13 +23,17 @@ use function CraftCms\Cms\t;
  * @property ElementConditionInterface $condition
  *
  * @method ElementConditionInterface getCondition()
+ *
+ * @phpstan-import-type GeneratedField from FieldLayout
  */
 class GeneratedFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     public string $fieldUid;
 
+    /** @var GeneratedField|false */
     private array|false $field;
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {
@@ -105,6 +110,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         ]);
     }
 
+    /** @return GeneratedField|null */
     private function getFieldConfig(): ?array
     {
         if (isset($this->field)) {

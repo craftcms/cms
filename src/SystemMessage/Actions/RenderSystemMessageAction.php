@@ -22,6 +22,9 @@ readonly class RenderSystemMessageAction
         private SystemMessageRenderContext $renderContext,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $variables
+     */
     public function handle(
         string $key,
         array $variables = [],

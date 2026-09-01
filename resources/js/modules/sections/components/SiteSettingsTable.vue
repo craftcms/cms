@@ -1,19 +1,12 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {computed, h} from 'vue';
-  import {type SectionSiteSettingsData, TableSpacing} from '@/common/types';
-  import Pane from '@/common/components/Pane.vue';
+  import {type SectionSiteSettingsData} from '@/common/types';
   import {useEditableTable} from '@/modules/admin-table/composables/useEditableTable';
   import {usePage} from '@inertiajs/vue3';
 
-  type SitesData = Record<
-    string,
-    {
-      enabled: boolean;
-      [key: string]: any;
-    }
-  >;
+  type SitesData = Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: SitesData): void;
@@ -24,13 +17,14 @@
       selectedType?: string;
       isMultiSite?: boolean;
       isHeadless?: boolean;
+      disabled?: boolean;
     }>(),
     {isMultiSite: false, isHeadless: false}
   );
 
   const page = usePage<{
     homepageUri?: string;
-    templateOptions: Array<any>;
+    templateOptions: Array<import('@/common/types').SelectItem>;
   }>();
 
   const homepageUri = computed(() => page.props.homepageUri);
@@ -49,15 +43,25 @@
   });
 
   const {table} = useEditableTable<SectionSiteSettingsData>({
+    // SAFETY: useEditableTable injects each record key as the configured handle property.
     data: () => props.modelValue as Record<string, SectionSiteSettingsData>,
     key: 'handle',
     name: 'sites',
     columnVisibility: () => columnVisibility.value,
-    onChange: (data) => emit('update:modelValue', data as SitesData),
+    onChange: (data) => {
+      if (Array.isArray(data)) {
+        throw new Error(
+          'Section site settings must remain keyed by site handle.'
+        );
+      }
+      // SAFETY: useEditableTable removes its injected handle before returning keyed records.
+      emit('update:modelValue', data as SitesData);
+    },
     columns: ({columnHelper}) => [
-      columnHelper.accessor('name', {
+      columnHelper.display({
+        id: 'name',
         header: t('Site'),
-        cell: ({getValue}) => getValue(),
+        cell: ({row}) => row.original.name,
         meta: {
           cellTag: 'th',
           trackSize: '0.25fr',
@@ -65,6 +69,7 @@
       }),
       columnHelper.lightswitch('enabled', {
         header: t('Enabled'),
+        disabled: () => props.disabled,
         meta: {
           trackSize: '80px',
           cellClass: 'bg-[var(--c-color-neutral-fill-quiet)]',
@@ -92,13 +97,16 @@
             emit('update:modelValue', newValue);
           }
         },
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
       }),
       columnHelper.text('singleUri', {
         header: t('URI'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
-        disabled: (row) => !row.original.enabled || row.original.singleHomepage,
+        disabled: (row) =>
+          props.disabled ||
+          !row.original.enabled ||
+          row.original.singleHomepage,
         meta: {
           headerTip: t(
             'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.'
@@ -109,7 +117,7 @@
         header: t('Entry URI Format'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
         meta: {
           headerTip: t(
             'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'
@@ -120,7 +128,7 @@
         header: t('Template'),
         class: 'w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]',
         options: templateOptions.value,
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
         meta: {
           headerTip: t(
             'Which template should be loaded when an entry’s URL is requested.'
@@ -132,20 +140,16 @@
         meta: {
           trackSize: '120px',
         },
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
       }),
     ],
   });
 </script>
 
 <template>
-  <Pane :padding="0" appearance="raised">
-    <AdminTable
-      :table="table"
-      :spacing="TableSpacing.Relaxed"
-      :reorderable="false"
-    />
-  </Pane>
+  <craft-pane padding="0" appearance="raised">
+    <AdminTable :table="table" :reorderable="false" />
+  </craft-pane>
 </template>
 
 <style scoped lang="scss"></style>

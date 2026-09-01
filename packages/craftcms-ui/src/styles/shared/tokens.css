@@ -1,0 +1,224 @@
+:root,
+:host {
+  --c-text-lg: calc(16rem / 16);
+  --c-text-base: calc(14rem / 16);
+  --c-text-sm: calc(12rem / 16);
+  --c-text-xs: calc(9rem / 16);
+
+  --c-leading-normal: 1.42;
+
+  /* Focus outline tokens */
+  --c-color-focus-outline: var(--color-blue-500);
+  --c-focus-outline-offset: 2px;
+  --c-focus-outline-width: 2px;
+  --c-focus-outline-style: solid;
+
+  /* Surface tokens (replaces --c-bg-*) */
+  --c-surface-default: var(--color-base-100);
+  --c-surface-raised: var(--color-base-50);
+  --c-surface-sunken: var(--color-slate-200);
+  --c-surface-form: var(--color-base-100);
+  --c-surface-overlay: var(--color-base-50);
+  --c-surface-shade: rgba(0 0 0 / 25%);
+
+  /* Text tokens (replaces --c-fg-*) */
+  --c-text-white: var(--color-white);
+  --c-text-black: var(--color-black);
+  --c-text-default: var(--color-slate-900);
+  --c-text-quiet: var(--color-slate-600);
+  --c-text-link: var(--color-blue-600);
+
+  /* Transparent tokens */
+  --c-color-border-translucent: color-mix(
+    in srgb,
+    var(--color-slate-900),
+    transparent 39%
+  );
+
+  /* Shadows */
+  --c-shadow-sunken: var(--inset-shadow-sm);
+  --c-shadow-raised: var(--shadow-sm);
+  --c-shadow-overlay: var(--shadow-lg);
+
+  /* Color mixes */
+  --c-color-mix-hover: currentColor 10%;
+  --c-color-mix-active: currentColor 20%;
+
+  --c-font-body:
+    system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  --c-font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+
+  --c-radius-sm: 3px;
+  --c-radius-md: 4px;
+  --c-radius-lg: 6px;
+  --c-radius-xl: 12px;
+  --c-radius-full: calc(Infinity * 1px);
+
+  --c-spacing: 0.25rem; /* 4px */
+  --c-spacing-1px: 1px;
+  --c-spacing-xs: calc(var(--c-spacing) * 0.5);
+  --c-spacing-sm: calc(var(--c-spacing) * 1);
+  --c-spacing-md: calc(var(--c-spacing) * 2);
+  --c-spacing-lg: calc(var(--c-spacing) * 4);
+  --c-spacing-xl: calc(var(--c-spacing) * 8);
+  --c-spacing-2xl: calc(var(--c-spacing) * 16);
+
+  --c-size-touch-target: calc(34rem / 16);
+  --c-size-touch-target-sm: calc(24rem / 16);
+
+  --c-size-icon-xs: calc(10rem / 16);
+  --c-size-icon-sm: calc(12rem / 16);
+  --c-size-icon-md: calc(14rem / 16);
+  --c-size-icon-lg: calc(22rem / 16);
+  --c-size-icon-xl: calc(30rem / 16);
+
+  --c-size-control-2xs: calc(14rem / 16);
+  --c-size-control-xs: calc(16rem / 16);
+  --c-size-control-sm: calc(24rem / 16);
+  --c-size-control-md: calc(34rem / 16);
+  --c-size-control-lg: calc(44rem / 16);
+
+  --c-shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
+  --c-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --c-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --c-shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --c-shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --c-shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --c-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /**
+  Status
+   */
+
+  /* Live */
+  --c-status-live-fill: var(--color-emerald-500);
+  --c-status-live-border: var(--color-emerald-700);
+  --c-status-live-text: var(--color-emerald-700);
+
+  /* Enabled */
+  --c-status-enabled-fill: var(--color-emerald-500);
+  --c-status-enabled-border: var(--color-emerald-700);
+  --c-status-enabled-text: var(--color-emerald-700);
+
+  /* Pending */
+  --c-status-pending-fill: var(--color-orange-400);
+  --c-status-pending-text: var(--color-orange-700);
+  --c-status-pending-border: var(--color-orange-700);
+
+  /* Expired */
+  --c-status-expired-fill: var(--color-red-400);
+  --c-status-expired-text: var(--color-red-700);
+  --c-status-expired-border: var(--color-red-700);
+
+  /* Disabled */
+  --c-status-disabled-fill: var(--color-slate-200);
+  --c-status-disabled-text: var(--color-slate-600);
+  --c-status-disabled-border: var(--color-slate-600);
+
+  /**
+ Static colors
+  */
+  --c-color-static-success-fill: var(--color-static-emerald-200);
+  --c-color-static-success-on: var(--c-text-white);
+  --c-color-static-success-border: var(--color-static-emerald-500);
+
+  --c-color-static-warning-fill: var(--color-static-yellow-100);
+  --c-color-static-warning-on: var(--c-text-black);
+  --c-color-static-warning-border: var(--color-static-yellow-200);
+
+  --c-color-static-info-fill: var(--color-static-blue-400);
+  --c-color-static-info-on: var(--c-text-white);
+  --c-color-static-info-border: var(--color-static-blue-500);
+
+  --c-color-static-brand-fill: var(--color-static-red-500);
+  --c-color-static-brand-on: var(--c-text-white);
+  --c-color-static-brand-border: var(--color-static-red-600);
+
+  --c-color-static-danger-fill: var(--color-static-red-500);
+  --c-color-static-danger-on: var(--c-text-white);
+  --c-color-static-danger-border: var(--color-static-red-600);
+
+  --c-color-static-accent-fill: var(--color-static-blue-400);
+  --c-color-static-accent-on: var(--c-text-white);
+  --c-color-static-accent-border: var(--color-static-blue-500);
+
+  --c-color-static-neutral-fill: var(--color-static-slate-600);
+  --c-color-static-neutral-on: var(--c-text-white);
+  --c-color-static-neutral-border: var(--color-static-slate-700);
+
+  /**
+  Form controls
+  Basic styles for all form controls. Buttons, inputs, etc. can each have their own settings but in general
+  they should be inherited from these styles.
+   */
+  /* Form Controls */
+  --c-form-control-fill: var(--c-surface-form);
+  --c-form-control-text: var(--c-text-default);
+  --c-form-control-border-color: var(--color-slate-500);
+  --c-form-control-border-width: 1px;
+  --c-form-control-border-style: solid;
+  --c-form-control-radius: var(--c-radius-md);
+  --c-form-control-spacing-inline: var(--c-spacing-md);
+  --c-form-control-spacing-block: var(--c-spacing-sm);
+  --c-form-control-height: var(--c-size-control-md);
+
+  /* Input */
+  --c-input-fill: var(--c-form-control-fill);
+  --c-input-text: var(--c-form-control-text);
+  --c-input-border-color: var(--c-form-control-border-color);
+  --c-input-border-width: var(--c-form-control-border-width);
+  --c-input-border-style: var(--c-form-control-border-style);
+  --c-input-radius: var(--c-form-control-radius);
+  --c-input-spacing-inline: var(--c-form-control-spacing-inline);
+  --c-input-spacing-block: var(--c-form-control-spacing-block);
+  --c-input-shadow: var(--inset-shadow-sm);
+
+  /* Select */
+  --c-select-fill: var(--c-form-control-fill);
+  --c-select-text: var(--c-form-control-text);
+  --c-select-border-color: var(--c-form-control-border-color);
+  --c-select-border-width: var(--c-form-control-border-width);
+  --c-select-border-style: var(--c-form-control-border-style);
+  --c-select-radius: var(--c-form-control-radius);
+  --c-select-spacing-inline: var(--c-form-control-spacing-inline);
+  --c-select-spacing-block: var(--c-form-control-spacing-block);
+  --c-select-shadow: var(--shadow-sm);
+
+  /* Checkbox */
+  --c-checkbox-size: var(--c-size-control-xs);
+  --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
+
+  /** Appearances **/
+  /* Generic Panes */
+  --c-pane-fill: var(--c-surface-overlay);
+  --c-pane-text: var(--c-text-default);
+  --c-pane-padding: var(--c-spacing-lg);
+  --c-pane-border-width: 1px;
+  --c-pane-border-style: solid;
+  --c-pane-border-color: transparent;
+  --c-pane-radius: var(--c-radius-md);
+  --c-pane-shadow:
+    0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
+
+  /* Callouts */
+  --c-callout-radius: var(--c-pane-radius);
+
+  /* Modals */
+  --c-modal-fill: var(--c-pane-fill);
+  --c-modal-text: var(--c-pane-text);
+  --c-modal-radius: var(--c-radius-lg);
+  --c-modal-border-width: var(--c-pane-border-width);
+  --c-modal-border-style: var(--c-pane-border-style);
+  --c-modal-border-color: var(--c-pane-border-color);
+  --c-modal-padding: var(--c-pane-padding);
+  --c-modal-shadow:
+    0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
+    0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
+}

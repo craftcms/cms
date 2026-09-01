@@ -14,7 +14,6 @@ use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request as HttpRequest;
@@ -51,7 +50,7 @@ class ControllerTest extends TestCase
      */
     public function testBeforeAction(): void
     {
-        Cms::config()->isSystemLive = true;
+        app()->maintenanceMode()->deactivate();
         Auth::logout();
         Craft::$app->getUser()->setIdentity(null);
 

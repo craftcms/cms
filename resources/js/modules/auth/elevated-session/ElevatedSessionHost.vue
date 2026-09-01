@@ -1,11 +1,10 @@
 <script setup lang="ts">
-  import {ConfigService} from '@craftcms/cp';
+  import {ConfigService} from '@craftcms/ui';
   import {releaseFocusWithin, trapFocusWithin} from '@craftcms/garnish';
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {nextTick, onBeforeUnmount, useTemplateRef, watch} from 'vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import Modal from '@/common/components/Modal.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {elevatedSessionManager} from './manager';
   import '@/modules/auth/components/login/login-form.js';
   import type CraftLoginForm from '@/modules/auth/components/login/login-form';
@@ -19,7 +18,10 @@
     () => state.active,
     async (active) => {
       if (active) {
-        previouslyFocused = document.activeElement as HTMLElement | null;
+        previouslyFocused =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
         await nextTick();
         loginForm.value?.focus();
       } else {
@@ -58,7 +60,7 @@
 
 <template>
   <Modal :is-active="state.active" width="sm" @close="close" @opened="opened">
-    <Pane
+    <craft-pane
       data-elevated-session-dialog
       role="dialog"
       aria-modal="true"
@@ -90,6 +92,6 @@
           :fragment="state.alternativeLoginMethods"
         />
       </craft-login-form>
-    </Pane>
+    </craft-pane>
   </Modal>
 </template>

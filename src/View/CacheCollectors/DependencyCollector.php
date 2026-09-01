@@ -82,6 +82,7 @@ class DependencyCollector implements CacheCollectorInterface
         return isset($this->tags);
     }
 
+    /** @param list<string> $tags */
     public function collectTags(array $tags): void
     {
         if (! $this->isCollecting()) {

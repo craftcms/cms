@@ -54,7 +54,9 @@
     {% endblock %}
 {% endembed %}
 
+
 <fieldset>
+  <craft-field-group>
     {{ forms.lightswitchField({
         label: "Use a monospaced font"|t('app'),
         name: 'code',
@@ -69,6 +71,7 @@
         toggle: 'initialRowsContainer',
         disabled: readOnly,
     }) }}
+  </craft-field-group>
 </fieldset>
 
 <div id="initialRowsContainer" class="nested-fields{% if not field.multiline %} hidden{% endif %}" data-error-key="initialRows">

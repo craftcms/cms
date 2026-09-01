@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
@@ -25,6 +26,17 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Form\Controls\AssetSelect;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\FieldWidth;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -55,6 +67,10 @@ use function CraftCms\Cms\t;
 
 /**
  * Assets represents an Assets field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type UploadedFileData array{type:'data', filename:string, mimeType:string, data:string}|array{type:'file'|'upload', filename:string, mimeType:string|null, path:string}
  */
 class Assets extends BaseRelationField
 {
@@ -144,8 +160,8 @@ class Assets extends BaseRelationField
     public bool $restrictFiles = false;
 
     /**
-     * @var array|null The file kinds that the field should be restricted to
-     *                 (only used if [[restrictFiles]] is true)
+     * @var list<string>|null The file kinds that the field should be restricted to
+     *                        (only used if [[restrictFiles]] is true)
      */
     public ?array $allowedKinds = null;
 
@@ -179,11 +195,10 @@ class Assets extends BaseRelationField
     #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
-    /**
-     * @var array|null References for files uploaded as data strings for this field.
-     */
+    /** @var array{data:array<array-key, string>, filename:array<array-key, string>}|null References for files uploaded as data strings for this field. */
     private ?array $_uploadedDataFiles = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Rename old settings
@@ -217,6 +232,135 @@ class Assets extends BaseRelationField
     }
 
     #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(additionalProperties: [
+            'author.username' => t('Author Username'),
+            'owner.slug' => t('Owner Slug'),
+            'owner.title' => t('Owner Title'),
+            'owner.uid' => t('Owner UID'),
+            'owner.site.handle' => t('Owner Site Handle'),
+        ]);
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
+        $sourceOptions = array_map(fn (array $option): array => [
+            'label' => (string) $option['label'],
+            'value' => $option['value'],
+        ], $this->getSourceOptions());
+
+        $subpath = fn (string $name, ?string $value): Text => Text::make($name)
+            ->placeholder(t('path/to/subfolder'))
+            ->textExpanderTriggers($objectTemplateTriggers)
+            ->value($value);
+
+        // Ordered to match Craft 5’s `Assets/settings.twig`, which overrode the
+        // shared `fieldSettings` block wholesale. “Maintain hierarchy” is absent
+        // because assets can’t relate to a structure (Craft 5 never rendered the
+        // block), and “Branch Limit” with it — it only ever showed alongside
+        // “Maintain hierarchy”, so it was permanently hidden here.
+        return Form::make(array_values(array_filter([
+            FormField::make(t('Restrict assets to a single location'))
+                ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
+            Group::make('restricted-location', [
+                FormField::make()
+                    ->label(t('Source'))
+                    ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
+                    ->width(FieldWidth::Third),
+                FormField::make()
+                    ->label(t('Subpath'))
+                    ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
+                    ->width(FieldWidth::TwoThirds),
+            ])
+                ->asField()
+                ->label(t('Asset Location'))
+                ->instructions(t('The location where assets can be selected from.'))
+                ->tip($objectTemplateTip)
+                ->visible($this->restrictLocation),
+            FormField::make(t('Allow subfolders'))
+                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders))
+                ->visible($this->restrictLocation),
+            FormField::make(t('Default Upload Subpath'))
+                ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
+                ->tip($objectTemplateTip)
+                ->visible($this->restrictLocation && $this->allowSubfolders),
+            $this->sourcesField()->visible(! $this->restrictLocation),
+
+            Group::make('default-upload-location', [
+                FormField::make()
+                    ->label(t('Source'))
+                    ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
+                    ->width(FieldWidth::Third),
+                FormField::make()
+                    ->label(t('Subpath'))
+                    ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                    ->tip($objectTemplateTip)
+                    ->width(FieldWidth::TwoThirds),
+            ])
+                ->asField()
+                ->label(t('Default Upload Location'))
+                ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
+                ->visible(! $this->restrictLocation),
+            Separator::make('asset-location-separator'),
+            $this->selectionConditionField(),
+            FormField::make(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
+            FormField::make(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
+            FormField::make(t('Restrict allowed file types'))
+                ->control(Lightswitch::make('restrictFiles')->value($this->restrictFiles)),
+            FormField::make(t('Allowed Kinds'))
+                ->control(Choice::make('allowedKinds')
+                    ->multiple()
+                    ->options($this->getFileKindOptions())
+                    ->value($this->allowedKinds ?? []))
+                ->visible($this->restrictFiles),
+            FormField::make(t('Allow uploading directly to the field'))
+                ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
+                ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
+            ...$this->limitFields(),
+            $this->defaultPlacementField(),
+            $this->viewModeField(),
+            $this->selectionLabelField(),
+            $this->showSearchInputField()->visible($this->canSearchWithinSources()),
+            $this->validateRelatedElementsField(),
+            Separator::make('preview-mode-separator'),
+            FormField::make(t('Preview Mode'))
+                ->instructions(t('How the related {type} should be displayed within element indexes.', [
+                    'type' => Asset::pluralLowerDisplayName(),
+                ]))
+                ->control(Choice::make('previewMode')->options([
+                    ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
+                    ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
+                ])->value($this->previewMode)),
+            $this->advancedSettingsGroup(),
+        ])));
+    }
+
+    /**
+     * Returns whether the “Show the search input” setting applies.
+     *
+     * The search input only makes sense when the field draws from one specific
+     * place: a single selected source, or a restricted location. Craft 5 drove
+     * this from JS in `elementfieldsettings.twig` and `AssetsFieldSettings.js`.
+     */
+    private function canSearchWithinSources(): bool
+    {
+        if ($this->restrictLocation) {
+            return true;
+        }
+
+        if (! $this->allowMultipleSources) {
+            return $this->source !== null;
+        }
+
+        return is_array($this->sources)
+            && count($this->sources) === 1
+            && $this->sources[0] !== '*';
+    }
+
+    /** @return list<array{label:string, value:string, data:array{'structure-id':int|null}}> */
+    #[Override]
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
@@ -226,6 +370,9 @@ class Assets extends BaseRelationField
                 $sourceOptions[] = [
                     'label' => $volume['label'],
                     'value' => $volume['key'],
+                    'data' => [
+                        'structure-id' => $volume['structureId'] ?? null,
+                    ],
                 ];
             }
         }
@@ -233,9 +380,7 @@ class Assets extends BaseRelationField
         return $sourceOptions;
     }
 
-    /**
-     * Returns the available file kind options for the settings
-     */
+    /** @return list<array{value:string, label:string}> */
     public function getFileKindOptions(): array
     {
         $fileKindOptions = [];
@@ -265,6 +410,7 @@ class Assets extends BaseRelationField
         }
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -277,6 +423,8 @@ class Assets extends BaseRelationField
 
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
+     *
+     * @param  ElementQuery<Asset>  $value
      */
     public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
@@ -400,6 +548,15 @@ class Assets extends BaseRelationField
         return Gql::canQueryAssets($schema);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -412,6 +569,7 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /** @param ElementCollection<int, covariant ElementInterface> $elements */
     #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
@@ -593,6 +751,7 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
+    /** @return array{volumeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -614,6 +773,7 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /** @return list<string> */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
@@ -680,6 +840,84 @@ class Assets extends BaseRelationField
         return $sources;
     }
 
+    /**
+     * Carries the field's upload affordance through to the Vue control.
+     *
+     * The same three facts {@see inputTemplateVariables()} hands the legacy
+     * Twig input, on the same terms: uploads have to be enabled on the field,
+     * there has to be a volume to put them in, and the user needs permission
+     * to save assets there. The upload folder is resolved without creating
+     * dynamic folders — rendering a field should not have the side effect of
+     * creating one — so a field pointed at an as-yet-unmade dynamic subfolder
+     * reports no folder, and the button renders disabled rather than absent.
+     */
+    #[Override]
+    protected function selectControl(FieldContext $context): ElementSelect
+    {
+        $control = AssetSelect::make($context->path);
+        $uploadVolume = $this->_uploadVolume();
+
+        $canUpload = (
+            $this->allowUploads &&
+            $uploadVolume &&
+            Gate::check("saveAssets:$uploadVolume->uid")
+        );
+
+        if (! $canUpload) {
+            return $control;
+        }
+
+        try {
+            $uploadFolderId = $this->_uploadFolder($context->element, false)->id;
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // A misconfigured location costs the field its upload affordance,
+            // not its ability to relate what's already there. What went wrong
+            // reaches the author through {@see formWarning()}.
+            return $control;
+        }
+
+        return $control
+            ->canUpload()
+            ->fsType($uploadVolume->sourceFilesystemType())
+            ->uploadFolderId($uploadFolderId);
+    }
+
+    /**
+     * Reports a broken asset location as the field's warning.
+     *
+     * `_uploadFolder()` throws with a message written for the author — which
+     * volume setting is wrong, on which field — so it is passed through as-is.
+     * Craft 5 surfaced the same text by replacing the whole input with a
+     * warning paragraph; here the field keeps working and carries the warning
+     * alongside it.
+     *
+     * Only asked when a location is actually load-bearing: a field that
+     * neither uploads nor restricts never resolves a folder, so a missing
+     * default upload location is not a misconfiguration to complain about.
+     */
+    #[Override]
+    public function formWarning(?ElementInterface $element = null): ?string
+    {
+        if (! $this->allowUploads && ! $this->restrictLocation) {
+            return null;
+        }
+
+        try {
+            $this->_uploadFolder($element, false);
+        } catch (InvalidFsException $e) {
+            return $e->getMessage();
+        } catch (InvalidSubpathException) {
+            return t('This field’s target subfolder path is invalid: {path}', [
+                'path' => $this->restrictLocation
+                    ? $this->restrictedLocationSubpath
+                    : $this->defaultUploadLocationSubpath,
+            ]);
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -718,6 +956,7 @@ class Assets extends BaseRelationField
         return $variables;
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -752,9 +991,7 @@ class Assets extends BaseRelationField
         return count($sources) === 1;
     }
 
-    /**
-     * Returns any files that were uploaded to the field.
-     */
+    /** @return list<UploadedFileData> */
     private function _getUploadedFiles(ElementInterface $element): array
     {
         $files = [];
@@ -861,9 +1098,7 @@ class Assets extends BaseRelationField
         return $folder;
     }
 
-    /**
-     * Get a list of allowed extensions for a list of file kinds.
-     */
+    /** @return list<string> */
     private function _getAllowedExtensions(): array
     {
         if (! is_array($this->allowedKinds)) {

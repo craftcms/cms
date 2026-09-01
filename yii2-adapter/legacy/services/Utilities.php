@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -10,15 +12,14 @@ namespace craft\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Event;
+use craft\base\UtilityInterface;
 use craft\events\RegisterComponentTypesEvent;
-use CraftCms\Cms\Utility\Events\UtilitiesResolving;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event as EventFacade;
 
 /**
  * The Utilities service provides APIs for managing utilities.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities]] should be used instead.
  */
@@ -66,7 +67,7 @@ class Utilities extends Component
     /**
      * Returns all utility type classes that the user has permission to use.
      *
-     * @return array<class-string<\craft\base\UtilityInterface>>
+     * @return array<class-string<\CraftCms\Cms\Utility\Utility>>
      */
     public function getAuthorizedUtilityTypes(): array
     {
@@ -76,7 +77,7 @@ class Utilities extends Component
     /**
      * Returns whether the current user is authorized to use a given utility.
      *
-     * @param  class-string<\craft\base\UtilityInterface>  $class  The utility class
+     * @param  class-string<UtilityInterface>  $class  The utility class
      */
     public function checkAuthorization(string $class): bool
     {
@@ -87,26 +88,11 @@ class Utilities extends Component
     /**
      * Returns a utility class by its ID
      *
-     * @return class-string<\craft\base\UtilityInterface>|null
+     * @return class-string<UtilityInterface>|null
      */
     public function getUtilityTypeById(string $id): ?string
     {
         /** @phpstan-ignore-next-line */
         return $this->utilities->getUtilityTypeById($id);
-    }
-
-    public static function registerEvents(): void
-    {
-        EventFacade::listen(UtilitiesResolving::class, function(UtilitiesResolving $event) {
-            $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
-
-            Craft::$app->getUtilities()->trigger(self::EVENT_REGISTER_UTILITIES, $yiiEvent);
-
-            $event->types = Collection::make($yiiEvent->types);
-
-            if ($yiiEvent->handled) {
-                return false;
-            }
-        });
     }
 }

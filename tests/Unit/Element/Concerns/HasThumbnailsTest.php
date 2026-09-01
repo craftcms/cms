@@ -104,9 +104,8 @@ describe('getThumbHtml', function () {
 
         $html = $element->getThumbHtml(100);
 
-        expect($html)->toContain('<div');
-        expect($html)->toContain('class="thumb"');
-        expect($html)->toContain('data-srcset');
+        expect($html)->toContain('<craft-thumbnail');
+        expect($html)->toContain('srcset');
         expect($html)->toContain('https://example.com/thumb.jpg');
     });
 
@@ -147,7 +146,7 @@ describe('getThumbHtml', function () {
 
         $html = $element->getThumbHtml(100);
 
-        expect($html)->toContain('data-animated');
+        expect($html)->toContain('animated');
     });
 
     test('falls back to SVG when no thumb URL', function () {

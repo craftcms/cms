@@ -17,6 +17,7 @@ use function Laravel\Prompts\spin;
  */
 trait FetchesUpdates
 {
+    /** @param array<string, string> $constraints */
     protected function fetchUpdates(array $constraints = []): UpdatesData
     {
         $updates = null;
@@ -29,6 +30,7 @@ trait FetchesUpdates
         return $updates;
     }
 
+    /** @return array{handle: string, from: string, to: string, status: string} */
     protected function formatLine(string $handle, string $from, Update $update): array
     {
         $expired = $update->status === UpdateStatus::EXPIRED;

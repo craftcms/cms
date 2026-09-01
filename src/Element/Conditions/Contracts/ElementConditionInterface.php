@@ -31,7 +31,7 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Sets the possible field layouts that the condition could be working with.
      *
-     * @param  array<FieldLayout|array>  $fieldLayouts
+     * @param  array<FieldLayout|array<string, mixed>>  $fieldLayouts
      */
     public function setFieldLayouts(array $fieldLayouts): void;
 

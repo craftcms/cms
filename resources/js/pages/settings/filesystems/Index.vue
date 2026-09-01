@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
@@ -9,7 +9,6 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-  import Pane from '@/common/components/Pane.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface FileSystemData {
@@ -34,18 +33,6 @@
     filesystems: {data: Array<FileSystemData>};
     readOnly: boolean;
   }>();
-
-  function deleteFs(fs: FileSystemData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}”', {
-          name: fs.name,
-        })
-      )
-    ) {
-      router.delete(destroy({handle: fs.handle}));
-    }
-  }
 
   const columnHelper = createCraftColumnHelper<FileSystemData>();
 
@@ -79,7 +66,22 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteFs(row.original),
+        confirm: t('Are you sure you want to delete “{name}”', {
+          name: row.original.name,
+        }),
+        onClick: () =>
+          router
+            .optimistic<{filesystems: {data: Array<FileSystemData>}}>(
+              ({filesystems}) => ({
+                filesystems: {
+                  ...filesystems,
+                  data: filesystems.data.filter(
+                    ({handle}) => handle !== row.original.handle
+                  ),
+                },
+              })
+            )
+            .delete(destroy({handle: row.original.handle})),
       }),
     ]),
   ]);
@@ -111,7 +113,7 @@
     >
   </LayoutSlot>
 
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable :table="table" :reorderable="false">
       <template #empty-row>
         <Empty :label="t('No filesystems exist yet.')" icon="light/folder-open">
@@ -121,5 +123,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -37,7 +39,7 @@ test('render elements rejects invalid element ids', function () {
                 'instances' => [[]],
             ],
         ],
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('render elements returns chip html for entries', function () {
@@ -61,6 +63,76 @@ test('render elements returns chip html for entries', function () {
     $response->assertOk()
         ->assertJsonPath("elements.{$entry->id}.default", fn (string $html) => str_contains($html, 'chip') && str_contains($html, (string) $entry->id));
 });
+
+test('rendered nested element cards include the nested actions for their owner', function () {
+    $address = createOwnedAddress();
+
+    postJson(action([RenderController::class, 'elements']), [
+        'elements' => [
+            [
+                'type' => Address::class,
+                'id' => $address->id,
+                'siteId' => $address->siteId,
+                'ownerId' => auth()->id(),
+                'instances' => [
+                    ['context' => 'field', 'ui' => 'card', 'showActionMenu' => true, 'sortable' => true],
+                ],
+            ],
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath(
+            "elements.{$address->id}.0",
+            fn (string $html) => str_contains($html, 'data-move-forward-action')
+                && str_contains($html, 'data-move-backward-action')
+                && str_contains($html, 'data-duplicate-action')
+                && str_contains($html, 'data-delete-action'),
+        );
+});
+
+test('client-supplied configs cannot request the nested actions without ownership', function () {
+    $address = createOwnedAddress();
+
+    postJson(action([RenderController::class, 'elements']), [
+        'elements' => [
+            [
+                'type' => Address::class,
+                'id' => $address->id,
+                'siteId' => $address->siteId,
+                // no ownerId — and an attempt to force the flag from the client
+                'instances' => [
+                    [
+                        'context' => 'field',
+                        'ui' => 'card',
+                        'showActionMenu' => true,
+                        'showNestedActions' => true,
+                    ],
+                ],
+            ],
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath(
+            "elements.{$address->id}.0",
+            fn (string $html) => ! str_contains($html, 'data-duplicate-action') && ! str_contains($html, 'data-delete-action'),
+        );
+});
+
+function createOwnedAddress(): Address
+{
+    $address = new Address([
+        'ownerId' => auth()->id(),
+        'title' => 'Home',
+        'countryCode' => 'US',
+        'addressLine1' => '123 Fake Street',
+        'locality' => 'San Francisco',
+        'administrativeArea' => 'CA',
+        'postalCode' => '94107',
+    ]);
+    app(Elements::class)->saveElement($address);
+
+    return $address;
+}
 
 test('render components validates required payload', function () {
     postJson(action([RenderController::class, 'components']))
@@ -158,7 +230,7 @@ test('render markdown encodes markdown before parsing', function () {
 });
 
 test('render markdown sanitizes preview html when requested', function () {
-    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+    HtmlSanitizers::extend('paragraphs-only', new HtmlSanitizer(
         (new HtmlSanitizerConfig)->allowElement('p')
     ));
 

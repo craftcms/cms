@@ -46,6 +46,7 @@ class ResourceDirective
         app(HtmlStack::class)->html($html, $position, $key);
     }
 
+    /** @param array<string, mixed> $options */
     public static function script(string $script, int|Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
         if (is_int($position)) {

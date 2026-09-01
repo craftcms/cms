@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -30,6 +31,41 @@ test('index', function () {
     get(action([AddressesController::class, 'index']))
         ->assertOk()
         ->assertSee(t('Addresses'));
+});
+
+test('index cards include the server-rendered nested actions', function () {
+    postJson(action([AddressesController::class, 'store']), [
+        'userId' => auth()->id(),
+        'title' => 'Home',
+        'addressLine1' => '123 Fake Street',
+        'administrativeArea' => 'CA',
+        'locality' => 'San Francisco',
+        'postalCode' => '94107',
+    ])->assertOk();
+
+    get(action([AddressesController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Addresses')
+            ->where('data.elements.0.cardActionsHtml', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action'))
+            ->where('contentFragment.html', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action')));
+});
+
+test('index renders the Inertia addresses page', function () {
+    get(action([AddressesController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Addresses')
+            ->where('userId', auth()->id())
+            ->where('showIndex', false)
+            ->where('title', t('Addresses'))
+            ->has('crumbs', 3)
+            // A list, not an object keyed by screen name: the shell hides the
+            // secondary nav when it can't count the items.
+            ->where('subnav.0.label', t('Profile'))
+            ->has('details')
+            ->where('data.mode', 'cards')
+            ->where('contentFragment.html', fn (string $html): bool => $html !== ''));
 });
 
 test('store & destroy', function () {

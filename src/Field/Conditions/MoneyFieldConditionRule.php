@@ -22,6 +22,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 {
     use FieldConditionRuleTrait;
 
+    /** @return list<string> */
     #[Override]
     protected function operators(): array
     {
@@ -32,17 +33,19 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  bool  $safeOnly
+     */
     #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need
         if (isset($values['value']) && is_array($values['value'])) {
-            /** @var array $value */
             $value = Arr::pull($values, 'value');
         }
 
         if (isset($values['maxValue']) && is_array($values['maxValue'])) {
-            /** @var array $maxValue */
             $maxValue = Arr::pull($values, 'maxValue');
         }
 
@@ -55,17 +58,13 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         }
 
         if (isset($value, $this->_fieldUid)) {
-            if (! isset($value['currency'])) {
-                $value['currency'] = $field->currency;
-            }
+            $value['currency'] ??= $field->currency;
 
             $this->value = MoneyHelper::toDecimal(MoneyHelper::toMoney($value));
         }
 
         if (isset($maxValue, $this->_fieldUid)) {
-            if (! isset($maxValue['currency'])) {
-                $maxValue['currency'] = $field->currency;
-            }
+            $maxValue['currency'] ??= $field->currency;
             $this->maxValue = MoneyHelper::toDecimal(MoneyHelper::toMoney($maxValue));
         }
     }
@@ -98,7 +97,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
                     $this->inputOptions(),
                     ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )).
-                Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
+                Html::tag('craft-info-icon', t('The values are matched inclusively.')),
                 ['class' => 'flex flex-center']
             );
         }
@@ -106,6 +105,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         return FormFields::moneyInputHtml($this->inputOptions());
     }
 
+    /** @return array{type: 'text', id: 'value', name: 'value', value: string|false, autocomplete: false, currency: string, currencyLabel: string, showCurrency: bool, decimals: int, defaultValue: string|false|null, describedBy: string|null, field: Money, showClear: false} */
     #[Override]
     protected function inputOptions(): array
     {
@@ -144,7 +144,8 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         return $this->paramValue();
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param MoneyLibrary|float|int|null $value */
+    protected function matchFieldValue(mixed $value): bool
     {
         if (! $this->field() instanceof Money) {
             return true;
@@ -154,7 +155,6 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $value = (float) $value->getAmount();
         }
 
-        /** @var int|float|null $value */
         return $this->matchValue($value);
     }
 }

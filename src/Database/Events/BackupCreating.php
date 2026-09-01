@@ -8,6 +8,7 @@ use Illuminate\Database\Connection;
 
 class BackupCreating
 {
+    /** @param string[]|null $ignoreTables */
     public function __construct(
         public Connection $connection,
         public string $file,

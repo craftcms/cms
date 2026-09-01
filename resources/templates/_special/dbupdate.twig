@@ -3,10 +3,9 @@
 
 {% block message %}
     <p>{{ "To complete the update, some changes must be made to your database."|t('app') }}</p>
-    <form method="post" class="buttons">
+    <form method="post" action="{{ cpUrl('updates') }}" class="buttons">
         {{ csrfInput() }}
-        {{ actionInput('updater') }}
         {{ hiddenInput('return', Request.path()) }}
-        <button type="submit" class="btn submit">{{ 'Finish up'|t('app') }}</button>
+      <craft-button type="submit" variant="primary">{{ 'Finish up'|t('app') }}</craft-button>
     </form>
 {% endblock %}

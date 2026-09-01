@@ -34,9 +34,7 @@ trait QueriesStructures
      */
     public bool $withStructure {
         get {
-            if (! isset($this->withStructure)) {
-                $this->withStructure = $this->structureId && ! $this->trashed;
-            }
+            $this->withStructure ??= $this->structureId && ! $this->trashed;
 
             return $this->withStructure;
         }
@@ -570,6 +568,7 @@ trait QueriesStructures
         return ! $this->revisions && $this->withStructure;
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function applyStructureParams(ElementQuery $elementQuery): void
     {
         if (! $elementQuery->shouldJoinStructureData()) {

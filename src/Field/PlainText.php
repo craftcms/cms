@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -11,6 +12,16 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +84,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
      */
     public ?int $byteLimit = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Config normalization
@@ -120,23 +132,60 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
-    public function getSettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return $this->settingsHtml(false);
+        return Form::make([
+            FormField::make(t('UI Mode'))
+                ->instructions(t('How the field should be presented in the control panel.'))
+                ->control(Choice::make('uiMode')->value($this->uiMode)->options([
+                    ['label' => t('Normal'), 'value' => 'normal'],
+                    ['label' => t('Enlarged'), 'value' => 'enlarged'],
+                ])),
+            FormField::make(t('Placeholder Text'))
+                ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
+                ->control(Text::make(['placeholder'])->value($this->placeholder)),
+            Group::make('plain-text-field-limit', [
+                FormField::make(t('Maximum'))
+                    ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
+                    ->control(Number::make('fieldLimit')
+                        ->value($this->charLimit ?? $this->byteLimit)
+                        ->deltaGroupAtNamespace()
+                        ->min(1)),
+                FormField::make(t('Unit'))
+                    ->control(Choice::make(['limitUnit'])
+                        ->value($this->byteLimit ? 'bytes' : 'chars')
+                        ->deltaGroupAtNamespace()
+                        ->options([
+                            ['label' => t('Characters'), 'value' => 'chars'],
+                            ['label' => t('Bytes'), 'value' => 'bytes'],
+                        ])),
+            ])->label(t('Field Limit')),
+            Group::make('plain-text-behavior', [
+                FormField::make(t('Use a monospaced font'))
+                    ->control(Lightswitch::make('code')->value($this->code)),
+                FormField::make(t('Allow line breaks'))
+                    ->control(Lightswitch::make(['multiline'])->value($this->multiline)),
+            ]),
+        ])->when($this->multiline, fn (Form $form) => $form->add(
+            FormField::make(t('Initial Rows'))
+                ->control(Number::make('initialRows')
+                    ->value($this->initialRows)
+                    ->min(1)),
+        ));
     }
 
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->settingsHtml(true);
-    }
+        $control = $this->multiline
+            ? Textarea::make($context->path)->rows($this->initialRows)
+            : Text::make($context->path);
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fieldtypes/PlainText/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-        ]);
+        return $control
+            ->value($context->value)
+            ->maxLength($this->charLimit)
+            ->placeholder($this->placeholder === null ? null : t($this->placeholder, category: 'site'))
+            ->monospace($this->code);
     }
 
     #[Override]
@@ -170,12 +219,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         return $this->_inputHtml($value, $element, false);
     }
 
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->_inputHtml($value, $element, true);
-    }
-
     private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
         return template('_components/fieldtypes/PlainText/input', [
@@ -189,6 +232,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
+    /** @return list<Closure|string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {

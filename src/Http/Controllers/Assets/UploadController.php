@@ -155,7 +155,7 @@ readonly class UploadController
             $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
 
             return new JsonResponse([
-                'conflict' => t('A file with the name "{filename}" already exists.', ['filename' => $asset->conflictingFilename]),
+                'conflict' => t('A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
                 'assetId' => $asset->id,
                 'filename' => $asset->conflictingFilename,
                 'conflictingAssetId' => $conflictingAsset->id ?? null,
@@ -174,8 +174,8 @@ readonly class UploadController
 
     public function replaceFile(Request $request): Response
     {
-        $assetId = $request->input('assetId');
-        $sourceAssetId = $request->input('sourceAssetId');
+        $assetId = $request->integer('assetId');
+        $sourceAssetId = $request->integer('sourceAssetId');
         $targetFilename = $request->input('targetFilename');
 
         if (
@@ -239,6 +239,10 @@ readonly class UploadController
                     ->folderId($sourceAsset->folderId)
                     ->filename(Query::escapeParam($targetFilename))
                     ->one();
+
+                if ($assetToReplace) {
+                    Gate::authorize('replaceFile', $assetToReplace);
+                }
             }
 
             if (! empty($assetToReplace)) {
@@ -286,7 +290,7 @@ readonly class UploadController
         $extension = strtolower(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_EXTENSION));
 
         if (! in_array($extension, $allowedExtensions, true)) {
-            throw new AssetDisallowedExtensionException(t('"{extension}" is not an allowed file extension.', [
+            throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
                 'extension' => $extension,
             ]));
         }

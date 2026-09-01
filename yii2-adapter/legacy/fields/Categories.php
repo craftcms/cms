@@ -18,9 +18,10 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
+use CraftCms\Yii2Adapter\Field\BaseRelationField;
 use GraphQL\Type\Definition\Type;
-
 use Override;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -28,7 +29,7 @@ use function CraftCms\Cms\t;
  *
  * @deprecated in 6.0.0
  */
-class Categories extends \CraftCms\Cms\Field\BaseRelationField
+class Categories extends BaseRelationField
 {
     /**
      * {@inheritdoc}
@@ -130,6 +131,72 @@ class Categories extends \CraftCms\Cms\Field\BaseRelationField
         }
 
         return parent::normalizeValue($value, $element);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Note: when Categories field is used across multiple field layouts (e.g. several entry types in
+     * the same section), calling `.eagerly()` without an explicit alias on a loop of mixed-type
+     * elements will re-trigger this method once per distinct field-layout provider, each time
+     * recomputing results for every source element that has this field, not just its own type's
+     * subset. (`ElementQuery`'s default eager-loading alias is derived from the *triggering*
+     * element's own provider handle, even though eager-loading map resolution itself matches by
+     * field ID across all providers.) Pass an explicit alias (`.eagerly('someAlias')`) in that
+     * scenario so every element shares one dedup key and only the first trigger actually runs.
+     */
+    #[Override]
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
+    {
+        $map = parent::getEagerLoadingMap($sourceElements);
+
+        // if we're not maintaining hierarchy, go with the default behavior
+        if (!$this->maintainHierarchy || !is_array($map) || empty($map['map'])) {
+            return $map;
+        }
+
+        // array keyed by the sourceId with value containing all its target IDs
+        $targetIdsBySource = [];
+        foreach ($map['map'] as $mapping) {
+            $targetIdsBySource[$mapping['source']][] = $mapping['target'];
+        }
+
+        // Fetch every referenced category in one batched query, rather than per source element
+        // (this allows us to lower the number of queries needed to complete the task)
+        $allTargetIds = array_values(array_unique(array_merge(...array_values($targetIdsBySource))));
+        /** @var array<int, Category> $categoriesById */
+        $categoriesById = Category::find()
+            ->siteId($sourceElements[0]->siteId)
+            ->id($allTargetIds)
+            ->status(null)
+            ->indexBy('id')
+            ->all();
+
+        $newMap = [];
+
+        // now for each source, fill the gaps and apply branch limit
+        foreach ($targetIdsBySource as $sourceId => $targetIds) {
+            $categories = array_values(array_filter(array_map(
+                fn($id) => $categoriesById[$id] ?? null,
+                $targetIds,
+            )));
+
+            // Fill in any gaps
+            Structures::fillGapsInElements($categories);
+
+            // Enforce the branch limit
+            if ($this->branchLimit) {
+                Structures::applyBranchLimitToElements($categories, $this->branchLimit);
+            }
+
+            foreach ($categories as $category) {
+                $newMap[] = ['source' => $sourceId, 'target' => $category->id];
+            }
+        }
+
+        $map['map'] = $newMap;
+
+        return $map;
     }
 
     /**

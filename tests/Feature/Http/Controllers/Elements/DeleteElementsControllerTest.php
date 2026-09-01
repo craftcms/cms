@@ -5,8 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements as ElementsService;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
 use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
@@ -78,6 +80,7 @@ describe('deletionBlockers', function () {
             'hardDelete' => true,
         ])->assertOk()
             ->assertJsonCount(1, 'blockers')
+            ->assertJsonPath('totalElements', 1)
             ->assertJsonPath('blockers.0.summary', 'Active blocker')
             ->assertJsonPath('blockers.0.details', '<p>Details</p>')
             ->assertJsonPath('blockers.0.actions.0.label', 'Resolve')
@@ -139,11 +142,15 @@ describe('destroy', function () {
             ->all();
 
         app()->bind(ElementsService::class, function () use (&$deletedIds) {
-            return new class(app(ElementPlaceholders::class), $deletedIds) extends ElementsService
+            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $deletedIds) extends ElementsService
             {
-                public function __construct(ElementPlaceholders $placeholders, private array &$deletedIds)
-                {
-                    parent::__construct($placeholders);
+                public function __construct(
+                    ElementPlaceholders $placeholders,
+                    ElementTypes $elementTypes,
+                    ElementCaches $elementCaches,
+                    private array &$deletedIds,
+                ) {
+                    parent::__construct($placeholders, $elementTypes, $elementCaches);
                 }
 
                 public function deleteElement(ElementInterface $element, bool $hard = false): bool
@@ -288,7 +295,7 @@ describe('replaceRelations', function () {
             'elementIds' => [$entry->id],
             'sourceElementType' => Entry::class,
             'newTargetId' => 0,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', 'No new entry selected.');
     });
 
@@ -351,7 +358,7 @@ describe('replaceReferences', function () {
             'elementType' => Entry::class,
             'elementIds' => [$entry->id],
             'newTargetId' => 999999,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', 'The selected entry could not be found.');
     });
 });

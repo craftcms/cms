@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Plugin\Plugin;
-use Illuminate\Support\Facades\Event;
 
 /**
  * @mixin Plugin
@@ -25,12 +24,6 @@ trait HasWidgets
 
     public function bootHasWidgets(): void
     {
-        if (! $this->widgets) {
-            return;
-        }
-
-        Event::listen(WidgetTypesResolving::class, function (WidgetTypesResolving $event) {
-            $event->types->push(...$this->widgets);
-        });
+        $this->app->make(WidgetTypes::class)->register(...$this->widgets);
     }
 }

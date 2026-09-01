@@ -21,7 +21,7 @@ abstract class ObjectType extends GqlObjectType
 
     /**
      * @param  mixed  $source  The parent data source to use for resolving this field
-     * @param  array  $arguments  arguments for resolving this field.
+     * @param  array<string, mixed>  $arguments  arguments for resolving this field.
      * @param  mixed  $context  The context shared between all resolvers
      * @param  ResolveInfo  $resolveInfo  The resolve information
      * @return mixed $result
@@ -42,7 +42,7 @@ abstract class ObjectType extends GqlObjectType
 
     /**
      * @param  mixed  $source  The parent data source to use for resolving this field
-     * @param  array  $arguments  arguments for resolving this field.
+     * @param  array<string, mixed>  $arguments  arguments for resolving this field.
      * @param  mixed  $context  The context shared between all resolvers
      * @param  ResolveInfo  $resolveInfo  The resolve information
      * @return mixed $result

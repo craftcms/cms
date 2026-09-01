@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->auth = app(AuthMethods::class);
-    Cms::config()->isSystemLive = true;
 });
 
 test('authenticate with valid password', function () {
@@ -66,6 +65,19 @@ test('authenticate inactive user', function () {
     expect($result)->toBeFalse();
     expect($this->auth->authError)->toBe(AuthError::InvalidCredentials);
 });
+
+test('authenticate rejects unavailable Eloquent users', function (array $elementAttributes) {
+    $user = UserModel::factory()->create();
+    $user->element->update($elementAttributes);
+
+    $result = $this->auth->authenticate($user, ['password' => 'password']);
+
+    expect($result)->toBeFalse();
+    expect($this->auth->authError)->toBe(AuthError::InvalidCredentials);
+})->with([
+    'disabled' => [['enabled' => false]],
+    'archived' => [['archived' => true]],
+]);
 
 test('authenticate pending user', function () {
     $user = UserModel::factory()->createElement([
@@ -145,39 +157,27 @@ test('authenticate without CP access', function () {
     expect($this->auth->authError)->toBe(AuthError::NoCpAccess);
 });
 
-test('authenticate with CP offline no access', function () {
-    Edition::set(Edition::Pro);
-
-    $user = UserModel::factory()->createElement([
-        'admin' => false,
-    ]);
-    UserPermissions::saveUserPermissions($user->id, [
-        'accessCp',
-    ]);
-
-    Cms::config()->cpTrigger = '/';
-    Cms::config()->isSystemLive = false;
-
-    $result = $this->auth->authenticate($user, ['password' => 'password']);
-
-    expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::NoCpOfflineAccess);
-});
-
-test('authenticate with site offline no access', function () {
+test('authenticate without maintenance access', function (bool $isCpRequest, AuthError $expectedError) {
     Edition::set(Edition::Pro);
 
     $user = UserModel::factory()->createElement([
         'admin' => false,
     ]);
 
-    Cms::config()->isSystemLive = false;
+    if ($isCpRequest) {
+        UserPermissions::saveUserPermissions($user->id, ['accessCp']);
+        Cms::config()->cpTrigger = '/';
+    }
 
+    app()->maintenanceMode()->activate([]);
     $result = $this->auth->authenticate($user, ['password' => 'password']);
 
     expect($result)->toBeFalse();
-    expect($this->auth->authError)->toBe(AuthError::NoSiteOfflineAccess);
-});
+    expect($this->auth->authError)->toBe($expectedError);
+})->with([
+    'control panel' => [true, AuthError::NoCpOfflineAccess],
+    'site' => [false, AuthError::NoSiteOfflineAccess],
+]);
 
 test('authenticating event can block auth', function () {
     $user = UserModel::factory()->createElement();

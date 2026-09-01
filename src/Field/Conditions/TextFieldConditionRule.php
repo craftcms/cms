@@ -6,11 +6,13 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
+use Stringable;
 
 class TextFieldConditionRule extends BaseTextConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
+    /** @return array{value: list<string>|string, caseInsensitive: true}|null */
     protected function elementQueryParam(): ?array
     {
         $value = $this->paramValue();
@@ -24,9 +26,9 @@ class TextFieldConditionRule extends BaseTextConditionRule implements FieldCondi
         ];
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param Stringable|string|null $value */
+    protected function matchFieldValue(mixed $value): bool
     {
-        /** @var string|null $value */
         return $this->matchValue($value);
     }
 }

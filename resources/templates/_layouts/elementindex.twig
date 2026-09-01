@@ -78,7 +78,6 @@
     {% include '_elements/footer' %}
 {% endblock %}
 
-
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
         canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},

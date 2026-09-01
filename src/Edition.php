@@ -17,6 +17,8 @@ use InvalidArgumentException;
 
 /**
  * Edition defines all available Craft CMS editions
+ *
+ * @implements Arrayable<string, int|string>
  */
 enum Edition: int implements Arrayable
 {
@@ -179,12 +181,12 @@ enum Edition: int implements Arrayable
 
     public function supportsRequiring2FA(): bool
     {
-        return self::isAtLeast(self::Team);
+        return $this->value >= self::Team->value;
     }
 
     public function supportsPublicRegistration(): bool
     {
-        return self::isAtLeast(self::Pro);
+        return $this->value >= self::Pro->value;
     }
 
     public function toArray(): array

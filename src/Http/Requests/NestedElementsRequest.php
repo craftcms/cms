@@ -17,6 +17,7 @@ class NestedElementsRequest extends FormRequest
 {
     private ?ElementInterface $owner = null;
 
+    /** @var ElementQueryInterface|ElementCollection<array-key, ElementInterface>|null */
     private ElementQueryInterface|ElementCollection|null $nestedElements = null;
 
     /** @var int[]|null */
@@ -26,6 +27,7 @@ class NestedElementsRequest extends FormRequest
 
     private ?NestedElementInterface $nestedElement = null;
 
+    /** @return array<string, list<string|object>> */
     public function rules(): array
     {
         return [
@@ -57,6 +59,7 @@ class NestedElementsRequest extends FormRequest
         return $this->owner = $owner;
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key, ElementInterface> */
     public function nestedElements(): ElementQueryInterface|ElementCollection
     {
         if ($this->nestedElements) {
@@ -75,6 +78,7 @@ class NestedElementsRequest extends FormRequest
         return $this->nestedElements = $nestedElements;
     }
 
+    /** @return list<int> */
     public function elementIds(): array
     {
         $this->validateReorder();
@@ -82,6 +86,30 @@ class NestedElementsRequest extends FormRequest
         abort_if(is_null($this->elementIds), 400, 'Invalid elementIds param');
 
         return $this->elementIds;
+    }
+
+    /**
+     * Ensures the user is authorized to reorder the nested elements, in addition to
+     * (not instead of) the general `manageNestedElements` authorization checked by
+     * {@see owner()} — a field's nested elements can be manageable without being sortable.
+     */
+    public function authorizeReorder(): void
+    {
+        $owner = $this->owner();
+        $attribute = $this->attribute();
+
+        if (SessionAuth::checkAuthorization(sprintf('reorderNestedElements::%s::%s', $owner->id, $attribute))) {
+            return;
+        }
+
+        if (
+            $owner->id !== $owner->getCanonicalId() &&
+            SessionAuth::checkAuthorization(sprintf('reorderNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
+        ) {
+            return;
+        }
+
+        abort(403, 'User is not authorized to perform this action');
     }
 
     public function offset(): int

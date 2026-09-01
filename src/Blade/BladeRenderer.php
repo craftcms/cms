@@ -4,45 +4,51 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Blade;
 
-use CraftCms\Cms\View\BaseTemplateRenderer;
+use CraftCms\Cms\View\Contracts\TemplateRendererInterface;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\View\Factory;
+use Illuminate\View\View;
+use Illuminate\View\ViewName;
 
-#[Scoped]
-class BladeRenderer extends BaseTemplateRenderer
+class BladeRenderer implements TemplateRendererInterface
 {
+    public function __construct(private readonly Factory $factory) {}
+
     public function supports(string $file): bool
     {
         return str_ends_with($file, '.blade.php');
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderTemplate(
         string $template,
-        array $variables,
+        array $variables = [],
         ?TemplateMode $templateMode = null,
         ?string $resolvedTemplate = null,
     ): string {
-        return $this->renderInternal(
-            template: $template,
-            variables: $variables,
-            templateMode: $templateMode,
-            render: fn (string $template, array $variables) => $resolvedTemplate
-                ? view()->file($resolvedTemplate, $variables)->render()
-                : view($template, $variables)->render()
+        if ($resolvedTemplate === null) {
+            return view($template, $variables)->render();
+        }
+
+        $view = new View(
+            $this->factory,
+            $this->factory->getEngineFromPath($resolvedTemplate),
+            ViewName::normalize($template),
+            $resolvedTemplate,
+            $variables,
         );
+        $this->factory->callCreator($view);
+
+        return $view->render();
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderString(
         string $template,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
     ): string {
-        return $this->renderInternal(
-            'string:'.$template,
-            $variables,
-            $templateMode,
-            fn () => Blade::render($template, $variables),
-        );
+        return Blade::render($template, $variables);
     }
 }

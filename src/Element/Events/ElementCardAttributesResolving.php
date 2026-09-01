@@ -14,7 +14,7 @@ class ElementCardAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  array  $cardAttributes  The card attributes
+     * @param  array<string, array<string, mixed>>  $cardAttributes  The card attributes
      * @param  FieldLayout|null  $fieldLayout  The field layout
      */
     public function __construct(

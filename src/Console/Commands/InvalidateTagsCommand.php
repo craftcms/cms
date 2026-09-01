@@ -19,6 +19,9 @@ class InvalidateTagsCommand extends Command
 {
     use CraftCommand;
 
+    /**
+     * @param  list<string>  $aliases
+     */
     public function __construct(string $signature, string $description, array $aliases = [])
     {
         $this->signature = $signature;
@@ -87,6 +90,9 @@ class InvalidateTagsCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @return list<array{signature: string, description: string, aliases?: list<string>}>
+     */
     public static function signatures(): array
     {
         $signatures = [

@@ -54,7 +54,7 @@ class SiteGroups
     /**
      * Returns all site groups.
      *
-     * @return Collection<SiteGroup>
+     * @return Collection<int, SiteGroup>
      */
     public function getAllGroups(): Collection
     {

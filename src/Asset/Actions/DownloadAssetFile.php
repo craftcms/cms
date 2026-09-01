@@ -17,6 +17,12 @@ class DownloadAssetFile extends ElementAction
         return t('Download');
     }
 
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
     public function getTriggerHtml(): ?string
     {
         HtmlStack::jsWithVars(fn ($type) => <<<JS

@@ -2,7 +2,7 @@ import {onBeforeUnmount, onMounted} from 'vue';
 import {router} from '@inertiajs/vue3';
 
 /**
- * Bridges `@craftcms/cp`'s framework-agnostic `action:redirect` event into an
+ * Bridges `@craftcms/ui`'s framework-agnostic `action:redirect` event into an
  * Inertia SPA visit.
  *
  * `runAction` dispatches a cancelable `action:redirect` event on a redirecting
@@ -14,7 +14,8 @@ import {router} from '@inertiajs/vue3';
  */
 export function useActionRedirect(): void {
   function handleActionRedirect(event: Event): void {
-    const url = (event as CustomEvent<{url: string}>).detail?.url;
+    if (!(event instanceof CustomEvent)) return;
+    const url = event.detail?.url;
     if (!url) return;
     event.preventDefault();
     router.visit(url);

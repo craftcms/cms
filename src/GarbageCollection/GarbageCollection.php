@@ -33,6 +33,7 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
+use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use CraftCms\Cms\Queue\Models\JobProgress;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Artisan;
@@ -84,7 +85,7 @@ class GarbageCollection
      */
     public function run(bool $force = false): void
     {
-        if (! $force && ! Lottery::odds($this->probability, 1_000_000)->choose()) {
+        if (! $force && ! $this->shouldRun()) {
             return;
         }
 
@@ -146,10 +147,19 @@ class GarbageCollection
         $this->elementCaches->invalidateAll();
     }
 
+    public function queue(): void
+    {
+        if (! $this->shouldRun()) {
+            return;
+        }
+
+        dispatch(new RunGarbageCollection);
+    }
+
     /**
      * @param array<array{
      *     0: class-string<GarbageCollectionAction>,
-     *     1: array
+     *     1: array<string, mixed>
      * }|class-string<GarbageCollectionAction>> $actions
      */
     public function runActions(array $actions): void
@@ -163,5 +173,10 @@ class GarbageCollection
                 'garbageCollection' => $this,
             ], $params ?? []))();
         }
+    }
+
+    private function shouldRun(): bool
+    {
+        return Lottery::odds($this->probability, 1_000_000)->choose();
     }
 }

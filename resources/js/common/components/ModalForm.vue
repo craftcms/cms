@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import Modal, {type ModalProps} from '@/common/components/Modal.vue';
-  import Pane from '@/common/components/Pane.vue';
 
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -40,24 +39,87 @@
     :max-height="maxHeight"
   >
     <form @submit.prevent="submitHandler">
-      <Pane :title="title">
-        <!-- Forward all slots from parent to Pane -->
-        <template v-for="(_, slotName) in $slots" :key="slotName" #[slotName]>
-          <slot :name="slotName"></slot>
-        </template>
+      <!--
+        `craft-pane` uses native slots, which can't be filled by a `v-for` over
+        `$slots` the way Vue slots could — a native `slot=` assignment has to
+        sit on a real element that is a direct child of the pane. So each pane
+        region is forwarded explicitly, through a `display: contents` wrapper
+        that keeps the pane's header/footer flex layout intact. The wrappers
+        are only rendered when the parent actually fills the slot, since the
+        pane decides whether to render its header/footer from the presence of
+        slotted children.
+      -->
+      <craft-pane :label="title">
+        <div v-if="$slots.header" slot="header" class="contents">
+          <slot name="header"></slot>
+        </div>
+        <div v-if="$slots.title" slot="title" class="contents">
+          <slot name="title"></slot>
+        </div>
+        <div
+          v-if="$slots['header-actions']"
+          slot="header-actions"
+          class="contents"
+        >
+          <slot name="header-actions"></slot>
+        </div>
+        <div v-if="$slots.body" slot="body" class="contents">
+          <slot name="body"></slot>
+        </div>
 
         <slot></slot>
-        <template #secondary-action>
-          <craft-button type="reset" @click="emit('close')" appearance="plain">
-            {{ resetLabel }}
-          </craft-button>
-        </template>
-        <template #primary-action>
-          <craft-button type="submit" variant="accent" :loading="loading">
-            {{ submitLabel }}
-          </craft-button>
-        </template>
-      </Pane>
+
+        <div v-if="$slots.footer" slot="footer" class="contents">
+          <slot name="footer"></slot>
+        </div>
+        <div
+          v-if="$slots['footer-content']"
+          slot="footer-content"
+          class="contents"
+        >
+          <slot name="footer-content"></slot>
+        </div>
+        <div v-if="$slots.feedback" slot="feedback" class="contents">
+          <slot name="feedback"></slot>
+        </div>
+        <div v-if="$slots.actions" slot="actions" class="contents">
+          <slot name="actions"></slot>
+        </div>
+
+        <div
+          v-if="$slots['secondary-action']"
+          slot="secondary-action"
+          class="contents"
+        >
+          <slot name="secondary-action"></slot>
+        </div>
+        <craft-button
+          v-else
+          slot="secondary-action"
+          type="reset"
+          @click="emit('close')"
+          variant="plain"
+        >
+          {{ resetLabel }}
+        </craft-button>
+
+        <div
+          v-if="$slots['primary-action']"
+          slot="primary-action"
+          class="contents"
+        >
+          <slot name="primary-action"></slot>
+        </div>
+        <craft-button
+          v-else
+          slot="primary-action"
+          type="submit"
+          variant="accent"
+          :loading="loading"
+        >
+          {{ submitLabel }}
+        </craft-button>
+      </craft-pane>
     </form>
   </Modal>
 </template>

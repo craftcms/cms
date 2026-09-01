@@ -15,9 +15,7 @@ class QueryParam
 
     public const string NOT = 'not';
 
-    /**
-     * @var array The param values.
-     */
+    /** @var list<mixed> The param values. */
     public array $values = [];
 
     /**
@@ -48,6 +46,7 @@ class QueryParam
         return $param;
     }
 
+    /** @return list<mixed> */
     public static function toArray(mixed $value): array
     {
         if ($value === null) {
@@ -94,6 +93,7 @@ class QueryParam
     /**
      * Extracts the logic operator (`and`, `or`, or `not`) from the beginning of an array.
      */
+    /** @param list<mixed> $values */
     public static function extractOperator(array &$values): ?string
     {
         $firstVal = reset($values);

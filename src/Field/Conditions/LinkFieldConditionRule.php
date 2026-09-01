@@ -22,6 +22,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
      */
     public ?string $linkType = null;
 
+    /** @return list<string> */
     #[\Override]
     protected function operators(): array
     {
@@ -31,6 +32,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         ];
     }
 
+    /** @return array<string, mixed> */
     #[\Override]
     public function getConfig(): array
     {
@@ -85,15 +87,15 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         $query->where(new Coalesce($valueSql), $this->linkType);
     }
 
+    /** @param LinkData|null $value */
     #[\Override]
-    protected function matchFieldValue($value): bool
+    protected function matchFieldValue(mixed $value): bool
     {
         if (! $this->field() instanceof Link) {
             return true;
         }
 
         if ($this->operator === self::OPERATOR_TYPE) {
-            /** @var LinkData|null $value */
             return $value?->getType() === $this->linkType;
         }
 

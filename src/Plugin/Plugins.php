@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -23,7 +24,6 @@ use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUninstalling;
-use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -38,18 +38,21 @@ use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\PackageManifest;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use PDOException;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use UnexpectedValueException;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
@@ -58,7 +61,7 @@ use function CraftCms\Cms\t;
 class Plugins
 {
     /**
-     * @var array[] Custom plugin configurations.
+     * @var array<string, array<string, mixed>> Custom plugin configurations.
      */
     public array $pluginConfigs;
 
@@ -78,44 +81,43 @@ class Plugins
     private ?array $plugins = null;
 
     /**
-     * @var array Plugin info provided by Composer, indexed by handles
+     * @var array<string, array<string, mixed>> Plugin info provided by Composer, indexed by handles
      */
     private array $composerPluginInfo;
 
     /**
-     * @var array All of the stored info for plugins (enabled or disabled), indexed by handles
+     * @var array<string, array<string, mixed>> All of the stored info for plugins (enabled or disabled), indexed by handles
      *
      * @see getStoredPluginInfo()
      */
     private array $storedPluginInfo;
 
-    /**
-     * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
-     */
-    private string|array|null $forceDisabledPlugins;
+    /** @var array<string, true> Plugin handles that must be disabled per the `disabledPlugins` config setting */
+    private array $forceDisabledPlugins;
 
     /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
      */
     private array $classPluginHandles = [];
 
+    /** @var array<string, array{hotFile: string, buildDirectory: string, input: string[]}> */
     private array $viteConfigs = [];
 
+    /** @var array<string, string[]> */
     private array $styles = [];
 
+    /** @var array<string, string[]> */
     private array $scripts = [];
 
     public function __construct(
         private readonly Repository $cache,
-        Application $app,
+        private readonly Application $app,
         Filesystem $files,
-        GeneralConfig $generalConfig
+        GeneralConfig $generalConfig,
+        private readonly PackageManifest $packageManifest,
     ) {
-        if ($generalConfig->safeMode) {
-            $this->forceDisabledPlugins = '*';
-        } else {
-            $this->forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
-        }
+        $forceDisabledPlugins = $generalConfig->safeMode ? '*' : $generalConfig->disabledPlugins;
+        $this->forceDisabledPlugins = array_fill_keys(is_string($forceDisabledPlugins) ? str($forceDisabledPlugins)->explode(',')->all() : ($forceDisabledPlugins ?? []), true);
 
         $this->composerPluginInfo = [];
 
@@ -125,8 +127,11 @@ class Plugins
             return;
         }
 
-        /** @var array $plugins */
         $plugins = require $path;
+
+        if (! is_array($plugins)) {
+            throw new UnexpectedValueException("Plugin manifest [$path] must return an array.");
+        }
 
         foreach ($plugins as $packageName => $plugin) {
             $plugin['packageName'] = $packageName;
@@ -151,7 +156,13 @@ class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Cms::isInstalled()) {
+        if ($this->pluginsLoaded || $this->loadingPlugins) {
+            return;
+        }
+
+        $this->ensurePluginsAreNotLaravelProviders();
+
+        if (! Cms::isInstalled()) {
             return;
         }
 
@@ -186,6 +197,8 @@ class Plugins
             ->all();
 
         $anyVersionsChanged = false;
+
+        $plugins = [];
 
         foreach ($this->storedPluginInfo as $handle => $row) {
             // Skip disabled plugins
@@ -235,7 +248,7 @@ class Plugins
                 $anyVersionsChanged = true;
             }
 
-            $this->registerPlugin($plugin);
+            $plugins[$handle] = $plugin;
         }
 
         if ($anyVersionsChanged) {
@@ -243,8 +256,23 @@ class Plugins
             $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
         }
 
+        $this->plugins = $plugins;
+
+        foreach ($plugins as $plugin) {
+            if ($plugin instanceof ServiceProvider) {
+                $plugin->booting(fn () => $plugin->bootPlugin($this));
+                $registered = $this->app->register($plugin);
+
+                if ($registered !== $plugin) {
+                    throw new InvalidPluginException($plugin->handle, 'Plugin class ['.$plugin::class.'] was already registered.');
+                }
+            }
+
+            event(new PluginRegistered($plugin));
+        }
+
         // Sort enabled plugins by their names
-        $this->plugins = Collection::make($this->plugins)
+        $this->plugins = Collection::make($plugins)
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->all();
 
@@ -336,6 +364,17 @@ class Plugins
     }
 
     /**
+     * Republishes all enabled plugins' public assets.
+     */
+    public function publishPluginAssets(): void
+    {
+        foreach ($this->getAllPlugins() as $plugin) {
+            $plugin->removeAssets();
+            $plugin->publishAssets();
+        }
+    }
+
+    /**
      * Enables a plugin by its handle.
      *
      * @param  string  $handle  The plugin’s handle
@@ -367,7 +406,7 @@ class Plugins
         );
 
         $this->storedPluginInfo[$handle]['enabled'] = true;
-        $this->registerPlugin($plugin);
+        $plugin->publishAssets();
 
         event(new PluginEnabled($plugin));
 
@@ -406,7 +445,7 @@ class Plugins
         );
 
         $this->storedPluginInfo[$handle]['enabled'] = false;
-        $this->unregisterPlugin($plugin);
+        $plugin->removeAssets();
 
         event(new PluginDisabled($plugin));
 
@@ -445,10 +484,7 @@ class Plugins
         }
 
         // Set the edition
-        if ($edition === null) {
-            // See if one is already set in the project config
-            $edition = $projectConfig->get($configKey.'.edition');
-        }
+        $edition ??= $projectConfig->get($configKey.'.edition');
 
         $editions = $plugin::editions();
 
@@ -519,7 +555,7 @@ class Plugins
         );
 
         $this->storedPluginInfo[$handle] = $info;
-        $this->registerPlugin($plugin);
+        $plugin->publishAssets();
 
         event(new PluginInstalled($plugin));
 
@@ -608,11 +644,11 @@ class Plugins
             $projectConfig->remove(ProjectConfig::PATH_PLUGINS.'.'.$handle, "Uninstall the “{$handle}” plugin");
         }
 
-        if ($plugin) {
-            $this->unregisterPlugin($plugin);
-        }
-
         unset($this->storedPluginInfo[$handle]);
+
+        if ($plugin) {
+            $plugin->removeAssets();
+        }
 
         event(new PluginUninstalled($plugin));
 
@@ -666,7 +702,7 @@ class Plugins
      * Saves a plugin’s settings.
      *
      * @param  PluginInterface  $plugin  The plugin
-     * @param  array  $settings  The plugin’s new settings
+     * @param  array<string, mixed>  $settings  The plugin’s new settings
      * @return bool Whether the plugin’s settings were saved successfully
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
@@ -780,7 +816,7 @@ class Plugins
      * Returns the stored info for a given plugin.
      *
      * @param  string  $handle  The plugin handle
-     * @return array|null The stored info, if there is any
+     * @return array<string, mixed>|null The stored info, if there is any
      */
     public function getStoredPluginInfo(string $handle): ?array
     {
@@ -823,7 +859,7 @@ class Plugins
      * Returns the Composer-supplied info
      *
      * @param  string|null  $handle  The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.
-     * @return array|null The plugin info, or null if an unknown handle was passed.
+     * @return array<string, array<string, mixed>>|array<string, mixed>|null The plugin info, or null if an unknown handle was passed.
      */
     public function getComposerPluginInfo(?string $handle = null): ?array
     {
@@ -838,7 +874,7 @@ class Plugins
      * Creates and returns a new plugin instance based on its handle.
      *
      * @param  string  $handle  The plugin’s handle
-     * @param  array|null  $info  The plugin’s stored info, if any
+     * @param  array<string, mixed>|null  $info  The plugin’s stored info, if any
      *
      * @throws InvalidPluginException if $handle is invalid
      */
@@ -900,6 +936,7 @@ class Plugins
     /**
      * Returns info about all of the plugins we can find, whether they’re installed or not.
      */
+    /** @return Collection<string, array<string, mixed>> */
     public function getAllPluginInfo(): Collection
     {
         $this->loadPlugins();
@@ -917,6 +954,7 @@ class Plugins
      *
      * @throws InvalidPluginException if the plugin isn't Composer-installed
      */
+    /** @return array<string, mixed> */
     public function getPluginInfo(string $handle): array
     {
         if (! isset($this->composerPluginInfo[$handle])) {
@@ -947,7 +985,7 @@ class Plugins
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
-        $info['isForceDisabled'] = ! ($this->forceDisabledPlugins === null) && ($this->forceDisabledPlugins === '*' || in_array($handle, $this->forceDisabledPlugins, true));
+        $info['isForceDisabled'] = $this->isPluginForceDisabled($handle);
         $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
@@ -1091,7 +1129,7 @@ class Plugins
         );
 
         if ($iconPath === null) {
-            $iconPath = Aliases::get('@appicons/default-plugin.svg');
+            $iconPath = Icons::resolveIconPath('default-plugin');
         } else {
             $iconPath .= '/icon.svg';
         }
@@ -1103,18 +1141,23 @@ class Plugins
      * Returns the license key stored for a given plugin, if it was purchased through the Store.
      *
      * @param  string  $handle  The plugin’s handle
-     * @return string|null The plugin’s license key, or null if it isn’t known
+     * @return string|false|null The plugin’s license key, `false` if it’s set to a non-existent environment variable, or `null` if it isn’t known
      *
      * @throws InvalidLicenseKeyException
      */
-    public function getPluginLicenseKey(string $handle): ?string
+    public function getPluginLicenseKey(string $handle): string|false|null
     {
-        $licenseKey = Env::parse($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
+        $storedLicenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
+        $licenseKey = Env::parse($storedLicenseKey);
 
         // also check if pc has the license key
         if ($licenseKey === null) {
             $pcPlugins = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS);
             $licenseKey = Env::parse($pcPlugins[$handle]['licenseKey'] ?? null);
+        }
+
+        if ($licenseKey === null && is_string($storedLicenseKey) && str_starts_with($storedLicenseKey, '$')) {
+            return false;
         }
 
         return $this->normalizePluginLicenseKey($licenseKey);
@@ -1143,7 +1186,7 @@ class Plugins
         if (
             preg_match('/^\$(\w+)$/', (string) $oldLicenseKey, $matches) &&
             in_array(Env::get($matches[1]), ['', null], true) &&
-            file_exists(app()->environmentFilePath())
+            Env::variableExists($matches[1], app()->environmentFilePath())
         ) {
             Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {
@@ -1207,6 +1250,7 @@ class Plugins
         return LicenseKeyStatus::tryFrom($info['licenseKeyStatus'] ?? '') ?? LicenseKeyStatus::Unknown;
     }
 
+    /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */
     public function addViteConfig(string $handle, array $config): void
     {
         $this->viteConfigs[$handle] = $config;
@@ -1263,30 +1307,26 @@ class Plugins
         return $handle;
     }
 
-    /**
-     * Registers a plugin internally and as an application module.
-     *
-     * This should only be called for enabled plugins
-     *
-     * @param  PluginInterface  $plugin  The plugin
-     */
-    private function registerPlugin(PluginInterface $plugin): void
+    private function ensurePluginsAreNotLaravelProviders(): void
     {
-        $this->plugins[$plugin->handle] = $plugin;
+        $providers = $this->packageManifest->providers();
 
-        event(new PluginRegistered($plugin));
-    }
+        foreach ($this->composerPluginInfo as $handle => $plugin) {
+            $class = $plugin['class'] ?? null;
 
-    /**
-     * Unregisters a plugin internally and as an application module.
-     *
-     * @param  PluginInterface  $plugin  The plugin
-     */
-    private function unregisterPlugin(PluginInterface $plugin): void
-    {
-        unset($this->plugins[$plugin->handle]);
+            if (! is_string($class) || $class === '') {
+                throw new InvalidPluginException($handle, "Plugin package [{$plugin['packageName']}] does not define a plugin class.");
+            }
 
-        event(new PluginUnregistered($plugin));
+            if (! in_array($class, $providers, true)) {
+                continue;
+            }
+
+            throw new InvalidPluginException(
+                $handle,
+                "Plugin class [$class] from package [{$plugin['packageName']}] must not be declared as a Laravel service provider.",
+            );
+        }
     }
 
     /**
@@ -1295,6 +1335,7 @@ class Plugins
      *
      * @throws InvalidPluginException if plugin not found
      */
+    /** @return array<string, mixed> */
     private function getPluginConfigData(string $handle): array
     {
         $projectConfig = app(ProjectConfig::class);
@@ -1310,13 +1351,15 @@ class Plugins
         }
 
         // Force disable it?
-        if (
-            $this->forceDisabledPlugins === '*' ||
-            (is_array($this->forceDisabledPlugins) && isset($this->forceDisabledPlugins[$handle]))
-        ) {
+        if ($this->isPluginForceDisabled($handle)) {
             $data['enabled'] = false;
         }
 
         return $data;
+    }
+
+    private function isPluginForceDisabled(string $handle): bool
+    {
+        return isset($this->forceDisabledPlugins['*']) || isset($this->forceDisabledPlugins[$handle]);
     }
 }

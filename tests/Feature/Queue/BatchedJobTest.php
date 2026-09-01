@@ -12,6 +12,16 @@ it('has default batch size of 100', function () {
     expect($job->batchSize)->toBe(100);
 });
 
+it('rejects non-positive batch sizes', function (int $batchSize) {
+    $job = new TestBatchedJob;
+
+    expect(fn () => $job->batchSize = $batchSize)
+        ->toThrow(InvalidArgumentException::class, 'Batch size must be at least 1.');
+})->with([
+    'zero' => 0,
+    'negative' => -1,
+]);
+
 it('starts at batch index 0', function () {
     $job = new TestBatchedJob;
 

@@ -32,9 +32,9 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements Elemen
         return ['postDate', 'after', 'before'];
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         $query->postDate($this->queryParamValue());
     }
 

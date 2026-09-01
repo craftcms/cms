@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -24,6 +25,7 @@ use function CraftCms\Cms\template;
 
 class CraftSupport extends Widget
 {
+    /** @param array<string, mixed> $config */
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Plugins $plugins,
@@ -85,11 +87,11 @@ class CraftSupport extends Widget
         $dbDriver = DB::driverLabel();
 
         $imagesService = $this->images;
-        if ($imagesService->getIsGd()) {
-            $imageDriver = 'GD';
-        } else {
-            $imageDriver = 'Imagick';
-        }
+        $imageDriver = match ($imagesService->getDriver()) {
+            ImageDriver::Gd => 'GD',
+            ImageDriver::Imagick => 'Imagick',
+            ImageDriver::Vips => 'Vips',
+        };
 
         $body = <<<'EOD'
 ### Description

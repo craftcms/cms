@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Commands;
 
+use Closure;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
-use CraftCms\Cms\Database\Events\MigratorsResolving;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
@@ -26,6 +27,18 @@ use Throwable;
 
 use function Laravel\Prompts\confirm;
 
+/**
+ * Runs Craft, plugin, content, and explicitly registered migration tracks.
+ *
+ * ```php
+ * public function boot(): void
+ * {
+ *     MigrateCommand::registerMigrator(fn (Migrator $migrator) => $migrator
+ *         ->track('my-plugin')
+ *         ->setPaths([__DIR__.'/migrations']));
+ * }
+ * ```
+ */
 class MigrateCommand extends Command implements Isolatable
 {
     use BackupTrait;
@@ -61,8 +74,24 @@ class MigrateCommand extends Command implements Isolatable
      */
     private array $migrators = [];
 
-    public function handle(Updates $updates, Plugins $plugins): int
+    /** @var list<Closure(): Migrator> */
+    private static array $migratorResolvers = [];
+
+    /** @param Closure(): Migrator $resolver */
+    public static function registerMigrator(Closure $resolver): void
     {
+        self::$migratorResolvers[] = $resolver;
+    }
+
+    public static function flushState(): void
+    {
+        self::$migratorResolvers = [];
+    }
+
+    public function handle(
+        Updates $updates,
+        Plugins $plugins,
+    ): int {
         if (! $this->confirmToProceed()) {
             return self::SUCCESS;
         }
@@ -132,7 +161,7 @@ class MigrateCommand extends Command implements Isolatable
             $which = match (true) {
                 $track === 'craft' => 'Craft',
                 $track === 'content' => 'content',
-                str_starts_with((string) $track, 'plugin') => $plugins[substr((string) $track, 7)]->name,
+                str_starts_with($track, 'plugin') => $plugins[substr($track, 7)]->name,
                 default => $track,
             };
 
@@ -169,14 +198,18 @@ class MigrateCommand extends Command implements Isolatable
             // Update version info
             if ($track === 'craft') {
                 $this->updates->updateCraftVersionInfo();
-            } elseif (str_starts_with((string) $track, 'plugin')) {
-                $this->plugins->updatePluginVersionInfo($plugins[substr((string) $track, 7)]);
+            } elseif (str_starts_with($track, 'plugin')) {
+                $this->plugins->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
 
         $this->call(UpCommand::class);
     }
 
+    /**
+     * @param  array<string, list<string>>  $migrationsByTrack
+     * @param  array<string, PluginInterface>  $plugins
+     */
     private function gatherMigrationsByTrack(array &$migrationsByTrack, array &$plugins): void
     {
         if (! $this->option('track') || $this->option('track') === 'craft') {
@@ -186,8 +219,9 @@ class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        $plugins = $this->plugins->getAllPlugins();
-        foreach ($plugins as $plugin) {
+        foreach ($this->plugins->getAllPlugins() as $plugin) {
+            $plugins[$plugin->handle] = $plugin;
+
             if ($this->option('track') && $this->option('track') !== "plugin:$plugin->handle") {
                 continue;
             }
@@ -206,11 +240,11 @@ class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        event($event = new MigratorsResolving);
+        foreach (self::$migratorResolvers as $resolver) {
+            $migrator = app()->call($resolver);
 
-        foreach ($event->migrators as $migrator) {
             if (! $migrator instanceof Migrator) {
-                $this->components->warn($migrator::class.' is not an instance of '.Migrator::class);
+                $this->components->warn(get_debug_type($migrator).' is not an instance of '.Migrator::class);
 
                 continue;
             }

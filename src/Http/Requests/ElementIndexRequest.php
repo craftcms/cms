@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Foundation\Http\FormRequest;
@@ -105,5 +106,86 @@ class ElementIndexRequest extends FormRequest
         }
 
         return $condition;
+    }
+
+    /**
+     * Returns the posted view state, normalized to always carry a mode.
+     */
+    /** @return array<string, mixed> */
+    public function viewState(): array
+    {
+        $viewState = $this->input('viewState', []);
+
+        if (! is_array($viewState)) {
+            $viewState = [];
+        }
+
+        if (empty($viewState['mode'])) {
+            $viewState['mode'] = 'table';
+        }
+
+        return $viewState;
+    }
+
+    /**
+     * Returns the posted field layouts, hydrated from their configs.
+     *
+     * @return FieldLayout[]|null
+     */
+    public function fieldLayouts(): ?array
+    {
+        $fieldLayouts = $this->input('fieldLayouts');
+
+        if (empty($fieldLayouts) || ! is_array($fieldLayouts)) {
+            return null;
+        }
+
+        return array_map(FieldLayout::createFromConfig(...), $fieldLayouts);
+    }
+
+    /**
+     * Returns the posted return URL, with `?` replaced by the `:QS:` token
+     * (see https://github.com/craftcms/cms/issues/18923).
+     */
+    public function returnUrl(): ?string
+    {
+        $returnUrl = $this->input('returnUrl');
+
+        return $returnUrl ? str_replace('?', ':QS:', $returnUrl) : null;
+    }
+
+    /** @return array<string, mixed> */
+    public function criteria(): array
+    {
+        return $this->array('criteria');
+    }
+
+    /** @return array<string, mixed> */
+    public function baseCriteria(): array
+    {
+        return $this->array('baseCriteria');
+    }
+
+    /** @return list<int> */
+    public function collapsedElementIds(): array
+    {
+        return $this->array('collapsedElementIds');
+    }
+
+    /**
+     * Returns the filter condition config, posted either as a `filterConfig`
+     * array or as a `filters` query string.
+     */
+    /** @return array<string, mixed>|null */
+    public function filterConditionConfig(): ?array
+    {
+        $config = $this->input('filterConfig');
+
+        if (! $config && ($serialized = $this->input('filters'))) {
+            parse_str((string) $serialized, $parsed);
+            $config = $parsed['condition'] ?? null;
+        }
+
+        return is_array($config) ? $config : null;
     }
 }

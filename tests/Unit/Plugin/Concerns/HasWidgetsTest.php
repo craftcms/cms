@@ -2,18 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
-use CraftCms\Cms\Dashboard\Widgets\Updates;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Support\Collection;
 
 beforeEach(function () {
-    app()->forgetInstance(TestPlugin::class);
-});
-
-afterEach(function () {
-    app(Dispatcher::class)->forget(WidgetTypesResolving::class);
     app()->forgetInstance(TestPlugin::class);
 });
 
@@ -23,25 +16,10 @@ it('registers configured widget types', function () {
         'name' => 'Test Plugin',
     ]);
 
-    $plugin->setWidgets([Updates::class]);
+    $plugin->setWidgets([TestPluginWidgetType::class]);
     $plugin->bootHasWidgets();
 
-    $event = new WidgetTypesResolving(new Collection);
-    event($event);
-
-    expect($event->types->all())->toContain(Updates::class);
+    expect(app(WidgetTypes::class)->types())->toContain(TestPluginWidgetType::class);
 });
 
-it('does not register widget listeners when none are configured', function () {
-    $plugin = TestPlugin::create([
-        'handle' => 'test-plugin',
-        'name' => 'Test Plugin',
-    ]);
-
-    $plugin->bootHasWidgets();
-
-    $event = new WidgetTypesResolving(new Collection);
-    event($event);
-
-    expect($event->types->all())->toBe([]);
-});
+abstract class TestPluginWidgetType extends Widget {}

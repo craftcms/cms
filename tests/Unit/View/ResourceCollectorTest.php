@@ -21,19 +21,58 @@ beforeEach(function () {
 });
 
 it('captures and reapplies buffered html stack resources', function () {
-    $this->collector->begin($this->context);
+    $registerResources = function (HtmlStack $htmlStack): void {
+        $htmlStack->js('console.log("hello")', Position::Head, 'js-key');
+        $htmlStack->script('window.__craft = true', Position::BodyEnd, ['type' => 'module'], 'script-key');
+        $htmlStack->css('body { color: red }', ['media' => 'screen', 'data' => ['theme' => 'dark']], 'css-key');
+        $htmlStack->jsFile('/app.js', [
+            'defer' => true,
+            'condition' => 'IE 9',
+            'noscript' => true,
+            'data' => ['module' => 'app'],
+            'position' => Position::BodyEnd->value,
+        ], 'file-key');
+        $htmlStack->cssFile('/app.css', ['media' => 'print'], 'css-file-key');
+        $htmlStack->metaTag(['name' => 'description', 'content' => 'cached'], 'meta-key');
+        $htmlStack->jsImport('alpine', '/alpine.js');
+        $htmlStack->css('body { color: blue }', ['nonce' => 'updated'], 'css-key');
+    };
 
-    $this->htmlStack->js('console.log("hello")', Position::Head, 'js-key');
-    $this->htmlStack->script('window.__craft = true', Position::BodyEnd, ['type' => 'module'], 'script-key');
-    $this->htmlStack->css('body { color: red }', ['media' => 'screen'], 'css-key');
-    $this->htmlStack->jsFile('/app.js', ['defer' => true, 'position' => Position::BodyEnd->value], 'file-key');
-    $this->htmlStack->metaTag(['name' => 'description', 'content' => 'cached'], 'meta-key');
-    $this->htmlStack->jsImport('alpine', '/alpine.js');
+    $registerResources($this->htmlStack);
+    $expectedHead = $this->htmlStack->headHtml();
+    $expectedBody = $this->htmlStack->bodyEndHtml();
+
+    app()->forgetScopedInstances();
+    $this->collector = app(ResourceCollector::class);
+    $this->htmlStack = app(HtmlStack::class);
+
+    $this->collector->begin($this->context);
+    $registerResources($this->htmlStack);
 
     $payload = $this->collector->end($this->context);
 
     expect($payload['js'][Position::Head->value]['js-key'])->toContain('console.log("hello")')
-        ->and($payload['css']['css-key'][0])->toContain('body { color: red }')
+        ->and($payload['scripts'][Position::BodyEnd->value]['script-key'])->toBe([
+            'window.__craft = true',
+            ['type' => 'module'],
+        ])
+        ->and($payload['css']['css-key'])->toBe([
+            'body { color: blue }',
+            ['nonce' => 'updated'],
+        ])
+        ->and($payload['jsFiles'][Position::BodyEnd->value]['file-key'])->toBe([
+            '/app.js',
+            [
+                'defer' => true,
+                'condition' => 'IE 9',
+                'noscript' => true,
+                'data' => ['module' => 'app'],
+            ],
+        ])
+        ->and($payload['cssFiles']['css-file-key'])->toBe([
+            '/app.css',
+            ['media' => 'print'],
+        ])
         ->and($payload['metaTags']['meta-key'])->toBe([
             'name' => 'description',
             'content' => 'cached',
@@ -42,13 +81,12 @@ it('captures and reapplies buffered html stack resources', function () {
     $this->htmlStack->clear();
     $this->collector->apply($payload, $this->context);
 
-    $head = $this->htmlStack->headHtml();
-    $body = $this->htmlStack->bodyEndHtml();
+    expect($this->htmlStack->headHtml())->toBe($expectedHead)
+        ->and($this->htmlStack->bodyEndHtml())->toBe($expectedBody);
+});
 
-    expect($head)->toContain('body { color: red }')
-        ->toContain('console.log("hello");')
-        ->toContain('name="description"')
-        ->toContain('alpine')
-        ->and($body)->toContain('/app.js')
-        ->toContain('type="module"');
+it('returns an empty payload when no resources were buffered', function () {
+    $this->collector->begin($this->context);
+
+    expect($this->collector->end($this->context))->toBe([]);
 });

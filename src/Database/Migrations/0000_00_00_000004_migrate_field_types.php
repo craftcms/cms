@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /** @var array<string, class-string> */
     private array $map = [
         'craft\fields\Addresses' => Addresses::class,
         'craft\fields\Assets' => Assets::class,
@@ -75,16 +76,18 @@ return new class extends Migration
         $muteEvents = $projectConfig->muteEvents;
         $projectConfig->muteEvents = true;
 
-        $fieldConfigs = $projectConfig->find(fn (array $item) => (
-            isset($item['type']) &&
-            isset($this->map[$item['type']])
-        ));
+        try {
+            $fieldConfigs = $projectConfig->find(fn (array $item) => (
+                isset($item['type']) &&
+                isset($this->map[$item['type']])
+            ));
 
-        foreach ($fieldConfigs as $path => $config) {
-            $projectConfig->set("$path.type", $this->map[$config['type']]);
+            foreach ($fieldConfigs as $path => $config) {
+                $projectConfig->set("$path.type", $this->map[$config['type']]);
+            }
+        } finally {
+            $projectConfig->muteEvents = $muteEvents;
         }
-
-        $projectConfig->muteEvents = $muteEvents;
     }
 
     public function down(): void

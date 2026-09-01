@@ -82,7 +82,7 @@
   --secondary-button-border: var(--button-border);
   --secondary-button-text-color: var(--white);
   --secondary-button-bg: var(--gray-500);
-  ]--secondary-button-border--hover: var(--button-border--hover);
+  --secondary-button-border--hover: var(--button-border--hover);
   --secondary-button-bg--hover: var(--gray-550);
 
   --secondary-button-border--active: var(--button-border--active);

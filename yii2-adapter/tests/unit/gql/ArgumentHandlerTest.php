@@ -10,7 +10,6 @@ namespace crafttests\unit\gql;
 use Craft;
 use craft\elements\Category;
 use craft\elements\Tag;
-use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\gql\ArgumentManager;
 use craft\gql\base\ArgumentHandlerInterface;
@@ -25,6 +24,7 @@ use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\User\Elements\User;
 use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -81,11 +81,15 @@ class ArgumentHandlerTest extends TestCase
             },
         ]);
 
-        Event::on(ArgumentManager::class, ArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS, function(RegisterGqlArgumentHandlersEvent $event) use ($handler) {
-            $event->handlers['initial'] = $handler;
-        });
+        $registry = app(GqlArguments::class);
+        $registry->register('initial', static fn() => clone $handler);
 
-        $result = $gql->executeQuery(new GqlSchema(['id' => 1]), "{integrationQuery ($argumentString)}");
+        try {
+            $result = $gql->executeQuery(new GqlSchema(['id' => 1]), "{integrationQuery ($argumentString)}");
+        } finally {
+            $registry->remove('initial');
+        }
+
         self::assertEquals($expectedResult, json_decode($result['data']['integrationQuery'], true));
     }
 

@@ -109,6 +109,7 @@ class ContentBlock extends Element implements NestedElementInterface
         return ContentBlockInterface::getType();
     }
 
+    /** @return list<int|array{siteId: int, propagate?: bool, enabledByDefault?: bool}> */
     #[Override]
     public function getSupportedSites(): array
     {

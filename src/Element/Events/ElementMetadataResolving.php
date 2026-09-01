@@ -16,7 +16,7 @@ class ElementMetadataResolving
 {
     /**
      * @param  ElementInterface  $element  The element
-     * @param  array  $metadata  The metadata, with keys representing the labels
+     * @param  array<string, mixed>  $metadata  The metadata, with keys representing the labels
      */
     public function __construct(
         public ElementInterface $element,

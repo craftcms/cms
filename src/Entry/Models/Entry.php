@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Models;
 
+use CraftCms\Cms\Database\Factories\EntryFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Element\Queries\EntryQuery;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Entry extends BaseModel
 {
+    /** @use HasFactory<EntryFactory> */
     use HasFactory;
 
     #[\Override]
@@ -94,6 +96,7 @@ class Entry extends BaseModel
             ->withPivot('sortOrder');
     }
 
+    /** @return EntryQuery<\CraftCms\Cms\Entry\Elements\Entry> */
     public static function elementQuery(): EntryQuery
     {
         return new EntryQuery;

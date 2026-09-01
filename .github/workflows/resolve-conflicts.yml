@@ -1,0 +1,137 @@
+name: Auto-resolve merge conflicts
+on:
+  push:
+    branches:
+      - 6.x
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  find-conflicted-prs:
+    name: find conflicted PRs
+    runs-on: ubuntu-latest
+    outputs:
+      prs: ${{ steps.list.outputs.prs }}
+    steps:
+      - name: List same-repo PRs targeting ${{ github.ref_name }} with conflicts
+        id: list
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.ref_name }}
+        run: |
+          set -e
+          # isCrossRepository == false means the PR's head branch lives in this repo,
+          # not a fork — forks are ignored entirely, not just skipped later.
+          # Draft PRs are excluded too — they're not ready for review yet, so an
+          # auto-pushed merge commit would just be noise.
+          numbers=$(gh pr list --repo "$REPO" --base "$BASE" --state open \
+            --json number,isCrossRepository,isDraft \
+            -q '.[] | select(.isCrossRepository == false and .isDraft == false) | .number')
+
+          conflicted=()
+          for n in $numbers; do
+            # GitHub computes mergeable state asynchronously; poll briefly until it's known
+            state=UNKNOWN
+            for i in 1 2 3 4 5; do
+              state=$(gh pr view "$n" --repo "$REPO" --json mergeable -q '.mergeable')
+              [ "$state" != "UNKNOWN" ] && break
+              sleep 5
+            done
+            echo "PR #$n mergeable state: $state"
+            [ "$state" = "CONFLICTING" ] && conflicted+=("$n")
+          done
+
+          json=$(printf '%s\n' "${conflicted[@]:-}" | jq -R 'select(length > 0) | tonumber' | jq -sc .)
+          echo "prs=$json" >> "$GITHUB_OUTPUT"
+          echo "Conflicted PRs targeting $BASE: $json"
+
+  resolve-conflicts:
+    name: 'resolve conflicts: PR #${{ matrix.pr }}'
+    needs: find-conflicted-prs
+    if: needs.find-conflicted-prs.outputs.prs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJson(needs.find-conflicted-prs.outputs.prs) }}
+    steps:
+      - name: Look up PR head branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          head_ref=$(gh pr view "${{ matrix.pr }}" --repo "$REPO" --json headRefName -q '.headRefName')
+          echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start merge to surface conflicts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin "${{ github.ref_name }}"
+          git merge --no-commit --no-ff "origin/${{ github.ref_name }}" || true
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Resolve conflicts with Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -o pipefail
+          cat > /tmp/prompt.md <<'PROMPT_EOF'
+          This checkout has an in-progress merge from `${{ github.ref_name }}` with unresolved
+          conflicts. Run `git status` to see the conflicted files.
+
+          Resolve every conflict by editing the files directly, preserving the intent of both
+          sides wherever possible. If a conflict is ambiguous, pick the more conservative
+          resolution and leave a `# CONFLICT-REVIEW:` comment next to it explaining the choice
+          so a human reviewer can double check it.
+
+          When every conflict is resolved:
+          1. `git add` the resolved files.
+          2. `git commit --no-edit` to complete the merge.
+          3. `git push origin HEAD:${{ steps.pr.outputs.head_ref }}`.
+
+          Do not touch unrelated code, and do not merge, approve, or close the pull request —
+          a human will review and merge it.
+
+          Finish by summarizing, in a few sentences, which conflicts you found and how you
+          resolved each one, highlighting any ambiguous conflicts that need extra attention —
+          this summary is posted to the PR for human review. When referencing GitHub issue/PR
+          IDs and git commit SHAs, just output the ID/SHA plainly without backticks or a
+          summary of the issue/PR/commit (e.g. “#1234” or “64d8d14840”).  
+          PROMPT_EOF
+
+          claude -p \
+            --dangerously-skip-permissions \
+            --allowedTools "Bash,Edit,Read,Write" \
+            --max-turns 30 \
+            "$(cat /tmp/prompt.md)" | tee /tmp/claude-response.md
+
+      - name: Comment for human review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          {
+            echo "This PR had conflicts with \`${{ github.ref_name }}\`. Claude attempted an automatic resolution and pushed a merge commit. **Please review the merge commit carefully before approving/merging.**"
+            echo
+            echo "<details><summary>Claude's response</summary>"
+            echo "<blockquote>"
+            echo
+            cat /tmp/claude-response.md
+            echo
+            echo "</blockquote>"
+            echo "</details>"
+          } > /tmp/comment.md
+
+          gh pr comment "${{ matrix.pr }}" --repo "$REPO" --body-file /tmp/comment.md
+          gh pr edit "${{ matrix.pr }}" --repo "$REPO" --add-label "conflicts-auto-resolved" || true

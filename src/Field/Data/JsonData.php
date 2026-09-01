@@ -18,11 +18,13 @@ use Override;
 use Stringable;
 use Traversable;
 
+/** @implements IteratorAggregate<mixed, mixed> */
 class JsonData extends Component implements AllowableInSandbox, IteratorAggregate, Serializable, Stringable
 {
+    /** @param array<string, mixed>|object $config */
     public function __construct(
         private mixed $value,
-        public array $config = [],
+        public array|object $config = [],
     ) {
         parent::__construct($config);
     }
@@ -32,6 +34,7 @@ class JsonData extends Component implements AllowableInSandbox, IteratorAggregat
         return $this->getJson();
     }
 
+    /** @param list<mixed> $parameters */
     #[Override]
     public function __call($method, $parameters)
     {
@@ -131,6 +134,7 @@ class JsonData extends Component implements AllowableInSandbox, IteratorAggregat
         unset($this->value[$offset]);
     }
 
+    /** @return Traversable<mixed, mixed> */
     public function getIterator(): Traversable
     {
         if (is_string($this->value)) {

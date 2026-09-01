@@ -12,6 +12,11 @@ use CraftCms\Cms\Entry\Elements\Entry;
 
 trait HasDeletionBlockers
 {
+    /**
+     * @template TElement of \CraftCms\Cms\Element\Contracts\ElementInterface
+     *
+     * @param  ElementCollection<int, TElement>  $elements
+     */
     public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {
         $blockers = [

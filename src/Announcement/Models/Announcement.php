@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Announcement\Models;
 
+use CraftCms\Cms\Database\Factories\AnnouncementFactory;
 use CraftCms\Cms\Plugin\Models\Plugin;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Announcement extends BaseModel
 {
+    /** @use HasFactory<AnnouncementFactory> */
     use HasFactory;
 
     public const ?string UPDATED_AT = null;
@@ -38,6 +40,10 @@ class Announcement extends BaseModel
         return $this->belongsTo(Plugin::class, 'pluginId');
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     #[Scope]
     protected function visible(Builder $query): Builder
     {

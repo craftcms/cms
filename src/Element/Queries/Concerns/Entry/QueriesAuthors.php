@@ -9,6 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -64,6 +65,7 @@ trait QueriesAuthors
         });
     }
 
+    /** @param EntryQuery<Entry> $query */
     private function applyAuthorId(EntryQuery $query): void
     {
         if (is_null($query->authorId)) {
@@ -104,6 +106,7 @@ trait QueriesAuthors
         }
     }
 
+    /** @param EntryQuery<Entry> $query */
     private function applyAuthorGroupId(EntryQuery $query): void
     {
         if (is_null($query->authorGroupId)) {

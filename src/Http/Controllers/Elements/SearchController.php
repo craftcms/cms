@@ -13,15 +13,18 @@ use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 
-readonly class SearchController
+class SearchController
 {
+    private ElementIndexRequest $request;
+
     public function __construct(
-        private Elements $elements,
-        private ElementIndexRequest $request,
+        private readonly Elements $elements,
     ) {}
 
-    public function __invoke(): JsonResponse
+    public function __invoke(ElementIndexRequest $request): JsonResponse
     {
+        $this->request = $request;
+
         $this->request->validate([
             'siteId' => ['nullable'],
             'criteria' => ['nullable', 'array'],

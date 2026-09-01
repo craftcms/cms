@@ -30,7 +30,47 @@ $lightIcons = [
 
 $styles = [
     'globe' => 'regular',
-    'grip-dots' => 'custom',
+];
+
+/**
+ * Repo-owned icons that must exist in custom-icons/ after every run.
+ *
+ * The Font Awesome kit is not the source of truth for these — several were
+ * removed from the kit after they were committed here (which is why
+ * cms-assets/resources/icons/custom-icons is the only icons directory tracked
+ * by git). Regenerating the icons directory must never lose them; if the kit
+ * stops providing one, the committed copy is authoritative.
+ */
+$repoCustomIcons = [
+    'asterisk-slash',
+    'c-debug',
+    'c-outline',
+    'clone-dashed',
+    'craft-cms',
+    'craft-partners',
+    'craft-stack-exchange',
+    'default-plugin',
+    'diamond-slash',
+    'duplicate',
+    'element-card',
+    'element-card-slash',
+    'element-cards',
+    'gear-slash',
+    'graphql',
+    'grip-dots',
+    'image-slash',
+    'language',
+    'list-flip',
+    'list-tree-flip',
+    'notification-bottom-left',
+    'notification-bottom-right',
+    'notification-top-left',
+    'notification-top-right',
+    'share-flip',
+    'slideout-left',
+    'slideout-right',
+    'thumb-left',
+    'thumb-right',
 ];
 
 $kitDir = dirname(__DIR__).'/node_modules/@awesome.me/kit-ddaed3f5c5';
@@ -42,25 +82,16 @@ if (! is_dir($iconsDir)) {
 }
 
 $metaPath = "$kitDir/icons/metadata/icons.json";
+
+if (! is_file($metaPath) || ! is_dir($kitSvgsDir)) {
+    fwrite(STDERR, "Font Awesome kit is missing or incomplete at $kitDir.\n".
+        "Expected metadata at $metaPath and SVGs at $kitSvgsDir.\n".
+        "Try re-running \`vp install\` — this can happen if the private kit registry (npm.fontawesome.com) returned an incomplete package.\n");
+    exit(1);
+}
+
 $meta = json_decode(file_get_contents($metaPath), true);
 $index = [];
-$aliasesPhp = <<<PHP
-<?php
-
-use Yiisoft\Aliases\Aliases;
-
-\$aliases = app(Aliases::class);
-
-/**
- * We use reflection here as calling ->set every
- * time incurs a high performance cost.
- */
-\$reflectionProperty = new ReflectionProperty(\$aliases, 'aliases');
-\$reflectionProperty->setValue(\$aliases, array_merge_recursive(\$reflectionProperty->getValue(\$aliases), [
-    '@appicons' => [
-
-PHP;
-
 $skipped = 0;
 $wrote = 0;
 
@@ -69,9 +100,18 @@ if (! is_dir($iconsDir.'/light')) {
 }
 
 foreach ($lightIcons as $name) {
+    $svg = $meta[$name]['svg']['light']['raw'] ?? '';
+
+    if ($svg === '') {
+        echo "Skipping light/$name.svg (kit metadata has no light SVG content)\n";
+        $skipped++;
+
+        continue;
+    }
+
     $iconPath = "$iconsDir/light/$name.svg";
     echo "Writing light/$name.svg ... ";
-    file_put_contents($iconPath, $meta[$name]['svg']['light']['raw']);
+    file_put_contents($iconPath, $svg);
     echo "done\n";
     $wrote++;
 }
@@ -95,8 +135,17 @@ foreach ($meta as $name => $info) {
     }
 
     $iconPath = "$iconsDir/$dir/$name.svg";
+    $svg = $info['svg'][$style]['raw'] ?? '';
+
+    if ($svg === '') {
+        echo "Skipping $dir/$name.svg (kit metadata has no $style SVG content)\n";
+        $skipped++;
+
+        continue;
+    }
+
     echo "Writing $dir/$name.svg ... ";
-    file_put_contents($iconPath, $info['svg'][$style]['raw']);
+    file_put_contents($iconPath, $svg);
     echo "done\n";
     $wrote++;
 
@@ -110,20 +159,28 @@ foreach ($meta as $name => $info) {
         ];
     }
 
-    if ($style !== 'solid') {
-        $aliasesPhp .= <<<PHP
-        '@appicons/$name.svg' => "@icons/$dir/$name.svg",
-
-PHP;
-    }
 }
 
-$aliasesPhp .= <<<'PHP'
-    ]
-]));
-PHP;
-
 echo "Finished writing $wrote icons ($skipped skipped).\n";
+
+$missing = array_filter(
+    $repoCustomIcons,
+    fn (string $name): bool => ! is_file("$iconsDir/custom-icons/$name.svg")
+        || filesize("$iconsDir/custom-icons/$name.svg") === 0,
+);
+
+if ($missing !== []) {
+    fwrite(STDERR, "\nError: the following repo-owned custom icons are missing or empty:\n");
+
+    foreach ($missing as $name) {
+        fwrite(STDERR, "  - custom-icons/$name.svg\n");
+    }
+
+    fwrite(STDERR, "\nThe Font Awesome kit no longer provides these; git is their source of truth.\n");
+    fwrite(STDERR, "Restore them with:\n\n");
+    fwrite(STDERR, "  git checkout -- cms-assets/resources/icons/custom-icons\n\n");
+    exit(1);
+}
 
 echo 'Copying LICENSE.txt ... ';
 copy("$kitDir/LICENSE.txt", "$iconsDir/LICENSE.txt");
@@ -138,8 +195,4 @@ $indexContents = <<<PHP
 return $arr;
 PHP;
 file_put_contents($indexPath, $indexContents);
-echo "done\n";
-
-echo 'Writing aliases ... ';
-file_put_contents("$iconsDir/aliases.php", $aliasesPhp);
 echo "done\n";

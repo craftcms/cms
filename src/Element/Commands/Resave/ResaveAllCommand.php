@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands\Resave;
 
-use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Support\Str;
 use Override;
 
@@ -28,14 +27,12 @@ class ResaveAllCommand extends ResaveCommand
             'craft:resave:users',
         ];
 
-        event($event = new ElementResaveCommandsResolving);
-
-        foreach ($event->commands as $commandName => $command) {
-            if (! $this->getApplication()->has($commandName)) {
+        foreach ($this->getApplication()->all('craft:resave') as $command) {
+            if ($command instanceof self) {
                 continue;
             }
 
-            $commands[] = $commandName;
+            $commands[] = $command->getName();
         }
 
         $commands = array_values(array_unique($commands));

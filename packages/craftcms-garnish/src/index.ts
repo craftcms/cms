@@ -35,11 +35,14 @@ import {setUiLayerManager} from './managers/registry';
 import {Modal, type ModalSettings} from './modal';
 import {HUD, type HUDSettings} from './hud';
 import {DisclosureMenu, type DisclosureMenuSettings} from './disclosure-menu';
+import {CustomSelect, type CustomSelectSettings} from './custom-select';
+import {MenuBtn, type MenuBtnSettings} from './menu-btn';
 import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {Drag, type DragSettings} from './drag/drag';
 import {DragDrop, type DragDropSettings} from './drag/drag-drop';
 import {DragSort, type DragSortSettings} from './drag/drag-sort';
 import {DragMove} from './drag-move';
+import {Select, type SelectSettings} from './select';
 import {ResizeHandle} from './icons/resize-handle';
 import {garnishClassBus, globals, win, doc, bod} from './globals';
 import type {Callback, Constructor, GarnishBaseSettings} from './types';
@@ -72,11 +75,15 @@ export type {
   DisclosureMenuItem,
   DisclosureMenuItemConfig,
 } from './disclosure-menu';
+export {CustomSelect, type CustomSelectSettings};
+export {MenuBtn, type MenuBtnSettings};
 export {BaseDrag, type BaseDragSettings};
 export {Drag, type DragSettings};
 export {DragDrop, type DragDropSettings};
 export {DragSort, type DragSortSettings};
 export {DragMove};
+export {Select, type SelectSettings};
+export type {SelectHandle, SelectFilter} from './select';
 export {ResizeHandle};
 export {win, doc, bod};
 
@@ -179,11 +186,14 @@ export const Garnish = {
   Modal,
   HUD,
   DisclosureMenu,
+  CustomSelect,
+  MenuBtn,
   BaseDrag,
   Drag,
   DragDrop,
   DragSort,
   DragMove,
+  Select,
   /** @deprecated Use UiLayerManager instead. */
   ShortcutManager: UiLayerManager,
 

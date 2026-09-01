@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
@@ -40,7 +41,13 @@ it('requires admin changes', function () {
     get(action([UserGroupsController::class, 'edit'], [UserGroup::factory()->create()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/users/groups/Edit')
-            ->where('readOnly', true));
+            ->where('deleteAction', null)
+            ->where('form.nodes', function (Collection $nodes): bool {
+                $controls = $nodes->pluck('control')->filter();
+
+                return $controls->isNotEmpty()
+                    && $controls->every(fn (array $control): bool => $control['mode'] === 'readOnly');
+            }));
 
     // Not allowed
     get(action([UserGroupsController::class, 'create']))->assertForbidden();
@@ -57,7 +64,15 @@ test('create requires pro edition', function () {
 
     Edition::set(Edition::Pro);
 
-    get(action([UserGroupsController::class, 'create']))->assertOk();
+    get(action([UserGroupsController::class, 'create']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/users/groups/Edit')
+            ->where('form.values.id', null)
+            ->where('form.values.permissions', [])
+            ->where('submit.method', 'post')
+            ->where('form.nodes', fn (Collection $nodes): bool => $nodes
+                ->contains(fn (array $node): bool => ($node['control']['path'] ?? null) === ['handle']
+                    && ($node['control']['props']['source'] ?? null) === ['name'])));
 });
 
 test('index redirects to team permissions page when edition is team', function () {
@@ -83,7 +98,12 @@ test('edit renders user group page when edition is pro or higher', function () {
     Edition::set(Edition::Pro);
 
     get(action([UserGroupsController::class, 'edit'], $group->id))
-        ->assertSee($group->name);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/users/groups/Edit')
+            ->where('form.values.id', $group->id)
+            ->where('form.values.name', $group->name)
+            ->where('elevatedFields', ['permissions'])
+            ->where('deleteAction.url', action([UserGroupsController::class, 'destroy'], $group->id)));
 });
 
 test('store validates on unique handle and name', function () {

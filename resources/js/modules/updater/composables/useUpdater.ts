@@ -1,35 +1,16 @@
 import {computed, type ComputedRef, type Ref, ref} from 'vue';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import axios from 'axios';
-import {useHelpers} from '@/common/composables/useCraftData';
 
 /**
  * State returned from updater API endpoints
  */
-export interface UpdaterState {
-  status?: string;
-  error?: string;
-  errorDetails?: string;
-  nextAction?: string;
-  options?: UpdaterOption[];
-  finished?: boolean;
-  returnUrl?: string;
-  data: string;
-}
+export type UpdaterState = CraftCms.Cms.Update.Data.UpdaterState;
 
 /**
  * An option/button the user can click when faced with an error or decision
  */
-export interface UpdaterOption {
-  label: string;
-  url?: string;
-  email?: string;
-  subject?: string;
-  submit?: boolean;
-  nextAction?: string;
-  status?: string;
-  data?: string;
-}
+export type UpdaterOption = CraftCms.Cms.Update.Data.UpdaterOption;
 
 interface UseUpdaterReturn {
   state: Ref<UpdaterState>;
@@ -44,11 +25,7 @@ interface UseUpdaterReturn {
 /**
  * Composable for managing the updater workflow state machine
  */
-export function useUpdater(
-  actionPrefix: string,
-  initialState: UpdaterState
-): UseUpdaterReturn {
-  const {getActionUrl} = useHelpers();
+export function useUpdater(initialState: UpdaterState): UseUpdaterReturn {
   const state = ref<UpdaterState>({...initialState});
   const isLoading = ref(false);
 
@@ -58,13 +35,13 @@ export function useUpdater(
   /**
    * Execute an updater action via POST request
    */
-  async function executeAction(action: string): Promise<void> {
+  async function executeAction(actionUrl: string): Promise<void> {
     isLoading.value = true;
     let response;
 
     try {
       response = await axios.post(
-        getActionUrl(`${actionPrefix}/${action}`),
+        actionUrl,
         {data: state.value.data},
         {
           headers: {
@@ -102,12 +79,13 @@ export function useUpdater(
       options: newState.options,
       finished: newState.finished,
       returnUrl: newState.returnUrl ?? state.value.returnUrl,
-      nextAction: newState.nextAction,
+      nextUrl: newState.nextUrl,
+      finishUrl: newState.finishUrl,
     };
 
     // Auto-execute next action if specified
-    if (newState.nextAction) {
-      executeAction(newState.nextAction);
+    if (newState.nextUrl) {
+      executeAction(newState.nextUrl);
     }
   }
 
@@ -115,8 +93,8 @@ export function useUpdater(
    * Handle user clicking an option button
    */
   function handleOptionClick(option: UpdaterOption): void {
-    // If option has a nextAction, execute it
-    if (option.nextAction) {
+    // If option has a nextUrl, execute it
+    if (option.nextUrl) {
       // Clear error state and show new status
       state.value.error = undefined;
       state.value.errorDetails = undefined;
@@ -131,7 +109,7 @@ export function useUpdater(
         state.value.data = option.data;
       }
 
-      executeAction(option.nextAction);
+      executeAction(option.nextUrl);
     }
   }
 
@@ -159,7 +137,7 @@ export function useUpdater(
     // Try to disable maintenance mode
     axios
       .post(
-        getActionUrl(`${actionPrefix}/finish`),
+        state.value.finishUrl,
         {data: state.value.data},
         {
           headers: {

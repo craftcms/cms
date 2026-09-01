@@ -6,6 +6,7 @@ use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -27,7 +28,9 @@ it('requires login for index', function () {
 test('index', function () {
     get(action([PasskeysController::class, 'index']))
         ->assertOk()
-        ->assertSee(t('Passkeys'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Passkeys')
+            ->has('passkeys'));
 });
 
 describe('creationOptions', function () {
@@ -87,8 +90,7 @@ describe('verifyCreation', function () {
         postJson(action([PasskeysController::class, 'verifyCreation']), [
             'credentials' => json_encode(['invalid' => 'data']),
             'credentialName' => 'Test Passkey',
-        ])
-            ->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJson(['message' => 'Passkey creation failed.']);
     });
 });
@@ -106,13 +108,13 @@ describe('delete', function () {
             ->assertJsonValidationErrorFor('uid');
     });
 
-    it('returns success message with table HTML', function () {
-        // This test would need a real passkey to delete
-        // For now, we'll just verify the structure when passkey doesn't exist
+    it('returns a success message', function () {
+        // This test would need a real passkey to delete; for now we just verify
+        // the response shape when the passkey doesn't exist.
         postJson(action([PasskeysController::class, 'delete']), [
             'uid' => 'non-existent-uid',
         ])
             ->assertOk()
-            ->assertJsonStructure(['message', 'tableHtml']);
+            ->assertJsonStructure(['message']);
     });
 });

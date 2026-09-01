@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
@@ -21,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -47,8 +49,10 @@ abstract class BaseUpdaterController
 
     public const string ACTION_FINISH = 'finish';
 
-    /** @var array The data associated with the current update */
+    /** @var array<string, mixed> The data associated with the current update */
     protected array $data = [];
+
+    protected bool $usesStepUrls = true;
 
     public function __construct(
         protected Request $request,
@@ -61,17 +65,15 @@ abstract class BaseUpdaterController
             return;
         }
 
-        if (! is_null($this->request->input('data'))) {
-            try {
-                $data = Crypt::decrypt($this->request->input('data', ''));
-            } catch (DecryptException) {
-                throw ValidationException::withMessages([
-                    'data' => t('Invalid data.'),
-                ]);
-            }
-
-            $this->data = Json::decode($data);
+        try {
+            $data = Crypt::decrypt($this->request->input('data', ''));
+        } catch (DecryptException) {
+            throw ValidationException::withMessages([
+                'data' => t('Invalid data.'),
+            ]);
         }
+
+        $this->data = Json::decode($data);
     }
 
     public function index(): Response|View
@@ -212,6 +214,7 @@ abstract class BaseUpdaterController
     /**
      * Returns the initial data.
      */
+    /** @return array<string, mixed> */
     abstract protected function initialData(): array;
 
     /**
@@ -219,6 +222,7 @@ abstract class BaseUpdaterController
      *
      * @param  bool  $force  Whether to go through with the update even if Maintenance Mode is enabled
      */
+    /** @return array<string, mixed> */
     abstract protected function initialState(bool $force = false): array;
 
     /**
@@ -226,6 +230,7 @@ abstract class BaseUpdaterController
      *
      * @param  bool  $force  Whether to go through with the update even if Maintenance Mode is enabled
      */
+    /** @return array<string, mixed> */
     final protected function realInitialState(bool $force = false): array
     {
         $state = $this->initialState($force);
@@ -247,6 +252,7 @@ abstract class BaseUpdaterController
     /**
      * Returns the state data for after [[actionComposerInstall()]] is done.
      */
+    /** @return array<string, mixed> */
     abstract protected function postComposerInstallState(): array;
 
     /**
@@ -293,6 +299,7 @@ abstract class BaseUpdaterController
      *
      * @see ensureComposerJson()
      */
+    /** @return array<string, mixed> */
     protected function noComposerJsonState(): array
     {
         return [
@@ -307,12 +314,45 @@ abstract class BaseUpdaterController
     /**
      * Sends a state response.
      */
+    /** @param array<string, mixed> $state */
     protected function send(array $state = []): Response
     {
         // Encode and hash the data
         $state['data'] = $this->hashedData();
 
-        return new JsonResponse($state);
+        if (! $this->usesStepUrls) {
+            return new JsonResponse($state);
+        }
+
+        return new JsonResponse($this->clientState($state)->toArray());
+    }
+
+    /** @param array<string, mixed> $state */
+    protected function clientState(array $state): UpdaterState
+    {
+        if (isset($state['nextAction'])) {
+            $state['nextUrl'] = $this->stepUrl($state['nextAction']);
+            unset($state['nextAction']);
+        }
+
+        foreach ($state['options'] ?? [] as $index => $option) {
+            if (! isset($option['nextAction'])) {
+                continue;
+            }
+
+            $option['nextUrl'] = $this->stepUrl($option['nextAction']);
+            unset($option['nextAction']);
+            $state['options'][$index] = $option;
+        }
+
+        $state['finishUrl'] = $this->stepUrl(self::ACTION_FINISH);
+
+        return UpdaterState::fromArray($state);
+    }
+
+    private function stepUrl(string $action): string
+    {
+        return action([static::class, Str::camel($action)]);
     }
 
     /**
@@ -320,6 +360,7 @@ abstract class BaseUpdaterController
      *
      * @param  string  $nextAction  The next action that should be run
      */
+    /** @param array<string, mixed> $state */
     protected function sendNextAction(string $nextAction, array $state = []): Response
     {
         $state = $this->actionState($nextAction, $state);
@@ -330,6 +371,7 @@ abstract class BaseUpdaterController
     /**
      * Sends a "finished" state response.
      */
+    /** @param array<string, mixed> $state */
     protected function sendFinished(array $state = []): Response
     {
         $state = $this->finishedState($state);
@@ -344,6 +386,7 @@ abstract class BaseUpdaterController
      * @param  Throwable  $e  The exception that was thrown
      * @param  string  $output  The Composer output
      */
+    /** @param array<string, mixed> $state */
     protected function sendComposerError(string $error, Throwable $e, string $output, array $state = []): Response
     {
         $state['error'] = $error;
@@ -367,6 +410,10 @@ abstract class BaseUpdaterController
     /**
      * Returns an option definition that kicks off a new action.
      */
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
+     */
     protected function actionOption(string $label, string $action, array $state = []): array
     {
         $state['label'] = $label;
@@ -377,13 +424,15 @@ abstract class BaseUpdaterController
     /**
      * Sets the state info for the given next action.
      */
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
+     */
     protected function actionState(string $nextAction, array $state = []): array
     {
         $state['nextAction'] = $nextAction;
 
-        if (! isset($state['status'])) {
-            $state['status'] = $this->actionStatus($nextAction);
-        }
+        $state['status'] ??= $this->actionStatus($nextAction);
 
         return $state;
     }
@@ -413,6 +462,10 @@ abstract class BaseUpdaterController
 
     /**
      * Sets the state info for when the job is done.
+     */
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
      */
     protected function finishedState(array $state = []): array
     {
@@ -479,7 +532,7 @@ abstract class BaseUpdaterController
      * Attempts to install a plugin by its handle.
      *
      *
-     * @return array Array with installation results
+     * @return array{bool, string|null} Array with installation results
      */
     protected function installPluginInternal(string $handle, ?string $edition = null): array
     {

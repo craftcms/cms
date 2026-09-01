@@ -6,6 +6,9 @@ namespace CraftCms\Cms\SystemMessage\Data;
 
 readonly class RenderedSystemMessage
 {
+    /**
+     * @param  array<string, mixed>  $variables
+     */
     public function __construct(
         public string $key,
         public string $language,

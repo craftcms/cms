@@ -34,6 +34,7 @@ class Email extends BaseTextLinkType
         return parent::normalizeValue($value);
     }
 
+    /** @return array<string, string> */
     #[Override]
     protected function inputAttributes(): array
     {

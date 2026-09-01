@@ -8,6 +8,8 @@ use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -28,12 +30,14 @@ use function CraftCms\Cms\t;
 
 readonly class ActionController
 {
+    use EnforcesPermissions;
     use RespondsWithFlash;
 
     public function __construct(
         private Assets $assets,
         private Elements $elements,
         private Folders $folders,
+        private Volumes $volumes,
     ) {}
 
     public function deleteAsset(Request $request): Response
@@ -230,6 +234,20 @@ readonly class ActionController
         $query = DB::table(Table::ASSETS)
             ->whereIn('id', $assetIds)
             ->orWhereIn('folderId', array_unique($folderIds));
+
+        // make sure the user has permission to move each of these assets
+        $volumeIds = (clone $query)
+            ->select('volumeId')
+            ->distinct()
+            ->pluck('volumeId')
+            ->filter();
+
+        foreach ($volumeIds as $volumeId) {
+            if ($volume = $this->volumes->getVolumeById($volumeId)) {
+                $this->requirePermission("savePeerAssets:$volume->uid");
+                $this->requirePermission("deletePeerAssets:$volume->uid");
+            }
+        }
 
         $count = $query->count();
         $totalSize = (int) $query->sum('size');

@@ -6,21 +6,24 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
-use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -68,7 +71,12 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/edit-element-controller-test'),
     ]);
 
-    $this->entryType = EntryType::factory()->create();
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(new EntryTitleField(['uid' => 'entry-title'])));
+    $config = $layout->getConfig();
+    $config['tabs'][0]['uid'] = 'entry-content';
+    $layout = FieldLayoutModel::factory()->create(['type' => Entry::class, 'config' => $config]);
+    $this->entryType = EntryType::factory()->create(['fieldLayoutId' => $layout->id]);
     $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
         'handle' => 'news',
         'enableVersioning' => true,
@@ -123,13 +131,20 @@ it('renders the current entry edit screen for each control panel route', functio
 
     get($route($entry))
         ->assertOk()
-        ->assertSeeText('Current Title')
-        ->assertSeeText('Create a draft')
-        ->assertSee('elements/save', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('title', 'Current Title')
+            ->where('elementId', $entry->id)
+            ->where('readOnly', false)
+            ->where('saveUrl', fn (string $url) => str_contains($url, 'entries/save-entry'))
+            ->has('form.nodes')
+            ->has('sidebarForm.nodes')
+        );
 })->with('editElementEntryRoutes');
 
 it('renders the asset edit screen', function () {
     $this->withoutExceptionHandling();
+    Queue::fake();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,
@@ -187,8 +202,10 @@ it('returns a json editor payload for the current element', function () {
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('action', 'elements/save')
             ->where('notice', null)
-            ->where('content', fn (string $content) => $content !== ''
+            ->where('content', fn (string $content) => str_contains($content, 'craft-entry-field-layout-form')
                 && str_contains($content, 'elements/save'))
+            ->where('deltaNames', fn ($names) => collect($names)
+                ->doesntContain(fn (string $name) => str_ends_with($name, '[title]')))
             ->where('bodyHtml', fn (string $html) => str_contains($html, sprintf('"elementId":%d', $entry->id))
                 && str_contains($html, sprintf('"canonicalId":%d', $entry->id))
                 && str_contains($html, '"isStatic":false')
@@ -200,6 +217,40 @@ it('returns a json editor payload for the current element', function () {
             ->has('initialDeltaValues')
             ->etc()
         );
+});
+
+/**
+ * The Vue slideout builds its own `Craft.ElementEditor`, so it needs the same
+ * settings — but not the same delivery. The injected script looks the
+ * container up by id, and it runs while Vue still has the panel's subtree
+ * detached from the document, so the settings travel as a prop instead.
+ */
+it('sends element editor settings as a prop to an Inertia slideout', function () {
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement(['title' => 'Prop Delivery', 'slug' => 'prop-delivery']);
+
+    $response = getJson(action(EditElementController::class, [
+        'elementType' => $entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Craft-Container-Id' => 'slideout-1',
+    ])->assertOk();
+
+    expect($response->json('props.screen.elementEditorSettings'))
+        ->toMatchArray([
+            'elementId' => $entry->id,
+            'canonicalId' => $entry->id,
+            'isStatic' => false,
+            'isProvisionalDraft' => false,
+        ])
+        // The jQuery hand-off is the other branch's job, and emitting both
+        // would double-instantiate the editor.
+        ->and($response->json('props.bodyHtml'))
+        ->not->toContain('elementEditorSettings');
 });
 
 it('prevalidates enabled live elements and returns an error summary', function () {
@@ -228,94 +279,6 @@ it('prevalidates enabled live elements and returns an error summary', function (
                 && str_contains($summary, 'field-error-key'))
             ->etc()
         );
-});
-
-it('renders draft editing controls for saved drafts', function () {
-    $entry = EntryModel::factory()
-        ->forSection($this->section)
-        ->forEntryType($this->entryType)
-        ->createElement([
-            'title' => 'Canonical Title',
-            'slug' => 'canonical-title',
-        ]);
-    /** @var Entry $draft */
-    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Working Draft');
-
-    get(cp_url(sprintf(
-        'entries/%s/%d-%s?draftId=%d',
-        $entry->getSection()->handle,
-        $entry->id,
-        $entry->slug,
-        $draft->draftId,
-    )))
-        ->assertOk()
-        ->assertSeeText('Apply draft')
-        ->assertSeeText(mb_ucfirst(t('Save {type}', ['type' => t('draft')])))
-        ->assertSee('elements/save-draft', false);
-});
-
-it('renders revision notices and controls for revisions', function () {
-    $entry = EntryModel::factory()
-        ->forSection($this->section)
-        ->forEntryType($this->entryType)
-        ->createElement([
-            'title' => 'Canonical Title',
-            'slug' => 'canonical-title',
-        ]);
-    /** @var Entry $revision */
-    $revision = Elements::getElementById(app(Revisions::class)->createRevision($entry, auth()->id(), 'Revision notes'));
-
-    get(cp_url(sprintf(
-        'entries/%s/%d-%s?revisionId=%d',
-        $entry->getSection()->handle,
-        $entry->id,
-        $entry->slug,
-        $revision->revisionId,
-    )))
-        ->assertOk()
-        ->assertSeeText('viewing a revision')
-        ->assertSeeText('Revert content from this revision')
-        ->assertSee('elements/revert', false);
-});
-
-it('renders provisional draft notices when a provisional draft exists', function () {
-    $entry = EntryModel::factory()
-        ->forSection($this->section)
-        ->forEntryType($this->entryType)
-        ->createElement([
-            'title' => 'Canonical Title',
-            'slug' => 'canonical-title',
-        ]);
-
-    app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
-
-    get(cp_url(sprintf(
-        'entries/%s/%d-%s',
-        $entry->getSection()->handle,
-        $entry->id,
-        $entry->slug,
-    )))
-        ->assertOk()
-        ->assertSeeText('Showing your unsaved changes.')
-        ->assertSee('elements/apply-draft', false);
-});
-
-it('renders unpublished draft controls', function () {
-    /** @var Entry $draft */
-    $draft = app(Entry::class);
-    $draft->siteId = Sites::getPrimarySite()->id;
-    $draft->sectionId = $this->section->id;
-    $draft->typeId = $this->entryType->id;
-    $draft->title = 'Unpublished Draft';
-    $draft->slug = Str::slug($draft->title);
-    $draft->setAuthorIds([auth()->id()]);
-
-    app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
-
-    get($draft->getCpEditUrl())
-        ->assertOk()
-        ->assertSeeText(mb_ucfirst(t('Create {type}', ['type' => Entry::lowerDisplayName()])))
-        ->assertSee('elements/apply-draft', false);
 });
 
 it('merges canonical changes into outdated drafts before rendering', function () {

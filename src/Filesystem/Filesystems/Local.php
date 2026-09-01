@@ -6,20 +6,31 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
+use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class Local extends Filesystem
 {
     public const string VISIBILITY_FILE = 'file';
 
     public const string VISIBILITY_DIR = 'dir';
+
+    public bool $hasUrls = false;
+
+    public ?string $url = null;
 
     /**
      * @var int[][] Visibility map
@@ -36,12 +47,6 @@ class Local extends Filesystem
             self::VISIBILITY_HIDDEN => 0700,
         ],
     ];
-
-    public ?string $settingsHtml {
-        get => $this->getSettingsHtml();
-        set {
-        }
-    }
 
     public string $rootPath {
         get => $this->getRootPath();
@@ -91,49 +96,65 @@ class Local extends Filesystem
     {
         return array_merge(parent::attributeLabels(), [
             'path' => t('Base Path'),
+            'url' => t('Base URL'),
         ]);
     }
 
     #[Override]
     public function settingsAttributes(): array
     {
-        return array_values(array_diff(parent::settingsAttributes(), ['rootPath', 'settingsHtml']));
+        return array_values(array_diff(parent::settingsAttributes(), ['rootPath']));
     }
 
     #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'path' => [
+            'url' => new EnvValueRule([
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $this->hasUrls),
+            ]),
+            'path' => new EnvValueRule([
                 'required',
                 'string',
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    if (Security::isSystemDir($this->getRootPath())) {
+                    if (Security::isRestrictedDir($this->getRootPath())) {
                         $fail(t('Local filesystems cannot be located within or above system directories.'));
                     }
                 },
-            ],
+            ]),
         ]);
     }
 
     #[Override]
-    public function getSettingsHtml(): ?string
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
-        return $this->settingsHtml(false);
-    }
+        $form = Form::make();
 
-    #[Override]
-    public function getReadOnlySettingsHtml(): ?string
-    {
-        return $this->settingsHtml(true);
-    }
+        $form->add(Field::make(t('Files in this filesystem have public URLs'))
+            ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fs/Local/settings', [
-            'filesystem' => $this,
-            'readOnly' => $readOnly,
-        ], TemplateMode::Cp);
+        if ($this->hasUrls) {
+            $form->add(Field::make(t('Base URL'))
+                ->instructions(t('The base URL to the files in this filesystem.'))
+                ->required()
+                ->control(Text::make('url')
+                    ->value($this->url)
+                    ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, fn ($value): bool => Str::isUrl($value)))
+                    ->placeholder('//example.com/path/to/folder'))
+                ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')));
+        }
+
+        return $form->add(Field::make(t('Base Path'))
+            ->instructions(t('The base folder path that should be used as the root of the filesystem.'))
+            ->required()
+            ->control(Text::make('path')
+                ->value($this->path)
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true))
+                ->placeholder('/path/to/folder'))
+            ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')));
     }
 
     #[Override]
@@ -154,6 +175,21 @@ class Local extends Filesystem
 
         // Pass it through realpath() in case the path is symlinked
         return realpath($path) ?: $path;
+    }
+
+    #[Override]
+    public function getRootUrl(): ?string
+    {
+        if (! $this->hasUrls) {
+            return null;
+        }
+
+        $url = Env::parse($this->url);
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/" : null;
     }
 
     #[Override]

@@ -133,8 +133,15 @@ describe('clear', function () {
 
         $this->registry->clear();
 
+        // The body end may still carry the client-asset sync script (what
+        // the browser has loaded isn't undone by a clear), but none of the
+        // cleared assets themselves.
+        $bodyEndHtml = $this->registry->bodyEndHtml();
+
         expect($this->registry->headHtml())->toBe('')
-            ->and($this->registry->bodyEndHtml())->toBe('');
+            ->and($bodyEndHtml)->not->toContain('var x = 1')
+            ->and($bodyEndHtml)->not->toContain('/app.js')
+            ->and($bodyEndHtml)->not->toContain('console.log');
     });
 });
 
@@ -834,7 +841,10 @@ describe('legacy asset registry', function () {
             ->and($head)->toContain('/test-buffered-bundle.js');
     });
 
-    it('can register the same asset again after rendered assets are cleared', function () {
+    it('does not re-emit a bundle already flushed earlier in the same request', function () {
+        // A bundle should be emitted at most once per request. Multiple render
+        // passes in one request (e.g. ElementIndexResource emits headHtml() for
+        // both actions and the index) must not duplicate a shared bundle.
         $assets = app(InternalAssetRegistry::class);
 
         $assets->register(TestBufferedBundleAsset::class);
@@ -845,7 +855,31 @@ describe('legacy asset registry', function () {
 
         expect($first)
             ->toContain('window.testBufferedDependency = true;')
-            ->and($second)->toContain('window.testBufferedDependency = true;');
+            ->and($second)->not->toContain('window.testBufferedDependency = true;');
+    });
+
+    it('does not double-emit a bundle across a captured fragment and the outer render', function () {
+        // Regression: a bundle queued before capture() (flushed into the outer
+        // render) and re-registered while the fragment renders must land in
+        // exactly one of the fragment or the outer output, never both.
+        $assets = app(InternalAssetRegistry::class);
+
+        // Queued for the page before the fragment is captured.
+        $assets->register(TestBufferedBundleAsset::class);
+
+        $fragment = $this->registry->capture(function () use ($assets): string {
+            // Fields re-register CpAsset (and friends) while their settings render.
+            $assets->register(TestBufferedBundleAsset::class);
+
+            return '<div class="field-settings"></div>';
+        });
+
+        $outerHead = $this->registry->headHtml();
+
+        $inFragment = substr_count((string) $fragment->headHtml, '/test-buffered-bundle.js');
+        $inOuter = substr_count($outerHead, '/test-buffered-bundle.js');
+
+        expect($inFragment + $inOuter)->toBe(1);
     });
 });
 

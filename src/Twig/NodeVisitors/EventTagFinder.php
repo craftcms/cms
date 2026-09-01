@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\NodeVisitors;
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\Support\Facades\Template;
 use Twig\Environment;
 use Twig\Node\DoNode;
 use Twig\Node\Expression\FilterExpression;
 use Twig\Node\Expression\FunctionExpression;
+use Twig\Node\ModuleNode;
 use Twig\Node\Node;
 use Twig\Node\PrintNode;
 
@@ -18,10 +19,25 @@ use Twig\Node\PrintNode;
  */
 class EventTagFinder extends BaseEventTagVisitor
 {
+    public function __construct(
+        private readonly EventTagAdder $eventTagAdder,
+    ) {}
+
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
-        if (! app(TwigRenderer::class)->isRenderingPageTemplate()) {
+        if (! Template::isRenderingPageTemplate()) {
+            return $node;
+        }
+
+        if ($node instanceof ModuleNode) {
+            // Reset everything as we're rendering a new template
+            // (see https://github.com/craftcms/cms/issues/19304)
+            static::$foundHead = false;
+            static::$foundBeginBody = false;
+            static::$foundEndBody = false;
+            $this->eventTagAdder->reset();
+
             return $node;
         }
 

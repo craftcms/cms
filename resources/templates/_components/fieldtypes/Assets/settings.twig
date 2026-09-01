@@ -5,11 +5,12 @@
   {% embed '_includes/forms/field.twig' with config %}
     {% block input %}
       {% import '_includes/forms.twig' as forms %}
-      <div class="flex flex-nowrap">
+      <div class="flex flex-nowrap items-center gap-2">
         <div>
-          {{ forms.select({
+          {{ forms.selectField({
             id: "#{config.id}-source",
             name: "#{config.name}Source",
+            label: 'Source'|t,
             options: config.sourceOptions,
             value: config.sourceValue,
             describedBy: describedBy,
@@ -17,8 +18,9 @@
           }) }}
         </div>
         <div class="flex-grow">
-          {{ forms.text({
+          {{ forms.textField({
             class: 'ltr',
+            label: 'Subpath'|t,
             id: "#{config.id}-subpath",
             name: "#{config.name}Subpath",
             value: config.subpathValue,
@@ -57,58 +59,62 @@
       id: 'restricted-location-settings',
       class: not field.restrictLocation ? 'hidden' : false,
     } %}
-      {{ _self.uploadLocationField({
-        id: 'restricted-location',
-        label: 'Asset Location'|t('app'),
-        instructions: 'The location where assets can be selected from.'|t('app'),
-        tip: dynamicPathTip,
-        name: 'restrictedLocation',
-        sourceOptions: sourceOptions,
-        sourceValue: field.restrictedLocationSource,
-        subpathValue: field.restrictedLocationSubpath,
-        errors: field.errors.get('restrictedLocationSubpath'),
-      }) }}
-
-      {{ forms.lightswitchField({
-        label: 'Allow subfolders'|t('app'),
-        name: 'allowSubfolders',
-        on: field.allowSubfolders,
-        toggle: 'allow-subfolders-settings',
-      }) }}
-
-      {% tag('div') with {
-        id: 'allow-subfolders-settings',
-        class: not field.allowSubfolders ? 'hidden' : false,
-      } %}
-        {{ forms.textField({
-          class: 'ltr',
-          name: 'restrictedDefaultUploadSubpath',
-          label: 'Default Upload Location'|t('app'),
-          value: field.restrictedDefaultUploadSubpath,
-          instructions: 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'|t('app'),
+      <craft-field-group>
+        {{ _self.uploadLocationField({
+          id: 'restricted-location',
+          label: 'Asset Location'|t('app'),
+          instructions: 'The location where assets can be selected from.'|t('app'),
           tip: dynamicPathTip,
-          placeholder: 'path/to/subfolder'|t('app'),
+          name: 'restrictedLocation',
+          sourceOptions: sourceOptions,
+          sourceValue: field.restrictedLocationSource,
+          subpathValue: field.restrictedLocationSubpath,
+          errors: field.errors.get('restrictedLocationSubpath'),
         }) }}
-      {% endtag %}
+
+        {{ forms.lightswitchField({
+          label: 'Allow subfolders'|t('app'),
+          name: 'allowSubfolders',
+          on: field.allowSubfolders,
+          toggle: 'allow-subfolders-settings',
+        }) }}
+
+        {% tag('div') with {
+          id: 'allow-subfolders-settings',
+          class: not field.allowSubfolders ? 'hidden' : false,
+        } %}
+          {{ forms.textField({
+            class: 'ltr',
+            name: 'restrictedDefaultUploadSubpath',
+            label: 'Default Upload Location'|t('app'),
+            value: field.restrictedDefaultUploadSubpath,
+            instructions: 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'|t('app'),
+            tip: dynamicPathTip,
+            placeholder: 'path/to/subfolder'|t('app'),
+          }) }}
+        {% endtag %}
+      </craft-field-group>
     {% endtag %}
 
     {% tag('div') with {
       id: 'unrestricted-location-settings',
       class: field.restrictLocation ? 'hidden' : false,
     } %}
-      {{ block('sourcesField') }}
+      <craft-field-group>
+        {{ block('sourcesField') }}
 
-      {{ _self.uploadLocationField({
-        id: 'default-upload-location',
-        label: 'Default Upload Location'|t('app'),
-        instructions: 'Where assets should be stored when they are uploaded directly to the field.'|t('app'),
-        tip: dynamicPathTip,
-        name: 'defaultUploadLocation',
-        sourceOptions: sourceOptions,
-        sourceValue: field.defaultUploadLocationSource,
-        subpathValue: field.defaultUploadLocationSubpath,
-        errors: field.errors.get('defaultUploadLocationSubpath'),
-      }) }}
+        {{ _self.uploadLocationField({
+          id: 'default-upload-location',
+          label: 'Default Upload Location'|t('app'),
+          instructions: 'Where assets should be stored when they are uploaded directly to the field.'|t('app'),
+          tip: dynamicPathTip,
+          name: 'defaultUploadLocation',
+          sourceOptions: sourceOptions,
+          sourceValue: field.defaultUploadLocationSource,
+          subpathValue: field.defaultUploadLocationSubpath,
+          errors: field.errors.get('defaultUploadLocationSubpath'),
+        }) }}
+      </craft-field-group>
     {% endtag %}
 
     <hr>
@@ -145,6 +151,7 @@
       id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}
       data-error-key="allowedKinds"
     >
+      <legend class="font-bold">{{ 'Allowed Kinds'|t }}</legend>
       {% for option in field.getFileKindOptions() %}
         {{ forms.checkboxField({
           label: option.label,

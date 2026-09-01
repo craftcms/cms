@@ -25,6 +25,7 @@ return new class extends Migration
         });
 
         Schema::createIndex(Table::FIELDREFERENCES, ['fieldId', 'fieldInstanceUid', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
+        Schema::createIndex(Table::FIELDREFERENCES, ['fieldId', 'sourceId', 'sourceSiteId']);
         Schema::createIndex(Table::FIELDREFERENCES, ['targetId']);
 
         Schema::table(Table::FIELDREFERENCES, function (Blueprint $table) {

@@ -21,6 +21,7 @@ parameters:
     bootstrapFiles:
         - tests/_bootstrap.php
     stubFiles:
+        - stubs/laravel-ruleset-validation.stub
         - stubs/_generated.stub
         - stubs/GraphQL/Type/Definition/FieldDefinition.stub
         - stubs/GraphQL/Type/Definition/ResolveInfo.stub

@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\NestedElementsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Support\Facades\DB;
@@ -26,43 +22,16 @@ readonly class NestedElementsController
         private Elements $elements,
     ) {}
 
-    public function reorder(NestedElementsRequest $request, ElementCaches $elementCaches): Response
+    public function reorder(NestedElementsRequest $request): Response
     {
-        $nestedElements = $request->nestedElements();
+        $request->authorizeReorder();
 
-        if ($nestedElements instanceof ElementQueryInterface) {
-            $oldSortOrders = (clone $nestedElements)
-                ->status(null)
-                ->asArray()
-                ->select(['id', 'sortOrder'])
-                ->pluck('sortOrder', 'id')
-                ->all();
-        } else {
-            $oldSortOrders = $nestedElements
-                ->keyBy(fn (ElementInterface $element) => $element->id)
-                /** @phpstan-ignore-next-line */
-                ->map(fn (NestedElementInterface $element) => $element->getSortOrder())
-                ->all();
-        }
-
-        // Build the full list of IDs in the new sort order
-        $allIds = array_diff(array_keys($oldSortOrders), $request->elementIds());
-        array_splice($allIds, $request->offset(), 0, $request->elementIds());
-
-        // Update all the incorrect sort orders
-        foreach ($allIds as $i => $id) {
-            $sortOrder = $i + 1;
-            if (! isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
-                DB::table(Table::ELEMENTS_OWNERS)
-                    ->where('ownerId', $request->owner()->id)
-                    ->where('elementId', $id)
-                    ->update([
-                        'sortOrder' => $sortOrder,
-                    ]);
-            }
-        }
-
-        $elementCaches->invalidateForElement($request->owner());
+        $this->elements->reorderNestedElements(
+            $request->owner(),
+            $request->nestedElements(),
+            $request->elementIds(),
+            $request->offset(),
+        );
 
         return $this->asSuccess(t('New {total, plural, =1{position} other{positions}} saved.', [
             'total' => count($request->elementIds()),

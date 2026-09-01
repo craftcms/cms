@@ -3,5 +3,5 @@
 {% include '_includes/forms/componentSelect.twig' with {
     options: options ?? Fields.getAllFields().all(),
     showHandles: true,
-    createAction: (create ?? false) ? 'fields/edit-field' : null,
+    createAction: (create ?? false) ? cpUrl('settings/fields/edit') : null,
 } %}

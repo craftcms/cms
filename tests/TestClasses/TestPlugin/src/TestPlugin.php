@@ -10,8 +10,22 @@ use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormControlTypes;
+use CraftCms\Cms\Form\FormNodeTypes;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
+use CraftCms\Cms\Gql\Directives\Directive;
+use CraftCms\Cms\Gql\Mutations\Mutation;
+use CraftCms\Cms\Gql\Queries\Query;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Console\Command;
@@ -21,6 +35,8 @@ use Override;
 class TestPlugin extends Plugin
 {
     public static bool $useSettings = true;
+
+    public static bool $useSettingsForm = true;
 
     public static bool $beforeSaveSettings = true;
 
@@ -45,7 +61,16 @@ class TestPlugin extends Plugin
 
     public ?Migrator $customMigrator = null;
 
-    public ?string $customSettingsHtml = null;
+    public ?Closure $customNativeFields = null;
+
+    /** @var array<string, array|Closure> */
+    public array $customCacheOptions = [];
+
+    /** @var array<string, string|Closure> */
+    public array $customCacheTags = [];
+
+    /** @var array<string, Closure> */
+    public array $customSystemMessages = [];
 
     public bool $didCallBeforeInstall = false;
 
@@ -54,6 +79,12 @@ class TestPlugin extends Plugin
     public bool $didCallBeforeUninstall = false;
 
     public bool $didCallAfterUninstall = false;
+
+    public function registerFormTypes(FormNodeTypes $nodeTypes, FormControlTypes $controlTypes): void
+    {
+        $nodeTypes->register(Notice::class);
+        $controlTypes->register(Slug::class);
+    }
 
     #[Override]
     public ?string $packageName = 'craftcms/test-plugin';
@@ -79,11 +110,6 @@ class TestPlugin extends Plugin
         $this->customPermissions = $permissions;
     }
 
-    public function setSettingsHtml(?string $settingsHtml): void
-    {
-        $this->customSettingsHtml = $settingsHtml;
-    }
-
     /** @param array<int, class-string<Command>> $commands */
     public function setCommands(array $commands): void
     {
@@ -102,6 +128,47 @@ class TestPlugin extends Plugin
         $this->fieldTypes = $fieldTypes;
     }
 
+    /** @param array<int, class-string<FsInterface>> $filesystemTypes */
+    public function setFilesystemTypes(array $filesystemTypes): void
+    {
+        $this->filesystemTypes = $filesystemTypes;
+    }
+
+    /** @param array<int, class-string<SingularTypeInterface>> $gqlTypes */
+    public function setGqlTypes(array $gqlTypes): void
+    {
+        $this->gqlTypes = $gqlTypes;
+    }
+
+    /** @param array<int, class-string<Query>> $gqlQueries */
+    public function setGqlQueries(array $gqlQueries): void
+    {
+        $this->gqlQueries = $gqlQueries;
+    }
+
+    /** @param array<int, class-string<Mutation>> $gqlMutations */
+    public function setGqlMutations(array $gqlMutations): void
+    {
+        $this->gqlMutations = $gqlMutations;
+    }
+
+    /** @param array<int, class-string<Directive>> $gqlDirectives */
+    public function setGqlDirectives(array $gqlDirectives): void
+    {
+        $this->gqlDirectives = $gqlDirectives;
+    }
+
+    /** @param array<int, class-string<BaseLinkType>> $linkTypes */
+    public function setLinkTypes(array $linkTypes): void
+    {
+        $this->linkTypes = $linkTypes;
+    }
+
+    public function setNativeFields(Closure $nativeFields): void
+    {
+        $this->customNativeFields = $nativeFields;
+    }
+
     /** @param array<string, class-string|array<int, class-string>> $events */
     public function setListeners(array $events): void
     {
@@ -112,6 +179,30 @@ class TestPlugin extends Plugin
     public function setUtilities(array $utilities): void
     {
         $this->utilities = $utilities;
+    }
+
+    /** @param array<string, array|Closure> $cacheOptions */
+    public function setCacheOptions(array $cacheOptions): void
+    {
+        $this->customCacheOptions = $cacheOptions;
+    }
+
+    /** @param array<string, string|Closure> $cacheTags */
+    public function setCacheTags(array $cacheTags): void
+    {
+        $this->customCacheTags = $cacheTags;
+    }
+
+    /** @param array<string, Closure> $systemMessages */
+    public function setSystemMessages(array $systemMessages): void
+    {
+        $this->customSystemMessages = $systemMessages;
+    }
+
+    /** @param array<string, string|string[]> $siteTemplateRoots */
+    public function setSiteTemplateRoots(array $siteTemplateRoots): void
+    {
+        $this->siteTemplateRoots = $siteTemplateRoots;
     }
 
     /** @param array<int, class-string<WidgetInterface>> $widgets */
@@ -208,6 +299,30 @@ class TestPlugin extends Plugin
     }
 
     #[Override]
+    protected function getNativeFields(): ?Closure
+    {
+        return $this->customNativeFields;
+    }
+
+    #[Override]
+    protected function getCacheOptions(): array
+    {
+        return $this->customCacheOptions;
+    }
+
+    #[Override]
+    protected function getCacheTags(): array
+    {
+        return $this->customCacheTags;
+    }
+
+    #[Override]
+    protected function getSystemMessages(): array
+    {
+        return $this->customSystemMessages;
+    }
+
+    #[Override]
     protected function createSettingsModel(): ?Validatable
     {
         if (! self::$useSettings) {
@@ -218,9 +333,15 @@ class TestPlugin extends Plugin
     }
 
     #[Override]
-    protected function settingsHtml(): ?string
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
-        return $this->customSettingsHtml ?? '<input id="settings-foo" name="foo" value="'.e($this->getSettings()?->foo).'">';
+        if (! self::$useSettingsForm) {
+            return null;
+        }
+
+        return Form::make([
+            Field::make('Foo', Text::make('foo')),
+        ]);
     }
 
     #[Override]

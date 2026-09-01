@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Section;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -43,8 +42,10 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
@@ -59,6 +60,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 
 #[Scoped]
 class Sections
@@ -109,7 +111,7 @@ class Sections
      * {% set sectionIds = craft.sections.getAllSectionIds %}
      * ```
      *
-     * @return Collection<int> All the sections’ IDs.
+     * @return Collection<int, int> All the sections’ IDs.
      */
     public function getAllSectionIds(): Collection
     {
@@ -128,7 +130,7 @@ class Sections
      * {% set sectionIds = craft.sections.getEditableSectionIds %}
      * ```
      *
-     * @return Collection<int> All the editable sections’ IDs.
+     * @return Collection<int, int> All the editable sections’ IDs.
      */
     public function getEditableSectionIds(): Collection
     {
@@ -231,7 +233,7 @@ class Sections
      * {% set sections = craft.sections.getAllSections %}
      * ```
      *
-     * @return Collection<Section> All the sections.
+     * @return Collection<int, Section> All the sections.
      */
     public function getAllSections(): Collection
     {
@@ -250,7 +252,7 @@ class Sections
      * {% set sections = craft.sections.getEditableSections %}
      * ```
      *
-     * @return Collection<Section> All the editable sections.
+     * @return Collection<int, Section> All the editable sections.
      */
     public function getEditableSections(): Collection
     {
@@ -267,6 +269,32 @@ class Sections
         return $this->getAllSections()->filter(
             fn (Section $section) => $user->can("viewEntries:$section->uid"),
         );
+    }
+
+    /**
+     * Returns all sections the given user is able to publish.
+     *
+     * Returned as plain arrays rather than a Collection: array shapes are
+     * covariant under static analysis, so branch-narrowed member types stay
+     * assignable — Collection's TValue is invariant and rejects them.
+     *
+     * @throws AuthenticationException
+     */
+    /** @return Collection<int, Section> */
+    public function getPublishableSections(): Collection
+    {
+        $currentUser = currentUser();
+
+        if (! $currentUser) {
+            return Collection::empty();
+        }
+
+        if ($this->getEditableSections()->isEmpty()) {
+            return Collection::empty();
+        }
+
+        return collect($this->getEditableSections())
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid"));
     }
 
     /**
@@ -305,7 +333,7 @@ class Sections
      * ```
      *
      * @param  SectionType  $type  The section type (`single`, `channel`, or `structure`)
-     * @return Collection<Section> All the sections of the given type.
+     * @return Collection<int, Section> All the sections of the given type.
      */
     public function getSectionsByType(SectionType $type): Collection
     {
@@ -374,7 +402,7 @@ class Sections
 
         $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
 
-        return ! empty(array_intersect($entryTypeIds, $sectionEntryTypeIds));
+        return ! empty($entryTypeIds) && empty(array_diff($entryTypeIds, $sectionEntryTypeIds));
     }
 
     /**
@@ -436,13 +464,11 @@ class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        if (! isset($this->sectionSiteSettings[$sectionId])) {
-            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
-                ->where('sections_sites.sectionId', $sectionId)
-                ->get()
-                ->mapInto(SectionSiteSettings::class)
-                ->all();
-        }
+        $this->sectionSiteSettings[$sectionId] ??= $this->_createSectionSiteSettingsQuery()
+            ->where('sections_sites.sectionId', $sectionId)
+            ->get()
+            ->mapInto(SectionSiteSettings::class)
+            ->all();
 
         return $this->sectionSiteSettings[$sectionId];
     }
@@ -651,7 +677,7 @@ class Sections
                 ->delete();
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
-                ->insert(Collection::make($data['entryTypes'] ?? [])
+                ->insert(Collection::wrap($data['entryTypes'] ?? [])
                     ->map(fn ($entryType) => EntryTypes::getEntryType($entryType))
                     ->filter()
                     ->map(fn (EntryType $entryType, int $i) => [
@@ -760,7 +786,7 @@ class Sections
                         description: I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                    ));
+                    ))->afterCommit();
                 } elseif ($this->autoResaveEntries) {
                     dispatch(new ResaveElements(
                         elementType: Entry::class,
@@ -778,7 +804,7 @@ class Sections
                         description: I18N::prep('Resaving {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                    ));
+                    ))->afterCommit();
                 }
             }
 
@@ -792,7 +818,7 @@ class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var ElementCollection<Entry> $entries */
+            /** @var ElementCollection<int, Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)
@@ -870,20 +896,22 @@ class Sections
      * Ensures that the given Single section has its one and only entry, and returns it.
      *
      *
-     * @return Entry The
-     *
      * @throws Exception if reasons
      *
      * @see saveSection()
      */
-    private function ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    /** @param array<string, array<string, bool|string|null>>|null $siteSettings */
+    private function ensureSingleEntry(Section $section, ?array $siteSettings = null): void
     {
+        // Don't resave the entry if we are mid-migrations
+        if (app(Updates::class)->isCraftUpdatePending()) {
+            return;
+        }
+
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
-        if ($siteSettings === null) {
-            $siteSettings = $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
-        }
+        $siteSettings ??= $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
 
         if (empty($siteSettings)) {
             throw new Exception('No site settings exist for section '.$section->id);
@@ -914,6 +942,12 @@ class Sections
             ->sectionId($section->id)
             ->siteId($siteIds)
             ->status(null);
+
+        // Prefer the primary site if it's enabled for the section
+        $primarySiteId = Sites::getPrimarySite()->id;
+        if (in_array($primarySiteId, $siteIds)) {
+            $baseEntryQuery->preferSites([$primarySiteId]);
+        }
 
         // If there are any existing entries, find the first one with a valid typeId
         /** @var Entry|null $entry */
@@ -1002,8 +1036,6 @@ class Sections
                 $this->elements->deleteElement($entryToDelete, true);
             }
         });
-
-        return $entry;
     }
 
     /**
@@ -1162,6 +1194,7 @@ class Sections
     /**
      * Returns data for the Sections index page in the control panel.
      */
+    /** @return array{array<string, int|string|null>, array<int, array<string, int|string|null>>} */
     public function getSectionTableData(
         int $page,
         int $limit,
@@ -1172,7 +1205,7 @@ class Sections
         [$results, $paginator] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
-        /** @var Collection<Section> $sections */
+        /** @var Collection<int, Section> $sections */
         $sections = $results
             ->map(fn (object $result) => $this->_sections()->firstWhere('id', $result->id))
             ->filter()
@@ -1210,7 +1243,7 @@ class Sections
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: LengthAwarePaginator}
+     * @return array{0: Collection<int, object>, 1: LengthAwarePaginator<int, object>}
      */
     private function prepTableData(
         Builder $query,
@@ -1248,6 +1281,7 @@ class Sections
     /**
      * Returns the sql expression to be used in the 'where' param for the query.
      */
+    /** @return array<int, array{string, string, string}> */
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];

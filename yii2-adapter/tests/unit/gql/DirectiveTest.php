@@ -29,7 +29,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
+use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Schema;
 
 class DirectiveTest extends TestCase
 {
@@ -59,11 +61,12 @@ class DirectiveTest extends TestCase
         $element = new ExampleElement();
         $element->someField = $in;
 
-        $fieldNodes = new ArrayObject([Json::decode('{"directives":[' . implode(',', $directives) . ']}', false)]);
+        $fieldNodes = new ArrayObject([Parser::field('someField ' . implode(' ', $directives))]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'someField',
             'fieldNodes' => $fieldNodes,
+            'schema' => new Schema([]),
         ]);
 
         self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
@@ -83,11 +86,12 @@ class DirectiveTest extends TestCase
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
 
-        $fieldNodes = new ArrayObject([Json::decode('{"directives":[' . self::_buildDirective(Transform::class, ['width' => 200]) . ']}', false)]);
+        $fieldNodes = new ArrayObject([Parser::field('filename ' . self::_buildDirective(Transform::class, ['width' => 200]))]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'filename',
             'fieldNodes' => $fieldNodes,
+            'schema' => new Schema([]),
         ]);
 
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
@@ -157,23 +161,19 @@ class DirectiveTest extends TestCase
         $assetTransform = Transform::class;
 
         $transformParameters = [
-            ['handle' => 'anExampleTransform', 'immediately' => false],
-            ['handle' => 'anExampleTransform', 'immediately' => true],
-            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5, 'immediately' => true],
-            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5, 'immediately' => false],
+            ['handle' => 'anExampleTransform'],
+            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5],
         ];
 
         // asset transform
         return [
             [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[0])], $transformParameters[0]],
             [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[1])], $transformParameters[1]],
-            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[2])], $transformParameters[2]],
-            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[3])], $transformParameters[3]],
         ];
     }
 
     /**
-     * Build the JSON string to be used as a directive object
+     * Build the GraphQL string to be used as a directive
      *
      * @param string $className
      * @phpstan-param class-string<Directive> $className
@@ -182,15 +182,16 @@ class DirectiveTest extends TestCase
      */
     private static function _buildDirective(string $className, array $arguments = []): string
     {
-        $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
-        $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": %s}}';
+        $argumentTemplate = '%s: %s';
 
         $argumentList = [];
         foreach ($arguments as $key => $value) {
             $argumentList[] = sprintf($argumentTemplate, $key, Json::encode($value));
         }
 
-        return sprintf($directiveTemplate, $className::name(), implode(', ', $argumentList));
+        $arguments = $argumentList === [] ? '' : sprintf('(%s)', implode(', ', $argumentList));
+
+        return sprintf('@%s%s', $className::name(), $arguments);
     }
 
     /**

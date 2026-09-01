@@ -8,17 +8,13 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\User\Contracts\CraftUser;
-use CraftCms\Cms\View\HtmlStack;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\PasskeySetupAsset;
-use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 readonly class PasskeysController
 {
@@ -30,28 +26,16 @@ readonly class PasskeysController
         private Passkeys $passkeys,
     ) {}
 
-    public function index(Request $request, HtmlStack $HtmlStack): CpScreenResponse
+    public function index(Request $request): CpScreenResponse
     {
-        $currentUser = $request->craftUser();
-        if (! $currentUser) {
+        if (! $currentUser = $request->craftUser()) {
             abort(401);
         }
 
         $user = $currentUser->asElement();
 
-        $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
-
-        app(InternalAssetRegistry::class)->register(PasskeySetupAsset::class);
-        $HtmlStack->js(<<<'JS'
-new Craft.PasskeySetup();
-JS);
-
-        $response->contentTemplate('users/_passkeys', [
-            'user' => $user,
-            'passkeys' => $this->passkeys->getPasskeys($user)->all(),
-        ]);
-
-        return $response;
+        return $this->asEditUserScreen($user, EditUserScreens::PASSKEYS)
+            ->inertiaPage('users/Passkeys', new UserPasskeysViewModel($user, $this->passkeys));
     }
 
     public function creationOptions(Request $request): JsonResponse
@@ -86,14 +70,7 @@ JS);
             return $this->asFailure(t('Passkey creation failed.'));
         }
 
-        $user = $request->craftUser();
-        if (! $user) {
-            abort(401);
-        }
-
-        return $this->asSuccess(t('Passkey created.'), [
-            'tableHtml' => $this->passkeyTableHtml($user),
-        ]);
+        return $this->asSuccess(t('Passkey created.'));
     }
 
     public function delete(Request $request): Response
@@ -109,15 +86,6 @@ JS);
 
         $this->passkeys->deletePasskey($user, $uid);
 
-        return $this->asSuccess(t('Passkey deleted.'), [
-            'tableHtml' => $this->passkeyTableHtml($user),
-        ]);
-    }
-
-    private function passkeyTableHtml(CraftUser $user): string
-    {
-        return template('users/_passkeys-table', [
-            'passkeys' => $this->passkeys->getPasskeys($user)->all(),
-        ], templateMode: TemplateMode::Cp);
+        return $this->asSuccess(t('Passkey deleted.'));
     }
 }

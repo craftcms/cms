@@ -11,6 +11,7 @@ class UserGroupPermissionsSaved
 {
     public function __construct(
         public int $userGroupId,
+        /** @var string[] */
         public array $permissions,
     ) {}
 }

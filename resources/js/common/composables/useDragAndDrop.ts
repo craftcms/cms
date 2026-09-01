@@ -4,6 +4,7 @@ import {
   dropTargetForElements,
   monitorForElements,
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import type {ElementDragPayload} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import {
   attachClosestEdge,
   type Edge,
@@ -52,7 +53,7 @@ export function useDragAndDrop(
   options: UseDragAndDropOptions
 ): UseDragAndDropReturn {
   const instanceId = Symbol('drag-instance');
-  const itemDataKey = Symbol('drag-item');
+  const itemDataKey = 'craftDragItem';
 
   const axis = options.axis ?? 'vertical';
   const allowedEdges: Edge[] =
@@ -60,12 +61,16 @@ export function useDragAndDrop(
     (axis === 'vertical' ? ['top', 'bottom'] : ['left', 'right']);
 
   type ItemData = {
-    [key: symbol]: true;
+    craftDragItem: true;
     id: string | number;
     index: number;
     instanceId: symbol;
     rect: DOMRect;
   };
+
+  function isItemData(data: ElementDragPayload['data']): data is ItemData {
+    return data[itemDataKey] === true;
+  }
 
   function getItemData(
     id: string | number,
@@ -79,12 +84,6 @@ export function useDragAndDrop(
       instanceId,
       rect,
     };
-  }
-
-  function isItemData(
-    data: Record<string | symbol, unknown>
-  ): data is ItemData {
-    return data[itemDataKey] === true;
   }
 
   // Use reactive objects for state - keys are stringified IDs
@@ -139,7 +138,10 @@ export function useDragAndDrop(
             }),
             render({container}) {
               // Clone the element for the drag preview (must be synchronous)
-              const preview = element.cloneNode(true) as HTMLElement;
+              const preview = element.cloneNode(true);
+              if (!(preview instanceof HTMLElement)) {
+                throw new Error('Expected an HTML drag preview.');
+              }
               preview.style.width = `${rect.width}px`;
               preview.style.height = `${rect.height}px`;
               container.appendChild(preview);
@@ -154,6 +156,15 @@ export function useDragAndDrop(
         },
         onDrop() {
           setDragState(id, idleDragState);
+
+          // Native HTML drag swallows the trailing pointerup on the source, so
+          // an interactive drag handle (e.g. a button) can stay stuck in
+          // :active/:hover. Briefly disabling pointer events forces the browser
+          // to drop those states.
+          dragElement.style.pointerEvents = 'none';
+          requestAnimationFrame(() => {
+            dragElement.style.pointerEvents = '';
+          });
         },
       }),
       dropTargetForElements({
@@ -161,7 +172,8 @@ export function useDragAndDrop(
         getIsSticky: () => true,
         canDrop({source}) {
           return (
-            isItemData(source.data) && source.data.instanceId === instanceId
+            source.data[itemDataKey] === true &&
+            source.data.instanceId === instanceId
           );
         },
         getData({input}) {

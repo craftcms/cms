@@ -19,6 +19,7 @@ use CraftCms\Cms\Structure\Models\Structure as StructureModel;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,9 @@ class Structures
      * @var StructureElementModel[]
      */
     private array $rootElementRecordsByStructureId = [];
+
+    /** @var array<int, Lock> */
+    private array $locks = [];
 
     public function __construct(
         private readonly ElementCaches $elementCaches,
@@ -384,10 +388,13 @@ class Structures
         Mode $mode,
     ): bool {
         // Get a lock or bust
-        $lockName = 'structure:'.$structureId;
+        $ownsLock = ! isset($this->locks[$structureId]);
 
-        $lock = Cache::lock($lockName, 30);
-        $lock->block($this->mutexTimeout);
+        if ($ownsLock) {
+            $lock = Cache::lock('structure:'.$structureId, 30);
+            $lock->block($this->mutexTimeout);
+            $this->locks[$structureId] = $lock;
+        }
 
         $structureElementModel = null;
 
@@ -427,14 +434,14 @@ class Structures
         ));
 
         if (! $event->isValid) {
-            $lock->release();
+            $this->releaseLock($structureId, $ownsLock);
 
             return false;
         }
 
         // Tell the element about it
         if (! $element->beforeMoveInStructure($structureId)) {
-            $lock->release();
+            $this->releaseLock($structureId, $ownsLock);
 
             return false;
         }
@@ -450,12 +457,10 @@ class Structures
         try {
             if (! $structureElementModel->$method($targetElementModel)) {
                 DB::rollBack();
-                $lock->release();
+                $this->releaseLock($structureId, $ownsLock);
 
                 return false;
             }
-
-            $lock->release();
 
             // Update the element with the latest values.
             $element->root = $structureElementModel->root;
@@ -467,9 +472,10 @@ class Structures
             $element->afterMoveInStructure($structureId);
 
             DB::commit();
+            $this->releaseLock($structureId, $ownsLock);
         } catch (Throwable $e) {
             DB::rollBack();
-            $lock->release();
+            $this->releaseLock($structureId, $ownsLock);
             throw $e;
         }
 
@@ -485,5 +491,15 @@ class Structures
         ));
 
         return true;
+    }
+
+    private function releaseLock(int $structureId, bool $ownsLock): void
+    {
+        if (! $ownsLock) {
+            return;
+        }
+
+        $this->locks[$structureId]->release();
+        unset($this->locks[$structureId]);
     }
 }

@@ -19,6 +19,7 @@ class DatepickerI18nAsset implements LegacyAssetInterface
 {
     public array $depends = [];
 
+    /** @var list<string> */
     private array $js = [];
 
     public function __construct(I18N $i18N)

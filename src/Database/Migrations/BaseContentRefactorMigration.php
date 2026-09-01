@@ -26,6 +26,7 @@ use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
+use UnexpectedValueException;
 
 use function Laravel\Prompts\progress;
 
@@ -135,7 +136,6 @@ class BaseContentRefactorMigration extends Migration
                     }
 
                     if (is_array($column)) {
-                        /** @var array $dbType */
                         $value = [];
                         foreach (array_keys($dbType) as $i => $key) {
                             if (! isset($column[$key])) {
@@ -239,6 +239,10 @@ class BaseContentRefactorMigration extends Migration
         return $label;
     }
 
+    /**
+     * @param  array<string, string|array<string, string>>  $fieldColumns
+     * @param  list<string>  $flatFieldColumns
+     */
     private function findColumnsForField(
         string $fieldColumnPrefix,
         string $contentTable,
@@ -268,7 +272,16 @@ class BaseContentRefactorMigration extends Migration
 
         // was this a multi-column field?
         if (is_array($dbType) && count($dbType) > 1) {
-            $dbTypeKeys = array_keys($dbType);
+            $dbTypes = [];
+            foreach ($dbType as $key => $type) {
+                if (! is_string($key) || ! is_string($type)) {
+                    throw new UnexpectedValueException('Field database type arrays must map string keys to string types.');
+                }
+
+                $dbTypes[$key] = $type;
+            }
+
+            $dbTypeKeys = array_keys($dbTypes);
             $extraColumns = array_map(
                 fn (string $key) => sprintf('%s%s_%s', $fieldColumnPrefix, $field->handle, $key),
                 array_slice($dbTypeKeys, 1),
@@ -276,12 +289,14 @@ class BaseContentRefactorMigration extends Migration
 
             if (Collection::make($extraColumns)->contains(fn (string $column) => Schema::hasColumn($contentTable, $column))) {
                 $columns = [$primaryColumn, ...$extraColumns];
+                $columnsByKey = [];
                 foreach ($columns as $i => $column) {
                     if (Schema::hasColumn($contentTable, $column)) {
-                        $fieldColumns[$layoutElement->uid][$dbTypeKeys[$i]] = $column;
+                        $columnsByKey[$dbTypeKeys[$i]] = $column;
                         $flatFieldColumns[] = "c.$column";
                     }
                 }
+                $fieldColumns[$layoutElement->uid] = $columnsByKey;
 
                 return true;
             }
@@ -293,6 +308,7 @@ class BaseContentRefactorMigration extends Migration
         return true;
     }
 
+    /** @param array<string, string>|string|null $dbType */
     private function decodeValue(mixed $value, string|array|null $dbType, string $contentTable, string $column): mixed
     {
         if ($value === null || $value === '') {

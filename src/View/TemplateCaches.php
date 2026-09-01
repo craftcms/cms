@@ -8,15 +8,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
-use CraftCms\Cms\View\CacheCollectors\ResourceCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
-use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Pagination\AbstractPaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 
@@ -38,6 +35,7 @@ class TemplateCaches
 
     public function __construct(
         private readonly DependencyCollector $dependencyCollector,
+        private readonly TemplateCacheCollectors $cacheCollectors,
     ) {}
 
     public function getTemplateCache(string $key, bool $global, bool $registerResources = false): ?string
@@ -144,14 +142,8 @@ class TemplateCaches
             return $this->collectors;
         }
 
-        event($event = new TemplateCacheCollectorsResolving(Collection::make()));
-
-        $this->collectors = collect([
-            DependencyCollector::class,
-            ResourceCollector::class,
-        ])
-            ->concat($event->types)
-            ->map(function (string $type): CacheCollectorInterface {
+        $this->collectors = array_map(
+            function (string $type): CacheCollectorInterface {
                 $collector = app($type);
 
                 if (! $collector instanceof CacheCollectorInterface) {
@@ -159,8 +151,9 @@ class TemplateCaches
                 }
 
                 return $collector;
-            })
-            ->all();
+            },
+            $this->cacheCollectors->types()->all(),
+        );
 
         return $this->collectors;
     }
@@ -179,6 +172,7 @@ class TemplateCaches
         $this->applyNonDependencyCollectorPayloads($data['collectors'], $context);
     }
 
+    /** @param array<string, mixed> $payloads */
     private function applyNonDependencyCollectorPayloads(array $payloads, TemplateCacheContext $context): void
     {
         foreach ($this->collectors() as $collector) {

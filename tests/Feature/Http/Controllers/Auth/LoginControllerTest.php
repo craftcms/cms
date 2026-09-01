@@ -86,9 +86,22 @@ test('attemptLogin fails with wrong password', function () {
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'wrongpassword',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     Event::assertDispatched(Failed::class);
+});
+
+test('attemptLogin counts a wrong password once', function () {
+    Cms::config()->maxInvalidLogins = 10;
+
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertBadRequest();
+
+    expect(UserModel::findOrFail($user->id)->invalidLoginCount)->toBe(1);
 });
 
 test('attemptLogin is limited to five failed attempts per minute', function () {
@@ -98,7 +111,7 @@ test('attemptLogin is limited to five failed attempts per minute', function () {
         postJson(action([LoginController::class, 'attemptLogin']), [
             'loginName' => $attempt % 2 === 0 ? mb_strtoupper($user->email) : $user->email,
             'password' => 'wrongpassword',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 
     postJson(action([LoginController::class, 'attemptLogin']), [
@@ -129,7 +142,7 @@ test('attemptLogin clears failed attempts after valid credentials', function () 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'wrongpassword',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
@@ -142,7 +155,7 @@ test('attemptLogin clears failed attempts after valid credentials', function () 
         postJson(action([LoginController::class, 'attemptLogin']), [
             'loginName' => $user->email,
             'password' => 'wrongpassword',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 });
 
@@ -188,21 +201,21 @@ test('attemptLogin fails for user without password', function () {
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'craftcms2018!!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     expect(Auth::check())->toBeFalse();
 });
 
-test('logout logs the user out and redirects', function () {
+test('logout logs the user out and redirects', function (string $method) {
     actingAs(User::findOne());
 
     expect(Auth::check())->toBeTrue();
 
-    get(action([LoginController::class, 'logout']))
+    $this->$method(action([LoginController::class, 'logout']))
         ->assertRedirect();
 
     expect(Auth::check())->toBeFalse();
-});
+})->with(['get', 'post']);
 
 test('logout redirects to the post-logout redirect, not back to the previous page', function () {
     Cms::config()->postLogoutRedirect = '';
@@ -211,7 +224,7 @@ test('logout redirects to the post-logout redirect, not back to the previous pag
 
     // Even when arriving from a page, logout must not fall through to back().
     $response = $this->from('https://localhost/members/dashboard')
-        ->get('/'.Cms::config()->getLogoutPath())
+        ->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect();
 
     expect($response->headers->get('Location'))->toBe('https://localhost/');
@@ -222,7 +235,7 @@ test('logout honors a configured post-logout redirect', function () {
 
     actingAs(User::findOne());
 
-    $this->get('/'.Cms::config()->getLogoutPath())
+    $this->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect('https://localhost/goodbye');
 });
 
@@ -308,7 +321,6 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
 });
 
 test('login routes are registered for localized loginPath values', function () {
-    Cms::config()->isSystemLive = true;
     Cms::config()->loginPath = ['siteWithCustomPath' => 'aanmelden'];
 
     Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');

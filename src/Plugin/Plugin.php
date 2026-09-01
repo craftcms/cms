@@ -8,6 +8,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\File;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
+use LogicException;
 use Override;
 use ReflectionClass;
 
@@ -18,12 +19,17 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasEditions;
     use Concerns\HasElementTypes;
     use Concerns\HasFieldtypes;
+    use Concerns\HasFilesystemTypes;
     use Concerns\HasFrontendAssets;
+    use Concerns\HasGql;
+    use Concerns\HasLinkTypes;
     use Concerns\HasListeners;
+    use Concerns\HasNativeFields;
     use Concerns\HasPermissions;
     use Concerns\HasRoutes;
     use Concerns\HasScheduling;
     use Concerns\HasSettings;
+    use Concerns\HasSystemMessages;
     use Concerns\HasTranslations;
     use Concerns\HasUtilities;
     use Concerns\HasViews;
@@ -99,60 +105,57 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
     protected ?Plugins $pluginsService = null;
 
-    /**
-     * @internal
-     */
-    #[Override]
-    public function register(): void
-    {
-        $this->setupTraits('register');
-        $this->registerPlugin();
-    }
-
-    /**
-     * @internal
-     */
-    public function boot(Plugins $plugins): void
+    /** @internal */
+    final public function bootPlugin(Plugins $plugins): void
     {
         $this->pluginsService = $plugins;
 
-        $handle = $this->pluginsService->getPluginHandleByClass(static::class);
-
-        if (! $handle) {
-            return;
-        }
-
-        if (! $this->pluginsService->isPluginInstalled($handle)) {
-            return;
-        }
-
-        if (! $this->pluginsService->isPluginEnabled($handle)) {
-            return;
-        }
-
-        $this->setupTraits('boot');
-        $this->bootPlugin();
+        $this->bootHasCommands();
+        $this->bootHasConfig();
+        $this->bootHasElementTypes();
+        $this->bootHasFieldTypes();
+        $this->bootHasFilesystemTypes();
+        $this->bootHasFrontendAssets();
+        $this->bootHasGql();
+        $this->bootHasLinkTypes();
+        $this->bootHasListeners();
+        $this->bootHasNativeFields();
+        $this->bootHasPermissions();
+        $this->bootHasRoutes();
+        $this->bootHasScheduling();
+        $this->bootHasSystemMessages();
+        $this->bootHasTranslations();
+        $this->bootHasUtilities();
+        $this->bootHasViews();
+        $this->bootHasWidgets();
+        $this->bootPublishesFiles();
     }
 
-    private function setupTraits(string $method): void
+    /** @internal */
+    final public function publishAssets(): void
     {
-        $usesRecursive = once(fn () => class_uses_recursive(static::class));
+        $this->ensurePackageNameIsSet();
 
-        collect($usesRecursive)
-            ->map(fn (string $trait) => class_basename($trait))
-            ->each(function (string $trait) use ($method) {
-                if (! method_exists($this, $method = "{$method}{$trait}")) {
-                    return;
-                }
-
-                $this->$method();
-            });
+        $this->publishFrontendAssets();
+        $this->publishConfiguredFiles();
     }
 
-    public function registerPlugin(): void {}
+    /** @internal */
+    final public function removeAssets(): void
+    {
+        $this->ensurePackageNameIsSet();
 
-    public function bootPlugin(): void {}
+        File::deleteDirectory(public_path("vendor/{$this->packageName}"));
+    }
 
+    private function ensurePackageNameIsSet(): void
+    {
+        if ($this->packageName === null) {
+            throw new LogicException("Plugin [{$this->handle}] does not define a package name.");
+        }
+    }
+
+    /** @param array<string, string> $paths */
     protected function copyPublishableFiles(array $paths): void
     {
         foreach ($paths as $from => $to) {
@@ -167,6 +170,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         }
     }
 
+    /** @param class-string[] $classes */
     protected function registerSerializableClasses(array $classes): void
     {
         $existing = $this->app->make(Repository::class)->get('cache.serializable_classes');
@@ -211,6 +215,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     }
 
     #[Override]
+    /** @param array<string, mixed> $config */
     public static function create(array $config): PluginInterface
     {
         $plugin = app()->make(static::class, array_merge($config, ['app' => app()]));

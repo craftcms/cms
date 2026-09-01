@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Site\Concerns;
 
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Collection;
 
 trait SiteDefaults
 {
@@ -62,9 +63,10 @@ trait SiteDefaults
         return 'en';
     }
 
+    /** @return array<string, mixed>|null */
     private function primarySiteConfig(): ?array
     {
-        return once(fn () => collect(
+        return once(fn () => Collection::wrap(
             app(ProjectConfig::class)->get('sites', true) ?? []
         )->firstWhere('primary', true));
     }

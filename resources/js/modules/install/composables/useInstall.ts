@@ -1,14 +1,25 @@
 import {computed, ref} from 'vue';
 import {useStepper} from '@vueuse/core';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {
   validateAccount,
   validateDb,
   validateSite,
 } from '@actions/InstallController';
 
+interface InstallStep {
+  id?: string;
+  label?: string;
+  action?: string;
+  heading?: string;
+  submitLabel?: string;
+  hidden?: boolean;
+}
+
+type InstallSteps = Record<string, InstallStep>;
+
 export const useInstall = () => {
-  const possibleSteps = ref<Record<string, any>>({
+  const possibleSteps = ref<InstallSteps>({
     start: {},
     license: {
       id: 'license',
@@ -40,9 +51,8 @@ export const useInstall = () => {
   });
 
   const steps = computed(() => {
-    return Object.keys(possibleSteps.value).reduce<Record<string, any>>(
-      (acc, key) => {
-        const step = possibleSteps.value[key];
+    return Object.entries(possibleSteps.value).reduce<InstallSteps>(
+      (acc, [key, step]) => {
         const hidden = step.hidden ?? false;
 
         if (!hidden) {
@@ -56,14 +66,16 @@ export const useInstall = () => {
   });
 
   const dotSteps = computed(() => {
-    return Object.keys(steps.value).reduce<Record<string, any>>((acc, key) => {
-      const step = steps.value[key];
-      if (step.label ?? false) {
-        acc[key] = step;
-      }
+    return Object.entries(steps.value).reduce<InstallSteps>(
+      (acc, [key, step]) => {
+        if (step.label ?? false) {
+          acc[key] = step;
+        }
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {}
+    );
   });
 
   const stepper = useStepper(steps);

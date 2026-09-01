@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Support\File;
@@ -14,9 +15,14 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 use Imagick;
-use Imagine\Gd\Imagine as GdImagine;
-use Imagine\Image\Format;
-use Imagine\Imagick\Imagine as ImagickImagine;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
+use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
+use Intervention\Image\Exceptions\MissingDependencyException;
+use Intervention\Image\FileExtension;
+use Intervention\Image\Format;
+use Intervention\Image\ImageManager;
+use Jcupitt\Vips\Image as VipsImage;
 use Throwable;
 
 use function CraftCms\Cms\maxPowerCaptain;
@@ -24,26 +30,47 @@ use function CraftCms\Cms\maxPowerCaptain;
 #[Singleton]
 class Images
 {
-    public const string MINIMUM_IMAGICK_VERSION = '6.2.9';
-
     /** @var string[] */
     private array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     private ImageDriver $driver;
 
+    private ImageManager $manager;
+
     private ?string $imagickVersion = null;
+
+    private ?bool $canRasterizeSvg = null;
+
+    /** @var array<string, bool> */
+    private array $encodingSupport = [];
 
     public function __construct()
     {
-        if (strtolower((string) Cms::config()->imageDriver) === ImageDriver::Gd->value) {
-            $this->driver = ImageDriver::Gd;
+        $configuredDriver = strtolower((string) Cms::config()->imageDriver);
+
+        if ($configuredDriver !== GeneralConfig::IMAGE_DRIVER_AUTO) {
+            $this->driver = ImageDriver::from($configuredDriver);
+            $this->manager = $this->createManager($this->driver);
+            $this->manager->driver->checkHealth();
 
             return;
         }
 
-        $this->driver = $this->getCanUseImagick()
-            ? ImageDriver::Imagick
-            : ImageDriver::Gd;
+        foreach ([ImageDriver::Imagick, ImageDriver::Vips, ImageDriver::Gd] as $driver) {
+            try {
+                $manager = $this->createManager($driver);
+                $manager->driver->checkHealth();
+            } catch (Throwable) {
+                continue;
+            }
+
+            $this->driver = $driver;
+            $this->manager = $manager;
+
+            return;
+        }
+
+        throw new MissingDependencyException('No supported image driver is available.');
     }
 
     /**
@@ -64,20 +91,24 @@ class Images
         return $this->driver === ImageDriver::Imagick;
     }
 
+    public function getIsVips(): bool
+    {
+        return $this->driver === ImageDriver::Vips;
+    }
+
+    public function getDriver(): ImageDriver
+    {
+        return $this->driver;
+    }
+
+    public function getManager(): ImageManager
+    {
+        return $this->manager;
+    }
+
     public function getVersion(): string
     {
-        if ($this->getIsGd()) {
-            return PHP::extensionVersion('gd');
-        }
-
-        $version = PHP::extensionVersion('imagick');
-
-        try {
-            $version .= ' (ImageMagick '.$this->getImageMagickApiVersion().')';
-        } catch (Throwable) {
-        }
-
-        return $version;
+        return $this->manager->driver->version();
     }
 
     /**
@@ -85,21 +116,16 @@ class Images
      */
     public function getSupportedImageFormats(): array
     {
-        $supportedFormats = $this->supportedImageFormats;
+        $additionalFormats = array_filter(
+            FileExtension::cases(),
+            fn (FileExtension $extension) => ! in_array($extension->format(), [Format::JPEG, Format::GIF, Format::PNG], true)
+                && $this->canDecodeFormat($extension),
+        );
 
-        if ($this->getSupportsWebP()) {
-            $supportedFormats[] = Format::ID_WEBP;
-        }
-
-        if ($this->getSupportsAvif()) {
-            $supportedFormats[] = Format::ID_AVIF;
-        }
-
-        if ($this->getSupportsHeic()) {
-            $supportedFormats[] = Format::ID_HEIC;
-        }
-
-        return $supportedFormats;
+        return array_values(array_unique([
+            ...$this->supportedImageFormats,
+            ...array_map(fn (FileExtension $extension) => $extension->value, $additionalFormats),
+        ]));
     }
 
     /**
@@ -123,37 +149,90 @@ class Images
 
     public function getCanUseImagick(): bool
     {
-        if (! extension_loaded('imagick')) {
+        try {
+            $manager = $this->createManager(ImageDriver::Imagick);
+            $manager->driver->checkHealth();
+        } catch (Throwable) {
             return false;
         }
 
-        // https://github.com/craftcms/cms/issues/5435
-        if (empty(Imagick::queryFormats())) {
-            return false;
-        }
-
-        return version_compare($this->getImageMagickApiVersion(), self::MINIMUM_IMAGICK_VERSION) !== -1;
+        return $manager->driver->supports(Format::JPEG);
     }
 
     public function getSupportsWebP(): bool
     {
-        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
-
-        return $info->isFormatSupported(Format::ID_WEBP);
+        return $this->supportsFormat(Format::WEBP);
     }
 
     public function getSupportsAvif(): bool
     {
-        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
-
-        return $info->isFormatSupported(Format::ID_AVIF);
+        return $this->supportsFormat(Format::AVIF);
     }
 
     public function getSupportsHeic(): bool
     {
-        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
+        return $this->supportsFormat(Format::HEIC);
+    }
 
-        return $info->isFormatSupported(Format::ID_HEIC);
+    public function getCanRasterizeSvg(): bool
+    {
+        if ($this->canRasterizeSvg !== null) {
+            return $this->canRasterizeSvg;
+        }
+
+        try {
+            $this->manager->decodeBinary('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1"/></svg>');
+        } catch (Throwable) {
+            return $this->canRasterizeSvg = false;
+        }
+
+        return $this->canRasterizeSvg = true;
+    }
+
+    public function supportsFormat(string|Format|FileExtension $format): bool
+    {
+        try {
+            $format = Format::create($format);
+            if (isset($this->encodingSupport[$format->name])) {
+                return $this->encodingSupport[$format->name];
+            }
+
+            $encoded = $this->manager->createImage(1, 1)->encode($format->encoder());
+
+            return $this->encodingSupport[$format->name] = $encoded->size() > 0;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    public function canDecodeFormat(string|Format|FileExtension $format): bool
+    {
+        try {
+            return $this->manager->driver->supports($format);
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    private function createManager(ImageDriver $driver): ImageManager
+    {
+        if ($driver === ImageDriver::Vips && ! class_exists(VipsDriver::class)) {
+            throw new MissingDependencyException('The intervention/image-driver-vips package must be installed to use the Vips image driver.');
+        }
+
+        $driverClass = match ($driver) {
+            ImageDriver::Gd => GdDriver::class,
+            ImageDriver::Imagick => ImagickDriver::class,
+            ImageDriver::Vips => VipsDriver::class,
+        };
+
+        return new ImageManager(
+            $driverClass,
+            autoOrientation: false,
+            decodeAnimation: true,
+            backgroundColor: 'ffffff',
+            strip: false,
+        );
     }
 
     public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
@@ -273,31 +352,12 @@ class Images
             return false;
         }
 
-        if (! $this->getIsImagick()) {
-            return false;
-        }
-
-        $image = new Imagick($filePath);
-        $orientation = ExifOrientation::tryFrom($image->getImageOrientation());
+        $orientation = ExifOrientation::tryFrom((int) ($this->getExifData($filePath)['ifd0.Orientation'] ?? 0));
         if ($orientation === null) {
             return false;
         }
 
-        $degrees = match ($orientation) {
-            ExifOrientation::Rotate180, ExifOrientation::Rotate180Mirrored => 180,
-            ExifOrientation::Rotate90, ExifOrientation::Rotate90Mirrored => 90,
-            ExifOrientation::Rotate270, ExifOrientation::Rotate270Mirrored => 270,
-            default => 0,
-        };
-
-        $mirrored = in_array($orientation, [
-            ExifOrientation::Rotate0Mirrored,
-            ExifOrientation::Rotate180Mirrored,
-            ExifOrientation::Rotate90Mirrored,
-            ExifOrientation::Rotate270Mirrored,
-        ], true);
-
-        if ($degrees === 0 && ! $mirrored) {
+        if ($orientation === ExifOrientation::Rotate0) {
             return false;
         }
 
@@ -306,17 +366,10 @@ class Images
             return false;
         }
 
-        if ($degrees !== 0) {
-            $image->rotate($degrees);
-        }
-
-        if ($mirrored) {
-            $image->flipHorizontally();
-        }
-
-        return $image->saveAs($filePath, true);
+        return $image->orient()->saveAs($filePath, true);
     }
 
+    /** @return array<string,mixed>|null */
     public function getExifData(string $filePath): ?array
     {
         if (! ImageHelper::canHaveExifData($filePath)) {
@@ -334,14 +387,26 @@ class Images
             return false;
         }
 
-        if (! $this->getIsImagick()) {
+        if ($this->getIsImagick()) {
+            $image = new Imagick($filePath);
+            $image->setImageOrientation(Imagick::ORIENTATION_UNDEFINED);
+            ImageHelper::cleanExifDataFromImagickImage($image);
+            $image->writeImages($filePath, true);
+
+            return true;
+        }
+
+        $image = $this->loadImage($filePath);
+        if (! $image instanceof Raster) {
             return false;
         }
 
-        $image = new Imagick($filePath);
-        $image->setImageOrientation(Imagick::ORIENTATION_UNDEFINED);
-        ImageHelper::cleanExifDataFromImagickImage($image);
-        $image->writeImages($filePath, true);
+        $native = $image->getInterventionImage()->core()->native();
+        if ($native instanceof VipsImage && $native->getType('orientation') !== 0) {
+            $native->remove('orientation');
+        }
+
+        $image->saveAs($filePath, true);
 
         return true;
     }

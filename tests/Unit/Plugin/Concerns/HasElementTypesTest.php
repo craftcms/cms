@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\ElementTypesResolving;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 
 it('registers configured element types', function () {
@@ -15,22 +15,7 @@ it('registers configured element types', function () {
     $plugin->setElementTypes([TestPluginElementType::class]);
     $plugin->bootHasElementTypes();
 
-    event($event = new ElementTypesResolving([]));
-
-    expect($event->types)->toContain(TestPluginElementType::class);
-});
-
-it('does not register element type listeners when none are configured', function () {
-    $plugin = TestPlugin::create([
-        'handle' => 'test-plugin',
-        'name' => 'Test Plugin',
-    ]);
-
-    $plugin->bootHasElementTypes();
-
-    event($event = new ElementTypesResolving([]));
-
-    expect($event->types)->toBe([]);
+    expect(app(Elements::class)->getAllElementTypes())->toContain(TestPluginElementType::class);
 });
 
 abstract class TestPluginElementType extends Element {}

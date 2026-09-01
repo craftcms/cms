@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import Release from '@/modules/updater/components/Release.vue';
   import {computed, ref} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -40,9 +40,7 @@
   // Computed: should we show the update button?
   const showUpdateCta = computed(() => {
     return (
-      props.allowUpdates &&
-      props.latestVersion &&
-      typeof props.ctaUrl !== 'undefined'
+      props.allowUpdates && props.latestVersion && props.ctaUrl !== undefined
     );
   });
 
@@ -107,11 +105,7 @@
           <!-- Update button -->
           <Form
             v-else
-            :action="
-              UpdaterController.index[
-                '/{cpTrigger?}/{actionTrigger?}/updater'
-              ]()
-            "
+            :action="UpdaterController.index()"
             method="post"
             v-slot="{processing}"
           >

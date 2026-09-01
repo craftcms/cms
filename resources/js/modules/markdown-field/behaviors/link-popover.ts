@@ -1,7 +1,7 @@
 import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {escapeMarkdownLabel} from './utilities';
-import '@craftcms/cp/components/popover/popover';
+import '@craftcms/ui/components/popover/popover';
 import '../../link-field/craft-link-field';
 import type {LinkFieldValue} from '../../link-field/craft-link-field';
 
@@ -47,6 +47,11 @@ export function createLinkPopoverController(
     selectionStart = editor.textarea.selectionStart;
     selectionEnd = editor.textarea.selectionEnd;
 
+    const content = document.createElement('div');
+    content.slot = 'content';
+    content.classList.add('p-2');
+
+    // SAFETY: craft-link-field is registered with these public configuration properties.
     const linkField = document.createElement(
       'craft-link-field'
     ) as HTMLElement & {
@@ -57,31 +62,34 @@ export function createLinkPopoverController(
     linkField.advancedFields = options.advancedFields;
     linkField.showLabelField = options.showLabelField;
     linkField.types = options.types;
+    content.appendChild(linkField);
 
     trigger = triggerElement(event);
     const triggerId = anchorId(trigger);
 
     popover = document.createElement('craft-popover');
     popover.className = 'markdown-link-popover';
-    popover.distance = 6;
-    popover.for = triggerId;
     popover.id = popoverId(triggerId);
-    // `for` resolves after the first update; set the anchor directly so
-    // programmatic show() has a target during the first render.
-    popover.anchor = trigger;
     popover.placement = 'bottom-start';
-    popover.withoutArrow = true;
-    popover.appendChild(linkField);
+    // Lion positions the overlay against its slotted `invoker` by default, but
+    // the link button lives outside the popover. Easy enough, we just need to supply
+    // it as the overlay's `referenceNode` so Popper anchors to it without the
+    // button needing to be a slotted child.
+    popover.config = {referenceNode: trigger};
+    // Lion's content lives in the `content` slot (rendered inside the pane).
+    popover.appendChild(content);
     document.body.appendChild(popover);
 
+    // SAFETY: The registered apply event passes the CustomEvent payload consumed by handleApply.
     linkField.addEventListener('apply', handleApply as EventListener);
     linkField.addEventListener('cancel', handleCancel);
+    // SAFETY: The element-select-start listener ignores the event payload.
     linkField.addEventListener(
       'element-select-start',
       suspend as EventListener
     );
     linkField.addEventListener('element-select-end', resume);
-    popover.addEventListener('craft-after-hide', handlePopoverAfterHide);
+    popover.addEventListener('opened-changed', handlePopoverAfterHide);
 
     setDisclosureState(trigger, false);
     void showPopover(popover);
@@ -152,7 +160,7 @@ export function createLinkPopoverController(
     suspended = true;
     resumeFocusTarget = event.detail.restoreFocusTo ?? null;
     setDisclosureState(trigger, false);
-    event.detail.waitUntil(popover.hide() ?? Promise.resolve());
+    event.detail.waitUntil(popover.close());
   }
 
   function resume(): void {
@@ -169,6 +177,11 @@ export function createLinkPopoverController(
 
   function handlePopoverAfterHide(event: Event): void {
     if (event.target !== popover) {
+      return;
+    }
+
+    // `opened-changed` fires on both open and close; only react to closes.
+    if (event instanceof CustomEvent && event.detail?.opened) {
       return;
     }
 
@@ -213,7 +226,7 @@ export function createLinkPopoverController(
       return;
     }
 
-    await target.show();
+    await target.open();
     setDisclosureState(trigger, true);
 
     if (focusTarget?.isConnected) {
@@ -237,7 +250,7 @@ export function createLinkPopoverController(
     }
 
     currentPopover?.removeEventListener(
-      'craft-after-hide',
+      'opened-changed',
       handlePopoverAfterHide
     );
     currentPopover?.remove();

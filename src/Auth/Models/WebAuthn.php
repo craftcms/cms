@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Models;
 
+use CraftCms\Cms\Database\Factories\WebAuthnFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WebAuthn extends BaseModel
 {
+    /** @use HasFactory<WebAuthnFactory> */
     use HasFactory;
+
     use HasUid;
 
     #[\Override]

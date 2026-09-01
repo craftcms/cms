@@ -1,0 +1,89 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Elements/Overview" />
+
+# Element Index
+
+The element index is how the control panel lists elements — the table you see
+on the Entries screen, and the card grid behind its “cards” view mode. This
+module provides the building blocks so every index (and any admin table) shares
+one shell, one selection model, and one footer.
+
+## Architecture
+
+An index is composed from three layers:
+
+```
+Page (e.g. content/Index.vue)
+└─ BaseElementIndex        shell: header/body/footer, pagination, bulk actions
+   ├─ #header slot         your toolbar (search, filters, view mode…)
+   └─ #body slot           a view body:
+                           · DataTable     — table mode
+                           · ElementCards  — cards mode
+```
+
+All three layers read from the **same TanStack table instance**, so selection,
+sorting, and pagination state stay in sync without prop threading. The server
+owns the data: in the control panel, pager clicks and column sorts trigger
+Inertia visits, and the table instance is configured with
+`manualSorting`/`manualPagination`. (The stories here use client-side row
+models instead, purely so they’re interactive on their own.)
+
+If you just need a table on an admin screen — no cards mode, no custom body —
+use `AdminTable`. It pre-composes `BaseElementIndex` + `DataTable` behind a
+single flat prop set, and it’s what the settings index pages (Entry Types,
+Sites, GraphQL tokens, …) already use.
+
+## Selection
+
+Selection logic lives in one composable, `useElementIndexSelection`, called
+independently by the shell and both view bodies:
+
+```ts
+const {
+  selectedIds, // ids of the selected rows
+  hasSelection,
+  showBulkActions, // selectable + actions exist
+  clearSelection,
+  onToggleAllSelected, // guarded select-all
+  selectRow, // click path; pass {checked, shiftKey} for range selection
+  toggleRow, // keyboard path: Space/Enter
+  extendSelectionTo, // keyboard path: Shift+Arrow
+} = useElementIndexSelection(() => table, {selectable, readOnly, actions});
+```
+
+`useElementIndexSelection` is a thin adapter: the anchor/range mechanics live in
+the shared `useSelectable` composable, and this wrapper adds what's specific to
+the index — translating rows to ids, TanStack's select-all, and the bulk-action
+flags. Selection state stays in the table rather than being mirrored, so the
+checkboxes, the row model and the composable can't drift apart. See
+**Composables → useSelectable** for the underlying model.
+
+A few behaviors worth knowing:
+
+- **Shift-click range selection** — the composable keeps an anchor (the last
+  individually toggled row) and selects the inclusive range in row-model
+  order. `craft-checkbox` events don’t carry modifier keys, so the bodies
+  capture `shiftKey` on the native click and pass it along.
+- **Keyboard navigation** — on a focused row or card: Space/Enter toggles,
+  Arrows move focus, Shift+Arrow extends the selection. The focus wiring lives
+  in each body (rows and cards differ structurally); the composable only does
+  the selection math.
+- **Everything respects `readOnly`**, which falls back to the shared Inertia
+  page prop when not passed explicitly.
+
+## Bulk actions
+
+The server serializes the available actions for the active source (see
+`ElementActions::serializeActionItems()`), and `BaseElementIndex` swaps its
+footer for the bulk-actions bar once rows are selected. Actions POST to
+`element-indexes/perform-action` with the selected ids; on success the bar
+emits `action-performed` so the page can reload its data and clear the
+selection.
+
+## Accessibility
+
+The shell renders a visually-hidden `role="status"` live region that announces
+loading, result totals, and selection changes. Sortable column headers carry
+`aria-sort` and shared sort instructions, and keyboard focus is indicated by
+the global `:focus-visible` outline.

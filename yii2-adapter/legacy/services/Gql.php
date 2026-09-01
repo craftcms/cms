@@ -1,31 +1,26 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
-
 namespace craft\services;
 
 use Craft;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
-use craft\events\RegisterGqlDirectivesEvent;
-use craft\events\RegisterGqlMutationsEvent;
-use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlSchemaComponentsEvent;
-use craft\events\RegisterGqlTypesEvent;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
-use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
-use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
-use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Gql as NewGql;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -41,25 +36,40 @@ use yii\base\Exception;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->getGql()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.3.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Gql} instead.
+ * @deprecated 6.0.0 use {@see NewGql} instead.
  */
 class Gql extends Component
 {
     public const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
+
     public const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
+
     public const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
+
     public const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
+
     public const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
+
     public const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
+
     public const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
+
     public const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
+
     public const CACHE_TAG = NewGql::CACHE_TAG;
+
     public const GRAPHQL_COUNT_FIELD = NewGql::GRAPHQL_COUNT_FIELD;
+
     public const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = NewGql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
+
     public const GRAPHQL_COMPLEXITY_QUERY = NewGql::GRAPHQL_COMPLEXITY_QUERY;
+
     public const GRAPHQL_COMPLEXITY_EAGER_LOAD = NewGql::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+
     public const GRAPHQL_COMPLEXITY_CPU_HEAVY = NewGql::GRAPHQL_COMPLEXITY_CPU_HEAVY;
+
     public const GRAPHQL_COMPLEXITY_NPLUS1 = NewGql::GRAPHQL_COMPLEXITY_NPLUS1;
 
     public function getSchemaDef(?GqlSchema $schema = null, bool $prebuildSchema = false): Schema
@@ -265,50 +275,6 @@ class Gql extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(GqlTypesResolving::class, function(GqlTypesResolving $event) {
-            $service = self::service();
-            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterGqlTypesEvent(['types' => $event->types]);
-            $service->trigger(self::EVENT_REGISTER_GQL_TYPES, $yiiEvent);
-            $event->types = $yiiEvent->types;
-        });
-
-        Event::listen(GqlQueriesResolving::class, function(GqlQueriesResolving $event) {
-            $service = self::service();
-            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_QUERIES)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterGqlQueriesEvent(['queries' => $event->queries]);
-            $service->trigger(self::EVENT_REGISTER_GQL_QUERIES, $yiiEvent);
-            $event->queries = $yiiEvent->queries;
-        });
-
-        Event::listen(GqlMutationsResolving::class, function(GqlMutationsResolving $event) {
-            $service = self::service();
-            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_MUTATIONS)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterGqlMutationsEvent(['mutations' => $event->mutations]);
-            $service->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $yiiEvent);
-            $event->mutations = $yiiEvent->mutations;
-        });
-
-        Event::listen(GqlDirectivesResolving::class, function(GqlDirectivesResolving $event) {
-            $service = self::service();
-            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_DIRECTIVES)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterGqlDirectivesEvent(['directives' => $event->directives]);
-            $service->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $yiiEvent);
-            $event->directives = $yiiEvent->directives;
-        });
-
         Event::listen(GqlSchemaComponentsResolving::class, function(GqlSchemaComponentsResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {

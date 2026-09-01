@@ -2,6 +2,7 @@ import type {App, Component} from 'vue';
 import {defineAsyncComponent} from 'vue';
 
 type MaybePromise<T> = T | Promise<T>;
+type ComponentApp = Pick<App, 'component' | 'config'>;
 
 export type CpComponentModule = {
   default: Component;
@@ -15,13 +16,16 @@ export type CpComponentRegistration = Component | CpComponentLoader;
 
 export interface CpComponentRegistry {
   register(name: string, componentOrLoader: CpComponentRegistration): void;
-  install(app: App): void;
+  install(app: ComponentApp): void;
+  uninstall(app: ComponentApp): void;
 }
+
+let nextAppId = 0;
 
 function isLoader(
   componentOrLoader: CpComponentRegistration
 ): componentOrLoader is CpComponentLoader {
-  if (typeof componentOrLoader !== 'function') {
+  if (!(componentOrLoader instanceof Function)) {
     return false;
   }
 
@@ -42,10 +46,10 @@ function asyncComponent(loader: CpComponentLoader): Component {
 
 export function createCpComponentRegistry(): CpComponentRegistry {
   const components = new Map<string, CpComponentRegistration>();
-  let app: App | null = null;
+  const apps = new Set<ComponentApp>();
 
   function registerWithApp(
-    app: App,
+    app: ComponentApp,
     name: string,
     componentOrLoader: CpComponentRegistration
   ) {
@@ -73,20 +77,27 @@ export function createCpComponentRegistry(): CpComponentRegistry {
       }
 
       components.set(name, componentOrLoader);
-      if (app) {
+      for (const app of apps) {
         registerWithApp(app, name, componentOrLoader);
       }
     },
 
     install(installedApp) {
-      if (app === installedApp) {
+      if (apps.has(installedApp)) {
         return;
       }
 
-      app = installedApp;
+      installedApp.config.idPrefix = `craft-${++nextAppId}`;
+      apps.add(installedApp);
       components.forEach((componentOrLoader, name) => {
         registerWithApp(installedApp, name, componentOrLoader);
       });
     },
+
+    uninstall(app) {
+      apps.delete(app);
+    },
   };
 }
+
+export const cpComponentRegistry = createCpComponentRegistry();

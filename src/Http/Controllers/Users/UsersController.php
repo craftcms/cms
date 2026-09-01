@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -27,22 +27,6 @@ readonly class UsersController
     use EditUserTrait;
     use EnforcesPermissions;
     use RespondsWithFlash;
-
-    public function index(Request $request, ?string $slug = null): View
-    {
-        $this->authorize('viewUsers');
-
-        Edition::require(Edition::Team);
-
-        return view('users._index', [
-            'title' => t('Users'),
-            'buttonLabel' => mb_ucfirst(t('New {type}', [
-                'type' => User::lowerDisplayName(),
-            ])),
-            'canRegisterUsers' => Gate::allows('save', new User),
-            'source' => $slug ?? $request->input('source'),
-        ]);
-    }
 
     public function create(Request $request, Drafts $drafts): Response
     {
@@ -70,27 +54,27 @@ readonly class UsersController
         ]));
     }
 
-    public function edit(?int $userId = null): Response|CpScreenResponse
+    /**
+     * The account's Profile screen — the user's field layout, rendered through
+     * the shared element editor. Both "My Account" and another user's account
+     * land here; the account navigation beside it comes from the view model.
+     */
+    public function edit(ElementRequest $request, ?int $userId = null): Response|InertiaResponse
     {
         $user = $this->editedUser($userId);
 
-        /**
-         * Let the elements/edit action do most of the work
-         */
-        $response = app(EditElementController::class)->setElement($user)();
+        // A plugin can take screens off the list, so this one isn't a given
+        // even though nothing in core removes it.
+        abort_unless(
+            isset(app(EditUserScreens::class)->screens($user)[EditUserScreens::PROFILE]),
+            403,
+            'User not authorized to perform this action.',
+        );
 
-        if (! $response instanceof CpScreenResponse) {
-            return $response;
-        }
-
-        return $this->asEditUserScreen($user, self::SCREEN_PROFILE, $response)
-            ->when(
-                $user->getIsUnpublishedDraft() && $this->showPermissionsScreen(),
-                function (CpScreenResponse $response) use ($user) {
-                    $response
-                        ->submitButtonLabel(t('Create and set permissions'))
-                        ->redirectUrl($this->editUserScreenUrl($user, self::SCREEN_PERMISSIONS));
-                },
-            );
+        return Inertia::render('users/Edit', new UserEditViewModel(
+            user: $user,
+            request: $request,
+            canSave: $request->craftUser()->can('save', $user),
+        ));
     }
 }

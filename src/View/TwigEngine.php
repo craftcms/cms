@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Contracts\View\Engine;
 
 class TwigEngine implements Engine
 {
+    /** @param array<string, mixed> $data */
     public function get($path, array $data = []): string
     {
         $template = $this->templateFromPath($path);
-        $renderer = app(TwigRenderer::class);
 
         try {
-            return $renderer->renderPageTemplate($template, $data);
+            /** @throws TemplateLoaderException */
+            return Template::renderPageTemplate($template, $data, renderer: TemplateEngine::Twig);
         } catch (TemplateLoaderException $e) {
             /**
              * If a custom error page is set up on the frontend, Laravel will
@@ -28,7 +29,12 @@ class TwigEngine implements Engine
             if (TemplateMode::is(TemplateMode::Cp) && Str::contains($template, 'errors/')) {
                 $template = $this->templateFromPath($path, TemplateMode::Site);
 
-                return $renderer->renderPageTemplate($template, $data);
+                return Template::renderPageTemplate(
+                    $template,
+                    $data,
+                    TemplateMode::Site,
+                    renderer: TemplateEngine::Twig,
+                );
             }
 
             throw $e;

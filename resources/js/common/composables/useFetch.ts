@@ -3,45 +3,56 @@ import {
   type ComputedRef,
   type Ref,
   ref,
+  shallowRef,
   unref,
-  type UnwrapRef,
   watch,
 } from 'vue';
 import axios, {
+  type AxiosError,
   type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
   type CancelTokenSource,
 } from 'axios';
 import {useHelpers} from '@/common/composables/useCraftData';
-import {apiClient} from '@craftcms/cp/utilities/api/apiClient';
+import {apiClient} from '@craftcms/ui/utilities/api/apiClient';
+import type {FormValue, FormValues} from '@/modules/forms/types';
 
 // Type for URL parameter - can be string, ref, or computed
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;
 
+type RequestParams = FormValues | URLSearchParams;
+type RequestData =
+  | FormValues
+  | FormData
+  | URLSearchParams
+  | string
+  | Blob
+  | null;
+
 // Options interface
-interface UseAxiosOptions<T = any> extends Omit<
+interface UseAxiosOptions<T = FormValue> extends Omit<
   AxiosRequestConfig,
   'url' | 'params'
 > {
   immediate?: boolean;
   refetch?: boolean;
-  params?: MaybeRef<Record<string, any>>;
+  params?: MaybeRef<RequestParams>;
   transform?: (data: T) => T;
   enabled?: MaybeRef<boolean>;
   debounce?: number;
   onSuccess?: (data: T, response: AxiosResponse) => void;
-  onError?: (error: any) => void;
+  onError?: (error: AxiosError) => void;
   initialData?: T | null;
   axiosInstance?: AxiosInstance;
 }
 
 // Return type interface
 interface UseAxiosReturn<T> {
-  data: Ref<UnwrapRef<T> | null>;
-  error: any;
+  data: Ref<T | null>;
+  error: Ref<unknown>;
   state: Ref<AxiosFetchState>;
-  execute: (postData?: any) => Promise<void>;
+  execute: (postData?: RequestData) => Promise<void>;
   isLoading: ComputedRef<boolean>;
   isSuccess: ComputedRef<boolean>;
   isError: ComputedRef<boolean>;
@@ -56,7 +67,7 @@ export type AxiosFetchState =
   | 'error'
   | 'aborted';
 
-export function useFetch<T = any>(
+export function useFetch<T = FormValue>(
   url: MaybeRef<string>,
   options: UseAxiosOptions<T> = {}
 ): UseAxiosReturn<T> {
@@ -67,7 +78,7 @@ export function useFetch<T = any>(
     params,
     enabled = true,
     debounce = 0,
-    transform = (data: any) => data as T,
+    transform,
     onSuccess,
     onError,
     initialData = null,
@@ -77,7 +88,7 @@ export function useFetch<T = any>(
   } = options;
 
   // Reactive state
-  const data = ref(initialData) as Ref<UnwrapRef<T> | null>;
+  const data = shallowRef<T | null>(initialData);
   const state = ref<AxiosFetchState>('idle');
   const error = ref<unknown>(null);
 
@@ -87,7 +98,7 @@ export function useFetch<T = any>(
 
   const computedUrl = computed<string>(() => unref(url));
   const computedEnabled = computed<boolean>(() => unref(enabled));
-  const computedParams = computed<Record<string, any> | undefined>(() =>
+  const computedParams = computed<RequestParams | undefined>(() =>
     unref(params)
   );
 
@@ -98,7 +109,7 @@ export function useFetch<T = any>(
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   // The actual fetch function
-  const execute = async (postData = {}): Promise<void> => {
+  const execute = async (postData?: RequestData): Promise<void> => {
     if (!computedUrl.value || !computedEnabled.value) return;
 
     // Cancel previous request
@@ -120,9 +131,11 @@ export function useFetch<T = any>(
         ...axiosOptions,
       });
 
-      const transformedData = transform(response.data);
+      const transformedData = transform
+        ? transform(response.data)
+        : response.data;
       state.value = 'success';
-      data.value = transformedData as UnwrapRef<T>;
+      data.value = transformedData;
       onSuccess?.(transformedData, response);
     } catch (err: unknown) {
       if (axios.isCancel(err)) {
@@ -208,7 +221,7 @@ export function useFetch<T = any>(
   };
 }
 
-export function usePost<T = any>(
+export function usePost<T = FormValue>(
   url: MaybeRef<string>,
   options: UseAxiosOptions<T> = {}
 ) {
@@ -219,7 +232,7 @@ export function usePost<T = any>(
   });
 }
 
-export function useActionClient<T = any>(
+export function useActionClient<T = FormValue>(
   url: MaybeRef<string>,
   options: UseAxiosOptions<T> = {}
 ) {
@@ -235,7 +248,7 @@ export function useActionClient<T = any>(
   });
 }
 
-export function useApiClient<T = any>(
+export function useApiClient<T = FormValue>(
   url: MaybeRef<string>,
   options: UseAxiosOptions<T> = {}
 ) {

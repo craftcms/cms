@@ -26,7 +26,7 @@ return [
 
 Craft's template resolver still owns template lookup before either engine renders anything. Public/private template filtering, path containment, localized site template lookup, index template lookup, and registered template roots all apply before Craft decides whether the resolved file should be rendered by Twig or Blade.
 
-Control panel template lookup still defaults to `twig` and `html`. Blade CP and plugin views are rendered through Laravel's view system, either by calling `view()` directly or by using `BladeRenderer`.
+Control panel template lookup supports `twig`, `html`, and `blade.php`. Blade application and plugin views can also be rendered directly through Laravel's view system.
 
 ## Rendering Templates
 
@@ -35,13 +35,13 @@ The engine-neutral renderer resolves a Craft template name and then chooses Twig
 ```php
 <?php
 
-use CraftCms\Cms\View\TemplateRenderer;
+use CraftCms\Cms\Support\Facades\Template;
 
-$html = app(TemplateRenderer::class)->renderTemplate('articles/_entry', [
+$html = Template::renderTemplate('articles/_entry', [
     'entry' => $entry,
 ]);
 
-$pageHtml = app(TemplateRenderer::class)->renderPageTemplate('articles/show', [
+$pageHtml = Template::renderPageTemplate('articles/show', [
     'entry' => $entry,
 ]);
 ```
@@ -55,31 +55,39 @@ $html = template('articles/_entry', ['entry' => $entry]);
 $pageHtml = pageTemplate('articles/show', ['entry' => $entry]);
 ```
 
-`renderPageTemplate()` and `pageTemplate()` wrap Blade templates in Craft's page lifecycle, so queued head/body resources are rendered into the page placeholders.
-
-If you already have a Laravel view name or a file path, use `BladeRenderer` directly:
+Automatic selection uses the first registered renderer that supports the resolved file. Pass a `TemplateEngine` or custom renderer name to force a renderer:
 
 ```php
 <?php
 
-use CraftCms\Cms\Blade\BladeRenderer;
+use CraftCms\Cms\View\TemplateEngine;
 
-$renderer = app(BladeRenderer::class);
+$html = template('articles/_entry', ['entry' => $entry], renderer: TemplateEngine::Blade);
+```
+
+`renderPageTemplate()` and `pageTemplate()` wrap Blade templates in Craft's page lifecycle, so queued head/body resources are rendered into the page placeholders.
+
+If you already have a Laravel view name or file path, resolve the low-level `BladeRenderer` through the `Template` facade:
+
+```php
+<?php
+
+use CraftCms\Cms\View\TemplateEngine;
+use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\Support\Facades\Template;
+
+$renderer = Template::renderer(TemplateEngine::Blade);
 
 $partial = $renderer->renderTemplate('my-plugin::tokens.index', [
     'token' => $token,
-]);
-
-$page = $renderer->renderPageTemplate('my-plugin::screens.edit', [
-    'entry' => $entry,
-]);
+], TemplateMode::Cp);
 
 $inline = $renderer->renderString('Hello, {{ $name }}', [
     'name' => 'Craft',
-]);
+], TemplateMode::Cp);
 ```
 
-`renderView()` and `renderPageView()` defer to Laravel view resolution. Use them for application and plugin views that are registered with Laravel's view finder. Slash-style view names and namespaced views both work:
+Slash-style view names and namespaced views both work:
 
 ```php
 <?php
@@ -89,7 +97,37 @@ view('my-plugin::tokens.index', $variables);
 view('my-plugin::nested/screen', $variables);
 ```
 
-Use `view()->file($path, $variables)` or `BladeRenderer::renderFile()` only when you intentionally want to render a concrete file path.
+Use `view()->file($path, $variables)` when you intentionally want to render a concrete file path.
+
+## Renderers
+
+`TemplateManager` is a scoped Laravel manager. Its built-in renderer names are `twig` and `blade`, represented by `TemplateEngine`. Custom renderers implement `TemplateRendererInterface`, including file support, resolved-template rendering, and inline-string rendering. A replacement for the built-in Twig renderer must implement `TwigRendererInterface`.
+
+Register renderers once, typically from a service provider’s `boot()` method, through the `Template` facade. The registration is replayed whenever Laravel creates a new manager scope:
+
+```php
+<?php
+
+use App\Templates\MarkdownRenderer;
+use CraftCms\Cms\Support\Facades\Template;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\ServiceProvider;
+
+class PluginServiceProvider extends ServiceProvider
+{
+    public function boot(): void
+    {
+        Template::extend(
+            'markdown',
+            static fn (Container $container) => $container->make(MarkdownRenderer::class),
+        );
+    }
+}
+```
+
+New renderer names are appended after the built-in renderers. Re-registering an existing name replaces its creator without changing its selection position. Like other Laravel managers, an already-resolved renderer remains cached in the current scope until `forgetRenderers()` is called. New manager scopes receive the latest creator automatically and resolve their own renderer instances.
+
+Don’t wrap `extend()` in `callAfterResolving()`, because the manager registers its own scope replay. Renderer creators should resolve scoped dependencies from the supplied container rather than capturing request-specific instances.
 
 ## Routes
 
@@ -118,7 +156,7 @@ Blade views receive the same Craft template globals as Twig through a Laravel vi
 - `$devMode`
 - `$isInstalled`
 - `$loginUrl`
-- `$logoutUrl`
+- `$logoutUrl` (the action URL for a CSRF-protected POST logout form)
 - `$setPasswordUrl`
 - `$now`
 - `$today`
@@ -388,21 +426,21 @@ Craft exposes engine-neutral rendering events for both Twig and Blade:
 - `CraftCms\Cms\View\Events\PageTemplateRendering`
 - `CraftCms\Cms\View\Events\PageTemplateRendered`
 
-Each event includes the template engine:
+Before events run before template resolution, so listeners can mutate the template name, variables, or template mode before a renderer is selected. After events expose the final renderer name as a string:
 
 ```php
 <?php
 
-use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\TemplateEngine;
 use Illuminate\Support\Facades\Event;
 
-Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
-    if ($event->engine !== TemplateEngine::Blade) {
+Event::listen(TemplateRendered::class, function (TemplateRendered $event) {
+    if ($event->rendererName !== TemplateEngine::Blade->value) {
         return;
     }
 
-    $event->variables['fromListener'] = true;
+    $event->output = trim($event->output);
 });
 ```
 

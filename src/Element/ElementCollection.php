@@ -86,7 +86,8 @@ class ElementCollection extends Collection
      *     ->with(['related']);
      * ```
      *
-     * @param  array|string  $with  The property value
+     * @param  array<array-key,mixed>|string  $with  The property value
+     * @return self<TKey,TElement>
      */
     public function with(array|string $with): self
     {
@@ -94,7 +95,7 @@ class ElementCollection extends Collection
         $elementsByClass = $this->groupBy(fn (ElementInterface $element) => $element::class)->all();
 
         foreach ($elementsByClass as $class => $classElements) {
-            app(Elements::class)->eagerLoadElements($class, $this->items, $with);
+            Elements::eagerLoadElements($class, $classElements, $with);
         }
 
         return $this;
@@ -216,6 +217,7 @@ class ElementCollection extends Collection
     /**
      * Reloads fresh element instances from the database for all the elements.
      */
+    /** @return Collection<array-key,ElementInterface> */
     public function fresh(): Collection
     {
         if ($this->isEmpty()) {
@@ -379,6 +381,7 @@ class ElementCollection extends Collection
      *
      * @see ElementHelper::renderElements()
      */
+    /** @param array<string,mixed> $variables */
     public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->items, $variables);
@@ -466,13 +469,14 @@ class ElementCollection extends Collection
     /**
      * @template TZipValue
      *
-     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  ...$items
-     * @return Collection<int,Collection<int,mixed>>
+     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  $items
+     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  ...$moreItems
+     * @return Collection<int,Collection<int,TElement|TZipValue>>
      */
     #[Override]
-    public function zip($items): Collection
+    public function zip($items, ...$moreItems): Collection
     {
-        return $this->toBase()->zip(...func_get_args());
+        return $this->toBase()->zip($items, ...$moreItems);
     }
 
     /**

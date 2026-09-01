@@ -18,7 +18,15 @@
 {% set createAction = createAction ?? null %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set registerJs = registerJs ?? true %}
-{% set jsClass = jsClass ?? 'Craft.ComponentSelectInput' %}
+
+{# Legacy escape hatch: callers that pass an explicit jsClass (e.g. plugins with
+   Craft.ComponentSelectInput subclasses) get the original disclosure-menu markup
+   + `{% js %}` boot below. Everyone else — including entryTypeSelect.twig, which
+   now defaults to the web-component path — gets the self-booting
+   `<craft-component-select>` element, configured via attributes, with a
+   `craft-action-menu` Choose menu and no registered JS. #}
+{% set jsClass = jsClass ?? null %}
+{% set legacy = jsClass is not empty %}
 
 {# sort the options by handle, then label #}
 {% if showHandles %}
@@ -35,8 +43,39 @@
   {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% tag 'div' with containerAttributes %}
+{% if not legacy %}
+  {# Settings ride on attributes (parsed in the element's connectedCallback).
+     Booleans: bare attribute = on, "false" = off, absent = the component's
+     default — so default-true settings are emitted explicitly either way. #}
+  {# Emit `name` raw (NOT `|namespaceInputName`): the ambient `namespaceInputs`
+     pass already namespaces every `name="…"` attribute — including this custom
+     element's — exactly once, the same way it namespaces the chips' hidden
+     inputs (which also pass `name` through raw). Pre-namespacing here would
+     double-apply the namespace, so the JS would render new chips with an
+     over-nested `types[…][types][…]…` input name. #}
+  {# `selectable` defaults on (legacy `Craft.ComponentSelectInput` default),
+     independent of the chips' `checkbox` affordance below (which stays off by
+     default) — matching the legacy split where JS selection was always on but
+     chips rendered no checkbox unless a caller opted in. #}
+  {% set containerAttributes = containerAttributes|merge({
+    name: (name ?? false) ? name : false,
+    limit: limit ?: false,
+    sortable: sortable ? true : 'false',
+    selectable: (selectable ?? true) ? true : 'false',
+    'show-handles': showHandles ? true : 'false',
+    'show-description': showDescription ? true : 'false',
+    'show-action-menus': showActionMenus ? true : 'false',
+    hyperlinks: hyperlinks ? true : 'false',
+    'create-action': createAction ?: false,
+    disabled: disabled,
+    'data-id': 'component-select',
+    'slot': 'input'
+  }) %}
+{% endif %}
+
+{% tag legacy ? 'div' : 'craft-component-select' with containerAttributes %}
   {% tag 'ul' with {
+    'data-id': 'component-select-items',
     class: [
       'components',
       'chips',
@@ -66,56 +105,105 @@
     {% endapply -%}
   {% endtag %}
 
-  <div class="flex flex-nowrap">
+  <div data-id="component-select-footer" class="flex flex-nowrap pt-2">
     {% set valueIds = values|map(component => component.getId()) %}
 
-    {% set buttonAttributeClasses = ['dashed', 'add-btn'] %}
-    {% if disabled and limit and valueIds|length >= limit %}
+    {% if legacy %}
+      {% set buttonAttributeClasses = ['dashed', 'add-btn'] %}
+      {% if disabled and limit and valueIds|length >= limit %}
         {% set buttonAttributeClasses = buttonAttributeClasses|merge(['hidden']) %}
-    {% endif %}
+      {% endif %}
 
-    {# the disclosureMenu already has support for description (shows below the label),
-    so the description that goes into the info icon needs to be keyed by something else - 'info' #}
-    {{ disclosureMenu(options|map(component => {
-      type: 'button',
-      label: component.getUiLabel(),
-      handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
-      info: showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null,
-      icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
-      color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
-      attributes: {
-        data: {
-          type: className(component),
-          id: component.getId(),
-          handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+      {# the disclosureMenu already has support for description (shows below the label),
+      so the description that goes into the info icon needs to be keyed by something else - 'info' #}
+      {{ disclosureMenu(options|map(component => {
+        type: 'button',
+        label: component.getUiLabel(),
+        handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+        info: showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null,
+        icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
+        color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
+        attributes: {
+          data: {
+            type: className(component),
+            id: component.getId(),
+            handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+          },
         },
-      },
-      liAttributes: {
-        class: {
-          hidden: component.getId() in valueIds
-        }|filter|keys,
-      },
-    }), {
-      buttonLabel: 'Choose'|t('app'),
-      buttonAttributes: {
-        class: buttonAttributeClasses,
-      },
-      omitIfEmpty: false,
-      withSearchInput,
-      disabled,
-    }) }}
+        liAttributes: {
+          class: {
+            hidden: component.getId() in valueIds
+          }|filter|keys,
+        },
+      }), {
+        buttonLabel: 'Choose'|t('app'),
+        buttonAttributes: {
+          class: buttonAttributeClasses,
+        },
+        omitIfEmpty: false,
+        withSearchInput,
+        disabled,
+      }) }}
+    {% else %}
+      <craft-action-menu {% if withSearchInput %}searchable{% endif %} class="mr-1">
+        <craft-button
+          type="button"
+          slot="invoker"
+          icon="chevron-down"
+          command="--choose-item"
+          variant="dashed"
+          {{ attr({disabled: disabled}) }}
+        >
+          {{ 'Choose'|t('app') }}
+        </craft-button>
+
+        <div slot="content">
+          {% for component in options %}
+            {% set optionHandle = showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null %}
+            {% set optionDescription = showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null %}
+            {# `hidden` is consumer-owned visibility (already selected); the menu's
+               `searchable` filter uses the separate `data-search-hidden` channel and
+               matches against textContent + `data-keywords`. #}
+            {% tag 'craft-action-item' with {
+              icon: component is instance of('craft\\base\\Iconic') ? (component.getIcon() ?: false) : false,
+              'icon-color': component is instance of('craft\\base\\Colorable') ? (component.getColor().value ?? false) : false,
+              hidden: component.getId() in valueIds,
+              data: {
+                type: className(component),
+                id: component.getId(),
+                keywords: [optionHandle, optionDescription]|filter|join(' ') ?: false,
+              },
+            } %}
+              {%- apply spaceless %}
+                <span class="inline-flex flex-col items-start gap-2xs">
+                  <span>{{ component.getUiLabel() }}</span>
+                  {% if optionHandle %}
+                    <span class="menu-item-description mt-2xs smalltext light code">{{ optionHandle }}</span>
+                  {% endif %}
+                  {% if optionDescription %}
+                    <span class="menu-item-description mt-2xs smalltext light">{{ optionDescription }}</span>
+                  {% endif %}
+                </span>
+              {% endapply -%}
+            {% endtag %}
+          {% endfor %}
+        </div>
+      </craft-action-menu>
+    {% endif %}
 
     {% if createAction and not disabled %}
       {{ forms.button({
-        class: ['dashed', 'create-btn'],
+        class: ['create-btn'],
         label: 'Create'|t('app'),
         icon: 'plus',
+        appearance: 'outline',
+        command: '--create-item',
       }) }}
     {% endif %}
   </div>
 {% endtag %}
 
-{% if not disabled and registerJs %}
+{% if legacy and not disabled and registerJs %}
   {% set jsSettings = {
     id: id|namespaceInputId,
     name: name|namespaceInputName,
@@ -129,8 +217,8 @@
   }|merge(jsSettings ?? {}) %}
 
   {% js %}
-    (() => {
-      new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+  (() => {
+    new {{ jsClass }}({{ jsSettings|json_encode|raw }});
     })();
   {% endjs %}
 {% endif %}

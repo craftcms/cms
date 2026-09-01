@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonContains;
 use CraftCms\Cms\Database\QueryParam;
@@ -18,6 +17,14 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
@@ -38,6 +45,11 @@ use function CraftCms\Cms\t;
 
 /**
  * BaseOptionsField is the base class for classes representing an options field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type Option array{label:string, value:string, default?:bool|string, icon?:string|null, color?:string|null}
+ * @phpstan-type Optgroup array{optgroup:string}
  */
 abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
@@ -131,6 +143,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
     }
 
+    /** @param list<static> $instances */
     private static function valueColumn(array $instances): string|Expression|null
     {
         if (count($instances) === 1 && isset($instances[0]->layoutElement)) {
@@ -140,9 +153,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return static::valueSql($instances);
     }
 
-    /**
-     * @var array The available options
-     */
+    /** @var list<Option|Optgroup> The available options */
     public array $options;
 
     /**
@@ -273,88 +284,90 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
     }
 
-    public function getSettingsHtml(): string
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        if (empty($this->options)) {
-            // Give it a default row
-            $this->options = [['label' => '', 'value' => '']];
-        }
-
-        $cols = [];
+        $columns = [];
         if (static::$optgroups) {
-            $cols['isOptgroup'] = [
+            $columns['isOptgroup'] = [
                 'heading' => t('Optgroup?'),
                 'type' => 'checkbox',
                 'class' => 'thin',
                 'toggle' => ['!value', '!icon', '!color', '!default'],
             ];
         }
-        $cols['label'] = [
+        $columns['label'] = [
             'heading' => t('Option Label'),
             'type' => 'singleline',
             'autopopulate' => 'value',
         ];
-        $cols['value'] = [
+        $columns['value'] = [
             'heading' => t('Value'),
             'type' => 'singleline',
             'class' => 'code',
         ];
         if (static::$optionIcons) {
-            $cols['icon'] = [
-                'heading' => t('Icon'),
-                'type' => 'icon',
-                'class' => 'thin',
-            ];
+            $columns['icon'] = ['heading' => t('Icon'), 'type' => 'icon', 'class' => 'thin'];
         }
         if (static::$optionColors) {
-            $cols['color'] = [
-                'heading' => t('Color'),
-                'type' => 'color',
-            ];
+            $columns['color'] = ['heading' => t('Color'), 'type' => 'color'];
         }
-        $cols['default'] = [
+        $columns['default'] = [
             'heading' => t('Default?'),
             'type' => 'checkbox',
             'radioMode' => ! static::$multi,
             'class' => 'thin',
         ];
 
-        $rows = [];
-        foreach ($this->options as $option) {
+        $rows = array_map(function (array $option): array {
             if (isset($option['optgroup'])) {
                 $option['isOptgroup'] = true;
                 $option['label'] = Arr::pull($option, 'optgroup');
             }
-            $rows[] = $option;
-        }
 
-        $html = FormFields::editableTableFieldHtml([
-            'label' => $this->optionsSettingLabel(),
-            'instructions' => t('Define the available options.'),
-            'id' => 'options',
-            'name' => 'options',
-            'addRowLabel' => t('Add an option'),
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $cols,
-            'rows' => $rows,
-            'errors' => $this->errors()->get('options'),
-            'data' => ['error-key' => 'options'],
-        ]);
+            return $option;
+        }, $this->options ?: [['label' => '', 'value' => '']]);
 
-        if (static::$allowCustomOptions) {
-            $html .= FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom options'),
-                'id' => 'custom-options',
-                'name' => 'customOptions',
-                'on' => $this->customOptions,
-            ]);
-        }
-
-        return $html;
+        return Form::make([
+            FormField::make($this->optionsSettingLabel())
+                ->instructions(t('Define the available options.'))
+                ->control(Table::make('options')
+                    ->columns($columns)
+                    ->allowAdd()
+                    ->allowDelete()
+                    ->allowReorder()
+                    ->value($rows)),
+        ])->when(
+            static::$allowCustomOptions,
+            fn (Form $form): Form => $form->add(
+                FormField::make(t('Allow custom options'))
+                    ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
+            ),
+        );
     }
 
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $options = collect($this->translatedOptions(true, $context->value, $context->element))
+            ->filter(fn (array $option): bool => array_key_exists('value', $option))
+            ->map(fn (array $option): array => Arr::only($option, ['label', 'value', 'disabled']))
+            ->values()
+            ->all();
+
+        return Choice::make($context->path)
+            ->options($options)
+            ->multiple(static::$multi)
+            ->presentation($this->formPresentation())
+            ->value($this->encodeValue($context->value));
+    }
+
+    protected function formPresentation(): ChoicePresentation
+    {
+        return static::$multi ? ChoicePresentation::Checkboxes : ChoicePresentation::Select;
+    }
+
+    /** @return list<string>|string|null */
     #[Override]
     public function getDefaultValue(): array|string|null
     {
@@ -442,6 +455,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
 
     /**
      * Check if given option should be marked as selected.
+     *
+     * @param  Option  $option
+     * @param  list<string>  $selectedValues
      */
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {
@@ -504,6 +520,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return OptionsFieldConditionRule::class;
     }
 
+    /** @return list<\Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -618,6 +635,14 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return static::$multi;
     }
 
+    /**
+     * @return array{
+     *     name:string|null,
+     *     type:Type,
+     *     args:array<string, ArgumentConfig>,
+     *     resolve:string,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -629,6 +654,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ];
     }
 
+    /** @return Type|array{name:string, type:Type, description:string} */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -678,6 +704,8 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      *   ['label' => 'Banana', 'value' => 'banana'],
      * ]
      * ```
+     *
+     * @return list<Option|Optgroup>
      */
     protected function options(): array
     {
@@ -691,6 +719,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      * @param  mixed  $value  The field’s value. This will either be the [[normalizeValue()|normalized value]],
      *                        raw POST data (i.e. if there was a validation error), or null
      * @param  ElementInterface|null  $element  The element the field is associated with, if there is one
+     * @return list<array{optgroup:string}|array{label:string|null, value:string|list<string>, color?:string|null, icon?:string|null, custom?:true}>
      */
     protected function translatedOptions(bool $encode = false, mixed $value = null, ?ElementInterface $element = null): array
     {
@@ -736,9 +765,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $translatedOptions;
     }
 
-    /**
-     * Base64-encodes a value.
-     */
+    /** @return string|list<string>|null Base64-encodes a value. */
     protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
     {
         if ($value instanceof MultiOptionsFieldData) {

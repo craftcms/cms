@@ -29,13 +29,15 @@ use function CraftCms\Cms\enum_value;
  * ```
  *
  * @template T
+ *
+ * @implements IteratorAggregate<array-key, T>
  */
 class MemoizableArray implements Countable, IteratorAggregate
 {
-    /** @var array<int|string, mixed> Normalized elements */
+    /** @var array<int|string, T> Normalized elements */
     private array $normalized = [];
 
-    /** @var array<string, mixed> Memoized array elements */
+    /** @var array<string, T|self<T>|null> Memoized array elements */
     private array $memoized = [];
 
     /**
@@ -57,7 +59,7 @@ class MemoizableArray implements Countable, IteratorAggregate
     }
 
     /**
-     * @return Collection<T>
+     * @return Collection<array-key, T>
      */
     public function collect(): Collection
     {
@@ -73,7 +75,7 @@ class MemoizableArray implements Countable, IteratorAggregate
      * @param  string  $key  the column name whose result will be used to index the array
      * @param  mixed  $value  the value that `$key` should be compared with
      * @param  bool  $strict  whether a strict type comparison should be used when checking array element values against `$value`
-     * @return self the filtered array
+     * @return self<T> the filtered array
      */
     public function where(string $key, mixed $value = true, bool $strict = false): self
     {
@@ -106,9 +108,9 @@ class MemoizableArray implements Countable, IteratorAggregate
      * Array keys are preserved by default.
      *
      * @param  string  $key  the column name whose result will be used to index the array
-     * @param  array  $values  the value that `$key` should be compared with
+     * @param  list<mixed>  $values  the value that `$key` should be compared with
      * @param  bool  $strict  whether a strict type comparison should be used when checking array element values against `$values`
-     * @return self the filtered array
+     * @return self<T> the filtered array
      */
     public function whereIn(string $key, array $values, bool $strict = false): self
     {
@@ -164,6 +166,7 @@ class MemoizableArray implements Countable, IteratorAggregate
         return $this->memoized[$memKey] = $this->normalizeByKey($valueKey);
     }
 
+    /** @return ArrayIterator<array-key, T> */
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->normalize($this->elements));
@@ -174,6 +177,10 @@ class MemoizableArray implements Countable, IteratorAggregate
         return count($this->elements);
     }
 
+    /**
+     * @param  array<array-key, T>  $elements
+     * @return array<array-key, T>
+     */
     private function normalize(array $elements): array
     {
         if (! isset($this->normalizer)) {
@@ -193,9 +200,7 @@ class MemoizableArray implements Countable, IteratorAggregate
             return $this->elements[$key];
         }
 
-        if (! isset($this->normalized[$key])) {
-            $this->normalized[$key] = call_user_func($this->normalizer, $this->elements[$key], $key);
-        }
+        $this->normalized[$key] ??= call_user_func($this->normalizer, $this->elements[$key], $key);
 
         return $this->normalized[$key];
     }

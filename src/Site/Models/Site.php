@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site\Models;
 
+use CraftCms\Cms\Database\Factories\SiteFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
@@ -17,7 +18,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Site extends BaseModel
 {
+    /** @use HasFactory<SiteFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

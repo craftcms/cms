@@ -85,6 +85,30 @@ abstract class Widget extends Component implements WidgetInterface
         return array_pop($classNameParts);
     }
 
+    #[Override]
+    public function getType(): string
+    {
+        return static::class;
+    }
+
+    #[Override]
+    public function getIcon(): ?string
+    {
+        return static::icon();
+    }
+
+    #[Override]
+    public function getDisplayName(): string
+    {
+        return static::displayName();
+    }
+
+    #[Override]
+    public function getMaxColspan(): ?int
+    {
+        return static::maxColspan();
+    }
+
     /**
      * Returns the widget’s title.
      *
@@ -133,6 +157,7 @@ EOD;
         return $this->getSettings();
     }
 
+    /** @param array<string, mixed>|WidgetModel $config */
     public static function fromConfig(array|WidgetModel $config): WidgetInterface
     {
         if ($config instanceof WidgetModel) {

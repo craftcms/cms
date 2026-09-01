@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import type {SelectItem, SelectOption} from '@/common/types';
 
 function addBooleanData(
@@ -14,7 +14,7 @@ function addBooleanData(
     ? {
         ...option,
         data: {
-          ...(option.data || {}),
+          ...option.data,
           hint: option.data?.boolean === '1' ? trueLabel : falseLabel,
           indicator: option.data?.boolean
             ? {

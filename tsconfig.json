@@ -6,19 +6,22 @@
     "paths": {
       "@/*": ["./resources/js/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
-      "@craftcms/cp/vue/*": ["./node_modules/@craftcms/cp/dist/vue/*"],
       "@icons/*": ["./cms-assets/resources/icons/*"],
       "@public/*": ["./resources/public/*"],
-      "@routes/*": ["./resources/js/routes/craft/*"],
+      "@routes/*": ["./resources/js/routes/craft/*"]
     },
     "types": ["vite/client"]
   },
   "include": [
     "resources/js/**/*.ts",
     "resources/js/**/*.d.ts",
-    "resources/js/**/*.vue"
+    "resources/js/**/*.vue",
+    "tests/TestClasses/TestPlugin/resources/js/**/*.ts",
+    "tests/TestClasses/TestPlugin/resources/js/**/*.vue",
+    "workbench/resources/js/**/*.ts",
+    "workbench/resources/js/**/*.vue",
+    "yii2-adapter/resources/js/**/*.ts",
+    "yii2-adapter/resources/js/**/*.vue"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

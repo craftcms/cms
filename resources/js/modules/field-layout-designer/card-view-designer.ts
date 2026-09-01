@@ -15,25 +15,29 @@ declare const axios: any;
  */
 export class CardViewDesigner extends Base {
   designer: FieldLayoutDesigner;
-  $container: any = null;
+  $container: HTMLElement;
   $previewContainer: any = null;
-  $libraryContainer: any = null;
+  $libraryContainer: HTMLElement;
   sortableCheckboxSelect: any = null;
   $thumbManagementContainer: any = null;
   alwaysShowThumbAlignmentBtns = false;
   cancelToken: any = null;
   attribute: any = null;
 
-  constructor(designer: FieldLayoutDesigner, container: any) {
+  constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
     this.designer = designer;
     this.$container = container;
     cvdData.set(this.$container, this);
 
     this.$previewContainer = this.$container.querySelector('.cvd-preview');
-    this.$libraryContainer = this.$container.querySelector(
+    const libraryContainer = this.$container.querySelector(
       '.cvd-library .cp-checkbox-select'
     );
+    if (!(libraryContainer instanceof HTMLElement)) {
+      throw new Error('Card view designer requires a checkbox library.');
+    }
+    this.$libraryContainer = libraryContainer;
 
     // The <craft-sortable-checkbox-select> custom element boots the sortable list
     // itself; the CVD only consumes the DOM events it emits (see
@@ -81,7 +85,10 @@ export class CardViewDesigner extends Base {
   listenToCheckboxEvents(): void {
     // trigger preview update when items are checked/unchecked
     this.addListener(this.$libraryContainer, 'change', (ev: any) => {
-      if ((ev.target as HTMLElement).matches('input[type=checkbox]')) {
+      if (
+        ev.target instanceof HTMLElement &&
+        ev.target.matches('input[type=checkbox]')
+      ) {
         this.updateCardViewConfig();
         this.updatePreview();
       }
@@ -97,10 +104,10 @@ export class CardViewDesigner extends Base {
   updateCardViewConfig(): void {
     this.designer.updateConfig((config: any) => {
       // can't rely on :checked
-      config.cardView = (
-        Array.from(
-          this.$libraryContainer.querySelectorAll('input[type=checkbox]')
-        ) as HTMLInputElement[]
+      config.cardView = Array.from(
+        this.$libraryContainer.querySelectorAll<HTMLInputElement>(
+          'input[type=checkbox]'
+        )
       )
         .filter((el) => el.checked)
         .map((el) => el.value);
@@ -197,8 +204,8 @@ export class CardViewDesigner extends Base {
     const $draggable = this.findCheckboxByValue(value);
 
     if ($draggable) {
-      const updateConfig = (
-        $draggable.querySelector('input[type="checkbox"]') as HTMLInputElement
+      const updateConfig = $draggable.querySelector<HTMLInputElement>(
+        'input[type="checkbox"]'
       )?.checked;
       $draggable.remove();
 
@@ -333,12 +340,11 @@ export class CardViewDesigner extends Base {
 
   /**
    * Tear down the CVD so the FLD can be re-booted (host innerHTML swap): cancel any
-   * in-flight preview, dispose the checkbox library, clear the `cvdData`
-   * back-reference, then run the base teardown. Detached-DOM listeners are GC'd.
+   * in-flight preview, clear the `cvdData` back-reference, then run the base
+   * teardown. The sortable checkbox custom element owns its controller teardown.
    */
   override destroy(): void {
     this.cancelToken?.cancel();
-    this.sortableCheckboxSelect?.destroy();
     this.sortableCheckboxSelect = null;
 
     if (this.$container) {

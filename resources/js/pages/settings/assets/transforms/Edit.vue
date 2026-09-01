@@ -1,274 +1,179 @@
 <script setup lang="ts">
-  import Pane from '@/common/components/Pane.vue';
-  import {useInputGenerator} from '@/common/composables/useInputGenerator';
-  import useCraftData from '@/common/composables/useCraftData';
-  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
-  import {store as saveTransform} from '@actions/Settings/ImageTransformsController';
-  import {t, toHandle} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputColor from '@craftcms/cp/vue/CraftInputColor.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import {useForm} from '@inertiajs/vue3';
-  import type {BaseOption} from '@/common/types';
-  import {computed} from 'vue';
+  import {t} from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
+  import type {UrlMethodPair} from '@inertiajs/core';
+  import type {
+    FormControlOverrideProps,
+    FormControlPayload,
+    FormPayload,
+    FormValue,
+  } from '@/modules/forms/types';
+  import {inputName} from '@/modules/forms/runtime';
+  import FormPage from '@/pages/Form.vue';
   import cropImageUrl from '/images/transforms/crop.svg';
   import fitImageUrl from '/images/transforms/fit.svg';
   import letterboxImageUrl from '/images/transforms/letterbox.svg';
   import stretchImageUrl from '/images/transforms/stretch.svg';
 
-  interface QualityOption extends Omit<BaseOption, 'value'> {
-    value: number;
-  }
+  type ChoiceValue = boolean | number | string;
+  type ChoiceOption = {
+    label: string;
+    value: ChoiceValue;
+    disabled?: boolean;
+  };
 
-  const props = defineProps<{
-    transform: CraftCms.Cms.Image.Data.ImageTransform;
-    modeOptions: Array<BaseOption>;
-    positionOptions: Array<BaseOption>;
-    interlaceOptions: Array<BaseOption>;
-    formatOptions: Array<BaseOption>;
-    qualityOptions: Array<QualityOption>;
+  defineProps<{
+    form: FormPayload;
+    submit: UrlMethodPair;
+    refreshUrl: string | null;
   }>();
 
-  const {readOnly} = useCraftData();
-
-  const form = useForm({
-    transformId: props.transform.id,
-    name: props.transform.name ?? '',
-    handle: props.transform.handle ?? '',
-    width: props.transform.width ?? '',
-    height: props.transform.height ?? '',
-    mode: props.transform.mode,
-    position: props.transform.position,
-    quality: props.transform.quality ?? '',
-    interlace: props.transform.interlace,
-    format: props.transform.format ?? '',
-    fill:
-      props.transform.fill && props.transform.fill !== 'transparent'
-        ? props.transform.fill.replace(/^#/, '')
-        : '',
-    upscale: props.transform.upscale,
-  });
-
-  const modeImageUrls: Record<string, string> = {
+  const modeImageUrls = {
     crop: cropImageUrl,
     fit: fitImageUrl,
     letterbox: letterboxImageUrl,
     stretch: stretchImageUrl,
   };
 
-  const modeOptions = computed(() =>
-    props.modeOptions.map((option) => ({
-      ...option,
-      imageUrl: modeImageUrls[option.value],
-    }))
-  );
+  function isTransformMode(value: string): value is keyof typeof modeImageUrls {
+    return Object.hasOwn(modeImageUrls, value);
+  }
 
-  const positionLabel = computed(() =>
-    form.mode === 'letterbox' ? t('Image Position') : t('Default Focal Point')
-  );
+  function modeImageUrl(value: FormValue): string {
+    const mode = String(value);
+    if (isTransformMode(mode)) {
+      return modeImageUrls[mode];
+    }
 
-  const shouldShowFillColor = computed(() => form.mode === 'letterbox');
-  const shouldShowPosition = computed(
-    () => form.mode === 'crop' || form.mode === 'letterbox'
-  );
+    throw new Error(`Unsupported transform mode: ${mode}`);
+  }
 
-  function matchingQualityOptionValue(quality: string | number | null): string {
+  function options(control: FormControlPayload): ChoiceOption[] {
+    // SAFETY: choice controls serialize this documented option shape.
+    return control.props.options as ChoiceOption[];
+  }
+
+  function qualityPickerValue(
+    control: FormControlPayload,
+    quality: FormValue
+  ): string {
     const numericQuality = Number(quality);
 
     if (!numericQuality) {
-      return '0';
+      return '';
     }
 
-    const matchedValue = props.qualityOptions.reduce((matchedValue, option) => {
-      return numericQuality >= option.value ? option.value : matchedValue;
-    }, 10);
-
-    return String(matchedValue);
+    return String(
+      options(control)
+        .filter((option) => Number(option.value) > 0)
+        .reduce<ChoiceValue>(
+          (matchedValue, option) =>
+            numericQuality >= Number(option.value)
+              ? option.value
+              : matchedValue,
+          10
+        )
+    );
   }
 
-  const qualityPickerValue = computed({
-    get: () => matchingQualityOptionValue(form.quality),
-    set(value: string) {
-      const numericValue = Number(value);
+  function setQualityPreset(
+    value: ChoiceValue | undefined,
+    setValue: FormControlOverrideProps['setValue']
+  ): void {
+    const numericValue = Number(value);
 
-      form.quality = numericValue ? String(numericValue) : '';
-    },
-  });
-
-  const handleGenerator = useInputGenerator(
-    () => form.name,
-    (value) => (form.handle = toHandle(value))
-  );
-
-  if (props.transform.id) {
-    handleGenerator.stop();
+    setValue(numericValue ? String(numericValue) : '', 'discrete');
   }
-
-  const {save} = useSettingsSave(form, saveTransform);
-
-  useAppLayout({form, onSave: save});
 </script>
 
 <template>
-  <Pane appearance="raised">
-    <div class="grid gap-3">
-      <CraftInput
-        :label="t('Name')"
-        id="name"
-        name="name"
-        v-model="form.name"
-        :error="form.errors.name"
-        :disabled="readOnly"
-        required
-        autofocus
-      />
-
-      <CraftInputHandle
-        :label="t('Handle')"
-        id="handle"
-        name="handle"
-        v-model="form.handle"
-        :error="form.errors.handle"
-        :disabled="readOnly"
-        required
-        @change="handleGenerator.markDirty()"
-      />
-
-      <div class="field">
-        <div class="heading">
-          <label id="mode-label">{{ t('Mode') }}</label>
-        </div>
-
-        <div
-          class="mode-options"
-          role="radiogroup"
-          aria-labelledby="mode-label"
+  <FormPage
+    :form="form"
+    :submit="submit"
+    :refresh-url="refreshUrl ?? undefined"
+  >
+    <template
+      #mode="{control, value, setValue, editable, invalid, required, label}"
+    >
+      <div
+        class="mode-options"
+        role="radiogroup"
+        :aria-label="label"
+        :aria-invalid="invalid ? 'true' : undefined"
+        :aria-required="required ? 'true' : undefined"
+      >
+        <label
+          v-for="option in options(control)"
+          :key="String(option.value)"
+          class="mode-option"
+          :class="{'mode-option--selected': value === option.value}"
         >
-          <label
-            v-for="option in modeOptions"
-            :key="option.value"
-            class="mode-option"
-            :class="{'mode-option--selected': form.mode === option.value}"
-          >
-            <img
-              class="mode-option__image"
-              :src="option.imageUrl"
-              width="113"
-              height="75"
-              alt=""
-            />
-            <span class="mode-option__label">
-              <input
-                v-model="form.mode"
-                type="radio"
-                name="mode"
-                :value="option.value"
-                :disabled="readOnly"
-              />
-              {{ option.label }}
-            </span>
-          </label>
-        </div>
-
-        <ul v-if="form.errors.mode" class="error-list">
-          <li>{{ form.errors.mode }}</li>
-        </ul>
-      </div>
-
-      <CraftInputColor
-        v-if="shouldShowFillColor"
-        id="fill"
-        name="fill"
-        :label="t('Fill Color')"
-        v-model="form.fill"
-        :error="form.errors.fill"
-        :disabled="readOnly"
-      />
-
-      <div v-if="shouldShowPosition" class="field">
-        <div class="heading">
-          <label id="position-label">{{ positionLabel }}</label>
-        </div>
-
-        <div
-          class="position-grid"
-          role="radiogroup"
-          aria-labelledby="position-label"
-        >
-          <label
-            v-for="option in positionOptions"
-            :key="option.value"
-            class="position-option"
-            :class="{
-              'position-option--selected': form.position === option.value,
-              'position-option--disabled': readOnly,
-            }"
-            :title="option.label"
-          >
+          <img
+            class="mode-option__image"
+            :src="modeImageUrl(option.value)"
+            width="113"
+            height="75"
+            alt=""
+          />
+          <span class="mode-option__label">
             <input
-              v-model="form.position"
               type="radio"
-              name="position"
-              :value="option.value"
-              :disabled="readOnly"
-              :aria-label="option.label"
+              :name="editable ? inputName(control.path) : ''"
+              :value="String(option.value)"
+              :checked="value === option.value"
+              :disabled="!editable || option.disabled"
+              :required="editable && required"
+              @change="setValue(String(option.value), 'discrete')"
             />
-            <span class="position-option__marker"></span>
-          </label>
-        </div>
-
-        <ul v-if="form.errors.position" class="error-list">
-          <li>{{ form.errors.position }}</li>
-        </ul>
+            {{ option.label }}
+          </span>
+        </label>
       </div>
+    </template>
 
-      <CraftInput
-        :label="t('Width')"
-        id="width"
-        name="width"
-        v-model="form.width"
-        :error="form.errors.width"
-        :disabled="readOnly"
-        inputmode="numeric"
-        size="5"
-      />
+    <template #position="{control, value, setValue, editable, invalid, label}">
+      <div
+        class="position-grid"
+        role="radiogroup"
+        :aria-label="label"
+        :aria-invalid="invalid ? 'true' : undefined"
+      >
+        <label
+          v-for="option in options(control)"
+          :key="String(option.value)"
+          class="position-option"
+          :class="{
+            'position-option--selected': value === option.value,
+            'position-option--disabled': !editable || option.disabled,
+          }"
+          :title="option.label"
+        >
+          <input
+            type="radio"
+            :name="editable ? inputName(control.path) : ''"
+            :value="String(option.value)"
+            :checked="value === option.value"
+            :disabled="!editable || option.disabled"
+            :aria-label="option.label"
+            @change="setValue(String(option.value), 'discrete')"
+          />
+          <span class="position-option__marker"></span>
+        </label>
+      </div>
+    </template>
 
-      <CraftInput
-        :label="t('Height')"
-        id="height"
-        name="height"
-        v-model="form.height"
-        :error="form.errors.height"
-        :disabled="readOnly"
-        inputmode="numeric"
-        size="5"
-      />
-
-      <CraftSwitch
-        :label="t('Allow Upscaling')"
-        id="upscale"
-        name="upscale"
-        v-model="form.upscale"
-        :error="form.errors.upscale"
-        :disabled="readOnly"
-      />
-
+    <template #quality="{control, value, setValue, editable}">
       <div class="quality-field">
         <CraftSelect
-          :label="t('Quality')"
-          id="quality-picker"
-          v-model="qualityPickerValue"
-          :error="form.errors.quality"
-          :disabled="readOnly"
+          :model-value="qualityPickerValue(control, value)"
+          :disabled="!editable"
+          @update:model-value="setQualityPreset($event, setValue)"
         >
-          <select slot="input">
-            <option value="0">{{ t('Auto') }}</option>
+          <select slot="input" :aria-label="t('Quality preset')">
             <option
-              v-for="option in qualityOptions"
-              :key="option.value"
+              v-for="option in options(control)"
+              :key="String(option.value)"
               :value="String(option.value)"
             >
               {{ option.label }}
@@ -277,79 +182,23 @@
         </CraftSelect>
 
         <CraftInput
-          v-show="qualityPickerValue !== '0'"
-          id="quality"
-          name="quality"
-          v-model="form.quality"
-          :error="form.errors.quality"
-          :disabled="readOnly"
+          v-show="qualityPickerValue(control, value) !== ''"
+          :name="editable ? inputName(control.path) : ''"
+          :model-value="String(value ?? '')"
+          :disabled="!editable"
+          :aria-label="t('Quality')"
           type="number"
           min="1"
           max="100"
           size="5"
+          @update:model-value="setValue(String($event ?? ''), 'typing')"
         />
       </div>
-
-      <CraftSelect
-        :label="t('Interlacing')"
-        id="interlace"
-        name="interlace"
-        v-model="form.interlace"
-        :error="form.errors.interlace"
-        :disabled="readOnly"
-      >
-        <select slot="input">
-          <option
-            v-for="option in interlaceOptions"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </CraftSelect>
-
-      <CraftSelect
-        :label="t('Image Format')"
-        :help-text="t('The image format that transformed images should use.')"
-        id="format"
-        name="format"
-        v-model="form.format"
-        :error="form.errors.format"
-        :disabled="readOnly"
-      >
-        <select slot="input">
-          <option
-            v-for="option in formatOptions"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </CraftSelect>
-    </div>
-  </Pane>
+    </template>
+  </FormPage>
 </template>
 
 <style scoped>
-  .field > .heading {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 5px;
-    min-block-size: calc(22rem / 16);
-    margin-block: -5px 5px;
-  }
-
-  .field > .heading > label {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 5px;
-    font-weight: 700;
-  }
-
   .mode-options {
     display: flex;
     flex-wrap: wrap;

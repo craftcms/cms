@@ -56,10 +56,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\CpDataResolving;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
-use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\LinkTypesResolving;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
+use CraftCms\Cms\Field\FieldTypes;
+use CraftCms\Cms\Field\LinkTypes;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
+use CraftCms\Cms\FieldLayout\NativeFields;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
@@ -80,6 +81,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use PDOException;
+use yii\base\Component;
 
 use function CraftCms\Cms\t;
 
@@ -116,7 +118,7 @@ class DeprecatedConcepts
     }
 
     /**
-     * @return class-string<\yii\base\Component>
+     * @return class-string<Component>
      */
     private static function legacyArgumentManagerClass(): string
     {
@@ -125,7 +127,7 @@ class DeprecatedConcepts
     }
 
     /**
-     * @return class-string<\yii\base\Component>
+     * @return class-string<Component>
      */
     private static function legacyElementQueryConditionBuilderClass(): string
     {
@@ -152,20 +154,13 @@ class DeprecatedConcepts
             Gate::policy(Tag::class, TagPolicy::class);
         }
 
-        Event::listen(FieldTypesResolving::class, function(FieldTypesResolving $event) {
-            if (DeprecatedConcepts::supportsCategories()) {
-                $event->types->add(CategoriesField::class);
-            }
-            if (DeprecatedConcepts::supportsTags()) {
-                $event->types->add(TagsField::class);
-            }
-        });
-
-        Event::listen(LinkTypesResolving::class, function(LinkTypesResolving $event) {
-            if (DeprecatedConcepts::supportsCategories()) {
-                $event->types[] = CategoryLinkType::class;
-            }
-        });
+        if (DeprecatedConcepts::supportsCategories()) {
+            app(FieldTypes::class)->register(CategoriesField::class);
+            app(LinkTypes::class)->register(CategoryLinkType::class);
+        }
+        if (DeprecatedConcepts::supportsTags()) {
+            app(FieldTypes::class)->register(TagsField::class);
+        }
 
         Event::listen(RunningGarbageCollection::class, function(RunningGarbageCollection $event) {
             $event->garbageCollection->runActions(array_filter([
@@ -426,7 +421,7 @@ class DeprecatedConcepts
                     $newItems[] = [
                         'label' => t('Globals', category: 'yii2-adapter'),
                         'url' => 'globals',
-                        'icon' => 'globe',
+                        'icon' => 'regular/globe',
                     ];
                 }
                 if (
@@ -489,7 +484,7 @@ class DeprecatedConcepts
                 $event->data['editableCategoryGroups'] = collect(Craft::$app->getCategories()->getEditableGroups())
                     ->map(fn(CategoryGroup $group) => [
                         'handle' => $group->handle,
-                        'id' => (int)$group->id,
+                        'id' => (int) $group->id,
                         'name' => Craft::t('site', $group->name),
                         'uid' => $group->uid,
                     ])
@@ -556,13 +551,17 @@ class DeprecatedConcepts
         // Legacy `view` global remains available through the adapter layer only.
         Twig::registerExtension(new Extension());
 
-        Event::listen(function(NativeFieldsResolving $event) {
-            switch ($event->fieldLayout->type) {
+        $nativeFields = app(NativeFields::class);
+        $nativeFields->remove('yii2-adapter:deprecated-concepts');
+        $nativeFields->register('yii2-adapter:deprecated-concepts', function(FieldLayout $fieldLayout, array $fields): array {
+            switch ($fieldLayout->type) {
                 case Category::class:
                 case Tag::class:
-                    $event->fields[] = TitleField::class;
+                    $fields[] = TitleField::class;
                     break;
             }
+
+            return $fields;
         });
 
         if (DeprecatedConcepts::supportsTags()) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
+use ArrayAccess;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
@@ -17,8 +18,8 @@ class Arr extends \Illuminate\Support\Arr
      * Converts an object or an array of objects into an array.
      *
      * @param  mixed  $object  the object to be converted into an array
-     * @param  array  $properties  a mapping from object class names to the properties that need to put into the resulting arrays.
-     *                             The properties specified for each class are an array of the following format:
+     * @param  array<class-string, array<int|string, string|callable>>  $properties  a mapping from object class names to the properties that need to put into the resulting arrays.
+     *                                                                               The properties specified for each class are an array of the following format:
      *
      * ```php
      * [
@@ -46,7 +47,7 @@ class Arr extends \Illuminate\Support\Arr
      * ]
      * ```
      * @param  bool  $recursive  whether to recursively convert properties which are objects into arrays.
-     * @return array the array representation of the object
+     * @return array<array-key, mixed> the array representation of the object
      */
     public static function toArray(mixed $object, array $properties = [], bool $recursive = true): array
     {
@@ -140,8 +141,8 @@ class Arr extends \Illuminate\Support\Arr
      * For integer-keyed elements, the elements from the latter array will
      * be appended to the former array.
      *
-     * @param  array  ...$arrays  The arrays to merge. The first array will be merged to.
-     * @return array the merged array (the original arrays are not changed.)
+     * @param  array<array-key, mixed>  ...$arrays  The arrays to merge. The first array will be merged to.
+     * @return array<array-key, mixed> the merged array (the original arrays are not changed.)
      */
     public static function merge(array ...$arrays): array
     {
@@ -171,6 +172,8 @@ class Arr extends \Illuminate\Support\Arr
     /**
      * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
      * to dot notation (`x.y.z`).
+     *
+     * @param  array<array-key, mixed>|ArrayAccess<array-key, mixed>  $array
      */
     #[Override]
     public static function get($array, $key, $default = null)
@@ -185,6 +188,11 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Filter items where the value is not empty.
+     *
+     * @template TValue
+     *
+     * @param  array<array-key, TValue>  $array
+     * @return array<array-key, TValue>
      */
     public static function whereNotEmpty(array $array): array
     {
@@ -193,6 +201,8 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Checks whether a numerically-indexed array's keys are in ascending order.
+     *
+     * @param  array<array-key, mixed>  $array
      *
      * @since 6.x
      */
@@ -219,6 +229,8 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns whether all the elements in the array are numeric.
+     *
+     * @param  array<array-key, mixed>  $array
      */
     public static function isNumeric(array $array): bool
     {
@@ -227,17 +239,21 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns whether all the elements in the array are integers.
+     *
+     * @param  array<array-key, mixed>  $array
      */
     public static function isIndexed(array $array): bool
     {
         return Collection::make($array)->every(fn ($v) => is_int($v));
     }
 
+    /** @param iterable<array-key, mixed> $array */
     public static function contains(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
         return Collection::make($array)->contains($key, $strict ? '===' : '==', $value);
     }
 
+    /** @param iterable<array-key, mixed> $array */
     public static function containsRecursive(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
         foreach ($array as $element) {

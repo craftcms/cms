@@ -8,12 +8,13 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Override;
-use Throwable;
 
-class GenerateImageTransform extends Job
+class GenerateImageTransform extends Job implements ShouldBeUnique
 {
+    public int $uniqueFor = 300;
+
     public function __construct(
         public int $transformId,
         protected ?string $description = null,
@@ -21,24 +22,31 @@ class GenerateImageTransform extends Job
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(ImageTransformer $transformer): void
     {
-        $transformer = new ImageTransformer;
         $index = $transformer->getTransformIndexModelById($this->transformId);
 
-        if ($index && ! $index->fileExists) {
-            // Don't let an exception stop us from processing the rest
-            try {
-                /** @var Asset|null $asset */
-                $asset = Asset::find()->id($index->assetId)->one();
-
-                if ($asset) {
-                    $transformer->getTransformUrl($asset, $index->getTransform(), true);
-                }
-            } catch (Throwable $e) {
-                Log::warning('Image transform generation failed: '.$e->getMessage(), [__METHOD__]);
-            }
+        if (! $index) {
+            return;
         }
+
+        if ($index->fileExists) {
+            return;
+        }
+
+        /** @var Asset|null $asset */
+        $asset = Asset::find()->id($index->assetId)->one();
+
+        if (! $asset) {
+            return;
+        }
+
+        $transformer->getTransformUrlForIndex($asset, $index, true);
+    }
+
+    public function uniqueId(): string
+    {
+        return (string) $this->transformId;
     }
 
     #[Override]

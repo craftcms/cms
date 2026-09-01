@@ -43,14 +43,28 @@ abstract class BatchedElementJob extends BatchedJob
 
     protected function getQuery(): Builder
     {
-        /** @var ElementQuery $query */
-        $query = $this->elementType::find()->orderBy('elements.id');
+        $query = $this->elementType::find();
+        assert($query instanceof ElementQuery);
+        $query->orderBy('elements.id');
+        $criteria = $this->criteria;
+        unset($criteria['offset'], $criteria['limit']);
 
-        if (! empty($this->criteria)) {
-            Typecast::configure($query, $this->criteria);
+        if (! empty($criteria)) {
+            Typecast::configure($query, $criteria);
         }
 
         return $query;
+    }
+
+    #[\Override]
+    protected function queryOffset(): int
+    {
+        return (int) ($this->criteria['offset'] ?? 0);
+    }
+
+    protected function queryLimit(): ?int
+    {
+        return isset($this->criteria['limit']) ? (int) $this->criteria['limit'] : null;
     }
 
     protected function processItem(mixed $item): void

@@ -3,75 +3,100 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
-use CraftCms\Cms\Gql\Data\GqlSchema;
-use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
-use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
-use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\Handlers\RelatedAssets;
 use CraftCms\Cms\Gql\Handlers\RelatedEntries;
-use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Facades\Event;
+use CraftCms\Cms\Gql\Handlers\RelationArgumentHandler;
 
-beforeEach(function () {
-    app(Gql::class)->flushCaches();
-    app(Gql::class)->setActiveSchema(new GqlSchema);
-    Cms::config()->enableGraphqlCaching = false;
-});
+it('supports class and factory handlers registered by argument name', function () {
+    $registry = app(GqlArguments::class);
+    $registry->register('initial', MultiplyArgumentHandler::class);
 
-it('registers custom argument handlers for gql execution', function () {
-    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
-        $event->queries['integrationQuery'] = [
-            'type' => Type::string(),
-            'args' => [
-                'initial' => Type::int(),
-                'multiplier' => Type::int(),
-                'result' => Type::int(),
-                'wipeInitial' => Type::boolean(),
-            ],
-            'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
-                if (! empty($context['argumentManager'])) {
-                    $arguments = $context['argumentManager']->prepareArguments($arguments);
-                }
-
-                ksort($arguments);
-
-                return json_encode($arguments);
-            },
-        ];
-    });
-
-    $handler = new class implements ArgumentHandlerInterface
-    {
-        public function handleArgumentCollection(array $argumentList = []): array
-        {
-            $argumentList['result'] = $argumentList['initial'] * $argumentList['multiplier'];
-
-            if (! empty($argumentList['wipeInitial'])) {
-                unset($argumentList['initial']);
-            }
-
-            return $argumentList;
-        }
-
-        public function setArgumentManager(ArgumentManager $argumentManager): void {}
-    };
-
-    Event::listen(GqlArgumentHandlersResolving::class, function (GqlArgumentHandlersResolving $event) use ($handler) {
-        $event->handlers['initial'] = $handler;
-    });
-
-    $result = app(Gql::class)->executeQuery(new GqlSchema(['id' => 1]), '{integrationQuery (initial: 5 multiplier: 2)}');
-
-    expect(json_decode((string) $result['data']['integrationQuery'], true))->toBe([
+    expect(new ArgumentManager()->prepareArguments([
+        'initial' => 5,
+        'multiplier' => 2,
+    ]))->toBe([
         'initial' => 5,
         'multiplier' => 2,
         'result' => 10,
     ]);
+
+    $factoryManager = null;
+    $factory = function (ArgumentManager $argumentManager) use (&$factoryManager) {
+        $factoryManager = $argumentManager;
+
+        return new ReplaceArgumentHandler;
+    };
+    $registry->register('initial', $factory);
+    $argumentManager = new ArgumentManager;
+
+    expect($argumentManager->prepareArguments([
+        'initial' => 5,
+        'multiplier' => 2,
+    ]))->toBe([
+        'initial' => 5,
+        'multiplier' => 2,
+        'result' => 99,
+    ])->and($factoryManager)->toBe($argumentManager);
+});
+
+it('injects container dependencies into class handlers', function () {
+    $dependency = new ArgumentHandlerDependency;
+    app()->instance(ArgumentHandlerDependency::class, $dependency);
+    app(GqlArguments::class)->register('containerBuilt', ContainerBuiltArgumentHandler::class);
+
+    expect(new ArgumentManager()->prepareArguments(['containerBuilt' => true]))
+        ->toHaveKey('dependency', $dependency);
+});
+
+it('reuses relation handler memoization within one manager but not across managers', function () {
+    MemoizedRelationArgumentHandler::$lookups = 0;
+    app(GqlArguments::class)->register('memoizedRelation', MemoizedRelationArgumentHandler::class);
+
+    $firstManager = new ArgumentManager;
+    $secondManager = new ArgumentManager;
+    $firstManager->prepareArguments(['memoizedRelation' => [1]]);
+    $firstManager->prepareArguments(['memoizedRelation' => [1]]);
+    $secondManager->prepareArguments(['memoizedRelation' => [1]]);
+
+    expect(MemoizedRelationArgumentHandler::$lookups)->toBe(2);
+});
+
+it('binds manager-local handlers when they are set', function () {
+    $argumentManager = new ArgumentManager;
+    $argumentManager->prepareArguments([]);
+
+    $argumentManager->setHandler('object', new ManagerLocalArgumentHandler);
+    $argumentManager->setHandler('class', ManagerLocalArgumentHandler::class);
+    $factoryReceivedManager = false;
+    $argumentManager->setHandler('factory', function (ArgumentManager $manager) use (&$factoryReceivedManager, $argumentManager) {
+        $factoryReceivedManager = $manager === $argumentManager;
+
+        return new ManagerLocalArgumentHandler;
+    });
+
+    expect($argumentManager->prepareArguments([
+        'object' => true,
+        'class' => true,
+        'factory' => true,
+    ]))->toHaveKey('boundHandlers', 3)
+        ->and($factoryReceivedManager)->toBeTrue();
+});
+
+it('rejects invalid factory results when handlers are first resolved', function () {
+    app(GqlArguments::class)->register('invalid', fn () => new stdClass);
+
+    expect(fn () => new ArgumentManager()->prepareArguments(['invalid' => true]))
+        ->toThrow(
+            InvalidArgumentException::class,
+            sprintf(
+                'Argument handler [invalid] must resolve to an instance of [%s].',
+                ArgumentHandlerInterface::class,
+            ),
+        );
 });
 
 it('prepares relation arguments with the registered handlers', function () {
@@ -96,9 +121,6 @@ it('prepares relation arguments with the registered handlers', function () {
         }
     };
 
-    $relatedAssets->setArgumentManager($argumentManager);
-    $relatedEntries->setArgumentManager($argumentManager);
-
     $argumentManager->setHandler('relatedToAssets', $relatedAssets);
     $argumentManager->setHandler('relatedToEntries', $relatedEntries);
 
@@ -114,3 +136,80 @@ it('prepares relation arguments with the registered handlers', function () {
         ],
     ]);
 });
+
+class MultiplyArgumentHandler implements ArgumentHandlerInterface
+{
+    public function handleArgumentCollection(array $argumentList = []): array
+    {
+        $argumentList['result'] = $argumentList['initial'] * $argumentList['multiplier'];
+
+        return $argumentList;
+    }
+
+    public function setArgumentManager(ArgumentManager $argumentManager): void {}
+}
+
+class ReplaceArgumentHandler implements ArgumentHandlerInterface
+{
+    public function handleArgumentCollection(array $argumentList = []): array
+    {
+        $argumentList['result'] = 99;
+
+        return $argumentList;
+    }
+
+    public function setArgumentManager(ArgumentManager $argumentManager): void {}
+}
+
+class ArgumentHandlerDependency {}
+
+class ContainerBuiltArgumentHandler implements ArgumentHandlerInterface
+{
+    public function __construct(
+        public ArgumentHandlerDependency $dependency,
+    ) {}
+
+    public function handleArgumentCollection(array $argumentList = []): array
+    {
+        $argumentList['dependency'] = $this->dependency;
+
+        return $argumentList;
+    }
+
+    public function setArgumentManager(ArgumentManager $argumentManager): void {}
+}
+
+class MemoizedRelationArgumentHandler extends RelationArgumentHandler
+{
+    public static int $lookups = 0;
+
+    #[Override]
+    protected string $argumentName = 'memoizedRelation';
+
+    #[Override]
+    protected function handleArgument($argumentValue): mixed
+    {
+        self::$lookups++;
+
+        return [[$argumentValue[0]]];
+    }
+}
+
+class ManagerLocalArgumentHandler implements ArgumentHandlerInterface
+{
+    public ?ArgumentManager $argumentManager = null;
+
+    public function handleArgumentCollection(array $argumentList = []): array
+    {
+        if ($this->argumentManager !== null) {
+            $argumentList['boundHandlers'] = ($argumentList['boundHandlers'] ?? 0) + 1;
+        }
+
+        return $argumentList;
+    }
+
+    public function setArgumentManager(ArgumentManager $argumentManager): void
+    {
+        $this->argumentManager = $argumentManager;
+    }
+}

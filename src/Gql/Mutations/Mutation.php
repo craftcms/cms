@@ -8,16 +8,16 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Gql\Concerns\HasGqlType;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Gql\Resolvers\MutationResolver;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\WrappingType;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 abstract class Mutation
 {
     use HasGqlType;
 
-    /**
-     * Returns the mutations defined by the class as an array.
-     */
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     abstract public static function getMutations(): array;
 
     /**
@@ -40,11 +40,17 @@ abstract class Mutation
                 $configArray = $innerType instanceof InputObjectType ? $innerType->config : [];
             }
 
-            if (! empty($configArray) && ! empty($configArray['normalizeValue'])) {
-                $resolver->setValueNormalizer($handle, $configArray['normalizeValue']);
+            if ($normalizer = self::valueNormalizer($configArray)) {
+                $resolver->setValueNormalizer($handle, $normalizer);
             }
         }
 
         $resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, $fieldList);
+    }
+
+    /** @param array{normalizeValue?: callable(mixed): mixed, ...} $config */
+    private static function valueNormalizer(array $config): ?callable
+    {
+        return $config['normalizeValue'] ?? null;
     }
 }

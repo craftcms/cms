@@ -29,14 +29,14 @@ class I18N
     private const string CONTEXT_FORMATTING_LOCALE = 'craft.formattingLocale';
 
     /**
-     * @var Collection<string> All of the known locales
+     * @var Collection<int, string> All of the known locales
      *
      * @see getAllLocaleIds()
      */
     private ?Collection $allLocaleIds = null;
 
     /**
-     * @var array[]
+     * @var array<string, array{aliasOf: string, displayName?: string}>
      *
      * @see getAllLocaleIds()
      */
@@ -50,7 +50,7 @@ class I18N
     private ?Collection $appLocaleIds = null;
 
     /**
-     * @var Collection<Locale>
+     * @var Collection<int, Locale>
      *
      * @see getAppLocales()
      */
@@ -163,7 +163,7 @@ class I18N
     /**
      * Returns a collection of all known locale IDs, according to the Intl extension.
      *
-     * @return Collection<string>
+     * @return Collection<int, string>
      *
      * @link https://php.net/manual/en/resourcebundle.locales.php
      */
@@ -202,7 +202,7 @@ class I18N
     /**
      * Returns a collection of all known locales.
      *
-     * @return Collection<Locale> A collection of [[Locale]] objects.
+     * @return Collection<int, Locale> A collection of [[Locale]] objects.
      *
      * @see getAllLocaleIds()
      */
@@ -218,7 +218,7 @@ class I18N
      * The list of locales is based on whatever files exist
      * in `vendor/craftcms/cms/resources/translations/`.
      *
-     * @return Collection<string> A collection of locale IDs.
+     * @return Collection<int, string> A collection of locale IDs.
      */
     public function getAppLocaleIds(): Collection
     {
@@ -232,7 +232,7 @@ class I18N
      * The list of locales is based on whatever files exist
      * in `vendor/craftcms/cms/resources/translations/`.
      *
-     * @return Collection<Locale> An array of [[Locale]] objects.
+     * @return Collection<int, Locale> An array of [[Locale]] objects.
      */
     public function getAppLocales(): Collection
     {
@@ -303,7 +303,7 @@ class I18N
     /**
      * Returns a collection of the site locale IDs.
      *
-     * @return Collection<string> A collection of locale IDs.
+     * @return Collection<int, string> A collection of locale IDs.
      */
     public function getSiteLocaleIds(): Collection
     {
@@ -316,7 +316,7 @@ class I18N
     /**
      * Returns a collection of the site locales.
      *
-     * @return Collection<Locale> A collection of [[Locale]] objects.
+     * @return Collection<int, Locale> A collection of [[Locale]] objects.
      */
     public function getSiteLocales(): Collection
     {
@@ -331,7 +331,7 @@ class I18N
     /**
      * Returns a list of locales that are editable by the current user.
      *
-     * @return Collection<Locale>
+     * @return Collection<int, Locale>
      */
     public function getEditableLocales(): Collection
     {
@@ -345,13 +345,16 @@ class I18N
     /**
      * Returns a collection of the editable locale IDs.
      *
-     * @return Collection<string>
+     * @return Collection<int, string>
      */
     public function getEditableLocaleIds(): Collection
     {
         return $this->getEditableLocales()->map(fn (Locale $locale) => $locale->id);
     }
 
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
     public function translate(string|Stringable|null $message, array $parameters = [], ?string $category = null, ?string $locale = null): string
     {
         if (! $message) {
@@ -462,7 +465,7 @@ class I18N
      * Prepares a source translation to be lazy-translated with [[translate()]].
      *
      * @param  string  $message  The message to be translated.
-     * @param  array  $params  The parameters that will be used to replace the corresponding placeholders in the message.
+     * @param  array<string, mixed>  $params  The parameters that will be used to replace the corresponding placeholders in the message.
      * @param  ?string  $category  The message category.
      * @param  ?string  $locale  The language code (e.g. `en-US`, `en`). If this is `null`, the current
      *                           language will be used by default.

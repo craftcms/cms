@@ -1,0 +1,42 @@
+/**
+ * Chrome owned by `panel-stack.ts` — the one shade shared by both slideout
+ * implementations, plus a defensive copy of the body scroll lock.
+ */
+
+.cp-slideout-shade {
+  position: fixed;
+  inset: 0;
+  /* The same token `.slideout-shade` uses in `resources/css/slideout.css`, so
+     this looks identical to the shade it replaced. */
+  background: var(--c-surface-shade, rgb(0 0 0 / 25%));
+  opacity: 0;
+  /* Inert until shown. The shade is appended once and left in place rather
+     than removed on close, so it must not swallow clicks in between —
+     removing it on a `transitionend` that may never fire would. */
+  pointer-events: none;
+  /* One below `.slideout-container` / `.slideout-panel`, which both sit at
+     100. The Vue stack teleports its panels into `<body>` and the legacy
+     stack appends its own, so their relative DOM order isn't something this
+     module can rely on to keep the shade underneath — the z-index does it
+     instead. Nothing else in the CP occupies 99 but tooltips, which belong
+     under the shade anyway. */
+  z-index: 99;
+}
+
+.cp-slideout-shade.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cp-slideout-shade {
+    transition: opacity linear 250ms;
+  }
+}
+
+/* The legacy stylesheet defines this too (as `overflow: hidden !important`);
+   repeated here so the scroll lock still works on a CP surface that doesn't
+   load the legacy bundle. */
+body.no-scroll {
+  overflow: hidden;
+}

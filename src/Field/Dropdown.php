@@ -66,12 +66,6 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    #[\Override]
-    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
-    {
-        return $this->inputHtmlInternal($value, $element, true);
-    }
-
     private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         /** @var SingleOptionFieldData $value */
@@ -116,6 +110,7 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         ]);
     }
 
+    /** @return string|list<string> */
     #[\Override]
     protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array
     {
@@ -130,6 +125,10 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         return t('Dropdown Options');
     }
 
+    /**
+     * @param  array{label:string, value:string, default?:bool|string, icon?:string|null, color?:string|null}  $option
+     * @param  list<string>  $selectedValues
+     */
     #[\Override]
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {

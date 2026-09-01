@@ -14,6 +14,7 @@ class UserSettings extends Component
 
     public ?string $photoSubpath = null;
 
+    /** @var string[]|string|false */
     #[LiteralTypeScriptType('false | "all" | Array<string>')]
     public array|string|false $require2fa = false;
 

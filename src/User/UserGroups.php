@@ -47,7 +47,7 @@ readonly class UserGroups
     /**
      * Returns all user groups.
      *
-     * @return Collection<UserGroup>
+     * @return Collection<int, UserGroup>
      */
     public function getAllGroups(): Collection
     {
@@ -65,7 +65,7 @@ readonly class UserGroups
      * Returns the user groups that the current user is allowed to assign to another user.
      *
      * @param  User|null  $user  The recipient of the user groups. If set, their current groups will be included as well.
-     * @return Collection<UserGroup>
+     * @return Collection<int, UserGroup>
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
@@ -180,7 +180,7 @@ readonly class UserGroups
     /**
      * Gets user groups by a user ID.
      *
-     * @return Collection<UserGroup>
+     * @return Collection<int, UserGroup>
      */
     public function getGroupsByUserId(int $userId): Collection
     {

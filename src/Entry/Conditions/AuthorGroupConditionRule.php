@@ -46,9 +46,9 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
         return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         $query->authorGroupId($this->paramValue(fn ($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
     }
 

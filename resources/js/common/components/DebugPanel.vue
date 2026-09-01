@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {ref} from 'vue';
   import VarDump from '@/common/components/VarDump.vue';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';

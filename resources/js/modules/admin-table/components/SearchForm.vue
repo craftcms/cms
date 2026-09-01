@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {type FormComponentProps} from '@inertiajs/core';
   import {Form} from '@inertiajs/vue3';
   import {useDebounceFn} from '@vueuse/core';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 
   const searchTerm = defineModel<string>();
   defineProps<FormComponentProps & {}>();

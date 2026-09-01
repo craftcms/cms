@@ -1,4 +1,4 @@
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig, loadEnv, lazyPlugins} from 'vite-plus';
 import laravel from 'laravel-vite-plugin';
 import inertia from '@inertiajs/vite';
 import {exec} from 'child_process';
@@ -49,7 +49,55 @@ function serveResourcesLegacy() {
   };
 }
 
-function typescriptTransformer() {
+/** Everything the PHP-backed codegen plugins write into resources/js. */
+const PHP_GENERATED_PATHS = [
+  'resources/js/generated',
+  'resources/js/actions',
+  'resources/js/routes',
+  'resources/js/wayfinder',
+];
+
+/**
+ * Whether to bundle the PHP-generated sources already on disk rather than
+ * regenerating them.
+ *
+ * Both the TypeScript transformer and Wayfinder shell out to
+ * `./vendor/bin/testbench`, so any build that regenerates needs a PHP runtime
+ * matching Composer's resolved platform — under an older PHP the whole of
+ * `vendor` parses as syntax errors. Builds that only bundle output someone
+ * else generated (the Storybook deploy jobs restore these paths from the
+ * build-assets cache) opt out and skip installing PHP altogether.
+ */
+function skipPhpCodegen(env) {
+  if (
+    !['1', 'true'].includes(
+      String(env.CRAFT_SKIP_PHP_CODEGEN ?? '').toLowerCase()
+    )
+  ) {
+    return false;
+  }
+
+  // Opting out only makes sense when that output is actually present. Bundling
+  // without it yields a broken build that surfaces as unrelated-looking module
+  // resolution errors, so fail loudly and early instead.
+  const missing = PHP_GENERATED_PATHS.filter(
+    (dir) => !fs.existsSync(dir) || !fs.readdirSync(dir).length
+  );
+
+  if (missing.length) {
+    throw new Error(
+      'CRAFT_SKIP_PHP_CODEGEN is set, but these are missing or empty:\n' +
+        missing.map((dir) => `  - ${dir}`).join('\n') +
+        '\n\nGenerate them first with `vp run generate:types` and ' +
+        '`vp run generate:wayfinder`\n(both need PHP), or unset the variable ' +
+        'to generate them as part of this build.'
+    );
+  }
+
+  return true;
+}
+
+function typescriptTransformer(skip = false) {
   const command = './vendor/bin/testbench typescript:transform';
 
   let context;
@@ -82,6 +130,14 @@ function typescriptTransformer() {
     buildStart() {
       context = this;
 
+      if (skip) {
+        context.info(
+          'Reusing existing TypeScript transformer types (CRAFT_SKIP_PHP_CODEGEN)'
+        );
+
+        return;
+      }
+
       return runCommand();
     },
     async handleHotUpdate({file, server}) {
@@ -97,6 +153,7 @@ function typescriptTransformer() {
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
   const publicDirectory = 'cms-assets/resources';
+  const skipCodegen = skipPhpCodegen(env);
 
   let server = undefined;
   if (env.APP_URL) {
@@ -117,6 +174,81 @@ export default defineConfig(({mode}) => {
   }
 
   return {
+    lint: {
+      plugins: ['oxc', 'typescript', 'unicorn', 'react', 'vue'],
+      categories: {
+        correctness: 'warn',
+      },
+      env: {
+        browser: true,
+        builtin: true,
+      },
+      ignorePatterns: [
+        '**/*',
+        '!resources/js/**',
+        '!workbench/resources/js/**',
+        'resources/build/**',
+        'resources/legacy/**',
+        'resources/js/**/fixtures/**',
+      ],
+      overrides: [
+        {
+          files: ['resources/js/**/*.{ts,vue}'],
+          rules: {
+            'no-undef': 'off',
+            'vue/require-default-prop': 'off',
+            'typescript/no-explicit-any': 'off',
+          },
+          globals: {
+            Craft: 'readonly',
+            Garnish: 'readonly',
+          },
+        },
+      ],
+      options: {
+        typeAware: true,
+        typeCheck: true,
+      },
+      jsPlugins: [
+        {
+          name: 'vite-plus',
+          specifier: 'vite-plus/oxlint-plugin',
+        },
+      ],
+    },
+    staged: {
+      'yii2-adapter/**/*.php':
+        './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix',
+      '!(yii2-adapter)/**/*.php': ['./vendor/bin/rector', './vendor/bin/pint'],
+      'yii2-adapter/**/*.scss':
+        'stylelint --fix --allow-empty-input -c ./yii2-adapter/.stylelintrc.json',
+      '!(yii2-adapter)/**/*.scss': 'stylelint --fix --allow-empty-input',
+      '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
+      'resources/js/**/*.{ts,vue}': 'vp check --fix',
+    },
+    fmt: {
+      singleQuote: true,
+      bracketSpacing: false,
+      vueIndentScriptAndStyle: true,
+      trailingComma: 'es5',
+      printWidth: 80,
+      sortPackageJson: false,
+      ignorePatterns: [
+        '*.md',
+        '*.php',
+        'composer.lock',
+        '**/dist/*',
+        'vendor/*',
+        '.ddev/*',
+        'resources/build/*',
+        'resources/public/*',
+        'resources/js/actions/*',
+        'resources/js/routes/*',
+        'resources/js/wayfinder/*',
+        'yii2-adapter/*',
+        'tests-playwright/.authentication.json',
+      ],
+    },
     base: './',
     server,
 
@@ -132,10 +264,13 @@ export default defineConfig(({mode}) => {
 
     // Vitest picks up this config's resolve/aliases. The unit tests colocated
     // under resources/js (e.g. modules/auth/elevated-session) need a DOM
-    // environment; the craftcms-cp package has its own vitest projects.
+    // environment; the craftcms-ui package has its own vitest projects.
     test: {
       environment: 'happy-dom',
-      include: ['resources/js/**/*.test.ts'],
+      include: [
+        'resources/js/**/*.test.ts',
+        'yii2-adapter/resources/js/**/*.test.ts',
+      ],
     },
 
     build: {
@@ -154,15 +289,29 @@ export default defineConfig(({mode}) => {
       exclude: ['@awesome.me/webawesome'],
     },
 
-    plugins: [
+    plugins: lazyPlugins(() => [
       serveResourcesLegacy(),
       tailwindcss(),
-      typescriptTransformer(),
-      wayfinder({
-        path: 'resources/js',
-        command: './vendor/bin/testbench wayfinder:generate',
-      }),
+      typescriptTransformer(skipCodegen),
+      // Wayfinder has no opt-out of its own, and its only hooks are buildStart
+      // and handleHotUpdate — both of which shell out to PHP — so drop it
+      // entirely rather than let it regenerate what the cache already holds.
+      ...(skipCodegen
+        ? []
+        : [
+            wayfinder({
+              path: 'resources/js',
+              command: './vendor/bin/testbench wayfinder:generate',
+            }),
+          ]),
       vue({
+        script: {
+          // vue-tsc resolves the ambient `CraftCms.*` namespace (generated by
+          // the typescript transformer) through tsconfig, but compiler-sfc's
+          // build-time defineProps<> resolver only sees global declarations
+          // from files listed here.
+          globalTypeFiles: [path.resolve('resources/js/generated/types.d.ts')],
+        },
         template: {
           compilerOptions: {
             isCustomElement: (tag) => tag.includes('-'),
@@ -173,27 +322,38 @@ export default defineConfig(({mode}) => {
           },
         },
       }),
-      laravel({
-        input: [
-          'resources/js/cp.ts',
-          'resources/js/legacy.ts',
-          'resources/css/cp.css',
-        ],
-        publicDirectory,
-        hotFile: `${publicDirectory}/hot`,
-        refresh: [
-          // The defaults
-          'resources/lang/**',
-          'resources/views/**',
-          'routes/**',
-          // Plus ours
-          'resources/templates/**',
-        ],
-        detectTls: env.VITE_DETECT_TLS ?? undefined,
-      }),
+      // Skipped under Vitest, which builds its own Vite server from this same
+      // config. The Laravel plugin owns the hot file — writing it when a server
+      // starts and deleting it when one closes — so leaving it in means every
+      // test run deletes the hot file out from under a running `npm run dev`.
+      // The CP then silently falls back to stale built assets, which looks like
+      // "my changes aren't showing up" rather than anything to do with tests.
+      ...(process.env.VITEST
+        ? []
+        : [
+            laravel({
+              input: [
+                'resources/js/cp.ts',
+                'resources/js/legacy.ts',
+                'resources/css/cp.css',
+                'workbench/resources/js/cp.ts',
+              ],
+              publicDirectory,
+              hotFile: `${publicDirectory}/hot`,
+              refresh: [
+                // The defaults
+                'resources/lang/**',
+                'resources/views/**',
+                'routes/**',
+                // Plus ours
+                'resources/templates/**',
+              ],
+              detectTls: env.VITE_DETECT_TLS ?? undefined,
+            }),
+          ]),
       inertia({
         ssr: false,
       }),
-    ],
+    ]),
   };
 });

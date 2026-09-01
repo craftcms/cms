@@ -17,7 +17,7 @@ class CompatibleFieldTypesResolving
 {
     public function __construct(
         public FieldInterface $field,
-        /** @var Collection<class-string<FieldInterface>> The field type classes that are considered compatible with {@see $field}. */
+        /** @var Collection<int, class-string<FieldInterface>> The field type classes that are considered compatible with {@see $field}. */
         public Collection $compatibleTypes,
     ) {}
 }

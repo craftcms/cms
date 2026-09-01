@@ -154,7 +154,7 @@ class File extends \Illuminate\Support\Facades\File
      *
      * @throws RuntimeException if the directory cannot be created
      */
-    public static function makeDirectory(string $path, ?int $mode = null, bool $recursive = true, $force = true): bool
+    public static function makeDirectory(string $path, ?int $mode = null, bool $recursive = true, bool $force = true): bool
     {
         if (is_dir($path)) {
             return true;
@@ -167,7 +167,7 @@ class File extends \Illuminate\Support\Facades\File
      * Removes all of a directory's contents recursively.
      *
      * @param  string  $directory  the directory to be cleaned.
-     * @param  array  $except  list of glob patterns for files/directories to exclude. Patterns ending with `/` match directories only.
+     * @param  string[]  $except  list of glob patterns for files/directories to exclude. Patterns ending with `/` match directories only.
      */
     public static function cleanDirectory(string $directory, array $except = []): bool
     {
@@ -229,11 +229,11 @@ class File extends \Illuminate\Support\Facades\File
      * Sanitizes a filename.
      *
      * @param  string  $filename  the filename to sanitize
-     * @param  array  $options  options for sanitization. Valid options are:
-     *                          - `asciiOnly`: bool, whether only ASCII characters should be allowed. Defaults to false.
-     *                          - `separator`: string|null, the separator character to use in place of whitespace. Defaults to '-'. If set to null, whitespace will be preserved.
-     *                          - `stripEmoji`: bool|null, whether to strip emoji characters. Defaults to null (auto-detect based on DB charset support).
-     *                          When null, emojis are always stripped as a safe default. Pass `false` to preserve them.
+     * @param  array{asciiOnly?: bool, separator?: ?string, stripEmoji?: ?bool}  $options  options for sanitization. Valid options are:
+     *                                                                                     - `asciiOnly`: bool, whether only ASCII characters should be allowed. Defaults to false.
+     *                                                                                     - `separator`: string|null, the separator character to use in place of whitespace. Defaults to '-'. If set to null, whitespace will be preserved.
+     *                                                                                     - `stripEmoji`: bool|null, whether to strip emoji characters. Defaults to null (auto-detect based on DB charset support).
+     *                                                                                     When null, emojis are always stripped as a safe default. Pass `false` to preserve them.
      * @return string The cleansed filename
      */
     public static function sanitizeFilename(string $filename, array $options = []): string
@@ -520,9 +520,7 @@ class File extends \Illuminate\Support\Facades\File
             throw new InvalidArgumentException("No file/directory exists at $path");
         }
 
-        if ($to === null) {
-            $to = "$path.zip";
-        }
+        $to ??= "$path.zip";
 
         $zip = new ZipArchive;
 

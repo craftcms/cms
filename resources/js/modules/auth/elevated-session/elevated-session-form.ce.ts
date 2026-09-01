@@ -23,10 +23,10 @@ export default class CraftElevatedSessionForm extends ControllerElement<Elevated
   protected readonly rootSelector = 'form';
 
   protected create(form: HTMLElement): ElevatedSessionForm {
-    return new ElevatedSessionForm(
-      form as HTMLFormElement,
-      this.inputSelectors()
-    );
+    if (!(form instanceof HTMLFormElement)) {
+      throw new Error('Elevated session host must contain a form.');
+    }
+    return new ElevatedSessionForm(form, this.inputSelectors());
   }
 
   private inputSelectors(): string[] | undefined {

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {ref} from 'vue';
   import SystemMessageEditModal from './SystemMessageEditModal.vue';
-  import Pane from '@/common/components/Pane.vue';
   import type {SelectOption} from '@/common/types';
   import type {SystemMessageData} from '@/modules/utilities/types/utilities';
 
@@ -49,26 +48,23 @@
   <div id="messages" class="p-4">
     <div v-for="message in localMessages" :key="message.key" class="mb-6">
       <h2 class="text-lg mb-2">{{ message.heading }}</h2>
-      <Pane appearance="outline">
-        <template #title>
-          <div class="font-medium">
-            {{ message.subject }}
-          </div>
-        </template>
+      <craft-pane appearance="outline">
+        <div slot="title" class="font-medium">
+          {{ message.subject }}
+        </div>
 
-        <template #header-actions>
-          <craft-button
-            type="button"
-            icon
-            size="small"
-            @click="openEditModal(message)"
-          >
-            <craft-icon name="pencil" :label="t('Edit message')"></craft-icon>
-          </craft-button>
-        </template>
+        <craft-button
+          slot="header-actions"
+          type="button"
+          icon
+          size="small"
+          @click="openEditModal(message)"
+        >
+          <craft-icon name="pencil" :label="t('Edit message')"></craft-icon>
+        </craft-button>
 
         <div class="font-mono text-xs" v-html="formatBody(message.body)"></div>
-      </Pane>
+      </craft-pane>
     </div>
   </div>
 

@@ -13,7 +13,7 @@ class InvalidHtmlTagException extends InvalidArgumentException
      *
      * @param  string  $message  The error message
      * @param  string|null  $type  The tag type
-     * @param  array|null  $attributes  The tag attributes
+     * @param  array<string, mixed>|null  $attributes  The tag attributes
      * @param  int|null  $start  The tag’s starting position
      * @param  int|null  $htmlStart  The tag’s inner HTML starting position
      */

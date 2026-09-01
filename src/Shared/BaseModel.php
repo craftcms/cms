@@ -23,6 +23,9 @@ class BaseModel extends Model
 
     public const ?string DELETED_AT = 'dateDeleted';
 
+    /**
+     * @param  list<mixed>  $parameters
+     */
     #[\Override]
     public function __call($method, $parameters)
     {
@@ -33,6 +36,9 @@ class BaseModel extends Model
         return parent::__call($method, $parameters);
     }
 
+    /**
+     * @param  list<mixed>  $parameters
+     */
     #[\Override]
     public static function __callStatic($method, $parameters)
     {

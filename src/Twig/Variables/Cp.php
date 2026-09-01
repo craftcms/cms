@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use DateTimeInterface;
 use Deprecated;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Uri;
 use InvalidArgumentException;
@@ -86,6 +85,7 @@ class Cp extends Component
      * {% set selectedSubnavItem = 'orders' %}
      * ```
      */
+    /** @return array<array-key, mixed> */
     public function nav(): array
     {
         return app(Navigation::class)->getItems();
@@ -103,6 +103,7 @@ class Cp extends Component
     /**
      * Returns an array of alerts to display in the control panel.
      */
+    /** @return array<array-key, mixed> */
     public function getAlerts(): array
     {
         return app(Alerts::class)->get(request()->craftPath());
@@ -113,6 +114,7 @@ class Cp extends Component
      *
      * @internal
      */
+    /** @return array<string, mixed>|null */
     public function trialInfo(): ?array
     {
         $issues = collect(app(License::class)->issues([
@@ -131,7 +133,6 @@ class Cp extends Component
 
         $names = $cmsIssues->map(fn ($issue) => $issue[0])->all();
         foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
-            /** @var Collection $group */
             $count = $group->count();
             if ($count === 1) {
                 $names[] = $group->first()[0];
@@ -178,9 +179,7 @@ class Cp extends Component
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @return array[]
-     *
-     * @phpstan-return array{label:string,data:array}[]
+     * @return list<array<string, mixed>>
      */
     #[Deprecated(message: 'in 6.0.0.  [[\CraftCms\Cms\Cp\SelectOptions::getEnvSuggestions]] should be used instead.')]
     public function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
@@ -191,6 +190,10 @@ class Cp extends Component
     /**
      * Returns environment variable options for a select input.
      */
+    /**
+     * @param  list<scalar>|null  $allowedValues
+     * @return list<array<string, mixed>>
+     */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getEnvOptions] should be used instead.')]
     public function getEnvOptions(?array $allowedValues = null): array
     {
@@ -200,6 +203,7 @@ class Cp extends Component
     /**
      * Returns environment variable options for a boolean menu.
      */
+    /** @return list<array<string, mixed>> */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getBooleanEnvOptions] should be used instead.')]
     public function getBooleanEnvOptions(): array
     {
@@ -211,6 +215,7 @@ class Cp extends Component
      *
      * @param  bool  $appOnly  Whether to limit the env options to those that match available app locales
      */
+    /** @return list<array<string, mixed>> */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageEnvOptions]] shoudl be used instead.')]
     public function getLanguageEnvOptions(bool $appOnly = false): array
     {
@@ -222,6 +227,7 @@ class Cp extends Component
      *
      * @param  DateTimeInterface|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
      */
+    /** @return list<array<string, mixed>> */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.')]
     public function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
@@ -235,6 +241,7 @@ class Cp extends Component
      * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
      * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
      */
+    /** @return list<array<string, mixed>> */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageOptions]] should be used instead.')]
     public function getLanguageOptions(
         bool $showLocaleIds = false,
@@ -257,6 +264,7 @@ class Cp extends Component
     /**
      * Returns all options for a filesystem input.
      */
+    /** @return list<array<string, mixed>> */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.')]
     public function getFsOptions(): array
     {
@@ -266,6 +274,7 @@ class Cp extends Component
     /**
      * Returns all options for a volume input.
      */
+    /** @return list<array<string, mixed>> */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getVolumeOptions]] should be used instead.')]
     public function getVolumeOptions(): array
     {
@@ -275,6 +284,7 @@ class Cp extends Component
     /**
      * Returns ASCII character mappings for the given language, if it differs from the application language.
      */
+    /** @return array<string, list<string>|string>|null */
     public function getAsciiCharMap(string $language): ?array
     {
         if ($language === app()->getLocale()) {
@@ -287,9 +297,7 @@ class Cp extends Component
     /**
      * Returns the available template path suggestions for template inputs.
      *
-     * @return array[]
-     *
-     * @phpstan-return array{label:string,data:array}[]
+     * @return list<array<string, mixed>>
      */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions]] should be used instead.')]
     public function getTemplateSuggestions(): array
@@ -299,6 +307,10 @@ class Cp extends Component
         return $this->formatLegacySuggestions($suggestions);
     }
 
+    /**
+     * @param  list<array<string, mixed>>|null  $formActions
+     * @return list<array<string, mixed>>|null
+     */
     public function prepFormActions(?array $formActions): ?array
     {
         event($event = new FormActionsResolving($formActions ?? []));
@@ -314,11 +326,162 @@ class Cp extends Component
      * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      */
+    /** @param array<string, mixed> $config */
     public function field(string|Stringable $input, array $config = []): string
     {
         return FormFields::fieldHtml($input, $config);
     }
 
+    /**
+     * Renders a text input's HTML from the legacy text variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function text(array $config = []): string
+    {
+        return FormFields::textFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a copy-text input's HTML from the legacy copytext variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function copytext(array $config = []): string
+    {
+        return FormFields::copytextFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a textarea's HTML from the legacy textarea variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function textarea(array $config = []): string
+    {
+        return FormFields::textareaFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a password input's HTML from the legacy password variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function password(array $config = []): string
+    {
+        return FormFields::passwordFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a color input's HTML from the legacy color variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function color(array $config = []): string
+    {
+        return FormFields::colorFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a date input's HTML from the legacy date variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function date(array $config = []): string
+    {
+        return FormFields::dateHtml($config);
+    }
+
+    /**
+     * Renders date and time inputs from the legacy datetime variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function dateTime(array $config = []): string
+    {
+        return FormFields::dateTimeHtml($config);
+    }
+
+    /**
+     * Renders a time input's HTML from the legacy time variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function time(array $config = []): string
+    {
+        return FormFields::timeHtml($config);
+    }
+
+    /**
+     * Renders a lightswitch's HTML from the legacy lightswitch variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function lightswitch(array $config = []): string
+    {
+        return FormFields::lightswitchFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a button's HTML from the legacy button variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function button(array $config = []): string
+    {
+        return FormFields::buttonFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a button group's HTML from the legacy buttonGroup variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function buttonGroup(array $config = []): string
+    {
+        return FormFields::buttonGroupFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a checkbox's HTML from the legacy checkbox variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function checkbox(array $config = []): string
+    {
+        return FormFields::checkboxFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a checkbox group's HTML from the legacy checkboxGroup variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function checkboxGroup(array $config = []): string
+    {
+        return FormFields::checkboxGroupFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a checkbox select's HTML from the legacy checkboxSelect variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function checkboxSelect(array $config = []): string
+    {
+        return FormFields::checkboxSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a radio's HTML from the legacy radio variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function radio(array $config = []): string
+    {
+        return FormFields::radioFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a radio group's HTML from the legacy radioGroup variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function radioGroup(array $config = []): string
+    {
+        return FormFields::radioGroupFromConfig($config)->toHtml();
+    }
+
+    /**
+     * @param  array<array-key, array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [
@@ -330,6 +493,10 @@ class Cp extends Component
         ], $options);
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>  $originalOptions
+     * @return list<array<string, mixed>>
+     */
     private function formatLegacyOptions(array $originalOptions): array
     {
         $options = [];

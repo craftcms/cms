@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {nextTick, onMounted, shallowRef, useTemplateRef, watch} from 'vue';
   import type {BaseOption} from '@/common/types';
   import type {MixedInputPart} from '@/pages/settings/routes/types';
@@ -55,7 +55,7 @@
     const widths: Record<number, string> = {};
 
     model.value.forEach((part, index) => {
-      if (typeof part === 'string') {
+      if (!isToken(part)) {
         widths[index] = `${measureTextPartWidth(part)}px`;
       }
     });
@@ -76,7 +76,11 @@
   }
 
   function inputFromEvent(event: Event): HTMLInputElement {
-    return event.currentTarget as HTMLInputElement;
+    if (!(event.currentTarget instanceof HTMLInputElement)) {
+      throw new TypeError('Expected an input event target.');
+    }
+
+    return event.currentTarget;
   }
 
   function rememberCursor(event: Event, index: number) {
@@ -89,18 +93,15 @@
     };
   }
 
-  function normalizeEditableParts(parts: Array<MixedInputPart>): {
-    parts: Array<MixedInputPart>;
-    changed: boolean;
-  } {
+  function normalizeEditableParts(parts: Array<MixedInputPart>) {
     const normalized: Array<MixedInputPart> = [];
     let changed = false;
 
     parts.forEach((part) => {
       const previous = normalized[normalized.length - 1];
 
-      if (typeof part === 'string') {
-        if (typeof previous === 'string') {
+      if (!(part instanceof Object)) {
+        if (previous !== undefined && !isToken(previous)) {
           normalized[normalized.length - 1] = previous + part;
           changed = true;
         } else {
@@ -110,7 +111,7 @@
         return;
       }
 
-      if (typeof previous !== 'string') {
+      if (previous === undefined || isToken(previous)) {
         normalized.push('');
         changed = true;
       }
@@ -120,7 +121,7 @@
 
     if (
       normalized.length === 0 ||
-      typeof normalized[normalized.length - 1] !== 'string'
+      isToken(normalized[normalized.length - 1]!)
     ) {
       normalized.push('');
       changed = true;
@@ -148,7 +149,7 @@
       return 0;
     }
 
-    if (caret === 'end' || typeof caret === 'undefined') {
+    if (caret === 'end' || caret === undefined) {
       return element.value.length;
     }
 
@@ -221,11 +222,12 @@
   function addToken(token: BaseOption) {
     const focused = focusedTextPart.value;
     const selected = selectedTokenIndex.value;
+    const focusedPart = focused ? model.value[focused.index] : undefined;
     selectedTokenIndex.value = null;
 
-    if (focused && typeof model.value[focused.index] === 'string') {
+    if (focused && focusedPart !== undefined && !isToken(focusedPart)) {
       const parts = [...model.value];
-      const text = parts[focused.index] as string;
+      const text = focusedPart;
       const before = text.slice(0, focused.selectionStart);
       const after = text.slice(focused.selectionEnd);
 
@@ -269,7 +271,12 @@
     const previousPart = parts[index - 1];
     const nextPart = parts[index];
 
-    if (typeof previousPart === 'string' && typeof nextPart === 'string') {
+    if (
+      previousPart !== undefined &&
+      nextPart !== undefined &&
+      !isToken(previousPart) &&
+      !isToken(nextPart)
+    ) {
       const caret = previousPart.length;
       parts.splice(index - 1, 2, previousPart + nextPart);
       model.value = parts;

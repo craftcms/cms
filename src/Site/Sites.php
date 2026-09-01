@@ -62,21 +62,21 @@ class Sites
     public int $maxSites = 100;
 
     /**
-     * @var ?Collection<int>
+     * @var Collection<int, int>|null
      *
      * @see getEditableSiteIds()
      */
     private ?Collection $editableSiteIds = null;
 
     /**
-     * @var ?Collection<Site>
+     * @var Collection<int, Site>|null
      *
      * @see getSiteById()
      */
     private ?Collection $allSitesById = null;
 
     /**
-     * @var ?Collection<Site>
+     * @var Collection<int, Site>|null
      *
      * @see getSiteById()
      */
@@ -135,7 +135,7 @@ class Sites
     }
 
     /**
-     * @return Collection<int>
+     * @return Collection<int, int>
      */
     public function getAllSiteIds(?bool $withDisabled = null): Collection
     {
@@ -268,7 +268,7 @@ class Sites
     /**
      * Returns all of the site IDs that are editable by the current user.
      *
-     * @return Collection<int> All the editable sites’ IDs
+     * @return Collection<int, int> All the editable sites’ IDs
      */
     public function getEditableSiteIds(): Collection
     {
@@ -288,7 +288,7 @@ class Sites
     /**
      * Returns all of the site IDs that are editable by the current user in a certain section.
      *
-     * @return Collection<int> All the editable sites’ IDs
+     * @return Collection<int, int> All the editable sites’ IDs
      */
     public function getEditableSiteIdsForSection(Section $section): Collection
     {
@@ -303,7 +303,7 @@ class Sites
     /**
      * Returns all sites.
      *
-     * @return Collection<Site> All the sites
+     * @return Collection<int, Site> All the sites
      */
     public function getAllSites(?bool $withDisabled = null): Collection
     {
@@ -313,7 +313,7 @@ class Sites
     /**
      * Returns all editable sites.
      *
-     * @return Collection<Site> All the editable sites
+     * @return Collection<int, Site> All the editable sites
      */
     public function getEditableSites(): Collection
     {
@@ -328,7 +328,7 @@ class Sites
     /**
      * Returns sites by a group ID.
      *
-     * @return Collection<Site>
+     * @return Collection<int, Site>
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): Collection
     {
@@ -341,7 +341,7 @@ class Sites
     /**
      * Returns editable sites by a group ID.
      *
-     * @return Collection<Site>
+     * @return Collection<int, Site>
      */
     public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): Collection
     {
@@ -375,7 +375,7 @@ class Sites
     /**
      * Returns sites by their language.
      *
-     * @return Collection<Site>
+     * @return Collection<int, Site>
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): Collection
     {
@@ -869,7 +869,7 @@ class Sites
     /**
      * Returns all sites, or only enabled sites.
      *
-     * @return Collection<Site>
+     * @return Collection<int, Site>
      */
     private function allSites(?bool $withDisabled = null): Collection
     {

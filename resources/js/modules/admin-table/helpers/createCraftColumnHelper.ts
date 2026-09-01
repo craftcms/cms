@@ -1,5 +1,5 @@
-import {t} from '@craftcms/cp';
-import {h} from 'vue';
+import {t} from '@craftcms/ui';
+import {h, type VNodeChild} from 'vue';
 import {
   type AccessorColumnDef,
   type CellContext,
@@ -11,36 +11,52 @@ import {
 import type {AccessorParam} from '@/modules/admin-table/composables/useEditableTable';
 import CpLink from '@/common/components/CpLink.vue';
 import Date from '@/common/components/Date.vue';
+import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
-type LinkColumnDef<T extends Record<string, any>> = DisplayColumnDef<T> & {
-  props: (cellContext: CellContext<T, any>) => Record<string, any>;
+type ComponentProperties = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
+
+type LinkColumnDef<T extends object> = AccessorColumnDef<T> & {
+  props: (cellContext: CellContext<T, unknown>) => ComponentProperties;
 };
 
-type DateColumnDef<T extends Record<string, any>> = DisplayColumnDef<T> & {
+type HtmlColumnDef<T extends object> = AccessorColumnDef<T> & {
+  props: (cellContext: CellContext<T, unknown>) => ComponentProperties;
+};
+
+type DateColumnDef<T extends object> = {
   format?: string;
+  header?: ColumnDef<T>['header'];
+  size?: number;
+  meta?: ColumnDef<T>['meta'];
 };
 
-export type CraftColumnHelper<T extends Record<string, any>> =
-  ColumnHelper<T> & {
-    handle: (
-      accessor: AccessorParam<T>,
-      config?: Partial<DisplayColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-    link: (
-      accessor: AccessorParam<T>,
-      config?: Partial<LinkColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-    actions: (
-      actions: (cellContext: CellContext<T, any>) => Array<any>,
-      config?: Partial<DisplayColumnDef<T>>
-    ) => ColumnDef<T, any>;
-    date: (
-      accessor: AccessorParam<T>,
-      config?: Partial<DateColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-  };
+export type CraftColumnHelper<T extends object> = ColumnHelper<T> & {
+  handle: (
+    accessor: AccessorParam<T>,
+    config?: Partial<AccessorColumnDef<T>>
+  ) => AccessorColumnDef<T, unknown>;
+  html: (
+    accessor: AccessorParam<T>,
+    config?: Partial<HtmlColumnDef<T>>
+  ) => AccessorColumnDef<T, unknown>;
+  link: (
+    accessor: AccessorParam<T>,
+    config?: Partial<LinkColumnDef<T>>
+  ) => AccessorColumnDef<T, unknown>;
+  actions: (
+    actions: (cellContext: CellContext<T, unknown>) => VNodeChild[],
+    config?: Partial<DisplayColumnDef<T>>
+  ) => ColumnDef<T, unknown>;
+  date: (
+    accessor: AccessorParam<T>,
+    config?: Partial<DateColumnDef<T>>
+  ) => AccessorColumnDef<T, unknown>;
+};
 
-export function createCraftColumnHelper<T extends Record<string, any>>() {
+export function createCraftColumnHelper<T extends object>() {
   const baseHelper = createColumnHelper<T>();
 
   const columnHelper: CraftColumnHelper<T> = {
@@ -49,25 +65,28 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
     group: baseHelper.group,
 
     date(accessor, config = {}) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line @typescript-eslint/no-unused-vars
       const {format, ...rest} = config;
-      return baseHelper.accessor(accessor, {
-        cell: (cellContext: CellContext<T, any>) => {
-          if (cellContext.getValue()) {
-            if (typeof cellContext.getValue() === 'string') {
-              return h(Date, {value: cellContext.getValue()});
-            } else if (
-              typeof cellContext.getValue() === 'object' &&
-              Object.keys(cellContext.getValue()).includes('date')
-            ) {
-              return h(Date, {value: cellContext.getValue().date});
-            }
+      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+        id: String(accessor),
+        cell: (cellContext: CellContext<T, unknown>) => {
+          const value = cellContext.getValue();
+          if (Object(value).constructor === String) {
+            return h(Date, {value: String(value)});
+          }
+          if (
+            value instanceof Object &&
+            'date' in value &&
+            Object(value.date).constructor === String
+          ) {
+            return h(Date, {value: String(value.date)});
           }
 
-          return 'Never';
+          throw new Error('Date columns require a string or dated value.');
         },
         ...rest,
-      } as any);
+      };
+      return baseHelper.accessor(accessor, columnDef);
     },
 
     actions(actions = () => [], config = {}) {
@@ -76,7 +95,7 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
         header: t('Actions'),
         meta: {
           headerSrOnly: true,
-          ...(config.meta || {}),
+          ...config.meta,
         },
         cell: (cellContext) =>
           h(
@@ -92,25 +111,27 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
     link(accessor, config = {}) {
       const {props = () => ({}), ...rest} = config;
 
-      return baseHelper.accessor(accessor, {
+      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+        id: String(accessor),
         cell: (cellContext: CellContext<T, any>) =>
           h('div', [
             h(
               CpLink,
               {
                 class: 'font-bold',
-                inertia: false,
                 ...props(cellContext),
               },
               () => cellContext.getValue()
             ),
           ]),
         ...rest,
-      } as any);
+      };
+      return baseHelper.accessor(accessor, columnDef);
     },
 
     handle(accessor, config = {}) {
-      return baseHelper.accessor(accessor, {
+      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+        id: String(accessor),
         header: t('Handle'),
         cell: ({getValue}: CellContext<T, any>) =>
           h(
@@ -121,7 +142,23 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
             String(getValue())
           ),
         ...config,
-      } as any);
+      };
+      return baseHelper.accessor(accessor, columnDef);
+    },
+
+    html(accessor, config = {}) {
+      const {props = () => ({}), ...rest} = config;
+
+      const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
+        id: String(accessor),
+        cell: (cellContext: CellContext<T, any>) =>
+          h(DynamicHtmlRenderer, {
+            html: cellContext.getValue(),
+            ...props(cellContext),
+          }),
+        ...rest,
+      };
+      return baseHelper.accessor(accessor, columnDef);
     },
   };
 

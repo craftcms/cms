@@ -10,7 +10,8 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,25 +28,8 @@ readonly class AddressesController
     {
         $user = $this->editedUser($userId);
 
-        $response = $this->asEditUserScreen($user, self::SCREEN_ADDRESSES);
-
-        $response->contentHtml(function () use ($user) {
-            $config = [
-                'showInGrid' => true,
-                'canCreate' => Gate::check('editUsers'),
-            ];
-
-            // Use an element index view if there's more than 50 addresses
-            $total = Address::find()->owner($user)->count();
-            if ($total > 50) {
-                return $user->getAddressManager()->getIndexHtml($user, $config);
-            }
-
-            return Html::tag('h2', t('Addresses')).
-                $user->getAddressManager()->getCardsHtml($user, $config);
-        });
-
-        return $response;
+        return $this->asEditUserScreen($user, EditUserScreens::ADDRESSES)
+            ->inertiaPage('users/Addresses', new UserAddressesViewModel($user));
     }
 
     public function store(Request $request, Elements $elements): Response

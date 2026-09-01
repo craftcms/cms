@@ -22,40 +22,14 @@ use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Directives\Directive;
-use CraftCms\Cms\Gql\Directives\FormatDateTime;
-use CraftCms\Cms\Gql\Directives\Markdown;
-use CraftCms\Cms\Gql\Directives\Money;
-use CraftCms\Cms\Gql\Directives\ParseRefs;
-use CraftCms\Cms\Gql\Directives\StripTags;
-use CraftCms\Cms\Gql\Directives\Transform;
-use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
-use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
-use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
-use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
-use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
 use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
 use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
-use CraftCms\Cms\Gql\Mutations\Asset as AssetMutation;
-use CraftCms\Cms\Gql\Mutations\Entry as EntryMutation;
-use CraftCms\Cms\Gql\Mutations\Ping as PingMutation;
-use CraftCms\Cms\Gql\Queries\Address as AddressQuery;
-use CraftCms\Cms\Gql\Queries\Asset as AssetQuery;
-use CraftCms\Cms\Gql\Queries\Entry as EntryQuery;
-use CraftCms\Cms\Gql\Queries\Ping as PingQuery;
-use CraftCms\Cms\Gql\Queries\User as UserQuery;
-use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Mutation;
-use CraftCms\Cms\Gql\Types\Number;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Gql\Types\Query;
 use CraftCms\Cms\Gql\Types\QueryArgument;
@@ -78,7 +52,9 @@ use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Directive as GqlDirective;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -89,6 +65,7 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use GraphQL\Validator\Rules\ValidationRule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -100,6 +77,12 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ *
+ * @phpstan-type SchemaComponents array<string, array{label: string, nested?: array<string, array{label: string}>}>
+ */
 #[Scoped]
 class Gql
 {
@@ -136,14 +119,14 @@ class Gql
     private ?GqlSchema $_schema = null;
 
     /**
-     * @var array Content arguments by element class
+     * @var array<class-string<BaseElementInterface>, array<string, ArgumentConfig>> Content arguments by element class
      *
      * @see getOrSetContentArguments()
      */
     private array $_contentArguments = [];
 
     /**
-     * @var array Custom field arguments by field layout UUID
+     * @var array<string, array<string, ArgumentConfig>> Custom field arguments by field layout UUID
      *
      * @see getFieldLayoutArguments()
      */
@@ -154,6 +137,7 @@ class Gql
      */
     private ?TypeManager $_typeManager = null;
 
+    /** @var array<string, array<string, FieldDefinitionConfig>> */
     private array $_typeDefinitions = [];
 
     /**
@@ -164,6 +148,10 @@ class Gql
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
+        private readonly GqlDirectives $gqlDirectives,
+        private readonly GqlTypes $gqlTypes,
+        private readonly GqlQueries $gqlQueries,
+        private readonly GqlMutations $gqlMutations,
     ) {}
 
     /**
@@ -194,9 +182,7 @@ class Gql
                 $this->_schemaDef = new Schema($schemaConfig);
                 // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
                 // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
-                if ($this->_schemaDef->description === null) {
-                    $this->_schemaDef->description = $schema?->name;
-                }
+                $this->_schemaDef->description ??= $schema?->name;
 
                 // but we always have to add the InputObjectType mutation args
                 /** @var ObjectType $mutation */
@@ -231,9 +217,7 @@ class Gql
                 $this->_schemaDef->getTypeMap();
                 // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
                 // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
-                if ($this->_schemaDef->description === null) {
-                    $this->_schemaDef->description = $schema?->name;
-                }
+                $this->_schemaDef->description ??= $schema?->name;
             } catch (Throwable $exception) {
                 throw new GqlException('Failed to validate the GQL Schema - '.$exception->getMessage(),
                     previous: $exception);
@@ -247,6 +231,7 @@ class Gql
      * @param  bool  $debug  Whether debugging validation rules should be allowed.
      * @param  bool  $isIntrospectionQuery  Whether this is an introspection query
      */
+    /** @return list<ValidationRule> */
     public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false): array
     {
         $validationRules = DocumentValidator::defaultRules();
@@ -289,9 +274,10 @@ class Gql
     /**
      * @param  GqlSchema  $schema  The schema definition to use.
      * @param  string  $query  The query string to execute.
-     * @param  array|null  $variables  The variables to use.
+     * @param  array<string, mixed>|null  $variables  The variables to use.
      * @param  string|null  $operationName  The operation name.
      * @param  bool  $debugMode  Whether debug mode validations rules should be used for GraphQL.
+     * @return array<string, mixed>
      */
     public function executeQuery(
         GqlSchema $schema,
@@ -382,11 +368,27 @@ class Gql
         TagDependency::invalidate(self::CACHE_TAG);
     }
 
+    /** @return array<string, mixed>|null */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return DependencyCache::get($cacheKey) ?: null;
+        $data = DependencyCache::get($cacheKey);
+
+        if (! isset($data['result'], $data['cacheInfo']['tags'])) {
+            return null;
+        }
+
+        // If we're actively collecting cache info, register this cache's tags and duration
+        if ($this->elementCaches->isCollectingCacheInfo()) {
+            $this->elementCaches->collectCacheTags($data['cacheInfo']['tags']);
+            if (isset($data['cacheInfo']['expiryDate'])) {
+                $this->elementCaches->setCacheExpiryDate($data['cacheInfo']['expiryDate']);
+            }
+        }
+
+        return $data['result'];
     }
 
+    /** @param array<array-key, mixed> $result */
     private function shouldCache(array $result): bool
     {
         foreach ($result as $value) {
@@ -406,20 +408,30 @@ class Gql
         return true;
     }
 
+    /** @param array<string, mixed> $result */
     public function setCachedResult(
         string $cacheKey,
         array $result,
         ?TagDependency $dependency = null,
         ?int $duration = null,
     ): void {
-        if ($dependency === null) {
-            $dependency = new TagDependency;
-        }
+        $dependency ??= new TagDependency;
 
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        DependencyCache::put($cacheKey, $result, $duration, $dependency);
+        $cacheInfo = [
+            'tags' => $dependency->tags,
+        ];
+
+        if ($duration) {
+            $cacheInfo['expiryDate'] = now()->addSeconds($duration);
+        }
+
+        DependencyCache::put($cacheKey, [
+            'result' => $result,
+            'cacheInfo' => $cacheInfo,
+        ], $duration, $dependency);
     }
 
     /**
@@ -475,6 +487,7 @@ class Gql
         return $this->getPublicToken()?->getSchema();
     }
 
+    /** @return array{queries: array<string, SchemaComponents>, mutations: array<string, SchemaComponents>} */
     public function getAllSchemaComponents(): array
     {
         $queries = [];
@@ -590,6 +603,7 @@ class Gql
         return $this->_publicToken;
     }
 
+    /** @param array{enabled?: bool, expiryDate?: mixed} $config */
     private function _createPublicToken(array $config): ?GqlToken
     {
         $schema = $this->_getPublicSchema();
@@ -827,28 +841,26 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      *
-     * @phpstan-param callable():array $setter
+     * @phpstan-param callable(): array<string, ArgumentConfig> $setter
+     *
+     * @return array<string, ArgumentConfig>
      */
     public function getOrSetContentArguments(string $elementType, callable $setter): array
     {
-        if (! isset($this->_contentArguments[$elementType])) {
-            $this->_contentArguments[$elementType] = $setter();
-        }
+        $this->_contentArguments[$elementType] ??= $setter();
 
         return $this->_contentArguments[$elementType];
     }
 
+    /** @return array<string, ArgumentConfig> */
     public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
     {
         if (! isset($fieldLayout->type)) {
             throw new InvalidArgumentException('Field layout is missing its element type.');
         }
 
-        if (! isset($this->_fieldArguments[$fieldLayout->uid])) {
-            $this->_fieldArguments[$fieldLayout->uid] =
-                $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
-                $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
-        }
+        $this->_fieldArguments[$fieldLayout->uid] ??= $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
+        $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
 
         return $this->_fieldArguments[$fieldLayout->uid];
     }
@@ -856,6 +868,7 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  FieldLayout[]  $fieldLayouts
+     * @return array<string, ArgumentConfig>
      */
     public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
     {
@@ -883,6 +896,7 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  FieldInterface[]  $fields
+     * @return array<string, ArgumentConfig>
      */
     public function defineContentArgumentsForFields(string $elementType, array $fields): array
     {
@@ -904,6 +918,8 @@ class Gql
 
     /**
      * @param  class-string<BaseElementInterface>  $elementType
+     * @param  array<array-key, array{handle?: string}>  $fields
+     * @return array<string, ArgumentConfig>
      */
     public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
     {
@@ -929,10 +945,11 @@ class Gql
 
     /**
      * @param  class-string<BaseElementInterface>  $elementType
+     * @param  array<array-key, FieldLayoutProviderInterface>  $contexts
+     * @return array<string, ArgumentConfig>
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
-        /** @var FieldLayoutProviderInterface[] $contexts */
         return $this->getOrSetContentArguments($elementType, function () use ($contexts, $elementType): array {
             $fields = [];
             $generatedFields = [];
@@ -990,12 +1007,14 @@ class Gql
         return array_map($formatter, $errors);
     }
 
+    /**
+     * @param  array<string, FieldDefinitionConfig>  $fields
+     * @return array<string, FieldDefinitionConfig>
+     */
     public function prepareFieldDefinitions(array $fields, string $typeName): array
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
-            if ($this->_typeManager === null) {
-                $this->_typeManager = new TypeManager;
-            }
+            $this->_typeManager ??= new TypeManager;
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
         }
@@ -1003,6 +1022,7 @@ class Gql
         return $this->_typeDefinitions[$typeName];
     }
 
+    /** @param array<string, mixed>|null $variables */
     private function _getCacheKey(
         GqlSchema $schema,
         string $query,
@@ -1018,7 +1038,7 @@ class Gql
         }
 
         // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 
@@ -1044,27 +1064,24 @@ class Gql
         return $cacheKey;
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
+    protected function queryDefinitions(): array
+    {
+        return $this->operationDefinitions($this->gqlQueries->types(), 'getQueries');
+    }
+
+    /** @return array<string, FieldDefinitionConfig> */
+    protected function mutationDefinitions(): array
+    {
+        return $this->operationDefinitions($this->gqlMutations->types(), 'getMutations');
+    }
+
     /**
-     * @return array the list of registered types.
+     * @return array<class-string<SingularTypeInterface>> the list of registered types.
      */
     private function _registerGqlTypes(): array
     {
-        $types = [
-            // Scalars
-            DateTime::class,
-            Number::class,
-            QueryArgument::class,
-
-            // Interfaces
-            AddressInterface::class,
-            ElementInterface::class,
-            EntryInterface::class,
-            AssetInterface::class,
-            UserInterface::class,
-        ];
-
-        event($event = new GqlTypesResolving(types: $types));
-        $types = $event->types;
+        $types = $this->gqlTypes->types()->all();
 
         foreach ($types as $type) {
             /** @var class-string<SingularTypeInterface> $type */
@@ -1076,40 +1093,31 @@ class Gql
 
     private function _registerGqlQueries(): void
     {
-        $queryList = [
-            // Queries
-            AddressQuery::getQueries(),
-            PingQuery::getQueries(),
-            EntryQuery::getQueries(),
-            AssetQuery::getQueries(),
-            UserQuery::getQueries(),
-        ];
-
-        // Flatten them
-        $queries = array_merge(...$queryList);
-
-        event($event = new GqlQueriesResolving(queries: $queries));
-        $queries = $event->queries;
+        $queries = $this->queryDefinitions();
 
         TypeLoader::registerType('Query', fn () => call_user_func(Query::class.'::getType', $queries));
     }
 
     private function _registerGqlMutations(): void
     {
-        $mutationList = [
-            // Mutations
-            PingMutation::getMutations(),
-            EntryMutation::getMutations(),
-            AssetMutation::getMutations(),
-        ];
-
-        // Flatten them
-        $mutations = array_merge(...$mutationList);
-
-        event($event = new GqlMutationsResolving(mutations: $mutations));
-        $mutations = $event->mutations;
+        $mutations = $this->mutationDefinitions();
 
         TypeLoader::registerType('Mutation', fn () => call_user_func(Mutation::class.'::getType', $mutations));
+    }
+
+    /**
+     * @param  iterable<class-string>  $providers
+     * @return array<string, FieldDefinitionConfig>
+     */
+    private function operationDefinitions(iterable $providers, string $method): array
+    {
+        $definitions = [];
+
+        foreach ($providers as $provider) {
+            $definitions = array_merge($definitions, $provider::$method());
+        }
+
+        return $definitions;
     }
 
     /**
@@ -1118,27 +1126,9 @@ class Gql
     private function _loadGqlDirectives(?GqlSchema $schema): array
     {
         /** @var class-string<Directive>[] $directiveClasses */
-        $directiveClasses = [
-            // Directives
-            FormatDateTime::class,
-            Markdown::class,
-            Money::class,
-            StripTags::class,
-            Trim::class,
-        ];
-
-        if ($schema !== null) {
-            if (in_array('directive:parseRefs', $schema->scope)) {
-                $directiveClasses[] = ParseRefs::class;
-            }
-
-            if (in_array('directive:transform', $schema->scope)) {
-                $directiveClasses[] = Transform::class;
-            }
-        }
-
-        event($event = new GqlDirectivesResolving(directives: $directiveClasses));
-        $directiveClasses = $event->directives;
+        $directiveClasses = $this->gqlDirectives
+            ->forSchema($schema)
+            ->all();
 
         $directives = GqlDirective::builtInDirectives();
 
@@ -1150,6 +1140,7 @@ class Gql
         return $directives;
     }
 
+    /** @return array{SchemaComponents, SchemaComponents} */
     private function siteSchemaComponents(): array
     {
         $sites = Sites::getAllSites(true);
@@ -1166,6 +1157,7 @@ class Gql
         return [$queryComponents, []];
     }
 
+    /** @return array{SchemaComponents, SchemaComponents} */
     private function elementSchemaComponents(): array
     {
         $queryComponents = [
@@ -1183,6 +1175,7 @@ class Gql
         return [$queryComponents, []];
     }
 
+    /** @return array{SchemaComponents, SchemaComponents} */
     private function entrySchemaComponents(): array
     {
         $queryComponents = [];
@@ -1284,6 +1277,7 @@ class Gql
         return [$queryComponents, $mutationComponents];
     }
 
+    /** @return array{SchemaComponents, SchemaComponents} */
     private function assetSchemaComponents(): array
     {
         $queryComponents = [];
@@ -1318,6 +1312,7 @@ class Gql
         return [$queryComponents, $mutationComponents];
     }
 
+    /** @return array{SchemaComponents, SchemaComponents} */
     private function userSchemaComponents(): array
     {
         $queryComponents = [];

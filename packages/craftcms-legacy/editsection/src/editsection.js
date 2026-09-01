@@ -4,7 +4,7 @@
   var $siteRows = $('#sites').children('tbody').children();
   var $lightswitches = $siteRows
     .children('th:nth-child(2)')
-    .children('.lightswitch');
+    .children('craft-switch');
   var $singleHomepageCheckboxes = $siteRows.find('.single-homepage .checkbox');
 
   function updateSites() {
@@ -18,8 +18,8 @@
     var $lightswitch = $lightswitches.eq(i);
     if ($lightswitch.length) {
       const $tds = $lightswitch.parent().nextAll('td');
-      const $inputs = $tds.find('textarea, input, .lightswitch');
-      if (!$lightswitch.data('lightswitch').on) {
+      const $inputs = $tds.find('textarea, input, craft-switch');
+      if (!$lightswitch[0].on) {
         $tds.addClass('disabled');
         $inputs.attr({
           tabindex: '-1',

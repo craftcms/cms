@@ -5,7 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -181,13 +183,15 @@ it('rolls back prior saves when a later element fails', function () {
         'title' => 'Second Before Save',
     ]);
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), $secondEntry->id) extends Elements
+    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $secondEntry->id) extends Elements
     {
         public function __construct(
             ElementPlaceholders $placeholders,
+            ElementTypes $elementTypes,
+            ElementCaches $elementCaches,
             private readonly int $failingElementId,
         ) {
-            parent::__construct($placeholders);
+            parent::__construct($placeholders, $elementTypes, $elementCaches);
         }
 
         public function saveElement(

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('renders a simple HTML tag', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% tag "div" %}Hello{% endtag %}',
     );
 
@@ -17,7 +17,7 @@ it('renders a simple HTML tag', function () {
 });
 
 it('renders a tag with attributes', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% tag "div" with { class: "wrapper", id: "main" } %}Content{% endtag %}',
     );
 
@@ -28,7 +28,7 @@ it('renders a tag with attributes', function () {
 });
 
 it('renders a self-closing void tag', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% tag "br" %}{% endtag %}',
     );
 
@@ -36,7 +36,7 @@ it('renders a self-closing void tag', function () {
 });
 
 it('renders a tag with dynamic tag name', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% tag tagName %}Inner{% endtag %}',
         ['tagName' => 'span'],
     );
@@ -45,7 +45,7 @@ it('renders a tag with dynamic tag name', function () {
 });
 
 it('renders a tag with dynamic attributes', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% tag "a" with attrs %}Click{% endtag %}',
         ['attrs' => ['href' => '/home', 'class' => 'link']],
     );
@@ -56,7 +56,7 @@ it('renders a tag with dynamic attributes', function () {
 });
 
 it('renders nested template content inside a tag', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% tag "ul" %}{% for item in items %}<li>{{ item }}</li>{% endfor %}{% endtag %}',
         ['items' => ['A', 'B', 'C']],
     );

@@ -2,13 +2,11 @@
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
-use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRoots;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use Illuminate\Http\Request as IlluminateRequest;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Once;
 use yii\base\Module;
 use yii\web\Controller;
 
@@ -79,11 +77,7 @@ it('renders template routes from legacy url rules', function() {
     File::ensureDirectoryExists($templateRoot);
     File::put($templateRoot . '/_index.twig', 'Example template route');
 
-    Once::flush();
-
-    Event::listen(CpTemplateRootsResolving::class, function(CpTemplateRootsResolving $event) use ($templateRoot) {
-        $event->roots['example-plugin'] = $templateRoot;
-    });
+    app(TemplateRoots::class)->register(TemplateMode::Cp, 'example-plugin', $templateRoot);
 
     TemplateMode::set(TemplateMode::Cp);
     app()->instance('request', IlluminateRequest::create('/' . Cms::config()->cpTrigger . '/example-plugin'));

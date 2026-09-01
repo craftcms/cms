@@ -52,7 +52,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  * @method static addSelect($column)
  * @method static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
  * @method static leftJoin($table, $first, $operator = null, $second = null)
- * @method static orderBy($column)
+ * @method static orderBy($column, $direction = 'asc')
  * @method static orderByDesc($column)
  * @method static reorder($column = null, $direction = 'asc')
  * @method static rightJoin($table, $first, $operator = null, $second = null)
@@ -79,7 +79,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @use Concerns\HydratesElements<TElement> */
     use Concerns\HydratesElements;
 
+    /** @use Concerns\OverridesResults<TElement> */
     use Concerns\OverridesResults;
+
     use Concerns\QueriesCustomFields;
     use Concerns\QueriesDraftsAndRevisions;
     use Concerns\QueriesEagerly;
@@ -103,12 +105,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * All of the globally registered builder macros.
      */
+    /** @var array<string, Closure> */
     #[Override]
     protected static $macros = [];
 
     /**
      * All of the locally registered builder macros.
      */
+    /** @var array<string, Closure> */
     protected array $localMacros = [];
 
     /**
@@ -170,26 +174,30 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * The callbacks that should be invoked before retrieving data from the database.
      */
+    /** @var array<int, callable(self<TElement>): void> */
     protected array $beforeQueryCallbacks = [];
 
     /**
      * The callbacks that should be invoked after retrieving data from the database.
      */
+    /** @var array<int, callable(mixed): mixed> */
     protected array $afterQueryCallbacks = [];
 
     /**
      * The callbacks that should be invoked on clone.
      */
+    /** @var array<int, callable(self<TElement>): void> */
     protected array $onCloneCallbacks = [];
 
     // Use ** as a placeholder for "all the default columns"
+    /** @var array<int, string> */
     protected array $columns = ['**'];
 
     // For internal use
     // -------------------------------------------------------------------------
 
     /**
-     * @var array<string,string|callable|array> Column alias => name mapping
+     * @var array<string,string|callable|array<array-key, mixed>> Column alias => name mapping
      *
      * @see applyOrderByParams()
      * @see applySelectParam()
@@ -212,8 +220,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     private ?Builder $queryBeforePrepare = null;
 
+    /** @var array<string,string|callable|array<array-key, mixed>>|null */
     private ?array $columnMapBeforePrepare = null;
 
+    /** @var array<int, callable(self<TElement>): void>|null */
     private ?array $beforeQueryCallbacksBeforePrepare = null;
 
     /**
@@ -224,12 +234,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
      */
+    /** @var self<*>|null */
     public static ?self $activeQuery = null;
 
     /**
      * Create a new Element query instance.
      *
      * @param  class-string<TElement>  $elementType
+     * @param  array<string, mixed>  $config
      */
     public function __construct(
         /** @var class-string<TElement> */
@@ -272,9 +284,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
 
             foreach ($columnListing as $column) {
-                if (! isset($this->columnMap[$column])) {
-                    $this->columnMap[$column] = "$this->table.$column";
-                }
+                $this->columnMap[$column] ??= "$this->table.$column";
             }
         }
 
@@ -305,6 +315,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @see ElementHelper::renderElements()
      */
+    /** @param array<string, mixed> $variables */
     public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->all(), $variables);
@@ -314,8 +325,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Find a model by its primary key.
      *
      * @param  int|string|Arrayable<array-key, mixed>|array<mixed>  $id
-     * @param  string|Expression|array<string|Expression>  $columns
-     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<TElement>|Collection<array> : TElement|array|null)
+     * @param  string|Expression|array<int, string|Expression>  $columns
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<int, array<string, mixed>> : TElement|array<string, mixed>|null)
      */
     public function find(mixed $id, $columns = ['*']): ElementInterface|ElementCollection|Collection|array|null
     {
@@ -329,8 +340,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find multiple elements by their primary keys.
      *
-     * @param  Arrayable|array  $ids
-     * @return ElementCollection<int, TElement>|Collection<int, array>
+     * @param  Arrayable<array-key, mixed>|array<array-key, mixed>  $ids
+     * @param  array<int, string>  $columns
+     * @return ElementCollection<int, TElement>|Collection<int, array<string, mixed>>
      */
     public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|Collection
     {
@@ -346,7 +358,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<array> : TElement|array)
+     * @param  array<int, string>  $columns
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<int, array<string, mixed>> : TElement|array<string, mixed>)
      *
      * @throws ElementNotFoundException<TElement>
      */
@@ -406,7 +419,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query and get the first result or throw an exception.
      *
-     * @return TElement|array
+     * @param  array<int, string>  $columns
+     * @return TElement|array<string, mixed>
      *
      * @throws ElementNotFoundException<TElement>
      */
@@ -446,7 +460,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query and get the first result if it's the sole matching record.
      *
-     * @return TElement|array
+     * @param  array<int, string>  $columns
+     * @return TElement|array<string, mixed>
      *
      * @throws ElementNotFoundException<TElement>
      * @throws MultipleRecordsFoundException
@@ -461,7 +476,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * @return TElement|array|null
+     * @param  array<int, string>  $columns
+     * @return TElement|array<string, mixed>|null
      */
     public function first($columns = ['*']): ElementInterface|array|null
     {
@@ -478,8 +494,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  string|Expression|array<string|Expression>  $columns
-     * @return ElementCollection<TElement>|Collection<array>
+     * @param  string|Expression|array<int, string|Expression>  $columns
+     * @return ElementCollection<array-key, TElement>|Collection<array-key, array<string, mixed>>
      */
     public function get($columns = ['*']): ElementCollection|Collection
     {
@@ -496,7 +512,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement and return a collection.
      *
-     * @return ElementCollection<TElement>|Collection<array>
+     * @return ElementCollection<array-key, TElement>|Collection<array-key, array<string, mixed>>
      */
     public function collect(): ElementCollection|Collection
     {
@@ -506,7 +522,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get the hydrated elements
      *
-     * @return array<int, TElement>
+     * @param  array<int, string>  $columns
+     * @return array<int, TElement|array<string, mixed>>
      */
     public function getModels(array|string $columns = ['*']): array
     {
@@ -541,8 +558,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  array|string  $columns
-     * @return array<int, TElement>
+     * @param  array<int, string>|string  $columns
+     * @return array<int, TElement|array<string, mixed>>
      */
     public function all($columns = ['*']): array
     {
@@ -550,14 +567,16 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * @return TElement|null
+     * @param  array<int, string>  $columns
+     * @return TElement|array<string, mixed>|null
      */
     public function one($columns = ['*']): ElementInterface|array|null
     {
         return $this->first($columns);
     }
 
-    public function pluck($column, $key = null): Collection
+    /** @return Collection<array-key, mixed> */
+    public function pluck(string $column, ?string $key = null): Collection
     {
         $column = $this->columnMap[$column] ?? $column;
 
@@ -589,10 +608,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Paginate the given query.
      *
      * @param  int|null|Closure  $perPage
-     * @param  array|string  $columns
+     * @param  array<int, string>|string  $columns
      * @param  string  $pageName
      * @param  int|null  $page
      * @param  Closure|int|null  $total
+     * @return LengthAwarePaginator<array-key, TElement|array<string, mixed>>
      *
      * @throws InvalidArgumentException
      */
@@ -618,10 +638,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Paginate the given query into a simple paginator.
      *
      * @param  int|null  $perPage
-     * @param  array|string  $columns
+     * @param  array<int, string>|string  $columns
      * @param  string  $pageName
      * @param  int|null  $page
-     * @return \Illuminate\Contracts\Pagination\Paginator
+     * @return \Illuminate\Contracts\Pagination\Paginator<array-key, TElement|array<string, mixed>>
      */
     public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
     {
@@ -638,8 +658,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         ]);
     }
 
-    /** @TODO: Remove $_ variable after ElementQueryInterface is removed */
-    public function count($columns = '*', $_ = null): int
+    /** @param array<int, string>|string $columns */
+    public function count($columns = '*'): int
     {
         if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
             return count($result);
@@ -671,7 +691,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->applyAfterQueryCallbacks($result);
     }
 
-    public function getCountForPagination($columns = ['*']): int
+    /** @param array<int, string> $columns */
+    public function getCountForPagination(array $columns = ['*']): int
     {
         $query = clone $this;
         $query->query = $query->query->cloneWithout([
@@ -699,8 +720,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $query->query->getCountForPagination($columns);
     }
 
-    /** @TODO: Remove $db variable after ElementQueryInterface is removed */
-    public function exists($db = null): bool
+    public function exists(): bool
     {
         try {
             $this->applyBeforeQueryCallbacks();
@@ -720,6 +740,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->getQuery()->exists();
     }
 
+    /**
+     * @param  array<int, string>  $columns
+     * @return TElement|array<string, mixed>|null
+     */
     public function nth(int $n, $columns = ['*']): ElementInterface|array|null
     {
         if (! is_null($result = $this->getResultOverride())) {
@@ -736,15 +760,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $eagerResult->first();
         }
 
-        /** @var ?ElementInterface $element */
-        $element = $this->query->skip(($this->offset ?: 0) + $n)->first($columns);
-
-        return $element;
+        return (clone $this)
+            ->offset(($this->offset ?: 0) + $n)
+            ->first($columns);
     }
 
     /**
      * Register a closure to be invoked after the query is executed.
      */
+    /** @return self<TElement> */
     public function afterQuery(Closure $callback): self
     {
         $this->afterQueryCallbacks[] = $callback;
@@ -767,7 +791,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get a lazy collection for the given query.
      *
-     * @return LazyCollection<int, TElement|array>
+     * @return LazyCollection<int, TElement|array<string, mixed>>
      */
     public function cursor(): LazyCollection
     {
@@ -792,10 +816,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->query;
     }
 
-    /**
-     * @param  int|null  $value
-     */
-    public function limit($value): self
+    /** @return self<TElement> */
+    public function limit(?int $value): self
     {
         $this->getQuery()->limit = $value;
 
@@ -810,16 +832,19 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->getQuery()->getLimit();
     }
 
-    /**
-     * @param  int|null  $value
-     */
-    public function offset($value): self
+    /** @return self<TElement> */
+    public function offset(?int $value): self
     {
         $this->getQuery()->offset = $value;
 
         return $this;
     }
 
+    /**
+     * @param  string|Expression|array<int|string, int|string|Expression>  $column
+     * @param  int|string  $direction
+     * @return self<TElement>
+     */
     public function orderBy($column, $direction = 'asc'): self
     {
         /**
@@ -860,6 +885,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return str_contains($columns, ',') || preg_match('/\s+(asc|desc)(?:\s*(?:,|$))/i', $columns) === 1;
     }
 
+    /** @return array<int, array{string, 'asc'|'desc'}> */
     private function normalizeOrderByString(string $columns, mixed $defaultDirection): array
     {
         $defaultDirection = match ($defaultDirection) {
@@ -893,6 +919,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->getQuery()->getOffset();
     }
 
+    /** @return array<string, mixed>|null */
     public function getWhereForColumn(string $column): ?array
     {
         return collect($this->query->wheres)->firstWhere('column', $column);
@@ -901,6 +928,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Returns an array of the current criteria attribute values.
      */
+    /** @return array<string, mixed> */
     public function getCriteria(): array
     {
         return collect($this->criteriaAttributes())
@@ -973,8 +1001,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public function __get($key): mixed
     {
-        if (array_key_exists($key, $this->customFieldValues)) {
-            return $this->customFieldValues[$key];
+        if ($this->isCustomFieldHandle($key)) {
+            return $this->customFieldValues[$key] ?? null;
         }
 
         if (in_array($key, $this->propertyPassthru)) {
@@ -985,9 +1013,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     #[Override]
-    public function __set(string $name, $value): void
+    public function __set(string $name, mixed $value): void
     {
-        if (array_key_exists($name, $this->customFieldValues)) {
+        if ($this->isCustomFieldHandle($name)) {
             $this->customFieldValues[$name] = $value;
 
             return;
@@ -1008,11 +1036,20 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         throw new Exception("Property [{$name}] does not exist on the Element query instance.");
     }
 
+    #[Override]
+    public function canSetProperty(string $name): bool
+    {
+        return parent::canSetProperty($name)
+            || $this->isCustomFieldHandle($name)
+            || method_exists($this, $name)
+            || in_array($name, $this->propertyPassthru);
+    }
+
     /**
      * Dynamically handle calls into the query instance.
      *
      * @param  string  $method
-     * @param  array  $parameters
+     * @param  array<int, mixed>  $parameters
      */
     #[Override]
     public function __call($method, $parameters): mixed
@@ -1023,7 +1060,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return null;
         }
 
-        if (array_key_exists($method, $this->customFieldValues)) {
+        if ($this->isCustomFieldHandle($method)) {
             $this->customFieldValues[$method] = $parameters[0];
 
             return $this;
@@ -1073,7 +1110,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Dynamically handle calls into the query instance.
      *
      * @param  string  $method
-     * @param  array  $parameters
+     * @param  array<int, mixed>  $parameters
      *
      * @throws \BadMethodCallException
      */
@@ -1129,6 +1166,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked on a clone.
      */
+    /** @return self<TElement> */
     public function onClone(Closure $callback): self
     {
         $this->onCloneCallbacks[] = $callback;
@@ -1169,6 +1207,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked before the query is executed.
      */
+    /** @return self<TElement> */
     public function beforeQuery(Closure $callback): self
     {
         $this->beforeQueryCallbacks[] = $callback;
@@ -1302,6 +1341,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->query->columns = $select;
     }
 
+    /** @return string|array<array-key, mixed> */
     private function resolveColumnMapping(string $key): string|array
     {
         if (! isset($this->columnMap[$key])) {
@@ -1325,11 +1365,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Throw an exception if the query doesn't have an orderBy clause.
      *
-     * @return void
      *
      * @throws RuntimeException
      */
-    protected function enforceOrderBy()
+    protected function enforceOrderBy(): void
     {
         if (empty($this->query->orders) && empty($this->query->unionOrders)) {
             throw new RuntimeException('You must specify an orderBy clause when using this function.');

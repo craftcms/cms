@@ -43,6 +43,9 @@ class Api
 
     private static string $craftIdEndpoint;
 
+    /**
+     * @param  array<string, mixed>  $apiParams
+     */
     public function __construct(
         private readonly Application $app,
         private readonly Composer $composer,
@@ -67,6 +70,8 @@ class Api
      * Returns info about the current Craft license.
      *
      * @param  string[]  $include
+     * @param  array<string, string>  $headers
+     * @return array<string, mixed>
      *
      * @throws RequestException if the API gave a non-2xx response
      */
@@ -82,6 +87,7 @@ class Api
      * Checks for Craft and plugin updates.
      *
      * @param  string[]  $maxVersions  The maximum versions that should be allowed
+     * @return array<string, mixed>
      */
     public function getUpdates(array $maxVersions = []): array
     {
@@ -98,6 +104,9 @@ class Api
         return $this->request('GET', 'updates', $options ?? [])->json();
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     */
     public function request(string $method, string $uri, array $options = []): Response
     {
         // Close the PHP session in case this takes a while
@@ -123,6 +132,7 @@ class Api
         return $response;
     }
 
+    /** @return array<string, string> */
     public function headers(): array
     {
         $allowAdminChanges = Cms::config()->allowAdminChanges;
@@ -174,7 +184,7 @@ class Api
                 } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
-                if ($licenseKey || $allowAdminChanges) {
+                if ($licenseKey || ($licenseKey !== false && $allowAdminChanges)) {
                     $pluginLicenses[] = "$pluginHandle:".($licenseKey ?? '__REQUEST__');
                 }
             }

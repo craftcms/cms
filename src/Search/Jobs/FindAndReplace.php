@@ -71,7 +71,7 @@ class FindAndReplace extends BatchedJob
     /**
      * Recursively replaces text in a value.
      */
-    private function replaceRecursive(string|array|null &$value): void
+    private function replaceRecursive(mixed &$value): void
     {
         if ($value === null) {
             return;

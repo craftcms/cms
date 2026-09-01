@@ -11,10 +11,12 @@ use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\ElementType;
 use CraftCms\Cms\Gql\Types\InterfaceType;
 use CraftCms\Cms\Support\Facades\Gql;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
 class Element extends InterfaceType implements SingularTypeInterface
 {
     public static function getTypeGenerator(): string
@@ -40,6 +42,7 @@ class Element extends InterfaceType implements SingularTypeInterface
         return $type;
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     #[Override]
     public static function getFieldDefinitions(): array
     {
@@ -130,6 +133,7 @@ class Element extends InterfaceType implements SingularTypeInterface
         ]), self::getName());
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     public static function getDraftFieldDefinitions(): array
     {
         return [

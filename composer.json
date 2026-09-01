@@ -45,17 +45,17 @@
     "craftcms/server-check": "~6.0.0",
     "craftcms/url-validator": "^1.0",
     "elvanto/litemoji": "^5.2.0",
-    "enshrined/svg-sanitize": "~0.22.0",
+    "enshrined/svg-sanitize": "^1.0.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^3.0",
-    "laravel/framework": "^13.0.0",
+    "intervention/image": "^4.2",
+    "laravel/framework": "^13.17",
     "laravel/wayfinder": "^0.1.12",
     "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
     "phpoffice/phpspreadsheet": "^5.3",
-    "pixelandtonic/imagine": "~1.5.2.1",
     "pragmarx/google2fa": "^9.0",
     "pragmarx/recovery": "^0.2.1",
     "symfony/css-selector": "^7.0|^8.0",
@@ -77,17 +77,20 @@
   },
   "require-dev": {
     "barryvdh/laravel-debugbar": "^4.2",
+    "craftcms/test-plugin": "1.0.1",
     "dg/bypass-finals": "^1.9",
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
+    "intervention/image-driver-vips": "^4.1",
     "larastan/larastan": "^3.4",
+    "laravel/boost": "^2.6",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
     "orchestra/testbench": "^11.0",
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-arch": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.0",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-arch": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3",
     "spatie/laravel-typescript-transformer": "^3.2"
@@ -100,11 +103,16 @@
     {
       "type": "path",
       "url": "./cms-assets"
+    },
+    {
+      "type": "path",
+      "url": "./tests/TestClasses/TestPlugin"
     }
   ],
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
+    "intervention/image-driver-vips": "Adds support for image processing with libvips (requires ext-ffi and libvips).",
     "ext-iconv": "Adds support for more character encodings than PHP\u2019s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
     "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
   },
@@ -133,9 +141,9 @@
     "rector": "rector",
     "tests": [
       "Composer\\Config::disableProcessTimeout",
-      "./vendor/bin/pest --compact"
+      "./vendor/bin/pest --parallel --compact"
     ],
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel",
+    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
     "post-autoload-dump": [
       "@clear",
       "@prepare"
@@ -148,12 +156,10 @@
     ],
     "serve": [
       "Composer\\Config::disableProcessTimeout",
-      "@php vendor/bin/testbench package:sync-skeleton --ansi",
-      "@build",
-      "@php vendor/bin/testbench serve --ansi"
+      "@php vendor/bin/testbench workbench:serve --ansi"
     ],
     "ci": [
-      "@php pint",
+      "@php pint --parallel",
       "@rector",
       "@phpstan",
       "@tests",
@@ -212,6 +218,7 @@
         "Path": "CraftCms\\Cms\\Support\\Facades\\Path",
         "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
         "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
+        "ResponseHeaders": "CraftCms\\Cms\\Support\\Facades\\ResponseHeaders",
         "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
         "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
         "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",
@@ -219,6 +226,7 @@
         "SiteGroups": "CraftCms\\Cms\\Support\\Facades\\SiteGroups",
         "Sites": "CraftCms\\Cms\\Support\\Facades\\Sites",
         "Structures": "CraftCms\\Cms\\Support\\Facades\\Structures",
+        "Template": "CraftCms\\Cms\\Support\\Facades\\Template",
         "TemplateHooks": "CraftCms\\Cms\\Support\\Facades\\TemplateHooks",
         "Twig": "CraftCms\\Cms\\Support\\Facades\\Twig",
         "Updates": "CraftCms\\Cms\\Support\\Facades\\Updates",

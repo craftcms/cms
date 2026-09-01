@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Concerns;
 
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 trait HasGqlType
 {
     /**
-     * @param  array|null  $fields  optional fields to use
+     * @param  array<string, UnnamedFieldDefinitionConfig>|null  $fields  optional fields to use
      * @return GqlObjectType
      */
     public static function getType(?array $fields = null): Type
@@ -23,6 +25,7 @@ trait HasGqlType
         ]));
     }
 
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     protected static function getConditionalFields(): array
     {
         return [];

@@ -19,6 +19,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     #[Override]
     public string $operator = self::OPERATOR_NOT_EMPTY;
 
+    /** @return list<string> */
     #[Override]
     protected function operators(): array
     {
@@ -62,7 +63,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
         };
     }
 
-    protected function matchFieldValue($value): bool
+    protected function matchFieldValue(mixed $value): bool
     {
         throw new NotSupportedException;
     }

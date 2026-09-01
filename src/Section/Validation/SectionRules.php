@@ -20,6 +20,7 @@ use function CraftCms\Cms\t;
 /** @extends Ruleset<Section> */
 class SectionRules extends Ruleset
 {
+    /** @return array<string, array<int, string|Closure|object>> */
     public function rules(): array
     {
         return [
@@ -85,6 +86,7 @@ class SectionRules extends Ruleset
         }
     }
 
+    /** @param array<int, array{label: string, urlFormat: string}> $value */
     private function validatePreviewTargets(array $value, Closure $fail): void
     {
         $hasErrors = false;

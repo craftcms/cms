@@ -30,11 +30,16 @@ PHP),
         );
     }
 
+    /** @param array<string, mixed> $context */
     public static function render(string $hook, array &$context): string
     {
         return app(TemplateHooks::class)->invoke($hook, $context);
     }
 
+    /**
+     * @param  array<string, mixed>  $variables
+     * @return array<string, mixed>
+     */
     public static function templateContext(array $variables): array
     {
         return array_filter(

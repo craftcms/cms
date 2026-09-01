@@ -6,10 +6,10 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\table;
@@ -30,7 +30,7 @@ class ListAdminsCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): void
     {
-        /** @var Collection<User> $users */
+        /** @var ElementCollection<array-key, User> $users */
         $users = User::find()
             ->admin()
             ->status(null)

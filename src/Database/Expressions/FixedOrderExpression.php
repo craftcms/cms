@@ -16,6 +16,7 @@ readonly class FixedOrderExpression implements Expression
 {
     use StringizeExpression;
 
+    /** @param list<mixed> $values */
     public function __construct(
         private string|Expression $column,
         private array $values,

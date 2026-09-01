@@ -30,6 +30,18 @@ test('generates temporary slug', function () {
         ->and(ElementHelper::isTempSlug($slug))->toBeTrue();
 });
 
+test('detects temporary slugs', function (bool $expected, ?string $slug) {
+    expect(ElementHelper::isTempSlug($slug))->toBe($expected);
+})->with([
+    [false, null],
+    [false, ''],
+    [false, 'foo'],
+    [false, '_temp_foo'],
+    [false, 'foo__temp_bar'],
+    [true, '__temp_'],
+    [true, '__temp_foo'],
+]);
+
 test('generate slug', function (string $expected, string $input, ?bool $ascii = null, ?string $language = null) {
     $expected = str_replace('[separator-here]', Cms::config()->slugWordSeparator, $expected);
 

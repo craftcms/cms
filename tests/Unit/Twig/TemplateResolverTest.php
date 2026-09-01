@@ -5,12 +5,10 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File as Path;
-use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
-use Illuminate\Support\Facades\Event;
+use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Once;
 use Twig\Error\LoaderError;
 
 beforeEach(function () {
@@ -229,11 +227,7 @@ describe('template roots', function () {
         mkdir($rootDir, 0777, true);
         file_put_contents($rootDir.'/page.twig', 'root content');
 
-        Once::flush();
-
-        Event::listen(CpTemplateRootsResolving::class, function (CpTemplateRootsResolving $event) use ($rootDir) {
-            $event->roots['myroot'] = $rootDir;
-        });
+        app(TemplateRoots::class)->register(TemplateMode::Cp, 'myroot', $rootDir);
 
         TemplateMode::set(TemplateMode::Cp);
 
@@ -248,11 +242,7 @@ describe('template roots', function () {
         mkdir($rootDir, 0777, true);
         file_put_contents($rootDir.'/fallback.twig', 'fallback content');
 
-        Once::flush();
-
-        Event::listen(CpTemplateRootsResolving::class, function (CpTemplateRootsResolving $event) use ($rootDir) {
-            $event->roots[''] = $rootDir;
-        });
+        app(TemplateRoots::class)->register(TemplateMode::Cp, '', $rootDir);
 
         TemplateMode::set(TemplateMode::Cp);
 

@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Migrations;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -23,7 +24,7 @@ readonly class MigrationsController
         }
     }
 
-    public function __invoke(Request $request, Migrator $migrator)
+    public function __invoke(Request $request, Migrator $migrator): RedirectResponse
     {
         try {
             $migrator->track('content')->run();

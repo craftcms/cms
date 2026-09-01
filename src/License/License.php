@@ -28,6 +28,10 @@ use function CraftCms\Cms\t;
 
 /**
  * @internal
+ *
+ * @phpstan-type Resolution array{type: string, plugin?: string, licenseId: string|int|null, edition?: string}
+ * @phpstan-type Issue array{string, string, Resolution|null}
+ * @phpstan-type LicenseInfo array{id: string|int|null, edition: string|null, status: string|LicenseKeyStatus, timestamp?: int|null}
  */
 #[Singleton]
 readonly class License
@@ -87,6 +91,8 @@ readonly class License
 
     /**
      * Returns a hash of the given licensing issues.
+     *
+     * @param  array<Issue|string>  $issues
      */
     public function issuesHash(array $issues): string
     {
@@ -101,7 +107,8 @@ readonly class License
      * Returns all known licensing issues.
      *
      *
-     * @return array{0:string,1:string,2:array|null}[]
+     * @param  list<string>|bool|null  $only
+     * @return list<Issue>
      */
     public function issues(array|bool|null $only = null, bool $fetch = false): array
     {
@@ -163,6 +170,9 @@ readonly class License
         return $issues;
     }
 
+    /**
+     * @param  LicenseInfo  $licenseInfo
+     */
     private function getLicenseData(string $handle, array $licenseInfo): ?LicenseData
     {
         if ($handle === 'craft') {
@@ -216,7 +226,11 @@ readonly class License
         );
     }
 
-    private function statusIssueInvalid(LicenseData $licenseData, array|bool|null $only = null): array
+    /**
+     * @param  list<string>  $only
+     * @return Issue|array{}
+     */
+    private function statusIssueInvalid(LicenseData $licenseData, array $only): array
     {
         if (! in_array(LicenseKeyStatus::Invalid->value, $only)) {
             return [];
@@ -230,7 +244,11 @@ readonly class License
         ];
     }
 
-    private function statusIssueTrial(LicenseData $licenseData, array|bool|null $only = null): array
+    /**
+     * @param  list<string>  $only
+     * @return Issue|array{}
+     */
+    private function statusIssueTrial(LicenseData $licenseData, array $only): array
     {
         if (! in_array(LicenseKeyStatus::Trial->value, $only)) {
             return [];
@@ -249,7 +267,11 @@ readonly class License
         ];
     }
 
-    private function statusIssueMismatched(LicenseData $licenseData, array|bool|null $only = null): array
+    /**
+     * @param  list<string>  $only
+     * @return Issue|array{}
+     */
+    private function statusIssueMismatched(LicenseData $licenseData, array $only): array
     {
         if (! in_array(LicenseKeyStatus::Mismatched->value, $only)) {
             return [];
@@ -327,7 +349,11 @@ readonly class License
         ];
     }
 
-    private function statusIssueAstray(LicenseData $licenseData, array|bool|null $only = null): array
+    /**
+     * @param  list<string>  $only
+     * @return Issue|array{}
+     */
+    private function statusIssueAstray(LicenseData $licenseData, array $only): array
     {
         if (! in_array(LicenseKeyStatus::Astray->value, $only)) {
             return [];
@@ -348,7 +374,11 @@ readonly class License
         ];
     }
 
-    private function issueWrongEdition(LicenseData $licenseData, array|bool|null $only = null): array
+    /**
+     * @param  list<string>  $only
+     * @return Issue|array{}
+     */
+    private function issueWrongEdition(LicenseData $licenseData, array $only): array
     {
         if (! in_array('wrong_edition', $only)) {
             return [];

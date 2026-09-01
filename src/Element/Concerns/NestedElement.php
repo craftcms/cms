@@ -128,7 +128,7 @@ trait NestedElement
         $this->ownerType = null;
     }
 
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         return match ($name) {
             'ownerId' => $this->getOwnerId(),
@@ -288,6 +288,7 @@ trait NestedElement
         return $this->_owner ?: null;
     }
 
+    /** @param array<string,mixed> $criteria */
     public function getOwners(array $criteria = []): array
     {
         if (! isset($this->_owners)) {
@@ -310,6 +311,7 @@ trait NestedElement
         return $this->_owners;
     }
 
+    /** @phpstan-return array{site: '*', preferSites: list<int|null>, unique: true, status: null, drafts: null, provisionalDrafts: null, revisions: null, trashed: null} */
     private function ownerCriteria(): array
     {
         return [
@@ -384,8 +386,10 @@ trait NestedElement
         match ($plan->handle) {
             'owner' => $this->setOwner(reset($elements) ?: null),
             'primaryOwner' => $this->setPrimaryOwner(reset($elements) ?: null),
-            default => parent::setEagerLoadedElements($handle, $elements, $plan),
+            default => null,
         };
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**

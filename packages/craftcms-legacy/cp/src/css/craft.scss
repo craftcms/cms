@@ -1,17 +1,15 @@
 @charset "utf-8";
 
 @import 'compat';
-@import 'slideouts';
 @import 'menu';
 @import 'hud';
 @import 'icon-picker';
 @import 'login';
-
+@import 'customize-sources';
 @import 'main';
 @import 'cp';
 @import 'range';
 @import 'global-sidebar';
-@import 'craft-disclosure';
 @import 'craft-spinner';
 @import 'craft-tooltip';
 @import 'preview';

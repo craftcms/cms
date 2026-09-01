@@ -268,7 +268,7 @@ readonly class ElementAttributeRenderer
             return '';
         }
 
-        return Html::encode($element->slug);
+        return Html::encode($element->slug ?? '');
     }
 
     private function renderRevisionNotesAttribute(ElementInterface $element): string

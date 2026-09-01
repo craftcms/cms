@@ -1,20 +1,18 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import {type JobInfo, JobStatus} from '@craftcms/cp';
-  import {useActionClient} from '@/common/composables/useFetch';
-  import {unref, watch} from 'vue';
-  import {router} from '@inertiajs/vue3';
-  import {show} from '@routes/cp/utilities';
+  import {t} from '@craftcms/ui';
+  import {type JobInfo, JobStatus} from '@/modules/queue/types';
+  import {useForm} from '@inertiajs/vue3';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
+  import {retry} from '@actions/QueueController';
 
   const props = defineProps<{
     job: JobInfo;
   }>();
 
   const {flash} = useFlashMessages();
-  const {execute, state} = useActionClient('queue/retry');
+  const form = useForm({});
 
-  async function retryJob() {
+  function retryJob() {
     if (
       !confirm(
         t(
@@ -28,23 +26,21 @@
       return;
     }
 
-    await execute({id: unref(props.job.uid)});
-    router.visit(show({id: 'queue-manager'}), {
+    form.submit(retry({id: props.job.uid}), {
       only: ['contentHtml'],
+      preserveScroll: true,
+      onSuccess: () => {
+        if (props.job.status.value === JobStatus.Reserved) {
+          flash('success', t('Job restarted.'));
+        } else {
+          flash('success', t('Job retried.'));
+        }
+      },
+      onError: () => {
+        flash('error', t('Failed to retry job.'));
+      },
     });
   }
-
-  watch(state, (newValue) => {
-    if (newValue === 'success') {
-      if (props.job.status.value === JobStatus.Reserved) {
-        flash('success', t('Job restarted.'));
-      } else {
-        flash('success', t('Job retried.'));
-      }
-    } else if (newValue === 'error') {
-      flash('error', t('Failed to retry job.'));
-    }
-  });
 </script>
 
 <template>
@@ -52,7 +48,7 @@
     type="button"
     @click="retryJob"
     size="small"
-    :loading="state === 'loading'"
+    :loading="form.processing"
     v-bind="$attrs"
   >
     <craft-icon name="play" slot="prefix" style="font-size: 0.7em"></craft-icon>

@@ -28,6 +28,7 @@ use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -53,6 +54,7 @@ class Entries
      * @param  int  $entryId  The entry’s ID.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the entry in.
      *                                         Defaults to the current site.
+     * @param  array<string, array<array-key, int|string>|bool|int|string|null>  $criteria
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
     public function getEntryById(int $entryId, array|int|string|null $siteId = null, array $criteria = []): ?Entry
@@ -62,12 +64,10 @@ class Entries
         }
 
         // Get the structure ID
-        if (! isset($criteria['structureId'])) {
-            $criteria['structureId'] = DB::table(Table::ENTRIES, 'entries')
-                ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
-                ->where('entries.id', $entryId)
-                ->value('sections.structureId');
-        }
+        $criteria['structureId'] ??= DB::table(Table::ENTRIES, 'entries')
+            ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
+            ->where('entries.id', $entryId)
+            ->value('sections.structureId');
 
         return $this->elements->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
@@ -84,9 +84,7 @@ class Entries
         $siteId = Sites::getCurrentSite()->id;
         $missingEntries = [];
 
-        if (! isset($this->singleEntries[$siteId])) {
-            $this->singleEntries[$siteId] = [];
-        }
+        $this->singleEntries[$siteId] ??= [];
 
         foreach ($handles as $handle) {
             if (isset($this->singleEntries[$siteId][$handle])) {
@@ -164,6 +162,12 @@ class Entries
         // and that it's not a nested entry
         if ($entry->getPrimaryOwnerId() !== null) {
             throw new Exception('Attempting to move a nested element.');
+        }
+
+        $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
+
+        if (! in_array($entry->typeId, $sectionEntryTypeIds, true)) {
+            throw new Exception('Entry type is not supported by the target section.');
         }
 
         // Ensure all fields have been normalized
@@ -295,6 +299,10 @@ class Entries
     public function reassignEntries(int|array $oldUserId, int $newUserId): int
     {
         $oldUserIds = Arr::wrap($oldUserId);
+
+        if (in_array($newUserId, $oldUserIds, true)) {
+            throw new InvalidArgumentException('The new author must be different from the old author.');
+        }
 
         $count = DB::table(Table::ENTRIES_AUTHORS)
             ->whereIn('authorId', $oldUserIds)

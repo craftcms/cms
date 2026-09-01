@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {computed} from 'vue';
   import PluginEdition from '@/modules/plugin-manager/components/PluginEdition.vue';

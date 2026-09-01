@@ -2,12 +2,12 @@
 
 namespace craft\base\imagetransforms;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Contracts\ImageTransformerInterface} instead.
-     */
-    interface ImageTransformerInterface extends \CraftCms\Cms\Image\Contracts\ImageTransformerInterface
-    {
-    }
+use craft\elements\Asset;
+use craft\models\ImageTransform;
+
+interface ImageTransformerInterface
+{
+    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string;
+
+    public function invalidateAssetTransforms(Asset $asset): void;
 }

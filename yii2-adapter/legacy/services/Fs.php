@@ -14,11 +14,11 @@ use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Throwable;
 use yii\base\Component;
@@ -34,7 +34,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 4.0.0
- * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Filesystem\Filesystems} instead.
+ * @deprecated in 6.0.0. Use {@see Filesystems} instead.
  */
 class Fs extends Component
 {
@@ -168,19 +168,14 @@ class Fs extends Component
         $this->service()->handleDeletedFilesystem($event);
     }
 
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        TypeRegistryCompatibility::reconcile(app(FilesystemTypes::class), Craft::$app->getFs(), self::EVENT_REGISTER_FILESYSTEM_TYPES);
+    }
+
     public static function registerEvents(): void
     {
-        EventFacade::listen(FilesystemTypesResolving::class, function(FilesystemTypesResolving $event) {
-            if (!Craft::$app->getFs()->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
-            Craft::$app->getFs()->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $yiiEvent);
-
-            $event->types = Collection::make($yiiEvent->types);
-        });
-
         EventFacade::listen(FilesystemRenamed::class, function(FilesystemRenamed $event) {
             if (!Craft::$app->getFs()->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
                 return;

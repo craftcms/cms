@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes as VolumesService;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -24,8 +23,8 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Users;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
 it('runs the built-in resave commands from resave all', function () {
@@ -157,8 +156,21 @@ it('passes fields and default value options to queued resave jobs', function () 
 
     Queue::assertPushed(ResaveElements::class, fn (ResaveElements $job) => $job->withFields === ['featured']
         && $job->set === 'featured'
-        && $job->toDefault === true);
+        && $job->toDefault);
 });
+
+it('rejects non-positive queue batch sizes', function (int $batchSize) {
+    Queue::fake();
+
+    $this->artisan("craft:resave:entries --queue --batch-size=$batchSize")
+        ->expectsOutputToContain('--batch-size must be at least 1.')
+        ->assertExitCode(1);
+
+    Queue::assertNothingPushed();
+})->with([
+    'zero' => 0,
+    'negative' => -1,
+]);
 
 it('filters users by group', function () {
     $group = UserGroup::factory()->create(['handle' => 'staff']);
@@ -258,12 +270,14 @@ it('filters entries by section and can propagate to another site', function () {
         ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->where('siteId', $site->id)->exists())->toBeTrue();
 });
 
-it('ignores event-discovered commands that are not actually registered', function () {
-    Event::listen(ElementResaveCommandsResolving::class, function (ElementResaveCommandsResolving $event) {
-        $event->commands['craft:resave:missing-plugin-command'] = [
-            'description' => 'Missing command',
-        ];
-    });
+it('runs registered resave commands', function () {
+    $handled = false;
+    Artisan::setArtisan(null);
+    Artisan::command('craft:resave:custom', function () use (&$handled) {
+        $handled = true;
+    })->purpose('Custom resave command');
 
     $this->artisan('craft:resave:all --no-interaction')->assertSuccessful();
+
+    expect($handled)->toBeTrue();
 });

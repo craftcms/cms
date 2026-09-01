@@ -14,13 +14,14 @@ use CraftCms\Cms\Http\Controllers\SiteRouteController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Site\Sites;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
 $routes = app(CraftRoutes::class);
 
 if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->getLoginPath() !== false) {
-        Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+        Route::allowDuringMaintenance()->get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
     /*
@@ -30,29 +31,29 @@ if (Edition::get()->registersFrontendUserRoutes()) {
      */
     if (Cms::isInstalled()) {
         foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
-            Route::get($path, [LoginController::class, 'showLogin']);
-            Route::post($path, [LoginController::class, 'attemptLogin'])
+            Route::allowDuringMaintenance()->get($path, [LoginController::class, 'showLogin']);
+            Route::allowDuringMaintenance()->post($path, [LoginController::class, 'attemptLogin'])
                 ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
 
         foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
-            Route::get($path, [VerifyEmailController::class, 'show']);
-            Route::post($path, [VerifyEmailController::class, 'store']);
+            Route::allowDuringMaintenance()->get($path, [VerifyEmailController::class, 'show']);
+            Route::allowDuringMaintenance()->post($path, [VerifyEmailController::class, 'store']);
         }
 
         foreach ($routes->localizedConfigPaths('getSetPasswordPath') as $path) {
-            Route::get($path, [SetPasswordController::class, 'show']);
-            Route::post($path, [SetPasswordController::class, 'store']);
+            Route::allowDuringMaintenance()->get($path, [SetPasswordController::class, 'show']);
+            Route::allowDuringMaintenance()->post($path, [SetPasswordController::class, 'store']);
         }
 
         foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
-            Route::get($path, [LoginController::class, 'logout'])->middleware('auth');
+            Route::allowDuringMaintenance()->any($path, [LoginController::class, 'logout'])->middleware('auth');
         }
     }
 }
 
 if (OAuth::isAvailable()) {
-    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () use ($routes) {
+    Route::allowDuringMaintenance()->middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () use ($routes) {
         Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
         Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
@@ -63,7 +64,7 @@ if (OAuth::isAvailable()) {
 }
 
 if (! is_null(Cms::config()->setPasswordRequestPath)) {
-    Route::get('.well-known/change-password', function (Sites $sites) {
+    Route::allowDuringMaintenance()->get('.well-known/change-password', function (Sites $sites) {
         $uri = Cms::config()->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
 
         abort_if(is_null($uri), 404);
@@ -72,4 +73,11 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-Route::fallback(SiteRouteController::class)->name('siteFallback');
+// Signals support for passkeys without leaking the CP URL, per https://www.w3.org/TR/passkey-endpoints/.
+Route::get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
+
+// Route::fallback() only registers GET/HEAD by default
+Route::any('{fallbackPlaceholder}', SiteRouteController::class)
+    ->where('fallbackPlaceholder', '.*')
+    ->fallback()
+    ->name('siteFallback');

@@ -17,6 +17,7 @@ trait InteractsWithCp
     /** @var bool Whether the plugin has its own section in the control panel */
     public bool $hasCpSection = false;
 
+    /** @return NavItem|array<string, mixed>|null */
     public function getCpNavItem(): NavItem|array|null
     {
         return new NavItem()

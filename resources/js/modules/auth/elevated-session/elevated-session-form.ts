@@ -1,4 +1,5 @@
 import {elevatedSessionManager} from './manager';
+import {jq} from '@/common/utils/jquery';
 
 type FormTarget = HTMLFormElement | string | ArrayLike<HTMLFormElement>;
 type InputTarget = Element | string | ArrayLike<Element>;
@@ -6,11 +7,11 @@ type InputValue = string | string[] | null;
 
 function firstElement<T extends Element>(target: T | string | ArrayLike<T>): T {
   const element =
-    typeof target === 'string'
-      ? document.querySelector<T>(target)
-      : target instanceof Element
-        ? target
-        : target[0];
+    target instanceof Element
+      ? target
+      : target instanceof Object
+        ? target[0]
+        : document.querySelector<T>(String(target));
 
   if (!element) {
     throw new Error('Unable to find the elevated-session form.');
@@ -51,7 +52,7 @@ function inputValue(input: Element): InputValue {
 }
 
 function passwordInput(input: Element): Element {
-  const jquery = (window as any).jQuery ?? (window as any).$;
+  const jquery = jq();
   const currentInput =
     jquery?.(input).data?.('passwordInput')?.$currentInput?.[0];
 
@@ -134,6 +135,13 @@ export class ElevatedSessionForm {
       return;
     }
 
+    // The guard only gates native form submissions. If an earlier listener
+    // already canceled the submit (e.g. an Inertia page that intercepts the
+    // form and confirms the session itself), there is nothing to resume.
+    if (event.defaultPrevented) {
+      return;
+    }
+
     if (!this.inputsChanged()) {
       return;
     }
@@ -156,10 +164,11 @@ export class ElevatedSessionForm {
   };
 
   private track(target: InputTarget): void {
-    if (typeof target === 'string') {
-      this.inputSelectors.push(target);
+    if (!(target instanceof Object)) {
+      const selector = String(target);
+      this.inputSelectors.push(selector);
       this.form
-        .querySelectorAll(target)
+        .querySelectorAll(selector)
         .forEach((input) => this.inputs.set(input, inputValue(input)));
       return;
     }

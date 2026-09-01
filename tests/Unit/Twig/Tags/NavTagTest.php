@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('renders a flat list of items at the same level', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% nav item in items %}{{ item.title }},{% endnav %}',
         [
             'items' => [
@@ -26,7 +26,7 @@ it('renders a flat list of items at the same level', function () {
 it('renders nested list with ifchildren and children sub-tags', function () {
     $template = '{% nav item in items %}<li>{{ item.title }}{% ifchildren %}<ul>{% children %}</ul>{% endifchildren %}</li>{% endnav %}';
 
-    $result = $this->renderer->renderString($template, [
+    $result = $this->manager->renderString($template, [
         'items' => [
             (object) ['title' => 'About', 'level' => 1],
             (object) ['title' => 'Team', 'level' => 2],
@@ -43,7 +43,7 @@ it('renders nested list with ifchildren and children sub-tags', function () {
 it('renders three levels deep with proper outdenting', function () {
     $template = '{% nav item in items %}<li>{{ item.title }}{% ifchildren %}<ul>{% children %}</ul>{% endifchildren %}</li>{% endnav %}';
 
-    $result = $this->renderer->renderString($template, [
+    $result = $this->manager->renderString($template, [
         'items' => [
             (object) ['title' => 'A', 'level' => 1],
             (object) ['title' => 'B', 'level' => 2],
@@ -58,7 +58,7 @@ it('renders three levels deep with proper outdenting', function () {
 });
 
 it('exposes nav.level context variable', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% nav item in items %}[{{ nav.level }}:{{ item.title }}]{% endnav %}',
         [
             'items' => [
@@ -72,7 +72,7 @@ it('exposes nav.level context variable', function () {
 });
 
 it('skips items that jump more than one level deeper', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% nav item in items %}{{ item.title }},{% endnav %}',
         [
             'items' => [
@@ -87,7 +87,7 @@ it('skips items that jump more than one level deeper', function () {
 });
 
 it('renders nothing for an empty collection', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% nav item in items %}{{ item.title }}{% endnav %}',
         ['items' => []],
     );
@@ -96,7 +96,7 @@ it('renders nothing for an empty collection', function () {
 });
 
 it('skips orphan items outside parent nested-set range using lft/rgt', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% nav item in items %}{{ item.title }},{% endnav %}',
         [
             'items' => [

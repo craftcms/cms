@@ -27,14 +27,11 @@ use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
-use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\Node;
 use GraphQL\Language\AST\NodeList;
-use GraphQL\Language\AST\ObjectFieldNode;
-use GraphQL\Language\AST\ObjectValueNode;
-use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Utils\AST;
 use InvalidArgumentException;
 
 class ElementQueryConditionBuilder extends Component
@@ -45,12 +42,16 @@ class ElementQueryConditionBuilder extends Component
 
     private ArgumentManager $_argumentManager;
 
+    /** @var array<string, FragmentDefinitionNode> */
     private array $_fragments;
 
+    /** @var array<string, array<string, EagerLoadingFieldInterface&Field>> */
     private array $_eagerLoadableFieldsByContext = [];
 
+    /** @var list<string> */
     private array $_transformableAssetProperties = ['url', 'width', 'height'];
 
+    /** @var array<string, array<int|string, class-string|bool>> */
     private array $_additionalEagerLoadableNodes;
 
     public function __construct($config = [])
@@ -91,9 +92,10 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param  FieldInterface|null  $startingParentField  the starting parent field for the extraction, if any
      */
+    /** @return array<string, mixed> */
     public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
-        /** @var ArrayObject $fieldNodes */
+        /** @var ArrayObject<int, FieldNode> $fieldNodes */
         $fieldNodes = $this->_resolveInfo->fieldNodes;
 
         if ($fieldNodes->count() === 0 || empty($fieldNodes[0])) {
@@ -117,63 +119,18 @@ class ElementQueryConditionBuilder extends Component
     }
 
     /**
-     * @param  ArgumentNode[]|NodeList  $argumentNodes
+     * @param  list<ArgumentNode>|NodeList<ArgumentNode>  $argumentNodes
+     * @return array<string, mixed>
      */
     private function _extractArguments(NodeList|array $argumentNodes): array
     {
         $arguments = [];
 
         foreach ($argumentNodes as $argumentNode) {
-            $arguments[$argumentNode->name->value] = $this->_extractArgumentValue($argumentNode);
+            $arguments[$argumentNode->name->value] = AST::valueFromASTUntyped($argumentNode->value, $this->_resolveInfo->variableValues);
         }
 
         return $arguments;
-    }
-
-    private function _extractArgumentValue(Node $argumentNode): mixed
-    {
-        // Deal with a raw object value.
-        if ($argumentNode->kind === 'ObjectValue') {
-            /** @var ObjectValueNode $argumentNode */
-            $extractedValue = [];
-            foreach ($argumentNode->fields as $fieldNode) {
-                $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
-            }
-
-            return $extractedValue;
-        }
-
-        if (in_array($argumentNode->kind, ['Argument', 'Variable', 'ListValue', 'ObjectField'], true)) {
-            /** @var ArgumentNode|VariableNode|ListValueNode|ObjectFieldNode $argumentNode */
-            $argumentNodeValue = $argumentNode->value;
-
-            switch ($argumentNodeValue->kind) {
-                case 'Variable':
-                    return $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
-                case 'ListValue':
-                    $extractedValue = [];
-                    foreach ($argumentNodeValue->values as $value) {
-                        $extractedValue[] = $this->_extractArgumentValue($value);
-                    }
-
-                    return $extractedValue;
-                case 'ObjectValue':
-                    $extractedValue = [];
-                    foreach ($argumentNodeValue->fields as $fieldNode) {
-                        $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
-                    }
-
-                    return $extractedValue;
-                case 'NullValue':
-                    return null;
-                default:
-                    return $argumentNodeValue->value;
-            }
-        }
-
-        $value = $argumentNode->value ?? null;
-
-        return $argumentNode->kind === 'IntValue' ? (int) $value : $value;
     }
 
     private function _isAdditionalEagerLoadableNode(string $nodeName, mixed $parentField): bool
@@ -211,6 +168,7 @@ class ElementQueryConditionBuilder extends Component
         return false;
     }
 
+    /** @return array<string, array<int|string, class-string|bool>> */
     private function _getKnownSpecialEagerLoadNodes(): array
     {
         if (! isset($this->_additionalEagerLoadableNodes)) {
@@ -239,6 +197,7 @@ class ElementQueryConditionBuilder extends Component
         return $this->_additionalEagerLoadableNodes;
     }
 
+    /** @return array<string, mixed> */
     private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
@@ -254,6 +213,10 @@ class ElementQueryConditionBuilder extends Component
         return $arguments;
     }
 
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return list<array<string, mixed>|string>
+     */
     private function _prepareTransformArguments(array $arguments): array
     {
         if (empty($arguments)) {
@@ -282,6 +245,7 @@ class ElementQueryConditionBuilder extends Component
      * @param  FieldInterface|null  $parentField  the current parent field, that we are in.
      * @param  Node|null  $wrappingFragment  the wrapping fragment node, if any
      * @param  string  $context  the context in which to search fields
+     * @return list<EagerLoadPlan>
      */
     private function _traverseAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
@@ -509,7 +473,7 @@ class ElementQueryConditionBuilder extends Component
         return $plans;
     }
 
-    public function canNodeBeAliased(string $nodeName, $parentField = null): bool
+    public function canNodeBeAliased(string $nodeName, ?FieldInterface $parentField = null): bool
     {
         if (! $this->_isAdditionalEagerLoadableNode($nodeName, $parentField)) {
             return true;

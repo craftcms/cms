@@ -6,12 +6,15 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Support\Facades\DB;
 use Override;
+use Throwable;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\suggest;
@@ -41,13 +44,16 @@ class DeleteCommand extends Command implements PromptsForMissingInput
             return self::FAILURE;
         }
 
-        if ($this->option('delete-content') && $this->option('inheritor')) {
+        $deleteContent = (bool) $this->option('delete-content');
+        $inheritor = $this->option('inheritor');
+
+        if ($deleteContent && $inheritor) {
             $this->components->error('Only one of --delete-content or --inheritor may be specified.');
 
             return self::FAILURE;
         }
 
-        if (! ($inheritor = $this->option('inheritor')) && $this->input->isInteractive() && confirm('Transfer this user’s content to an existing user?')) {
+        if (! $deleteContent && ! $inheritor && $this->input->isInteractive() && confirm('Transfer this user’s content to an existing user?')) {
             $inheritor = suggest(
                 label: 'Which user should inherit the content?',
                 options: User::whereNot('id', $user->id)->pluck('username', 'id'),
@@ -66,6 +72,12 @@ class DeleteCommand extends Command implements PromptsForMissingInput
                 return self::FAILURE;
             }
 
+            if ($inheritor->id === $user->id) {
+                $this->components->error('A user cannot inherit their own content.');
+
+                return self::FAILURE;
+            }
+
             if (! confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
                 $this->components->warn('Aborted');
 
@@ -77,21 +89,45 @@ class DeleteCommand extends Command implements PromptsForMissingInput
             return self::SUCCESS;
         }
 
-        if (! $inheritor && ! $this->option('delete-content')) {
-            $this->components->error('You must specify either --delete-content or --inheritor to proceed.');
-
-            return self::FAILURE;
-        }
-
         $fail = false;
+        $hardDelete = (bool) $this->option('hard');
         $this->components->task(
             'Deleting the user',
-            function () use ($inheritor, $elements, $user, &$fail) {
-                if ($inheritor) {
-                    Entries::reassignEntries($user->id, $inheritor->id);
-                }
+            function () use ($inheritor, $elements, $hardDelete, $user, &$fail) {
+                DB::beginTransaction();
 
-                $fail = ! $elements->deleteElement($user, $this->option('hard'));
+                try {
+                    if ($inheritor) {
+                        Entries::reassignEntries($user->id, $inheritor->id);
+                    } else {
+                        foreach (Entry::find()
+                            ->authorId($user->id)
+                            ->site('*')
+                            ->unique()
+                            ->status(null)
+                            ->cursor() as $entry) {
+                            if (! $elements->deleteElement($entry, $hardDelete)) {
+                                $fail = true;
+                                DB::rollBack();
+
+                                return;
+                            }
+                        }
+                    }
+
+                    if (! $elements->deleteElement($user, $hardDelete)) {
+                        $fail = true;
+                        DB::rollBack();
+
+                        return;
+                    }
+
+                    DB::commit();
+                } catch (Throwable $e) {
+                    DB::rollBack();
+
+                    throw $e;
+                }
             }
         );
 

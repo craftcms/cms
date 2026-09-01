@@ -10,7 +10,7 @@ readonly class Search
      * Normalizes search keywords.
      *
      * @param  string|string[]  $str  The dirty keywords
-     * @param  array  $ignore  Ignore words to strip out
+     * @param  string[]  $ignore  Ignore words to strip out
      * @param  bool  $processCharMap  Whether to remove punctuation and diacritics (default is true)
      * @param  string|null  $language  The language that the character map should be based on, if `$processCharMap` is `true`.
      * @return string The cleansed keywords.
@@ -93,6 +93,7 @@ readonly class Search
     /**
      * Returns the asciiPunctuation array.
      */
+    /** @return array<string, string> */
     private static function getPunctuation(): array
     {
         // Keep local copy

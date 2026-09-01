@@ -1,12 +1,17 @@
 import {Base, hasAttr} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
 import {
+  canUseVueSlideout,
+  openLayoutComponentSettings,
+} from './settings-slideout';
+import {
   firstFocusableInSiblings,
   fldElementData,
   htmlToElement,
 } from './support';
 import type {Tab} from './tab';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/cp';
+import {type ActionMenuItem, t} from '@craftcms/ui';
+import type {FormValues} from '@/modules/forms/types';
 
 declare const Craft: any;
 
@@ -30,11 +35,9 @@ export class Element extends Base {
   thumbable = false;
   hasCustomWidth = false;
   hasSettings = false;
-  settingsNamespace: any = null;
   slideout: any = null;
   defaultHandle: any = null;
   fieldId: any = null;
-  fieldsWithErrors: any[] = [];
 
   constructor(tab: Tab, $container: any) {
     super();
@@ -42,8 +45,6 @@ export class Element extends Base {
     this.$container = $container;
     this.uid = $container.dataset.uid;
     this.fieldId = $container.dataset.id;
-
-    this.fieldsWithErrors = [];
 
     // New element?
     const isNew = !this.uid;
@@ -97,23 +98,30 @@ export class Element extends Base {
       hasAttr(this.$container, 'data-has-custom-width');
 
     if (this.hasCustomWidth) {
-      const widthSlider = new Craft.SlidePicker(this.config.width || 100, {
-        min: 25,
-        max: 100,
-        step: 25,
-        valueLabel: (width: number) => {
-          return Craft.t('app', '{pct} width', {pct: `${width}%`});
-        },
-        onChange: (width: number) => {
-          this.updateConfig((config: any) => {
-            config.width = width;
-            return config;
-          });
-        },
-        readOnly: this.tab.designer.settings!.readOnly,
+      const widthSlider = document.createElement('craft-slide-picker');
+      widthSlider.setAttribute('label', Craft.t('app', 'Number of columns'));
+      widthSlider.setAttribute('value-unit', '%');
+      widthSlider.setAttribute('min', '25');
+      widthSlider.setAttribute('max', '100');
+      widthSlider.setAttribute('step', '25');
+      widthSlider.setAttribute('value', `${this.config.width || 100}`);
+
+      if (this.tab.designer.settings!.readOnly) {
+        widthSlider.setAttribute('read-only', '');
+      }
+
+      widthSlider.addEventListener('value-change', (event: Event) => {
+        if (!(event instanceof CustomEvent)) {
+          return;
+        }
+        const width = Number(event.detail?.value);
+        this.updateConfig((config: any) => {
+          config.width = width;
+          return config;
+        });
       });
-      // Craft.SlidePicker exposes a jQuery $container — unwrap to native.
-      this.$container.appendChild(widthSlider.$container[0]);
+
+      this.$container.appendChild(widthSlider);
     }
 
     // create the action menu
@@ -252,6 +260,14 @@ export class Element extends Base {
     return label !== '' ? label : this.$container.dataset.attribute;
   }
 
+  private settingsRequestData() {
+    return {
+      uid: this.uid,
+      layoutConfig: this.tab.designer.config,
+      elementType: this.tab.designer.settings!.elementType,
+    };
+  }
+
   async createSettings(): Promise<void> {
     let data;
     try {
@@ -260,9 +276,8 @@ export class Element extends Base {
         'fields/render-layout-component-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.tab.designer.config,
-            elementType: this.tab.designer.settings!.elementType,
+            ...this.settingsRequestData(),
+            config: this.config,
           },
         }
       );
@@ -272,9 +287,28 @@ export class Element extends Base {
       throw e;
     }
 
-    this.settingsNamespace = data.namespace;
+    const requestData = () => ({
+      ...this.settingsRequestData(),
+      config: this.config,
+    });
+
+    if (canUseVueSlideout()) {
+      await openLayoutComponentSettings(data, {
+        title: this.settingsTitle(),
+        triggerElement: this.$actionBtn,
+        requestData,
+        // The panel owns Save/Cancel and reports errors from the rejection.
+        apply: (settings) => this.applyConfig(() => this.config, settings),
+      });
+
+      this.trigger('createSettings');
+
+      return;
+    }
+
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
+      requestData,
     });
 
     // slideout.$container is a Craft jQuery object; bind on the native form.
@@ -290,14 +324,11 @@ export class Element extends Base {
     const $fieldsContainer =
       this.slideout.$container[0].querySelector('.fields');
 
-    if (this.isField) {
-      const $handleInput = $fieldsContainer?.querySelector(
-        'input[name$="[handle]"]'
-      );
-      if ($handleInput) {
-        $handleInput.value = this.config.handle || '';
+    this.addListener($fieldsContainer, 'field-saved', (event) => {
+      if (event instanceof CustomEvent && event.detail?.selectorHtml) {
+        this.refreshField(String(event.detail.selectorHtml));
       }
-    }
+    });
 
     this.trigger('createSettings');
   }
@@ -310,38 +341,56 @@ export class Element extends Base {
     $submitBtn?.classList.add('loading');
 
     try {
-      await this.applyConfig(() => this.config, true);
+      await this.applyConfig(
+        () => this.config,
+        this.slideout.settingsForm?.currentValues() ?? {}
+      );
+    } catch {
+      // Errors are already shown in the slideout.
     } finally {
       $submitBtn?.classList.remove('loading');
     }
   }
 
+  /** The label shown in the settings panel's title bar. */
+  private settingsTitle(): string {
+    return this.getLabel()
+      ? t('{label} Settings', {
+          label: this.getLabel(),
+        })
+      : t('Settings');
+  }
+
   async showFieldEditor(): Promise<void> {
-    const slideout = new Craft.CpScreenSlideout('fields/edit-field', {
-      params: {
-        fieldId: this.fieldId,
-        multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
-      },
-    });
+    const slideout = new Craft.CpScreenSlideout(
+      Craft.getCpUrl('settings/fields/edit'),
+      {
+        params: {
+          fieldId: this.fieldId,
+          multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
+        },
+      }
+    );
 
     slideout.on('submit', async ({response}: any) => {
-      const designer = this.tab.designer;
-
-      // refresh the library selector
-      const $oldSelector = designer.$fieldLibrary.querySelector(
-        `.fld-field[data-id=${this.fieldId}]`
-      );
-      const $newSelector = htmlToElement(response.data.selectorHtml);
-      $oldSelector?.replaceWith($newSelector);
-      designer.refreshLibraryFields();
-      designer.elementDrag!.removeItems($oldSelector);
-      designer.elementDrag!.addItems($newSelector);
-
-      // refresh all instances of this field
-      designer.$tabContainer
-        .querySelectorAll(`.fld-field[data-id=${this.fieldId}]`)
-        .forEach((el: HTMLElement) => fldElementData.get(el)?.refresh());
+      this.refreshField(response.data.selectorHtml);
     });
+  }
+
+  private refreshField(selectorHtml: string): void {
+    const designer = this.tab.designer;
+    const $oldSelector = designer.$fieldLibrary.querySelector(
+      `.fld-field[data-id=${this.fieldId}]`
+    );
+    const $newSelector = htmlToElement(selectorHtml);
+    $oldSelector?.replaceWith($newSelector);
+    designer.refreshLibraryFields();
+    designer.elementDrag!.removeItems($oldSelector);
+    designer.elementDrag!.addItems($newSelector);
+
+    designer.$tabContainer
+      .querySelectorAll(`.fld-field[data-id=${this.fieldId}]`)
+      .forEach((el: HTMLElement) => fldElementData.get(el)?.refresh());
   }
 
   async makeRequired(): Promise<void> {
@@ -376,17 +425,19 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    withSettings = false
+    settings: FormValues | null = null,
+    closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);
     if (config === false) {
       return;
     }
 
-    // Craft.ui error helpers require jQuery fields — keep them at the seam.
-    this.fieldsWithErrors.forEach(($field: any) => {
-      Craft.ui.clearErrorsFromField($field);
-    });
+    const settingsForm = this.slideout?.settingsForm;
+
+    if (settings && settingsForm) {
+      settingsForm.errors = {};
+    }
 
     let data;
 
@@ -396,33 +447,19 @@ export class Element extends Base {
         'fields/apply-layout-element-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.tab.designer.config,
-            elementType: this.tab.designer.settings!.elementType,
+            ...this.settingsRequestData(),
             config,
-            settingsNamespace: this.settingsNamespace,
-            settings: withSettings
-              ? serializeFormInputs(this.slideout.$container[0])
-              : null,
+            settings,
           },
         }
       );
       data = response.data;
     } catch (e: any) {
-      if (withSettings) {
-        const errors = e?.response?.data?.errors;
-        if (errors) {
-          Object.entries(errors).forEach(([name, fieldErrors]) => {
-            // Craft.ui.addErrorsToField needs a jQuery field — seam.
-            const $field = this.slideout.$container.find(
-              `[data-error-key="${name}"]`
-            );
-            if ($field.length) {
-              Craft.ui.addErrorsToField($field, fieldErrors);
-              this.fieldsWithErrors.push($field);
-            }
-          });
-        }
+      const errors = e?.response?.data?.errors;
+
+      // The Vue panel renders its own errors from the rejection.
+      if (settings && settingsForm && errors) {
+        settingsForm.errors = errors;
       }
 
       Craft.cp.displayError(e?.response?.data?.message);
@@ -462,7 +499,7 @@ export class Element extends Base {
     designer.elementDrag!.removeItems($oldContainer);
     designer.elementDrag!.addItems($newContainer);
 
-    if (this.slideout) {
+    if (closeSlideout && this.slideout) {
       this.slideout.close();
       this.slideout.destroy();
       this.slideout = null;
@@ -485,12 +522,12 @@ export class Element extends Base {
   }
 
   async refresh(): Promise<void> {
-    await this.applyConfig((config: any) => config);
+    await this.applyConfig((config: any) => config, null, false);
   }
 
   get index(): number {
     const tabConfig = this.tab.config;
-    if (typeof tabConfig === 'undefined') {
+    if (tabConfig === undefined) {
       return -1;
     }
     return tabConfig.elements.findIndex((c: any) => c.uid === this.uid);

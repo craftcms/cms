@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\TemplateHooks;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
     app()->forgetScopedInstances();
 });
 
 it('renders output from a registered hook handler', function () {
     app(TemplateHooks::class)->register('myHook', fn (array &$context, bool &$handled): string => '<p>Hook content</p>');
 
-    $result = $this->renderer->renderString('{% hook "myHook" %}');
+    $result = $this->manager->renderString('{% hook "myHook" %}');
 
     expect(trim((string) $result))->toBe('<p>Hook content</p>');
 });
 
 it('renders empty string when no handlers are registered', function () {
-    $result = $this->renderer->renderString('before{% hook "unregistered" %}after');
+    $result = $this->manager->renderString('before{% hook "unregistered" %}after');
 
     expect(trim((string) $result))->toBe('beforeafter');
 });
@@ -29,7 +29,7 @@ it('concatenates output from multiple handlers', function () {
     $hooks->register('multi', fn (array &$context, bool &$handled) => 'A');
     $hooks->register('multi', fn (array &$context, bool &$handled) => 'B');
 
-    $result = $this->renderer->renderString('{% hook "multi" %}');
+    $result = $this->manager->renderString('{% hook "multi" %}');
 
     expect(trim((string) $result))->toBe('AB');
 });
@@ -37,7 +37,7 @@ it('concatenates output from multiple handlers', function () {
 it('passes the template context to the hook handler', function () {
     app(TemplateHooks::class)->register('greeting', fn (array &$context, bool &$handled): string => 'Hello, '.($context['name'] ?? 'unknown'));
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% hook "greeting" %}',
         ['name' => 'World'],
     );
@@ -54,7 +54,7 @@ it('stops invoking handlers when handled flag is set', function () {
     });
     $hooks->register('handled', fn (array &$context, bool &$handled) => 'Second');
 
-    $result = $this->renderer->renderString('{% hook "handled" %}');
+    $result = $this->manager->renderString('{% hook "handled" %}');
 
     expect(trim((string) $result))->toBe('First');
 });

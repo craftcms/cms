@@ -49,12 +49,12 @@ readonly class JobProgress
 
     public function failed(string $uid, ?string $description = null, ?string $error = null): void
     {
-        $this->upsertJob($uid, JobStatus::Failed, [
+        $this->upsertJob($uid, JobStatus::Failed, array_filter([
             'progress' => 0,
             'description' => $description,
             'error' => $error,
             'dateFailed' => now('utc'),
-        ]);
+        ]));
     }
 
     public function setProgress(string $uid, string $description, int $progress, ?string $label = null): void
@@ -79,7 +79,7 @@ readonly class JobProgress
     }
 
     /**
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getJobInfo(?int $limit = null): Collection
     {
@@ -118,7 +118,7 @@ readonly class JobProgress
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getAll(): Collection
     {
@@ -146,7 +146,7 @@ readonly class JobProgress
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getActive(): Collection
     {
@@ -167,7 +167,7 @@ readonly class JobProgress
     /**
      * Gets all jobs with a specific status.
      *
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getByStatus(JobStatus $status): Collection
     {
@@ -177,7 +177,7 @@ readonly class JobProgress
     }
 
     /**
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getFailed(): Collection
     {
@@ -271,37 +271,22 @@ readonly class JobProgress
 
     /**
      * Upserts a job entry.
+     *
+     * @param  array<string, mixed>  $attributes
      */
     private function upsertJob(
         string $uid,
         JobStatus $status,
         array $attributes = [],
     ): void {
-        DB::beginTransaction();
-
-        $now = now();
-        $exists = JobProgressModel::query()->where('uid', $uid)->exists();
-
-        if (! $exists) {
-            JobProgressModel::create(array_merge($attributes, [
+        JobProgressModel::query()->upsert(
+            [
+                ...$attributes,
                 'uid' => $uid,
                 'status' => $status->value,
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-            ]));
-
-            DB::commit();
-
-            return;
-        }
-
-        $data = array_merge($attributes, [
-            'status' => $status->value,
-            'dateUpdated' => $now,
-        ]);
-
-        JobProgressModel::query()->where('uid', $uid)->update($data);
-
-        DB::commit();
+            ],
+            uniqueBy: 'uid',
+            update: [...array_keys($attributes), 'status'],
+        );
     }
 }

@@ -21,11 +21,11 @@ use UnitEnum;
  * This trait contains all logic related to getting, setting, normalizing,
  * and tracking changes to custom field values on elements.
  *
- * @property array $serializedFieldValues Array of the element's serialized custom field values, indexed by their handles
- * @property array $fieldValues The element's normalized custom field values, indexed by their handles
+ * @property array<string,mixed> $serializedFieldValues Array of the element's serialized custom field values, indexed by their handles
+ * @property array<string,mixed> $fieldValues The element's normalized custom field values, indexed by their handles
  * @property string $fieldContext The field context this element's content uses
  * @property FieldLayout|null $fieldLayout The field layout used by this element
- * @property array $fieldParamNamespace The namespace used by custom field params on the request
+ * @property array<string,mixed> $fieldParamNamespace The namespace used by custom field params on the request
  *
  * @internal
  */
@@ -41,12 +41,15 @@ trait HasCustomFields
      */
     public bool $awaitingFieldValues = false;
 
+    /** @var array<string,true>|null */
     private ?array $_outdatedFields = null;
 
+    /** @var array<string,array<string,true>>|null */
     private ?array $_modifiedFields = null;
 
     private ?string $_fieldParamNamePrefix = null;
 
+    /** @var array<string,true>|null */
     private ?array $_normalizedFieldValues = null;
 
     /** @var array<string, mixed> */
@@ -61,16 +64,19 @@ trait HasCustomFields
     /** @var int[] */
     private array $_invalidNestedElementIds = [];
 
+    /** @return array<string,mixed> */
     public function getFieldValues(?array $fieldHandles = null): array
     {
         return $this->collectFieldValues($fieldHandles, fn (FieldInterface $field) => $this->getFieldValue($field->handle));
     }
 
+    /** @return array<string,mixed> */
     public function getSerializedFieldValues(?array $fieldHandles = null): array
     {
         return $this->collectFieldValues($fieldHandles, fn (FieldInterface $field) => $field->serializeValue($this->getFieldValue($field->handle), $this));
     }
 
+    /** @return array<string,mixed> */
     public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array
     {
         return $this->collectFieldValues($fieldHandles, fn (FieldInterface $field) => $field->serializeValueForDb($this->getFieldValue($field->handle), $this));
@@ -96,6 +102,7 @@ trait HasCustomFields
         return $values;
     }
 
+    /** @param array<string,mixed> $values */
     public function setFieldValues(array $values): void
     {
         foreach ($values as $fieldHandle => $value) {
@@ -183,8 +190,10 @@ trait HasCustomFields
         }
 
         if (! isset($this->_outdatedFields)) {
+            // Outdated fields are the ones that changed on the *canonical* element
+            // since this derivative was created (or last merged).
             $fields = DB::table(Table::CHANGEDFIELDS)
-                ->where('elementId', $this->id)
+                ->where('elementId', $this->getCanonicalId())
                 ->where('siteId', $this->siteId)
                 ->when(
                     value: $this->dateLastMerged,
@@ -303,6 +312,7 @@ trait HasCustomFields
         } while ($processedAnyFields);
     }
 
+    /** @param array<string,mixed> $values */
     private function hasFieldValueFromRequest(FieldInterface $field, array $values): bool
     {
         if (array_key_exists((string) $field->handle, $values)) {
@@ -355,9 +365,7 @@ trait HasCustomFields
 
     public function setGeneratedFieldRawValue(string $handle, mixed $value): void
     {
-        if (! isset($this->_generatedFieldValues)) {
-            $this->_generatedFieldValues = [];
-        }
+        $this->_generatedFieldValues ??= [];
 
         $this->_generatedFieldValues[$handle] = $value;
     }

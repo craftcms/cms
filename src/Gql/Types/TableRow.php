@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Types;
 
+use CraftCms\Cms\Field\Table as TableField;
+use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type TableColumn from TableField */
 class TableRow extends ObjectType
 {
     #[Override]
@@ -20,6 +23,8 @@ class TableRow extends ObjectType
 
     /**
      * @param  bool  $includeHandles  Whether columns also should be present by their field handles.
+     * @param  array<string, TableColumn>  $columns
+     * @return array<string, Type&OutputType>
      */
     public static function prepareRowFieldDefinition(array $columns, bool $includeHandles = true): array
     {

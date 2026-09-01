@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -23,20 +24,26 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -47,15 +54,20 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Addresses field type.
  *
- * @phpstan-import-type EagerLoadingMap from ElementInterface
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type AddressEagerLoadingMap array{
+ *     elementType:class-string<Address>,
+ *     map:list<array{source:int, target:int}>,
+ *     criteria:array{fieldId:int|null, allowOwnerDrafts:true, allowOwnerRevisions:true},
+ *     createElement:callable,
+ * }
  */
 class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
@@ -173,6 +185,28 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make([
+            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
+            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
+            FormField::make(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
+                ->control(Choice::make('viewMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                        ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                    ])
+                    ->value($this->viewMode)),
+        ]);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         $rules = parent::getRules();
@@ -217,6 +251,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return null;
     }
 
+    /** @return list<int> */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -296,7 +331,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     private function totalAddresses(ElementInterface $owner): int
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         $value = $owner->getFieldValue($this->handle);
 
         if ($value instanceof AddressQuery) {
@@ -310,26 +345,34 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $value->count();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->settingsHtml(true);
-    }
+        $addresses = array_values(match (true) {
+            $context->value instanceof ElementCollection => $context->value->all(),
+            $context->value instanceof AddressQuery => $context->value->all(),
+            default => [],
+        });
+        $values = $forms = $sortOrder = [];
+        $identities = ElementHelper::nestedElementIdentities($addresses);
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
+        foreach ($addresses as $index => $address) {
+            $uid = $identities[$index];
+            $values[$uid] = ['type' => 'address'];
+            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+                $address->getFieldLayout(),
+                $address,
+                new FormContext,
+            );
+            $sortOrder[] = $uid;
+        }
 
-        return template('_components/fieldtypes/Addresses/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
-        ]);
+        return MatrixControl::make($context->path)
+            ->entryTypes(['address' => Address::displayName()])
+            ->forms($forms)
+            ->minEntries($this->minAddresses)
+            ->maxEntries($this->maxAddresses)
+            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
     #[Override]
@@ -354,7 +397,11 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // An empty POST value means every address was removed. It arrives as
+        // null rather than '' because of Laravel's ConvertEmptyStringsToNull
+        // middleware — and delta ensures the value is only applied from the
+        // request when the field was actually modified.
+        if ($value === '' || ($fromRequest && $value === null)) {
             $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
@@ -369,8 +416,43 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $query;
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>  $value
+     * @return list<Address>
+     */
     private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
+        // Was the value posted in the new (delta) format?
+        $delta = isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder']);
+
+        if ($delta) {
+            $newAddressData = $value['entries'] ?? $value['blocks'] ?? [];
+            $newSortOrder = $value['sortOrder'] ?? null;
+
+            // Were the addresses posted by UUID or ID?
+            $firstKey = (string) array_key_first($newAddressData);
+            $firstSortOrder = $newSortOrder !== null ? (string) reset($newSortOrder) : '';
+            $uids = (
+                str_starts_with($firstKey, 'uid:') ||
+                str_starts_with($firstSortOrder, 'uid:') ||
+                Str::isUuid($firstKey) ||
+                Str::isUuid($firstSortOrder)
+            );
+
+            if ($uids) {
+                // Strip out the `uid:` key prefixes. New addresses are posted with them; addresses
+                // that were already on the element aren't, so both need to be normalized.
+                $newAddressData = array_combine(
+                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($newAddressData)),
+                    array_values($newAddressData),
+                );
+            }
+        } else {
+            $uids = false;
+            $newAddressData = $value;
+            $newSortOrder = array_keys($value);
+        }
+
         // Get the old addresses
         if ($element->id) {
             /** @var Address[] $oldAddressesById */
@@ -380,10 +462,38 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->drafts(null)
                 ->revisions(null)
                 ->status(null)
-                ->indexBy('id')
+                ->get()
+                ->keyBy($uids ? 'uid' : 'id')
                 ->all();
         } else {
             $oldAddressesById = [];
+        }
+
+        // Fall back to the addresses' current order if only their data was posted
+        $newSortOrder ??= array_keys($oldAddressesById);
+
+        // Map the canonical addresses' UUIDs to the derivatives', in case the data was posted
+        // with them (which is the case for the first save after a draft was created)
+        $canonicalUidMap = [];
+
+        if ($uids) {
+            $derivativeIds = [];
+
+            foreach ($oldAddressesById as $uid => $address) {
+                if ($address->getIsDerivative()) {
+                    $derivativeIds[$address->getCanonicalId()] = $uid;
+                }
+            }
+
+            if ($derivativeIds !== []) {
+                $canonicalUids = DB::table(DbTable::ELEMENTS)
+                    ->whereIn('id', array_keys($derivativeIds))
+                    ->pluck('uid', 'id');
+
+                foreach ($canonicalUids as $canonicalId => $canonicalUid) {
+                    $canonicalUidMap[$canonicalUid] = $derivativeIds[$canonicalId];
+                }
+            }
         }
 
         $addresses = [];
@@ -391,6 +501,10 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseAddressFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
+
+        if ($delta && $baseAddressFieldNamespace) {
+            $baseAddressFieldNamespace .= '.entries';
+        }
 
         $nativeFields = [
             'title',
@@ -412,7 +526,18 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             'longitude',
         ];
 
-        foreach ($value as $addressId => $addressData) {
+        foreach ($newSortOrder as $postedAddressId) {
+            // New addresses are posted with a `uid:` key prefix; addresses that were already
+            // on the element aren't
+            $addressId = $uids ? Str::chopStart((string) $postedAddressId, 'uid:') : $postedAddressId;
+            $addressData = $newAddressData[$addressId] ?? [];
+
+            // If this is a preexisting address but we don't have a record of it,
+            // check to see if it was recently duplicated for a draft.
+            if (! isset($oldAddressesById[$addressId]) && isset($canonicalUidMap[$addressId])) {
+                $addressId = $canonicalUidMap[$addressId];
+            }
+
             // Existing address?
             if (isset($oldAddressesById[$addressId])) {
                 /** @var Address $address */
@@ -438,10 +563,20 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address->setPrimaryOwner($element);
                 $address->setOwner($element);
                 $address->siteId = $element->siteId;
+
+                // Use the provided UUID, so the address can persist across future autosaves
+                if ($uids) {
+                    $address->uid = $addressId;
+                }
             }
 
             if (isset($addressData['enabled'])) {
                 $address->enabled = (bool) $addressData['enabled'];
+            }
+
+            // The Address form control nests the address format fields under an `address` key
+            if (isset($addressData['address']) && is_array($addressData['address'])) {
+                $addressData += $addressData['address'];
             }
 
             foreach ($nativeFields as $field) {
@@ -454,7 +589,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
             // Set the content post location on the entry if we can
             if ($baseAddressFieldNamespace) {
-                $address->setFieldParamNamespace("$baseAddressFieldNamespace.$addressId.fields");
+                $address->setFieldParamNamespace("$baseAddressFieldNamespace.$postedAddressId.fields");
             }
 
             if (isset($addressData['fields'])) {
@@ -526,7 +661,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         $serialized = [];
         $new = 0;
 
@@ -578,8 +713,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $this->addressManager()->getTranslationDescription($element);
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
-    protected function actionMenuItems(): array
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
         $items = [];
 
@@ -587,7 +723,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $items[] = $this->copyAction();
         }
 
-        $parentItems = parent::actionMenuItems();
+        $parentItems = parent::fieldLayoutActionMenuItems($context);
 
         if (! empty($items) && ! empty($parentItems)) {
             return [
@@ -600,48 +736,29 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return [...$items, ...$parentItems];
     }
 
+    /** @return array{id:string, icon:string, color:Color, label:string, showInChips:false, action:array<string, mixed>} */
     private function copyAction(): array
     {
-        $id = sprintf('action-copy-%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $fieldId) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getAddresses = () => field.find(' > .nested-element-cards > .elements > li > .element');
-
-  btn.on('activate', () => {
-    Craft.cp.copyElements(getAddresses());
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getAddresses().length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            InputNamespace::namespaceId($this->getInputId()),
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-%s', mt_rand()),
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
             'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => Address::pluralLowerDisplayName(),
             ])),
+            // Operates on the field's input, which isn't present where chips render
+            'showInChips' => false,
+            // Behavior travels with the item as a declarative action, handled
+            // by the field action listeners in `resources/js/modules/fields`.
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-nested-elements',
+                'detail' => [
+                    'selector' => '.nested-element-cards .elements > li > .element',
+                    'elementType' => Address::class,
+                    'fieldId' => $this->id,
+                ],
+            ],
         ];
     }
 
@@ -652,12 +769,6 @@ JS, [
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($element);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->inputHtmlInternal($element, true);
     }
 
     private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
@@ -693,6 +804,7 @@ JS, [
         return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -708,10 +820,11 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         return $value->count() === 0;
     }
 
+    /** @param ElementCollection<int, Address>|AddressQuery $value */
     private function validateAddresses(ElementInterface $element, AddressQuery|ElementCollection $value, Closure $fail): void
     {
         if ($value instanceof AddressQuery) {
@@ -791,7 +904,8 @@ JS, [
     }
 
     /**
-     * @return EagerLoadingMap
+     * @param  list<ElementInterface>  $sourceElements
+     * @return AddressEagerLoadingMap|list<AddressEagerLoadingMap>
      */
     public function getEagerLoadingMap(array $sourceElements): array
     {
@@ -842,6 +956,15 @@ JS, [
         parent::afterMergeFrom($outgoingField);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -854,6 +977,7 @@ JS, [
         ];
     }
 
+    /** @return array{withProvisionalDrafts:bool} */
     #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
@@ -865,7 +989,13 @@ JS, [
     #[Override]
     public function getContentGqlMutationArgumentType(): Type
     {
-        return Type::listOf(AddressesInput::getType());
+        $type = AddressesInput::getType();
+
+        if (! $type instanceof Type) {
+            throw new RuntimeException('AddressesInput::getType() must return a GraphQL type.');
+        }
+
+        return Type::listOf($type);
     }
 
     #[Override]

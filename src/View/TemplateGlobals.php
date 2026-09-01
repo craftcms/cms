@@ -18,14 +18,17 @@ use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-readonly class TemplateGlobals
+class TemplateGlobals
 {
+    /** @var array<string, mixed>|null */
+    private ?array $globals = null;
+
     public function __construct(
-        private Application $app,
-        private GeneralConfig $generalConfig,
-        private Sites $sites,
-        private Updates $updates,
-        private CraftVariable $craftVariable,
+        private readonly Application $app,
+        private readonly GeneralConfig $generalConfig,
+        private readonly Sites $sites,
+        private readonly Updates $updates,
+        private readonly CraftVariable $craftVariable,
     ) {}
 
     /**
@@ -35,6 +38,10 @@ readonly class TemplateGlobals
      */
     public function resolve(): array
     {
+        if (isset($this->globals)) {
+            return $this->globals;
+        }
+
         $isInstalled = Cms::isInstalled();
         $setPasswordRequestPath = $this->generalConfig->getSetPasswordRequestPath();
 
@@ -72,6 +79,6 @@ readonly class TemplateGlobals
 
         event($event = new TemplateGlobalsResolving($globals));
 
-        return $event->globals;
+        return $this->globals = $event->globals;
     }
 }

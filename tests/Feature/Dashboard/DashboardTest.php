@@ -6,12 +6,10 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
-use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\MissingWidget;
-use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
@@ -28,20 +26,6 @@ beforeEach(function () {
     WidgetModel::all()->each->delete();
 });
 
-it('can get all widget types', function () {
-    expect($this->dashboard->getAllWidgetTypes())->not()->toBeEmpty();
-});
-
-it('can register additional widgets', function () {
-    class MyWidget extends Widget {}
-
-    Event::listen(WidgetTypesResolving::class, function (WidgetTypesResolving $event) {
-        $event->types[] = MyWidget::class;
-    });
-
-    expect($this->dashboard->getAllWidgetTypes())->toContain(MyWidget::class);
-});
-
 it('can create a widget from config', function () {
     $config = [
         'type' => Feed::class,
@@ -51,23 +35,17 @@ it('can create a widget from config', function () {
         ],
     ];
 
-    /** @var Feed $widget */
     $widget = $this->dashboard->createWidget($config);
-    expect($widget)->toBeInstanceOf(Feed::class);
-    tap($widget, function (Feed $widget) {
-        expect($widget->url)->toBe('https://craftcms.com/news.rss');
-        expect($widget->title)->toBe('Craft News');
-    });
+
+    expect($widget)
+        ->toBeInstanceOf(Feed::class)
+        ->url->toBe('https://craftcms.com/news.rss')
+        ->title->toBe('Craft News');
 });
 
 it('can create a widget from type', function () {
-    $widget = $this->dashboard->createWidget([
-        'type' => Feed::class,
-        'settings' => [
-            'title' => 'Craft News',
-            'url' => 'https://craftcms.com/news.rss',
-        ],
-    ]);
+    $widget = $this->dashboard->createWidget(Feed::class);
+
     expect($widget)->toBeInstanceOf(Feed::class);
 });
 
@@ -281,7 +259,7 @@ it('ignores non existing ids', function () {
 
     expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget1->id, $widget2->id]);
 
-    $this->dashboard->reorderWidgets([$widget2->id, $widget1->id, 10]);
+    $this->dashboard->reorderWidgets([$widget2->id, $widget1->id, max($widget1->id, $widget2->id) + 1]);
 
     expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget2->id, $widget1->id]);
 });

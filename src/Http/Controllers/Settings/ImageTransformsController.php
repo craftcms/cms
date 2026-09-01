@@ -4,43 +4,53 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImageTransformEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
-use CraftCms\Cms\Image\Enums\ImageTransformQuality;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Imagine\Image\Format;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-class ImageTransformsController
+class ImageTransformsController extends BaseAssetSettingsController
 {
     use RespondsWithFlash;
 
-    public function index(ImageTransforms $imageTransforms)
+    public function __construct(
+        private readonly GeneralConfig $generalConfig,
+        private readonly FormResolver $formResolver,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
+    ) {}
+
+    public function index(ImageTransforms $imageTransforms): \Inertia\Response
     {
         return Inertia::render('settings/assets/transforms/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets/transforms')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets/transforms')],
                 ['label' => t('Image Transforms')],
             ],
-            'subnav' => [
-                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets')),
-                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms'))->selected(true),
-            ],
+            'subnav' => $this->subnav(),
             'title' => t('Image Transforms'),
             'transforms' => $imageTransforms
                 ->getAllTransforms()
@@ -65,8 +75,12 @@ class ImageTransformsController
 
     public function store(Request $request, ImageTransforms $imageTransforms): Response
     {
-        $transform = new ImageTransform;
-        $transform->id = $request->integer('transformId') ?: null;
+        $transformId = $request->integer('transformId') ?: null;
+        $transform = $transformId ? $imageTransforms->getTransformById($transformId) : new ImageTransform;
+
+        abort_if($transform === null, 404, 'Transform not found');
+
+        $transform->id = $transformId;
         $transform->name = $request->input('name');
         $transform->handle = $request->input('handle');
         $transform->width = (int) $request->input('width') ?: null;
@@ -82,6 +96,43 @@ class ImageTransformsController
             ? (string) $fill
             : null;
         $transform->upscale = $request->boolean('upscale', $transform->upscale);
+
+        $parameterBuckets = [];
+
+        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
+            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
+                $existing = $transform->getParametersForTransformer($assetTransformer->uid);
+
+                if ($existing !== []) {
+                    $parameterBuckets[$assetTransformer->uid] = $existing;
+                }
+
+                continue;
+            }
+
+            try {
+                $parameters = $this->assetTransformers->validateParameters(
+                    $assetTransformer,
+                    $request->array("parameters.{$assetTransformer->uid}"),
+                );
+            } catch (InvalidAssetTransformException $exception) {
+                throw ValidationException::withMessages([
+                    "parameters.{$assetTransformer->uid}" => $exception->getMessage(),
+                ]);
+            }
+
+            $parameterRules = $this->assetTransformDrivers
+                ->driver($assetTransformer->driver)
+                ->definition()
+                ->parameterRules;
+            $parameters = Arr::only($parameters, array_keys($parameterRules));
+
+            if ($parameters !== []) {
+                $parameterBuckets[$assetTransformer->uid] = $parameters;
+            }
+        }
+
+        $transform->setParameters($parameterBuckets);
 
         if ($transform->format === '') {
             $transform->format = null;
@@ -111,6 +162,37 @@ class ImageTransformsController
         );
     }
 
+    public function renderForm(Request $request, ImageTransforms $imageTransforms, Images $images): JsonResponse
+    {
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'values.transformId' => ['nullable', 'integer'],
+            'values.name' => ['nullable', 'string'],
+            'values.handle' => ['nullable', 'string'],
+            'values.width' => ['nullable', 'integer', 'min:1'],
+            'values.height' => ['nullable', 'integer', 'min:1'],
+            'values.mode' => ['required', Rule::enum(ImageTransformMode::class)],
+            'values.position' => ['required', Rule::enum(ImageTransformPosition::class)],
+            'values.quality' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'values.interlace' => ['required', Rule::enum(ImageTransformInterlace::class)],
+            'values.format' => ['nullable', Rule::enum(ImageTransformFormat::class)],
+            'values.fill' => ['nullable', 'string'],
+            'values.upscale' => ['required', 'boolean'],
+            'values.parameters' => ['nullable', 'array'],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+        $values = $data['values'];
+        $transform = empty($values['transformId'])
+            ? new ImageTransform
+            : $imageTransforms->getTransformById((int) $values['transformId']);
+
+        abort_if($transform === null, 404, 'Transform not found');
+
+        return new JsonResponse([
+            'form' => $this->viewModel($transform, $images, $values)->form(),
+        ]);
+    }
+
     public function destroy(ImageTransforms $imageTransforms, int $transformId): Response
     {
         $imageTransforms->deleteTransformById($transformId);
@@ -131,25 +213,20 @@ class ImageTransformsController
             ->addCrumb(t('Image Transforms'), 'settings/assets/transforms')
             ->addCrumb($title)
             ->redirectUrl('settings/assets/transforms')
-            ->inertiaPage('settings/assets/transforms/Edit', [
-                'transform' => $transform,
-                'modeOptions' => ImageTransformMode::asOptions(),
-                'positionOptions' => ImageTransformPosition::asOptions(),
-                'interlaceOptions' => ImageTransformInterlace::asOptions(),
-                'formatOptions' => $this->formatOptions($images, $transform),
-                'qualityOptions' => ImageTransformQuality::asOptions(),
-            ]);
+            ->inertiaPage('settings/assets/transforms/Edit', $this->viewModel($transform, $images));
     }
 
-    /**
-     * @return array<int, array{label: string, value: string}>
-     */
-    private function formatOptions(Images $images, ImageTransform $transform): array
+    /** @param array<string, mixed>|null $values */
+    private function viewModel(ImageTransform $transform, Images $images, ?array $values = null): ImageTransformEditViewModel
     {
-        return collect(ImageTransformFormat::asOptions())
-            ->prepend(['label' => t('Auto'), 'value' => ''])
-            ->reject(fn (array $option) => $option['value'] === ImageTransformFormat::WEBP->value && $transform->format !== Format::ID_WEBP && ! $images->getSupportsWebP())
-            ->reject(fn (array $option) => $option['value'] === ImageTransformFormat::AVIF->value && $transform->format !== Format::ID_AVIF && ! $images->getSupportsAvif())
-            ->all();
+        return new ImageTransformEditViewModel(
+            $transform,
+            $images,
+            $this->formResolver,
+            $this->assetTransformers,
+            $this->assetTransformDrivers,
+            readOnly: ! $this->generalConfig->allowAdminChanges,
+            values: $values,
+        );
     }
 }

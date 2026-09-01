@@ -24,7 +24,9 @@ use Illuminate\Support\Facades\DB;
 /**
  * @internal
  *
- * @phpstan-import-type EagerLoadingMap from ElementInterface
+ * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
+ * @phpstan-type NormalizedEagerLoadingMap array{elementType:class-string<ElementInterface>,map?:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
+ * @phpstan-type EagerLoadingMap NormalizedEagerLoadingMap|array{map:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  */
 #[Singleton]
 readonly class ElementEagerLoader
@@ -39,7 +41,7 @@ readonly class ElementEagerLoader
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
      *
-     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
+     * @phpstan-param string|array<EagerLoadPlan|array<array-key, mixed>|string> $with
      *
      * @return EagerLoadPlan[]
      */
@@ -151,8 +153,8 @@ readonly class ElementEagerLoader
      * Eager-loads additional elements onto a given set of elements.
      *
      * @param  class-string<ElementInterface>  $elementType  The root element type class
-     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
-     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param  ElementInterface[]|Collection<array-key, ElementInterface>  $elements  The root element models that should be updated with the eager-loaded elements
+     * @param  array<string|array<array-key, mixed>|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {
@@ -418,18 +420,17 @@ readonly class ElementEagerLoader
 
     /**
      * @param  EagerLoadingMap|EagerLoadingMap[]|false  $map
-     * @return EagerLoadingMap[]|false[]
+     * @return NormalizedEagerLoadingMap[]|false[]
      */
     private function normalizeEagerLoadingMaps(array|false $map): array
     {
-        if (isset($map['elementType']) || $map === false) {
+        if ($map === false || isset($map['elementType'])) {
             // a normal, one-dimensional map
             return [$map];
         }
 
-        if (isset($map['map'])) {
+        if (! array_is_list($map)) {
             // no single element type was provided, so split it up into multiple maps - one for each unique type
-            /** @phpstan-ignore-next-line */
             $maps = $this->groupMapsByElementType($map['map']);
             if (isset($map['criteria']) || isset($map['createElement'])) {
                 foreach ($maps as &$m) {
@@ -445,7 +446,6 @@ readonly class ElementEagerLoader
         $maps = [];
         foreach ($map as $m) {
             if (isset($m['map'])) {
-                /** @phpstan-ignore-next-line */
                 $maps += $this->normalizeEagerLoadingMaps($m);
             }
         }
@@ -455,7 +455,7 @@ readonly class ElementEagerLoader
 
     /**
      * @param  array{source:int,target:int,elementType?:class-string<ElementInterface>}[]  $map
-     * @return EagerLoadingMap[]
+     * @return NormalizedEagerLoadingMap[]
      */
     private function groupMapsByElementType(array $map): array
     {

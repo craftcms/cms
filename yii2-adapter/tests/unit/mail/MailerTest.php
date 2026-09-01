@@ -18,11 +18,8 @@ use CraftCms\Cms\Config\GeneralConfig as CmsGeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
-use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Event;
 use ReflectionException;
 use UnitTester;
 use yii\base\InvalidConfigException;
@@ -108,31 +105,6 @@ class MailerTest extends TestCase
 
         self::assertSame('1', (string)$variables['user']->id);
         self::assertSame('https://craftcms.com', $variables['link']);
-    }
-
-    public function testMessageProperties(): void
-    {
-        $this->markTestSkipped('TODO: Rework for Laravel with system messages');
-
-        // app(ProjectConfig::class)->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
-
-        // Event::listen(SystemMessagesResolving::class, function(SystemMessagesResolving $event) {
-        //     $event->messages = collect([
-        //         new SystemMessage([
-        //             'key' => 'account_activation',
-        //             'body' => '{{fromEmail}} || {{fromName}}',
-        //             'subject' => '{{fromName}} || {{fromEmail}}',
-        //         ]),
-        //     ]);
-        // });
-
-        // $this->_sendMail('test@craft.test');
-
-        // /* @var Message $lastMessage */
-        // $lastMessage = $this->tester->grabLastSentEmail();
-
-        // self::assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
-        // self::assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->toString());
     }
 
     /**

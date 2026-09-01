@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Resources;
 
 use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Element\CurrentElementIndex;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
@@ -19,8 +19,6 @@ use function CraftCms\Cms\t;
 
 class ElementIndexResource extends JsonResource
 {
-    use InteractsWithElementIndexes;
-
     #[Override]
     public static $wrap;
 
@@ -31,22 +29,28 @@ class ElementIndexResource extends JsonResource
         parent::__construct(null);
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function toArray(Request $_): array
     {
         $request = app(ElementIndexRequest::class);
+        $elementIndexes = app(ElementIndexes::class);
 
         $elementType = $request->elementType();
-        [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source'), $request->context());
-        $elementQuery = $this->buildElementQueryState(
+        [$sourceKey, $source] = $elementIndexes->resolveSource($elementType, $request->input('source'), $request->context());
+        $elementQuery = $elementIndexes->buildQueryState(
             elementType: $elementType,
             source: $source,
             condition: $request->condition(),
+            baseCriteria: $request->baseCriteria(),
+            criteria: $request->criteria(),
+            filterConditionConfig: $request->filterConditionConfig(),
+            collapsedElementIds: $request->collapsedElementIds(),
         )['query'];
 
         app(CurrentElementIndex::class)->activate($elementQuery);
 
-        $viewState = $this->resolveViewState();
+        $viewState = $request->viewState();
 
         $responseData = [];
         $actions = null;
@@ -55,7 +59,7 @@ class ElementIndexResource extends JsonResource
         if ($this->includeActions) {
             if ($request->isAdministrative() && isset($sourceKey)) {
                 $actions = ElementActions::availableActions($elementType, $sourceKey, $elementQuery);
-                $exporters = $this->availableExporters($elementType, $sourceKey);
+                $exporters = $elementIndexes->availableExporters($elementType, $sourceKey, $request->isMobileBrowser());
             }
 
             $responseData['actions'] = match (true) {
@@ -77,25 +81,19 @@ class ElementIndexResource extends JsonResource
             return $responseData;
         }
 
-        // get the return URL with `?` replaced with a token
-        // (see https://github.com/craftcms/cms/issues/18923)
-        if ($returnUrl = $request->input('returnUrl')) {
-            $returnUrl = str_replace('?', ':QS:', $returnUrl);
-        }
-
         $responseData['html'] = $elementType::indexHtml(
             elementQuery: $elementQuery,
             disabledElementIds: $request->array('disabledElementIds'),
             viewState: [
                 ...$viewState,
-                'fieldLayouts' => $this->resolveFieldLayouts(),
-                'returnUrl' => $returnUrl,
+                'fieldLayouts' => $request->fieldLayouts(),
+                'returnUrl' => $request->returnUrl(),
             ],
             sourceKey: $sourceKey,
             context: $request->context(),
             includeContainer: $this->includeContainer,
             selectable: (
-                ((! empty($actions)) || request()->boolean('selectable')) &&
+                ((! empty($actions)) || $request->boolean('selectable')) &&
                 empty($viewState['inlineEditing'])
             ),
             sortable: $request->isAdministrative() && $request->boolean('sortable'),

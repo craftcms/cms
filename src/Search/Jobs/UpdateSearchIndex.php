@@ -42,18 +42,19 @@ class UpdateSearchIndex extends Job
             return;
         }
 
-        $elements = $this->elementType::find()
+        $query = $this->elementType::find()
             ->drafts(null)
             ->provisionalDrafts(null)
             ->id($this->elementId)
             ->siteId($this->siteId)
-            ->status(null)
-            ->all();
+            ->status(null);
 
-        $total = count($elements);
+        $total = $query->count();
+        $processed = 0;
 
-        foreach ($elements as $i => $element) {
-            $this->setProgress((int) ((($i + 1) / max($total, 1)) * 100));
+        foreach ($query->cursor() as $element) {
+            $processed++;
+            $this->setProgress((int) (($processed / max($total, 1)) * 100));
             Search::indexElementAttributes($element, $this->fieldHandles);
         }
     }

@@ -8,6 +8,7 @@ use function CraftCms\Cms\t;
 
 class Flash
 {
+    /** @param array<string, mixed> $settings */
     public static function notice(?string $default = null, array $settings = []): ?string
     {
         $message = request('notice', $default);
@@ -30,6 +31,7 @@ class Flash
         return $message;
     }
 
+    /** @param array<string, mixed> $settings */
     public static function success(?string $default = null, array $settings = []): ?string
     {
         $message = request()->getSigned('successMessage', $default);
@@ -52,6 +54,7 @@ class Flash
         return $message;
     }
 
+    /** @param array<string, mixed> $settings */
     public static function error(?string $default = null, array $settings = []): ?string
     {
         $message = request()->getSigned('failMessage', $default);
@@ -77,7 +80,7 @@ class Flash
     public static function getNotice(): ?string
     {
         if (request()->isCpRequest()) {
-            return session()->get('cp-notification-notice')[0] ?? null;
+            return session()->get('cp-notification-notice')[0] ?? session()->get('notice');
         }
 
         return session()->get('notice');
@@ -86,7 +89,7 @@ class Flash
     public static function getSuccess(): ?string
     {
         if (request()->isCpRequest()) {
-            return session()->get('cp-notification-success')[0] ?? null;
+            return session()->get('cp-notification-success')[0] ?? session()->get('success');
         }
 
         return session()->get('success');
@@ -95,7 +98,7 @@ class Flash
     public static function getError(): ?string
     {
         if (request()->isCpRequest()) {
-            return session()->get('cp-notification-error')[0] ?? null;
+            return session()->get('cp-notification-error')[0] ?? session()->get('error');
         }
 
         return session()->get('error');

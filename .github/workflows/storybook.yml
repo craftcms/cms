@@ -5,13 +5,13 @@ on:
     branches:
       - 6.x
     paths:
-      - 'packages/craftcms-cp/**'
+      - 'packages/craftcms-ui/**'
       - 'packages/craftcms-garnish/**'
       - 'resources/js/**'
       - 'src/**/*.php'
   pull_request:
     paths:
-      - 'packages/craftcms-cp/**'
+      - 'packages/craftcms-ui/**'
       - 'packages/craftcms-garnish/**'
       - 'resources/js/**'
       - 'src/**/*.php'
@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   PHP_VERSION: '8.5'
 
 permissions:
@@ -48,18 +48,18 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Compute cache key
         id: cache-key
         # Keep this in sync with .github/workflows/js-ci.yml so the built assets
         # and generated files are shared between the two workflows.
         run: |
-          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-cp/src/**', 'packages/craftcms-cp/tsconfig*.json', 'packages/craftcms-cp/vite.config.*', 'packages/craftcms-cp/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/tsdown.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -68,7 +68,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
-            packages/craftcms-cp/dist
+            packages/craftcms-ui/dist
             packages/craftcms-garnish/dist
             vendor
             resources/js/actions
@@ -77,33 +77,34 @@ jobs:
             resources/js/generated
           key: ${{ steps.cache-key.outputs.value }}
 
-      - name: Install Composer dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: composer install --no-interaction --no-progress
+      - parallel:
+          - name: Install Composer dependencies
+            if: steps.cache.outputs.cache-hit != 'true'
+            run: composer install --no-interaction --no-progress
 
-      - name: Install npm dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci
-        env:
-          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+          - name: Install frontend dependencies
+            if: steps.cache.outputs.cache-hit != 'true'
+            run: vp install --frozen-lockfile
+            env:
+              CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
       # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
       - name: Build @craftcms/garnish
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run build:garnish
+        run: vp run build:garnish
 
-      - name: Build @craftcms/cp
+      - name: Build @craftcms/ui
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run build:cp
+        run: vp run build:ui
 
       - name: Generate TypeScript types
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run generate:types
+        run: vp run generate:types
 
       - name: Generate Wayfinder routes
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run generate:wayfinder
+        run: vp run generate:wayfinder
 
       - name: Determine deploy branch
         id: branch
@@ -115,7 +116,7 @@ jobs:
           fi
 
   deploy-cp:
-    name: 'Deploy / craftcms-cp'
+    name: 'Deploy / craftcms-ui'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: build-assets
@@ -125,11 +126,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Restore install + build + generated cache
         uses: actions/cache@v4
@@ -137,7 +138,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
-            packages/craftcms-cp/dist
+            packages/craftcms-ui/dist
             packages/craftcms-garnish/dist
             vendor
             resources/js/actions
@@ -147,7 +148,7 @@ jobs:
           key: ${{ needs.build-assets.outputs.cache-key }}
 
       - name: Build Storybook
-        run: npm run build:storybook --workspace=@craftcms/cp
+        run: vp run @craftcms/ui#build:storybook
 
       - name: Deploy to Cloudflare Pages
         id: deploy
@@ -155,7 +156,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy packages/craftcms-cp/storybook-static --project-name=craftcms-ui-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
+          command: pages deploy packages/craftcms-ui/storybook-static --project-name=craftcms-ui-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
 
   deploy-resources:
     name: 'Deploy / resources'
@@ -168,11 +169,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Restore install + build + generated cache
         uses: actions/cache@v4
@@ -180,7 +181,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
-            packages/craftcms-cp/dist
+            packages/craftcms-ui/dist
             packages/craftcms-garnish/dist
             vendor
             resources/js/actions
@@ -190,7 +191,12 @@ jobs:
           key: ${{ needs.build-assets.outputs.cache-key }}
 
       - name: Build Storybook
-        run: npm run build:storybook
+        # build-assets already ran the transformer and Wayfinder, and their
+        # output is restored from the cache above. Regenerating would shell out
+        # to ./vendor/bin/testbench, and this job installs no PHP.
+        env:
+          CRAFT_SKIP_PHP_CODEGEN: '1'
+        run: vp run build:storybook
 
       - name: Deploy to Cloudflare Pages
         id: deploy

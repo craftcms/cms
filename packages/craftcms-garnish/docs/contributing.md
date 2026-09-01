@@ -6,8 +6,8 @@ interactive demos are organized.
 
 ## Toolchain
 
-The package is TypeScript, ESM-only, and jQuery-free at its core. The build is
-[tsdown](https://tsdown.dev) (producing the dual `.` + `/compat` entries), tests run
+The package is TypeScript, ESM-only, and jQuery-free at its core. The build uses
+[Vite+ Pack](https://viteplus.dev/guide/pack) (producing the dual `.` + `/compat` entries), tests run
 on [Vitest](https://vitest.dev) against [happy-dom](https://github.com/capricorn86/happy-dom),
 and interactive demos run in [Storybook](https://storybook.js.org).
 
@@ -18,13 +18,13 @@ npm run dev          # Storybook dev server at http://localhost:6006
 npm run storybook    # alias of `npm run dev`
 npm run build:storybook  # static Storybook build (compiles every story — the CI proof)
 npm run build        # production build (dual `.` + `/compat` entries)
-npm run build:watch  # tsdown watch build
+npm run build:watch  # Vite+ pack watch build
 npm run test         # Vitest suite (one run)
 npm run test:dev     # Vitest watch mode
 npm run test:coverage  # Vitest with V8 coverage
 npm run check:types  # tsc --noEmit (includes stories + .storybook)
-npm run check:format # Prettier check
-npm run format       # Prettier write (./src ./tests ./stories ./.storybook)
+npm run check:format # Oxfmt check
+npm run format       # Oxfmt write (./src ./tests ./stories ./.storybook)
 npm run lint         # check:types + check:format
 ```
 
@@ -36,7 +36,7 @@ Before opening a PR, confirm the gates are green:
 npm run check:types && npm run test && npm run build
 ```
 
-Run `npm run format` to apply Prettier; CI uses `check:format`. New behavior needs
+Run `npm run format` to apply Oxfmt; CI uses `check:format`. New behavior needs
 test coverage — the suite favors **real code paths** over heavy mocking, and uses the
 happy-dom environment. Note that happy-dom has no layout engine, so
 `offsetWidth`/`offsetHeight` are always `0`; tests that depend on element visibility
@@ -57,9 +57,9 @@ Garnish widgets are **imperative** — `new Modal(container)`,
 `new DisclosureMenu(trigger)`, `new HUD(trigger, body)` — operating on plain DOM,
 **not** web components. So we use the **`@storybook/html-vite`** renderer: each
 story's `render()` returns an `HTMLElement` and instantiates the Garnish class
-inside it. (By contrast, `@craftcms/cp` uses `@storybook/web-components-vite`
+inside it. (By contrast, `@craftcms/ui` uses `@storybook/web-components-vite`
 because its components are custom elements.) We otherwise match cp's Storybook:
-version **10.4.1** and the **docs / a11y / themes** addons.
+version **10.5.5** and the **docs / a11y / themes** addons.
 
 ## Layout
 
@@ -92,7 +92,7 @@ are imported but never picked up as stories. Each story imports the **real sourc
 hot-reload.
 
 `tsconfig.json` includes `stories` and `.storybook` so `npm run check:types`
-type-checks them; Prettier's globs include them too.
+type-checks them; Oxfmt's globs include them too.
 
 Storybook's `html-vite` builder uses Vite under the hood and supplies its own
 pipeline, so there is no package-root `vite.config.ts`.

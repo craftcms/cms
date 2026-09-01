@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\DeletionBlockers;
 
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Html;
@@ -14,11 +15,13 @@ use function CraftCms\Cms\t;
 
 class EntryAuthorsBlocker extends BaseDeletionBlocker
 {
-    /**
-     * @var Collection<int>
-     */
+    /** @var Collection<int, int> */
     private readonly Collection $entryIds;
 
+    /**
+     * @param  ElementCollection<int, covariant ElementInterface>  $elements
+     * @param  array<string, mixed>  $config
+     */
     public function __construct(ElementCollection $elements, bool $hardDelete, array $config = [])
     {
         parent::__construct($elements, $hardDelete, $config);

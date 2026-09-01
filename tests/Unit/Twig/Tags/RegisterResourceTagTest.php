@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
     app()->forgetScopedInstances();
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
     $this->assets = app(HtmlStack::class);
 });
 
@@ -16,7 +16,7 @@ describe('css tag', function () {
     it('registers inline CSS', function () {
         $this->assets->startCssBuffer();
 
-        $this->renderer->renderString('{% css %}body { color: red; }{% endcss %}');
+        $this->manager->renderString('{% css %}body { color: red; }{% endcss %}');
 
         $registered = $this->assets->clearCssBuffer();
         $html = implode("\n", array_map(strval(...), $registered));
@@ -27,7 +27,7 @@ describe('css tag', function () {
     it('registers CSS from a string expression', function () {
         $this->assets->startCssBuffer();
 
-        $this->renderer->renderString('{% css "body { margin: 0; }" %}');
+        $this->manager->renderString('{% css "body { margin: 0; }" %}');
 
         $registered = $this->assets->clearCssBuffer();
         $html = implode("\n", array_map(strval(...), $registered));
@@ -40,7 +40,7 @@ describe('js tag', function () {
     it('registers inline JS', function () {
         $this->assets->startJsBuffer();
 
-        $this->renderer->renderString('{% js %}console.log("hello");{% endjs %}');
+        $this->manager->renderString('{% js %}console.log("hello");{% endjs %}');
 
         $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: false);
 
@@ -51,7 +51,7 @@ describe('js tag', function () {
     it('registers JS from a string expression', function () {
         $this->assets->startJsBuffer();
 
-        $this->renderer->renderString('{% js "alert(1);" %}');
+        $this->manager->renderString('{% js "alert(1);" %}');
 
         $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: true);
 
@@ -61,7 +61,7 @@ describe('js tag', function () {
     it('registers ready JS separately from body end JS', function () {
         $this->assets->startJsBuffer();
 
-        $this->renderer->renderString('{% js on ready %}console.log("ready");{% endjs %}');
+        $this->manager->renderString('{% js on ready %}console.log("ready");{% endjs %}');
 
         $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: false);
 

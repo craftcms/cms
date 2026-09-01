@@ -53,7 +53,9 @@ import './dashboard.scss';
 
     getTypeInfo: function (type, property, defaultValue) {
       if (property) {
-        if (typeof this.widgetTypes[type][property] === 'undefined') {
+        // Some type info properties (e.g. settingsHtml/settingsJs) are sent as `null`
+        // rather than omitted, so treat null the same as undefined here.
+        if (!this.widgetTypes[type][property]) {
           return defaultValue;
         } else {
           return this.widgetTypes[type][property];
@@ -61,6 +63,18 @@ import './dashboard.scss';
       } else {
         return this.widgetTypes[type];
       }
+    },
+
+    getSettingsForm: function (type, namespace) {
+      const form = this.getTypeInfo(type, 'settingsForm', null);
+
+      if (!form) {
+        return null;
+      }
+
+      return JSON.parse(
+        JSON.stringify(form).replaceAll('__NAMESPACE__', namespace)
+      );
     },
 
     handleNewWidgetOptionSelect: function (e) {
@@ -87,6 +101,10 @@ import './dashboard.scss';
               /__NAMESPACE__/g,
               settingsNamespace
             )
+          : null;
+      const settingsForm =
+        typeof responseData === 'undefined'
+          ? this.getSettingsForm(type, settingsNamespace)
           : null;
       const $gridItem = $(
         '<div class="item" data-colspan="1" style="display: block">'
@@ -156,7 +174,7 @@ import './dashboard.scss';
         )
         .appendTo($gridItem);
 
-      if (settingsHtml) {
+      if (settingsForm || settingsHtml) {
         $container.addClass('flipped');
         $container.children('.front').addClass('hidden');
       } else {
@@ -173,7 +191,9 @@ import './dashboard.scss';
           ? () => {
               eval(settingsJs);
             }
-          : $.noop
+          : $.noop,
+        undefined,
+        settingsForm
       );
 
       // Append the new widget after the last one
@@ -193,7 +213,7 @@ import './dashboard.scss';
       if (typeof responseData !== 'undefined') {
         $container.removeClass('loading');
         widget.update(responseData);
-      } else if (!settingsHtml) {
+      } else if (!settingsForm && !settingsHtml) {
         const data = {
           type: type,
         };
@@ -362,6 +382,7 @@ import './dashboard.scss';
     $settingsToggle: null,
     $saveBtn: null,
     $settingsErrorList: null,
+    settingsHost: null,
 
     id: null,
     type: null,
@@ -371,12 +392,19 @@ import './dashboard.scss';
 
     totalCols: null,
     settingsHtml: null,
+    settingsForm: null,
     initSettingsFn: null,
     showingSettings: false,
 
     colspanPicker: null,
 
-    init: function (container, settingsHtml, initSettingsFn, storedSettings) {
+    init: function (
+      container,
+      settingsHtml,
+      initSettingsFn,
+      storedSettings,
+      settingsForm
+    ) {
       this.$container = $(container);
       this.storedSettings = storedSettings;
 
@@ -403,7 +431,7 @@ import './dashboard.scss';
       this.$subtitle = this.$heading.find('> h5');
       this.$bodyContainer = this.$front.find('> .pane > .body');
 
-      this.setSettingsHtml(settingsHtml, initSettingsFn);
+      this.setSettings(settingsHtml, initSettingsFn, settingsForm);
 
       if (!this.$container.hasClass('flipped')) {
         this.onShowFront();
@@ -444,11 +472,12 @@ import './dashboard.scss';
       return window.dashboard.getTypeInfo(this.type, property, defaultValue);
     },
 
-    setSettingsHtml: function (settingsHtml, initSettingsFn) {
+    setSettings: function (settingsHtml, initSettingsFn, settingsForm) {
       this.settingsHtml = settingsHtml;
       this.initSettingsFn = initSettingsFn;
+      this.settingsForm = settingsForm;
 
-      if (this.settingsHtml) {
+      if (this.settingsForm || this.settingsHtml) {
         this.$settingsBtn.removeClass('hidden');
       } else {
         this.$settingsBtn.addClass('hidden');
@@ -456,6 +485,20 @@ import './dashboard.scss';
     },
 
     refreshSettings: function () {
+      this.$settingsContainer.empty();
+      this.settingsHost = null;
+
+      if (this.settingsForm) {
+        this.settingsHost = document.createElement(
+          'craft-dashboard-widget-settings-form'
+        );
+        this.settingsHost.payload = structuredClone(this.settingsForm);
+        this.settingsHost.widgetType = this.type;
+        this.$settingsContainer.append(this.settingsHost);
+
+        return;
+      }
+
       this.$settingsContainer.html(this.settingsHtml);
 
       Garnish.requestAnimationFrame(() => {
@@ -540,6 +583,10 @@ import './dashboard.scss';
                 Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
 
                 if (response.data.errors) {
+                  if (this.settingsHost) {
+                    this.settingsHost.errors = response.data.errors;
+                  }
+
                   this.$settingsErrorList = Craft.ui
                     .createErrorList(response.data.errors)
                     .insertAfter(this.$settingsContainer);
@@ -622,9 +669,13 @@ import './dashboard.scss';
 
       Craft.cp.elementThumbLoader.load(this.$bodyContainer);
 
-      this.setSettingsHtml(response.info.settingsHtml, function () {
-        eval(response.info.settingsJs);
-      });
+      this.setSettings(
+        response.info.settingsHtml,
+        function () {
+          eval(response.info.settingsJs);
+        },
+        response.info.settingsForm
+      );
     },
 
     cancelSettings: function () {
@@ -699,51 +750,60 @@ import './dashboard.scss';
       );
 
       // Initialize the colspan picker
-      this.colspanPicker = new Craft.SlidePicker(this.getColspan(), {
-        min: 1,
-        max: () => {
-          return window.dashboard.grid.totalCols;
-        },
-        step: 1,
-        describedBy: this.getWidgetLabelId(),
-        valueLabel: (colspan) => {
-          return Craft.t(
-            'app',
-            '{num, number} {num, plural, =1{column} other{columns}}',
-            {
-              num: colspan,
-            }
-          );
-        },
-        onChange: (colspan) => {
-          // Update the widget and grid
-          this.setColspan(colspan);
-          window.dashboard.grid.refreshCols(true);
+      this.colspanPicker = document.createElement('craft-slide-picker');
+      this.colspanPicker.min = 1;
+      this.colspanPicker.step = 1;
+      this.colspanPicker.value = this.getColspan();
+      this.colspanPicker.label = Craft.t('app', 'Number of columns');
+      this.colspanPicker.valueLabel = (colspan) => {
+        return Craft.t(
+          'app',
+          '{num, number} {num, plural, =1{column} other{columns}}',
+          {
+            num: colspan,
+          }
+        );
+      };
+      this.colspanPicker.setAttribute('described-by', this.getWidgetLabelId());
 
-          // Save the change
-          let data = {
-            id: this.id,
-            colspan: colspan,
-          };
+      const refreshColspanPicker = () => {
+        const maxCols = window.dashboard.grid.totalCols;
+        this.colspanPicker.max = maxCols;
+        if (this.colspanPicker.value > maxCols) {
+          this.colspanPicker.value = maxCols;
+        }
+      };
 
-          Craft.sendActionRequest('POST', 'dashboard/change-widget-colspan', {
-            data,
+      refreshColspanPicker();
+
+      this.colspanPicker.addEventListener('value-change', ({detail}) => {
+        const colspan = detail.value;
+
+        // Update the widget and grid
+        this.setColspan(colspan);
+        window.dashboard.grid.refreshCols(true);
+
+        // Save the change
+        let data = {
+          id: this.id,
+          colspan: colspan,
+        };
+
+        Craft.sendActionRequest('POST', 'dashboard/change-widget-colspan', {
+          data,
+        })
+          .then((response) => {
+            Craft.cp.displaySuccess(Craft.t('app', 'Widget saved.'));
           })
-            .then((response) => {
-              Craft.cp.displaySuccess(Craft.t('app', 'Widget saved.'));
-            })
-            .catch(({response}) => {
-              Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
-            });
-        },
+          .catch(({response}) => {
+            Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
+          });
       });
 
-      this.colspanPicker.$container.appendTo(
-        $row.find('> td.widgetmanagerhud-col-colspan-picker')
-      );
-      window.dashboard.grid.on('refreshCols', () => {
-        this.colspanPicker.refresh();
-      });
+      $row
+        .find('> td.widgetmanagerhud-col-colspan-picker')
+        .append(this.colspanPicker);
+      window.dashboard.grid.on('refreshCols', refreshColspanPicker);
 
       return $row;
     },

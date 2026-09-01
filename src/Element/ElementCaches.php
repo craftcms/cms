@@ -92,6 +92,10 @@ readonly class ElementCaches
     }
 
     /** @return list<string> */
+    /**
+     * @param  string[]  $tags
+     * @return string[]
+     */
     private function invalidateTags(array $tags): array
     {
         TagDependency::invalidate($tags);

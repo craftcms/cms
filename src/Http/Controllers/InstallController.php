@@ -102,7 +102,7 @@ readonly class InstallController
 
                 return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
             }),
-            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)),
+            'baseUrlTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
@@ -221,11 +221,6 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        // Don't save @web even if they chose it
-        if ($siteUrl === '@web') {
-            $siteUrl = Aliases::get($siteUrl);
-        }
-
         if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
@@ -287,7 +282,11 @@ readonly class InstallController
         return true;
     }
 
-    public function validateDbData($data): array
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, bool|int|string|null>
+     */
+    public function validateDbData(array $data): array
     {
         $data = Validator::validate($data, [
             'driver' => ['required', 'string', Rule::in('mysql', 'mariadb', 'pgsql', 'sqlite')],
@@ -325,6 +324,7 @@ readonly class InstallController
         return 'sqlite';
     }
 
+    /** @return array<string, array<string, string>> */
     private function dbDefaults(): array
     {
         return collect(self::DbDrivers)
@@ -332,6 +332,7 @@ readonly class InstallController
             ->all();
     }
 
+    /** @return array<string, string> */
     private function dbDefaultsForDriver(string $driver): array
     {
         if ($driver === 'sqlite') {
@@ -352,6 +353,7 @@ readonly class InstallController
         ];
     }
 
+    /** @param array<string, bool|int|string|null> $data */
     private function writeDbEnv(array $data, string $path): void
     {
         Env::writeVariable('DB_CONNECTION', $data['driver'], $path, overwrite: true);

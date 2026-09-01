@@ -6,7 +6,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -19,7 +21,6 @@ beforeEach(function () {
 
 afterEach(function () {
     putenv('GENERAL_SETTINGS_NAME');
-    putenv('GENERAL_SETTINGS_LIVE');
     putenv('GENERAL_SETTINGS_TIMEZONE');
     putenv('GENERAL_SETTINGS_MISSING');
 });
@@ -36,7 +37,16 @@ it('requires authentication', function () {
 
 it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/General'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Form')
+            ->where('craft.maintenanceMode', false)
+            ->where('form.values.name', ProjectConfig::get('system.name'))
+            ->where('form.values.maintenanceMode', false)
+            ->where('form.values.retryDuration', ProjectConfig::get('system.retryDuration'))
+            ->where('submit', [
+                'method' => 'post',
+                'url' => action([GeneralSettingsController::class, 'store']),
+            ]))
         ->assertOk();
 });
 
@@ -44,15 +54,41 @@ it('shows a readonly settings screen when admin changes is disabled', function (
     Cms::config()->allowAdminChanges = false;
 
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.readOnly', true))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.readOnly', true)
+            ->where('readOnly', false))
         ->assertOk();
 });
 
-it('exposes timezone options on the settings screen', function () {
+it('attaches settings notices to their fields', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('timezoneOptions')
-            ->where('timezoneOptions', fn ($options) => collect($options)->pluck('value')->contains('America/New_York')))
+            ->where('form.nodes', function ($nodes): bool {
+                $nodes = collect($nodes);
+                $notices = $nodes->filter(fn (array $node): bool => in_array(
+                    $node['control']['path'],
+                    [['name'], ['timeZone']],
+                    strict: true,
+                ));
+
+                return $notices->count() === 2
+                    && $nodes->every(fn (array $node): bool => $node['component'] === 'craft:field')
+                    && $notices->every(fn (array $node): bool => isset($node['props']['tipHtml']));
+            }))
+        ->assertOk();
+});
+
+it('exposes timezone options through the settings form', function () {
+    get(action([GeneralSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.nodes', function ($nodes): bool {
+                $timeZone = collect($nodes)
+                    ->first(fn (array $node): bool => $node['control']['path'] === ['timeZone']);
+
+                return collect($timeZone['control']['props']['options'])
+                    ->pluck('value')
+                    ->contains('America/New_York');
+            }))
         ->assertOk();
 });
 
@@ -61,29 +97,30 @@ it('can save settings', function () {
     date_default_timezone_set('UTC');
 
     post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => true,
         'name' => 'A new app name',
-        'live' => true,
         'retryDuration' => 60,
         'timeZone' => 'America/New_York',
     ])->assertRedirectBack()
         ->assertSessionHasNoErrors();
 
-    expect(ProjectConfig::get('system.name'))->toBe('A new app name')
-        ->and(ProjectConfig::get('system.live'))->toBe(true)
-        ->and(ProjectConfig::get('system.retryDuration'))->toBe(60)
-        ->and(ProjectConfig::get('system.timeZone'))->toBe('America/New_York')
-        ->and(date_default_timezone_get())->toBe('America/New_York');
-});
+    Auth::logout();
 
-it('clears retryDuration when not provided', function () {
-    post(action([GeneralSettingsController::class, 'store']), [
-        'name' => 'App',
-        'live' => true,
-        'timeZone' => 'America/New_York',
-    ])->assertRedirectBack()
-        ->assertSessionHasNoErrors();
+    get('/')
+        ->assertServiceUnavailable()
+        ->assertHeader('Retry-After', '60');
 
-    expect(ProjectConfig::get('system.retryDuration'))->toBeNull();
+    actingAs(User::find()->admin()->one());
+
+    get(action([GeneralSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.maintenanceMode', true)
+            ->where('form.values.name', 'A new app name')
+            ->where('form.values.retryDuration', 60)
+            ->where('form.values.timeZone', 'America/New_York'))
+        ->assertOk();
+
+    expect(date_default_timezone_get())->toBe('America/New_York');
 });
 
 it('validates required fields', function (array $data, array $errors) {
@@ -92,30 +129,30 @@ it('validates required fields', function (array $data, array $errors) {
 })->with([
     'all missing' => [
         'data' => [],
-        'errors' => ['name', 'live', 'timeZone'],
+        'errors' => ['maintenanceMode', 'name', 'timeZone'],
     ],
     'invalid timezone' => [
         'data' => [
+            'maintenanceMode' => false,
             'name' => 'App',
-            'live' => true,
             'timeZone' => 'Not/A_Timezone',
         ],
         'errors' => ['timeZone'],
     ],
-    'invalid live boolean' => [
+    'invalid maintenance mode' => [
         'data' => [
+            'maintenanceMode' => 'sometimes',
             'name' => 'App',
-            'live' => 'definitely',
-            'timeZone' => 'America/New_York',
+            'timeZone' => 'UTC',
         ],
-        'errors' => ['live'],
+        'errors' => ['maintenanceMode'],
     ],
-    'invalid retryDuration' => [
+    'invalid retry duration' => [
         'data' => [
+            'maintenanceMode' => false,
             'name' => 'App',
-            'live' => true,
             'retryDuration' => 'soon',
-            'timeZone' => 'America/New_York',
+            'timeZone' => 'UTC',
         ],
         'errors' => ['retryDuration'],
     ],
@@ -123,48 +160,154 @@ it('validates required fields', function (array $data, array $errors) {
 
 it('can save settings with environment variables', function () {
     putenv('GENERAL_SETTINGS_NAME=Env App');
-    putenv('GENERAL_SETTINGS_LIVE=true');
     putenv('GENERAL_SETTINGS_TIMEZONE=America/New_York');
     Cms::config()->timezone = null;
     date_default_timezone_set('UTC');
 
     post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => false,
         'name' => '$GENERAL_SETTINGS_NAME',
-        'live' => '$GENERAL_SETTINGS_LIVE',
         'timeZone' => '$GENERAL_SETTINGS_TIMEZONE',
     ])->assertRedirectBack()
         ->assertSessionHasNoErrors();
 
     expect(ProjectConfig::get('system.name'))->toBe('$GENERAL_SETTINGS_NAME')
-        ->and(ProjectConfig::get('system.live'))->toBe('$GENERAL_SETTINGS_LIVE')
         ->and(ProjectConfig::get('system.timeZone'))->toBe('$GENERAL_SETTINGS_TIMEZONE')
         ->and(date_default_timezone_get())->toBe('America/New_York');
-});
-
-it('validates resolved environment variable live values', function () {
-    putenv('GENERAL_SETTINGS_LIVE=maybe');
-
-    post(action([GeneralSettingsController::class, 'store']), [
-        'name' => 'App',
-        'live' => '$GENERAL_SETTINGS_LIVE',
-        'timeZone' => 'America/New_York',
-    ])->assertSessionHasErrors('live');
 });
 
 it('validates resolved environment variable timezone values', function () {
     putenv('GENERAL_SETTINGS_TIMEZONE=Not/A_Timezone');
 
     post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => false,
         'name' => 'App',
-        'live' => true,
         'timeZone' => '$GENERAL_SETTINGS_TIMEZONE',
     ])->assertSessionHasErrors('timeZone');
 });
 
 it('fails required validation for missing environment variables', function () {
     post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => false,
         'name' => '$GENERAL_SETTINGS_MISSING',
-        'live' => true,
         'timeZone' => 'America/New_York',
     ])->assertSessionHasErrors('name');
 });
+
+it('toggles maintenance mode when admin changes are disabled', function () {
+    Cms::config()->allowAdminChanges = false;
+    ProjectConfig::set('system.retryDuration', 60);
+    $systemName = ProjectConfig::get('system.name');
+    $timeZone = ProjectConfig::get('system.timeZone');
+    Route::middleware('web')->get('maintenance-toggle-status', fn () => 'Application is live');
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => true,
+        'name' => 'Changed name',
+        'retryDuration' => 120,
+        'timeZone' => 'America/New_York',
+    ])
+        ->assertRedirectBack();
+
+    Auth::logout();
+
+    get('/maintenance-toggle-status')
+        ->assertServiceUnavailable()
+        ->assertHeader('Retry-After', '60');
+
+    actingAs(User::find()->admin()->one());
+
+    get(action([GeneralSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.values.maintenanceMode', true)
+            ->where('form.values.name', $systemName)
+            ->where('form.values.retryDuration', 60)
+            ->where('form.values.timeZone', $timeZone))
+        ->assertOk();
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => false,
+    ])
+        ->assertRedirectBack();
+
+    Auth::logout();
+
+    get('/maintenance-toggle-status')
+        ->assertOk()
+        ->assertSeeText('Application is live');
+});
+
+it('updates retry responses without breaking the existing maintenance secret', function () {
+    Cms::config()->allowAdminChanges = false;
+    ProjectConfig::set('system.retryDuration', 60);
+    Route::middleware('web')->get('maintenance-retry-status', fn () => 'Application is live');
+    app()->maintenanceMode()->activate([
+        'retry' => 30,
+        'secret' => 'maintenance-secret',
+    ]);
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => true,
+    ])
+        ->assertRedirectBack();
+
+    Auth::logout();
+
+    get('/maintenance-retry-status')
+        ->assertServiceUnavailable()
+        ->assertHeader('Retry-After', '60');
+
+    get('/maintenance-secret')
+        ->assertRedirect('/');
+});
+
+it('removes the retry header when retry duration is cleared', function () {
+    app()->maintenanceMode()->activate(['retry' => 60]);
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => true,
+        'name' => 'App',
+        'timeZone' => 'UTC',
+    ])
+        ->assertRedirectBack()
+        ->assertSessionHasNoErrors();
+
+    Auth::logout();
+
+    get('/')
+        ->assertServiceUnavailable()
+        ->assertHeaderMissing('Retry-After');
+});
+
+it('restricts maintenance mode changes to administrators', function (bool $initiallyActive) {
+    Route::middleware('web')->get('maintenance-authorization-status', fn () => 'Application is live');
+    actingAs(UserModel::factory()
+        ->withPermissions(['accessCp', 'accessCpWhenSystemIsOff'])
+        ->createElement(['admin' => false]));
+
+    if ($initiallyActive) {
+        app()->maintenanceMode()->activate([]);
+    }
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => ! $initiallyActive,
+        'name' => ProjectConfig::get('system.name'),
+        'timeZone' => ProjectConfig::get('system.timeZone'),
+    ])
+        ->assertForbidden();
+
+    Auth::logout();
+
+    if ($initiallyActive) {
+        get('/maintenance-authorization-status')->assertServiceUnavailable();
+
+        return;
+    }
+
+    get('/maintenance-authorization-status')
+        ->assertOk()
+        ->assertSeeText('Application is live');
+})->with([
+    'enable' => [false],
+    'disable' => [true],
+]);

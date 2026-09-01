@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\RulesetValidation\Contracts;
+
+interface ValidatesWithRuleset {}
+
+namespace CraftCms\RulesetValidation;
+
+/** @template-covariant T of Contracts\ValidatesWithRuleset */
+abstract class Ruleset {}

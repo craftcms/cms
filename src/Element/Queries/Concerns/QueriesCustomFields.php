@@ -30,7 +30,7 @@ trait QueriesCustomFields
     public ?array $customFields = null;
 
     /**
-     * @var array|null The generated field handles that may be involved in this query.
+     * @var array<int, array{handle: string, uid: string}>|null The generated field handles that may be involved in this query.
      */
     public ?array $generatedFields = null;
 
@@ -49,17 +49,11 @@ trait QueriesCustomFields
      */
     private array $columnsToCast = [];
 
+    /** @var array<string, mixed> */
     private array $customFieldValues = [];
 
     protected function initQueriesCustomFields(): void
     {
-        foreach ([
-            ...array_keys(Fields::allFieldHandles()),
-            ...array_keys(Fields::allGeneratedFieldHandles()),
-        ] as $handle) {
-            $this->customFieldValues[$handle] = null;
-        }
-
         $this->beforeQuery(function (ElementQuery $elementQuery) {
             // Gather custom fields and generated field handles
             $elementQuery->customFields = [];
@@ -98,7 +92,7 @@ trait QueriesCustomFields
     /**
      * Returns the field layouts whose custom fields should be returned by [[customFields()]].
      *
-     * @return Collection<FieldLayout>
+     * @return Collection<int, FieldLayout>
      */
     protected function fieldLayouts(): Collection
     {
@@ -172,9 +166,7 @@ trait QueriesCustomFields
 
     private function addToColumnMap(string $alias, string|callable|Expression $column): void
     {
-        if (! isset($this->columnMap[$alias])) {
-            $this->columnMap[$alias] = [];
-        }
+        $this->columnMap[$alias] ??= [];
 
         if (! is_array($this->columnMap[$alias])) {
             $this->columnMap[$alias] = [$this->columnMap[$alias]];
@@ -188,6 +180,7 @@ trait QueriesCustomFields
      *
      * @throws QueryAbortedException
      */
+    /** @param ElementQuery<*> $elementQuery */
     private function applyCustomFieldParams(ElementQuery $elementQuery): void
     {
         if (empty($elementQuery->customFields)) {
@@ -196,20 +189,25 @@ trait QueriesCustomFields
 
         $fieldsByHandle = $this->fieldsByHandle($elementQuery);
 
-        foreach (array_keys(Fields::allFieldHandles()) as $handle) {
+        $fieldHandles = Fields::allFieldHandles();
+
+        foreach ($elementQuery->customFieldValues as $handle => $value) {
             // $fieldAttributes->$handle will return true even if it's set to null, so can't use isset() here
             if ($handle === 'owner') {
                 continue;
             }
-            if (($elementQuery->customFieldValues[$handle] ?? null) === null) {
+            if (! array_key_exists($handle, $fieldHandles)) {
+                continue;
+            }
+            if ($value === null) {
                 continue;
             }
             // Make sure the custom field exists in one of the field layouts
             if (! isset($fieldsByHandle[$handle])) {
                 // If it looks like null/:empty: is a valid option, let it slide
-                $value = is_array($elementQuery->customFieldValues[$handle]) && isset($elementQuery->customFieldValues[$handle]['value'])
-                    ? $elementQuery->customFieldValues[$handle]['value']
-                    : $elementQuery->customFieldValues[$handle];
+                $value = is_array($value) && isset($value['value'])
+                    ? $value['value']
+                    : $value;
 
                 if (is_array($value) && in_array(null, $value, true)) {
                     $values = [...$value];
@@ -222,16 +220,16 @@ trait QueriesCustomFields
                 throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
             }
 
-            $glue = $elementQuery->customFieldValues[$handle] === ':empty:'
+            $glue = $value === ':empty:'
                 ? QueryParam::AND
                 : QueryParam::OR;
 
-            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
+            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $value) {
                 foreach ($fieldsByHandle[$handle] as $instances) {
-                    $query->where(function (Builder $query) use ($handle, $elementQuery, $instances) {
+                    $query->where(function (Builder $query) use ($instances, $value) {
                         static::$activeQuery = $this;
                         try {
-                            $instances[0]::modifyQuery($query, $instances, $elementQuery->customFieldValues[$handle]);
+                            $instances[0]::modifyQuery($query, $instances, $value);
                         } finally {
                             static::$activeQuery = null;
                         }
@@ -241,6 +239,7 @@ trait QueriesCustomFields
         }
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function applyGeneratedFieldParams(ElementQuery $elementQuery): void
     {
         if (empty($elementQuery->generatedFields)) {
@@ -270,6 +269,10 @@ trait QueriesCustomFields
     /**
      * @return FieldInterface[][][]
      */
+    /**
+     * @param ElementQuery<*> $elementQuery
+     * @return array<string, array<string, FieldInterface[]>>
+     */
     private function fieldsByHandle(ElementQuery $elementQuery): array
     {
         /** @var FieldInterface[][][] $fieldsByHandle */
@@ -281,5 +284,18 @@ trait QueriesCustomFields
         }
 
         return $fieldsByHandle;
+    }
+
+    private function isCustomFieldHandle(string $handle): bool
+    {
+        if (array_key_exists($handle, $this->customFieldValues)) {
+            return true;
+        }
+
+        if (array_key_exists($handle, Fields::allFieldHandles())) {
+            return true;
+        }
+
+        return array_key_exists($handle, Fields::allGeneratedFieldHandles());
     }
 }

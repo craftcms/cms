@@ -8,10 +8,10 @@ class AddressSubdivisionsResolving
 {
     public function __construct(
         /**
-         * @var array The field's parents; always in order of: countryCode, administrativeArea, locality
+         * @var list<string> The field's parents; always in order of: countryCode, administrativeArea, locality
          */
         public array $parents,
-        /** @var string[] $subdivisions The subdivisions */
+        /** @var array<string, string> $subdivisions The subdivisions */
         public array $subdivisions,
     ) {}
 }

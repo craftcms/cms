@@ -246,10 +246,13 @@ it('authorizes assigning permissions without removing existing recipient permiss
         ->and($this->policy->assignPermission($user, $recipient, 'deleteUsers'))->toBeTrue();
 });
 
-it('authorizes activating users with administrateUsers', function () {
+it('authorizes activating users with administrateUsers, but not admin targets unless self is admin', function () {
     Edition::set(Edition::Pro);
 
     $target = User::factory()->createElement([
+        'active' => false,
+    ]);
+    $adminTarget = User::factory()->admin()->createElement([
         'active' => false,
     ]);
     $user = User::factory()
@@ -258,9 +261,12 @@ it('authorizes activating users with administrateUsers', function () {
     $administrator = User::factory()
         ->withPermissions(['viewUsers', 'editUsers', 'administrateUsers'])
         ->create();
+    $admin = User::factory()->admin()->create();
 
     expect($this->policy->activate($user, $target))->toBeFalse()
-        ->and($this->policy->activate($administrator, $target))->toBeTrue();
+        ->and($this->policy->activate($administrator, $target))->toBeTrue()
+        ->and($this->policy->activate($administrator, $adminTarget))->toBeFalse()
+        ->and($this->policy->activate($admin, $adminTarget))->toBeTrue();
 });
 
 it('authorizes deactivating users from self, administrateUsers, and admin target rules', function () {

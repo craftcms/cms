@@ -1,10 +1,9 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import InputCombobox from '@/common/form/InputCombobox.vue';
+  import {t} from '@craftcms/ui';
+  import CraftComboboxControl from '@craftcms/ui/vue/CraftCombobox.vue';
   import type {SelectItem} from '@/common/types';
-  import {computed, useSlots} from 'vue';
 
-  const modelValue = defineModel<string | number | boolean>();
+  const modelValue = defineModel<string>();
   defineProps<{
     label: string;
     id?: string;
@@ -16,42 +15,26 @@
     error?: string;
     requireOptionMatch?: boolean;
     showAllOnEmpty?: boolean;
+    placeholder?: string;
+    limit?: number;
   }>();
-
-  const slots = useSlots();
-  const forwardedSlots = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const {default: _, ...rest} = slots;
-    return rest;
-  });
 </script>
 
 <template>
-  <craft-input
+  <CraftComboboxControl
+    v-model="modelValue"
     :label="label"
     :id="id"
     :name="name"
     :disabled="disabled"
-    :has-feedback-for="error ? 'error' : ''"
-    :require-options-match="requireOptionMatch"
-    v-bind="$attrs"
+    :clearable="clearable"
+    :options="options"
+    :require-option-match="requireOptionMatch"
+    :show-all-on-empty="showAllOnEmpty"
+    :placeholder="placeholder"
+    :limit="limit"
+    :error="error"
   >
-    <InputCombobox
-      slot="input"
-      v-model="modelValue"
-      :options="options"
-      :label="label"
-      :disabled="disabled"
-      :clearable="clearable"
-      :require-option-match="requireOptionMatch"
-      :show-all-on-empty="showAllOnEmpty"
-    >
-      <!-- Forward all other slots -->
-      <template v-for="(_, slotName) in forwardedSlots" #[slotName]="slotData">
-        <slot :name="slotName" v-bind="slotData || {}"></slot>
-      </template>
-    </InputCombobox>
-
     <div slot="after">
       <slot name="after">
         <craft-callout
@@ -69,13 +52,7 @@
         </craft-callout>
       </slot>
     </div>
-
-    <div slot="feedback">
-      <ul class="error-list" v-if="error">
-        <li>{{ error }}</li>
-      </ul>
-    </div>
-  </craft-input>
+  </CraftComboboxControl>
 </template>
 
 <style scoped lang="scss"></style>

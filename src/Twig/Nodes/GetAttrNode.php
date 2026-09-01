@@ -19,8 +19,8 @@ use Twig\Template;
 class GetAttrNode extends GetAttrExpression
 {
     /**
-     * @param  array  $nodes  An array of named nodes
-     * @param  array  $attributes  An array of attributes (should not be nodes)
+     * @param  array<string, Node>  $nodes  An array of named nodes
+     * @param  array<string, mixed>  $attributes  An array of attributes (should not be nodes)
      * @param  int  $lineno  The line number
      *
      * @noinspection PhpMissingParentConstructorInspection
@@ -81,15 +81,45 @@ class GetAttrNode extends GetAttrExpression
                 ->raw('] ?? null) : ');
         }
 
-        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
-        $compiler->raw(TemplateHelper::class.'::attribute($this->env, $this->source, ');
-
         if ($this->getAttribute('ignore_strict_check')) {
             $this->getNode('node')->setAttribute('ignore_strict_check', true);
         }
 
+        // DIFF: null-safe (`?.`) short-circuit support, ported from GetAttrExpression::compile()
+        $nullSafe = $this->getAttribute('null_safe');
+
+        if (null === $nullSafeNode = $nullSafe ? $this : null) {
+            $node = $this->getNode('node');
+            while ($node instanceof self) {
+                if ($node->getAttribute('null_safe')) {
+                    $nullSafeNode = $node;
+                    break;
+                }
+                $node = $node->getNode('node');
+            }
+        }
+
+        $isShortCircuited = false;
+        if ($nullSafeNode !== null && ! $nullSafeNode->isShortCircuited()) {
+            $compiler
+                ->raw('((null === ('.$nullSafeNode->getVarName($compiler).' = ')
+                ->subcompile($nullSafeNode->getNode('node'))
+                ->raw(')) ? null : ');
+
+            $nullSafeNode->markAsShortCircuited();
+            $isShortCircuited = true;
+        }
+
+        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
+        $compiler->raw(TemplateHelper::class.'::attribute($this->env, $this->source, ');
+
+        if ($nullSafe) {
+            $compiler->raw($this->getVarName($compiler));
+        } else {
+            $compiler->subcompile($this->getNode('node'));
+        }
+
         $compiler
-            ->subcompile($this->getNode('node'))
             ->raw(', ')
             ->subcompile($this->getNode('attribute'));
 
@@ -110,5 +140,37 @@ class GetAttrNode extends GetAttrExpression
         if ($arrayAccessSandbox) {
             $compiler->raw(')');
         }
+
+        if ($isShortCircuited) {
+            $compiler->raw(')');
+        }
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function isShortCircuited(): bool
+    {
+        return $this->getAttribute('is_short_circuited');
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function markAsShortCircuited(): void
+    {
+        $this->setAttribute('is_short_circuited', true);
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function getVarName(Compiler $compiler): string
+    {
+        if ($this->getAttribute('var_name') === null) {
+            $this->setAttribute('var_name', $compiler->getVarName());
+        }
+
+        return '$'.$this->getAttribute('var_name');
     }
 }

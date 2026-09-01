@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
   import {router} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {ButtonVariant, t} from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import Text from '@/common/components/Text.vue';
   import Tooltip from '@/common/components/Tooltip.vue';
@@ -89,11 +89,10 @@
           slot="suffix"
           icon="x"
           type="button"
-          appearance="plain"
           size="small"
           @click="removeGroup(group.id)"
           aria-label="t('Remove {name}', {name: groupLabel(group)})"
-          variant="danger"
+          variant="danger-plain"
         >
         </craft-button>
       </craft-chip>
@@ -101,8 +100,12 @@
 
     <div class="flex gap-2 items-center">
       <craft-action-menu v-if="groups.length">
-        <craft-button type="button" slot="invoker" appearance="filled">
-          <craft-icon name="chevron-down" slot="prefix"></craft-icon>
+        <craft-button
+          type="button"
+          slot="invoker"
+          :variant="ButtonVariant.Dashed"
+          icon="chevron-down"
+        >
           {{ t('Choose') }}
         </craft-button>
 

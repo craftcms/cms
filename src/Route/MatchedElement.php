@@ -17,6 +17,7 @@ class MatchedElement
 {
     private ElementInterface|false $element = false;
 
+    /** @var array<mixed>|false */
     private array|false $route = false;
 
     public static function get(): ElementInterface|false
@@ -24,6 +25,9 @@ class MatchedElement
         return self::instance()->element;
     }
 
+    /**
+     * @return array<mixed>|false
+     */
     public static function getRoute(): array|false
     {
         return self::instance()->route;

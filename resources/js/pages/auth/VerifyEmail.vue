@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import AuthBase from '@/common/layouts/AuthBase.vue';

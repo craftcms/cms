@@ -6,10 +6,13 @@ namespace CraftCms\Cms\Gql\Arguments\Mutations;
 
 use CraftCms\Cms\Gql\Arguments\ElementMutationArguments;
 use CraftCms\Cms\Gql\Types\DateTime;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type ArgumentConfig from Argument */
 class Entry extends ElementMutationArguments
 {
+    /** @return array<string, ArgumentConfig> */
     #[\Override]
     public static function getArguments(): array
     {

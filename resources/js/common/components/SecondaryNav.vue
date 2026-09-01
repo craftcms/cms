@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import CpLink from '@/common/components/CpLink.vue';
+  import {t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
+  import CpLink from '@/common/components/CpLink.vue';
 
   const {items = []} = defineProps<{
     items?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -60,37 +60,44 @@
       <slot>
         <craft-nav-list v-if="items.length">
           <template v-for="(item, index) in items" :key="index">
-            <li v-if="item.subnav" class="nav-heading">
-              <span class="nav-heading-label">{{ item.label }}</span>
+            <template v-if="item.subnav">
+              <craft-nav-item
+                initial-state="open"
+                block
+                flush
+                :group="item.group"
+              >
+                <span class="text-xs font-bold">{{ item.label }}</span>
 
-              <craft-nav-list>
-                <template
-                  v-for="(subitem, subindex) in item.subnav"
-                  :key="subindex"
-                >
+                <craft-nav-list slot="subnav">
                   <CpLink
+                    v-for="(subitem, subindex) in item.subnav"
+                    :key="subindex"
                     as="craft-nav-item"
-                    :active="subitem.selected"
+                    :active.prop="subitem.selected"
                     :href="subitem.url"
-                    block
+                    :inertia="!subitem.external"
                     flush
+                    block
                   >
                     {{ subitem.label }}
                   </CpLink>
-                </template>
-              </craft-nav-list>
-            </li>
+                </craft-nav-list>
+              </craft-nav-item>
+            </template>
 
-            <CpLink
-              v-else
-              as="craft-nav-item"
-              :active="item.selected"
-              :href="item.url"
-              block
-              flush
-            >
-              {{ item.label }}
-            </CpLink>
+            <template v-else>
+              <CpLink
+                as="craft-nav-item"
+                :active.prop="item.selected"
+                :href="item.url"
+                :inertia="!item.external"
+                flush
+                block
+              >
+                {{ item.label }}
+              </CpLink>
+            </template>
           </template>
         </craft-nav-list>
       </slot>

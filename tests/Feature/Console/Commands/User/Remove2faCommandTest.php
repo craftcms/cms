@@ -135,7 +135,7 @@ class TestRemove2faSmsMethod extends BaseAuthMethod
         return '';
     }
 
-    public function getAuthFormHtml(): string
+    public function getAuthFormHtml(?string $returnUrl = null): string
     {
         return '';
     }
@@ -180,7 +180,7 @@ class TestRemove2faEmailMethod extends BaseAuthMethod
         return '';
     }
 
-    public function getAuthFormHtml(): string
+    public function getAuthFormHtml(?string $returnUrl = null): string
     {
         return '';
     }

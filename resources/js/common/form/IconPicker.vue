@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  defineOptions({inheritAttrs: false});
+
+  import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import Pane from '@/common/components/Pane.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {
     type ComponentPublicInstance,
     computed,
@@ -27,6 +28,12 @@
       error?: string;
       freeOnly?: boolean;
       disabled?: boolean;
+      // Used by the legacy `<craft-icon-picker>` mount bridge: `id` lets a
+      // wrapping `craft-field` label associate with the control, and
+      // labelledBy/describedBy cover the label-less table-cell case.
+      id?: string;
+      labelledBy?: string;
+      describedBy?: string;
     }>(),
     {freeOnly: false}
   );
@@ -105,8 +112,8 @@
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
 
   function handleClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
@@ -136,8 +143,12 @@
 
 <template>
   <craft-input
+    v-bind="$attrs"
+    :id="id"
     :label="label"
     :name="name"
+    :aria-labelledby="labelledBy"
+    :aria-describedby="describedBy"
     :has-feedback-for="error ? 'error' : ''"
     hidden-input
     .modelValue="model"
@@ -178,23 +189,22 @@
     @close="modalActive = false"
     @opened="focusSearch"
   >
-    <Pane class="h-full">
-      <template #header>
-        <form
-          role="search"
-          @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-4 px-4 pb-2 bg-white"
-        >
-          <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
-            <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
-              <craft-spinner
-                style="--size: 1em"
-                :visible="http.processing && iconHtml !== null"
-              ></craft-spinner>
-            </div>
-          </CraftInput>
-        </form>
-      </template>
+    <craft-pane class="h-full">
+      <form
+        slot="header"
+        role="search"
+        @submit.prevent="loadIcons()"
+        class="sticky top-0 pt-4 px-4 pb-2 bg-white"
+      >
+        <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
+          <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
+            <craft-spinner
+              style="--size: 1em"
+              :visible="http.processing && iconHtml !== null"
+            ></craft-spinner>
+          </div>
+        </CraftInput>
+      </form>
       <div>
         <!-- This only shows on the initial load -->
         <template v-if="http.processing && iconHtml === null">
@@ -216,7 +226,7 @@
           ></ul>
         </template>
       </div>
-    </Pane>
+    </craft-pane>
   </Modal>
 </template>
 

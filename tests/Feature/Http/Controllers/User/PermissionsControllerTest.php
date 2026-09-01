@@ -16,6 +16,7 @@ use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\patchJson;
@@ -161,8 +162,15 @@ test('index shows permissions page for own account', function () {
             ->where('currentGroupIds', fn ($groupIds) => collect($groupIds)->all() === [$group->id])
             ->where('directPermissions', fn ($permissions) => collect($permissions)->all() === ['accessSiteWhenSystemIsOff'])
             ->where('inheritedPermissions', fn ($permissions) => collect($permissions)->all() === ['accessCp'])
-            ->has('permissions')
-            ->has('subnav'));
+            ->where('permissions', function ($groups): bool {
+                $permissions = collect($groups)
+                    ->flatMap(fn (array $group): array => $group['permissions']);
+
+                return str_contains($permissions['accessSiteWhenSystemIsOff']['label'], 'maintenance mode')
+                    && str_contains($permissions['accessCp']['nested']['accessCpWhenSystemIsOff']['label'], 'maintenance mode');
+            })
+            ->where('subnav.0.label', t('Profile'))
+            ->has('details'));
 });
 
 test('index shows permissions page for other users', function () {

@@ -61,6 +61,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     private array $_fieldLayouts;
 
+    /** @var array<FieldLayout|array<string, mixed>> */
     public array $fieldLayouts {
         get => $this->getFieldLayouts();
         set {
@@ -110,6 +111,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return app(Fields::class)->getLayoutsByType($this->elementType)->all();
     }
 
+    /** @param array<FieldLayout|array<string, mixed>> $fieldLayouts */
     public function setFieldLayouts(array $fieldLayouts): void
     {
         $fieldsService = app(Fields::class);

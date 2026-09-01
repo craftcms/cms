@@ -12,6 +12,15 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Date as DateControl;
+use CraftCms\Cms\Form\Controls\DateTime as DateTimeControl;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
@@ -153,6 +162,71 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $dateTime = match (true) {
+            $this->showDate && ! $this->showTime => 'showDate',
+            $this->showTime && ! $this->showDate => 'showTime',
+            default => 'showBoth',
+        };
+        $options = [
+            ['label' => t('Show date'), 'value' => 'showDate'],
+            ['label' => t('Show time'), 'value' => 'showTime'],
+            ['label' => t('Show date and time'), 'value' => 'showBoth'],
+        ];
+
+        return Form::make([
+            FormField::make()
+                ->control(Choice::make('dateTime')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options($options)
+                    ->value($dateTime)),
+            FormField::make(t('Minute Increment'))
+                ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
+                ->control(Choice::make('minuteIncrement')->options(self::minuteIncrementOptions())->value($this->minuteIncrement)),
+            FormField::make(t('Show Time Zone'))
+                ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
+                ->control(Lightswitch::make('showTimeZone')->value($this->showTimeZone)),
+            FormField::make(t('Min Date'))
+                ->control(DateControl::make('min')->value($this->min?->format('Y-m-d'))),
+            FormField::make(t('Max Date'))
+                ->control(DateControl::make('max')->value($this->max?->format('Y-m-d'))),
+        ]);
+    }
+
+    /** @return list<array{label: string, value: int}> */
+    private static function minuteIncrementOptions(): array
+    {
+        return array_map(fn (int $increment): array => [
+            'label' => (string) $increment,
+            'value' => $increment,
+        ], [5, 10, 15, 30, 60]);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $value = $context->value instanceof DateTimeInterface ? [
+            'date' => $context->value->format('Y-m-d'),
+            'time' => $context->value->format('H:i'),
+            'timezone' => $context->value->getTimezone()->getName(),
+        ] : $context->value;
+
+        return DateTimeControl::make($context->path)
+            ->showDate($this->showDate)
+            ->showTime($this->showTime)
+            ->showTimeZone($this->showTimeZone)
+            ->min($this->min?->format('Y-m-d'))
+            ->max($this->max?->format('Y-m-d'))
+            ->minuteIncrement($this->minuteIncrement)
+            ->value($value ?? [
+                'date' => '',
+                'time' => '',
+                'timezone' => Cms::timezone(),
+            ]);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -161,59 +235,6 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'minuteIncrement' => ['integer', 'min:1', 'max:60'],
             'min' => ['nullable', 'date', 'before_or_equal:max'],
             'max' => ['nullable', 'date', 'after_or_equal:min'],
-        ]);
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        if ($this->showDate && ! $this->showTime) {
-            $dateTimeValue = 'showDate';
-        } elseif ($this->showTime && ! $this->showDate) {
-            $dateTimeValue = 'showTime';
-        } else {
-            $dateTimeValue = 'showBoth';
-        }
-
-        $incrementOptions = [5, 10, 15, 30, 60];
-        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
-
-        $options = [
-            [
-                'label' => t('Show date'),
-                'value' => 'showDate',
-            ],
-        ];
-
-        // Only allow the "Show date and time" option if it's already selected
-        if ($dateTimeValue === 'showTime') {
-            $options[] = [
-                'label' => t('Show time'),
-                'value' => 'showTime',
-            ];
-        }
-
-        $options[] = [
-            'label' => t('Show date and time'),
-            'value' => 'showBoth',
-        ];
-
-        return template('_components/fieldtypes/Date/settings', [
-            'options' => $options,
-            'value' => $dateTimeValue,
-            'incrementOptions' => $incrementOptions,
-            'field' => $this,
-            'readOnly' => $readOnly,
         ]);
     }
 
@@ -280,6 +301,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ]);
     }
 
+    /** @return list<string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -408,6 +430,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return DateFieldConditionRule::class;
     }
 
+    /** @return array{name:string|null, type:DateTimeType, resolve:\Closure} */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -428,6 +451,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
     }
 
+    /** @return array{name:string|null, type:DateTimeType, description:string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

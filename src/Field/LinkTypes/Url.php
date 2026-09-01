@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use Exception;
 use League\Uri\Uri;
 
@@ -68,31 +69,25 @@ class Url extends BaseTextLinkType
      */
     public bool $allowCustomSchemes = false;
 
+    #[\Override]
+    public function settingsNodes(string $prefix): array
+    {
+        return [
+            FormField::make(t('Allow root-relative URLs'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'allowRootRelativeUrls'))->value($this->allowRootRelativeUrls)),
+            FormField::make(t('Allow anchors'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'allowAnchors'))->value($this->allowAnchors)),
+            FormField::make(t('Allow custom URL schemes'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'allowCustomSchemes'))->value($this->allowCustomSchemes)),
+        ];
+    }
+
     protected function urlPrefix(): array
     {
         return ['https://', 'http://'];
     }
 
-    public function getSettingsHtml(): string
-    {
-        return
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow root-relative URLs'),
-                'name' => 'allowRootRelativeUrls',
-                'on' => $this->allowRootRelativeUrls,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow anchors'),
-                'name' => 'allowAnchors',
-                'on' => $this->allowAnchors,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom URL schemes'),
-                'name' => 'allowCustomSchemes',
-                'on' => $this->allowCustomSchemes,
-            ]);
-    }
-
+    /** @return array<string, string> */
     #[\Override]
     protected function inputAttributes(): array
     {

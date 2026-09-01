@@ -31,6 +31,7 @@ readonly class UpdateRelease
         return $event->isValid;
     }
 
+    /** @param array{version: string, date?: string|null, critical?: bool, notes?: string|null} $data */
     public static function fromArray(array $data): self
     {
         return new self(

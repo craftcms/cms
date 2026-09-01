@@ -28,7 +28,7 @@ class FieldLayoutUIElementsResolving
         public FieldLayout $fieldLayout,
 
         /**
-         * @var FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
+         * @var list<FieldLayoutElement|class-string<FieldLayoutElement>|array{class: class-string<FieldLayoutElement>, ...}> The elements that should be available to the field layout designer.
          */
         public array $elements = [],
     ) {}

@@ -6,6 +6,8 @@
 {% set id = id ?? "elementselect#{random()}" -%}
 {% set elements = elements ?? [] -%}
 {% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set inputClass = inputClass ?? null -%}
+{% set customElement = customElement ?? 'craft-element-select-input' -%}
 {% set sources = sources ?? null -%}
 {% set condition = condition ?? null -%}
 {% set criteria = criteria ?? null -%}
@@ -23,6 +25,7 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
 {% set registerJs = registerJs ?? true %}
+{% set useCustomElement = useCustomElement ?? false %}
 
 {% set allowAdd = allowAdd ?? true %}
 {% set allowRemove = allowRemove ?? true %}
@@ -36,13 +39,56 @@
     modalTitle: selectionLabel ?? 'Choose'|t('app'),
 }|merge(modalSettings ?? [], recursive=true) %}
 
+{% set jsSettings = {
+    id: id|namespaceInputId,
+    name: name ? name|namespaceInputName : null,
+    elementType: elementType,
+    sources: sources,
+    condition: condition ? condition.getConfig() : null,
+    referenceElementId: referenceElement.id ?? null,
+    referenceElementOwnerId: (referenceElement ?? null) is instance of('CraftCms\\Cms\\Element\\Contracts\\NestedElementInterface')
+        ? referenceElement.getOwnerId()
+        : null,
+    referenceElementSiteId: referenceElement.siteId ?? null,
+    criteria: criteria,
+    searchCriteria,
+    allowAdd: allowAdd,
+    allowRemove: allowRemove,
+    allowSelfRelations: allowSelfRelations ?? false,
+    maintainHierarchy: maintainHierarchy,
+    branchLimit: branchLimit ?? null,
+    sourceElementId: sourceElementId,
+    disabledElementIds: disabledElementIds ?? null,
+    defaultPlacement,
+    viewMode: viewMode,
+    single: single,
+    limit: limit,
+    showSiteMenu: showSiteMenu ?? false,
+    siteIds: siteIds ?? null,
+    modalStorageKey: storageKey,
+    fieldId: fieldId,
+    sortable: sortable,
+    selectable: not disabled,
+    showActionMenu: showActionMenu,
+    editable: not disabled,
+    prevalidate: prevalidate,
+    modalSettings: modalSettings ?? {},
+}|merge(jsSettings ?? {}) %}
+
+{% if useCustomElement %}
+    {% set containerAttributes = containerAttributes|merge({
+        'input-class': inputClass ?: false,
+        settings: jsSettings|json_encode,
+    }) %}
+{% endif %}
+
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
 {% from "_includes/forms" import text %}
 
-{% tag 'div' with containerAttributes %}
+{% tag useCustomElement ? customElement : 'div' with containerAttributes %}
     {% if maintainHierarchy %}
         {{ include('_elements/structurelist.twig', {
             id,
@@ -106,41 +152,7 @@
     </div>
 {% endtag %}
 
-{% if not disabled and registerJs %}
-    {% set jsSettings = {
-        id: id|namespaceInputId,
-        name: name ? name|namespaceInputName : null,
-        elementType: elementType,
-        sources: sources,
-        condition: condition ? condition.getConfig() : null,
-        referenceElementId: referenceElement.id ?? null,
-        referenceElementOwnerId: (referenceElement ?? null) is instance of('CraftCms\\Cms\\Element\\Contracts\\NestedElementInterface')
-            ? referenceElement.getOwnerId()
-            : null,
-        referenceElementSiteId: referenceElement.siteId ?? null,
-        criteria: criteria,
-        searchCriteria,
-        allowAdd: allowAdd,
-        allowRemove: allowRemove,
-        allowSelfRelations: allowSelfRelations ?? false,
-        maintainHierarchy: maintainHierarchy,
-        branchLimit: branchLimit ?? null,
-        sourceElementId: sourceElementId,
-        disabledElementIds: disabledElementIds ?? null,
-        defaultPlacement,
-        viewMode: viewMode,
-        single: single,
-        limit: limit,
-        showSiteMenu: showSiteMenu ?? false,
-        siteIds: siteIds ?? null,
-        modalStorageKey: storageKey,
-        fieldId: fieldId,
-        sortable: sortable,
-        showActionMenu: showActionMenu,
-        prevalidate: prevalidate,
-        modalSettings: modalSettings ?? {},
-    }|merge(jsSettings ?? {}) %}
-
+{% if not useCustomElement and not disabled and registerJs %}
     {% js %}
         new {{ jsClass }}({{ jsSettings|json_encode|raw }});
     {% endjs %}

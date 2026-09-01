@@ -23,6 +23,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Users represents a Users field.
+ *
+ * @phpstan-import-type InputObjectFieldConfig from \GraphQL\Type\Definition\InputObjectField
  */
 class Users extends BaseRelationField
 {
@@ -61,6 +63,15 @@ class Users extends BaseRelationField
         return Gql::canQueryUsers($schema);
     }
 
+    /**
+     * @return array{
+     *     name: string,
+     *     type: Type,
+     *     args: array<string, Type|InputObjectFieldConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -73,6 +84,7 @@ class Users extends BaseRelationField
         ];
     }
 
+    /** @return array{}|array{groupId: array<int, int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {

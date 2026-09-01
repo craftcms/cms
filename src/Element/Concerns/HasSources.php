@@ -20,6 +20,8 @@ use CraftCms\Cms\Support\Facades\Fields;
 trait HasSources
 {
     /**
+     * @var array<class-string,array<string,array<array-key,mixed>>>
+     *
      * @see sources()
      */
     private static array $sources = [];
@@ -46,7 +48,7 @@ trait HasSources
      * Defines the sources that elements of this type may belong to.
      *
      * @param  string  $context  The context ('index', 'modal', 'field', or 'settings').
-     * @return array The sources.
+     * @return array<array-key,mixed> The sources.
      *
      * @see sources()
      */

@@ -36,9 +36,11 @@ class UserQuery extends ElementQuery
 
     public const string STATUS_CREDENTIALED = 'credentialed';
 
+    /** @var array<int|string, Expression<*>|int|string> */
     #[Override]
     protected array $defaultOrderBy;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         parent::__construct(User::class, $config);

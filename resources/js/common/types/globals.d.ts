@@ -1,6 +1,32 @@
-import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {ConfigService} from '@craftcms/ui';
+import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
+import type {AxiosRequestConfig, AxiosResponse} from 'axios';
+
+type LegacySettingValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Element
+  | JQuery
+  | LegacyWidgetSettings
+  | LegacySettingValue[]
+  | ((...args: any[]) => void);
+
+interface LegacyWidgetSettings {
+  [key: string]: LegacySettingValue;
+}
+
+interface ElementIndexInstance {
+  settings: LegacyWidgetSettings;
+}
+
+interface LegacyModalInstance {
+  destroy?(): void;
+}
 
 declare module '@tanstack/vue-table' {
   interface ColumnMeta {
@@ -20,11 +46,11 @@ declare module '@tanstack/vue-table' {
 
 // Set up interfaces and types
 interface ProgressBarInterface {
-  // eslint-disable-next-line @typescript-eslint/no-misused-new
+  // oxlint-disable-next-line @typescript-eslint/no-misused-new
   new (
     $element: JQuery,
     displaySteps?: boolean,
-    settings?: object
+    settings?: LegacyWidgetSettings
   ): ProgressBarInterface;
 
   $progressBar: JQuery;
@@ -39,8 +65,8 @@ interface ProgressBarInterface {
 }
 
 interface IntervalManagerInterface {
-  // eslint-disable-next-line @typescript-eslint/no-misused-new
-  new (settings?: object): IntervalManagerInterface;
+  // oxlint-disable-next-line @typescript-eslint/no-misused-new
+  new (settings?: LegacyWidgetSettings): IntervalManagerInterface;
 
   stop(): void;
 
@@ -53,6 +79,11 @@ type Site = {
   name: string;
   uid: string;
 };
+
+interface CpServices {
+  $queue: QueueService;
+  $config: ConfigService;
+}
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
@@ -74,20 +105,39 @@ interface SlideoutInstance {
 }
 
 interface ElementSelectorModalInstance {
-  show(): void;
-  on(event: string, callback: () => void): void;
+  show(): Promise<void>;
+  hide(): void;
+  destroy(): void;
+  /** Returns an unsubscribe function. */
+  on(event: string, callback: (data?: unknown) => void): () => void;
+  /** Republishes the whole set; the index re-reads it. */
+  setDisabledElementIds(ids: number[]): void;
+  setBusy(busy: boolean): void;
 }
 
 type FieldLayoutDesignerInstance = any;
 
 interface ElementSelectorModalSettings {
+  /** Accepted for compatibility; the native dialog manages stacking itself. */
   closeOtherModals?: boolean;
-  criteria?: Record<string, unknown>;
+  criteria?: LegacyWidgetSettings;
+  disabledElementIds?: number[];
+  disableElementsOnSelect?: boolean;
   hideOnSelect?: boolean;
   modalTitle?: string;
+  showTitle?: boolean;
+  selectBtnLabel?: string;
   multiSelect?: boolean;
-  onSelect?: (elements: any[]) => void;
-  sources?: string[];
+  /** May return a promise; the modal stays busy until it settles. */
+  onSelect?: (elements: any[], meta?: {transform?: string | null}) => unknown;
+  onCancel?: () => void;
+  onClose?: () => void;
+  showSiteMenu?: boolean | 'auto' | null;
+  siteIds?: number[] | null;
+  sources?: string[] | null;
+  condition?: unknown;
+  storageKey?: string | null;
+  triggerElement?: HTMLElement | (() => HTMLElement | null) | null;
 }
 
 interface CraftStatic {
@@ -95,27 +145,50 @@ interface CraftStatic {
   csrfTokenValue?: string;
   ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
-  t(message: string, params?: object, category?: string): string;
-  sendActionRequest(method: string, action: string, options?: object): Promise;
+  t(message: string, params?: LegacyWidgetSettings, category?: string): string;
+  sendActionRequest(
+    method: string,
+    action: string,
+    options?: AxiosRequestConfig
+  ): Promise<AxiosResponse>;
+  namespaceId(id: string, namespace?: string | null): string;
   initUiElements(container: Element | JQuery): void;
   createElementSelectorModal(
     elementType: string,
     settings?: ElementSelectorModalSettings
-  ): ElementSelectorModalInstance;
-  expandPostArray(arr: object): any;
+  ): Promise<ElementSelectorModalInstance>;
+  expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];
   Preview: any;
   setCookie(name: string, value: string): any;
   getCookie(name: string): any;
-  getUrl(path: string, params?: string | object, baseUrl?: string): string;
+  getUrl(
+    path: string,
+    params?: string | LegacyWidgetSettings,
+    baseUrl?: string
+  ): string;
   baseCpUrl: string;
-  getCpUrl(path: string, params?: string | object): string;
+  getCpUrl(path: string, params?: string | LegacyWidgetSettings): string;
+  defaultIndexCriteria: LegacyWidgetSettings;
+  siteId?: number;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
     totalJobs?: number;
-    trigger?: (event: string, data?: unknown) => void;
+    trigger?: (event: string, data?: LegacySettingValue) => void;
+    $notificationContainer?: {length: number};
+    copyElements?: (
+      elementInfo: Array<{
+        type: string;
+        id: string | number;
+        siteId?: number | null;
+        draftId?: number | null;
+        revisionId?: number | null;
+        fieldId?: number | null;
+        ownerId?: number | null;
+      }>
+    ) => void;
     displayNotification: (
       type: any,
       message?: string,
@@ -125,7 +198,14 @@ interface CraftStatic {
       message?: string | CpNotificationSettings,
       settings?: CpNotificationSettings
     ) => object;
+    displayNotice?: (
+      message?: string,
+      settings?: CpNotificationSettings
+    ) => object;
+    runQueue?: () => void;
   };
+  broadcaster?: {postMessage(message: LegacyWidgetSettings): void};
+  defaultIndexCriteria: LegacyWidgetSettings;
   systemUid?: string;
   canAccessQueueManager?: boolean;
   queue?: {
@@ -145,13 +225,27 @@ interface CraftStatic {
     new (settings: SlideoutSettings): SlideoutInstance;
   };
   CpScreenSlideout: {
-    new (url: string, settings?: object): SlideoutInstance;
+    new (url: string, settings?: LegacyWidgetSettings): SlideoutInstance;
   };
+  createElementEditor(
+    elementType: string,
+    settings?: LegacyWidgetSettings
+  ): SlideoutInstance;
+  CustomizeSourcesModal: new (
+    elementIndex: ElementIndexInstance,
+    settings?: LegacyWidgetSettings
+  ) => {destroy(): void};
   FieldLayoutDesigner: {
-    new (container: any, settings?: object): FieldLayoutDesignerInstance;
+    new (
+      container: HTMLElement | JQuery,
+      settings?: LegacyWidgetSettings
+    ): FieldLayoutDesignerInstance;
   };
   ElevatedSessionForm: {
-    new (form: any, inputs?: string | string[]): unknown;
+    new (
+      form: HTMLFormElement | JQuery,
+      inputs?: string | string[]
+    ): LegacyModalInstance;
   };
   elevatedSessionManager: {
     fetchingTimeout: boolean;
@@ -161,28 +255,49 @@ interface CraftStatic {
       minSafeElevatedSessionTimeout?: number
     ): void | Promise<void>;
   };
+
+  ui: {
+    createCopyTextPrompt(settings: {
+      label: string;
+      value: string;
+    }): LegacyModalInstance;
+  };
+
+  // Asset editing, still served by the legacy bundle.
+  isImagick?: boolean;
+  PreviewFileModal: new (
+    assetId: number,
+    settings?: LegacyWidgetSettings
+  ) => LegacyModalInstance;
+  AssetImageEditor: new (
+    assetId: number,
+    settings?: LegacyWidgetSettings
+  ) => LegacyModalInstance;
+  createUploader(
+    fsType: string,
+    $element: JQuery,
+    settings?: LegacyWidgetSettings
+  ): {setParams(params: LegacyWidgetSettings): void};
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line @typescript-eslint/no-empty-object-type
 interface GarnishStatic {}
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface JQueryObject {}
-
+// oxlint-disable-next-line @typescript-eslint/no-empty-object-type
 // Declare existing variables, mock the things we'll use.
 
 declare global {
   let Cp: CpStatic;
   let Craft: CraftStatic;
   let Garnish: GarnishStatic;
-  let $: any;
+  let $: JQueryStatic;
   interface Window {
-    bootedCallbacks: Array<(craft: any) => void>;
-    bootingCallbacks: Array<(craft: any) => void>;
-    CpConfig: Record<string, any>;
+    bootedCallbacks: Array<(craft: CraftStatic) => void>;
+    bootingCallbacks: Array<(craft: CraftStatic) => void>;
+    CpConfig: LegacyWidgetSettings;
     Cp: CpStatic;
     Craft: CraftStatic;
-    $: JQueryObject;
-    jQuery: JQueryObject;
+    $?: JQueryStatic;
+    jQuery?: JQueryStatic;
     Garnish: GarnishStatic;
   }
 }

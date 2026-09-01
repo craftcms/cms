@@ -6,8 +6,6 @@ namespace CraftCms\Cms\View\LegacyAssets;
 
 use CraftCms\Cms\View\HtmlStack;
 
-use function CraftCms\Cms\craftAsset;
-
 /**
  * @deprecated
  *
@@ -21,6 +19,8 @@ class MatrixAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        $htmlStack->jsFile(craftAsset('legacy/matrix/dist/MatrixInput.js'));
+        // Craft.MatrixInput is provided by the modern module
+        // (resources/js/modules/matrix), loaded by both Vite entrypoints; this
+        // bundle only remains for its CpAsset dependency.
     }
 }

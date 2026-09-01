@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Support\Html;
 use Override;
 
@@ -15,6 +15,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
 {
     public bool $value = true;
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {
@@ -34,12 +35,12 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
                 'id' => $labelId,
             ]).
             Html::tag('div',
-                FormFields::lightswitchHtml([
-                    'id' => $lightswitchId,
-                    'on' => $this->value,
-                    'name' => 'value',
-                    'labelledBy' => $labelId,
-                ])
+                Lightswitch::make()
+                    ->id($lightswitchId)
+                    ->on($this->value)
+                    ->name('value')
+                    ->labelledBy($labelId)
+                    ->toHtml()
             );
     }
 

@@ -11,7 +11,7 @@ class Site extends ArgumentHandler
     #[\Override]
     protected string $argumentName = 'site';
 
-    protected function handleArgument($argumentValue): mixed
+    protected function handleArgument(mixed $argumentValue): mixed
     {
         $allowedSites = GqlHelper::getAllowedSites();
         $prop = $this->argumentName === 'site' ? 'handle' : 'id';

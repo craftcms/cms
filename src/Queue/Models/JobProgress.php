@@ -64,6 +64,9 @@ class JobProgress extends BaseModel
         return $attributes;
     }
 
+    /**
+     * @return Builder<static>
+     */
     public function prunable(): Builder
     {
         return static::query()

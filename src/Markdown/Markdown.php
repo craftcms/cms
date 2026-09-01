@@ -56,6 +56,7 @@ class Markdown
         return isset($this->flavors[$name]);
     }
 
+    /** @return list<string> */
     public function flavors(): array
     {
         return array_keys($this->flavors);

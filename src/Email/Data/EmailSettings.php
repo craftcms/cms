@@ -22,6 +22,9 @@ readonly class EmailSettings
         public array $siteOverrides = [],
     ) {}
 
+    /**
+     * @param  array{fromEmail?: ?string, fromName?: ?string, replyToEmail?: ?string, mailer?: ?string, template?: ?string, siteOverrides?: array<string, array{fromEmail?: ?string, fromName?: ?string, replyToEmail?: ?string, mailer?: ?string, template?: ?string}>}|null  $config
+     */
     public static function fromProjectConfig(?array $config = null): self
     {
         $config ??= ProjectConfig::get('email') ?? [];
@@ -101,6 +104,9 @@ readonly class EmailSettings
         return Env::parse($this->template);
     }
 
+    /**
+     * @return array<string, string|array<string, array<string, string>>>
+     */
     public function toArray(): array
     {
         $data = array_filter([

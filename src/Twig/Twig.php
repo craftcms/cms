@@ -34,6 +34,7 @@ class Twig
 
     private ?Environment $siteTwig = null;
 
+    /** @var array<string, mixed>|null */
     private ?array $options = null;
 
     /** @var array<class-string<ExtensionInterface>, ExtensionInterface> */
@@ -175,6 +176,7 @@ class Twig
         }
     }
 
+    /** @return array<string, mixed> */
     private function getOptions(): array
     {
         if (isset($this->options)) {

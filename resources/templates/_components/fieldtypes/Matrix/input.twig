@@ -9,7 +9,7 @@
   <span role="status" class="visually-hidden" data-status-message></span>
   <div class="blocks" role="list">
     {% for entry in entries %}
-      {% include '_components/fieldtypes/Matrix/block.twig' %}
+      {% include '_components/fieldtypes/Matrix/block.twig' with forms[entry.uid] %}
     {% endfor %}
   </div>
   {% if not static and not staticEntries %}

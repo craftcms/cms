@@ -2,21 +2,17 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\Events\TransformSaving;
-use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\Support\Facades\ImageTransforms as ImageTransformsFacade;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -143,6 +139,89 @@ describe('getTransformByUid', function () {
 });
 
 describe('saveTransform', function () {
+    it('round trips transformer-specific parameters through project config', function () {
+        $transformerUid = Str::uuid()->toString();
+        $transform = new ImageTransform([
+            'name' => 'Custom',
+            'handle' => 'custom',
+            'width' => 500,
+            'parameters' => [$transformerUid => ['blur' => 12]],
+        ]);
+
+        $this->service->saveTransform($transform);
+        $this->service->reset();
+
+        $saved = $this->service->getTransformByHandle('custom');
+
+        expect($saved->id)->toBe($transform->id)
+            ->and($saved->uid)->toBe($transform->uid)
+            ->and($saved->getParametersForTransformer($transformerUid))->toBe(['blur' => 12])
+            ->and(ProjectConfig::get("imageTransforms.{$transform->uid}"))->toMatchArray([
+                'width' => 500,
+                'parameters' => [$transformerUid => ['blur' => 12]],
+            ]);
+    });
+
+    it('canonicalizes legacy top-level parameters without changing their values', function () {
+        $uid = (string) Str::uuid();
+
+        ProjectConfig::set("imageTransforms.{$uid}", [
+            'name' => 'Legacy',
+            'handle' => 'legacy',
+            'width' => 640,
+            'height' => null,
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 82,
+            'format' => 'webp',
+            'interlace' => 'line',
+            'fill' => '#abcdef',
+            'upscale' => false,
+        ]);
+        ProjectConfig::rebuild();
+
+        expect(ProjectConfig::get("imageTransforms.{$uid}"))->toMatchArray([
+            'name' => 'Legacy',
+            'handle' => 'legacy',
+            'fill' => '#abcdef',
+            'format' => 'webp',
+            'height' => null,
+            'interlace' => 'line',
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 82,
+            'upscale' => false,
+            'width' => 640,
+        ])->and(ProjectConfig::get("imageTransforms.{$uid}"))->not->toHaveKey('parameters');
+    });
+
+    it('preserves custom parameters through metadata changes and saves parameter updates', function () {
+        $transformerUid = Str::uuid()->toString();
+        $transform = new ImageTransform([
+            'name' => 'Original',
+            'handle' => 'stableHandle',
+            'width' => 500,
+            'parameters' => [$transformerUid => ['blur' => 1]],
+        ]);
+        $this->service->saveTransform($transform);
+        $saved = $this->service->getTransformById($transform->id);
+
+        $saved->name = 'Renamed';
+        $this->service->saveTransform($saved);
+        $this->service->reset();
+
+        $saved = $this->service->getTransformById($transform->id);
+        expect($saved->name)->toBe('Renamed')
+            ->and($saved->getParametersForTransformer($transformerUid))->toBe(['blur' => 1]);
+
+        $saved->setParameters([$transformerUid => ['blur' => 2]]);
+        $this->service->saveTransform($saved);
+        $this->service->reset();
+
+        expect($this->service->getTransformById($transform->id)
+            ->getParametersForTransformer($transformerUid))->toBe(['blur' => 2]);
+    });
+
     it('saves a new transform', function () {
         Event::fake([TransformSaving::class, TransformSaved::class]);
         Event::listen(TransformSaving::class, fn () => null);
@@ -343,61 +422,6 @@ describe('deleteTransform', function () {
     it('returns false when deleting non-existent id', function () {
         expect($this->service->deleteTransformById(999))->toBeFalse();
     });
-});
-
-describe('getAllImageTransformers', function () {
-    it('includes the default ImageTransformer', function () {
-        $transformers = $this->service->getAllImageTransformers();
-
-        expect($transformers)->toContain(ImageTransformer::class);
-    });
-
-    it('fires ImageTransformersResolving event', function () {
-        Event::fake([ImageTransformersResolving::class]);
-
-        $this->service->getAllImageTransformers();
-
-        Event::assertDispatchedOnce(ImageTransformersResolving::class);
-    });
-
-    it('allows adding custom transformers via event', function () {
-        $customTransformer = (new class implements ImageTransformerInterface
-        {
-            public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
-            {
-                return '';
-            }
-
-            public function invalidateAssetTransforms(Asset $asset): void {}
-        })::class;
-
-        Event::listen(ImageTransformersResolving::class, function (ImageTransformersResolving $event) use ($customTransformer) {
-            $event->types[] = $customTransformer;
-        });
-
-        $transformers = $this->service->getAllImageTransformers();
-
-        expect($transformers)->toContain($customTransformer);
-    });
-});
-
-describe('getImageTransformer', function () {
-    it('returns an instance of the transformer', function () {
-        $transformer = $this->service->getImageTransformer(ImageTransformer::class);
-
-        expect($transformer)->toBeInstanceOf(ImageTransformerInterface::class);
-    });
-
-    it('memoizes transformer instances', function () {
-        $first = $this->service->getImageTransformer(ImageTransformer::class);
-        $second = $this->service->getImageTransformer(ImageTransformer::class);
-
-        expect($first)->toBe($second);
-    });
-
-    it('throws for invalid transformer class', function () {
-        $this->service->getImageTransformer(stdClass::class);
-    })->throws(ImageTransformException::class, 'Invalid image transformer');
 });
 
 describe('reset', function () {

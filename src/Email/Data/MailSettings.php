@@ -16,6 +16,9 @@ readonly class MailSettings
         public ?string $template = null,
     ) {}
 
+    /**
+     * @param  array{fromEmail?: ?string, fromName?: ?string, replyToEmail?: ?string, mailer?: ?string, template?: ?string}  $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -52,6 +55,9 @@ readonly class MailSettings
         return Env::parse($this->template);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function toArray(): array
     {
         return array_filter([

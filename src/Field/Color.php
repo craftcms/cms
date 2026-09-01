@@ -12,6 +12,13 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Color as ColorControl;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
@@ -19,6 +26,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Deprecated;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -109,6 +117,35 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $color ? $color['color'] : null;
     }
 
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make([
+            FormField::make(t('Palette'))
+                ->instructions(t('Define the available colors to choose from.'))
+                ->control(Table::make('palette')
+                    ->columns([
+                        'color' => ['heading' => t('Color'), 'type' => 'color'],
+                        'label' => ['heading' => t('Label'), 'type' => 'singleline'],
+                        'default' => ['heading' => t('Default'), 'type' => 'checkbox', 'radioMode' => true],
+                    ])
+                    ->allowAdd()
+                    ->allowDelete()
+                    ->allowReorder()
+                    ->value($this->palette)),
+            FormField::make(t('Allow custom colors'))
+                ->control(Lightswitch::make('allowCustomColors')->value($this->allowCustomColors)),
+        ]);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return ColorControl::make($context->path)
+            ->presets(array_values(array_filter(array_column($this->palette, 'color'))))
+            ->value($context->value instanceof ColorData ? $context->value->getHex() : $context->value);
+    }
+
     /**
      * Sets the default color
      */
@@ -150,57 +187,6 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             fn (string $color) => ['color' => $color, 'label' => null, 'default' => false],
             $presets,
         );
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return
-            FormFields::editableTableFieldHtml([
-                'label' => t('Palette'),
-                'name' => 'palette',
-                'instructions' => t('Define the available colors to choose from.'),
-                'cols' => [
-                    'color' => [
-                        'type' => 'color',
-                        'heading' => t('Color'),
-                    ],
-                    'label' => [
-                        'type' => 'singleline',
-                        'heading' => t('Label'),
-                    ],
-                    'default' => [
-                        'type' => 'checkbox',
-                        'heading' => t('Default'),
-                        'radioMode' => true,
-                    ],
-                ],
-                'rows' => $this->palette,
-                'allowAdd' => true,
-                'allowReorder' => true,
-                'allowDelete' => true,
-                'addRowLabel' => t('Add a color'),
-                'errors' => $this->errors()->get('palette'),
-                'data' => ['error-key' => 'palette'],
-                'static' => $readOnly,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom colors'),
-                'id' => 'allow-custom-colors',
-                'name' => 'allowCustomColors',
-                'on' => $this->allowCustomColors,
-                'disabled' => $readOnly,
-            ]);
     }
 
     #[Override]
@@ -274,6 +260,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $value;
     }
 
+    /** @return list<ColorRule|ConditionalRules> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -395,30 +382,6 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return $html.Html::endTag('div');
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        /** @var ColorData|null $value */
-        if (! $value) {
-            return '';
-        }
-
-        $html = Html::beginTag('div', ['class' => ['color', 'noteditable']]).
-            Html::tag('div', attributes: [
-                'class' => 'color-preview',
-                'style' => ['background-color' => $value->getHex()],
-            ]).
-            Html::endTag('div');
-
-        if (isset($value->label)) {
-            $html .= Html::tag('div', Html::encode($value->label), ['class' => 'colorhex']);
-        } else {
-            $html .= Html::tag('div', $value->getHex(), ['class' => ['colorhex', 'code']]);
-        }
-
-        return $html;
     }
 
     #[Override]

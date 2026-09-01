@@ -13,7 +13,7 @@
     "tests",
     "stories",
     ".storybook",
-    "tsdown.config.ts",
+    "vite.config.ts",
     "vitest.config.ts"
   ]
 }

@@ -12,11 +12,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RecoveryCodes extends BaseModel
 {
     #[\Override]
+    protected $hidden = [
+        'recoveryCodes',
+    ];
+
+    #[\Override]
     protected $table = Table::RECOVERYCODES;
 
     #[\Override]
     protected $casts = [
-        'recoveryCodes' => 'array',
+        'recoveryCodes' => 'encrypted:array',
     ];
 
     /**

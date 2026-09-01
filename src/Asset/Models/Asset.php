@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Models;
 
+use CraftCms\Cms\Database\Factories\AssetFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Asset extends BaseModel
 {
+    /** @use HasFactory<AssetFactory> */
     use HasFactory;
 
     #[\Override]

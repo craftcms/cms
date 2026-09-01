@@ -21,13 +21,7 @@ readonly class Conditions
     /**
      * Creates a condition instance.
      *
-     * @template T of ConditionInterface
-     *
-     * @param  array|class-string<T>  $config  The condition class or configuration array
-     *
-     * @phpstan-param array{class:class-string<T>}|class-string<T> $config
-     *
-     * @return T
+     * @param  array<string, mixed>|class-string<ConditionInterface>  $config  The condition class or configuration array
      *
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      */

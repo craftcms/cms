@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Yii2Adapter\Console;
 
 use craft\console\Application;
@@ -8,6 +10,8 @@ use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\StringInput;
 
 class LegacyCraftCommand extends Command
 {
@@ -30,11 +34,9 @@ class LegacyCraftCommand extends Command
         parent::__construct();
     }
 
-    public function handle(Deprecator $deprecator): never
+    public function handle(Deprecator $deprecator): int
     {
-        assert($this->input instanceof ArgvInput);
-
-        $tokens = $this->input->getRawTokens();
+        $tokens = $this->tokens($this->input);
 
         $tokens[0] = str_replace(':', '/', Str::after($tokens[0], 'craft:'));
 
@@ -42,10 +44,27 @@ class LegacyCraftCommand extends Command
             $deprecator->log(__METHOD__, $this->deprecationMessage);
         }
 
+        $argv = $_SERVER['argv'] ?? null;
         $_SERVER['argv'] = array_merge(['craft'], $tokens);
 
-        $exitCode = $this->app->run();
+        try {
+            return $this->app->run();
+        } finally {
+            if ($argv === null) {
+                unset($_SERVER['argv']);
+            } else {
+                $_SERVER['argv'] = $argv;
+            }
+        }
+    }
 
-        exit($exitCode);
+    /** @return list<string> */
+    private function tokens(InputInterface $input): array
+    {
+        if ($input instanceof ArgvInput) {
+            return $input->getRawTokens();
+        }
+
+        return new StringInput($this->getName() . ' ' . (string) $input)->getRawTokens();
     }
 }

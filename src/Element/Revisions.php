@@ -40,7 +40,7 @@ readonly class Revisions
      * @param  ElementInterface  $canonical  The element to create a revision for
      * @param  int|null  $creatorId  The user ID that the revision should be attributed to
      * @param  string|null  $notes  The revision notes
-     * @param  array  $newAttributes  any attributes to apply to the draft
+     * @param  array<string,mixed>  $newAttributes  any attributes to apply to the draft
      * @param  bool  $force  Whether to force a new revision even if the element doesn't appear to have changed since the last revision
      * @return int The revision ID
      *
@@ -95,10 +95,7 @@ readonly class Revisions
                 }
             }
 
-            if ($creatorId === null) {
-                // Default to the logged-in user ID if there is one
-                $creatorId = currentUser()?->getCraftUserId();
-            }
+            $creatorId ??= currentUser()?->getCraftUserId();
 
             event($event = new RevisionCreating(
                 canonical: $canonical,
@@ -138,9 +135,7 @@ readonly class Revisions
                 $newAttributes['revisionNum'] = $num;
                 $newAttributes['revisionNotes'] = $notes;
 
-                if (! isset($newAttributes['dateCreated'])) {
-                    $newAttributes['dateCreated'] = $canonical->dateUpdated;
-                }
+                $newAttributes['dateCreated'] ??= $canonical->dateUpdated;
 
                 $revision = $this->elements->duplicateElement(
                     element: $canonical,

@@ -129,7 +129,8 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[AllowedInSandbox]
     public ?string $longitude = null;
 
-    public function __construct($config = [])
+    /** @param array<string, mixed>|object $config */
+    public function __construct(object|array $config = [])
     {
         parent::__construct($config);
 
@@ -144,6 +145,26 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public static function displayName(): string
     {
         return t('Address');
+    }
+
+    #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'fullName' => t('Full Name'),
+            'organization' => t('Organization'),
+            'organizationTaxId' => t('Organization Tax ID'),
+            'countryCode' => t('Country Code'),
+            'administrativeArea' => t('Administrative Area'),
+            'locality' => t('Locality'),
+            'dependentLocality' => t('Dependent Locality'),
+            'postalCode' => t('Postal Code'),
+            'addressLine1' => t('Address Line 1'),
+            'addressLine2' => t('Address Line 2'),
+            'latitude' => t('Latitude'),
+            'longitude' => t('Longitude'),
+        ];
     }
 
     #[Override]
@@ -188,6 +209,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return new AddressCondition(self::class);
     }
 
+    /** @return list<class-string<Copy>> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -196,6 +218,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ];
     }
 
+    /** @return array<string, array{label: string}> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -224,6 +247,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         };
     }
 
+    /** @return list<array{label: string, orderBy: string, attribute?: string, defaultDir?: 'asc'|'desc'}> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -293,6 +317,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ];
     }
 
+    /** @return list<string> */
     #[Override]
     public function safeAttributes(): array
     {
@@ -323,7 +348,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public function getAttributeLabel($attribute): string
+    public function getAttributeLabel(string $attribute): string
     {
         if (AddressField::exists($attribute)) {
             /** @phpstan-var AddressField::* $attribute */
@@ -353,6 +378,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return $owner instanceof User && $owner->getIsCurrent();
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -377,7 +403,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
+        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
       });
     })();
     JS, [

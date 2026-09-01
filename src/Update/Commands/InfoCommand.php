@@ -79,7 +79,7 @@ class InfoCommand extends Command
 
         table(
             [Str::padRight('Handle', 10), Str::padRight('From', 10),  Str::padRight('To', 10), Str::padRight('Status', 10)],
-            $lines,
+            array_map(array_values(...), $lines),
         );
 
         $this->components->info(implode(' ', [

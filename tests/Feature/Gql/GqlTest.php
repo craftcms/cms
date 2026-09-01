@@ -10,26 +10,31 @@ use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
-use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
-use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
-use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\GqlMutations;
+use CraftCms\Cms\Gql\GqlQueries;
+use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
+use CraftCms\Cms\Gql\Mutations\Mutation as BaseMutation;
+use CraftCms\Cms\Gql\Queries\Query as BaseQuery;
 use CraftCms\Cms\Gql\TypeLoader;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -52,49 +57,64 @@ it('throws when no active schema is set', function () {
     app(Gql::class)->getActiveSchema();
 })->throws(GqlException::class, 'No schema is active.');
 
-it('dispatches query registration events', function () {
-    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
-        $event->queries['mockQuery'] = [
-            'type' => Type::string(),
-            'args' => [],
-            'resolve' => static fn () => 'mocked',
-        ];
-    });
+it('uses registered query providers', function () {
+    app(GqlQueries::class)->register(MockQuery::class);
 
     $queries = app(Gql::class)->getSchemaDef()->getQueryType()->getFields();
 
     expect($queries)->toHaveKey('mockQuery');
 });
 
-it('dispatches mutation registration events', function () {
-    Event::listen(GqlMutationsResolving::class, function (GqlMutationsResolving $event) {
-        $event->mutations['mockMutation'] = [
-            'type' => Type::string(),
-            'args' => [],
-            'resolve' => static fn () => 'mocked',
-        ];
-    });
+it('uses registered mutation providers', function () {
+    app(GqlMutations::class)->register(MockMutation::class);
 
     $mutations = app(Gql::class)->getSchemaDef()->getMutationType()->getFields();
 
     expect($mutations)->toHaveKey('mockMutation');
 });
 
-it('dispatches directive and type registration events', function () {
-    Event::listen(GqlDirectivesResolving::class, function (GqlDirectivesResolving $event) {
-        $event->directives[] = MockDirective::class;
-    });
+it('uses currently registered directives', function () {
+    $registry = app(GqlDirectives::class);
+    $registry->register(MockDirective::class);
 
-    Event::listen(GqlTypesResolving::class, function (GqlTypesResolving $event) {
-        $event->types[] = MockType::class;
-    });
+    $gql = app(Gql::class);
+    $schema = $gql->getSchemaDef(new GqlSchema);
+
+    expect($schema->getDirective(MockDirective::name()))->not()->toBeNull();
+
+    $registry->remove(MockDirective::class);
+    $gql->flushCaches();
+
+    $schema = $gql->getSchemaDef(new GqlSchema([
+        'scope' => ['directive:parseRefs', 'directive:transform'],
+    ]));
+
+    expect($schema->getDirective(MockDirective::name()))->toBeNull()
+        ->and($schema->getDirective('parseRefs'))->not->toBeNull()
+        ->and($schema->getDirective('transform'))->not->toBeNull();
+});
+
+it('coerces custom scalar directive arguments', function () {
+    $registry = app(GqlDirectives::class);
+    $registry->register(MockDirective::class);
+    app(GqlQueries::class)->register(MockQuery::class);
+
+    $gql = app(Gql::class);
+    $result = $gql->executeQuery(new GqlSchema, '{ mockQuery @mockDirective(prefix: "custom") }');
+
+    $registry->remove(MockDirective::class);
+
+    expect($result)->toBe(['data' => ['mockQuery' => 'mockmocked']]);
+});
+
+it('uses registered types', function () {
+    app(GqlTypes::class)->register(MockType::class);
 
     MockType::getType();
 
     $schema = app(Gql::class)->getSchemaDef();
 
-    expect($schema->getDirective(MockDirective::name()))->not->toBeNull()
-        ->and($schema->getType(MockType::getName()))->not->toBeNull();
+    expect($schema->getType(MockType::getName()))->not->toBeNull();
 });
 
 it('dispatches schema component registration events', function () {
@@ -118,11 +138,7 @@ it('dispatches validation rule events', function () {
 });
 
 it('validates schemas when a registered field definition is invalid', function () {
-    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
-        $event->queries['mockQuery'] = [
-            'type' => 'no bueno',
-        ];
-    });
+    app(GqlQueries::class)->register(InvalidMockQuery::class);
 
     app(Gql::class)->getSchemaDef(null, true);
 })->throws(GqlException::class);
@@ -170,6 +186,21 @@ it('fills the cache when querying through the new service', function () {
 
     expect($gql->getCachedResult($cacheKey))->toBe($result);
 });
+
+it('does not create cache keys for mutations', function (string $query, ?string $operationName) {
+    Cms::config()->enableGraphqlCaching = true;
+
+    $gql = app(Gql::class);
+    $schema = $gql->getPublicSchema();
+
+    $cacheKeyMethod = new ReflectionMethod(Gql::class, '_getCacheKey');
+
+    expect($cacheKeyMethod->invoke($gql, $schema, $query, null, null, $operationName))->toBeNull();
+})->with([
+    'comment-prefixed mutation' => ["# comment\nmutation { bogus }", null],
+    'fragment-prefixed mutation' => ['fragment PingFields on Query { ping } mutation { bogus }', null],
+    'named mutation after a query' => ['query Read { ping } mutation Write { bogus }', 'Write'],
+]);
 
 it('flushes graphql registries and loaders', function () {
     UserInterface::getType();
@@ -285,6 +316,27 @@ it('invalidates cached results when schemas change', function () {
     $gql->deleteSchemaById($schema->id);
 });
 
+it('preserves cache dependencies when a result is served from cache', function () {
+    $gql = app(Gql::class);
+    $cacheKey = 'testCachedResultCollectsCacheInfo';
+    $cacheValue = ['testValue'];
+
+    $gql->setCachedResult($cacheKey, $cacheValue, new TagDependency(['testTag']), 60);
+
+    ElementCaches::startCollectingCacheInfo();
+    $cachedResult = $gql->getCachedResult($cacheKey);
+    /** @var TagDependency $dependency */
+    [$dependency, $duration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($cachedResult)->toBe($cacheValue)
+        ->and($dependency)->toBeInstanceOf(TagDependency::class)
+        ->and($dependency->tags)->toContain('testTag')
+        ->and($dependency->tags)->toContain(Gql::CACHE_TAG)
+        ->and($duration)->not->toBeNull()
+        ->and($duration)->toBeGreaterThan(0)
+        ->and($duration)->toBeLessThanOrEqual(60);
+});
+
 it('supports token operations through the new service', function () {
     $gql = app(Gql::class);
 
@@ -330,3 +382,43 @@ it('saves, queries, and deletes schemas through the new service', function () {
         ->and($gql->deleteSchemaById($schemaId))->toBeTrue()
         ->and($gql->getSchemaById($schemaId))->toBeNull();
 });
+
+class MockQuery extends BaseQuery
+{
+    public static function getQueries(bool $checkToken = true): array
+    {
+        return [
+            'mockQuery' => [
+                'type' => Type::string(),
+                'args' => [],
+                'resolve' => static fn ($source, $arguments, $context, $resolveInfo) => GqlHelper::applyDirectives($source, $resolveInfo, 'mocked'),
+            ],
+        ];
+    }
+}
+
+class InvalidMockQuery extends BaseQuery
+{
+    public static function getQueries(bool $checkToken = true): array
+    {
+        return [
+            'mockQuery' => [
+                'type' => 'no bueno',
+            ],
+        ];
+    }
+}
+
+class MockMutation extends BaseMutation
+{
+    public static function getMutations(): array
+    {
+        return [
+            'mockMutation' => [
+                'type' => Type::string(),
+                'args' => [],
+                'resolve' => static fn () => 'mocked',
+            ],
+        ];
+    }
+}

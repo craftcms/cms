@@ -45,6 +45,7 @@ class Sms extends BaseTextLinkType
         return str_replace(' ', '-', $value);
     }
 
+    /** @return array<string, string> */
     #[Override]
     protected function inputAttributes(): array
     {

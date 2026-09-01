@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Models;
 
+use CraftCms\Cms\Database\Factories\SectionFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -22,7 +23,9 @@ use Override;
 
 class Section extends BaseModel
 {
+    /** @use HasFactory<SectionFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

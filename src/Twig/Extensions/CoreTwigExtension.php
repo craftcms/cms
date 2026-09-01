@@ -65,14 +65,21 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateGlobals;
 use DirectoryIterator;
+use DOMDocument;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
+use Imagick;
 use InvalidArgumentException;
 use Money\Money;
+use mysqli;
 use Override;
+use PDO;
+use Reflector;
 use SimpleXMLElement;
+use SoapClient;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Twig\Environment as TwigEnvironment;
@@ -84,6 +91,8 @@ use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use XMLReader;
+use XSLTProcessor;
 use yii\behaviors\AttributeTypecastBehavior;
 
 use function CraftCms\Cms\craftAsset;
@@ -114,11 +123,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     #[Override]
     public function getNodeVisitors(): array
     {
+        $eventTagAdder = new EventTagAdder($this->pageLifecycle);
+
         return [
             new Profiler,
             new GetAttrAdjuster,
-            new EventTagFinder,
-            new EventTagAdder($this->pageLifecycle),
+            new EventTagFinder($eventTagAdder),
+            $eventTagAdder,
         ];
     }
 
@@ -196,6 +207,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+    /** @return list<BinaryOperatorExpressionParser> */
     #[Override]
     public function getExpressionParsers(): array
     {
@@ -307,6 +319,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+    /** @param array<string, mixed> $options */
     public function addressFilter(?Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {
         if ($address === null) {
@@ -335,13 +348,15 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             $category = 'site';
         }
 
-        if ($params === null) {
-            $params = [];
-        }
+        $params ??= [];
 
         return t((string) $message, $params, $category, $language);
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function currencyFilter(mixed $value, ?string $currency = null, array $options = [], array $textOptions = [], bool $stripZeros = false): string
     {
         if ($value === null || $value === '') {
@@ -372,6 +387,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $value;
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function filesizeFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
@@ -385,6 +404,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
+    /**
+     * @param  array<int, int>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = [], ?string $locale = null): string
     {
         if ($value === null || $value === '') {
@@ -405,6 +428,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $value;
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
@@ -453,6 +480,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return clone $var;
     }
 
+    /**
+     * @param  string|array<string, mixed>  $type
+     * @param  array<string, mixed>  $params
+     */
     public function createFunction(string|array $type, array $params = []): object
     {
         if (is_array($type) && isset($type['__class']) && isset($type['class'])) {
@@ -469,9 +500,18 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             /** @phpstan-ignore-next-line */
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
+            DOMDocument::class,
+            XMLReader::class,
+            XSLTProcessor::class,
+            SoapClient::class,
+            GuzzleClient::class,
+            PDO::class,
+            mysqli::class,
+            Imagick::class,
             Process::class,
             FnStream::class,
             SimpleXMLElement::class,
+            Reflector::class,
         ] as $blockedClass) {
             if (is_a($class, $blockedClass, true)) {
                 throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
@@ -488,6 +528,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
         $object = app()->make($class, $params);
 
+        if (! is_object($object)) {
+            throw new InvalidArgumentException("Unable to create an instance of $class.");
+        }
+
         if (! is_array($type)) {
             return $object;
         }
@@ -497,7 +541,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return Typecast::configure($object, $type);
     }
 
-    public function dumpFunction(array $context, ...$vars): string
+    /** @param array<string, mixed> $context */
+    public function dumpFunction(array $context, mixed ...$vars): string
     {
         if (! $vars) {
             $vars = [TemplateHelper::contextWithoutTemplate($context)];
@@ -525,7 +570,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $entryType;
     }
 
-    public function expressionFunction(mixed $expression): \Illuminate\Database\Query\Expression
+    public function expressionFunction(mixed $expression): Expression
     {
         return new \Illuminate\Database\Query\Expression($expression);
     }
@@ -541,6 +586,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $valueSql;
     }
 
+    /**
+     * @param  array<array-key, mixed>|null  $variables
+     * @return array<array-key, mixed>
+     */
     public function gqlFunction(string $query, ?array $variables = null, ?string $operationName = null): array
     {
         $schema = GqlHelper::createFullAccessSchema();

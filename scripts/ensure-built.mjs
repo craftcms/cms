@@ -14,10 +14,10 @@ if (!existsSync('packages/craftcms-garnish/dist/index.js')) {
 
 // resources/js/legacy.ts imports the webpack-built legacy CP CSS, so the dev
 // server fails without at least one legacy build. The legacy build itself
-// imports @craftcms/cp dist files, so cp must be built first.
+// imports @craftcms/ui dist files, so cp must be built first.
 if (!existsSync('cms-assets/resources/legacy/cp/dist/css/cp.css')) {
-  if (!existsSync('packages/craftcms-cp/dist/cp.mjs')) {
-    run('npm run build:cp');
+  if (!existsSync('packages/craftcms-ui/dist/cp.mjs')) {
+    run('npm run build:ui');
   }
   run('npm run build:bundles');
 }

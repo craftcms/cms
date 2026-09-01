@@ -1,4 +1,4 @@
-import {actionClient} from '@craftcms/cp';
+import {actionClient} from '@craftcms/ui';
 import {reactive, readonly, type DeepReadonly} from 'vue';
 
 export interface ElevatedSessionOptions {
@@ -86,7 +86,13 @@ export class ElevatedSessionManager {
     try {
       return await callback();
     } catch (error) {
-      if (!isPasswordConfirmationError(error)) {
+      if (
+        !(error instanceof Object) ||
+        !('response' in error) ||
+        !(error.response instanceof Object) ||
+        !('status' in error.response) ||
+        error.response.status !== 423
+      ) {
         throw error;
       }
 
@@ -152,15 +158,6 @@ export class ElevatedSessionManager {
     this.mutableState.active = false;
     resolve(confirmed);
   }
-}
-
-export function isPasswordConfirmationError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'response' in error &&
-    (error as {response?: {status?: number}}).response?.status === 423
-  );
 }
 
 export const elevatedSessionManager = new ElevatedSessionManager();

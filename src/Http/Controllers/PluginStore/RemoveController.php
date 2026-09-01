@@ -31,8 +31,7 @@ class RemoveController extends BaseUpdaterController
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
-            'initialState' => $state,
-            'actionPrefix' => 'pluginstore/remove',
+            'initialState' => $this->clientState($state),
             'returnUrl' => $this->returnUrl(),
         ])->toResponse($this->request);
     }

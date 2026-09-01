@@ -17,6 +17,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\HtmlStack;
@@ -125,9 +126,12 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
+            // Read through the Flash getters, which also cover the CP
+            // notification keys that legacy-style controllers flash via
+            // Flash::success()/error() without the plain session keys.
             'flash' => fn () => [
-                'success' => $request->session()->get('success'),
-                'error' => $request->session()->get('error'),
+                'success' => Flash::getSuccess(),
+                'error' => Flash::getError(),
             ],
             'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? [
                 'displayedJob' => $progressService->getDisplayedJob(),
@@ -153,9 +157,11 @@ class HandleInertiaRequests extends Middleware
                     'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
                 ],
-                'site' => [
+                'site' => $currentSite ? [
+                    'id' => $currentSite->id,
+                    'handle' => $currentSite->handle,
                     'url' => $currentSite->getBaseUrl(),
-                ],
+                ] : null,
                 'currentUser' => $currentUser ? [
                     'id' => $currentUser->id,
                     'username' => $currentUser->username,
@@ -164,6 +170,7 @@ class HandleInertiaRequests extends Middleware
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
+                'maintenanceMode' => app()->isDownForMaintenance(),
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),

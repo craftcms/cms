@@ -1,0 +1,2 @@
+((null === ($_v0 = // line 1
+($context["entry"] ?? null))) ? null : CraftCms\Cms\Support\Template::attribute($this->env, $this->source, $_v0, "title", [], "any", false, false, false, 1))

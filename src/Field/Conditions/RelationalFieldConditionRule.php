@@ -40,6 +40,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return $field::elementType();
     }
 
+    /** @return list<string>|null */
     protected function sources(): ?array
     {
         /** @var BaseRelationField $field */
@@ -56,6 +57,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return $field->getSelectionCondition();
     }
 
+    /** @return array<string, mixed>|null */
     protected function criteria(): ?array
     {
         /** @var BaseRelationField $field */
@@ -70,6 +72,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return true;
     }
 
+    /** @return list<string> */
     #[\Override]
     protected function operators(): array
     {
@@ -156,13 +159,15 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         }
     }
 
+    /** @return list<int> */
     protected function elementQueryParam(): ?array
     {
         // $this->operator will always be OPERATOR_RELATED_TO at this point
         return $this->getElementIds();
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
+    protected function matchFieldValue(mixed $value): bool
     {
         if (! $this->field() instanceof BaseRelationField) {
             return true;
@@ -174,7 +179,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
             $value = (clone $value)->site('*')->unique()->status(null);
         }
 
-        /** @var ElementQueryInterface|ElementCollection $value */
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $elementIds = $value->collect()->map(fn (ElementInterface $element) => $element->id)->all();
 

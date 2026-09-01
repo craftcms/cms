@@ -1,11 +1,13 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {computed, ref} from 'vue';
+  import {t} from '@craftcms/ui';
   import ProjectConfigDiff from './ProjectConfigDiff.vue';
-  import {useProjectConfig} from '@/modules/utilities/composables/useProjectConfig';
-  import Pane from '@/common/components/Pane.vue';
-  import {Form} from '@inertiajs/vue3';
-  import {discard, rebuild} from '@actions/Utilities/ProjectConfigController';
+  import {Form, router} from '@inertiajs/vue3';
+  import {
+    discard,
+    download,
+    rebuild,
+  } from '@actions/Utilities/ProjectConfigController';
   import SyncConfigButton from '@/modules/utilities/components/project-config/SyncConfigButton.vue';
   import TransitionFade from '@/common/components/TransitionFade.vue';
 
@@ -17,8 +19,30 @@
     entireConfig: string;
   }>();
 
-  const {isDownloading, isDiscarding, discardChanges, downloadConfig} =
-    useProjectConfig();
+  const isDiscarding = ref(false);
+
+  function discardChanges(): void {
+    if (
+      !confirm(
+        t(
+          'Are you sure you want to discard the pending project config YAML changes?'
+        )
+      )
+    ) {
+      return;
+    }
+
+    isDiscarding.value = true;
+    router.post(
+      discard().url,
+      {},
+      {
+        onFinish: () => {
+          isDiscarding.value = false;
+        },
+      }
+    );
+  }
 
   const sectionTitle = computed(() => {
     if (!props.yamlExists) {
@@ -193,15 +217,16 @@
     <hr />
     <section class="config-section">
       <h2>{{ t('Loaded Project Config Data') }}</h2>
-      <Pane variant="code" tabindex="0" class="my-3">
+      <!-- craft-pane makes its own scroll container the tab stop -->
+      <craft-pane
+        variant="code"
+        class="my-3"
+        :aria-label="t('Loaded Project Config Data')"
+      >
         <pre><code>{{ entireConfig }}</code></pre>
-      </Pane>
+      </craft-pane>
       <div class="buttons">
-        <craft-button
-          type="button"
-          :loading="isDownloading"
-          @click="downloadConfig"
-        >
+        <craft-button :href="download().url">
           <craft-icon name="download" slot="prefix"></craft-icon>
           {{ t('Download') }}
         </craft-button>

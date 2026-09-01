@@ -420,6 +420,40 @@ it('can upload a photo with base64 encoded data', function () {
     expect($user->getPhoto())->not->toBeNull();
 });
 
+it('rejects oversized base64 encoded photos', function () {
+    Cms::config()->maxUploadFileSize = 10;
+
+    post(action(SaveUserController::class), [
+        'email' => 'oversized-photo@example.com',
+        'password' => 'securePassword123!',
+        'photo' => [
+            'filename' => 'avatar.jpg',
+            'data' => 'data:image/jpeg;base64,'.base64_encode(str_repeat('a', 11)),
+        ],
+    ])->assertSessionHasErrors(['photo']);
+});
+
+it('rejects oversized uploaded photos', function () {
+    Cms::config()->maxUploadFileSize = 10;
+
+    post(action(SaveUserController::class), [
+        'email' => 'oversized-upload@example.com',
+        'password' => 'securePassword123!',
+        'photo' => UploadedFile::fake()->createWithContent('avatar.jpg', str_repeat('a', 11)),
+    ])->assertSessionHasErrors(['photo']);
+});
+
+it('rejects malformed base64 encoded photos', function () {
+    post(action(SaveUserController::class), [
+        'email' => 'invalid-photo@example.com',
+        'password' => 'securePassword123!',
+        'photo' => [
+            'filename' => 'avatar.jpg',
+            'data' => 'data:image/jpeg;base64,not-valid-base64!',
+        ],
+    ])->assertSessionHasErrors(['photo']);
+});
+
 it('assigns default user groups on public registration', function () {
     ProjectConfig::set('users.defaultUserGroups', ['testgroup']);
 

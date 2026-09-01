@@ -26,6 +26,8 @@ class GeneralConfig extends BaseConfig
 
     public const string IMAGE_DRIVER_IMAGICK = 'imagick';
 
+    public const string IMAGE_DRIVER_VIPS = 'vips';
+
     public const string CAMEL_CASE = 'camel';
 
     public const string PASCAL_CASE = 'pascal';
@@ -33,10 +35,11 @@ class GeneralConfig extends BaseConfig
     public const string SNAKE_CASE = 'snake';
 
     #[Override]
+    /** @var array<string, string> */
     protected static array $renamedSettings = [];
 
     /**
-     * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
+     * @var array<string, bool|int|string> The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:
      *
@@ -556,7 +559,7 @@ class GeneralConfig extends BaseConfig
     public mixed $cooldownDuration = 300;
 
     /**
-     * @var array List of additional HTML tags that should be included in the `<head>` of control panel pages.
+     * @var list<array{0: string, 1?: array<string, mixed>}> List of additional HTML tags that should be included in the `<head>` of control panel pages.
      *
      * Each tag can be specified as an array of the tag name and its attributes.
      *
@@ -626,6 +629,22 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public ?string $cpTrigger = 'admin';
+
+    /**
+     * @var string The Asset Transformer to use when none is selected explicitly.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultAssetTransformer('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public string $defaultAssetTransformer = 'craft';
 
     /**
      * @var string The two-letter country code that addresses will be set to by default.
@@ -734,7 +753,7 @@ class GeneralConfig extends BaseConfig
     public int $defaultImageQuality = 82;
 
     /**
-     * @var array The default options that should be applied to each search term.
+     * @var array<string, bool|string> The default options that should be applied to each search term.
      *
      * Options include:
      *
@@ -1110,8 +1129,8 @@ class GeneralConfig extends BaseConfig
     public array $extraAppLocales = [];
 
     /**
-     * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
-     *            `\craft\helpers\Assets::_buildFileKinds()`.
+     * @var array<string, array<string, mixed>> List of additional file kinds Craft should support. This array will get merged with the one defined in
+     *                                          `\craft\helpers\Assets::_buildFileKinds()`.
      *
      * ```php Static Config
      * ->extraFileKinds([
@@ -1199,22 +1218,6 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public string|false $filenameWordSeparator = '-';
-
-    /**
-     * @var bool Whether image transforms should be generated before page load.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $generateTransformsBeforePageLoad = false;
 
     /**
      * @var string Prefix to use for all type names returned by GraphQL.
@@ -1345,8 +1348,8 @@ class GeneralConfig extends BaseConfig
     public string $ideHelperPath = 'vendor/_craft';
 
     /**
-     * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
-     *            and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
+     * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed,
+     *            followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
      *
      * ::: code
      * ```php Static Config
@@ -1362,8 +1365,8 @@ class GeneralConfig extends BaseConfig
     public mixed $imageDriver = self::IMAGE_DRIVER_AUTO;
 
     /**
-     * @var array An array containing the selectable image aspect ratios for the image editor. The array must be in the format
-     *            of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
+     * @var array<string, float|int|string> An array containing the selectable image aspect ratios for the image editor. The array must be in the format
+     *                                      of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
      *
      * ```php Static Config
      * ->imageEditorRatios([
@@ -1474,23 +1477,6 @@ class GeneralConfig extends BaseConfig
     public ?array $ipHeaders = null;
 
     /**
-     * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     *                in Settings → General.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->isSystemLive(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_IS_SYSTEM_LIVE=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?bool $isSystemLive = null;
-
-    /**
      * @var bool Whether GraphQL types should be generated lazily.
      *
      * ::: code
@@ -1527,7 +1513,7 @@ class GeneralConfig extends BaseConfig
     public bool $limitAutoSlugsToAscii = false;
 
     /**
-     * @var array Custom locale aliases, which will be included when fetching all known locales.
+     * @var array<string, array{aliasOf: string, displayName?: string}> Custom locale aliases, which will be included when fetching all known locales.
      *
      * Each locale alias should be defined as an array with the following keys:
      *
@@ -1807,8 +1793,7 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
-     * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
-     *           ImageMagick is used.)
+     * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
      * ::: code
      * ```php Static Config
@@ -2004,8 +1989,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
      *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
-     * image color distortion. This will only have an effect if ImageMagick is in use.
+     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
      *
      * ::: code
      * ```php Static Config
@@ -2025,7 +2009,7 @@ class GeneralConfig extends BaseConfig
      *
      * Setting this to `true` will result in larger image file sizes.
      *
-     * This will only have effect if ImageMagick is in use.
+     * This will only have an effect if the active image driver supports preserving EXIF data.
      *
      * ::: code
      * ```php Static Config
@@ -2043,8 +2027,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
-     * Setting this to `false` will reduce the image size a little bit, but on some ImageMagick versions can cause images to be saved with
-     * an incorrect gamma value, which causes the images to become very dark. This will only have effect if ImageMagick is in use.
+     * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
+     * This will only have an effect if the active image driver supports embedded color profiles.
      *
      * ::: code
      * ```php Static Config
@@ -2080,7 +2064,7 @@ class GeneralConfig extends BaseConfig
     public bool $preventUserEnumeration = true;
 
     /**
-     * @var array Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
+     * @var array<string, mixed> Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
      *
      * ```php Static Config
      * ->previewIframeResizerOptions([
@@ -2186,7 +2170,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
      *
-     * This will only work if ImageMagick is installed, and <config5:imageDriver> is set to either `auto` or `imagick`.
+     * This requires SVG decoding support from the active image driver.
      *
      * ::: code
      * ```php Static Config
@@ -2222,38 +2206,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 1 year
      */
     public mixed $rememberUsernameDuration = 31536000;
-
-    /**
-     * @var string The path to the root directory that should store published control panel resources.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBasePath = '@webroot/cpresources';
-
-    /**
-     * @var string The URL to the root directory where control panel resources are published.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBaseUrl = '@web/cpresources';
 
     /**
      * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
@@ -2482,7 +2434,7 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeSvgUploads = true;
 
     /**
-     * @var array|null Lists of headers that are, by default, subject to the trusted host configuration.
+     * @var list<string>|null Lists of headers that are, by default, subject to the trusted host configuration.
      *
      * See [[\yii\web\Request::secureHeaders]] for more details.
      *
@@ -2509,7 +2461,7 @@ class GeneralConfig extends BaseConfig
     public ?array $secureHeaders = null;
 
     /**
-     * @var array|null List of headers to check for determining whether the connection is made via HTTPS.
+     * @var array<string, list<string>>|null List of headers to check for determining whether the connection is made via HTTPS.
      *
      * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
      *
@@ -2884,7 +2836,7 @@ class GeneralConfig extends BaseConfig
     public bool $translationDebugOutput = false;
 
     /**
-     * @var array The configuration for trusted security-related headers.
+     * @var array<int|string, string|list<string>> The configuration for trusted security-related headers.
      *
      * See [[\yii\web\Request::trustedHosts]] for more details.
      *
@@ -3140,6 +3092,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  array<string, bool|int|string>  $value
      *
      * @see $accessibilityDefaults
      */
@@ -3631,6 +3585,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @param  list<array{0: string, 1?: array<string, mixed>}>  $value
+     *
      * @see $cpHeadTags
      */
     public function cpHeadTags(array $value): self
@@ -3700,6 +3656,24 @@ class GeneralConfig extends BaseConfig
     public function cpTrigger(?string $value): self
     {
         $this->cpTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Asset Transformer to use when none is selected explicitly.
+     *
+     * @group Assets
+     *
+     * @see $defaultAssetTransformer
+     */
+    public function defaultAssetTransformer(string $value): self
+    {
+        if ($value === '') {
+            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
+        }
+
+        $this->defaultAssetTransformer = $value;
 
         return $this;
     }
@@ -3858,6 +3832,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @param  array<string, bool|string>  $value
+     *
      * @see $defaultSearchTermOptions
      */
     public function defaultSearchTermOptions(array $value): self
@@ -3875,6 +3851,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  list<string>  $value
      *
      * @see $defaultTemplateExtensions
      */
@@ -4008,6 +3986,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  list<string>|string|null  $value
      *
      * @see $disabledPlugins
      */
@@ -4268,6 +4248,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Assets
      *
+     * @param  array<string, array<string, mixed>>  $value
+     *
      * @see $extraFileKinds
      */
     public function extraFileKinds(array $value): self
@@ -4351,24 +4333,6 @@ class GeneralConfig extends BaseConfig
     public function filenameWordSeparator(string|false $value): self
     {
         $this->filenameWordSeparator = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether image transforms should be generated before page load.
-     *
-     * ```php
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $generateTransformsBeforePageLoad
-     */
-    public function generateTransformsBeforePageLoad(bool $value = true): self
-    {
-        $this->generateTransformsBeforePageLoad = $value;
 
         return $this;
     }
@@ -4512,8 +4476,8 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed
-     * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
+     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed,
+     * followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
      *
      * ```php
      * ->imageDriver('imagick')
@@ -4545,6 +4509,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
+     *
+     * @param  array<string, float|int|string>  $value
      *
      * @see $imageEditorRatios
      */
@@ -4648,25 +4614,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     * in Settings → General.
-     *
-     * ```php
-     * ->isSystemLive(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $isSystemLive
-     */
-    public function isSystemLive(?bool $value): self
-    {
-        $this->isSystemLive = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether GraphQL types should be generated lazily.
      *
      * ```php
@@ -4716,6 +4663,8 @@ class GeneralConfig extends BaseConfig
      * - `displayName`: The locale alias’s display name _(optional)_
      *
      * @group System
+     *
+     * @param  array<string, array{aliasOf: string, displayName?: string}>  $value
      */
     public function localeAliases(array $value): self
     {
@@ -4750,6 +4699,8 @@ class GeneralConfig extends BaseConfig
      * The OAuth providers that should be available for login.
      *
      * @group Users
+     *
+     * @param  array<int|string, array<string, mixed>|string>  $value
      *
      * @see $oauthProviders
      */
@@ -4971,8 +4922,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
-     * ImageMagick is used.)
+     * Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
      * ```php
      * ->optimizeImageFilesize(false)
@@ -5186,8 +5136,7 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether CMYK should be preserved as the colorspace when manipulating images.
      *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
-     * image color distortion. This will only have an effect if ImageMagick is in use.
+     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
      *
      * ```php
      * ->preserveCmykColorspace(true)
@@ -5209,7 +5158,7 @@ class GeneralConfig extends BaseConfig
      *
      * Setting this to `true` will result in larger image file sizes.
      *
-     * This will only have effect if ImageMagick is in use.
+     * This will only have an effect if the active image driver supports preserving EXIF data.
      *
      * ```php
      * ->preserveExifData(true)
@@ -5229,8 +5178,8 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
-     * Setting this to `false` will reduce the image size a little bit, but on some ImageMagick versions can cause images to be saved with
-     * an incorrect gamma value, which causes the images to become very dark. This will only have effect if ImageMagick is in use.
+     * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
+     * This will only have an effect if the active image driver supports embedded color profiles.
      *
      * ```php
      * ->preserveImageColorProfiles(false)
@@ -5279,6 +5228,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  array<string, mixed>  $value
      *
      * @see $previewIframeResizerOptions
      */
@@ -5389,7 +5340,7 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether SVG thumbnails should be rasterized.
      *
-     * This will only work if ImageMagick is installed, and <config5:imageDriver> is set to either `auto` or `imagick`.
+     * This requires SVG decoding support from the active image driver.
      *
      * ```php
      * ->rasterizeSvgThumbs(true)
@@ -5426,42 +5377,6 @@ class GeneralConfig extends BaseConfig
     public function rememberUsernameDuration(mixed $value): self
     {
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The path to the root directory that should store published control panel resources.
-     *
-     * ```php
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBasePath
-     */
-    public function resourceBasePath(string $value): self
-    {
-        $this->resourceBasePath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URL to the root directory where control panel resources are published.
-     *
-     * ```php
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBaseUrl
-     */
-    public function resourceBaseUrl(string $value): self
-    {
-        $this->resourceBaseUrl = $value;
 
         return $this;
     }
@@ -5618,6 +5533,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  list<string>  $value
      *
      * @see $trackedQueueNames
      */

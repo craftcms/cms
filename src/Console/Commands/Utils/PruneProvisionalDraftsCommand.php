@@ -13,6 +13,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Collection;
 use Override;
+use stdClass;
 
 class PruneProvisionalDraftsCommand extends Command
 {
@@ -47,11 +48,10 @@ class PruneProvisionalDraftsCommand extends Command
         $prunedDraftCount = 0;
 
         foreach ($elements as $element) {
-            if (! class_exists($element->type)) {
+            if (! is_subclass_of($element->type, ElementInterface::class)) {
                 continue;
             }
 
-            /** @var class-string<ElementInterface> $elementType */
             $elementType = $element->type;
             $extraDraftCount = $element->count - 1;
             $extraDrafts = $elementType::find()
@@ -92,6 +92,9 @@ class PruneProvisionalDraftsCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @return Collection<int, stdClass>
+     */
     private function elementsWithExtraProvisionalDrafts(Connection $connection): Collection
     {
         return $connection->table(

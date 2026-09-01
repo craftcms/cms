@@ -4,34 +4,37 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure\Concerns;
 
-use CraftCms\Cms\Structure\Enums\Operation;
+use Closure;
+use CraftCms\Cms\Structure\Data\Operation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 trait StructureNode
 {
     public protected(set) ?Operation $nestedSetOperation = null;
 
-    private ?self $node = null;
+    private bool $nestedSetOperationHandledOnCreate = false;
 
     public static function bootStructureNode(): void
     {
         static::creating(function (self $model) {
-            $model->node?->refresh();
+            $operation = $model->nestedSetOperation;
+            $operation?->target?->refresh();
 
-            match ($model->nestedSetOperation) {
+            match ($operation?->type) {
                 Operation::MakeRoot => $model->beforeSavingRootNode(),
-                Operation::PrependTo => $model->beforeSavingNode($model->node->lft + 1, 1),
-                Operation::AppendTo => $model->beforeSavingNode($model->node->rgt, 1),
-                Operation::InsertBefore => $model->beforeSavingNode($model->node->lft, 0),
-                Operation::InsertAfter => $model->beforeSavingNode($model->node->rgt + 1, 0),
+                Operation::PrependTo => $model->beforeSavingNode($operation->target->lft + 1, 1, $operation->target),
+                Operation::AppendTo => $model->beforeSavingNode($operation->target->rgt, 1, $operation->target),
+                Operation::InsertBefore => $model->beforeSavingNode($operation->target->lft, 0, $operation->target),
+                Operation::InsertAfter => $model->beforeSavingNode($operation->target->rgt + 1, 0, $operation->target),
                 default => throw new RuntimeException('::create is not supported for inserting new nodes.'),
             };
         });
 
         static::created(function (self $model) {
-            if ($model->nestedSetOperation === Operation::MakeRoot) {
+            if ($model->nestedSetOperation?->type === Operation::MakeRoot) {
                 $model->setAttribute('root', $model->getKey());
                 $primaryKey = $model->getKeyName();
 
@@ -45,14 +48,15 @@ trait StructureNode
             }
 
             $model->refresh();
-            $model->node?->refresh();
+            $model->nestedSetOperation?->target?->refresh();
 
-            $model->nestedSetOperation = null;
-            $model->node = null;
+            $model->nestedSetOperationHandledOnCreate = true;
         });
 
         static::saving(function (self $model) {
-            switch ($model->nestedSetOperation) {
+            $operation = $model->nestedSetOperation;
+
+            switch ($operation?->type) {
                 case Operation::MakeRoot:
                     if ($model->isRoot()) {
                         throw new RuntimeException('Can not move the root node as the root.');
@@ -61,55 +65,60 @@ trait StructureNode
                     break;
                 case Operation::InsertBefore:
                 case Operation::InsertAfter:
-                    if ($model->node->isRoot()) {
+                    if ($operation->target->isRoot()) {
                         throw new RuntimeException('Can not move a node when the target node is root.');
                     }
                 case Operation::PrependTo:
                 case Operation::AppendTo:
-                    if (! $model->node->exists) {
+                    if (! $operation->target->exists) {
                         throw new RuntimeException('Can not move a node when the target node is new record.');
                     }
 
-                    if ($model->is($model->node)) {
+                    if ($model->is($operation->target)) {
                         throw new RuntimeException('Can not move a node when the target node is same.');
                     }
 
-                    if ($model->node->isChildOf($model)) {
+                    if ($operation->target->isChildOf($model)) {
                         throw new RuntimeException('Can not move a node when the target node is child.');
                     }
             }
         });
 
         static::saved(function (self $model) {
-            switch ($model->nestedSetOperation) {
+            if ($model->nestedSetOperationHandledOnCreate) {
+                $model->nestedSetOperationHandledOnCreate = false;
+
+                return;
+            }
+
+            $operation = $model->nestedSetOperation;
+
+            switch ($operation?->type) {
                 case Operation::MakeRoot:
                     $model->moveNodeAsRoot();
                     break;
                 case Operation::PrependTo:
-                    $model->moveNode($model->node->lft + 1, 1);
+                    $model->moveNode($operation->target->lft + 1, 1, $operation->target);
                     break;
                 case Operation::AppendTo:
-                    $model->moveNode($model->node->rgt, 1);
+                    $model->moveNode($operation->target->rgt, 1, $operation->target);
                     break;
                 case Operation::InsertBefore:
-                    $model->moveNode($model->node->lft, 0);
+                    $model->moveNode($operation->target->lft, 0, $operation->target);
                     break;
                 case Operation::InsertAfter:
-                    $model->moveNode($model->node->rgt + 1, 0);
+                    $model->moveNode($operation->target->rgt + 1, 0, $operation->target);
                     break;
                 default:
                     return;
             }
 
-            $model->node->refresh();
+            $operation->target?->refresh();
             $model->refresh();
-
-            $model->nestedSetOperation = null;
-            $model->node = null;
         });
 
         static::deleting(function (self $model) {
-            if ($model->isRoot() && $model->nestedSetOperation !== Operation::DeleteWithChildren) {
+            if ($model->isRoot() && $model->nestedSetOperation?->type !== Operation::DeleteWithChildren) {
                 throw new RuntimeException('Can not delete the root node when "nestedSetOperation" is not "deleteWithChildren".');
             }
         });
@@ -118,7 +127,7 @@ trait StructureNode
             $leftValue = $model->lft;
             $rightValue = $model->rgt;
 
-            if ($model->isLeaf() || $model->nestedSetOperation === Operation::DeleteWithChildren) {
+            if ($model->isLeaf() || $model->nestedSetOperation?->type === Operation::DeleteWithChildren) {
                 $model->shiftLeftRightAttribute($rightValue + 1, $leftValue - $rightValue - 1);
             } else {
                 $model->treeQuery()
@@ -132,10 +141,6 @@ trait StructureNode
 
                 $model->shiftLeftRightAttribute($rightValue + 1, -2);
             }
-
-            $model->node?->refresh();
-            $model->nestedSetOperation = null;
-            $model->node = null;
         });
     }
 
@@ -150,22 +155,22 @@ trait StructureNode
         $this->level = 0;
     }
 
-    protected function beforeSavingNode(int $value, int $depth): void
+    protected function beforeSavingNode(int $value, int $depth, self $target): void
     {
-        if (! $this->node->exists) {
+        if (! $target->exists) {
             throw new RuntimeException('Can not create a node when the target node is a new record.');
         }
 
-        if ($depth === 0 && $this->node->isRoot()) {
+        if ($depth === 0 && $target->isRoot()) {
             throw new RuntimeException('Can not create a node when the target node is root.');
         }
 
-        $this->node->refresh();
+        $target->refresh();
 
         $this->lft = $value;
         $this->rgt = $value + 1;
-        $this->level = $this->node->level + $depth;
-        $this->root = $this->node->root;
+        $this->level = $target->level + $depth;
+        $this->root = $target->root;
 
         $this->shiftLeftRightAttribute($value, 2);
     }
@@ -191,16 +196,16 @@ trait StructureNode
         $this->refresh();
     }
 
-    protected function moveNode(int $value, int $depth): void
+    protected function moveNode(int $value, int $depth, self $target): void
     {
-        $this->node->refresh();
+        $target->refresh();
 
         $leftValue = $this->lft;
         $rightValue = $this->rgt;
         $depthValue = $this->level;
-        $depth = $this->node->level - $depthValue + $depth;
+        $depth = $target->level - $depthValue + $depth;
 
-        if ($this->root === $this->node->root) {
+        if ($this->root === $target->root) {
             $delta = $rightValue - $leftValue + 1;
             $this->shiftLeftRightAttribute($value, $delta);
 
@@ -230,7 +235,7 @@ trait StructureNode
             return;
         }
 
-        $nodeRootValue = $this->node->root;
+        $nodeRootValue = $target->root;
 
         foreach (['lft', 'rgt'] as $attribute) {
             static::query()
@@ -270,53 +275,104 @@ trait StructureNode
 
     public function makeRoot(): bool
     {
-        $this->nestedSetOperation = Operation::MakeRoot;
-
-        return $this->save();
+        return $this->performNestedSetOperation(
+            Operation::makeRoot(),
+            fn () => $this->save(),
+        );
     }
 
     public function prependTo(self $node): bool
     {
-        $this->nestedSetOperation = Operation::PrependTo;
-        $this->node = $node;
-
-        return $this->save();
+        return $this->performNestedSetOperation(
+            Operation::prependTo($node),
+            fn () => $this->save(),
+        );
     }
 
     public function appendTo(self $node): bool
     {
-        $this->nestedSetOperation = Operation::AppendTo;
-        $this->node = $node;
-
-        return $this->save();
+        return $this->performNestedSetOperation(
+            Operation::appendTo($node),
+            fn () => $this->save(),
+        );
     }
 
     public function insertBefore(self $node): bool
     {
-        $this->nestedSetOperation = Operation::InsertBefore;
-        $this->node = $node;
-
-        return $this->save();
+        return $this->performNestedSetOperation(
+            Operation::insertBefore($node),
+            fn () => $this->save(),
+        );
     }
 
     public function insertAfter(self $node): bool
     {
-        $this->nestedSetOperation = Operation::InsertAfter;
-        $this->node = $node;
-
-        return $this->save();
+        return $this->performNestedSetOperation(
+            Operation::insertAfter($node),
+            fn () => $this->save(),
+        );
     }
 
     public function deleteWithChildren(): int
     {
-        $this->nestedSetOperation = Operation::DeleteWithChildren;
-
-        return $this->treeQuery()
-            ->where('lft', '>=', $this->lft)
-            ->where('rgt', '<=', $this->rgt)
-            ->delete();
+        return $this->performNestedSetOperation(
+            Operation::deleteWithChildren(),
+            fn () => $this->treeQuery()
+                ->where('lft', '>=', $this->lft)
+                ->where('rgt', '<=', $this->rgt)
+                ->delete(),
+        );
     }
 
+    public function delete(): ?bool
+    {
+        return $this->performNestedSetOperation(
+            Operation::remove(),
+            fn () => parent::delete(),
+        );
+    }
+
+    /**
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    private function performNestedSetOperation(Operation $operation, Closure $callback): mixed
+    {
+        if ($this->nestedSetOperation !== null) {
+            throw new RuntimeException('A nested set operation is already in progress.');
+        }
+
+        $this->nestedSetOperation = $operation;
+
+        try {
+            DB::beginTransaction();
+
+            try {
+                $result = $callback();
+
+                if ($result === false) {
+                    DB::rollBack();
+
+                    return false;
+                }
+
+                DB::commit();
+
+                return $result;
+            } catch (Throwable $e) {
+                DB::rollBack();
+
+                throw $e;
+            }
+        } finally {
+            $this->nestedSetOperation = null;
+            $this->nestedSetOperationHandledOnCreate = false;
+        }
+    }
+
+    /** @return Builder<static> */
     public function parents(?int $depth = null): Builder
     {
         return $this->treeQuery()
@@ -329,6 +385,7 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     public function children(?int $depth = null): Builder
     {
         return $this->treeQuery()
@@ -341,6 +398,7 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     public function leaves(): Builder
     {
         return $this->treeQuery()
@@ -350,11 +408,13 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     public function prev(): Builder
     {
         return $this->treeQuery()->where('rgt', '=', $this->lft - 1);
     }
 
+    /** @return Builder<static> */
     public function next(): Builder
     {
         return $this->treeQuery()->where('lft', '=', $this->rgt + 1);
@@ -382,6 +442,10 @@ trait StructureNode
         return $this->rgt - $this->lft === 1;
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     protected function scopeRoots(Builder $query): Builder
     {
         return $query
@@ -389,6 +453,10 @@ trait StructureNode
             ->orderBy($this->getKeyName());
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     protected function scopeLeaves(Builder $query): Builder
     {
         return $query
@@ -397,7 +465,10 @@ trait StructureNode
             ->orderBy('lft');
     }
 
-    /** @return Builder<static> */
+    /**
+     * @param  Builder<static>|null  $query
+     * @return Builder<static>
+     */
     protected function treeQuery(?Builder $query = null): Builder
     {
         $query ??= static::query();

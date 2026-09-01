@@ -9,6 +9,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Path;
@@ -48,18 +49,7 @@ class SystemReport extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $aliases = [];
-        foreach (Aliases::getAll() as $alias => $value) {
-            if (is_array($value)) {
-                foreach ($value as $a => $v) {
-                    if (! str_starts_with((string) $a, '@appicons/')) {
-                        $aliases[$a] = $v;
-                    }
-                }
-            } elseif (! str_starts_with((string) $alias, '@appicons/')) {
-                $aliases[$alias] = $value;
-            }
-        }
+        $aliases = Aliases::getAll();
         ksort($aliases);
 
         return template('_components/utilities/SystemReport', [
@@ -73,6 +63,7 @@ class SystemReport extends Utility
     /**
      * Returns application info.
      */
+    /** @return array<string, string> */
     private static function appInfo(): array
     {
         $info = [
@@ -100,6 +91,10 @@ class SystemReport extends Utility
         return $info;
     }
 
+    /**
+     * @param  array<string, string>  $info
+     * @return array<string, string>
+     */
     private static function addVersion(array $info, string $label, string $packageName): array
     {
         try {
@@ -133,9 +128,11 @@ class SystemReport extends Utility
     {
         $imagesService = app(Images::class);
 
-        $driverName = $imagesService->getIsGd()
-            ? 'GD'
-            : 'Imagick';
+        $driverName = match ($imagesService->getDriver()) {
+            ImageDriver::Gd => 'GD',
+            ImageDriver::Imagick => 'Imagick',
+            ImageDriver::Vips => 'Vips',
+        };
 
         return $driverName.' '.$imagesService->getVersion();
     }
@@ -143,6 +140,7 @@ class SystemReport extends Utility
     /**
      * Runs the requirements checker and returns its results.
      */
+    /** @return list<array<string, bool|string>> */
     private static function requirementResults(): array
     {
         $checker = ConnectionConfig::requirementsChecker();

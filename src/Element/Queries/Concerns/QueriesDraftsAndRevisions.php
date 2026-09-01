@@ -102,6 +102,7 @@ trait QueriesDraftsAndRevisions
         });
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function applyDraftParams(ElementQuery $elementQuery): void
     {
         if ($elementQuery->drafts === false) {
@@ -167,6 +168,7 @@ trait QueriesDraftsAndRevisions
         }
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function applyRevisionParams(ElementQuery $elementQuery): void
     {
         if ($elementQuery->revisions === false) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import type {SectionModel} from '@/pages/settings/sections/Index.vue';
   import {useForm} from '@inertiajs/vue3';
   import {destroy} from '@actions/Settings/SectionsController';
@@ -8,9 +8,7 @@
     section: SectionModel;
   }>();
 
-  const form = useForm({
-    id: props.section.id,
-  });
+  const form = useForm({});
 
   function handleDelete() {
     if (
@@ -23,18 +21,17 @@
       return;
     }
 
-    form.submit(destroy());
+    form.submit(destroy({section: props.section.id}));
   }
 </script>
 
 <template>
   <form @submit.prevent="handleDelete" method="post">
     <craft-button
-      variant="danger"
+      variant="danger-plain"
       type="submit"
       size="small"
       icon
-      appearance="plain"
       :loading="form.processing"
     >
       <craft-icon :label="t('Delete section')" name="x"></craft-icon>

@@ -1,6 +1,8 @@
 import {Listbox, type ListboxSettings} from './listbox';
 import CraftListbox from '@/modules/listbox/listbox.ce';
 import {defineElement} from '@/common/web-components';
+import {jq} from '@/common/utils/jquery';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 /**
  * Legacy programmatic callers (`CustomizeSourcesModal`, `BaseElementIndex`,
@@ -21,13 +23,12 @@ class CraftListboxGlobal extends Listbox {
     settings?: Partial<ListboxSettings>,
     defaults?: Partial<ListboxSettings>
   ): void {
-    const $ = (window as any).$ ?? (window as any).jQuery;
-    if ($ && settings && typeof settings.onChange === 'function') {
-      const orig = settings.onChange as (...args: any[]) => void;
+    const $ = jq();
+    if ($ && settings && settings.onChange instanceof Function) {
+      const original: Function = settings.onChange;
       settings = {
         ...settings,
-        onChange: ((option: any, ...rest: any[]) =>
-          orig.call(this, $(option), ...rest)) as any,
+        onChange: (option, index) => original.call(this, $(option), index),
       };
     }
     super.setSettings(settings, defaults);
@@ -36,8 +37,7 @@ class CraftListboxGlobal extends Listbox {
 
 // Assign onto the legacy `Craft` global so the PHP-emitted
 // `new Craft.Listbox($container, {…})` keeps working.
-const craft = (window as any).Craft ?? ((window as any).Craft = {});
-craft.Listbox = CraftListboxGlobal;
+registerCraftGlobals({Listbox: CraftListboxGlobal});
 
 defineElement('craft-listbox', CraftListbox);
 

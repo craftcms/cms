@@ -16,6 +16,7 @@ use Override;
  * @method static string[] getUsedFields(string $countryCode)
  * @method static string[] getUsedSubdivisionFields(string $countryCode)
  * @method static string getFieldLabel(string $field, string $countryCode)
+ * @method static array getFormFieldDefinitions(\CraftCms\Cms\Address\Elements\Address $address, bool|null $belongsToCurrentUser = null)
  * @method static string formatAddress(\CraftCms\Cms\Address\Elements\Address $address, array $options = [], \CommerceGuys\Addressing\Formatter\FormatterInterface|null $formatter = null)
  * @method static string getLocalityTypeLabel(string|null $type)
  * @method static string getDependentLocalityTypeLabel(string|null $type)

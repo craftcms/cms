@@ -7,14 +7,13 @@
     type UpdaterState,
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
-  import {ConfigService} from '@craftcms/cp';
+  import {ConfigService} from '@craftcms/ui';
 
   defineOptions({layout: []});
 
   const props = defineProps<{
     title: string;
     initialState: UpdaterState;
-    actionPrefix: string;
     returnUrl: string;
   }>();
 
@@ -26,7 +25,7 @@
     executeAction,
     handleOptionClick,
     getEmailLink,
-  } = useUpdater(props.actionPrefix, props.initialState);
+  } = useUpdater(props.initialState);
 
   /**
    * Parse status text to support markdown-like formatting
@@ -72,8 +71,8 @@
 
   // Start the update process when the page loads
   onMounted(() => {
-    if (props.initialState.nextAction) {
-      executeAction(props.initialState.nextAction);
+    if (props.initialState.nextUrl) {
+      executeAction(props.initialState.nextUrl);
     }
   });
 

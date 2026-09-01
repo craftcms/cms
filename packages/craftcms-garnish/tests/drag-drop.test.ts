@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import {Drag} from '../src/drag/drag';
 import {DragDrop} from '../src/drag/drag-drop';

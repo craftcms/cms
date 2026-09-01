@@ -8,6 +8,18 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
@@ -17,6 +29,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,6 +49,7 @@ readonly class SitesController
         GeneralConfig $generalConfig,
         private Sites $sites,
         private SiteGroups $siteGroups,
+        private FormResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -52,15 +66,16 @@ readonly class SitesController
         $groups = $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values();
 
         $crumbs = array_filter([
-            ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-            ['label' => t('Sites'), 'url' => isset($group) ? Url::cpUrl('settings/sites') : null],
+            ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+            ['label' => t('Sites'), 'href' => isset($group) ? Url::cpUrl('settings/sites') : null],
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
         return Inertia::render('settings/sites/Index', [
+            'title' => isset($group) ? $group->getName() : t('Sites'),
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
-            'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
+            'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
             'groups' => $groups,
             'subnav' => [
@@ -77,7 +92,7 @@ readonly class SitesController
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): CpScreenResponse
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -88,38 +103,34 @@ readonly class SitesController
             'Site group not found'
         );
 
+        $groupId = $request->integer('groupId') ?: $allGroups->first()->id;
+        $site = new Site([
+            'name' => '',
+            'handle' => '',
+            'language' => $this->sites->getPrimarySite()->getLanguage(false),
+            'groupId' => $groupId,
+        ]);
+
         return new CpScreenResponse()
             ->title(t('Create a new site'))
             ->redirectUrl('settings/sites')
             ->crumbs([
                 [
                     'label' => t('Settings'),
-                    'url' => Url::url('settings'),
+                    'href' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => Url::url('settings/sites'),
+                    'href' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => t('Create site'),
-                    'url' => Url::url('settings/sites/new'),
-                    'active' => true,
+                    'href' => Url::url('settings/sites/new'),
                 ],
             ])
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->getViewData(),
-                'site' => new Site([
-                    'name' => '',
-                    'handle' => '',
-                    'language' => $this->sites->getPrimarySite()->getLanguage(false),
-                    'groupId' => $request->integer('groupId'),
-                ]),
-                'groupId' => $request->input('groupId', $allGroups->first()->id),
-                'groupOptions' => $allGroups->map(fn ($group) => [
-                    'label' => $group->name,
-                    'value' => $group->id,
-                ])->all(),
-                'readOnly' => $this->readOnly,
+                ...$this->formProps($site),
+                'site' => $site,
             ]);
     }
 
@@ -138,15 +149,15 @@ readonly class SitesController
             ->crumbs([
                 [
                     'label' => t('Settings'),
-                    'url' => Url::url('settings'),
+                    'href' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => Url::url('settings/sites'),
+                    'href' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => $siteData->getGroup()->getName(),
-                    'url' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
+                    'href' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
                 ],
                 [
                     'label' => $siteData->getName(),
@@ -155,15 +166,21 @@ readonly class SitesController
             ])
             ->redirectUrl('settings/sites')
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->getViewData(),
+                ...$this->formProps($siteData),
                 'site' => $siteData,
-                'groupId' => $siteData->groupId,
-                'groupOptions' => $allGroups->map(fn ($group) => [
-                    'label' => $group->getName(),
-                    'value' => $group->id,
-                ])->all(),
                 'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
             ]);
+    }
+
+    public function renderForm(Request $request): JsonResponse
+    {
+        $request->validate([
+            'values' => ['required', 'array'],
+            'values.siteId' => ['nullable', 'integer', Rule::exists(Table::SITES, 'id')],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+
+        return new JsonResponse(['form' => $this->siteForm($request->array('values'))]);
     }
 
     public function store(Request $request): \Symfony\Component\HttpFoundation\Response
@@ -236,37 +253,171 @@ readonly class SitesController
             ->with('success', t('Site deleted.'));
     }
 
-    /**
-     * @return array<string,mixed>
-     */
-    private function getViewData(): array
+    /** @return array<string, mixed> */
+    private function formProps(Site $site): array
     {
-        $isValidUrl = fn ($value) => Str::isUrl($value);
+        return [
+            'form' => $this->siteForm($this->siteValues($site)),
+            'submit' => [
+                'method' => 'post',
+                'url' => action([self::class, 'store']),
+            ],
+            'refreshUrl' => action([self::class, 'renderForm']),
+        ];
+    }
+
+    /** @param array<string, mixed> $values */
+    private function siteForm(array $values): FormPayload
+    {
+        $siteId = $values['siteId'] ?? null;
+        $site = $siteId ? $this->sites->getSiteById((int) $siteId) : new Site;
+        abort_if($site === null, 404, "Invalid site ID: {$siteId}");
+
+        $isNew = $site->id === null;
+        $isMultiSite = $this->sites->getTotalSites() > 1;
+        $group = Field::make(t('Group'), Choice::make('group')
+            ->options($this->siteGroups->getAllGroups()->map(fn ($group) => [
+                'label' => $group->getName(),
+                'value' => $group->id,
+            ])->all()))
+            ->instructions(t('Which group should this site belong to?'))
+            ->required();
+
+        if (! $isNew && $isMultiSite) {
+            $group->warning(t('Changing this may result in data loss.'));
+        }
+
+        $handle = Handle::make('handle');
+        if ($isNew) {
+            $handle->source('name');
+        }
+
+        $nodes = [
+            HiddenField::make('siteId'),
+            $group,
+            Field::make(t('Name'), Text::make('name')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
+                ->required()
+                ->tip(sprintf(
+                    '%s [%s](%s)',
+                    t('Type `$` to choose an environment variable.'),
+                    t('Learn more'),
+                    'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
+                )),
+            Field::make(t('Handle'), $handle)
+                ->required()
+                ->instructions(t('How you’ll refer to this site in the templates.')),
+            Field::make(t('Language'), Combobox::make('language')
+                ->options([
+                    ...SelectOptions::getLanguageOptions(true),
+                    ...SelectOptions::getLanguageEnvOptions(),
+                ])
+                ->requireOptionMatch())
+                ->required()
+                ->instructions(t('The language content in this site will use.'))
+                ->tip(t('This can be set to an environment variable with a valid language ID ({examples}).', [
+                    'examples' => '`en`/`en-GB`',
+                ])),
+        ];
+
+        if ($isMultiSite || $isNew) {
+            $status = Field::make(t('Status'), Combobox::make('enabled')
+                ->options([
+                    [
+                        'label' => t('Enabled'),
+                        'value' => '1',
+                        'data' => ['indicator' => ['variant' => 'success']],
+                    ],
+                    [
+                        'label' => t('Disabled'),
+                        'value' => '0',
+                        'data' => ['indicator' => ['variant' => 'empty']],
+                    ],
+                    ...$this->booleanEnvOptions(),
+                ])
+                ->requireOptionMatch())
+                ->tip(t('This can be set to an environment variable with a boolean value ({examples}).', [
+                    'examples' => '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
+                ]));
+
+            if ($site->primary) {
+                $status->warning(t('The primary site cannot be disabled.'));
+            }
+
+            $nodes[] = $status;
+        }
+
+        if (($isMultiSite || $isNew) && ! $site->primary) {
+            $nodes[] = Field::make(t('Make this the primary site'), Lightswitch::make('primary'))
+                ->instructions(t('The primary site will be loaded by default on the front end.'));
+        } else {
+            $nodes[] = HiddenField::make('primary');
+        }
+
+        $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls'));
+
+        if ($values['hasUrls'] ?? false) {
+            $nodes[] = Field::make(t('Base URL'), Text::make('baseUrl')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, Str::isUrl(...))))
+                ->instructions(t('The base URL for the site.'))
+                ->tip(sprintf(
+                    '%s [%s](%s)',
+                    t('Type `$` to choose an environment variable, or `@` to choose an alias.'),
+                    t('Learn more'),
+                    'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
+                ));
+        }
+
+        return $this->formResolver->resolve(Form::make($nodes), new FormContext(
+            values: $values,
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+            refreshable: ! $this->readOnly,
+        ));
+    }
+
+    /** @return array<string, mixed> */
+    private function siteValues(Site $site): array
+    {
+        $enabled = match ($site->getEnabled(false)) {
+            true => '1',
+            false => '0',
+            default => $site->getEnabled(false),
+        };
 
         return [
-            'languageOptions' => [
-                ...SelectOptions::getLanguageOptions(true),
-                ...SelectOptions::getLanguageEnvOptions(),
-            ],
-            'nameSuggestions' => SelectOptions::getEnvSuggestions(),
-            'booleanEnvOptions' => [
-                [
-                    'label' => t('Enabled'),
-                    'value' => '1',
-                    'data' => [
-                        'boolean' => '1',
-                    ],
-                ],
-                [
-                    'label' => t('Disabled'),
-                    'value' => '0',
-                    'data' => [
-                        'boolean' => '0',
-                    ],
-                ],
-                ...SelectOptions::getBooleanEnvOptions(),
-            ],
-            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, $isValidUrl),
+            'siteId' => $site->id,
+            'group' => $site->groupId,
+            'name' => $site->getName(false),
+            'handle' => $site->handle,
+            'language' => $site->getLanguage(false),
+            'enabled' => $enabled,
+            'primary' => $site->primary,
+            'hasUrls' => $site->hasUrls,
+            'baseUrl' => $site->getBaseUrl(false) ?? '',
         ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function booleanEnvOptions(): array
+    {
+        $groups = SelectOptions::getBooleanEnvOptions();
+        $groups[0]['options'] = $groups[0]['options']
+            ->map(function (array $option): array {
+                $enabled = $option['data']['boolean'] === '1';
+
+                return [
+                    ...$option,
+                    'data' => [
+                        ...$option['data'],
+                        'hint' => $enabled ? t('Enabled') : t('Disabled'),
+                        'indicator' => [
+                            'variant' => $enabled ? 'success' : 'empty',
+                        ],
+                    ],
+                ];
+            })
+            ->all();
+
+        return $groups;
     }
 }

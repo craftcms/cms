@@ -34,6 +34,7 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
         return User::class;
     }
 
+    /** @return array{authors: true} */
     protected function criteria(): ?array
     {
         return [
@@ -52,9 +53,9 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
         return ['author', 'authorId'];
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         $query->authorId($this->getElementIds());
     }
 

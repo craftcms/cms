@@ -25,6 +25,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
      */
     public int|float|null $step = 1;
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {
@@ -34,6 +35,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         ]);
     }
 
+    /** @return string[] */
     #[Override]
     protected function operators(): array
     {
@@ -104,11 +106,12 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                 'autocomplete' => false,
                 'class' => 'flex-grow flex-shrink',
             ]).
-            Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
+            Html::tag('craft-info-icon', t('The values are matched inclusively.')),
             ['class' => 'flex flex-center']
         );
     }
 
+    /** @return string|string[]|null */
     #[Override]
     protected function paramValue(): string|array|null
     {
@@ -153,6 +156,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         return true;
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     protected function inputOptions(): array
     {

@@ -1,0 +1,50 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ButtonStories from './button.stories';
+
+<Meta of={ButtonStories} />
+
+# Button
+
+A button represents a clickable element that performs an action when activated.
+
+<Canvas of={ButtonStories.Default} />
+
+## Variant
+
+`variant` is the single axis that sets a button's color and appearance together — communicating both the intent of the action and how prominent it is.
+
+- `primary` — Solid accent color. The highest-emphasis style; use for the single most important action in a context, such as Save or Confirm.
+- `danger` — Solid red. Use for actions that delete, remove, or permanently change data.
+- `solid` — Solid neutral (gray). A prominent action without a strong positive or negative meaning.
+- `fill` — Soft neutral fill. The default; use for everyday actions.
+- `outline` — Transparent background with a neutral border. Medium emphasis; use for secondary actions alongside a `primary` or `solid` button.
+- `dashed` — Like `outline`, with a dashed border.
+- `plain` — No background or border. Lowest emphasis; use for tertiary actions that shouldn't draw attention on their own.
+- `link` — Renders as an inline text hyperlink.
+- `none` — Completely unstyled; provides behavior only.
+
+`primary` and `danger` are colored and stay stable in any context; every other variant uses the neutral palette.
+
+## Inherit
+
+Add the boolean `inherit` property to a button placed inside a [Colorable](?path=/docs/concepts-colorable--docs) container (such as a `craft-callout` or any `[data-color]` element). Its neutral variants then adopt the container's color instead of the neutral palette, while still honoring the chosen appearance (`solid`, `fill`, `outline`, and so on).
+
+`primary` and `danger` ignore `inherit` and keep their own colors, so they remain stable inside colorable containers.
+
+<Canvas of={ButtonStories.Inherit} />
+
+## Sizes
+
+<Canvas of={ButtonStories.Sizes} />
+
+## Icons
+
+<Canvas of={ButtonStories.Icons} />
+
+## Loading state
+
+<Canvas of={ButtonStories.Loading} />
+
+## Links
+
+<Canvas of={ButtonStories.Links} />

@@ -1,21 +1,24 @@
 # Do not export those files in the Composer archive (lighter dependency)
+/.agents/ export-ignore
+/.ai/ export-ignore
 /.browserslistrc export-ignore
+/.claude/ export-ignore
 /.codecov.yml export-ignore
+/.codex/ export-ignore
 /.ddev/ export-ignore
 /.env.example export-ignore
 /.git-blame-ignore-revs export-ignore
 /.gitattributes export-ignore
 /.github/ export-ignore
 /.gitignore export-ignore
-/.husky/ export-ignore
 /.lando.yml export-ignore
-/.lintstagedrc.json export-ignore
-/.nvmrc export-ignore
-/.prettierignore export-ignore
-/.prettierrc.json export-ignore
+/.mcp.json export-ignore
+/.vite-hooks/ export-ignore
 /CHANGELOG-WIP.md export-ignore
 /CHANGELOG.md export-ignore
 /README.md export-ignore
+/artisan export-ignore
+/boost.json export-ignore
 /codeception.yml export-ignore
 /composer.lock export-ignore
 /crowdin.yml export-ignore
@@ -23,6 +26,7 @@
 /gulpfile.js export-ignore
 /lerna.json export-ignore
 /lib/craft/behaviors/CustomFieldBehavior.php export-ignore
+/opencode.json export-ignore
 /package-lock.json export-ignore
 /package.json export-ignore
 /packages/ export-ignore

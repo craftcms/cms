@@ -1,9 +1,7 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {h} from 'vue';
-  import Pane from '@/common/components/Pane.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Empty from '@/common/components/Empty.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -23,16 +21,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteGroup(group: UserGroup) {
-    if (
-      confirm(
-        t('Are you sure you want to delete "{name}"?', {name: group.name})
-      )
-    ) {
-      router.delete(destroy({groupId: group.id}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<UserGroup>();
   const table = useVueTable({
     get columns() {
@@ -46,7 +34,17 @@
         }),
         columnHelper.handle('handle'),
         columnHelper.actions(({row}) => [
-          h(DeleteButton, {onClick: () => deleteGroup(row.original)}),
+          h(DeleteButton, {
+            confirm: t('Are you sure you want to delete "{name}"?', {
+              name: row.original.name,
+            }),
+            onClick: () =>
+              router
+                .optimistic<{groups: Array<UserGroup>}>(({groups}) => ({
+                  groups: groups.filter(({id}) => id !== row.original.id),
+                }))
+                .delete(destroy({groupId: row.original.id})),
+          }),
         ]),
       ];
     },
@@ -55,8 +53,6 @@
     },
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>
@@ -72,7 +68,7 @@
     >
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
@@ -87,5 +83,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

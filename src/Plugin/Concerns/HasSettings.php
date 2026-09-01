@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Plugin\Plugin;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
+use LogicException;
 
-use function CraftCms\Cms\pageTemplate;
+use function CraftCms\Cms\t;
 
 /**
- * @mixin Plugin
+ * @mixin PluginInterface
  *
  * @internal
  */
@@ -38,13 +43,12 @@ trait HasSettings
 
     public function getSettings(): ?Validatable
     {
-        if (! isset($this->settings)) {
-            $this->settings = $this->createSettingsModel() ?: false;
-        }
+        $this->settings ??= $this->createSettingsModel() ?: false;
 
         return $this->settings ?: null;
     }
 
+    /** @param array<string, mixed> $settings */
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
@@ -81,20 +85,36 @@ trait HasSettings
 
     private function settingsResponse(bool $readOnly): mixed
     {
-        $settingsHtml = InputNamespace::namespaceInputs(function () use ($readOnly) {
-            if ($readOnly) {
-                // Just return the settings HTML with disabled inputs by default
-                return (string) Html::disableInputs(fn () => $this->settingsHtml());
-            }
+        $settings = $this->getSettings();
 
-            return (string) $this->settingsHtml();
-        }, 'settings');
+        if (! $readOnly && $settings === null) {
+            throw new LogicException("Plugin [{$this->handle}] must provide a settings model when using the standard editable settings response.");
+        }
 
-        return response(pageTemplate('settings/plugins/_settings', [
-            'plugin' => $this,
-            'settingsHtml' => $settingsHtml,
-            'readOnly' => $readOnly,
-        ]));
+        $context = new FormContext(
+            namespace: 'settings',
+            values: ['settings' => $settings?->validationData() ?? []],
+            errors: $settings?->errors()->getMessages() ?? [],
+            mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+        );
+        $form = $this->settingsForm($context);
+
+        if ($form === null) {
+            throw new LogicException("Plugin [{$this->handle}] must return a Form from settingsForm() when using the standard settings response.");
+        }
+
+        return new CpScreenResponse()
+            ->title($this->name)
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Plugins'), 'settings/plugins')
+            ->redirectUrl('settings')
+            ->inertiaPage('Form', [
+                'form' => app(FormResolver::class)->resolve($form, $context),
+                'submit' => [
+                    'method' => 'post',
+                    'url' => Url::cpUrl("settings/plugins/{$this->handle}"),
+                ],
+            ]);
     }
 
     public function beforeSaveSettings(): bool
@@ -115,12 +135,7 @@ trait HasSettings
         return null;
     }
 
-    /**
-     * Returns the rendered settings HTML, which will be inserted into the content block on the settings page.
-     *
-     * @return string|null The rendered settings HTML
-     */
-    protected function settingsHtml(): ?string
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
         return null;
     }

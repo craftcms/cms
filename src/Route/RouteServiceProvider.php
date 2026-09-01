@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Controllers\ConfigSyncController;
-use CraftCms\Cms\Http\Controllers\MigrateController;
-use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
-use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController as PluginStoreRemoveController;
-use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
@@ -19,9 +15,11 @@ use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
@@ -29,6 +27,7 @@ use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
+use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -36,7 +35,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
@@ -52,20 +51,29 @@ class RouteServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        CraftMaintenanceMiddleware::registerRouteMacro();
+
         /**
          * These middleware must run before all others
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $globalMiddleware = array_map(
+            fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
+                ? CraftMaintenanceMiddleware::class
+                : $middleware,
+            $kernel->getGlobalMiddleware(),
+        );
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
-        ], $kernel->getGlobalMiddleware()));
+            HandleActionRequest::class,
+        ], $globalMiddleware));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             require $this->app->getCachedRoutesPath();
 
-            $this->bootMaintenanceModeExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions();
             $this->bootRequestForgeryExceptions();
         });
     }
@@ -83,7 +91,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
         if (! $this->app->routesAreCached()) {
-            $this->bootMaintenanceModeExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions();
             $this->bootRequestForgeryExceptions();
         }
 
@@ -94,7 +102,9 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router->view($route->getUri(), $route->template),
+                fn (Route $route) => $router
+                    ->view($route->getUri(), $route->template)
+                    ->middleware(['craft', 'craft.web']),
             );
         });
 
@@ -122,6 +132,11 @@ class RouteServiceProvider extends ServiceProvider
             LoginRateLimiter::NAME,
             fn (Request $request) => app(LoginRateLimiter::class)->limit($request),
         );
+
+        RateLimiter::for(
+            TwoFactorRateLimiter::NAME,
+            fn (Request $request) => app(TwoFactorRateLimiter::class)->limit($request),
+        );
     }
 
     private function bootRequestForgeryExceptions(): void
@@ -139,30 +154,12 @@ class RouteServiceProvider extends ServiceProvider
         ])->all());
     }
 
-    /**
-     * Register routes that should remain accessible during maintenance mode.
-     */
-    private function bootMaintenanceModeExceptions(): void
-    {
-        PreventRequestsDuringMaintenance::except([
-            action([UpdaterController::class, 'precheck']),
-            action([UpdaterController::class, 'composerInstall']),
-            action([UpdaterController::class, 'finish']),
-            action([UpdaterController::class, 'backup']),
-            action([UpdaterController::class, 'serverCheck']),
-            action([UpdaterController::class, 'migrate']),
-            action([ConfigSyncController::class, 'finish']),
-            action([PluginStoreInstallController::class, 'finish']),
-            action([PluginStoreRemoveController::class, 'finish']),
-            action(MigrateController::class),
-        ]);
-    }
-
     private function bootMiddleware(Router $router): void
     {
         $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
 
         collect([
+            UseWriteConnection::class,
             ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
@@ -172,6 +169,7 @@ class RouteServiceProvider extends ServiceProvider
             Enforce2fa::class,
             SetHeaders::class,
             ShowBrokenImage::class,
+            CraftMaintenanceMiddleware::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([

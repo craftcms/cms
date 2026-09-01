@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {computed, ref, watch} from 'vue';
   import {useApiClient, useFetch} from '@/common/composables/useFetch';
   import Empty from '@/common/components/Empty.vue';
@@ -7,15 +7,16 @@
   import {router} from '@inertiajs/vue3';
   import UpdaterController from '@actions/Updates/UpdaterController';
   import UpdatesController from '@actions/Updates/UpdatesController';
+  import type {FormValues} from '@/modules/forms/types';
 
-  interface Release {
+  interface Release extends FormValues {
     version: string;
     date: string | null;
     critical: boolean;
     notes: string | null;
   }
 
-  interface UpdateInfo {
+  interface UpdateInfo extends FormValues {
     status: string;
     statusText?: string;
     renewalPrice: string | null;
@@ -37,14 +38,16 @@
     altCtaUrl?: string;
   }
 
-  interface UpdatesResponse {
+  interface UpdatesCollection extends FormValues {
+    cms: UpdateInfo;
+    plugins: UpdateInfo[];
+  }
+
+  interface UpdatesResponse extends FormValues {
     total: number;
     critical: boolean;
     allowUpdates: boolean;
-    updates: {
-      cms: UpdateInfo;
-      plugins: UpdateInfo[];
-    };
+    updates: UpdatesCollection;
   }
 
   // State & API
@@ -57,7 +60,7 @@
       },
     });
 
-  const {execute, data, isError, isSuccess} = useFetch(
+  const {execute, data, isError, isSuccess} = useFetch<UpdatesResponse>(
     UpdatesController.cache().url,
     {
       method: 'post',
@@ -181,7 +184,7 @@
     });
 
     router.post(
-      UpdaterController.index['/{cpTrigger?}/{actionTrigger?}/updater'](),
+      UpdaterController.index(),
       {
         return: 'utilities/updates',
         install,

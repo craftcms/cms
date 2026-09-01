@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Html;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -23,10 +24,12 @@ readonly class ElementIndexHtml
     public function __construct(
         private Sites $sites,
         private ElementSources $elementSources,
+        private ElementIndexState $indexState,
     ) {}
 
     /**
      * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $config
      */
     public function html(string $elementType, array $config = []): string
     {
@@ -47,91 +50,41 @@ readonly class ElementIndexHtml
             'sources' => null,
         ];
 
+        // Note that 'auto' is deliberately left alone here rather than resolved
+        // via ElementIndexState::showStatusMenu(): the toolbar template treats
+        // any truthy value as "render the menu" and lets the JS index fill in
+        // the statuses, and resolving it server-side would change what renders.
         if ($config['showStatusMenu'] !== 'auto') {
             $config['showStatusMenu'] = (bool) $config['showStatusMenu'];
         }
 
-        $config['showSiteMenu'] = $config['showSiteMenu'] === 'auto'
-            ? $elementType::isLocalized()
-            : (bool) $config['showSiteMenu'];
+        $config['showSiteMenu'] = $this->indexState->showSiteMenu($elementType, $config['showSiteMenu']);
 
         $siteIds = $config['siteIds'] ?? $this->sites->getEditableSiteIds()->all();
 
-        $sortOptions = Collection::make($elementType::sortOptions())
-            ->map(fn ($option, $key) => [
-                'label' => $option['label'] ?? $option,
-                'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
+        $sortOptions = $this->indexState->sortOptions($elementType)
+            ->map(fn (array $option) => [
+                'label' => $option['label'] ?? $option['option'],
+                'attr' => $option['attribute'] ?? $option['key'],
+                'defaultDir' => $option['defaultDir'],
             ])
-            ->values()
             ->all();
         $sortOptionsKey = 'baseSortOptions';
 
-        $tableColumns = $this->elementSources->getAvailableTableAttributes($elementType)->all();
+        // No source is resolved server-side here — the JS index picks one — so
+        // only the element type's common attributes are offered.
+        $tableColumns = $this->indexState->tableColumns($elementType)->all();
 
         if ($config['sources'] !== false) {
-            if (is_array($config['sources'])) {
-                $indexedSourceKeys = array_flip($config['sources']);
-                $allSources = $this->elementSources->getSources($elementType, $config['context']);
-                $sources = [];
-
-                foreach ($allSources as $source) {
-                    if ($source['type'] === ElementSources::TYPE_HEADING) {
-                        $sources[] = $source;
-                    } elseif (isset($indexedSourceKeys[$source['key']])) {
-                        $sources[] = $source;
-                        // Unset so we can keep track of which keys couldn't be found
-                        unset($indexedSourceKeys[$source['key']]);
-                    }
-                }
-
-                $sources = ElementSources::filterExtraHeadings($sources);
-
-                // Did we miss any source keys? (This could happen if some are nested)
-                if (! empty($indexedSourceKeys)) {
-                    foreach (array_keys($indexedSourceKeys) as $key) {
-                        $source = $this->elementSources->findSource($elementType, $key, $config['context']);
-                        if ($source !== null) {
-                            // If it was listed after another source key that made it in, insert it there
-                            $pos = array_search($key, $config['sources']);
-                            $inserted = false;
-                            if ($pos > 0) {
-                                $prevKey = $config['sources'][$pos - 1];
-                                foreach ($sources as $i => $otherSource) {
-                                    if (($otherSource['key'] ?? null) === $prevKey) {
-                                        array_splice($sources, $i + 1, 0, [$source]);
-                                        $inserted = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (! $inserted) {
-                                $sources[] = $source;
-                            }
-                        }
-                    }
-                }
-            } else {
-                $sources = $this->elementSources->getSources($elementType, $config['context']);
-            }
-
-            // Show the sidebar if there are at least two (non-heading) sources
-            $showSidebar = (function () use ($sources): bool {
-                $foundSource = false;
-                foreach ($sources as $source) {
-                    if ($source['type'] !== ElementSources::TYPE_HEADING) {
-                        if ($foundSource || ! empty($source['nested'])) {
-                            return true;
-                        }
-                        $foundSource = true;
-                    }
-                }
-
-                return false;
-            })();
+            $sources = $this->indexState->sources(
+                $elementType,
+                $config['context'],
+                restrictTo: is_array($config['sources']) ? $config['sources'] : null,
+            );
+            $showSidebar = $this->indexState->showSidebar($sources);
         } else {
             $showSidebar = false;
-            $sources = [
+            $sources = Collection::make([
                 [
                     'type' => ElementSources::TYPE_NATIVE,
                     'key' => '__IMP__',
@@ -141,7 +94,7 @@ readonly class ElementIndexHtml
                     'defaultViewMode' => $config['defaultViewMode'],
                     'fieldLayouts' => $config['fieldLayouts'],
                 ],
-            ];
+            ]);
 
             // if field layouts were supplied, merge in additional table columns and sort columns
             if (! empty($config['fieldLayouts'])) {
@@ -166,7 +119,7 @@ readonly class ElementIndexHtml
         // If all the sources are site-specific, filter out any unneeded site IDs
         if (
             $config['showSiteMenu'] &&
-            Collection::make($sources)->every(fn (array $source) => $source['type'] === 'heading' || isset($source['sites']))
+            $sources->every(fn (array $source) => $source['type'] === 'heading' || isset($source['sites']))
         ) {
             $representedSiteIds = [];
             foreach ($sources as $source) {

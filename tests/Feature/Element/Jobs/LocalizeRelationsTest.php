@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
+use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 
@@ -47,45 +52,62 @@ it('handles case with no global relations', function () {
     expect(true)->toBeTrue();
 });
 
-it('localizes relations for a field', function () {
-    // This test requires a valid field to exist in the database
-    // Skip if no fields exist
-    $field = DB::table(Table::FIELDS)->first();
-
-    if (! $field) {
-        $this->markTestSkipped('No fields exist in the database');
-    }
-
-    $fieldId = $field->id;
-
-    // We need valid source and target elements
-    $elements = DB::table(Table::ELEMENTS)->limit(2)->get();
-
-    if ($elements->count() < 2) {
-        $this->markTestSkipped('Not enough elements exist in the database');
-    }
-
-    $uid = Str::uuid();
+it('can be retried after localizing a relation fails', function () {
+    $field = Field::factory()->create();
+    $source = Entry::factory()->create();
+    $target = Entry::factory()->create();
+    $primarySite = Sites::getPrimarySite();
+    $secondarySite = Site::factory()->create([
+        'groupId' => $primarySite->groupId,
+        'sortOrder' => 0,
+    ]);
+    $relationUid = Str::uuid();
+    $now = now();
 
     DB::table(Table::RELATIONS)->insert([
-        'fieldId' => $fieldId,
-        'sourceId' => $elements[0]->id,
+        'fieldId' => $field->id,
+        'sourceId' => $source->id,
         'sourceSiteId' => null,
-        'targetId' => $elements[1]->id,
+        'targetId' => $target->id,
         'sortOrder' => 1,
-        'uid' => $uid,
-        'dateCreated' => now(),
-        'dateUpdated' => now(),
+        'uid' => $relationUid,
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
     ]);
 
-    $job = new LocalizeRelations(fieldId: $fieldId);
+    $conflictingRelationId = DB::table(Table::RELATIONS)->insertGetId([
+        'fieldId' => $field->id,
+        'sourceId' => $source->id,
+        'sourceSiteId' => $secondarySite->id,
+        'targetId' => $target->id,
+        'sortOrder' => 1,
+        'uid' => Str::uuid(),
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
+    ]);
+
+    $job = new LocalizeRelations(fieldId: $field->id);
+
+    expect(fn () => $job->handle())->toThrow(QueryException::class);
+
+    expect(DB::table(Table::RELATIONS)
+        ->where('fieldId', $field->id)
+        ->whereNull('sourceSiteId')
+        ->exists())->toBeTrue();
+
+    DB::table(Table::RELATIONS)->where('id', $conflictingRelationId)->delete();
 
     $job->handle();
 
-    // Check that the relation now has a sourceSiteId
-    $relation = DB::table(Table::RELATIONS)
-        ->where('uid', $uid)
-        ->first();
+    expect(DB::table(Table::RELATIONS)
+        ->where('uid', $relationUid)
+        ->value('sourceSiteId'))->toBe($primarySite->id);
 
-    expect($relation->sourceSiteId)->not->toBeNull();
+    expect(DB::table(Table::RELATIONS)
+        ->where('fieldId', $field->id)
+        ->where('sourceId', $source->id)
+        ->where('targetId', $target->id)
+        ->orderBy('sourceSiteId')
+        ->pluck('sourceSiteId')
+        ->all())->toBe(Sites::getAllSiteIds()->sort()->values()->all());
 });

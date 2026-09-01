@@ -139,6 +139,7 @@ class UserPermissionsViewModel extends ViewModel
         ];
     }
 
+    /** @return Collection<int, string> */
     private function groupPermissions(): Collection
     {
         return $this->user->id
@@ -146,6 +147,7 @@ class UserPermissionsViewModel extends ViewModel
             : collect();
     }
 
+    /** @return Collection<int, string> */
     private function userPermissions(): Collection
     {
         return $this->user->id

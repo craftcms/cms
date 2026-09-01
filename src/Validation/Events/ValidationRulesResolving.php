@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Events;
 
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
 use CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -40,7 +41,7 @@ class ValidationRulesResolving
 
     /**
      * @param  ValidatesWithRuleset|Request  $subject  The object being validated
-     * @param  Ruleset  $ruleset  The ruleset that produced the attached {@see $rules}
+     * @param  Ruleset<Validatable>  $ruleset  The ruleset that produced the attached {@see $rules}
      * @param  array<string, array<mixed>>  $rules  The current validation rules
      */
     public function __construct(
@@ -57,9 +58,7 @@ class ValidationRulesResolving
      */
     public function addRule(string $attribute, mixed $rule): void
     {
-        if (! isset($this->rules[$attribute])) {
-            $this->rules[$attribute] = [];
-        }
+        $this->rules[$attribute] ??= [];
 
         $this->rules[$attribute][] = $rule;
     }
@@ -72,9 +71,7 @@ class ValidationRulesResolving
      */
     public function addRules(string $attribute, array $rules): void
     {
-        if (! isset($this->rules[$attribute])) {
-            $this->rules[$attribute] = [];
-        }
+        $this->rules[$attribute] ??= [];
 
         $this->rules[$attribute] = array_merge($this->rules[$attribute], $rules);
     }

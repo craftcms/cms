@@ -14,7 +14,7 @@ class ElementActionsResolving
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $source  The selected source's key
-     * @param  array  $actions  List of registered bulk actions for the element type
+     * @param  list<class-string>  $actions  List of registered bulk actions for the element type
      */
     public function __construct(
         public string $elementType,

@@ -14,7 +14,7 @@ use Throwable;
  * Owns the page rendering lifecycle: output buffering, PageStarting/PageEnded
  * events, and placeholder replacement for head/body asset injection.
  *
- * Keeps TemplateRenderer focused on template rendering without coupling
+ * Keeps TemplateManager focused on template rendering without coupling
  * it to asset output or page structure concerns.
  */
 #[Scoped]

@@ -51,6 +51,7 @@ class PhpInfo extends Utility
     /**
      * Parses and returns the PHP info.
      */
+    /** @return array<string, array<string, string>> */
     private static function phpInfo(): array
     {
         // Remove any arrays from $_ENV and $_SERVER to get around an "Array to string conversion" error

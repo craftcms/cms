@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {computed, onMounted} from 'vue';
@@ -54,10 +54,7 @@
         label: t('Install'),
         action: {
           type: 'http',
-          url: install().url,
-          body: {
-            pluginHandle: props.plugin.handle,
-          },
+          url: install({handle: props.plugin.handle}).url,
         },
         disabled: props.plugin.isForceDisabled,
       });
@@ -84,10 +81,7 @@
           label: t('Disable'),
           action: {
             type: 'http',
-            url: disable().url,
-            body: {
-              pluginHandle: props.plugin.handle,
-            },
+            url: disable({handle: props.plugin.handle}).url,
           },
         });
 
@@ -97,10 +91,7 @@
           variant: 'danger',
           action: {
             type: 'http',
-            url: uninstall().url,
-            body: {
-              pluginHandle: props.plugin.handle,
-            },
+            url: uninstall({handle: props.plugin.handle}).url,
             confirm: t(
               'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.',
               {
@@ -115,8 +106,7 @@
           label: t('Enable'),
           action: {
             type: 'http',
-            url: enable().url,
-            body: {pluginHandle: props.plugin.handle},
+            url: enable({handle: props.plugin.handle}).url,
           },
           disabled: props.plugin.isForceDisabled,
         });

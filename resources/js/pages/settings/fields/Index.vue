@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {
     createColumnHelper,
@@ -9,7 +9,6 @@
   import {computed, h, ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
-  import Pane from '@/common/components/Pane.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -44,18 +43,6 @@
     pagination: PaginationData;
     isMultiSite: boolean;
   }>();
-
-  function deleteField(field: FieldRow) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}”?', {
-          name: field.title,
-        })
-      )
-    ) {
-      router.delete(destroy({fieldId: field.id}));
-    }
-  }
 
   const searchTerm = ref(props.searchTerm ?? '');
   const columnHelper = createColumnHelper<FieldRow>();
@@ -147,7 +134,10 @@
       cell: ({row}) =>
         h('div', {class: 'self-end flex justify-end'}, [
           h(DeleteButton, {
-            onClick: () => deleteField(row.original),
+            confirm: t('Are you sure you want to delete “{name}”?', {
+              name: row.original.title,
+            }),
+            onClick: () => router.delete(destroy({fieldId: row.original.id})),
           }),
         ]),
     }),
@@ -228,7 +218,7 @@
     </CpLink>
   </LayoutSlot>
 
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable
       :table="table"
       :reorderable="false"
@@ -244,5 +234,5 @@
         <SearchForm v-model="searchTerm" />
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

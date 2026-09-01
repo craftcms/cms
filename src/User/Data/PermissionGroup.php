@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Data;
 
-use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
+/** @implements Arrayable<string, mixed> */
 class PermissionGroup implements Arrayable
 {
     public function __construct(
+        public string $handle,
         public string $heading,
         /** @var Collection<int, Permission> */
         public Collection $permissions = new Collection,
     ) {}
-
-    public string $handle {
-        get => Str::toHandle($this->heading);
-    }
 
     /** @var string[] */
     public array $keys {
@@ -35,7 +32,10 @@ class PermissionGroup implements Arrayable
         ];
     }
 
-    /** @param Collection<int, Permission> $permissions */
+    /**
+     * @param  Collection<int, Permission>  $permissions
+     * @return string[]
+     */
     private function permissionKeys(Collection $permissions): array
     {
         return $permissions

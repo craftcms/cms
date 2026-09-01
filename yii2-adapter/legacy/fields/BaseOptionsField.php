@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
  *
@@ -9,13 +11,14 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\BaseOptionsField} instead.
-     */
-    abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
-    {
-    }
+use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
+use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\BaseOptionsField} instead.
+ */
+abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField implements LegacyField
+{
+    use LegacyBuiltInField;
 }

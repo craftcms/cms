@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Query;
@@ -150,6 +151,7 @@ trait QueriesEntryTypes
         return $this;
     }
 
+    /** @param EntryQuery<Entry> $entryQuery */
     private function normalizeTypeId(EntryQuery $entryQuery): void
     {
         $entryQuery->typeId = match (true) {

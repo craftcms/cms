@@ -11,7 +11,7 @@ use GraphQL\Type\Definition\InputObjectType;
 
 class EntryRelation extends InputObjectType
 {
-    public static function getType(): mixed
+    public static function getType(): InputObjectType
     {
         $typeName = 'EntryRelationCriteriaInput';
 

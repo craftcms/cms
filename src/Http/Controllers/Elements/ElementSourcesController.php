@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\UserGroups;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -217,14 +218,14 @@ readonly class ElementSourcesController
         ]);
     }
 
-    public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig)
+    public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig): Response
     {
         $elementType = $request->elementType();
         $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES.".$elementType") ?? [];
-        $oldSourceConfigs = collect($oldSourceConfigs)
+        $oldSourceConfigs = collect(is_array($oldSourceConfigs) ? $oldSourceConfigs : [])
             ->keyBy('key')
             ->all();
 
@@ -232,11 +233,11 @@ readonly class ElementSourcesController
         $sourceSettings = $request->array('sources');
         $newSourceConfigs = [];
         $disabledSourceKeys = [];
+        $sourcePageIndexes = [];
 
         if ($multiPage) {
             $sourcePages = $request->array('sourcePages');
             $pageSettings = $request->array('pageSettings');
-            $sourcePageIndexes = [];
         }
 
         // Normalize to the way it's stored in the DB
@@ -312,7 +313,6 @@ readonly class ElementSourcesController
         }
 
         if ($multiPage) {
-            /** @phpstan-ignore-next-line */
             array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
@@ -330,6 +330,10 @@ readonly class ElementSourcesController
         ]);
     }
 
+    /**
+     * @param  array<array-key, mixed>  $attributes
+     * @return list<mixed>|string
+     */
     private function tableAttributeKeys(array $attributes): array|string
     {
         $attributes = collect($attributes)

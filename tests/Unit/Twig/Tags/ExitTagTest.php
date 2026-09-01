@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Error\RuntimeError;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('throws a NotFoundHttpException for 404', function () {
     try {
-        $this->renderer->renderString('{% exit 404 %}');
+        $this->manager->renderString('{% exit 404 %}');
         $this->fail('Expected exception was not thrown');
     } catch (RuntimeError $e) {
         expect($e->getPrevious())->toBeInstanceOf(NotFoundHttpException::class);
@@ -22,7 +22,7 @@ it('throws a NotFoundHttpException for 404', function () {
 
 it('throws an HttpException with the correct status code', function (int $statusCode) {
     try {
-        $this->renderer->renderString("{% exit $statusCode %}");
+        $this->manager->renderString("{% exit $statusCode %}");
         $this->fail('Expected exception was not thrown');
     } catch (RuntimeError $e) {
         expect($e->getPrevious())->toBeInstanceOf(HttpException::class);
@@ -37,7 +37,7 @@ it('throws an HttpException with the correct status code', function (int $status
 
 it('includes the message in the exception', function () {
     try {
-        $this->renderer->renderString("{% exit 404 'Page not found' %}");
+        $this->manager->renderString("{% exit 404 'Page not found' %}");
         $this->fail('Expected exception was not thrown');
     } catch (RuntimeError $e) {
         expect($e->getPrevious())->toBeInstanceOf(NotFoundHttpException::class);
@@ -47,7 +47,7 @@ it('includes the message in the exception', function () {
 
 it('includes the message for non-404 status codes', function () {
     try {
-        $this->renderer->renderString("{% exit 500 'Server error' %}");
+        $this->manager->renderString("{% exit 500 'Server error' %}");
         $this->fail('Expected exception was not thrown');
     } catch (RuntimeError $e) {
         expect($e->getPrevious())->toBeInstanceOf(HttpException::class);

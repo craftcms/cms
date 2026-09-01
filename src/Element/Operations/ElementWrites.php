@@ -101,6 +101,9 @@ readonly class ElementWrites
         }
     }
 
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
+     */
     public function save(
         ElementInterface $element,
         bool $runValidation = true,
@@ -185,6 +188,9 @@ readonly class ElementWrites
         event(new ElementsResaved($query));
     }
 
+    /**
+     * @param  int[]|int|null  $siteIds
+     */
     public function propagateElements(
         ElementQueryInterface $query,
         array|int|null $siteIds = null,
@@ -268,6 +274,9 @@ readonly class ElementWrites
         return $siteElement;
     }
 
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>  $supportedSites
+     */
     public function propagate(
         ElementInterface $element,
         array $supportedSites,
@@ -292,6 +301,9 @@ readonly class ElementWrites
      * @throws ElementNotFoundException
      * @throws UnsupportedSiteException
      * @throws Throwable
+     */
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
      */
     protected function saveInternal(
         ElementInterface $element,
@@ -580,7 +592,7 @@ readonly class ElementWrites
                                 $updated = false;
 
                                 foreach ($generatedFields as $field) {
-                                    $value = renderObjectTemplate($field['template'] ?? '', $siteElement);
+                                    $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
                                     $value = normalizeValue($value) ?? '';
 
                                     if ($value !== ($content[$field['uid']] ?? '')) {
@@ -718,6 +730,9 @@ readonly class ElementWrites
     /**
      * @throws UnsupportedSiteException
      */
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>  $supportedSites
+     */
     protected function propagateInternal(
         ElementInterface $element,
         array $supportedSites,
@@ -791,7 +806,8 @@ readonly class ElementWrites
             (
                 $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
-                $element->resaving
+                $element->resaving ||
+                ElementHelper::containsTempSlug($siteElement->uri)
             )
         ) {
             try {
@@ -913,6 +929,9 @@ readonly class ElementWrites
         return false;
     }
 
+    /**
+     * @param  array<int, int|string>  $dirtyAttributes
+     */
     private function updateModel(
         ElementInterface $element,
         bool $isNewElement,
@@ -926,7 +945,7 @@ readonly class ElementWrites
         }
 
         if (! $isNewElement) {
-            $elementModel = ElementModel::find($element->id);
+            $elementModel = ElementModel::withTrashed()->find($element->id);
 
             if (! $elementModel) {
                 throw new ElementNotFoundException("No element exists with the ID '$element->id'");
@@ -947,15 +966,24 @@ readonly class ElementWrites
         $elementModel->dateLastMerged = Query::prepareDateForDb($element->dateLastMerged);
         $elementModel->dateDeleted = Query::prepareDateForDb($element->dateDeleted);
 
+        $now = Query::prepareDateForDb(now());
+
+        // Element timestamps are stored in UTC (see Query::prepareDateForDb(), and the naked
+        // `dateTime` columns the install migration creates), but Eloquent formats and re-parses
+        // date attributes in PHP’s default timezone — which Cms::setDefaultTimezone() sets to the
+        // system timezone. Letting its automatic timestamps manage these columns would write local
+        // time into a UTC column, so set them ourselves.
+        $elementModel->timestamps = false;
+
         if ($isNewElement) {
-            if (isset($element->dateCreated)) {
-                $elementModel->dateCreated = Query::prepareDateForDb($element->dateCreated);
-            }
-            if (isset($element->dateUpdated)) {
-                $elementModel->dateUpdated = Query::prepareDateForDb($element->dateUpdated);
-            }
+            $elementModel->dateCreated = isset($element->dateCreated)
+                ? Query::prepareDateForDb($element->dateCreated)
+                : $now;
+            $elementModel->dateUpdated = isset($element->dateUpdated)
+                ? Query::prepareDateForDb($element->dateUpdated)
+                : $now;
         } elseif (! $element->resaving || $forceTouch) {
-            $elementModel->dateUpdated = now();
+            $elementModel->dateUpdated = $now;
         }
 
         if ($trackChanges) {
@@ -968,13 +996,18 @@ readonly class ElementWrites
 
         $elementModel->save();
 
-        $dateCreated = DateTimeHelper::toDateTime($elementModel->dateCreated);
+        // Read the timestamps back as they were stored, so DateTimeHelper::toDateTime() applies its
+        // UTC assumption to the raw string. Going through the model’s date attributes would instead
+        // hand it a Carbon that Eloquent already re-parsed in the system timezone, which is what
+        // made a freshly saved element report a different instant than the same element loaded back
+        // out of the database.
+        $dateCreated = DateTimeHelper::toDateTime($elementModel->getRawOriginal('dateCreated'));
 
         if ($dateCreated === false) {
             throw new Exception('There was a problem calculating dateCreated.');
         }
 
-        $dateUpdated = DateTimeHelper::toDateTime($elementModel->dateUpdated);
+        $dateUpdated = DateTimeHelper::toDateTime($elementModel->getRawOriginal('dateUpdated'));
 
         if ($dateUpdated === false) {
             throw new Exception('There was a problem calculating dateUpdated.');
@@ -995,6 +1028,9 @@ readonly class ElementWrites
         }
     }
 
+    /**
+     * @param  string[]  $searchableDirtyFields
+     */
     private function updateElementSearchIndex(
         ElementInterface $element,
         array $searchableDirtyFields,

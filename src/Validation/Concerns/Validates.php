@@ -75,14 +75,7 @@ trait Validates
         }
     }
 
-    /**
-     * TODO: Add types to method signature once components no longer rely
-     * on craft/base/Model
-     *
-     * @param  array|string|null  $attributeNames
-     * @param  bool  $clearErrors
-     */
-    public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool
+    public function validate(array|string|null $attributeNames = null, bool $clearErrors = true, bool $throw = false): bool
     {
         if ($clearErrors) {
             $this->clearErrors();
@@ -100,9 +93,10 @@ trait Validates
 
         if ($throw) {
             $ruleset->validate();
+            $result = true;
+        } else {
+            $result = $ruleset->passes();
         }
-
-        $result = $ruleset->passes();
 
         $this->errors()->merge($ruleset->getValidator()->errors());
 

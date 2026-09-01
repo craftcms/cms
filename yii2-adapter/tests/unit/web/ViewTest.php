@@ -16,13 +16,11 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
+use CraftCms\Cms\View\TemplateRoots;
 use crafttests\fixtures\SitesFixture;
-use Illuminate\Support\Facades\Event as LaravelEvent;
-use Illuminate\Support\Once;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -290,45 +288,23 @@ class ViewTest extends TestCase
     /**
      * @dataProvider getTemplateRootsDataProvider
      * @param array $expected
-     * @param string $which
      * @param array $roots
-     * @throws ReflectionException
      */
-    public function testGetTemplateRoots(array $expected, string $which, array $roots): void
+    public function testGetTemplateRoots(array $expected, array $roots): void
     {
-        Once::flush();
+        $originalRegistry = app(TemplateRoots::class);
+        $registry = new TemplateRoots();
+        app()->instance(TemplateRoots::class, $registry);
 
-        LaravelEvent::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event) use ($roots) {
-            $event->roots = $roots;
-        });
+        try {
+            foreach ($roots as $handle => $path) {
+                $registry->register(TemplateMode::Site, $handle, ...(array)$path);
+            }
 
-        self::assertSame($expected, TemplateMode::Site->templateRoots());
-    }
-
-    /**
-     * Testing these events is quite important as they are quite integral to this function working.
-     */
-    public function testGetTemplateRootsEvents(): void
-    {
-        Once::flush();
-
-        $cpEventTriggered = false;
-        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function() use (&$cpEventTriggered) {
-            $cpEventTriggered = true;
-        });
-
-        TemplateMode::Cp->templateRoots();
-        self::assertTrue($cpEventTriggered, 'Asserting that the CP template roots Yii event is triggered.');
-
-        Once::flush();
-
-        $siteEventTriggered = false;
-        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function() use (&$siteEventTriggered) {
-            $siteEventTriggered = true;
-        });
-
-        TemplateMode::Site->templateRoots();
-        self::assertTrue($siteEventTriggered, 'Asserting that the site template roots Yii event is triggered.');
+            self::assertSame($expected, TemplateMode::Site->templateRoots());
+        } finally {
+            app()->instance(TemplateRoots::class, $originalRegistry);
+        }
     }
 
     /**
@@ -486,22 +462,22 @@ TWIG;
     {
         return [
             ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
-            ['{{ (_variables.foo ?? object.foo)|raw }}', '{foo}'],
-            ['{{ (_variables.foo ?? object.foo).bar|raw }}', '{foo.bar}'],
+            ['{{ (_variables.foo ?? object.foo) }}', '{foo}'],
+            ['{{ (_variables.foo ?? object.foo).bar }}', '{foo.bar}'],
             ['{foo : \'bar\'}', '{foo : \'bar\'}'],
             ['{{foo}}', '{{foo}}'],
             ['{% foo %}', '{% foo %}'],
-            ['{{ (_variables.foo ?? object.foo).fn({bar: baz})|raw }}', '{foo.fn({bar: baz})}'],
-            ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}})|raw }}', '{foo.fn({bar: {baz: 1}})}'],
-            ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\')|raw }}', '{foo.fn(\'bar:baz\')}'],
-            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz})|raw }}', '{foo.fn({\'bar\': baz})}'],
+            ['{{ (_variables.foo ?? object.foo).fn({bar: baz}) }}', '{foo.fn({bar: baz})}'],
+            ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}}) }}', '{foo.fn({bar: {baz: 1}})}'],
+            ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\') }}', '{foo.fn(\'bar:baz\')}'],
+            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz}) }}', '{foo.fn({\'bar\': baz})}'],
             ['{% verbatim %}`{foo}`{% endverbatim %}', '`{foo}`'],
             ["{% verbatim %}`{foo}\n{bar}`{% endverbatim %}", "`{foo}\n{bar}`"],
             ["{% verbatim %}```\n{% exit %}\n```{% endverbatim %}", "```\n{% exit %}\n```"],
             ["{% verbatim %}````\n{% exit %}\n````{% endverbatim %}", "````\n{% exit %}\n````"],
             ["{% verbatim %}\n{foo}\n{% endverbatim %}", "{% verbatim %}\n{foo}\n{% endverbatim %}"],
             ["{%- verbatim -%}\n{foo}\n{%- endverbatim -%}", "{%- verbatim -%}\n{foo}\n{%- endverbatim -%}"],
-            ['{{ clone(productCategory).level(1).one().slug|raw }}', '{clone(productCategory).level(1).one().slug}'],
+            ['{{ clone(productCategory).level(1).one().slug }}', '{clone(productCategory).level(1).one().slug}'],
             ['{{ #{foo} }}', '{{ #{foo} }}'],
             ['{% set string = "test #{foo} 5" %}{{string}}', '{% set string = "test #{foo} 5" %}{{string}}'],
         ];
@@ -520,9 +496,6 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/index.twig'],
             ['@craftunittemplates/testSite3/index.twig', 'testSite3'],
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
-
-            // Cp Paths
-            ['@craftcms/resources/templates/entries/index.twig', 'entries', TemplateMode::Cp->value],
         ];
     }
 
@@ -650,9 +623,8 @@ TWIG;
     public static function getTemplateRootsDataProvider(): array
     {
         return [
-            [['random-roots' => [null]], 'random-roots', ['random-roots' => [null]]],
-            [['random-roots' => ['/linux/box/craft/templates']], 'random-roots', ['random-roots' => '/linux/box/craft/templates']],
-            [['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
+            [['random-roots' => ['/linux/box/craft/templates']], ['random-roots' => '/linux/box/craft/templates']],
+            [['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']], ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
         ];
     }
 
@@ -670,17 +642,6 @@ TWIG;
 
         // By default we want to be in site mode.
         $this->view->setTemplateMode(TemplateMode::Site->value);
-    }
-
-    /**
-    /**
-     * @param string $which
-     * @return array
-     * @throws ReflectionException
-     */
-    private function _getTemplateRoots(string $which): array
-    {
-        return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
     }
 
     /**

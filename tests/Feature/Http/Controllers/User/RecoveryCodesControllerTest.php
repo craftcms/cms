@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
+use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
-use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -64,6 +66,20 @@ describe('generate', function () {
 
         expect(count($codes))->toBe(count($uniqueCodes));
     });
+
+    it('encrypts recovery codes at rest', function () {
+        $user = User::findOne();
+        $codes = postJson(action([RecoveryCodesController::class, 'generate']))
+            ->assertOk()
+            ->json('codes');
+
+        $storedCodes = DB::table(Table::RECOVERYCODES)
+            ->where('userId', $user->id)
+            ->value('recoveryCodes');
+
+        expect($storedCodes)->not->toContain($codes[0])
+            ->and(RecoveryCodesModel::where('userId', $user->id)->first()->recoveryCodes)->toBe($codes);
+    });
 });
 
 describe('download', function () {
@@ -82,8 +98,7 @@ describe('download', function () {
     });
 
     it('returns 400 when no recovery codes exist', function () {
-        postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertStatus(400);
+        postJson(action([RecoveryCodesController::class, 'download']))->assertBadRequest();
     });
 
     it('downloads recovery codes as text file', function () {
@@ -129,7 +144,7 @@ describe('download', function () {
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
-        $user = currentUser();
+        $user = User::findOne();
         $content = postJson(action([RecoveryCodesController::class, 'download']))
             ->assertOk()
             ->getContent();

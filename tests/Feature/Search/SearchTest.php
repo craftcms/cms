@@ -6,8 +6,9 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
-use CraftCms\Cms\Search\Events\ScoringResults;
 use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchResultsResolving;
+use CraftCms\Cms\Search\Events\SearchScoresResolving;
 use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
@@ -17,15 +18,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
-
-// MySQL InnoDB fulltext indexes are not transactional — data inserted within
-// a transaction is invisible to MATCH...AGAINST queries. Since RefreshDatabase
-// wraps each test in a transaction, we disable fulltext and fall back to LIKE.
-beforeEach(function () {
-    if (DB::isMysql()) {
-        app(CraftCms\Cms\Search\Search::class)->useFullText = false;
-    }
-});
 
 function createIndexedEntry(string $title, ?string $slug = null): EntryModel
 {
@@ -172,15 +164,26 @@ describe('searchElements', function () {
         Event::assertDispatched(SearchStarting::class);
     });
 
-    test('fires ScoringResults event', function () {
+    test('fires SearchResultsResolving event', function () {
         createIndexedEntry('Test');
 
-        Event::fake([ScoringResults::class]);
+        Event::fake([SearchResultsResolving::class]);
 
         $elementQuery = entryQuery()->search('Test');
         Search::searchElements($elementQuery);
 
-        Event::assertDispatched(ScoringResults::class);
+        Event::assertDispatched(SearchResultsResolving::class);
+    });
+
+    test('fires SearchScoresResolving event', function () {
+        createIndexedEntry('Test');
+
+        Event::fake([SearchScoresResolving::class]);
+
+        $elementQuery = entryQuery()->search('Test');
+        Search::searchElements($elementQuery);
+
+        Event::assertDispatched(SearchScoresResolving::class);
     });
 
     test('fires SearchPerformed event', function () {
@@ -194,42 +197,129 @@ describe('searchElements', function () {
         Event::assertDispatched(SearchPerformed::class);
     });
 
-    test('SearchPerformed event can override scores', function () {
+    test('SearchScoresResolving event can override scores', function () {
         $entry1 = createIndexedEntry('Apple');
         $entry2 = createIndexedEntry('Banana');
 
         $siteId = Sites::getCurrentSite()->id;
+        $performedScores = null;
 
-        Event::listen(function (SearchPerformed $event) use ($entry1, $entry2, $siteId) {
+        Event::listen(function (SearchScoresResolving $event) use ($entry1, $entry2, $siteId) {
             $event->scores = [
-                "{$entry2->id}-{$siteId}" => 100,
                 "{$entry1->id}-{$siteId}" => 1,
+                "{$entry2->id}-{$siteId}" => 100,
             ];
+        });
+        Event::listen(function (SearchPerformed $event) use (&$performedScores) {
+            $performedScores = $event->scores;
         });
 
         $results = entryQuery()->search('Apple')->orderByDesc('score')->get();
 
-        expect($results)->toHaveCount(2);
-        expect($results[0]->id)->toBe($entry2->id);
+        expect($results)->toHaveCount(2)
+            ->and($results[0]->id)->toBe($entry2->id)
+            ->and(array_keys($performedScores))->toBe([
+                "{$entry2->id}-{$siteId}",
+                "{$entry1->id}-{$siteId}",
+            ]);
     });
 
-    test('ScoringResults event can override scores', function () {
+    test('SearchResultsResolving changes are scored and observed', function () {
         $entry1 = createIndexedEntry('Cherry');
-        $entry2 = createIndexedEntry('Date');
+        $entry2 = createIndexedEntry('Cherry Date');
 
         $siteId = Sites::getCurrentSite()->id;
+        $performed = null;
 
-        Event::listen(function (ScoringResults $event) use ($entry1, $entry2, $siteId) {
-            $event->scores = [
-                "{$entry2->id}-{$siteId}" => 100,
-                "{$entry1->id}-{$siteId}" => 1,
-            ];
+        Event::listen(function (SearchResultsResolving $event) use ($entry2) {
+            $event->results = array_values(array_filter(
+                $event->results,
+                fn (array $result) => (int) $result['elementId'] === $entry2->id,
+            ));
+        });
+        Event::listen(function (SearchPerformed $event) use (&$performed) {
+            $performed = $event;
         });
 
-        $results = entryQuery()->search('Cherry')->orderByDesc('score')->get();
+        $scores = Search::searchElements(entryQuery()->search('Cherry'));
 
-        expect($results)->toHaveCount(2);
-        expect($results[0]->id)->toBe($entry2->id);
+        expect($scores)
+            ->toHaveKey("{$entry2->id}-{$siteId}")
+            ->not->toHaveKey("{$entry1->id}-{$siteId}")
+            ->and(array_unique(array_column($performed->results, 'elementId')))->toBe([$entry2->id])
+            ->and($performed->scores)->toBe($scores);
+    });
+
+    test('nested searches retain their own scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $expectedOuterScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $expectedNestedScores = Search::searchElements(entryQuery()->search('Beta'));
+        $nestedScores = null;
+
+        Event::listen(function (SearchResultsResolving $event) use (&$nestedScores) {
+            if ($event->query->getQuery() === 'Alpha') {
+                $nestedScores = Search::searchElements(entryQuery()->search('Beta'));
+            }
+        });
+
+        $outerScores = Search::searchElements(entryQuery()->search('Alpha'));
+
+        expect($outerScores)->toBe($expectedOuterScores)
+            ->and($nestedScores)->toBe($expectedNestedScores);
+    });
+
+    test('sequential searches retain their own scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $alphaScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $betaScores = Search::searchElements(entryQuery()->search('Beta'));
+
+        expect(Search::searchElements(entryQuery()->search('Alpha')))->toBe($alphaScores)
+            ->and(Search::searchElements(entryQuery()->search('Beta')))->toBe($betaScores);
+    });
+
+    test('failed nested searches do not clear outer scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $expectedScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $failedQuery = null;
+
+        Event::listen(function (SearchResultsResolving $event) use (&$failedQuery) {
+            if ($event->query->getQuery() === 'Alpha') {
+                $failedQuery = Search::createDbQuery('', entryQuery());
+            }
+        });
+
+        $scores = Search::searchElements(entryQuery()->search('Alpha'));
+
+        expect($failedQuery)->toBeFalse()
+            ->and($scores)->toBe($expectedScores);
+    });
+
+    test('concurrent searches retain their own scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $expectedScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $searchFiber = null;
+
+        Event::listen(function (SearchResultsResolving $event) use (&$searchFiber) {
+            if ($event->query->getQuery() === 'Alpha' && Fiber::getCurrent() === $searchFiber) {
+                Fiber::suspend();
+            }
+        });
+
+        $searchFiber = new Fiber(fn () => Search::searchElements(entryQuery()->search('Alpha')));
+        $searchFiber->start();
+
+        Search::searchElements(entryQuery()->search('Beta'));
+        $searchFiber->resume();
+
+        expect($searchFiber->getReturn())->toBe($expectedScores);
     });
 });
 

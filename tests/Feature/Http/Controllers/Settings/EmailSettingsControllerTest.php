@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia;
@@ -22,6 +24,7 @@ beforeEach(function () {
 
 afterEach(function () {
     putenv('EMAIL_SETTINGS_FROM_EMAIL');
+    putenv('EMAIL_SETTINGS_FROM_NAME');
     putenv('EMAIL_SETTINGS_MAILER');
     putenv('EMAIL_SETTINGS_MISSING');
     putenv('EMAIL_SETTINGS_SITE_EMAIL');
@@ -39,7 +42,13 @@ it('requires authentication', function () {
 
 it('can show the email settings screen', function () {
     get(action([EmailSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Email'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/Email')
+            ->has('form.nodes')
+            ->has('form.values.fromEmail')
+            ->has('form.values.fromName')
+            ->where('submit.method', 'post')
+            ->where('submit.url', action([EmailSettingsController::class, 'store'])))
         ->assertOk();
 });
 
@@ -47,8 +56,47 @@ it('shows a readonly settings screen when admin changes is disabled', function (
     Cms::config()->allowAdminChanges = false;
 
     get(action([EmailSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.nodes', function (Collection $nodes): bool {
+                $controls = $nodes->pluck('control')->filter();
+
+                return $controls->isNotEmpty()
+                    && $controls->every(fn (array $control): bool => $control['mode'] === 'readOnly');
+            }))
         ->assertOk();
+});
+
+it('includes configured overrides for every site in the form', function () {
+    $site = Site::factory()->create(['name' => 'French']);
+    Sites::refreshSites();
+    ProjectConfig::set('email', [
+        'siteOverrides' => [
+            $site->uid => ['fromEmail' => 'french@example.com'],
+        ],
+    ], 'Set test email settings.');
+
+    get(action([EmailSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.nodes', fn (Collection $nodes): bool => $nodes
+                ->pluck('control')
+                ->filter()
+                ->contains(fn (array $control): bool => $control['component'] === 'craft:table'
+                    && $control['path'] === ['siteOverrides']))
+            ->where("form.values.siteOverrides.{$site->uid}.site", 'French')
+            ->where("form.values.siteOverrides.{$site->uid}.fromEmail", 'french@example.com')
+            ->where("form.values.siteOverrides.{$site->uid}.fromName", '')
+            ->where("form.values.siteOverrides.{$site->uid}.replyToEmail", '')
+            ->where("form.values.siteOverrides.{$site->uid}.template", ''))
+        ->assertOk();
+});
+
+it('escapes site names rendered as table headings', function () {
+    $site = Site::factory()->create(['name' => '<img src=x onerror=alert(1)>']);
+    Sites::refreshSites();
+
+    get(action([EmailSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where("form.values.siteOverrides.{$site->uid}.site", '&lt;img src=x onerror=alert(1)&gt;'));
 });
 
 it('can save email settings', function () {
@@ -94,6 +142,13 @@ it('fails required validation for missing from email environment variables', fun
         'fromEmail' => '$EMAIL_SETTINGS_MISSING',
         'fromName' => 'Test Sender',
     ])->assertSessionHasErrors('fromEmail');
+});
+
+it('fails required validation for missing sender name environment variables', function () {
+    post(action([EmailSettingsController::class, 'store']), [
+        'fromEmail' => 'test@example.com',
+        'fromName' => '$EMAIL_SETTINGS_FROM_NAME',
+    ])->assertSessionHasErrors('fromName');
 });
 
 it('can save email settings with an environment variable mailer', function () {

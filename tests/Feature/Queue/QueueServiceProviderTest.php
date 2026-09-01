@@ -4,11 +4,26 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueServiceProvider;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Event;
+
+it('keeps retry windows safely above Craft job timeouts', function () {
+    config()->set('queue.connections', [
+        'database' => ['driver' => 'database', 'retry_after' => 90],
+        'redis' => ['driver' => 'redis', 'retry_after' => 600],
+        'sqs' => ['driver' => 'sqs'],
+    ]);
+
+    app()->register(QueueServiceProvider::class, force: true);
+
+    expect(config('queue.connections.database.retry_after'))->toBe(360)
+        ->and(config('queue.connections.redis.retry_after'))->toBe(600)
+        ->and(config('queue.connections.sqs'))->not->toHaveKey('retry_after');
+});
 
 it('registers JobProgressService as singleton', function () {
     $service1 = app(JobProgress::class);
@@ -57,6 +72,14 @@ it('tracks failed jobs with error message', function () {
         ->not->toBeNull()
         ->status->toBe(JobStatus::Failed)
         ->error->toBe('Test failure');
+});
+
+it('marks sync jobs as completed', function () {
+    dispatch(new SyncProgressJob);
+
+    $progress = app(JobProgress::class)->getAll()->firstWhere('description', SyncProgressJob::class);
+
+    expect($progress?->status)->toBe(JobStatus::Done);
 });
 
 it('handles jobs without uuid method gracefully', function () {
@@ -150,3 +173,11 @@ it('does not track jobs on non-tracked queues', function () {
     // Progress should still exist because the queue is not tracked
     expect($progressService->getProgress($uid))->not->toBeNull();
 });
+
+class SyncProgressJob extends Job
+{
+    public function handle(): void
+    {
+        $this->setProgress(50);
+    }
+}

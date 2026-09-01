@@ -60,10 +60,12 @@ class GqlToken extends Component implements Stringable
         get => $this->getIsPublic();
     }
 
+    /** @var list<string>|null */
     public ?array $scope {
         get => $this->getScope();
     }
 
+    /** @var list<string>|null */
     private ?array $_scope = null;
 
     private ?GqlSchema $_schema = null;
@@ -137,11 +139,10 @@ class GqlToken extends Component implements Stringable
         $this->_scope = null;
     }
 
+    /** @return list<string>|null */
     public function getScope(): ?array
     {
-        if (! isset($this->_scope)) {
-            $this->_scope = $this->getSchema()?->scope;
-        }
+        $this->_scope ??= $this->getSchema()?->scope;
 
         return $this->_scope;
     }

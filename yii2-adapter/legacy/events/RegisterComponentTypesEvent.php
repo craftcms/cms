@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use the relevant Laravel registration event, such as {@see \CraftCms\Cms\Element\Events\ElementTypesResolving}, {@see \CraftCms\Cms\Field\Events\FieldTypesResolving}, {@see \CraftCms\Cms\Auth\Events\AuthMethodsResolving}, or {@see \CraftCms\Cms\Dashboard\Events\WidgetTypesResolving}, instead.
+ * @deprecated 6.0.0 use the relevant type catalog, such as {@see \CraftCms\Cms\Element\ElementTypes}, {@see \CraftCms\Cms\Field\FieldTypes}, or {@see \CraftCms\Cms\Dashboard\WidgetTypes}, instead.
  */
 class RegisterComponentTypesEvent extends Event
 {

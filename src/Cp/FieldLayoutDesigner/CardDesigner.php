@@ -20,6 +20,7 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class CardDesigner
 {
+    /** @param array<string, mixed> $config */
     public function html(FieldLayout $fieldLayout, array $config = []): string
     {
         $config += [
@@ -73,13 +74,14 @@ class CardDesigner
     /**
      * @throws Throwable
      */
+    /** @param list<string> $cardElements */
     public function previewHtml(FieldLayout $fieldLayout, array $cardElements = [], ?bool $showThumb = null): string
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading
-        $headingHtml = Html::tag('craft-element-label',
+        $headingHtml = Html::tag('craft-truncate',
             Html::tag('a', Html::tag('span', t('Title')), [
                 'class' => ['label-link'],
                 'href' => '#',
@@ -128,6 +130,7 @@ class CardDesigner
 
     }
 
+    /** @return array<string, array<string, string|null>> */
     private function cardPreviewOptionsInternal(
         FieldLayout $fieldLayout,
         string $keyPrefix,
@@ -180,14 +183,13 @@ class CardDesigner
         }
 
         foreach ($allOptions as $key => &$option) {
-            if (! isset($option['value'])) {
-                $option['value'] = $key;
-            }
+            $option['value'] ??= $key;
         }
 
         return $allOptions;
     }
 
+    /** @return array<string, array{label: string, value: string}> */
     private function cardThumbOptionsInternal(
         FieldLayout $fieldLayout,
         string $keyPrefix,
@@ -221,14 +223,13 @@ class CardDesigner
         }
 
         foreach ($allOptions as $key => &$option) {
-            if (! isset($option['value'])) {
-                $option['value'] = $key;
-            }
+            $option['value'] ??= $key;
         }
 
         return $allOptions;
     }
 
+    /** @param array<string, mixed> $config */
     private function thumbManagementHtml(FieldLayout $fieldLayout, array $config): string
     {
         $config += [

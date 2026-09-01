@@ -6,8 +6,6 @@ namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
-use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
-use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use Illuminate\Support\Facades\Context;
 use Illuminate\View\FileViewFinder;
 
@@ -113,28 +111,9 @@ enum TemplateMode: string
         }, '/\\');
     }
 
+    /** @return array<string, list<string>> */
     public function templateRoots(): array
     {
-        return once(function () {
-            $templateRoots = [];
-
-            event($event = match ($this) {
-                self::Cp => new CpTemplateRootsResolving,
-                self::Site => new SiteTemplateRootsResolving,
-            });
-
-            foreach ($event->roots as $templatePath => $dir) {
-                $templatePath = strtolower(trim($templatePath, '/'));
-
-                $templateRoots[$templatePath] ??= [];
-
-                array_push($templateRoots[$templatePath], ...(array) $dir);
-            }
-
-            // Longest (most specific) first
-            krsort($templateRoots, SORT_STRING);
-
-            return $templateRoots;
-        });
+        return app(TemplateRoots::class)->roots($this);
     }
 }

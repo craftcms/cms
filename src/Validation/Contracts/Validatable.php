@@ -74,11 +74,9 @@ interface Validatable extends ValidatesWithRuleset
      * This method is invoked after validation ends.
      * Override this method to perform additional validation or add custom errors to the validator.
      *
-     * TODO: Remove optionality of validator after components no longer rely on craft/base/Model
-     *
-     * @param  ?Validator  $validator  the validator instance that performed the validation.
+     * @param  Validator  $validator  the validator instance that performed the validation.
      */
-    public function afterValidate(?Validator $validator = null): void;
+    public function afterValidate(Validator $validator): void;
 
     /**
      * Handle a passed validation attempt.

@@ -7,12 +7,10 @@ namespace CraftCms\Yii2Adapter\Event;
 use Craft;
 use craft\base\Element;
 use craft\base\Field as LegacyField;
-use craft\console\controllers\ResaveController;
 use craft\controllers\AssetsController;
 use craft\controllers\ElementsController;
 use craft\controllers\UsersController;
 use craft\db\Connection;
-use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
@@ -39,7 +37,6 @@ use craft\services\Routes;
 use craft\services\Search as LegacySearch;
 use craft\services\Sites;
 use craft\services\Structures;
-use craft\services\SystemMessages;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -51,10 +48,9 @@ use craft\web\Application;
 use craft\web\twig\variables\Cp;
 use craft\web\View;
 use CraftCms\Cms\Edition\Events\EditionChanged;
-use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
+use CraftCms\Cms\View\TemplateCacheCollectors;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use CraftCms\Yii2Adapter\View\LegacyAssetBundleCollector;
@@ -78,13 +74,6 @@ readonly class EventCompatibility
         Entry::registerEvents();
         NestedElementManager::registerEvents();
         \craft\elements\User::registerEvents();
-
-        Event::listen(function(ElementTypesResolving $event) {
-            $event->types[] = Address::class;
-            $event->types[] = Asset::class;
-            $event->types[] = Entry::class;
-            $event->types[] = \craft\elements\User::class;
-        });
 
         /**
          * FieldLayouts
@@ -117,7 +106,6 @@ readonly class EventCompatibility
         Gc::registerEvents();
         LegacyGql::registerEvents();
         LegacySearch::registerEvents();
-        Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
         LegacyProjectConfig::registerEvents();
@@ -125,7 +113,6 @@ readonly class EventCompatibility
         Routes::registerEvents();
         Sites::registerEvents();
         Structures::registerEvents();
-        SystemMessages::registerEvents();
         UserGroups::registerEvents();
         UserPermissions::registerEvents();
         Users::registerEvents();
@@ -138,7 +125,6 @@ readonly class EventCompatibility
          * Controllers
          */
         AssetsController::registerEvents();
-        ResaveController::registerEvents();
         UsersController::registerEvents();
         ElementsController::registerEvents();
 
@@ -188,10 +174,22 @@ readonly class EventCompatibility
             YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
         });
 
-        Event::listen(function(TemplateCacheCollectorsResolving $event) {
-            $event->types->add(LegacyAssetBundleCollector::class);
-        });
+        app(TemplateCacheCollectors::class)->register(LegacyAssetBundleCollector::class);
 
         LegacyGqlEvents::register();
+    }
+
+    /** @internal */
+    public function finalizeRegistrationEvents(): void
+    {
+        LegacyField::finalizeRegistrationEvents();
+        Auth::finalizeRegistrationEvents();
+        Elements::finalizeRegistrationEvents();
+        Fields::finalizeRegistrationEvents();
+        Fs::finalizeRegistrationEvents();
+        Dashboard::finalizeRegistrationEvents();
+        UserPermissions::finalizeRegistrationEvents();
+        View::finalizeRegistrationEvents();
+        ImageTransforms::finalizeRegistrationEvents();
     }
 }

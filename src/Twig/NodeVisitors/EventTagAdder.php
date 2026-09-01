@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\NodeVisitors;
 
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Nodes\BaseNode;
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\PageLifecycle;
 use InvalidArgumentException;
 use Twig\Environment;
@@ -39,7 +39,7 @@ class EventTagAdder extends BaseEventTagVisitor
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
-        if (! app(TwigRenderer::class)->isRenderingPageTemplate()) {
+        if (! Template::isRenderingPageTemplate()) {
             return $node;
         }
 
@@ -60,6 +60,15 @@ class EventTagAdder extends BaseEventTagVisitor
     {
         // This needs to run after EventTagFinder
         return 1;
+    }
+
+    /**
+     * Resets the node visitor's per-template parse state.
+     */
+    public function reset(): void
+    {
+        $this->bodyTag = null;
+        $this->bodyAttrOffset = null;
     }
 
     private function processTextNode(TextNode $node): Node

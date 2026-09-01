@@ -9,7 +9,6 @@ use CraftCms\Cms\Plugin\Commands\EnableCommand;
 use CraftCms\Cms\Plugin\Commands\InstallCommand;
 use CraftCms\Cms\Plugin\Commands\ListCommand;
 use CraftCms\Cms\Plugin\Commands\UninstallCommand;
-use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\ServiceProvider;
 
 class PluginServiceProvider extends ServiceProvider
@@ -17,23 +16,11 @@ class PluginServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
-        /**
-         * Override the default Laravel package manifest so we
-         * can automatically detect and register Plugins.
-         */
-        $this->app->instance(
-            PackageManifest::class,
-            $this->app->make(PluginPackageManifest::class, [
-                'basePath' => $this->app->basePath(),
-                'manifestPath' => $this->app->getCachedPackagesPath(),
-            ]),
-        );
+        $this->app->booted(fn () => $this->app->make(Plugins::class)->loadPlugins());
     }
 
-    public function boot(Plugins $plugins): void
+    public function boot(): void
     {
-        $plugins->loadPlugins();
-
         if (! $this->app->runningInConsole()) {
             return;
         }

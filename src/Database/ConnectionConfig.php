@@ -16,6 +16,10 @@ use RuntimeException;
 
 class ConnectionConfig
 {
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     public static function normalize(array $config): array
     {
         if (($config['driver'] ?? null) !== 'sqlite') {

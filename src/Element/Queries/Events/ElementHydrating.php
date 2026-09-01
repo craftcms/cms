@@ -8,6 +8,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 class ElementHydrating
 {
+    /**
+     * @param  array<string, mixed>  $row
+     * @param  array<string, mixed>  $content
+     */
     public function __construct(
         public array $row,
         public array $content,

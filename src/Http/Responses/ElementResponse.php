@@ -24,6 +24,7 @@ class ElementResponse
 {
     use RespondsWithFlash;
 
+    /** @param array<string, mixed> $data */
     public function success(ElementInterface $element, string $message, array $data = [], bool $supportsAddAnother = false): Response
     {
         // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
@@ -83,10 +84,18 @@ class ElementResponse
         $data = [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
+            // The legacy editor and the slideouts apply errors by the raw
+            // attribute name, so the JSON branch keeps them as validated.
             'errors' => $element->errors()->getMessages(),
             'errorSummary' => $this->errorSummary($element),
             'invalidNestedElementIds' => $element->getInvalidNestedElementIds(),
         ];
+
+        // The Inertia editor matches errors to Form Controls by path, which is
+        // the posted input name rather than the validated attribute.
+        if (! request()->expectsJson()) {
+            $data['errors'] = $element->formErrors();
+        }
 
         return $this->asFailure($message, $data);
     }

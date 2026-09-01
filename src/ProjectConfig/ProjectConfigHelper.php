@@ -255,7 +255,8 @@ class ProjectConfigHelper
     /**
      * Traverse and clean a config array, removing empty values and sorting keys.
      *
-     * @param  array  $config  Config array to clean
+     * @param  array<string|int, mixed>  $config  Config array to clean
+     * @return array<string|int, mixed>
      *
      * @throws RuntimeException if config contains unexpected data.
      */
@@ -332,6 +333,10 @@ class ProjectConfigHelper
      *
      * @param  bool  $recursive  Whether to process nested associative arrays as well
      */
+    /**
+     * @param  array<string|int, mixed>  $array
+     * @return array<string|int, mixed>
+     */
     public static function packAssociativeArrays(array $array, bool $recursive = true): array
     {
         foreach ($array as &$value) {
@@ -366,6 +371,10 @@ class ProjectConfigHelper
      * ```
      *
      * @param  bool  $recursive  Whether to process nested associative arrays as well
+     */
+    /**
+     * @param  array<string|int, mixed>  $array
+     * @return array<string|int, mixed>
      */
     public static function packAssociativeArray(array $array, bool $recursive = true): array
     {
@@ -403,6 +412,10 @@ class ProjectConfigHelper
      * Loops through an array, and restores any arrays that were prepared via [[packAssociativeArray()]]
      * to their original form.
      */
+    /**
+     * @param  array<string|int, mixed>  $array
+     * @return array<string|int, mixed>
+     */
     public static function unpackAssociativeArrays(array $array): array
     {
         foreach ($array as &$value) {
@@ -418,6 +431,10 @@ class ProjectConfigHelper
      * Restores an array that was prepared via [[packAssociativeArray()]] to its original form.
      *
      * @param  bool  $recursive  Whether to process nested associative arrays as well
+     */
+    /**
+     * @param  array<string|int, mixed>  $array
+     * @return array<string|int, mixed>
      */
     public static function unpackAssociativeArray(array $array, bool $recursive = true): array
     {
@@ -449,6 +466,9 @@ class ProjectConfigHelper
 
     /**
      * Flatten a config array to a dot.based.key array.
+     *
+     * @param  array<string|int, mixed>  $array
+     * @param  array<string, mixed>  $result
      */
     public static function flattenConfigArray(array $array, string $path, array &$result): void
     {
@@ -469,7 +489,8 @@ class ProjectConfigHelper
      * Take a project config array and split it into components.
      * Components are defined per each second-level config entry, where all the sibling entries are keyed by UIDs.
      *
-     * @return array in the form of [$file => $config], where `$file` is the relative config file path in Project Config folder
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed> in the form of [$file => $config], where `$file` is the relative config file path in Project Config folder
      */
     public static function splitConfigIntoComponents(array $config): array
     {
@@ -485,7 +506,7 @@ class ProjectConfigHelper
     /**
      * Traverse a nested data array according to path and perform an action depending on parameters.
      *
-     * @param  array  $data  A nested array of data to traverse
+     * @param  array<string|int, mixed>  $data  A nested array of data to traverse
      * @param  string|string[]  $path  Path used to traverse the array. Either an array or a dot.based.path
      * @param  mixed  $value  Value to set at the destination. If null, will return the value, unless deleting
      * @param  bool  $delete  Whether to delete the value at the destination or not.
@@ -534,6 +555,8 @@ class ProjectConfigHelper
     /**
      * Recursively looks for an array of component configs (sub-arrays indexed by UUIDs), within the given config array.
      *
+     * @param  array<string, mixed>  $config
+     * @param  array<string, mixed>  $splitConfig
      * @return bool whether the config was split
      */
     private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, ?string $path = null): bool
@@ -576,6 +599,7 @@ class ProjectConfigHelper
     /**
      * Returns whether the given project config item is an array of component configs, where each key is a UUID, and each item is a sub-array.
      */
+    /** @param array<string|int, mixed> $item */
     private static function isComponentArray(array $item): bool
     {
         if (empty($item)) {
@@ -619,9 +643,7 @@ class ProjectConfigHelper
      */
     public static function touch(?int $timestamp = null): void
     {
-        if ($timestamp === null) {
-            $timestamp = now()->getTimestamp();
-        }
+        $timestamp ??= now()->getTimestamp();
 
         $timestampLine = "dateModified: $timestamp\n";
 

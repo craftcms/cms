@@ -18,15 +18,16 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
-use CraftCms\Cms\Field\Events\LinkTypesResolving;
-use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
-use CraftCms\Cms\Field\LinkTypes\Email as EmailType;
-use CraftCms\Cms\Field\LinkTypes\Entry;
-use CraftCms\Cms\Field\LinkTypes\Phone;
-use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Link as LinkControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Support\Arr;
@@ -43,7 +44,6 @@ use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Link represents a Link field.
@@ -51,8 +51,6 @@ use function CraftCms\Cms\template;
 class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
-
-    private static array $_types;
 
     #[Override]
     public static function displayName(): string
@@ -96,32 +94,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public static function types(): array
     {
-        if (! isset(self::$_types)) {
-            /** @var class-string<BaseLinkType>[] $types */
-            $types = [
-                Asset::class,
-                EmailType::class,
-                Entry::class,
-                Phone::class,
-                Sms::class,
-            ];
-
-            // Fire a registerLinkTypes event
-            event($event = new LinkTypesResolving($types));
-
-            $types = $event->types;
-
-            // URL *has* to be there
-            /** @var class-string<BaseLinkType>[] $types */
-            $types[] = UrlType::class;
-
-            self::$_types = array_combine(
-                array_map(fn (string $type) => $type::id(), $types),
-                $types,
-            );
-        }
-
-        return self::$_types;
+        return app(LinkTypes::class)->typesById()->all();
     }
 
     /**
@@ -152,7 +125,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     ];
 
     /**
-     * @var array<string,array> Settings for the allowed types
+     * @var array<string, array<string, mixed>> Settings for the allowed types
      */
     public array $typeSettings = [];
 
@@ -196,6 +169,25 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ], $this->linkSettingsRules());
     }
 
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make($this->linkSettingsNodes())->add(
+            FormField::make(t('Max Length'))
+                ->instructions(t('The maximum length (in bytes) the field can hold.'))
+                ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
+        )->when(
+            Cms::config()->enableGql,
+            fn (Form $form): Form => $form->add(
+                FormField::make(t('GraphQL Mode'))
+                    ->control(Choice::make('graphqlMode')->options([
+                        ['label' => t('Full data'), 'value' => 'full'],
+                        ['label' => t('URL only'), 'value' => 'url'],
+                    ])->value($this->fullGraphqlData ? 'full' : 'url')),
+            ),
+        );
+    }
+
     /**
      * Returns the link types available to the field.
      *
@@ -218,6 +210,25 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return $this->_linkTypes;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $value = $context->value instanceof LinkData
+            ? $context->value->serialize()
+            : $context->value;
+
+        $types = array_values(array_map(
+            fn (BaseLinkType $type): array => Arr::except($type->pickerConfig(), 'elementSelectConfig'),
+            $this->getLinkTypes(),
+        ));
+
+        return LinkControl::make($context->path)
+            ->types($types)
+            ->showLabelField($this->showLabelField)
+            ->advancedFields(array_values(array_intersect($this->advancedFields, ['urlSuffix', 'title'])))
+            ->value($value);
     }
 
     private function resolveType(string $value): string
@@ -249,63 +260,10 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return UrlType::id();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $html = template('_components/fieldtypes/Link/link-settings', $this->linkSettingsProps($readOnly));
-
-        $html .=
-            Html::tag('hr').
-            Html::button(t('Advanced'), attributes: [
-                'class' => 'fieldtoggle',
-                'data' => ['target' => 'advanced'],
-            ]).
-            Html::beginTag('div', [
-                'id' => 'advanced',
-                'class' => 'hidden',
-            ]).
-            FormFields::textFieldHtml([
-                'label' => t('Max Length'),
-                'instructions' => t('The maximum length (in bytes) the field can hold.'),
-                'id' => 'maxLength',
-                'name' => 'maxLength',
-                'type' => 'number',
-                'min' => '10',
-                'step' => '10',
-                'value' => $this->maxLength,
-                'errors' => $this->errors()->get('maxLength'),
-                'data' => ['error-key' => 'maxLength'],
-                'disabled' => $readOnly,
-            ]);
-
-        if (Cms::config()->enableGql) {
-            $html .=
-                FormFields::selectFieldHtml([
-                    'label' => t('GraphQL Mode'),
-                    'id' => 'graphql-mode',
-                    'name' => 'graphqlMode',
-                    'options' => [
-                        ['label' => t('Full data'), 'value' => 'full'],
-                        ['label' => t('URL only'), 'value' => 'url'],
-                    ],
-                    'value' => $this->fullGraphqlData ? 'full' : 'url',
-                    'disabled' => $readOnly,
-                ]);
-        }
-
-        return $html.Html::endTag('div');
-    }
-
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     private function prepareLegacyAdvancedFieldConfig(array $config): array
     {
         $config['advancedFields'] ??= [];
@@ -321,6 +279,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return $config;
     }
 
+    /** @return array<string, BaseLinkType> */
     protected function configuredLinkTypesForSettings(): array
     {
         return $this->getLinkTypes();
@@ -422,6 +381,8 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
     /**
      * Localize the value of the link field when linking to an element.
+     *
+     * @return LinkData|array{type: string, value: string}
      */
     private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
     {
@@ -664,6 +625,7 @@ JS;
         return $html.Html::endTag('div');
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -728,7 +690,7 @@ JS;
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
-        return $value?->getLink() ?? '';
+        return (string) ($value?->getLink() ?? '');
     }
 
     #[Override]
@@ -743,7 +705,7 @@ JS;
     }
 
     #[Override]
-    public function getContentGqlType(): Type|array
+    public function getContentGqlType(): Type
     {
         if (! $this->fullGraphqlData) {
             return parent::getContentGqlType();
@@ -752,6 +714,7 @@ JS;
         return LinkDataType::generateType($this);
     }
 
+    /** @return Type|array{name: string, type: Type, description: string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {

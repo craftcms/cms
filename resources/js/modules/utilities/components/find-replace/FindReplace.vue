@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import findAndReplaceController from '@actions/Utilities/FindAndReplaceController';
   import {useForm} from '@inertiajs/vue3';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import InlineFlash from '@/common/components/InlineFlash.vue';
 
   const form = useForm({

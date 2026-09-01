@@ -1,25 +1,22 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import PermissionList from '@/modules/permissions/components/PermissionList.vue';
+  import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {update} from '@actions/Users/PermissionsController';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
     inheritAttrs: false,
   });
 
   type UserPermissionsPageProps =
-    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel & {
-      details?: string | null;
-    };
+    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel;
 
   const props = usePage<UserPermissionsPageProps>().props;
 
@@ -28,9 +25,6 @@
     groups: props.currentGroupIds,
     permissions: props.directPermissions,
   });
-  const initialAdmin = form.admin;
-  const initialGroups = new Set(form.groups);
-  const initialPermissions = new Set(form.permissions);
 
   const routeAction = () =>
     props.user.isCurrent
@@ -40,14 +34,7 @@
         });
 
   const {save} = useSettingsSave(form, routeAction, {
-    passwordConfirmation: {
-      required: ({admin, groups, permissions}) =>
-        admin !== initialAdmin ||
-        groups.length !== initialGroups.size ||
-        groups.some((group) => !initialGroups.has(group)) ||
-        permissions.length !== initialPermissions.size ||
-        permissions.some((permission) => !initialPermissions.has(permission)),
-    },
+    elevatedFields: ['admin', 'groups', 'permissions'],
   });
 
   const lockedPermissions = computed(() => [
@@ -80,14 +67,18 @@
 </script>
 
 <template>
-  <input type="hidden" data-user-groups-input :value="form.groups.join(',')" />
-  <input
-    type="hidden"
-    data-user-permissions-input
-    :value="form.permissions.join(',')"
-  />
+  <UserScreen>
+    <input
+      type="hidden"
+      data-user-groups-input
+      :value="form.groups.join(',')"
+    />
+    <input
+      type="hidden"
+      data-user-permissions-input
+      :value="form.permissions.join(',')"
+    />
 
-  <Pane appearance="raised">
     <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
       <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
@@ -144,25 +135,13 @@
       </craft-callout>
 
       <craft-field-group v-if="!form.admin">
-        <div
-          v-for="group in props.permissions"
-          :key="group.handle"
-          class="user-permissions"
-        >
-          <PermissionList
-            :heading="group.heading"
-            :permissions="group.permissions"
-            :permission-keys="group.keys"
-            :locked-permissions="lockedPermissions"
-            :disabled="Boolean(props.teamPermissionsNotice)"
-            v-model="form.permissions"
-          />
-        </div>
+        <PermissionTree
+          :groups="props.permissions"
+          :locked-permissions="lockedPermissions"
+          :disabled="Boolean(props.teamPermissionsNotice)"
+          v-model="form.permissions"
+        />
       </craft-field-group>
     </craft-field-group>
-  </Pane>
-
-  <LayoutSlot v-if="props.details" name="details">
-    <div v-html="props.details"></div>
-  </LayoutSlot>
+  </UserScreen>
 </template>

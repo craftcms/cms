@@ -55,6 +55,7 @@ enum FileKind: string
         };
     }
 
+    /** @return list<string> */
     public function extensions(): array
     {
         return match ($this) {
@@ -66,7 +67,7 @@ enum FileKind: string
             self::Flash => [],
             self::Html => ['htm', 'html'],
             self::Illustrator => ['ai'],
-            self::Image => ['avif', 'bmp', 'gif', 'heic', 'heif', 'jfif', 'jp2', 'jpe', 'jpeg', 'jpg', 'jpx', 'pam', 'pfm', 'pgm', 'png', 'pnm', 'ppm', 'svg', 'tif', 'tiff', 'webp'],
+            self::Image => ['avif', 'bmp', 'gif', 'heic', 'heif', 'ico', 'j2c', 'j2k', 'jfif', 'jp2', 'jp2k', 'jpc', 'jpe', 'jpeg', 'jpf', 'jpg', 'jpg2', 'jpm', 'jpx', 'jxl', 'pam', 'pfm', 'pgm', 'pjpeg', 'pjpg', 'png', 'pnm', 'ppm', 'svg', 'tif', 'tiff', 'webp'],
             self::Javascript => ['js'],
             self::Json => ['json'],
             self::Pdf => ['pdf'],
@@ -81,6 +82,7 @@ enum FileKind: string
         };
     }
 
+    /** @return array{label: string, extensions: list<string>} */
     public function toArray(): array
     {
         return [

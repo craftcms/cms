@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Elements;
 
+use Closure;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\AuthMethods;
@@ -17,9 +18,11 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -28,6 +31,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -93,7 +97,7 @@ use function CraftCms\Cms\t;
  * @property-read Address[]|null $addresses the user’s addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  * @property-read DateTimeInterface|null $cooldownEndTime the time when the user will be over their cooldown period
- * @property-read array $preferences the user’s preferences
+ * @property-read array<string, mixed> $preferences the user’s preferences
  * @property-read bool $isCredentialed whether the user account can be logged into
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
@@ -117,6 +121,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string GQL_TYPE_NAME = 'User';
 
+    /** @var string[] */
     private static array $photoColors = [
         'red',
         'orange',
@@ -298,7 +303,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public ?string $remember_token = null;
 
     /**
-     * @var ElementCollection<Address> Addresses
+     * @var ElementCollection<int, Address> Addresses
      *
      * @see getAddresses()
      */
@@ -414,6 +419,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'username' => t('Username'),
+            'email' => t('Email'),
+            'firstName' => t('First Name'),
+            'lastName' => t('Last Name'),
+            'fullName' => t('Full Name'),
+            'preferredLanguage' => t('Preferred Language'),
+            'preferredLocale' => t('Preferred Locale'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('user');
@@ -434,6 +454,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public static function refHandle(): string
     {
         return 'user';
+    }
+
+    #[Override]
+    public static function editViewModelClass(): string
+    {
+        return UserEditViewModel::class;
     }
 
     #[Override]
@@ -491,6 +517,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return new UserCondition(self::class);
     }
 
+    /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -565,6 +592,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $sources;
     }
 
+    /** @return array<int, class-string|object> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -580,6 +608,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return ['username', 'fullName', 'firstName', 'lastName', 'email'];
     }
 
+    /** @return array<array-key, string|array<string, scalar|callable|null>> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -631,6 +660,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ];
     }
 
+    /** @return array<string, array<string, string>> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -673,6 +703,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
     }
 
+    /** @return array<string, array<string, string|Stringable|callable>> */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -736,6 +767,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ]);
     }
 
+    /** @return array<string, class-string|array<array-key, mixed>|callable>|null|false */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -808,6 +840,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'users';
     }
 
+    /** @return array<int, array<string, string>> */
     #[Override]
     protected function crumbs(): array
     {
@@ -818,7 +851,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return [
             [
                 'label' => t('Users'),
-                'url' => 'users',
+                'href' => Url::cpUrl('users'),
             ],
         ];
     }
@@ -828,6 +861,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->getName() ?: $this->email;
     }
 
+    /** @return string[] */
     #[Override]
     public function attributes(): array
     {
@@ -872,14 +906,16 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $labels;
     }
 
+    /** @return string[] */
     #[Override]
     public function safeAttributes(): array
     {
         return Arr::except(parent::safeAttributes(), ['photoId']);
     }
 
+    /** @param array<string, mixed> $values */
     #[Override]
-    public function setAttributesFromRequest($values): void
+    public function setAttributesFromRequest(array $values): void
     {
         unset(
             $values['invalidLoginCount'],
@@ -895,7 +931,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         );
 
         if (isset($values['email'])) {
-            $values['email'] = trim($values['email']);
+            $values['email'] = trim((string) $values['email']);
             if ($values['email'] === '' || $values['email'] === $this->email) {
                 unset($values['email']);
             }
@@ -981,7 +1017,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Gets the user’s addresses.
      *
-     * @return ElementCollection<Address>
+     * @return ElementCollection<int, Address>
      */
     #[AllowedInSandbox]
     public function getAddresses(): ElementCollection
@@ -991,14 +1027,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         if (! $this->id) {
-            /**
-             * @var ElementCollection<Address> $addresses
-             *
-             * @noRector
-             */
-            $addresses = new ElementCollection;
-
-            return $addresses;
+            return new ElementCollection;
         }
 
         return $this->_addresses = $this->createAddressQuery()
@@ -1148,9 +1177,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
-        if (! isset($this->_friendlyName)) {
-            $this->_friendlyName = $this->_defineFriendlyName() ?? false;
-        }
+        $this->_friendlyName ??= $this->_defineFriendlyName() ?? false;
 
         return $this->_friendlyName ?: null;
     }
@@ -1340,6 +1367,236 @@ XML;
         return Url::cpUrl("users/$this->id");
     }
 
+    /**
+     * The account actions for the Inertia editor — the Form-system counterpart
+     * to the items {@see safeActionMenuItems()} and
+     * {@see destructiveActionMenuItems()} build with inline jQuery.
+     *
+     * Everything here posts to an existing `users/*` action; the client
+     * dispatches them, so nothing needs an inline script.
+     *
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
+        $currentUser = currentUser();
+
+        if (
+            ! $this->id ||
+            $this->getIsUnpublishedDraft() ||
+            ! $currentUser instanceof CraftUser ||
+            Edition::get() === Edition::Solo
+        ) {
+            return [];
+        }
+
+        $isCurrentUser = $this->getIsCurrent();
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $status = $this->getStatus();
+
+        $items = [
+            ...$this->statusActionDescriptors($currentUser, $status, $isCurrentUser),
+            ...$this->passwordResetActionDescriptors($canAdministrateUsers, $status, $isCurrentUser),
+            ...$this->sessionActionDescriptors($currentUser, $isCurrentUser),
+        ];
+
+        // Suspending and deactivating revoke access, so they're flagged the way
+        // deleting is and sort with it.
+        if (! $isCurrentUser && Users::canSuspend($currentUser, $this) && $this->active && ! $this->suspended) {
+            $items[] = [
+                'label' => t('Suspend'),
+                'icon' => 'ban',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/suspend-user'),
+                    'params' => ['userId' => $this->id],
+                ],
+            ];
+        }
+
+        if (Gate::check('deactivate', $this) && ($this->active || $this->pending)) {
+            $items[] = [
+                'label' => t('Deactivate'),
+                'icon' => 'disabled',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/deactivate-user'),
+                    'params' => ['userId' => $this->id],
+                    'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Actions that move the account between statuses — enabling, activating,
+     * unsuspending, unlocking, and the password-reset emails that go with them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function statusActionDescriptors(CraftUser $currentUser, string $status, bool $isCurrentUser): array
+    {
+        $items = [];
+
+        switch ($status) {
+            case Element::STATUS_ARCHIVED:
+            case Element::STATUS_DISABLED:
+                if (Gate::check('save', $this)) {
+                    $items[] = $this->userActionDescriptor(t('Enable'), 'users/enable-user');
+                }
+                break;
+
+            case self::STATUS_INACTIVE:
+            case self::STATUS_PENDING:
+                // Activation only means something for an account that can be
+                // emailed about it.
+                if (! $this->email) {
+                    break;
+                }
+
+                if (Gate::check('sendActivationEmail', $this)) {
+                    $items[] = $this->userActionDescriptor(t('Send activation email'), 'users/send-activation-email', 'paperplane');
+                }
+
+                if (Gate::check('activate', $this)) {
+                    if (! $this->password && (! $this->admin || $currentUser->isAdmin())) {
+                        $items[] = $this->copyUrlDescriptor(t('Copy activation URL…'), 'users/get-password-reset-url');
+                    }
+
+                    $items[] = $this->userActionDescriptor(t('Activate account'), 'users/activate-user', 'enabled');
+                }
+                break;
+
+            case self::STATUS_SUSPENDED:
+                if (Users::canSuspend($currentUser, $this)) {
+                    $items[] = $this->userActionDescriptor(t('Unsuspend'), 'users/unsuspend-user', 'enabled');
+                }
+                break;
+
+            case self::STATUS_ACTIVE:
+                if (
+                    $this->locked &&
+                    ! $isCurrentUser &&
+                    ($currentUser->isAdmin() || ! $this->admin) &&
+                    $currentUser->can('moderateUsers') &&
+                    (
+                        ($impersonatorId = app(Impersonation::class)->getImpersonatorId()) === null ||
+                        $this->id !== $impersonatorId
+                    )
+                ) {
+                    $items[] = $this->userActionDescriptor(t('Unlock'), 'users/unlock-user');
+                }
+
+                if (! $isCurrentUser && Gate::check('editUsers')) {
+                    $items[] = $this->userActionDescriptor(t('Send password reset email'), 'users/send-password-reset-email', 'paperplane');
+
+                    if ($currentUser->can('administrateUsers') && (! $this->admin || $currentUser->isAdmin())) {
+                        $items[] = $this->copyUrlDescriptor(t('Copy password reset URL…'), 'users/get-password-reset-url');
+                    }
+                }
+                break;
+        }
+
+        return $items;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function passwordResetActionDescriptors(bool $canAdministrateUsers, string $status, bool $isCurrentUser): array
+    {
+        if (
+            ! $canAdministrateUsers ||
+            $isCurrentUser ||
+            ! in_array($status, [self::STATUS_PENDING, self::STATUS_ACTIVE], true)
+        ) {
+            return [];
+        }
+
+        return [$this->passwordResetRequired
+            ? [
+                ...$this->userActionDescriptor(
+                    t('Don’t require a password reset on next login'),
+                    'users/remove-password-reset-requirement',
+                    'asterisk-slash',
+                ),
+                'color' => Color::Gray->value,
+            ]
+            : $this->userActionDescriptor(
+                t('Require a password reset on next login'),
+                'users/require-password-reset',
+                'asterisk',
+            ),
+        ];
+    }
+
+    /**
+     * Signing in as this user, which always needs a fresh password first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function sessionActionDescriptors(CraftUser $currentUser, bool $isCurrentUser): array
+    {
+        if ($isCurrentUser || ! Users::canImpersonate($currentUser, $this)) {
+            return [];
+        }
+
+        return [
+            [
+                'label' => trim($this->getName())
+                    ? t('Sign in as {user}', ['user' => $this->getName()])
+                    : t('Sign in as user'),
+                'icon' => 'key',
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/impersonate'),
+                    'params' => ['userId' => $this->id],
+                    'requireElevatedSession' => true,
+                ],
+            ],
+            $this->copyUrlDescriptor(t('Copy impersonation URL…'), 'users/get-impersonation-url'),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function userActionDescriptor(string $label, string $action, ?string $icon = null): array
+    {
+        return array_filter([
+            'label' => $label,
+            'icon' => $icon,
+            'behavior' => [
+                'type' => 'submit',
+                'actionUrl' => Url::actionUrl($action),
+                'params' => ['userId' => $this->id],
+            ],
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * An action that fetches a one-off URL and offers it for copying, behind an
+     * elevated session — these URLs grant access to the account.
+     *
+     * @return array<string, mixed>
+     */
+    private function copyUrlDescriptor(string $label, string $action): array
+    {
+        return [
+            'label' => $label,
+            'icon' => 'clipboard',
+            'behavior' => [
+                'type' => 'copyUrl',
+                'actionUrl' => Url::actionUrl($action),
+                'params' => ['userId' => $this->id],
+                'prompt' => t('Copy the URL, and open it in a new private window.'),
+            ],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1396,7 +1653,7 @@ XML;
                         }
                         if ($canActivate) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
-                            if (! $this->password) {
+                            if (! $this->password && (! $this->admin || $currentUser->isAdmin())) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'));
                             }
                             $statusItems[] = [
@@ -1452,7 +1709,7 @@ XML;
                                 'userId' => $this->id,
                             ],
                         ];
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (! $this->admin || $currentUser->isAdmin())) {
                             $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'));
                         }
                     }
@@ -1540,6 +1797,7 @@ JS, [
         ];
     }
 
+    /** @return array<int, array<string, mixed>> */
     #[Override]
     protected function destructiveActionMenuItems(): array
     {
@@ -1592,6 +1850,7 @@ JS, [
         ];
     }
 
+    /** @return array<string, string> */
     private function _copyPasswordResetUrlActionItem(string $label): array
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
@@ -1627,7 +1886,7 @@ JS, [
     /**
      * Returns the user’s preferences.
      *
-     * @return array The user’s preferences.
+     * @return array<string, mixed> The user’s preferences.
      */
     public function getPreferences(): array
     {
@@ -1699,13 +1958,19 @@ JS, [
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'photo') {
-            /** @var Asset|null $photo */
-            $photo = $elements[0] ?? null;
-            $this->setPhoto($photo);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'photo':
+                /** @var Asset|null $photo */
+                $photo = $elements[0] ?? null;
+                $this->setPhoto($photo);
+                break;
+            case 'addresses':
+                /** @var Address[] $elements */
+                $this->_addresses = ElementCollection::make($elements);
+                break;
         }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
@@ -1794,6 +2059,7 @@ JS, [
         return parent::attributeHtml($attribute);
     }
 
+    /** @return array<string, array<string, bool>> */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -1807,19 +2073,35 @@ JS, [
         ];
     }
 
+    /**
+     * A user's status follows from the account actions (activate, suspend,
+     * deactivate…), not from an editable switch, so the editor sidebar shows
+     * none — matching {@see statusFieldHtml()}, which renders nothing.
+     */
+    #[Override]
+    protected function showStatusField(): bool
+    {
+        return false;
+    }
+
     #[Override]
     protected function statusFieldHtml(): string
     {
         return '';
     }
 
+    /** @return array<string, Closure|string|Stringable> */
     #[Override]
     protected function metadata(): array
     {
         $formatter = I18N::getFormatter();
 
         return [
-            t('Email') => Html::a($this->email, "mailto:$this->email"),
+            // A brand-new account has no email yet, and the editor renders this
+            // for unsaved drafts too.
+            t('Email') => fn () => $this->email
+                ? Html::a($this->email, "mailto:$this->email")
+                : false,
             t('Cooldown Time Remaining') => function () use ($formatter) {
                 if (
                     ! $this->locked ||
@@ -1859,6 +2141,10 @@ JS, [
         ];
     }
 
+    /**
+     * @param  ElementCollection<int, User>  $elements
+     * @return DeletionBlockerInterface[]
+     */
     #[Override]
     public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {

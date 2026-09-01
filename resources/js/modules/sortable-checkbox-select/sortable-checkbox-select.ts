@@ -1,6 +1,6 @@
 import {Base, DragSort, Y_AXIS} from '@craftcms/garnish';
 import {sortableCheckboxSelectData} from './support';
-import type {ReorderDirection} from '@craftcms/cp';
+import type {ReorderDirection} from '@craftcms/ui';
 
 // `Craft` and `$` (jQuery) remain page globals. This class extends the modern
 // `@craftcms/garnish` `Base` but orchestrates jQuery Craft widgets/DOM and exposes
@@ -167,6 +167,21 @@ export class SortableCheckboxSelect extends Base {
   }
 
   /**
+   * Whether an item is checked. The checkbox is either a direct-child native
+   * `<input type=checkbox>` (legacy markup) or an input slotted inside a
+   * `<craft-checkbox>`. Always read the native input — never the
+   * `craft-checkbox` host: the host's `checked` is Lion state that updates in
+   * Lion's own `change` listener, which can run *after* ours (making every
+   * read one toggle stale), and it isn't adopted yet when this runs at boot.
+   * The input's checkedness is already current when `change` fires.
+   */
+  isItemChecked(item: HTMLElement): boolean {
+    return !!item.querySelector<HTMLInputElement>(
+      ':scope > input[type=checkbox], :scope > craft-checkbox input[type=checkbox]'
+    )?.checked;
+  }
+
+  /**
    * Recompute every item's reorder state: a button is enabled only when its item is
    * checked and 2+ items are checked overall. Enabled ⇒ in the sorter (draggable);
    * disabled ⇒ removed (membership is what gates dragging). Called whenever the
@@ -184,9 +199,7 @@ export class SortableCheckboxSelect extends Base {
       )
     );
 
-    const isChecked = (item: HTMLElement): boolean =>
-      !!item.querySelector<HTMLInputElement>(':scope > input[type=checkbox]')
-        ?.checked;
+    const isChecked = (item: HTMLElement): boolean => this.isItemChecked(item);
 
     const enableReorder = items.filter(isChecked).length >= 2;
 
@@ -229,11 +242,7 @@ export class SortableCheckboxSelect extends Base {
       )
     );
 
-    const checkedFlags = items.map(
-      (item) =>
-        !!item.querySelector<HTMLInputElement>(':scope > input[type=checkbox]')
-          ?.checked
-    );
+    const checkedFlags = items.map((item) => this.isItemChecked(item));
     const firstCheckedIndex = checkedFlags.indexOf(true);
     const lastCheckedIndex = checkedFlags.lastIndexOf(true);
 
@@ -279,13 +288,20 @@ export class Item extends Base {
   init(select: SortableCheckboxSelect, item: any): void {
     this.select = select;
     this.$item = $(item);
-    this.$checkbox = this.$item.children('input[type=checkbox]');
+    // The checkbox is either a direct-child native input (legacy markup) or a
+    // slotted input inside a `<craft-checkbox>`, so match by descendant rather
+    // than direct child — otherwise the change listener never binds and
+    // checking items never enables reordering.
+    this.$checkbox = this.$item.find('input[type=checkbox]').first();
 
     // Always-present drag handle + Move up/down menu, before the checkbox.
     this.reorderBtn = document.createElement('craft-reorder-button');
     this.reorderBtn.addEventListener('reorder', (event: Event) => {
-      const {direction} = (event as CustomEvent<{direction: ReorderDirection}>)
-        .detail;
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+      // SAFETY: The reorder control emits a detail object with this registered direction contract.
+      const {direction} = event.detail as {direction: ReorderDirection};
       if (direction === 'down') {
         this.moveDown();
       } else {

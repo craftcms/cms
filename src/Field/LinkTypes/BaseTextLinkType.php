@@ -122,6 +122,16 @@ JS, [
         return $html.Html::hiddenInput($name, $value);
     }
 
+    /**
+     * @return array{
+     *     id: string,
+     *     label: string,
+     *     kind: string,
+     *     prefixes: list<string>,
+     *     pattern: string,
+     *     inputAttributes: array<string, string>,
+     * }
+     */
     #[\Override]
     public function pickerConfig(): array
     {
@@ -135,6 +145,8 @@ JS, [
 
     /**
      * Returns any additional attributes that should be set ot the text input.
+     *
+     * @return array<string, string>
      */
     protected function inputAttributes(): array
     {

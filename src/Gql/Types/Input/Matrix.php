@@ -14,7 +14,7 @@ use GraphQL\Type\Definition\Type;
 
 class Matrix extends InputObjectType
 {
-    public static function getType(MatrixField $context): mixed
+    public static function getType(MatrixField $context): InputObjectType
     {
         $typeName = $context->handle.'_MatrixInput';
 

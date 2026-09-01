@@ -11,7 +11,7 @@ class NestedElementsSaved
 {
     public function __construct(
         public NestedElementManager $manager,
-        /** @param  ElementInterface[]  $elements */
+        /** @var list<ElementInterface> $elements */
         public array $elements = [],
     ) {}
 }

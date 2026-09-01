@@ -4,16 +4,30 @@
     appendElementHtml,
     appendHeadHtml,
     type AppendHtmlDisposer,
-  } from '@craftcms/cp';
+  } from '@craftcms/ui';
   import {onBeforeUnmount, ref, watch} from 'vue';
 
-  const props = defineProps<{
-    fragment?: CraftCms.Cms.View.HtmlFragment | null;
+  const props = withDefaults(
+    defineProps<{
+      fragment?: CraftCms.Cms.View.HtmlFragment | null;
+      /** Tag name for the container element. */
+      as?: string;
+    }>(),
+    {
+      fragment: null,
+      as: 'div',
+    }
+  );
+
+  const emit = defineEmits<{
+    /** The fragment — assets included — is in the document. */
+    (e: 'ready', element: HTMLElement): void;
   }>();
 
   const container = ref<HTMLElement | null>(null);
   const disposers: AppendHtmlDisposer[] = [];
   let lastKey = '';
+  let lastElement: HTMLElement | null = null;
   let runId = 0;
 
   const disposeAll = () => {
@@ -52,18 +66,22 @@
       if (!element || key === '\u0000\u0000') {
         runId++;
         lastKey = '';
+        lastElement = null;
         disposeAll();
 
         return;
       }
 
-      if (key === lastKey) {
+      // Element identity matters too: a runtime `as` change swaps in a fresh
+      // empty container that needs the same fragment re-appended.
+      if (key === lastKey && element === lastElement) {
         return;
       }
 
       runId++;
       const currentRunId = runId;
       lastKey = key;
+      lastElement = element;
       disposeAll();
 
       if (
@@ -90,8 +108,10 @@
       // Upgrade legacy UI elements (lightswitches, field toggles, menus, …)
       // the same way CpScreenSlideout does after injecting fragment content.
       if (html) {
-        (window as any).Craft?.initUiElements?.(element);
+        window.Craft?.initUiElements?.(element);
       }
+
+      emit('ready', element);
     },
     {immediate: true}
   );
@@ -103,5 +123,5 @@
 </script>
 
 <template>
-  <div v-if="fragment" ref="container"></div>
+  <component :is="as" v-if="fragment" ref="container" />
 </template>

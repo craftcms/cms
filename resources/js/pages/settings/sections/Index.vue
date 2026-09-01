@@ -2,11 +2,10 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import DeleteSectionButton from '@/modules/sections/components/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
   import {router} from '@inertiajs/vue3';
-  import Pane from '@/common/components/Pane.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
@@ -49,9 +48,7 @@
           'a',
           {
             class: 'font-bold',
-            href: edit['/{cpTrigger?}/settings/sections/{section}']({
-              section: row.original.id,
-            }).url,
+            href: edit({section: row.original.id}).url,
           },
           getValue()
         ),
@@ -146,9 +143,8 @@
 
   <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
 
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable
-      spacing="relaxed"
       :title="title"
       :table="sectionTable"
       :reorderable="false"
@@ -161,5 +157,5 @@
         <SearchForm :action="index()" v-model="searchTerm" />
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

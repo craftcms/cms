@@ -233,7 +233,7 @@ class Folders
 
         if ($existingFolder && (! $folder->id || $folder->id !== $existingFolder->id)) {
             throw new FsObjectExistsException(t(
-                'A folder with the name "{folderName}" already exists in the volume.',
+                'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]
             ));
         }
@@ -260,7 +260,7 @@ class Folders
         $folder = $this->getFolderById($folderId);
 
         if (! $folder) {
-            throw new AssetOperationException(t('No folder exists with the ID "{id}"', [
+            throw new AssetOperationException(t('No folder exists with the ID “{id}”', [
                 'id' => $folderId,
             ]));
         }
@@ -275,7 +275,7 @@ class Folders
         ]);
 
         if ($conflictingFolder) {
-            throw new FsObjectExistsException(t('A folder with the name "{folderName}" already exists in the folder.', [
+            throw new FsObjectExistsException(t('A folder with the name “{folderName}” already exists in the folder.', [
                 'folderName' => $newName,
             ]));
         }
@@ -301,6 +301,7 @@ class Folders
     }
 
     /**
+     * @param  int|list<int>  $folderIds
      * @param  bool  $deleteDir  Whether the volume directory should be deleted along the record.
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void

@@ -1,28 +1,26 @@
-import {QueueService, ConfigService} from '@craftcms/cp';
 import {createInertiaApp, router} from '@inertiajs/vue3';
-import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
-import {Axios, Config, Queue} from '@/common/types/keys';
+import type {DefineComponent} from 'vue';
 import axios from 'axios';
-import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
-import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
-import ClearCaches from '@/modules/utilities/components/clear-caches/ClearCaches.vue';
-import FindReplace from '@/modules/utilities/components/find-replace/FindReplace.vue';
-import DatabaseBackup from '@/modules/utilities/components/DatabaseBackup.vue';
-import Migrations from '@/modules/utilities/components/Migrations.vue';
-import Updates from '@/modules/updater/components/Updates.vue';
-import ProjectConfig from '@/modules/utilities/components/project-config/ProjectConfig.vue';
-import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
-import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
-import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import {setTranslations} from '@craftcms/cp/utilities/translate';
+import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
-import {createCpComponentRegistry} from './components.js';
+import {registerSlideoutGlobals} from '@/common/slideouts';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
+import {config, installCpApp, queue} from './cp-app';
+import {cpComponentRegistry} from './components.js';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
-let bootedCallbacks: Array<(instance: any) => void> = [];
-let bootingCallbacks: Array<(instance: any) => void> = [];
+type TranslationStore = Record<string, Record<string, string>>;
+
+interface CpInitialConfig {
+  translations?: TranslationStore;
+  [key: string]: ScreenPageProps[string] | TranslationStore;
+}
+
+let bootedCallbacks: Array<(instance: typeof window.Cp) => void> = [];
+let bootingCallbacks: Array<(instance: typeof window.Cp) => void> = [];
 
 /**
  * Pages under these prefixes render outside the CP shell: auth screens wrap
@@ -42,22 +40,15 @@ function defaultPageLayout(name: string) {
   return AppLayout;
 }
 
-// Instantiate services
-const config = ConfigService.getInstance();
-const queue = QueueService.getInstance();
-const components = createCpComponentRegistry();
-
-function routeSegment(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
+function routeSegment(value: string): string {
   return value.toString().replace(/^\/+|\/+$/g, '');
 }
 
+const initialConfig: CpInitialConfig | typeof window.Craft = {};
+
 // Create our object
 const Cp = {
-  initialConfig: {} as Record<string, any>,
+  initialConfig,
 
   get $config() {
     return config;
@@ -76,18 +67,18 @@ const Cp = {
   },
 
   get $components() {
-    return components;
+    return cpComponentRegistry;
   },
 
-  booted(callback: (instance: any) => void) {
+  booted(callback: (instance: typeof window.Cp) => void) {
     bootedCallbacks.push(callback);
   },
 
-  booting(callback: (instance: any) => void) {
+  booting(callback: (instance: typeof window.Cp) => void) {
     bootingCallbacks.push(callback);
   },
 
-  config(config: Record<any, any>) {
+  config(config: CpInitialConfig | typeof window.Craft) {
     this.initialConfig = config;
   },
 
@@ -96,8 +87,8 @@ const Cp = {
     configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
 
     setUrlDefaults(() => ({
-      cpTrigger: routeSegment(config.get('cpTrigger')),
-      actionTrigger: routeSegment(config.get('actionTrigger')),
+      cpTrigger: routeSegment(String(config.get('cpTrigger') ?? '')),
+      actionTrigger: routeSegment(String(config.get('actionTrigger') ?? '')),
     }));
 
     queue.initialize({
@@ -107,7 +98,7 @@ const Cp = {
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
 
-    setTranslations(this.initialConfig.translations);
+    setTranslations(this.initialConfig.translations ?? {});
   },
 
   async start() {
@@ -117,50 +108,76 @@ const Cp = {
     axios.defaults.headers.common['X-CSRF-TOKEN'] =
       this.$config.get('csrfTokenValue');
 
-    console.groupCollapsed('Craft configuration');
-    console.log(config.all().entries());
-    console.groupEnd();
-
-    console.log('Calling booting callbacks', bootingCallbacks);
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
 
     await createInertiaApp({
-      resolve: (name) => resolveInertiaPage(name),
+      resolve: async (name) => {
+        const page = await resolveInertiaPage(name);
+
+        // SAFETY: the registry only accepts Vue defineComponent/SFC pages.
+        return page as DefineComponent;
+      },
       layout: defaultPageLayout,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
-        app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
-
-        app.provide(Queue, queue);
-        app.provide(Axios, axios);
-        app.provide(Config, config);
-        app.provide(Craft, config);
-
-        app.component('QueueManager', QueueManager);
-        app.component('QueueManagerToolbar', QueueManagerToolbar);
-        app.component('DeprecationErrors', DeprecationErrors);
-        app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
-        app.component('ClearCaches', ClearCaches);
-        app.component('FindReplace', FindReplace);
-        app.component('DatabaseBackup', DatabaseBackup);
-        app.component('Migrations', Migrations);
-        app.component('Updates', Updates);
-        app.component('ProjectConfig', ProjectConfig);
-        app.component('AssetIndexes', AssetIndexes);
-        app.component('SystemMessages', SystemMessages);
-
-        components.install(app);
+        installCpApp(app);
       },
     });
 
     handleNonInertiaRequests();
+    handleAccessibleRouting();
+    ensureLegacyNotificationContainer();
+    registerSlideoutGlobals();
 
-    console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },
 };
+
+/**
+ * When navigating to a new page, set keyboard focus on the route focus anchor and
+ * announce route change.
+ */
+function handleAccessibleRouting() {
+  const {announce} = useAnnouncer();
+  let previousPathname: string | null = null;
+  router.on('navigate', (event) => {
+    const {props, url} = event.detail.page;
+    const pathname = new URL(url, window.location.origin).pathname;
+    if (pathname === previousPathname) return;
+    previousPathname = pathname;
+
+    const routeFocusAnchor: HTMLElement | null =
+      document.getElementById('route-focus-anchor');
+    routeFocusAnchor?.focus();
+
+    if (!props.title) return;
+
+    announce(t('Navigated to {title} page', {title: props.title}));
+  });
+}
+
+/**
+ * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
+ * notifications, …) appends into `#notifications`, which only the Twig layout
+ * renders. Create it for Inertia pages — outside the Vue root, so page visits
+ * can't clobber legacy-appended notifications — and re-point the CP
+ * singleton's cached (empty) reference if it booted before the container
+ * existed.
+ */
+function ensureLegacyNotificationContainer() {
+  if (!document.getElementById('notifications')) {
+    const container = document.createElement('div');
+    container.id = 'notifications';
+    container.setAttribute('role', 'status');
+    document.body.appendChild(container);
+  }
+
+  if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
+    Craft.cp.$notificationContainer = $('#notifications');
+  }
+}
 
 function handleNonInertiaRequests() {
   let fallbackUrl = '';

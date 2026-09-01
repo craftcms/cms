@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use RuntimeException;
 use Throwable;
 
+/** @phpstan-require-implements CustomFieldLayoutProviderInterface */
 trait HasFieldLayout
 {
     /**
@@ -20,10 +23,7 @@ trait HasFieldLayout
      */
     public ?string $idAttribute = null;
 
-    /**
-     * @var int|string|callable|null The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
-     */
-    private $fieldLayoutIdConfig;
+    private Closure|int|string|null $fieldLayoutIdConfig = null;
 
     /**
      * @var FieldLayout|null The field layout associated with the owner
@@ -75,7 +75,7 @@ trait HasFieldLayout
      */
     public function setFieldLayoutId(callable|int|string|null $id): void
     {
-        $this->fieldLayoutIdConfig = $id;
+        $this->fieldLayoutIdConfig = is_callable($id) ? Closure::fromCallable($id) : $id;
     }
 
     private function canReadFieldLayoutIdAttribute(string $attribute): bool
@@ -143,7 +143,7 @@ trait HasFieldLayout
     /**
      * Returns the custom fields associated with the owner's field layout.
      *
-     * @return FieldInterface[]
+     * @return list<FieldInterface>
      */
     public function getCustomFields(): array
     {

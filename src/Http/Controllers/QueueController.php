@@ -27,7 +27,7 @@ readonly class QueueController
 
     public function run(): Response
     {
-        if (! Cms::config()->runQueueAutomatically) {
+        if (app()->isDownForMaintenance() || ! Cms::config()->runQueueAutomatically) {
             return response()->make();
         }
 
@@ -52,10 +52,6 @@ readonly class QueueController
 
     public function jobInfo(): JsonResponse
     {
-        if (! $this->utilities->checkAuthorization(Utilities\QueueManager::class)) {
-            abort(403, 'User is not authorized to perform this action.');
-        }
-
         $limit = $this->request->integer('limit') ?: null;
 
         return new JsonResponse([
@@ -64,15 +60,13 @@ readonly class QueueController
         ]);
     }
 
-    public function cancel(): Response
+    public function cancel(string $id): Response
     {
         if (! $this->utilities->checkAuthorization(Utilities\QueueManager::class)) {
             abort(403, 'User is not authorized to perform this action.');
         }
 
-        $jobId = $this->request->input('id');
-
-        $this->jobProgress->cancel($jobId);
+        $this->jobProgress->cancel($id);
 
         return $this->asSuccess();
     }
@@ -88,21 +82,20 @@ readonly class QueueController
         return $this->asSuccess();
     }
 
-    public function retry(): Response
+    public function retry(string $id): Response
     {
         if (! $this->utilities->checkAuthorization(Utilities\QueueManager::class)) {
             abort(403, 'User is not authorized to perform this action.');
         }
-
-        $id = $this->request->input('id');
 
         Artisan::call('queue:retry', [
             'id' => $id,
         ]);
 
         $this->jobProgress->delete($id);
+        $this->run();
 
-        return $this->run();
+        return $this->asSuccess();
     }
 
     public function retryAll(): Response
@@ -116,7 +109,8 @@ readonly class QueueController
         ]);
 
         $this->jobProgress->clearFailed();
+        $this->run();
 
-        return $this->run();
+        return $this->asSuccess();
     }
 }

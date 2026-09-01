@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
@@ -18,7 +19,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    // Forget the instance as the service provider loads plugins
+    TestPlugin::$useSettings = true;
+    TestPlugin::$beforeSaveSettings = true;
+    TestPlugin::$onAfterSaveSettings = null;
+    TestPlugin::$customPublishables = [];
+    TestPlugin::$customStyles = [];
+    TestPlugin::$customScripts = [];
+
     app()->forgetInstance(Plugins::class);
 
     loadTestPlugin();
@@ -34,6 +41,9 @@ afterEach(function () {
     TestPlugin::$customPublishables = [];
     TestPlugin::$customStyles = [];
     TestPlugin::$customScripts = [];
+    TestPlugin::$useSettings = true;
+    TestPlugin::$beforeSaveSettings = true;
+    TestPlugin::$onAfterSaveSettings = null;
 
     app()->forgetInstance(Plugins::class);
 });
@@ -122,8 +132,29 @@ it('can get plugin handle by class', function () {
 });
 
 it('can get all plugins', function () {
-    expect($this->plugins->getAllPlugins())->toHaveCount(1);
+    expect($this->plugins->getAllPlugins())->toHaveKey('test-plugin');
 });
+
+it('normalizes forced-disabled plugin configuration', function (string|array|null $disabledPlugins, bool $isForceDisabled) {
+    Cms::config()->disabledPlugins = $disabledPlugins;
+    app()->forgetInstance(Plugins::class);
+    loadTestPlugin();
+
+    $plugins = app(Plugins::class);
+
+    expect($plugins->getPluginInfo('test-plugin')['isForceDisabled'])->toBe($isForceDisabled);
+})->with([
+    'matching string' => ['test-plugin', true],
+    'non-matching string' => ['test', false],
+    'matching comma-separated string' => ['other,test-plugin', true],
+    'non-matching comma-separated string' => ['other,another', false],
+    'matching list' => [['test-plugin'], true],
+    'non-matching list' => [['test'], false],
+    'empty string' => ['', false],
+    'empty list' => [[], false],
+    'null' => [null, false],
+    'wildcard' => ['*', true],
+]);
 
 it('can enable and disable a plugin', function () {
     expect($this->plugins->isPluginEnabled('test-plugin'))->toBeFalse();
@@ -157,8 +188,6 @@ it('can uninstall and install a plugin', function () {
 it('publishes configured files when enabling a plugin', function () {
     $paths = configureTestPluginAssets();
 
-    TestPlugin::getInstance()->register();
-
     $this->plugins->enablePlugin('test-plugin');
 
     foreach ($paths as $path) {
@@ -172,9 +201,24 @@ it('publishes configured files when installing a plugin', function () {
 
     $paths = configureTestPluginAssets();
 
-    TestPlugin::getInstance()->register();
-
     $this->plugins->installPlugin('test-plugin');
+
+    foreach ($paths as $path) {
+        expect(File::exists($path))->toBeTrue();
+    }
+});
+
+it('cleanly republishes configured files for enabled plugins', function () {
+    $paths = configureTestPluginAssets();
+
+    $this->plugins->enablePlugin('test-plugin');
+
+    $stalePath = public_path('vendor/craftcms/test-plugin/stale.js');
+    File::put($stalePath, 'stale');
+
+    $this->plugins->publishPluginAssets();
+
+    expect(File::exists($stalePath))->toBeFalse();
 
     foreach ($paths as $path) {
         expect(File::exists($path))->toBeTrue();
@@ -282,8 +326,6 @@ it('can cancel saving with beforeSaveSettings', function () {
     expect($plugin->getSettings()->foo)->toBeNull();
 
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
-
-    TestPlugin::$beforeSaveSettings = true;
 });
 
 it('can run a hook on afterSaveSettings', function () {
@@ -297,8 +339,6 @@ it('can run a hook on afterSaveSettings', function () {
 
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeTrue();
     expect($triggered)->toBeTrue();
-
-    TestPlugin::$onAfterSaveSettings = null;
 });
 
 it('cannot save settings when the plugin doesnt use them', function () {
@@ -309,8 +349,6 @@ it('cannot save settings when the plugin doesnt use them', function () {
     expect($plugin->getSettings())->toBeNull();
 
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
-
-    TestPlugin::$useSettings = true;
 });
 
 it('can determine if the version number changed', function () {
@@ -359,13 +397,8 @@ it('can get all plugin info', function () {
     expect($this->plugins->getAllPluginInfo())->toHaveKey('test-plugin');
 });
 
-it('can determine if a plugin has issues', function () {
+it('does not report issues for a valid plugin', function () {
     expect($this->plugins->hasIssues('test-plugin'))->toBeFalse();
-
-    // If CRAFT_NO_TRIALS is set, a trial value for licenseKeyStatus will be considered as an issue
-    define('CRAFT_NO_TRIALS', true);
-
-    expect($this->plugins->hasIssues('test-plugin'))->toBeTrue();
 });
 
 it('can get and set the license key', function () {

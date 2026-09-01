@@ -41,6 +41,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
         return ['section', 'sectionId'];
     }
 
+    /** @return string[] */
     #[Override]
     protected function operators(): array
     {
@@ -58,9 +59,9 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
             ->all();
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $query->section('*');
         } else {

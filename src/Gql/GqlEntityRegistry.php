@@ -6,8 +6,22 @@ namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Cms;
 
+/**
+ * Stores generated GraphQL entities for reuse while building a schema.
+ *
+ * ```php
+ * public static function create(): ObjectType
+ * {
+ *     return GqlEntityRegistry::getOrCreate('Product', fn () => new ObjectType([
+ *         'name' => 'Product',
+ *         'fields' => [],
+ *     ]));
+ * }
+ * ```
+ */
 class GqlEntityRegistry
 {
+    /** @var array<string, object> */
     private static array $_entities = [];
 
     private static string $_prefix;
@@ -43,14 +57,20 @@ class GqlEntityRegistry
         self::$_prefix = $prefix;
     }
 
-    public static function getEntity(string $entityName): mixed
+    public static function getEntity(string $entityName): object|false
     {
         $entityName = self::prefixTypeName($entityName);
 
         return self::$_entities[$entityName] ?? false;
     }
 
-    public static function createEntity(string $entityName, mixed $entity): mixed
+    /**
+     * @template T of object
+     *
+     * @param  T  $entity
+     * @return T
+     */
+    public static function createEntity(string $entityName, object $entity): object
     {
         $entityName = self::prefixTypeName($entityName);
         $entity->name = self::prefixTypeName($entity->name);
@@ -61,7 +81,13 @@ class GqlEntityRegistry
         return $entity;
     }
 
-    public static function getOrCreate(string $name, callable $factory): mixed
+    /**
+     * @template T of object
+     *
+     * @param  callable(): T  $factory
+     * @return T
+     */
+    public static function getOrCreate(string $name, callable $factory): object
     {
         $name = self::prefixTypeName($name);
 

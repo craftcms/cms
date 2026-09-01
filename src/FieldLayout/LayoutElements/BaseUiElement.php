@@ -63,6 +63,8 @@ abstract class BaseUiElement extends FieldLayoutElement
 
     /**
      * Returns the selector label HTML attributes.
+     *
+     * @return array{class?: list<string>}
      */
     protected function selectorLabelAttributes(): array
     {

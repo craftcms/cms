@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('namespaces input name attributes', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace "myNamespace" %}<input name="title">{% endnamespace %}',
     );
 
@@ -17,7 +17,7 @@ it('namespaces input name attributes', function () {
 });
 
 it('namespaces input id attributes', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace "myNamespace" %}<input id="title">{% endnamespace %}',
     );
 
@@ -25,7 +25,7 @@ it('namespaces input id attributes', function () {
 });
 
 it('namespaces for attributes when matching id exists', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace "ns" %}<label for="title">Title</label><input id="title">{% endnamespace %}',
     );
 
@@ -33,7 +33,7 @@ it('namespaces for attributes when matching id exists', function () {
 });
 
 it('leaves for attributes unchanged when no matching id exists', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace "ns" %}<label for="title">Title</label>{% endnamespace %}',
     );
 
@@ -41,7 +41,7 @@ it('leaves for attributes unchanged when no matching id exists', function () {
 });
 
 it('renders body directly when namespace is empty', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace "" %}<input name="title">{% endnamespace %}',
     );
 
@@ -49,7 +49,7 @@ it('renders body directly when namespace is empty', function () {
 });
 
 it('supports dynamic namespace values', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace ns %}<input name="title">{% endnamespace %}',
         ['ns' => 'dynamicNs'],
     );
@@ -58,7 +58,7 @@ it('supports dynamic namespace values', function () {
 });
 
 it('supports withClasses to namespace CSS classes', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% namespace "ns" withClasses %}<div class="container"></div>{% endnamespace %}',
     );
 

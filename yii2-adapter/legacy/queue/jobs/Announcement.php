@@ -20,7 +20,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.7.0
- * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Announcement\Jobs\SendAnnouncement} instead.
+ * @deprecated in Craft 6.0.0. Use {@see SendAnnouncement} instead.
  */
 class Announcement extends BaseJob
 {
@@ -53,7 +53,7 @@ class Announcement extends BaseJob
      */
     public function execute($queue): void
     {
-        new SendAnnouncement($this->heading, $this->body, $this->pluginHandle, $this->adminsOnly)->handle();
+        app()->call([new SendAnnouncement($this->heading, $this->body, $this->pluginHandle, $this->adminsOnly), 'handle']);
     }
 
     /**

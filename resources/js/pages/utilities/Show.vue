@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import Pane from '@/common/components/Pane.vue';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -25,7 +24,7 @@
     utilities: Array<UtilityItem>;
   }>();
 
-  useAppLayout(() => ({fullWidth: true, title: props.title}));
+  useAppLayout(() => ({title: props.title}));
 </script>
 
 <template>
@@ -55,10 +54,10 @@
     </SecondaryNav>
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <div class="content-pane">
       <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
       <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
     </div>
-  </Pane>
+  </craft-pane>
 </template>

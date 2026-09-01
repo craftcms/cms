@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {init} from '@craftcms/graphiql';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import Select from '@/common/form/Select.vue';
@@ -75,16 +75,10 @@
 </template>
 
 <style scoped lang="css">
-  :global(.cp__main:has(.cp-graphiql)) {
-    min-height: 0;
-    overflow: hidden;
-    padding-block-end: 0;
-  }
-
   .cp-graphiql {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    height: 100%;
+    height: 100dvh;
     min-height: 0;
     overflow: hidden;
   }

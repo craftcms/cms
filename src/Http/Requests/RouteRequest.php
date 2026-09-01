@@ -15,6 +15,7 @@ use function CraftCms\Cms\t;
 
 class RouteRequest extends FormRequest
 {
+    /** @return array<string, list<string>> */
     public function rules(): array
     {
         return [
@@ -24,6 +25,7 @@ class RouteRequest extends FormRequest
         ];
     }
 
+    /** @return list<callable(Validator): void> */
     public function after(): array
     {
         return [
@@ -64,6 +66,10 @@ class RouteRequest extends FormRequest
         );
     }
 
+    /**
+     * @param  list<string|array{string, string}>  $uriParts
+     * @return list<string|array{string, string}>
+     */
     private function normalizeUriParts(array $uriParts): array
     {
         return collect($uriParts)

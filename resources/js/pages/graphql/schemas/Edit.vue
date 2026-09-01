@@ -1,11 +1,10 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import PermissionList from '@/modules/permissions/components/PermissionList.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+  import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store, update} from '@actions/Gql/SchemasController';
   import {useForm} from '@inertiajs/vue3';
@@ -66,7 +65,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <CraftInput
         v-if="!schema.isPublic"
@@ -88,22 +87,14 @@
           {{ t('Choose the available content for querying with this schema:') }}
         </h2>
 
-        <div
-          v-for="group in permissions"
-          :key="group.handle"
-          class="user-permissions"
-        >
-          <PermissionList
-            :heading="group.heading"
-            :permissions="group.permissions"
-            :permission-keys="group.keys"
-            v-model="form.permissions"
-            :disabled="readOnly"
-          />
-        </div>
+        <PermissionTree
+          :groups="permissions"
+          v-model="form.permissions"
+          :disabled="readOnly"
+        />
       </section>
     </div>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="schema.isPublic" name="details">
     <CraftSwitch

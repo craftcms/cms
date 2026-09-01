@@ -1,15 +1,18 @@
 <script setup lang="ts">
-  import {type JobInfo, JobStatus} from '@craftcms/cp';
-  import {t} from '@craftcms/cp/utilities/translate';
-  import {computed, ref, watch} from 'vue';
+  import {type JobInfo, JobStatus} from '@/modules/queue/types';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {computed} from 'vue';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import TransitionFade from '@/common/components/TransitionFade.vue';
-  import {useActionClient} from '@/common/composables/useFetch';
-  import {router} from '@inertiajs/vue3';
+  import {useForm} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
   import CpLink from '@/common/components/CpLink.vue';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
   import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
+  import {
+    cancelAll,
+    retryAll as retryAllAction,
+  } from '@actions/QueueController';
 
   const props = withDefaults(
     defineProps<{
@@ -19,18 +22,9 @@
     {jobs: () => [], activeJob: null}
   );
 
-  const {
-    execute: executeRetryAll,
-    state: retryAllStatus,
-    error: retryAllError,
-  } = useActionClient('queue/retry-all');
-  const {
-    execute: executeReleaseAll,
-    state: releaseAllStatus,
-    error: releaseAllError,
-  } = useActionClient('queue/release-all');
   const {flash, messages} = useFlashMessages();
-  const loading = ref(false);
+  const retryAllForm = useForm({});
+  const releaseAllForm = useForm({});
 
   const isRetryable = computed(() => {
     return (
@@ -39,33 +33,35 @@
     );
   });
 
-  async function retryAll() {
-    await executeRetryAll();
-    flash('success', t('Retrying all failed jobs.'));
-    router.visit(show({id: 'queue-manager'}), {
+  function retryAll() {
+    retryAllForm.submit(retryAllAction(), {
       only: ['contentHtml'],
+      preserveScroll: true,
+      onSuccess: () => {
+        flash('success', t('Retrying all failed jobs.'));
+      },
+      onError: () => {
+        flash('error', t('Failed to retry all jobs.'));
+      },
     });
   }
 
-  watch(retryAllError, () => {
-    flash('error', t('Failed to retry all jobs.'));
-  });
-
-  watch(releaseAllError, () => {
-    flash('error', t('Failed to release all jobs.'));
-  });
-
-  async function releaseAll() {
+  function releaseAll() {
     if (
       !confirm(t('Are you sure you want to release all jobs in the queue?'))
     ) {
       return;
     }
 
-    await executeReleaseAll();
-    flash('success', t('All jobs released.'));
-    router.visit(show({id: 'queue-manager'}), {
+    releaseAllForm.submit(cancelAll(), {
       only: ['contentHtml'],
+      preserveScroll: true,
+      onSuccess: () => {
+        flash('success', t('All jobs released.'));
+      },
+      onError: () => {
+        flash('error', t('Failed to release all jobs.'));
+      },
     });
   }
 </script>
@@ -77,7 +73,6 @@
       {{ t('Back') }}
     </CpLink>
     <div class="grow"></div>
-    <craft-spinner v-if="loading" class="spinner"></craft-spinner>
     <RetryJobButton v-if="isRetryable" :job="activeJob" size="default" />
     <ReleaseJobButton
       :job="activeJob"
@@ -110,7 +105,7 @@
     <craft-button
       type="button"
       @click="retryAll"
-      :loading="retryAllStatus === 'loading'"
+      :loading="retryAllForm.processing"
     >
       <craft-icon name="play" slot="prefix"></craft-icon>
       {{ t('Retry all failed jobs') }}
@@ -118,7 +113,7 @@
     <craft-button
       type="button"
       @click="releaseAll"
-      :loading="releaseAllStatus === 'loading'"
+      :loading="releaseAllForm.processing"
     >
       <craft-icon name="remove" slot="prefix"></craft-icon>
       {{ t('Release all jobs') }}

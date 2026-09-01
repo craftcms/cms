@@ -350,7 +350,9 @@ import './plugins.scss';
 
       // show the license key?
       const showLicenseKey =
-        info.licenseKey || info.licenseKeyStatus !== 'unknown';
+        info.licenseKey ||
+        this.$keyInput.val() !== '' ||
+        info.licenseKeyStatus !== 'unknown';
       if (showLicenseKey) {
         this.$keyContainer.removeClass('hidden');
         if (info.licenseKey && !this.$keyInput.val().match(/^\$/)) {
@@ -425,24 +427,13 @@ import './plugins.scss';
           const $p = $('<p/>', {class: 'error', html: message});
           if (info.licenseIssues[i] === 'wrong_edition') {
             const $form = $('<form/>', {
+              action: Craft.getCpUrl(
+                `settings/plugins/${this.handle}/switch-edition`
+              ),
               method: 'post',
               'accept-charset': 'UTF-8',
             })
               .append(Craft.getCsrfInput())
-              .append(
-                $('<input/>', {
-                  type: 'hidden',
-                  name: 'action',
-                  value: 'plugins/switch-edition',
-                })
-              )
-              .append(
-                $('<input/>', {
-                  type: 'hidden',
-                  name: 'pluginHandle',
-                  value: this.handle,
-                })
-              )
               .append(
                 $('<input/>', {
                   type: 'hidden',

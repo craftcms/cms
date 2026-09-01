@@ -21,6 +21,7 @@ class ControllerRoute
      * invokable controller class or [Controller::class, 'method'].
      * Params are added as route parameters before handling.
      *
+     * @param  class-string|array{class-string, string}  $action
      * @param  array<string, mixed>  $params
      */
     public function __construct(

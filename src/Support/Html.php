@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Support;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
@@ -29,6 +29,7 @@ use Yiisoft\Html\NoEncode;
 use Yiisoft\Html\Tag\Button;
 use Yiisoft\Html\Tag\Input;
 use Yiisoft\Html\Tag\Ol;
+use Yiisoft\Html\Tag\Script;
 use Yiisoft\Html\Tag\Ul;
 
 use function CraftCms\Cms\template;
@@ -41,9 +42,18 @@ class Html
     public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
 
     /**
-     * @var array List of tag attributes that should be specially handled when their values are of array type.
-     *            In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
-     *            will be generated instead of one: `data-name="xyz" data-age="13"`.
+     * Matches an SVG's leading XML declaration.
+     *
+     * Worth stripping from anything bound for the CP: an XML processing
+     * instruction is not valid HTML, and Vue's runtime template compiler
+     * throws on it in a production build.
+     */
+    public const string XML_DECLARATION_RE = '/<\?xml.*?\?>\s*/';
+
+    /**
+     * @var string[] List of tag attributes that should be specially handled when their values are of array type.
+     *               In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
+     *               will be generated instead of one: `data-name="xyz" data-age="13"`.
      */
     public static array $dataAttributes = [
         'aria',
@@ -95,7 +105,7 @@ class Html
      * into the original string using the keys as tokens.
      *
      * @param  string  $html  The HTML string.
-     * @param  array  $variables  An associative array of key => value pairs to be applied to the HTML string using `strtr`.
+     * @param  array<array-key, Stringable|string>  $variables  An associative array of key => value pairs to be applied to the HTML string using `strtr`.
      * @return string The HTML string with the encoded variable values swapped in.
      */
     public static function encodeParams(string $html, array $variables = []): string
@@ -167,10 +177,10 @@ class Html
     /**
      * Generates a hidden CSRF input tag.
      *
-     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                          If a value is null, the corresponding attribute will not be rendered.
-     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                                         If a value is null, the corresponding attribute will not be rendered.
+     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      */
     public static function csrfInput(array $options = []): string
@@ -179,7 +189,7 @@ class Html
             ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            SetHeaders::noCache();
+            ResponseHeaders::noCache();
 
             return (string) csrf_field();
         }
@@ -191,11 +201,13 @@ class Html
         return self::tag('craft-csrf-input');
     }
 
-    public static function beginForm($action = '', $method = 'post', $options = []): string
+    /**
+     * @param  array<array-key, mixed>|string  $action
+     * @param  array<string, mixed>  $options
+     */
+    public static function beginForm(array|string $action = '', string $method = 'post', array $options = []): string
     {
-        if (! isset($options['accept-charset'])) {
-            $options['accept-charset'] = 'UTF-8';
-        }
+        $options['accept-charset'] ??= 'UTF-8';
 
         return YiiHtml::form($action, $method, $options)->open();
     }
@@ -204,10 +216,10 @@ class Html
      * Generates a hidden `action` input tag.
      *
      * @param  string  $route  The action route
-     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                          If a value is null, the corresponding attribute will not be rendered.
-     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                                         If a value is null, the corresponding attribute will not be rendered.
+     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      */
     public static function actionInput(string $route, array $options = []): string
@@ -219,10 +231,10 @@ class Html
      * Generates a hidden `redirect` input tag.
      *
      * @param  string  $url  The URL to redirect to
-     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                          If a value is null, the corresponding attribute will not be rendered.
-     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                                         If a value is null, the corresponding attribute will not be rendered.
+     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
@@ -237,10 +249,10 @@ class Html
      * Generates a hidden `failMessage` input tag.
      *
      * @param  string  $message  The flash message to shown on failure
-     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                          If a value is null, the corresponding attribute will not be rendered.
-     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                                         If a value is null, the corresponding attribute will not be rendered.
+     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
@@ -255,10 +267,10 @@ class Html
      * Generates a hidden `successMessage` input tag.
      *
      * @param  string  $message  The flash message to shown on success
-     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                          If a value is null, the corresponding attribute will not be rendered.
-     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                                         If a value is null, the corresponding attribute will not be rendered.
+     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
@@ -269,6 +281,7 @@ class Html
         return self::hiddenInput('successMessage', Crypt::encrypt($message), $options)->render();
     }
 
+    /** @param array<string, mixed> $attributes */
     public static function hiddenInput(
         ?string $name = null,
         bool|float|int|string|Stringable|null $value = null,
@@ -279,6 +292,7 @@ class Html
         return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
     }
 
+    /** @param array<string, mixed> $attributes */
     public static function button(string $content = 'Button', array $attributes = []): Button
     {
         $tag = YiiHtml::button($content);
@@ -286,7 +300,8 @@ class Html
         return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
     }
 
-    public static function tag($name, $content = '', $attributes = []): string
+    /** @param array<string, mixed> $attributes */
+    public static function tag(string $name, bool|float|int|string|Stringable|null $content = '', array $attributes = []): string
     {
         return YiiHtml::tag($name)
             ->content(NoEncode::string((string) $content))
@@ -295,7 +310,8 @@ class Html
     }
 
     /** {@see YiiHtml::openTag} */
-    public static function beginTag($name, $options = []): string
+    /** @param array<string, mixed> $options */
+    public static function beginTag(string $name, array $options = []): string
     {
         return YiiHtml::openTag($name, self::normalizeTagAttributes($options));
     }
@@ -306,7 +322,11 @@ class Html
         return YiiHtml::closeTag($name);
     }
 
-    public static function a($text, $url = null, $options = []): string
+    /**
+     * @param  array<array-key, mixed>|string|null  $url
+     * @param  array<string, mixed>  $options
+     */
+    public static function a(Stringable|string $text, array|string|null $url = null, array $options = []): string
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
@@ -316,12 +336,20 @@ class Html
         return self::tag('a', $text, $options);
     }
 
+    /**
+     * @param  array<array-key, Stringable|string>  $items
+     * @param  array<string, mixed>  $attributes
+     */
     public static function ul(array $items = [], array $attributes = [], bool $encode = true): Ul
     {
         return YiiHtml::ul(self::normalizeTagAttributes($attributes))
             ->strings(array_map(strval(...), $items), encode: $encode);
     }
 
+    /**
+     * @param  array<array-key, Stringable|string>  $items
+     * @param  array<string, mixed>  $attributes
+     */
     public static function ol(array $items = [], array $attributes = [], bool $encode = true): Ol
     {
         return YiiHtml::ol(self::normalizeTagAttributes($attributes))
@@ -363,9 +391,9 @@ class Html
      *
      * @param  string  $tag  The HTML tag
      * @param  int  $offset  The offset to start looking for a tag
-     * @return array An array containing `type`, `attributes`, `children`, `start`, `end`, `htmlStart`, and `htmlEnd`
-     *               properties. Nested text nodes will be represented as arrays within `children` with `type` set to `'text'`, and a
-     *               `value` key containing the text value.
+     * @return array{type: string, attributes: array<string, mixed>, children: list<array<string, mixed>>, start: int, end: int, htmlStart: ?int, htmlEnd: ?int} An array containing `type`, `attributes`, `children`, `start`, `end`, `htmlStart`, and `htmlEnd`
+     *                                                                                                                                                           properties. Nested text nodes will be represented as arrays within `children` with `type` set to `'text'`, and a
+     *                                                                                                                                                           `value` key containing the text value.
      *
      * @throws InvalidHtmlTagException if `$tag` doesn't contain a valid HTML tag
      */
@@ -428,7 +456,7 @@ class Html
      * Modifies a HTML tag’s attributes, supporting the same attribute definitions as [[renderTagAttributes()]].
      *
      * @param  string  $tag  The HTML tag whose attributes should be modified.
-     * @param  array  $attributes  The attributes to be added to the tag.
+     * @param  array<string, mixed>  $attributes  The attributes to be added to the tag.
      * @return string The modified HTML tag.
      *
      * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
@@ -461,7 +489,7 @@ class Html
      *
      * @param  int|null  $end  The end position of the last attribute in the given tag
      * @param  bool  $decode  Whether the attributes should be HTML decoded in the process
-     * @return array The parsed HTML tag attributes
+     * @return array<string, mixed> The parsed HTML tag attributes
      *
      * @throws InvalidHtmlTagException if `$tag` doesn't contain a valid HTML tag
      */
@@ -510,7 +538,7 @@ class Html
      * @param  int  $offset  The offset to start looking for an attribute
      * @param  int|null  $start  The start position of the attribute in the given HTML
      * @param  int|null  $end  The end position of the attribute in the given HTML
-     * @return array|null The name and value of the attribute, or `false` if no complete attribute was found
+     * @return array{string, bool|string}|null The name and value of the attribute, or `null` if no complete attribute was found
      *
      * @throws InvalidArgumentException if `$html` doesn't begin with a valid HTML attribute
      */
@@ -560,6 +588,10 @@ class Html
 
     /**
      * Normalizes attributes.
+     */
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
      */
     public static function normalizeTagAttributes(array $attributes): array
     {
@@ -738,6 +770,7 @@ class Html
             substr($tag, $info[$position]);
     }
 
+    /** @return string[] */
     private static function _sortedDataAttributes(): array
     {
         if (! isset(self::$_sortedDataAttributes)) {
@@ -1212,6 +1245,7 @@ class Html
     /**
      * Returns a visually-hidden input label.
      */
+    /** @param array<string, mixed> $options */
     public static function hiddenLabel(string $content, ?string $for = null, array $options = []): string
     {
         return self::label($content, $for)
@@ -1337,7 +1371,7 @@ class Html
         }
 
         // Remove the XML declaration
-        $svg = preg_replace('/<\?xml.*?\?>\s*/', '', $svg);
+        $svg = preg_replace(self::XML_DECLARATION_RE, '', $svg);
 
         // Namespace class names and IDs
         if ($namespace) {
@@ -1348,7 +1382,8 @@ class Html
         return $svg;
     }
 
-    public static function jsFile($url, $options = [])
+    /** @param array<string, mixed> $options */
+    public static function jsFile(string $url, array $options = []): Script
     {
         return YiiHtml::javaScriptFile($url, $options);
     }
@@ -1357,7 +1392,7 @@ class Html
      * Returns JavaScript code with the given variables, pre-JSON-encoded.
      *
      * @param  callable  $jsFn  callback function that returns the JS code to be registered.
-     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @param  array<array-key, mixed>  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
      */
     public static function jsWithVars(callable $jsFn, array $vars): string
     {
@@ -1371,7 +1406,8 @@ class Html
         return self::endTag('form');
     }
 
-    public static function __callStatic(string $name, array $arguments)
+    /** @param list<mixed> $arguments */
+    public static function __callStatic(string $name, array $arguments): mixed
     {
         return YiiHtml::$name(...$arguments);
     }

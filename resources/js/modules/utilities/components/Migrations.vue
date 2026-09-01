@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import migrationsController from '@actions/Utilities/MigrationsController';
   import {
     createColumnHelper,
@@ -24,7 +24,7 @@
     migrationHistory: Array<Migration>;
   }>();
 
-  const allMigrations = computed(() => {
+  const allMigrations = computed<Migration[]>(() => {
     return [
       ...props.newMigrations.map((item) => ({
         name: item,
@@ -36,7 +36,7 @@
         status: t('Applied'),
         batch: item.batch,
       })),
-    ] as Migration[];
+    ] satisfies Migration[];
   });
 
   const columnHelper = createColumnHelper<Migration>();

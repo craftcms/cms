@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -32,9 +33,9 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
         return ['editable'];
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         $query->editable($this->value);
     }
 

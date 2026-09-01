@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\events\RegisterComponentTypesEvent;
-use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
+use CraftCms\Cms\Auth\AuthMethodCatalog;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -19,8 +19,8 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use DateTime;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
 use InvalidArgumentException;
@@ -297,7 +297,16 @@ class Auth extends Component
                 ->serialize($requestOptions, 'json');
         }
 
-        return app(Passkeys::class)->verifyPasskey($user, $requestOptions, $response);
+        $passkeys = app(Passkeys::class);
+        $credentialRecord = $passkeys->verifyPasskey($user, $requestOptions, $response);
+
+        if ($credentialRecord === false) {
+            return false;
+        }
+
+        $passkeys->webauthnServer()->getCredentialRepository()->saveCredentialSource($credentialRecord);
+
+        return true;
     }
 
     /**
@@ -324,14 +333,6 @@ class Auth extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(AuthMethodsResolving::class, function(AuthMethodsResolving $event) {
-            if (Craft::$app->getAuth()->hasEventHandlers(self::EVENT_REGISTER_METHODS)) {
-                $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->methods->all()]);
-                Craft::$app->getAuth()->trigger(self::EVENT_REGISTER_METHODS, $yiiEvent);
-                $event->methods = new Collection($yiiEvent->types);
-            }
-        });
-
         Event::listen(SettingPassword::class, function(SettingPassword $event) {
             if ($event->status === Password::PASSWORD_RESET) {
                 return;
@@ -352,5 +353,11 @@ class Auth extends Component
 
             $event->status = Password::PASSWORD_RESET;
         });
+    }
+
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        TypeRegistryCompatibility::reconcile(app(AuthMethodCatalog::class), Craft::$app->getAuth(), self::EVENT_REGISTER_METHODS);
     }
 }

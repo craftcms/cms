@@ -13,6 +13,7 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -40,6 +41,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * @template T of ElementInterface
      *
      * @param  T  $element
+     * @param  array<string, mixed>  $arguments
      * @return T
      *
      * @throws GqlException if data not found.
@@ -128,11 +130,25 @@ abstract class ElementMutationResolver extends MutationResolver
         return $element;
     }
 
+    /**
+     * @param  array<array-key, mixed>  $mutationArguments
+     * @return array<array-key, mixed>
+     */
     protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments): array
     {
-        return $this->_traverseAndNormalizeArguments($resolveInfo->fieldDefinition->args ?? [], $mutationArguments);
+        $arguments = array_values(array_filter(
+            $resolveInfo->fieldDefinition->args ?? [],
+            fn (object $argument): bool => $argument instanceof Argument,
+        ));
+
+        return $this->_traverseAndNormalizeArguments($arguments, $mutationArguments);
     }
 
+    /**
+     * @param  array<array-key, Argument|InputObjectField>  $argumentDefinitions
+     * @param  array<array-key, mixed>  $mutationArguments
+     * @return array<array-key, mixed>
+     */
     private function _traverseAndNormalizeArguments(array $argumentDefinitions, array $mutationArguments): array
     {
         $normalized = [];

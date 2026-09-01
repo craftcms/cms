@@ -14,10 +14,16 @@ use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Gql;
+use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/**
+ * @phpstan-import-type ArgumentConfig from Argument
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ */
 class Entry extends Structure
 {
     #[Override]
@@ -51,6 +57,7 @@ class Entry extends Structure
         return 'EntryInterface';
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     #[Override]
     public static function getFieldDefinitions(): array
     {
@@ -216,6 +223,10 @@ class Entry extends Structure
         ]), self::getName());
     }
 
+    /**
+     * @param  array<string, ArgumentConfig>  $sectionFieldArguments
+     * @return array<string, FieldDefinitionConfig>
+     */
     private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];

@@ -107,7 +107,7 @@ class Locale implements Stringable
     public const string FORMAT_HUMAN = 'human';
 
     /**
-     * @var array The languages that use RTL orientation.
+     * @var list<string> The languages that use RTL orientation.
      */
     private static array $rtlLanguages = [
         'ar',
@@ -221,9 +221,7 @@ class Locale implements Stringable
         }
 
         // If no target locale is specified, default to this locale
-        if ($inLocale === null) {
-            $inLocale = $this->id;
-        }
+        $inLocale ??= $this->id;
 
         return \Locale::getDisplayName($this->id, $inLocale);
     }
@@ -368,12 +366,14 @@ class Locale implements Stringable
      *
      * @param  string|null  $length  The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
      * @param  bool  $standAlone  Whether to return the "stand alone" month names.
-     * @return array The localized month names.
+     * @return list<string> The localized month names.
      */
     public function getMonthNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(12)
-            ->map(fn (int $month): string => $this->getMonthName($month, $length, $standAlone))
+        return Collection::times(
+            12,
+            fn (int $month): string => $this->getMonthName($month, $length, $standAlone),
+        )
             ->all();
     }
 
@@ -421,12 +421,14 @@ class Locale implements Stringable
      *
      * @param  string|null  $length  The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
      * @param  bool  $standAlone  Whether to return the "stand alone" day of the week names.
-     * @return array The localized day of the week names.
+     * @return list<string> The localized day of the week names.
      */
     public function getWeekDayNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(7)
-            ->map(fn (int $day): string => $this->getWeekDayName($day - 1, $length, $standAlone))
+        return Collection::times(
+            7,
+            fn (int $day): string => $this->getWeekDayName($day - 1, $length, $standAlone),
+        )
             ->all();
     }
 

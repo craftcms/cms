@@ -5,22 +5,17 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
+use CraftCms\Cms\Utility\Utilities\DbBackup;
 use CraftCms\Cms\Utility\Utilities\SystemMessages;
-use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Support\Facades\Event;
+use CraftCms\Cms\Utility\UtilityTypes;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->utilities = app(Utilities::class);
-});
-
-it('can get all utility types', function () {
-    expect($this->utilities->getAllUtilityTypes())->not()->toBeEmpty();
 });
 
 it('contains system messages when craft is pro', function () {
@@ -33,18 +28,20 @@ it('contains system messages when craft is pro', function () {
     expect($this->utilities->getAllUtilityTypes())->toContain(SystemMessages::class);
 });
 
-it('does not contains assetIndexes utility when there are no volumes', function () {
+it('does not contain the asset indexes utility when there are no volumes', function () {
     expect($this->utilities->getAllUtilityTypes())->not()->toContain(AssetIndexes::class);
 });
 
-it('can register extra utilities', function () {
-    expect($this->utilities->getAllUtilityTypes())->not()->toContain(DummyUtility::class);
+it('filters unavailable registered utilities', function () {
+    app(UtilityTypes::class)->register(DummyUtility::class, UnselectableUtility::class);
 
-    Event::listen(UtilitiesResolving::class, function (UtilitiesResolving $event) {
-        $event->types[] = DummyUtility::class;
-    });
+    Cms::config()->backupCommand = false;
+    Cms::config()->disabledUtilities[] = DummyUtility::id();
 
-    expect($this->utilities->getAllUtilityTypes())->toContain(DummyUtility::class);
+    expect($this->utilities->getAllUtilityTypes())
+        ->not()->toContain(DbBackup::class)
+        ->not()->toContain(DummyUtility::class)
+        ->not()->toContain(UnselectableUtility::class);
 });
 
 it('can get authorized utility types', function () {
@@ -53,16 +50,6 @@ it('can get authorized utility types', function () {
     actingAs(User::find()->one());
 
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toBeEmpty();
-});
-
-test('disabled utilities are not included', function () {
-    actingAs(User::find()->one());
-
-    expect($this->utilities->getAuthorizedUtilityTypes())->toContain(SystemReport::class);
-
-    Cms::config()->disabledUtilities[] = 'system-report';
-
-    expect($this->utilities->getAuthorizedUtilityTypes())->not()->toContain(SystemReport::class);
 });
 
 class DummyUtility extends Utility
@@ -83,5 +70,20 @@ class DummyUtility extends Utility
     public static function contentHtml(): string
     {
         return '';
+    }
+}
+
+class UnselectableUtility extends DummyUtility
+{
+    #[Override]
+    public static function id(): string
+    {
+        return 'unselectable';
+    }
+
+    #[Override]
+    public static function isSelectable(): bool
+    {
+        return false;
     }
 }

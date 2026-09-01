@@ -47,6 +47,7 @@ class DeprecationError extends BaseModel
         return $html;
     }
 
+    /** @return array{id: int, message: string, origin: string, lastOccurrence: string} */
     #[\Override]
     public function jsonSerialize(): array
     {

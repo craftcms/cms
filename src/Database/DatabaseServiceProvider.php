@@ -106,6 +106,10 @@ class DatabaseServiceProvider extends ServiceProvider
 
     public function boot(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
     {
+        if ($this->app->runningInConsole()) {
+            $db->useWriteConnectionWhenReading();
+        }
+
         Aliases::set('@migrations', '@package/Database/Migrations');
 
         $this->commands([

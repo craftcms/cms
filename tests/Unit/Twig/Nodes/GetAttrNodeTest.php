@@ -19,6 +19,9 @@ it('compiles method call', function () {
         'optimizable' => true,
         'ignore_strict_check' => false,
         'is_defined_test' => false,
+        'null_safe' => false,
+        'is_short_circuited' => false,
+        'var_name' => null,
     ], 1);
     $compiler = new Compiler(new Environment(new ArrayLoader));
 
@@ -34,6 +37,9 @@ it('compiles array access with optimization', function () {
         'optimizable' => true,
         'ignore_strict_check' => true,
         'is_defined_test' => false,
+        'null_safe' => false,
+        'is_short_circuited' => false,
+        'var_name' => null,
     ], 1);
     $env = new Environment(new ArrayLoader, ['strict_variables' => false]);
     $compiler = new Compiler($env);
@@ -50,6 +56,27 @@ it('compiles with defined test', function () {
         'optimizable' => true,
         'ignore_strict_check' => false,
         'is_defined_test' => true,
+        'null_safe' => false,
+        'is_short_circuited' => false,
+        'var_name' => null,
+    ], 1);
+    $compiler = new Compiler(new Environment(new ArrayLoader));
+
+    expect(trim($compiler->compile($node)->getSource()))->toMatchSnapshot();
+});
+
+it('compiles a null-safe attribute access', function () {
+    $node = new GetAttrNode([
+        'node' => new ContextVariable('entry', 1),
+        'attribute' => new ConstantExpression('title', 1),
+    ], [
+        'type' => Template::ANY_CALL,
+        'optimizable' => false,
+        'ignore_strict_check' => false,
+        'is_defined_test' => false,
+        'null_safe' => true,
+        'is_short_circuited' => false,
+        'var_name' => null,
     ], 1);
     $compiler = new Compiler(new Environment(new ArrayLoader));
 

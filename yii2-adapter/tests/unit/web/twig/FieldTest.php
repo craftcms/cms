@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -12,6 +14,7 @@ use Craft;
 use craft\test\TestCase;
 use craft\web\View;
 use CraftCms\Cms\View\TemplateMode;
+
 use function CraftCms\Cms\renderString;
 
 /**
@@ -19,21 +22,16 @@ use function CraftCms\Cms\renderString;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ *
  * @since 3.7.24
  */
 class FieldTest extends TestCase
 {
-    /**
-     * @var View
-     */
     protected View $view;
 
-    /**
-     *
-     */
-    public function testBlocks(): void
+    public function test_blocks(): void
     {
-        $template = <<<TWIG
+        $template = <<<'TWIG'
 {% embed '_includes/forms/field' with {
   id: 'foo',
   labelId: 'label',
@@ -49,17 +47,16 @@ class FieldTest extends TestCase
 TWIG;
 
         $html = renderString($template, [], TemplateMode::Cp);
-        self::assertStringContainsString('<div class="field" id="foo-field" data-attribute="foo" data-foo="test">', $html);
-        self::assertStringContainsString('TEST HEADING', $html);
-        self::assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
-        self::assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
-        self::assertMatchesRegularExpression('/<craft-callout\s+id="foo-tip"\s+variant="info"[^>]*>.*TEST TIP.*<\/craft-callout>/s', $html);
-        self::assertMatchesRegularExpression('/<craft-callout\s+id="foo-warning"\s+variant="warning"[^>]*>.*TEST WARNING.*<\/craft-callout>/s', $html);
-        self::assertStringContainsString('<input name="foo">', $html);
+        self::assertStringContainsString('<craft-field class="field" data-attribute="foo" data-foo="test" id="foo-field" label="TEST LABEL" orientation="ltr">', $html);
+        self::assertStringContainsString('<span slot="heading-prefix">TEST HEADING</span>', $html);
+        self::assertStringContainsString('<div slot="help-text"><p>TEST INSTRUCTIONS</p>', $html);
+        self::assertStringContainsString('<span slot="tip">TEST TIP</span>', $html);
+        self::assertStringContainsString('<span slot="warning">TEST WARNING</span>', $html);
+        self::assertStringContainsString('<input name="foo" slot="input">', $html);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function _before(): void
     {

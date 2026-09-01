@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import type {ActionMenuItem} from '@craftcms/cp';
+  import {type ActionMenuItem, ButtonVariant, t} from '@craftcms/ui';
   import {
     type Component,
     computed,
@@ -71,17 +70,31 @@
       if (action.type === 'display') {
         return {
           type: 'display',
-          node: displayToNode((action as ActionItemDisplay).is),
+          node: displayToNode(action.is),
         };
       }
 
-      return action as unknown as ActionMenuItem;
+      return {...action};
     });
   });
 
   onBeforeUnmount(() => {
     clearDisplayContainers();
   });
+
+  /**
+   `v-once` is load-bearing, not an optimization. `craft-action-menu` (Lion
+   `OverlayMixin`) imperatively relocates/restructures its own light DOM. If Vue
+   keeps the invoker in its reactive patch path, a later re-render patches the
+   invoker's slot fragment against DOM the element moved and throws "Cannot read
+   properties of null (reading 'insertBefore')". A passive wrapper isn't enough:
+   Vue's block optimization flattens dynamic descendants and patches them with
+   `craft-action-menu` as the container, bypassing the wrapper. `v-once` renders
+   the invoker exactly once and removes it from the block's dynamic children, so
+   Vue never re-patches the overlay-managed DOM. Invokers are static triggers
+   (an icon / avatar), so freezing them is safe. `inline-flex` keeps the wrapper
+   sized to the invoker so the overlay positions against a real box.
+   */
 </script>
 
 <template>
@@ -90,25 +103,17 @@
     :icon="icon"
     :label="label ?? undefined"
   >
-    <!--
-      `v-once` is load-bearing, not an optimization. `craft-action-menu` (Lion
-      `OverlayMixin`) imperatively relocates/restructures its own light DOM. If Vue
-      keeps the invoker in its reactive patch path, a later re-render patches the
-      invoker's slot fragment against DOM the element moved and throws "Cannot read
-      properties of null (reading 'insertBefore')". A passive wrapper isn't enough:
-      Vue's block optimization flattens dynamic descendants and patches them with
-      `craft-action-menu` as the container, bypassing the wrapper. `v-once` renders
-      the invoker exactly once and removes it from the block's dynamic children, so
-      Vue never re-patches the overlay-managed DOM. Invokers are static triggers
-      (an icon / avatar), so freezing them is safe. `inline-flex` keeps the wrapper
-      sized to the invoker so the overlay positions against a real box.
-    -->
     <span slot="invoker" style="display: inline-flex" v-once>
-      <slot
-        name="invoker"
-        :label="label"
-        :attributes="{slot: 'invoker'}"
-      ></slot>
+      <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
+        <craft-button
+          type="button"
+          size="small"
+          :icon="icon"
+          :aria-label="label"
+          :variant="ButtonVariant.Plain"
+        >
+        </craft-button>
+      </slot>
     </span>
   </craft-action-menu>
 </template>

@@ -218,7 +218,7 @@ trait QueriesRelatedElements
         return $this->relatedTo($relatedTo);
     }
 
-    private function _andRelatedToCriteria($value, $currentValue): mixed
+    private function _andRelatedToCriteria(mixed $value, mixed $currentValue): mixed
     {
         if (! $value) {
             return false;

@@ -9,10 +9,9 @@
     reorder,
   } from '@actions/Settings/RoutesController';
   import {Link, router} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
   import Empty from '@/common/components/Empty.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
@@ -74,7 +73,11 @@
       return;
     }
 
-    router.delete(destroy({uid: route.uid}));
+    router
+      .optimistic<{routes: Array<RouteIndexData>}>(({routes}) => ({
+        routes: routes.filter(({uid}) => uid !== route.uid),
+      }))
+      .delete(destroy({uid: route.uid}));
   }
 
   useAppLayout({title: props.title});
@@ -83,17 +86,21 @@
 <template>
   <LayoutSlot name="actions">
     <Link :href="create()">
-      <craft-button v-if="!readOnly" type="button" variant="primary">
-        <craft-icon name="plus" slot="prefix"></craft-icon>
+      <craft-button
+        v-if="!readOnly"
+        type="button"
+        icon="plus"
+        :variant="ButtonVariant.Primary"
+      >
         {{ t('New route') }}
       </craft-button>
     </Link>
   </LayoutSlot>
 
   <div v-if="routes.length === 0" class="empty-routes">
-    <Pane appearance="raised">
+    <craft-pane appearance="raised">
       <Empty :label="t('No routes exist yet.')" />
-    </Pane>
+    </craft-pane>
   </div>
 
   <div v-else class="routes-list">
@@ -155,9 +162,8 @@
         ></craft-reorder-button>
         <craft-button
           @click="deleteRoute(route)"
-          variant="danger"
+          variant="danger-plain"
           size="small"
-          appearance="plain"
           icon
         >
           <craft-icon name="trash" :label="t('Delete')"></craft-icon>

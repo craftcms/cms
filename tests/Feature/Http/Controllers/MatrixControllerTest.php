@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -24,6 +26,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -158,8 +161,7 @@ it('validates entry type ids for default table column options', function () {
 it('rejects invalid entry type ids for default table column options', function () {
     postJson(action([MatrixController::class, 'defaultTableColumnOptions']), [
         'entryTypeIds' => [999999],
-    ])
-        ->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonPath('message', 'Invalid entry type ID: 999999');
 });
 
@@ -184,32 +186,28 @@ it('validates create entry payloads', function () {
 it('rejects invalid owners when creating a matrix entry', function () {
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'ownerId' => 999999,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid owner ID, element type, or site ID.');
 });
 
 it('rejects invalid matrix field ids when creating a matrix entry', function () {
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'fieldId' => 999999,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid Matrix field ID: 999999');
 });
 
 it('rejects invalid entry type ids when creating a matrix entry', function () {
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'entryTypeId' => 999999,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid entry type ID: 999999');
 });
 
 it('rejects invalid site ids when creating a matrix entry', function () {
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'siteId' => 999999,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid owner ID, element type, or site ID.');
 });
 
@@ -228,9 +226,15 @@ it('creates a new matrix entry draft and renders its block html', function () {
         ->and($entry->getOwnerId())->toBe($this->fixture['owner']->id)
         ->and($entry->draftId)->not->toBeNull();
 
-    expect($response->json('blockHtml'))
+    $html = $response->json('blockHtml');
+    $host = new Crawler($html)->filter('craft-entry-field-layout-form[data-payload]');
+
+    expect($html)
         ->toContain('Matrix Block')
-        ->toContain('testNamespace[matrixField][entries][uid:'.$entry->uid.'][fresh]');
+        ->toContain('testNamespace[matrixField][entries][uid:'.$entry->uid.'][fresh]')
+        ->and($host)->toHaveCount(1)
+        ->and(json_decode((string) $host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['scope'])
+        ->toBe(['testNamespace', 'matrixField', 'entries', "uid:{$entry->uid}"]);
 });
 
 it('returns a failure response when saving a new matrix draft fails', function () {
@@ -242,8 +246,7 @@ it('returns a failure response when saving a new matrix draft fails', function (
         }
     });
 
-    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture))
-        ->assertStatus(400)
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture))->assertBadRequest()
         ->assertJsonPath('message', mb_ucfirst(t('Couldn’t create {type}.', [
             'type' => EntryElement::lowerDisplayName(),
         ])));
@@ -252,8 +255,7 @@ it('returns a failure response when saving a new matrix draft fails', function (
 it('rejects invalid duplicate source ids when creating a matrix entry', function () {
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'duplicate' => 999999,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', 'Invalid source element ID: 999999');
 });
 
@@ -279,8 +281,7 @@ it('rejects duplicate sources from another matrix owner', function () {
 
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'duplicate' => $source->id,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', "Invalid source element ID: $source->id");
 });
 
@@ -362,7 +363,7 @@ it('returns a failure response when duplicating a matrix entry fails validation'
     $this->fixture = refreshMatrixControllerFixture($this->fixture);
     $source = matrixControllerNestedEntries($this->fixture)->sole();
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class)) extends Elements
+    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends Elements
     {
         public function duplicateElement(
             ElementInterface $element,
@@ -378,8 +379,7 @@ it('returns a failure response when duplicating a matrix entry fails validation'
 
     postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
         'duplicate' => $source->id,
-    ]))
-        ->assertStatus(400)
+    ]))->assertBadRequest()
         ->assertJsonPath('message', t('Couldn’t duplicate {type}.', [
             'type' => EntryElement::lowerDisplayName(),
         ]));
@@ -408,8 +408,7 @@ it('rejects render blocks requests for entries outside matrix fields', function 
         'entryIds' => [$entry->id],
         'siteId' => $entry->siteId,
         'namespace' => 'testNamespace',
-    ])
-        ->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonPath('message', 'Entry must belong to a Matrix field.');
 });
 

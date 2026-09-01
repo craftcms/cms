@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';
   import CpLink from '@/common/components/CpLink.vue';

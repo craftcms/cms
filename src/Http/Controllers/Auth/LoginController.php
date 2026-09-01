@@ -40,8 +40,9 @@ readonly class LoginController extends AuthenticationController
 {
     public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods, OAuth $oauth): Response|View|\Inertia\Response
     {
-        // see if they're already logged in
-        if ($user = $request->craftUser()) {
+        // see if they're already logged in, unless this is a preview request
+        // (see https://github.com/craftcms/cms/discussions/19360)
+        if (! $request->isPreview() && ($user = $request->craftUser())) {
             return $this->handleSuccessfulLogin($request, $user);
         }
 
@@ -145,12 +146,20 @@ readonly class LoginController extends AuthenticationController
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }
 
-            // if we're impersonating, pass the user we're impersonating to the complete method
+            $loginUser = $user;
+            $remember = $request->boolean('rememberMe');
+
             if ($impersonation->isImpersonating()) {
-                $user = $request->craftUser() ?? $user;
+                $loginUser = $request->craftUser() ?? $user;
+                $remember = false;
             }
 
-            return $this->finalizeLogin($request, $user, $request->boolean('rememberMe'));
+            return $this->finalizeLogin(
+                $request,
+                $user,
+                $remember,
+                loginUser: $loginUser,
+            );
         }, 30_000);
     }
 

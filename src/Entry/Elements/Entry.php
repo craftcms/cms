@@ -28,6 +28,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
@@ -54,8 +55,16 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\DateTime;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -264,6 +273,19 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'section.handle' => t('Section Handle'),
+            'type.handle' => t('Entry Type Handle'),
+            'author.username' => t('Author Username'),
+            'postDate' => t('Post Date'),
+            'expiryDate' => t('Expiry Date'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('entry');
@@ -290,6 +312,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public static function hasDrafts(): bool
     {
         return true;
+    }
+
+    #[Override]
+    public static function editViewModelClass(): string
+    {
+        return EntryEditViewModel::class;
     }
 
     #[Override]
@@ -333,6 +361,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return EntryQuery<self> */
     #[Override]
     public static function find(): EntryQuery
     {
@@ -354,6 +383,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return true;
     }
 
+    /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -449,6 +479,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sources;
     }
 
+    /**
+     * @param  array{condition?: array{conditionRules?: array<int, array{class: class-string, values?: string[]}>}, data?: array<string, string>}  $config
+     * @return array{condition?: array{conditionRules?: array<int, array{class: class-string, values?: string[]}>}, data?: array<string, string>}
+     */
     #[Override]
     public static function modifyCustomSource(array $config): array
     {
@@ -513,6 +547,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
     }
 
+    /** @return array<int, class-string|array<string, scalar|null>|object> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -635,6 +670,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return true;
     }
 
+    /** @return array<string, scalar|null> */
     #[Override]
     public static function baseBulkDuplicateAttributes(): array
     {
@@ -644,6 +680,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return array<array-key, string|array<string, scalar|callable|null>> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -720,6 +757,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return array<string, array<string, string>> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -764,6 +802,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
+    /** @return array<string, array<string, string|callable>> */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -824,6 +863,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
+    /** @param array<string, scalar|callable|null> $attribute */
     #[Override]
     public static function attributePreviewHtml(array $attribute): mixed
     {
@@ -833,6 +873,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
     }
 
+    /** @return array<string, class-string|array<array-key, scalar|array<string, int>|null>>|null|false */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -882,6 +923,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return EntryInterface::getType();
     }
 
+    /** @return string[] */
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
@@ -900,6 +942,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
     }
 
+    /** @return string[] */
     #[Override]
     public function attributes(): array
     {
@@ -942,6 +985,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ]);
     }
 
+    /** @param array<string, array<array-key, int|string>|int|string|null> $values */
     #[Override]
     public function setAttributesFromRequest(array $values): void
     {
@@ -994,6 +1038,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->getColor();
     }
 
+    /** @return array<int, array{siteId: int, propagate: bool, enabledByDefault: bool}> */
     #[Override]
     public function getSupportedSites(): array
     {
@@ -1122,6 +1167,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sectionSiteSettings[$this->siteId]->uriFormat;
     }
 
+    /** @return array{string, array{template: string, variables: array{entry: self}}}|null */
     protected function route(): ?array
     {
         // Make sure that the entry is actually live
@@ -1150,6 +1196,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return array<int, array<string, bool|string|array<string, string|array<int, array<string, bool|string>>>>|null> */
     #[Override]
     protected function crumbs(): array
     {
@@ -1163,7 +1210,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
+                'href' => Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries')),
             ],
         ];
 
@@ -1190,8 +1237,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $sectionOptions = $sections
                 ->filter(fn (Section $s) => $s->type !== SectionType::Single)
                 ->map(fn (Section $s) => [
+                    'type' => 'link',
                     'label' => $s->getUiLabel(),
-                    'url' => $s->getCpIndexUri(),
+                    'href' => Url::cpUrl($s->getCpIndexUri()),
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1199,21 +1247,31 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $firstSingle = $sections->first(fn (Section $s) => $s->type === SectionType::Single);
             if ($firstSingle) {
                 $sectionOptions->prepend([
+                    'type' => 'link',
                     'label' => t('Singles'),
-                    'url' => $firstSingle->getCpIndexUri(),
+                    'href' => Url::cpUrl($firstSingle->getCpIndexUri()),
                     'selected' => $section->type === SectionType::Single,
                 ]);
             }
 
+            // The crumb names whichever option is current — for a Single that's
+            // the “Singles” pseudo-option, not the single's own name.
+            $current = $sectionOptions->first(fn (array $o) => $o['selected'])
+                ?? $sectionOptions->first();
+
             if ($sectionOptions->count() > 1) {
+                // A crumb is shaped like a link action item, so the current
+                // option doubles as the crumb and the whole set as its menu.
                 $crumbs[] = [
-                    'menu' => [
-                        'label' => t('Select section'),
-                        'items' => $sectionOptions->all(),
-                    ],
+                    'label' => $current['label'],
+                    'href' => $current['href'],
+                    'actions' => $sectionOptions->all(),
                 ];
             } else {
-                $crumbs[] = $sectionOptions->first();
+                $crumbs[] = [
+                    'label' => $current['label'],
+                    'href' => $current['href'],
+                ];
             }
         } elseif ($section->type !== SectionType::Single) {
             // Just show its name w/o a link
@@ -1311,6 +1369,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->getUiLabel();
     }
 
+    /** @return array<int, array{label: string, urlFormat: string}> */
     #[Override]
     protected function previewTargets(): array
     {
@@ -1557,6 +1616,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->_authorIds ??= array_map(fn (User $author) => $author->id, $this->getAuthors());
     }
 
+    /** @return int[]|null */
     public function getOldAuthorIds(): ?array
     {
         return $this->_oldAuthorIds;
@@ -1579,6 +1639,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $this->_authors = null;
     }
 
+    /**
+     * @param  array<array-key, User|int|string>|string|int|null  $authorIds
+     * @return int[]
+     */
     private function normalizeAuthorIds(array|string|int|null $authorIds): array
     {
         if ($authorIds === '' || $authorIds === null) {
@@ -1809,6 +1873,47 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
+        if (! currentUser()?->isAdmin() || ! Cms::config()->allowAdminChanges) {
+            return [];
+        }
+
+        $items = [
+            [
+                'label' => t('Entry type settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/entry-types/$this->typeId"),
+                    // A non-nested entry can have its type switched in the sidebar,
+                    // so the slideout follows the field rather than the saved value.
+                    'entryTypeFromField' => ! isset($this->fieldId),
+                ],
+            ],
+        ];
+
+        if (! empty($this->sectionId)) {
+            $items[] = [
+                'label' => t('Section settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'action' => 'sections/edit-section',
+                    'params' => ['sectionId' => $this->sectionId],
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
+    /** @return array<int, array<string, scalar|null>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1837,7 +1942,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
           params.entryTypeId = input.val();
         }
     }
-    new Craft.CpScreenSlideout('entry-types/edit', {params});
+    new Craft.CpScreenSlideout(Craft.getCpUrl('settings/entry-types/' + params.entryTypeId));
   });
 })();
 JS, [
@@ -1879,7 +1984,7 @@ JS, [
                 HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
+        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
       });
     })();
     JS, [
@@ -1906,8 +2011,10 @@ JS, [
     {
         match ($plan->handle) {
             'author', 'authors' => $this->setAuthors($elements),
-            default => $this->traitSetEagerLoadedElements($handle, $elements, $plan),
+            default => null,
         };
+
+        $this->traitSetEagerLoadedElements($handle, $elements, $plan);
     }
 
     // Indexes, etc.
@@ -1989,6 +2096,7 @@ JS, [
         }
     }
 
+    /** @return array<string, array<string, scalar>> */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -2012,6 +2120,149 @@ JS, [
         }
 
         return $user->can('move', $this);
+    }
+
+    /**
+     * The Form-system counterpart to {@see metaFieldsHtml()}. Mirrors the same
+     * visibility rules so the Inertia editor shows exactly the fields the
+     * legacy editor does.
+     *
+     * @return list<Node>
+     */
+    #[Override]
+    protected function metaFieldsNodes(bool $static): array
+    {
+        $nodes = [];
+        $section = $this->getSection();
+        $user = currentUserElement();
+
+        $entryTypes = $this->getAvailableEntryTypes();
+        if (collect($entryTypes)->doesntContain(fn (EntryType $entryType) => $entryType->id === $this->typeId)) {
+            $entryTypes[] = $this->getType();
+        }
+
+        if (count($entryTypes) > 1 || ! $this->isEntryTypeAllowed($entryTypes)) {
+            $nodes[] = Field::make(t('Entry Type'))
+                ->control(
+                    Choice::make('typeId')
+                        ->options(array_map(fn (EntryType $entryType) => [
+                            'label' => t($entryType->name, category: 'site'),
+                            'value' => $entryType->id,
+                        ], $entryTypes))
+                        ->value($this->getType()->id)
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($this->getType()->showSlugField) {
+            $nodes[] = Field::make(t('Slug'))
+                ->control(
+                    Text::make('slug')
+                        ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
+            $nodes[] = Field::make(t('Parent'))
+                ->control(
+                    ElementSelect::make('parentId')
+                        ->elementType(self::class)
+                        ->sources(["section:$section->uid"])
+                        ->criteria($this->_parentOptionCriteria($section))
+                        ->selectionLabel(t('Choose'))
+                        ->showSiteMenu()
+                        ->limit(1)
+                        ->value(array_filter([$this->parentIdForForm()]))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($section && $section->type !== SectionType::Single) {
+            if ($section->maxAuthors !== 0 && Edition::get() !== Edition::Solo) {
+                $nodes[] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
+                    'max' => $section->maxAuthors ?? PHP_INT_MAX,
+                ]))
+                    ->control(
+                        ElementSelect::make('authorIds')
+                            ->elementType(User::class)
+                            ->criteria(['can' => "viewEntries:$section->uid"])
+                            ->selectionLabel(t('Choose'))
+                            ->limit($section->maxAuthors)
+                            ->value($this->getAuthorIds())
+                            ->mode($static || ! $this->canChangeAuthor($user)
+                                ? ControlMode::Disabled
+                                : ControlMode::Editable),
+                    );
+            }
+
+            $nodes[] = Field::make(t('Post Date'))
+                ->control(
+                    DateTime::make('postDate')
+                        ->showTime()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->postDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+
+            $nodes[] = Field::make(t('Expiry Date'))
+                ->control(
+                    DateTime::make('expiryDate')
+                        ->showTime()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->expiryDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * The {@see DateTime} Control's value shape — an empty date still needs the
+     * date/time/timezone keys so the control renders.
+     *
+     * @return array{date: string, time: string, timezone: string}
+     */
+    private static function dateTimeControlValue(?DateTimeInterface $value): array
+    {
+        return [
+            'date' => $value?->format('Y-m-d') ?? '',
+            'time' => $value?->format('H:i') ?? '',
+            'timezone' => $value?->getTimezone()->getName() ?? Cms::timezone(),
+        ];
+    }
+
+    /**
+     * The entry's current parent id, resolved the same way the legacy Parent
+     * meta field resolves it.
+     */
+    private function parentIdForForm(): ?int
+    {
+        if ($parentId = $this->getParentId()) {
+            return $parentId;
+        }
+
+        /** @var self|null $parent */
+        $parent = self::find()
+            ->site('*')
+            ->preferSites([$this->siteId])
+            ->drafts(null)
+            ->draftOf(false)
+            ->status(null)
+            ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
+            ->ancestorDist(1)
+            ->one();
+
+        return $parent?->id;
     }
 
     #[Override]
@@ -2219,6 +2470,7 @@ JS;
         return $showStatusField;
     }
 
+    /** @return array<string, array<array-key, int|string>|bool|int|string|null> */
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
@@ -2480,19 +2732,20 @@ JS;
 
     private function _saveAuthors(): void
     {
-        if (! isset($this->_oldAuthorIds)) {
-            // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $this->_oldAuthorIds = DB::table(Table::ENTRIES_AUTHORS)
-                ->where('entryId', $this->duplicateOf->id ?? $this->id)
-                ->orderBy('sortOrder')
-                ->pluck('authorId')
-                ->map(fn ($id) => (int) $id)
-                ->all();
-        }
+        $this->_oldAuthorIds ??= DB::table(Table::ENTRIES_AUTHORS)
+            ->where('entryId', $this->duplicateOf->id ?? $this->id)
+            ->orderBy('sortOrder')
+            ->pluck('authorId')
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
-        DB::table(Table::ENTRIES_AUTHORS)
-            ->where('entryId', $this->id)
-            ->delete();
+        // Only issue the delete if there’s something to delete: an unconditional delete for a brand-new
+        // entry ID can take a gap lock on the primary index and deadlock against other transactions
+        // inserting authors for their own new entries.
+        $authorsQuery = DB::table(Table::ENTRIES_AUTHORS)->where('entryId', $this->id);
+        if ($authorsQuery->exists()) {
+            $authorsQuery->delete();
+        }
 
         if (! empty($this->_authorIds)) {
             $data = [];
@@ -2692,11 +2945,10 @@ JS;
      * Check if current typeId is in the array of passed in entry types.
      * If no entry types are passed, check get all the available ones.
      */
+    /** @param EntryType[]|null $entryTypes */
     public function isEntryTypeAllowed(?array $entryTypes = null): bool
     {
-        if ($entryTypes === null) {
-            $entryTypes = $this->getAvailableEntryTypes();
-        }
+        $entryTypes ??= $this->getAvailableEntryTypes();
 
         return in_array($this->typeId, array_map(fn ($entryType) => $entryType->id, $entryTypes));
     }
@@ -2738,17 +2990,14 @@ JS;
         $entryType = $this->getType();
 
         if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
-            return [
-                [
-                    'template' => sprintf(
-                        '%s/%s/%s',
-                        Cms::config()->partialTemplatesPath,
-                        self::refHandle(),
-                        $entryType->original->handle,
-                    ),
-                    'priority' => 5,
-                ],
-                ...$templates,
+            $templates[] = [
+                'template' => sprintf(
+                    '%s/%s/%s',
+                    Cms::config()->partialTemplatesPath,
+                    self::refHandle(),
+                    $entryType->original->handle,
+                ),
+                'priority' => 1,
             ];
         }
 

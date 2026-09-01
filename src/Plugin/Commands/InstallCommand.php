@@ -105,8 +105,7 @@ class InstallCommand extends Command
 
     private function switchEdition(string $handle, ?string $edition): int
     {
-        /** @var PluginInterface $plugin */
-        $plugin = $this->plugins->getPlugin($handle);
+        $plugin = $this->plugins->getPlugin($handle) ?? throw new InvalidPluginException($handle);
 
         if ($edition === null || $edition === $plugin->edition) {
             $this->components->warn(sprintf(

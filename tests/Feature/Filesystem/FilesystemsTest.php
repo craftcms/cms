@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -29,16 +31,15 @@ it('is a singleton and is available via the facade', function () {
         ->and($this->service)->toBe(FilesystemsFacade::getFacadeRoot());
 });
 
-it('can register extra filesystem types through an event', function () {
-    expect($this->service->getAllFilesystemTypes())
-        ->toBeInstanceOf(Collection::class)
-        ->not()->toContain(Temp::class);
+it('uses the current registry types', function () {
+    $registry = app(FilesystemTypes::class);
+    $registry->register(Temp::class);
 
-    Event::listen(FilesystemTypesResolving::class, function (FilesystemTypesResolving $event) {
-        $event->types->add(Temp::class);
-    });
+    expect($this->service->getAllFilesystemTypes())->toContain(Local::class, Temp::class);
 
-    expect($this->service->getAllFilesystemTypes())->toContain(Temp::class);
+    $registry->remove(Temp::class);
+
+    expect($this->service->getAllFilesystemTypes())->not()->toContain(Temp::class);
 });
 
 it('returns filesystems as a collection', function () {
@@ -57,6 +58,23 @@ it('creates a missing filesystem if type is not recognized', function () {
 
     expect($filesystem)->toBeInstanceOf(MissingFs::class)
         ->and($filesystem->expectedType)->toBe('some\\missing\\FilesystemType');
+});
+
+it('ignores unsupported legacy filesystem settings', function () {
+    $filesystem = $this->service->createFilesystem([
+        'type' => Local::class,
+        'name' => 'Legacy Filesystem',
+        'handle' => 'legacyFilesystem',
+        'settings' => [
+            'path' => sys_get_temp_dir().'/legacy-filesystem',
+        ],
+        'assetTransform' => [
+            'driver' => 'craft',
+        ],
+    ]);
+
+    expect($filesystem)->toBeInstanceOf(Local::class)
+        ->and($filesystem->handle)->toBe('legacyFilesystem');
 });
 
 it('can save and fetch filesystems by handle through the new service', function () {
@@ -83,6 +101,31 @@ it('dispatches a filesystem renamed event when renaming', function () {
     expect($this->service->saveFilesystem($filesystem, false))->toBeTrue();
 
     Event::assertDispatched(fn (FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
+});
+
+it('rewrites only hard-coded Craft transformer output filesystem references when renaming', function () {
+    $renamed = createServiceLocalFilesystem($this->service, 'output-old');
+
+    foreach ([
+        'hardCoded' => 'output-old',
+        'environment' => '$OUTPUT_FILESYSTEM',
+        'rawDisk' => 'disk:output-old',
+    ] as $handle => $outputFilesystem) {
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+            'name' => $handle,
+            'handle' => $handle,
+            'driver' => 'craft',
+            'settings' => ['filesystem' => $outputFilesystem],
+        ]));
+    }
+
+    $renamed->oldHandle = 'output-old';
+    $renamed->handle = 'output-new';
+    $this->service->saveFilesystem($renamed, false);
+
+    expect(app(AssetTransformers::class)->resolve('hardCoded')->settings['filesystem'])->toBe('output-new')
+        ->and(app(AssetTransformers::class)->resolve('environment')->settings['filesystem'])->toBe('$OUTPUT_FILESYSTEM')
+        ->and(app(AssetTransformers::class)->resolve('rawDisk')->settings['filesystem'])->toBe('disk:output-old');
 });
 
 it('validates local filesystems with laravel path requirements', function () {

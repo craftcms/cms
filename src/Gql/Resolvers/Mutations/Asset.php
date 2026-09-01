@@ -43,6 +43,7 @@ class Asset extends ElementMutationResolver
 
     private UrlValidator $urlValidator;
 
+    /** @param array<string, mixed> $arguments */
     public function saveAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
@@ -129,6 +130,7 @@ class Asset extends ElementMutationResolver
         return Elements::getElementById($asset->id, AssetElement::class);
     }
 
+    /** @param array<string, mixed> $arguments */
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
@@ -147,6 +149,7 @@ class Asset extends ElementMutationResolver
         return Elements::deleteElementById($assetId, hardDelete: $hardDelete);
     }
 
+    /** @param array<string, mixed> $arguments */
     #[Override]
     protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
@@ -167,6 +170,7 @@ class Asset extends ElementMutationResolver
         return $element;
     }
 
+    /** @param array{filename?: string, fileData?: string, url?: string} $fileInformation */
     protected function handleUpload(AssetElement $asset, array $fileInformation): bool
     {
         $tempPath = null;
@@ -271,6 +275,7 @@ class Asset extends ElementMutationResolver
      *
      * @throws UserError if the connection still resolves to a disallowed IP
      */
+    /** @param list<string> $ips */
     private function downloadUrl(string $url, array $ips, string $tempPath): void
     {
         $host = parse_url($url, PHP_URL_HOST);
@@ -292,6 +297,6 @@ class Asset extends ElementMutationResolver
                     throw new UserError("$url is invalid.");
                 }
             },
-        ]);
+        ])->get($url)->throw();
     }
 }

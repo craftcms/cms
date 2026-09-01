@@ -34,6 +34,14 @@ interface WidgetInterface extends ConfigurableComponentInterface, SavableCompone
      */
     public static function maxColspan(): ?int;
 
+    public function getType(): string;
+
+    public function getIcon(): ?string;
+
+    public function getDisplayName(): string;
+
+    public function getMaxColspan(): ?int;
+
     /**
      * Returns the widget’s title.
      *

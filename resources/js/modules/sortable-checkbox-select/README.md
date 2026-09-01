@@ -64,7 +64,7 @@ favor of the `support.ts` WeakMap alone.
 
 - `sortable-checkbox-select.ts` — the `SortableCheckboxSelect` class and the
   `Item` class.
-- `sortable-checkbox-select.wc.ts` — `<craft-sortable-checkbox-select>`, the
+- `sortable-checkbox-select.ce.ts` — `<craft-sortable-checkbox-select>`, the
   self-booting custom element.
 - `support.ts` — the `.data()`-mirror WeakMap.
 - `index.ts` — assigns `window.Craft.SortableCheckboxSelect` (+ `.Item`) and

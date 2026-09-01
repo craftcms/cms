@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {usePage} from '@inertiajs/vue3';
   import AuthBase from '@/common/layouts/AuthBase.vue';
   import '@/modules/auth/components/set-password/set-password-form.js';
@@ -10,6 +10,7 @@
     code: string;
     newUser: boolean;
     action: string;
+    passwordRules: string;
   }>();
 
   const page = usePage<{
@@ -29,6 +30,7 @@
       :code="code"
       :initial-error="page.props.errors?.newPassword"
       :new-user="newUser ? '' : null"
+      :password-rules="passwordRules"
     ></craft-set-password-form>
   </AuthBase>
 </template>

@@ -19,6 +19,7 @@ class FolderCriteria extends Component
 
     public mixed $path = null;
 
+    /** @var string|array<string, int|string> */
     public string|array $order = 'name asc';
 
     public ?int $offset = null;

@@ -99,7 +99,7 @@ readonly class MoveEntryToSectionController
 
         $this->requirePermission("saveEntries:$section->uid");
 
-        /** @var Collection<Entry> $entries */
+        /** @var Collection<int, Entry> $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)
@@ -113,6 +113,15 @@ readonly class MoveEntryToSectionController
         foreach ($entries as $entry) {
             abort_if(! $this->request->craftUser()?->can('moveToSection', [$entry, $section]), 403, 'User is not authorized to perform this action.');
         }
+
+        $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
+        $entryTypeIds = $entries->pluck('typeId')->unique()->all();
+
+        abort_if(
+            ! empty(array_diff($entryTypeIds, $sectionEntryTypeIds)),
+            400,
+            'Not all entries have a type supported by the target section.',
+        );
 
         $errors = [];
         foreach ($entries as $entry) {

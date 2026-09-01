@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
@@ -106,6 +110,22 @@ class TextField extends BaseNativeField
         return Arr::except(parent::fields(), ['value']);
     }
 
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return Text::make($this->name ?? $this->attribute())
+            ->inputType($this->inputType ?? 'text')
+            ->value($this->value($context->element))
+            ->mode($this->disabled
+                ? ControlMode::Disabled
+                : ($this->readonly ? ControlMode::ReadOnly : ControlMode::Editable))
+            ->maxLength($this->maxlength)
+            ->placeholder($this->placeholder)
+            ->step($this->step)
+            ->min($this->min)
+            ->max($this->max);
+    }
+
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return template('_includes/forms/text', [
@@ -138,6 +158,7 @@ class TextField extends BaseNativeField
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, string|array<string, string>>
      */
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -156,6 +177,7 @@ class TextField extends BaseNativeField
         return $this->name ?? parent::errorKey();
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

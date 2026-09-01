@@ -17,16 +17,16 @@
     "ui"
   ],
   "scripts": {
-    "build": "tsdown",
-    "build:watch": "tsdown --watch",
+    "build": "vp pack",
+    "build:watch": "vp pack --watch",
     "dev": "storybook dev -p 6006",
     "storybook": "storybook dev -p 6006",
     "build:storybook": "storybook build",
-    "test": "vitest run",
-    "test:dev": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "format": "prettier --write ./src ./tests ./stories ./.storybook",
-    "check:format": "prettier --check ./src ./tests ./stories ./.storybook",
+    "test": "vp test run",
+    "test:dev": "vp test",
+    "test:coverage": "vp test run --coverage",
+    "format": "vp fmt ./src ./tests ./stories ./.storybook",
+    "check:format": "vp fmt --check ./src ./tests ./stories ./.storybook",
     "check:types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "npm run check:types && npm run check:format"
@@ -63,18 +63,18 @@
   },
   "homepage": "https://github.com/craftcms/npm-packages#readme",
   "devDependencies": {
-    "@storybook/addon-a11y": "^10.4.1",
-    "@storybook/addon-docs": "^10.4.1",
-    "@storybook/addon-themes": "^10.4.1",
-    "@storybook/html-vite": "^10.4.1",
+    "@storybook/addon-a11y": "^10.5.5",
+    "@storybook/addon-docs": "^10.5.5",
+    "@storybook/addon-themes": "^10.5.5",
+    "@storybook/html-vite": "^10.5.5",
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/node": "^25.6.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "4.1.10",
     "happy-dom": "^20.9.0",
-    "storybook": "^10.4.1",
-    "tsdown": "^0.21.10",
+    "storybook": "^10.5.5",
     "typescript": "^6.0.3",
-    "vite": "^7.1.5",
-    "vitest": "^4.1.5"
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
+    "vitest": "4.1.10",
+    "vite-plus": "0.2.6"
   }
 }

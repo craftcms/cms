@@ -124,6 +124,7 @@ describe('show', function () {
         $payload = ($this->sourcesPayload)($condition);
         postJson(action([ConditionsController::class, 'show']), $payload)->assertOk();
     });
+
 });
 
 describe('store', function () {

@@ -29,11 +29,11 @@ readonly class TokensController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index()
+    public function index(): \Inertia\Response
     {
         return Inertia::render('graphql/tokens/Index', [
             'crumbs' => fn () => [
-                ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/tokens')],
+                ['label' => t('GraphQL'), 'href' => Url::cpUrl('graphql/tokens')],
                 ['label' => t('Tokens')],
             ],
             'title' => t('GraphQL Tokens'),
@@ -138,7 +138,7 @@ readonly class TokensController extends GqlController
             ->title($title)
             ->selectedSubnavItem('tokens')
             ->crumbs([
-                ['label' => t('GraphQL Tokens'), 'url' => 'graphql/tokens'],
+                ['label' => t('GraphQL Tokens'), 'href' => Url::cpUrl('graphql/tokens')],
                 ['label' => $title],
             ])
             ->redirectUrl('graphql/tokens')
@@ -149,6 +149,7 @@ readonly class TokensController extends GqlController
             ]);
     }
 
+    /** @return array<string, bool|int|string|null> */
     private function tokenData(GqlToken $token): array
     {
         return [
@@ -161,6 +162,7 @@ readonly class TokensController extends GqlController
         ];
     }
 
+    /** @return list<array{label:string|null, value:string}> */
     private function schemaOptions(GqlToken $token): array
     {
         $publicSchema = $this->gql->getPublicSchema();

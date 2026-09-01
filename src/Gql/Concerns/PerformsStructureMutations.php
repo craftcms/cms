@@ -12,6 +12,9 @@ use GraphQL\Error\Error;
 
 trait PerformsStructureMutations
 {
+    /**
+     * @param  array{prependTo?: int, appendTo?: int, prependToRoot?: bool, appendToRoot?: bool, insertBefore?: int, insertAfter?: int}  $arguments
+     */
     protected function performStructureOperations(ElementInterface $element, array $arguments): void
     {
         /** @var Element $element */

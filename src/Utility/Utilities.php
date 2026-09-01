@@ -5,21 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Utility\Events\UtilitiesResolving;
-use CraftCms\Cms\Utility\Utilities\AssetIndexes;
-use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use CraftCms\Cms\Utility\Utilities\DbBackup;
-use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
-use CraftCms\Cms\Utility\Utilities\FindAndReplace;
-use CraftCms\Cms\Utility\Utilities\Migrations;
-use CraftCms\Cms\Utility\Utilities\PhpInfo;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
-use CraftCms\Cms\Utility\Utilities\QueueManager;
-use CraftCms\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
-use CraftCms\Cms\Utility\Utilities\SystemReport;
-use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 
@@ -30,57 +16,23 @@ readonly class Utilities
 {
     public function __construct(
         private GeneralConfig $generalConfig,
+        private UtilityTypes $utilityTypes,
     ) {}
 
     /**
      * Returns all available utility type classes.
      *
-     * @return Collection<class-string<Utility>>
+     * @return Collection<int, class-string<Utility>>
      */
     public function getAllUtilityTypes(): Collection
     {
-        $utilityTypes = Collection::make()
-            ->push(
-                UpdatesUtility::class,
-                SystemReport::class,
-                ProjectConfigUtility::class,
-                PhpInfo::class,
-            )
-            ->when(
-                Edition::isAtLeast(Edition::Pro),
-                fn (Collection $c) => $c->push(SystemMessagesUtility::class)
-            )
-            ->unless(
-                Volumes::getAllVolumes()->isEmpty(),
-                fn (Collection $c) => $c->push(AssetIndexes::class)
-            )
-            ->push(
-                QueueManager::class,
-                ClearCaches::class,
-                DeprecationErrors::class,
-            )
-            ->when(
-                $this->generalConfig->backupCommand !== false,
-                fn (Collection $c) => $c->push(DbBackup::class)
-            )
-            ->push(
-                FindAndReplace::class,
-                Migrations::class,
-            );
-
-        event($event = new UtilitiesResolving($utilityTypes));
-
-        $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
-
-        return $event->types
-            /** @var class-string<Utility> $class */
-            ->filter(fn (string $class) => ! isset($disabledUtilities[$class::id()]) && $class::isSelectable());
+        return $this->utilityTypes->types();
     }
 
     /**
      * Returns all utility type classes that the user has permission to use.
      *
-     * @return Collection<class-string<Utility>>
+     * @return Collection<int, class-string<Utility>>
      */
     public function getAuthorizedUtilityTypes(): Collection
     {

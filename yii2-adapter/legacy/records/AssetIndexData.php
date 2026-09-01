@@ -21,8 +21,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $uri URI
  * @property int $size Size
  * @property string $timestamp Timestamp
- * @property bool $inProgress In progress
- * @property bool $completed Is completed
  * @property int $recordId Record ID
  * @property Volume $volume Volume
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -41,7 +39,6 @@ class AssetIndexData extends ActiveRecord
             [['timestamp'], DateTimeValidator::class],
             [['sessionId', 'volumeId'], 'required'],
             [['uri'], 'string'],
-            [['completed', 'inProgress'], 'boolean'],
         ];
     }
 

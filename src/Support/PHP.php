@@ -14,6 +14,7 @@ use function CraftCms\Cms\t;
 
 class PHP
 {
+    /** @var string[]|null */
     private static ?array $basePaths = null;
 
     private static ?bool $iconv = null;
@@ -156,9 +157,7 @@ class PHP
      */
     public static function isPathAllowed(string $path): bool
     {
-        if (! isset(self::$basePaths)) {
-            self::$basePaths = self::configValueAsPaths('open_basedir');
-        }
+        self::$basePaths ??= self::configValueAsPaths('open_basedir');
 
         if (! self::$basePaths) {
             return true;

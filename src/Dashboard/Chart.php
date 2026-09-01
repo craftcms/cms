@@ -32,7 +32,8 @@ class Chart
      * @param  string  $dateColumn  The column that represents the date
      * @param  string  $func  The aggregate function to call for each date interval ('count', 'sum', 'average', 'min', or 'max')
      * @param  string  $q  The column name or expression to pass into the aggregate function (make sure column names are `[[quoted]]`)
-     * @param  array  $options  Any customizations that should be made over the default options
+     * @param  array{intervalUnit?: 'hour'|'day'|'month'|'year'|null, categoryLabel?: string, valueLabel?: string, valueType?: string}  $options  Any customizations that should be made over the default options
+     * @return array{columns: list<array{type: string, label: string}>, rows: list<array{string, float}>}
      */
     public static function get(
         Builder $query,
@@ -127,6 +128,7 @@ class Chart
     /**
      * Returns the short date, decimal, percent and currency D3 formats based on Craft's locale settings
      */
+    /** @return array{shortDateFormats: array<string, string>} */
     public static function formats(): array
     {
         return [
@@ -137,6 +139,7 @@ class Chart
     /**
      * Returns the D3 short date formats based on Yii's short date format
      */
+    /** @return array<string, string> */
     public static function shortDateFormats(): array
     {
         $format = I18N::getFormattingLocale()->getDateFormat('short');

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {useFocusField} from '@/common/composables/useFocusField';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputPassword from '@craftcms/cp/vue/CraftInputPassword.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import {usePage} from '@inertiajs/vue3';
 
   const emit = defineEmits<{

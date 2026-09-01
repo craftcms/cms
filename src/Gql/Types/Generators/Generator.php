@@ -9,11 +9,15 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
+use GraphQL\Type\Definition\FieldDefinition;
+use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Log;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 abstract class Generator
 {
+    /** @return array<string, (Type&OutputType)|UnnamedFieldDefinitionConfig> */
     protected static function getContentFields(mixed $context): array
     {
         /** @var FieldLayoutProviderInterface|FieldLayout $context */

@@ -19,6 +19,12 @@ class ShowInFolder extends ElementAction
         return t('Show in folder');
     }
 
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
     public function getTriggerHtml(): ?string
     {
         if ($this->elementType !== Asset::class) {

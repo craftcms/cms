@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
+use CraftCms\Cms\FieldLayout\NativeFields;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.
  *
- * Native fields can be registered using {@see NativeFieldsResolving}.
+ * Native fields can be registered using {@see NativeFields}.
  */
 abstract class BaseNativeField extends BaseField
 {
@@ -39,17 +39,17 @@ abstract class BaseNativeField extends BaseField
     public ?string $id = null;
 
     /**
-     * @var array HTML attributes for the field container
+     * @var array<string, scalar|array<array-key, scalar|null>|null> HTML attributes for the field container
      */
     public array $containerAttributes = [];
 
     /**
-     * @var array HTML attributes for the input container
+     * @var array<string, scalar|array<array-key, scalar|null>|null> HTML attributes for the input container
      */
     public array $inputContainerAttributes = [];
 
     /**
-     * @var array HTML attributes for the field label
+     * @var array<string, scalar|array<array-key, scalar|null>|null> HTML attributes for the field label
      */
     public array $labelAttributes = [];
 
@@ -86,6 +86,7 @@ abstract class BaseNativeField extends BaseField
         return $this->id ?? parent::id();
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|null>|null> */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -94,12 +95,14 @@ abstract class BaseNativeField extends BaseField
         return Arr::merge($attributes, $this->containerAttributes);
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|null>|null> */
     #[Override]
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->inputContainerAttributes;
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|null>|null> */
     #[Override]
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Utility\Utilities;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 use function CraftCms\Cms\t;
@@ -19,7 +20,7 @@ readonly class FindAndReplaceController
         }
     }
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): RedirectResponse
     {
         $params = $request->validate([
             'find' => ['required', 'string'],

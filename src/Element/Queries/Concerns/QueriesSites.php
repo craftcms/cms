@@ -253,6 +253,7 @@ trait QueriesSites
     /**
      * Normalizes the siteId param value.
      */
+    /** @param ElementQuery<*> $query */
     private function normalizeSiteId(ElementQuery $query): mixed
     {
         if (is_null($query->siteId) || $query->siteId === '') {

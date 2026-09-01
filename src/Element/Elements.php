@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
-use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
@@ -39,11 +37,6 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 class Elements
 {
-    /**
-     * @var string[]
-     */
-    private array $elementTypesByRefHandle = [];
-
     public const string REF_TAG_PATTERN = '/
         \{                                      # Tags always begin with a `{`
             (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
@@ -56,6 +49,8 @@ class Elements
 
     public function __construct(
         private readonly ElementPlaceholders $placeholders,
+        private readonly ElementTypes $elementTypes,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -116,16 +111,7 @@ class Elements
      */
     public function getAllElementTypes(): array
     {
-        $elementTypes = [
-            Address::class,
-            Asset::class,
-            Entry::class,
-            User::class,
-        ];
-
-        event($event = new ElementTypesResolving($elementTypes));
-
-        return $event->types;
+        return $this->elementTypes->types()->all();
     }
 
     /**
@@ -136,18 +122,14 @@ class Elements
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        if (! isset($this->elementTypesByRefHandle[$refHandle])) {
-            $class = $this->elementTypeByRefHandle($refHandle);
+        $class = $this->elementTypeByRefHandle($refHandle);
 
-            // Special cases for categories/tags/globals, if they've been removed
-            if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
-                $class = Entry::class;
-            }
-
-            $this->elementTypesByRefHandle[$refHandle] = $class;
+        // Special cases for categories/tags/globals, if they've been removed
+        if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
+            $class = Entry::class;
         }
 
-        return $this->elementTypesByRefHandle[$refHandle] ?: null;
+        return $class ?: null;
     }
 
     private function elementTypeByRefHandle(string $refHandle): string|false
@@ -156,16 +138,7 @@ class Elements
             return $refHandle;
         }
 
-        foreach ($this->getAllElementTypes() as $class) {
-            if (
-                ($elementRefHandle = $class::refHandle()) !== null &&
-                strcasecmp($elementRefHandle, $refHandle) === 0
-            ) {
-                return $class;
-            }
-        }
-
-        return false;
+        return $this->elementTypes->typeByRefHandle($refHandle) ?? false;
     }
 
     /**
@@ -217,7 +190,8 @@ class Elements
      * @param  class-string<T>|null  $elementType  The element class.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
-     * @return T|null The matching element, or `null`.
+     * @param  array<string,mixed>  $criteria
+     * @return ($elementType is class-string<T> ? T|null : ElementInterface|null) The matching element, or `null`.
      */
     public function getElementById(
         int $elementId,
@@ -241,6 +215,7 @@ class Elements
      * @param  class-string<T>|null  $elementType  The element class.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
+     * @param  array<string,mixed>  $criteria
      * @return T|null The matching element, or `null`.
      */
     public function getElementByUid(
@@ -262,6 +237,7 @@ class Elements
      * @param  class-string<T>|null  $elementType  The element class.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
+     * @param  array<string,mixed>  $criteria
      * @return T|null The matching element, or `null`.
      */
     private function elementByKey(
@@ -340,7 +316,11 @@ class Elements
             )
             ->first();
 
-        return $result ? $this->getElementById($result->id, $result->type, $siteId) : null;
+        if (! $result || ! is_a($result->type, ElementInterface::class, true)) {
+            return null;
+        }
+
+        return $this->getElementById($result->id, $result->type, $siteId);
     }
 
     /**
@@ -475,7 +455,7 @@ class Elements
      * @template T of ElementInterface
      *
      * @param  T  $element  The derivative element
-     * @param  array  $newAttributes  Any attributes to apply to the canonical element
+     * @param  array<string,mixed>  $newAttributes  Any attributes to apply to the canonical element
      * @return T The updated canonical element
      *
      * @throws InvalidArgumentException if the element is already a canonical element
@@ -548,8 +528,8 @@ class Elements
      * @template T of ElementInterface
      *
      * @param  T  $element  the element to duplicate
-     * @param  array  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
-     *                                set to an array of site-specific attribute array, indexed by site IDs.
+     * @param  array<string,mixed>  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
+     *                                              set to an array of site-specific attribute array, indexed by site IDs.
      * @param  bool  $placeInStructure  whether to position the cloned element after the original one in its structure.
      *                                  (This will only happen if the duplicated element is canonical.)
      * @param  bool  $asUnpublishedDraft  whether the duplicate should be created as unpublished draft
@@ -739,6 +719,58 @@ class Elements
         return app(ElementDeletions::class)->restoreElements($elements);
     }
 
+    /**
+     * Reorders nested elements for a given owner element.
+     *
+     * @param  ElementInterface  $owner  The owner element
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $nestedElements  The owner’s nested elements
+     * @param  int[]  $elementIds  The nested element IDs that are being moved, in their new relative order
+     * @param  int  $offset  The zero-based offset that `$elementIds` should be inserted at, relative to the owner’s
+     *                       other nested elements
+     */
+    public function reorderNestedElements(
+        ElementInterface $owner,
+        ElementQueryInterface|ElementCollection $nestedElements,
+        array $elementIds,
+        int $offset,
+    ): void {
+        $elementIds = array_map(fn ($id) => (int) $id, $elementIds);
+
+        if ($nestedElements instanceof ElementQueryInterface) {
+            $oldSortOrders = (clone $nestedElements)
+                ->status(null)
+                ->asArray()
+                ->select(['id', 'sortOrder'])
+                ->pluck('sortOrder', 'id')
+                ->all();
+        } else {
+            $oldSortOrders = $nestedElements
+                ->keyBy(fn (ElementInterface $element) => $element->id)
+                /** @phpstan-ignore-next-line */
+                ->map(fn (NestedElementInterface $element) => $element->getSortOrder())
+                ->all();
+        }
+
+        // Build the full list of IDs in the new sort order
+        $allIds = array_diff(array_keys($oldSortOrders), $elementIds);
+        array_splice($allIds, $offset, 0, $elementIds);
+
+        // Update all the incorrect sort orders
+        foreach ($allIds as $i => $id) {
+            $sortOrder = $i + 1;
+            if (! isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
+                DB::table(Table::ELEMENTS_OWNERS)
+                    ->where('ownerId', $owner->id)
+                    ->where('elementId', $id)
+                    ->update([
+                        'sortOrder' => $sortOrder,
+                    ]);
+            }
+        }
+
+        $this->elementCaches->invalidateForElement($owner);
+    }
+
     // Misc
     // -------------------------------------------------------------------------
 
@@ -799,7 +831,7 @@ class Elements
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
      *
-     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
+     * @phpstan-param string|array<EagerLoadPlan|array<array-key,mixed>|string> $with
      *
      * @return EagerLoadPlan[]
      */
@@ -812,8 +844,8 @@ class Elements
      * Eager-loads additional elements onto a given set of elements.
      *
      * @param  class-string<ElementInterface>  $elementType  The root element type class
-     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
-     * @param  array<int, string|array|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param  ElementInterface[]|Collection<array-key,ElementInterface>  $elements  The root element models that should be updated with the eager-loaded elements
+     * @param  array<int,string|array<array-key,mixed>|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {

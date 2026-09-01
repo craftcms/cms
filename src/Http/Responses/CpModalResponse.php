@@ -31,7 +31,7 @@ class CpModalResponse implements Responsable
     public $prepareModal;
 
     /**
-     * @var array Custom attributes to add to the `<form>` tag.
+     * @var array<string, mixed> Custom attributes to add to the `<form>` tag.
      *
      * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
@@ -84,6 +84,7 @@ class CpModalResponse implements Responsable
      *
      * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
      */
+    /** @param array<string, mixed> $value */
     public function formAttributes(array $value): self
     {
         $this->formAttributes = $value;
@@ -124,6 +125,7 @@ class CpModalResponse implements Responsable
     /**
      * Sets a template that should be used to render the content HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
@@ -144,6 +146,7 @@ class CpModalResponse implements Responsable
     /**
      * Sets a template that should be used to render the errors summary HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(

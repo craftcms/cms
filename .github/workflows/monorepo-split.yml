@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
-          tag: ${GITHUB_REF#refs/tags/}
+          tag: ${{ github.ref_name }}
           package_directory: 'yii2-adapter'
           repository_organization: 'craftcms'
           repository_name: 'yii2-adapter'

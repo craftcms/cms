@@ -52,10 +52,14 @@ test('allows request through when pending session is exactly at the boundary', f
 test('clears user session keys when challenge has expired', function () {
     $this->withSession([
         'user.id' => 1,
+        'user.login_id' => 2,
+        'user.remember' => true,
         'user.pending_2fa_at' => now()->subSeconds(301)->timestamp,
     ])->get('/admin/test-2fa-recent');
 
     expect(session()->has('user.id'))->toBeFalse()
+        ->and(session()->has('user.login_id'))->toBeFalse()
+        ->and(session()->has('user.remember'))->toBeFalse()
         ->and(session()->has('user.pending_2fa_at'))->toBeFalse();
 });
 

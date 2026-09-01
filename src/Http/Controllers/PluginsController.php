@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,7 +42,7 @@ readonly class PluginsController
         return new CpScreenResponse()
             ->title(t('Plugins'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => 'settings'],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Plugins')],
             ])
             ->inertiaPage('settings/Plugins', [
@@ -49,15 +50,14 @@ readonly class PluginsController
             ]);
     }
 
-    public function install(Request $request): Response
+    public function install(Request $request, string $handle): Response
     {
         $request->validate([
-            'pluginHandle' => ['required', 'string'],
             'edition' => ['nullable', 'string'],
         ]);
 
         $success = $this->plugins->installPlugin(
-            handle: $request->input('pluginHandle'),
+            handle: $handle,
             edition: $request->input('edition'),
         );
 
@@ -66,51 +66,38 @@ readonly class PluginsController
             : $this->asFailure(t('Couldn’t install plugin.'));
     }
 
-    public function switchEdition(Request $request): Response
+    public function switchEdition(Request $request, string $handle): Response
     {
         $request->validate([
-            'pluginHandle' => ['required', 'string'],
             'edition' => ['required', 'string'],
         ]);
 
-        $this->plugins->switchEdition($request->input('pluginHandle'), $request->input('edition'));
+        $this->plugins->switchEdition($handle, $request->input('edition'));
 
         return $this->asSuccess(t('Plugin edition changed.'));
     }
 
-    public function uninstall(Request $request): Response
+    public function uninstall(string $handle): Response
     {
-        $request->validate([
-            'pluginHandle' => ['required', 'string'],
-        ]);
-
-        $success = $this->plugins->uninstallPlugin($request->input('pluginHandle'));
+        $success = $this->plugins->uninstallPlugin($handle);
 
         return $success ?
             $this->asSuccess(t('Plugin uninstalled.')) :
             $this->asFailure(t('Couldn’t uninstall plugin.'));
     }
 
-    public function enable(Request $request): Response
+    public function enable(string $handle): Response
     {
-        $pluginHandle = $request->validate([
-            'pluginHandle' => ['required', 'string'],
-        ])['pluginHandle'];
-
-        $success = $this->plugins->enablePlugin($pluginHandle);
+        $success = $this->plugins->enablePlugin($handle);
 
         return $success ?
             $this->asSuccess(t('Plugin enabled.')) :
             $this->asFailure(t('Couldn’t enable plugin.'));
     }
 
-    public function disable(Request $request): Response
+    public function disable(string $handle): Response
     {
-        $request->validate([
-            'pluginHandle' => ['required', 'string'],
-        ]);
-
-        $success = $this->plugins->disablePlugin($request->input('pluginHandle'));
+        $success = $this->plugins->disablePlugin($handle);
 
         return $success ?
             $this->asSuccess(t('Plugin disabled.')) :
@@ -134,14 +121,13 @@ readonly class PluginsController
         return $plugin->getSettingsResponse();
     }
 
-    public function saveSettings(Request $request): Response
+    public function saveSettings(Request $request, string $handle): Response
     {
         $request->validate([
-            'pluginHandle' => ['required', 'string'],
             'settings' => ['nullable', 'array'],
         ]);
 
-        $plugin = $this->plugins->getPlugin($request->input('pluginHandle'));
+        $plugin = $this->plugins->getPlugin($handle);
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
@@ -157,6 +143,6 @@ readonly class PluginsController
 
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))
-            : $this->editSettings($request->input('pluginHandle'), $plugin);
+            : $this->editSettings($handle, $plugin);
     }
 }

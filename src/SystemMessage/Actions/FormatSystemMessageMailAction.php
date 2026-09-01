@@ -8,14 +8,15 @@ use CraftCms\Cms\Email\Data\MailSettings;
 use CraftCms\Cms\SystemMessage\Data\FormattedSystemMessageMail;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateEngine;
+use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 
 readonly class FormatSystemMessageMailAction
 {
     public function __construct(
         private SystemMessageRenderContext $renderContext,
-        private TwigRenderer $templateRenderer,
+        private TemplateManager $templateManager,
     ) {}
 
     public function handle(RenderedSystemMessage $message, MailSettings $settings): FormattedSystemMessageMail
@@ -39,10 +40,11 @@ readonly class FormatSystemMessageMailAction
         $htmlBody = $this->renderContext->run(
             siteId: $message->siteId,
             language: $message->language,
-            callback: fn () => $this->templateRenderer->renderTemplate(
+            callback: fn () => $this->templateManager->renderTemplate(
                 template: $settings->template,
                 variables: $viewData,
                 templateMode: TemplateMode::Site,
+                renderer: TemplateEngine::Twig,
             ),
         );
 

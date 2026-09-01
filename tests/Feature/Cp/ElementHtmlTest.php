@@ -35,7 +35,7 @@ describe('elementChipHtml', function () {
             ->and($indexHtml)->toContain('thumb')
             ->and($this->elementHtml->elementChipHtml($user, ['showThumb' => false]))->not->toContain('thumb');
 
-        $labelPattern = '/<craft-element-label id="[^"]+" class="label">/';
+        $labelPattern = '/<craft-truncate id="[^"]+" class="label">/';
         expect((bool) preg_match($labelPattern, $indexHtml))->toBeTrue()
             ->and((bool) preg_match($labelPattern, (string) $this->elementHtml->elementChipHtml($user, ['showLabel' => false])))->toBeFalse();
     });

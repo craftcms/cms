@@ -20,7 +20,7 @@ use function CraftCms\Cms\craftAsset;
 class CpAsset implements LegacyAssetInterface
 {
     public array $depends = [
-        TailwindResetAsset::class,
+        // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
         AxiosAsset::class,
         D3Asset::class,
@@ -89,6 +89,7 @@ class CpAsset implements LegacyAssetInterface
      * Inertia, so they're stripped here unless the legacy conditions
      * (CP request / authenticated user) actually apply.
      */
+    /** @return array<string, mixed> */
     private function craftData(): array
     {
         $except = [

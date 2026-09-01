@@ -1,7 +1,7 @@
 import type {Preview} from '@storybook/vue3';
 import {setup} from '@storybook/vue3';
 import {withThemeByDataAttribute} from '@storybook/addon-themes';
-import '@craftcms/cp';
+import '@craftcms/ui';
 import '../resources/css/cp.css';
 import './preview.css';
 import {installInertiaMock, setPageProps} from './inertia-mock';

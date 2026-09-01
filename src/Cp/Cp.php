@@ -15,8 +15,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Providers\AppServiceProvider;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -57,6 +56,7 @@ readonly class Cp
      * The keys merged below are always present so the Inertia side never loses
      * config it relies on, even on unauthenticated or non-CP requests.
      */
+    /** @return Collection<string, mixed> */
     public static function config(): Collection
     {
         $generalConfig = Cms::config();
@@ -79,6 +79,28 @@ readonly class Cp
             ->useBuildDirectory('vendor/craft/build');
     }
 
+    /**
+     * Returns the URL for a file under `resources/public`.
+     *
+     * Those files are Vite's `publicDir`: copied into the build verbatim rather
+     * than hashed into the manifest, so `Vite::asset()` can't resolve them.
+     * Served from the dev server while it's running, and from the published
+     * build directory otherwise.
+     */
+    public static function publicAssetUrl(string $path): string
+    {
+        $path = ltrim($path, '/');
+        $vite = static::vite();
+
+        if ($vite->isRunningHot()) {
+            $hot = trim((string) file_get_contents(CmsAssets::resourcesPath('hot')));
+
+            return rtrim($hot, '/')."/$path";
+        }
+
+        return asset("vendor/craft/build/$path");
+    }
+
     public static function viteScripts(): Vite
     {
         return static::vite()->withEntryPoints([
@@ -94,6 +116,7 @@ readonly class Cp
      * always present, CP-request-only keys are added for CP requests, and the
      * large authenticated-user block is added when someone is logged in.
      */
+    /** @return array<string, mixed> */
     private static function craftData(): array
     {
         $upToDate = Cms::isInstalled() && ! app(Updates::class)->areMigrationsPending();
@@ -131,6 +154,7 @@ readonly class Cp
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
+            'systemName' => Cms::systemName(),
             'systemUid' => Cms::systemUid(),
             'timepickerOptions' => self::timepickerOptions($formattingLocale, $orientation),
             'timezone' => Cms::timezone(),
@@ -172,7 +196,8 @@ readonly class Cp
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
-            'autosaveDrafts' => true, // @TODO: This should always be true in the frontend
+            // Always on; the legacy editor still reads `Craft.autosaveDrafts`.
+            'autosaveDrafts' => true,
             'apiParams' => app(Api::class)->apiParams,
             'appId' => config('app.name'),
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
@@ -191,6 +216,7 @@ readonly class Cp
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => self::httpProxy($generalConfig),
             'isImagick' => Images::getIsImagick(),
+            'isVips' => Images::getIsVips(),
             'isMultiSite' => Sites::isMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => AssetsHelper::getMaxUploadSize(),
@@ -208,7 +234,7 @@ readonly class Cp
             'previewIframeResizerOptions' => self::previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
-            'publishableSections' => $upToDate ? self::publishableSections($currentUser) : [],
+            'publishableSections' => $upToDate ? SectionResource::collection(Sections::getPublishableSections()) : [],
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => self::sites(),
@@ -226,6 +252,7 @@ readonly class Cp
         return $event->data;
     }
 
+    /** @return array<string, mixed> */
     private static function datepickerOptions(Locale $formattingLocale, Locale $locale): array
     {
         return [
@@ -244,6 +271,7 @@ readonly class Cp
         ];
     }
 
+    /** @return array<string, mixed> */
     private static function defaultCookieOptions(): array
     {
         return [
@@ -254,6 +282,7 @@ readonly class Cp
         ];
     }
 
+    /** @return array<string, mixed>|null */
     private static function httpProxy(GeneralConfig $generalConfig): ?array
     {
         if (! $generalConfig->httpProxy) {
@@ -273,6 +302,7 @@ readonly class Cp
         ]);
     }
 
+    /** @return array<string, mixed>|null|false */
     private static function previewIframeResizerOptions(GeneralConfig $generalConfig): array|null|false
     {
         if (! $generalConfig->useIframeResizer) {
@@ -287,43 +317,7 @@ readonly class Cp
         return $generalConfig->previewIframeResizerOptions;
     }
 
-    private static function publishableSections(User $currentUser): array
-    {
-        $sections = [];
-
-        foreach (Sections::getEditableSections() as $section) {
-            if ($section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid")) {
-                $sections[] = [
-                    'entryTypes' => self::entryTypes($section),
-                    'handle' => $section->handle,
-                    'id' => (int) $section->id,
-                    'name' => t($section->name, category: 'site'),
-                    'sites' => $section->getSiteIds(),
-                    'type' => $section->type,
-                    'uid' => $section->uid,
-                    'canSave' => $currentUser->can("saveEntries:$section->uid"),
-                ];
-            }
-        }
-
-        return $sections;
-    }
-
-    private static function entryTypes(Section $section): array
-    {
-        $types = [];
-
-        foreach ($section->getEntryTypes() as $type) {
-            $types[] = [
-                'handle' => $type->handle,
-                'id' => (int) $type->id,
-                'name' => t($type->name, category: 'site'),
-            ];
-        }
-
-        return $types;
-    }
-
+    /** @return list<array{handle: string, id: int, uid: string, name: string}> */
     private static function sites(): array
     {
         $sites = [];
@@ -340,6 +334,7 @@ readonly class Cp
         return $sites;
     }
 
+    /** @return array<string, mixed> */
     private static function timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
         // normalize the AM/PM names consistently with time2int() in jQuery Timepicker

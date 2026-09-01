@@ -48,8 +48,10 @@ use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
+use yii\web\JqueryAsset as YiiJqueryAsset;
 use yii\web\JsonParser;
 use function CraftCms\Cms\backTraceAsString;
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
@@ -599,11 +601,19 @@ class App
 
         return [
             'class' => AssetManager::class,
-            'basePath' => $generalConfig->resourceBasePath,
-            'baseUrl' => $generalConfig->resourceBaseUrl,
+            'basePath' => $generalConfig->resourceBasePath ?? '@webroot/cpresources',
+            'baseUrl' => $generalConfig->resourceBaseUrl ?? '@web/cpresources',
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
             'appendTimestamp' => true,
+            'bundles' => [
+                YiiJqueryAsset::class => [
+                    'sourcePath' => null,
+                    'js' => [
+                        craftAsset('legacy/jquery/dist/jquery.js'),
+                    ],
+                ],
+            ],
         ];
     }
 

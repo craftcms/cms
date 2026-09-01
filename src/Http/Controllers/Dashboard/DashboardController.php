@@ -6,14 +6,18 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
-use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
+use CraftCms\Cms\Dashboard\Widgets\Custom;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\View\View;
 
 use function CraftCms\Cms\cp_url;
 
@@ -24,41 +28,59 @@ readonly class DashboardController
     public function __construct(
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
+        private CustomWidgets $customWidgets,
+        private WidgetTypes $widgetTypes,
     ) {}
 
-    public function index()
+    public function index(): View
     {
-        /**
-         * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
-         */
-        $widgetTypeInfo = $this->dashboard->getAllWidgetTypes()
-            /** @var class-string<WidgetInterface> $widgetType */
-            ->filter(fn (string $widgetType) => $widgetType::isSelectable())
-            /** @phpstan-ignore argument.unresolvableType */
-            ->mapWithKeys(function (string $widgetType) {
-                $this->HtmlStack->startJsBuffer();
-                $widget = $this->dashboard->createWidget($widgetType);
-                $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
-                $settingsJs = (string) $this->HtmlStack->clearJsBuffer(false);
+        $widgets = $this->dashboard->getAllWidgets();
 
-                return [$widget::class => [
-                    'iconSvg' => $this->getWidgetIconSvg($widget),
-                    'name' => $widget::displayName(),
-                    'maxColspan' => $widget::maxColspan(),
-                    'settingsHtml' => $settingsHtml,
-                    'settingsJs' => $settingsJs,
-                    'selectable' => true,
-                ]];
-            })
-            /** @phpstan-ignore argument.unresolvableType */
-            ->sortBy('name');
+        /** @var Collection<string, class-string<WidgetInterface>|array{type: class-string<Custom>, settings: array{definitionId: string}}> $widgetConfigs */
+        $widgetConfigs = Collection::make();
+
+        foreach ($this->widgetTypes->types() as $widgetType) {
+            if ($widgetType::isSelectable()) {
+                $widgetConfigs->put($widgetType, $widgetType);
+            }
+        }
+
+        $this->customWidgets->all()
+            ->reject(fn (CustomWidgetDefinition $definition) => $widgets->contains(
+                fn (WidgetInterface $widget) => $widget instanceof Custom && $widget->definitionId === $definition->id,
+            ))
+            ->each(function (CustomWidgetDefinition $definition) use ($widgetConfigs) {
+                $widgetConfigs->put($definition->type(), [
+                    'type' => Custom::class,
+                    'settings' => [
+                        'definitionId' => $definition->id,
+                    ],
+                ]);
+            });
+
+        /** @var Collection<string, array<string, mixed>> $widgetTypeInfo */
+        $widgetTypeInfo = Collection::make();
+
+        foreach ($widgetConfigs as $type => $config) {
+            $widget = $this->dashboard->createWidget($config);
+
+            $widgetTypeInfo->put($type, [
+                'iconSvg' => $this->getWidgetIconSvg($widget),
+                'name' => $widget->getDisplayName(),
+                'maxColspan' => $widget->getMaxColspan(),
+                'selectable' => true,
+                ...$this->getWidgetSettingsInfo($widget, '__NAMESPACE__'),
+            ]);
+        }
+
+        $widgetTypeInfo = $widgetTypeInfo->sortBy(fn (array $info) => $info['name']);
 
         $variables = [];
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
         $allWidgetJs = '';
 
-        $this->dashboard->getAllWidgets()
+        $widgets
             ->each(function (WidgetInterface $widget) use ($widgetTypeInfo, &$variables, &$allWidgetJs) {
                 $this->HtmlStack->startJsBuffer();
                 $info = $this->getWidgetInfo($widget);
@@ -68,20 +90,22 @@ readonly class DashboardController
                     return;
                 }
 
-                if (! $widgetTypeInfo->has($info['type'])) {
-                    $widgetTypeInfo->put($info['type'], [
-                        'iconSvg' => $this->getWidgetIconSvg($widget),
-                        'name' => $widget::displayName(),
-                        'maxColspan' => $widget::maxColspan(),
-                        'selectable' => false,
-                    ]);
-                }
+                $widgetTypeInfo[$info['type']] ??= [
+                    'iconSvg' => $this->getWidgetIconSvg($widget),
+                    'name' => $widget->getDisplayName(),
+                    'maxColspan' => $widget->getMaxColspan(),
+                    'settingsForm' => null,
+                    'settingsHtml' => '',
+                    'settingsJs' => '',
+                    'selectable' => false,
+                ];
 
                 $variables['widgets'][] = $info;
                 $allWidgetJs .= 'new Craft.Widget("#widget'.$widget->id.'", '.
                     Json::encode($info['settingsHtml']).', '.
                     '() => {'.$info['settingsJs'].'},'.
-                    Json::encode($info['settings']).
+                    Json::encode($info['settings']).','.
+                    Json::encode($info['settingsForm']).
                     ");\n";
 
                 // Allow any widget JS to execute *after* we've created the Craft.Widget instance

@@ -12,7 +12,6 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\File;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Override;
 use Throwable;
@@ -53,7 +52,6 @@ class AsciiFilenamesCommand extends Command
             default => throw new Exception('Invalid driver name: '.DB::connection()->getDriverName().'.')
         };
 
-        /** @var Collection<Asset> $assets */
         $assets = $query->get();
         $total = $assets->count();
 

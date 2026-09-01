@@ -13,7 +13,7 @@ class ElementSearchableAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  array  $attributes  The searchable attributes
+     * @param  list<string>  $attributes  The searchable attributes
      */
     public function __construct(
         public string $elementType,

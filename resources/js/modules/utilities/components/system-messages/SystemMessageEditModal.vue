@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useHttp} from '@inertiajs/vue3';
   import {useEventListener} from '@vueuse/core';
   import ModalForm from '@/common/components/ModalForm.vue';
@@ -9,8 +9,8 @@
   } from '@actions/Utilities/SystemMessagesController';
   import type {SelectOption} from '@/common/types';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
 
   interface SystemMessageData {
     key: string;

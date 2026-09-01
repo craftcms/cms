@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -59,6 +60,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     #[Override]
     protected string $table = Table::ENTRIES;
 
+    /** @var array<string, int> */
     #[Override]
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
@@ -89,14 +91,13 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public ?bool $savable = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Default status
-        if (! isset($config['status'])) {
-            $config['status'] = [
-                Entry::STATUS_LIVE,
-            ];
-        }
+        $config['status'] ??= [
+            Entry::STATUS_LIVE,
+        ];
 
         parent::__construct(Entry::class, $config);
 
@@ -166,6 +167,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $editable
      */
+    /** @return self<T> */
     public function editable(?bool $value = true): self
     {
         $this->editable = $value;
@@ -181,6 +183,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $savable
      */
+    /** @return self<T> */
     public function savable(?bool $value = true): self
     {
         $this->savable = $value;
@@ -228,6 +231,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     /**
      * @throws QueryAbortedException
      */
+    /** @param self<T> $query */
     private function applyAuthParam(
         self $query,
         ?bool $value,
@@ -331,6 +335,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         return $tags;
     }
 
+    /** @return Collection<int, FieldLayout> */
     #[Override]
     protected function fieldLayouts(): Collection
     {

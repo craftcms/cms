@@ -1,0 +1,366 @@
+html,
+body {
+  background-color: var(--c-surface-default);
+}
+
+body {
+  width: 100%;
+  overflow-x: hidden;
+  font-family: var(--c-font-body, sans-serif);
+  font-size: var(--c-text-base);
+  line-height: var(--c-leading-normal);
+  color: var(--c-text-default);
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/*
+  Global keyboard-focus indicator: any focusable element gets a visible ring
+  when focused via the keyboard. Uses :focus-visible so it stays off during
+  pointer interaction. Placeholder treatment — adjust as needed.
+*/
+:focus-visible {
+  outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+    var(--c-color-focus-outline);
+  outline-offset: var(--c-focus-outline-offset);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+pre {
+  margin: 0;
+}
+
+a {
+  cursor: pointer;
+  color: var(--c-text-link);
+}
+
+/*
+  Make lists unstyled by default.
+*/
+
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+dd {
+  margin: 0;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cp-code {
+  font-size: 0.75em;
+  font-family: var(--c-font-mono);
+  display: inline-flex;
+  padding: 0 var(--c-spacing-sm);
+  color: var(--c-color-on-quiet);
+  border: 1px solid var(--c-color-border-quiet);
+  background-color: color-mix(
+    var(--c-color-fill-quiet) 90%,
+    var(--c-color-fill-loud)
+  );
+  border-radius: var(--c-radius-sm);
+}
+
+.cp-icon {
+  --_icon-size: var(--c-icon-size, 1em);
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  max-width: var(--_icon-size);
+  display: inline-flex;
+
+  svg {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    max-width: var(--icon-size) !important;
+    max-height: var(--icon-size) !important;
+  }
+}
+
+hr {
+  display: block;
+  width: 100%;
+  border: 0;
+  height: 0;
+  border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+  margin-block: 0;
+  margin-inline: 0;
+  color: transparent;
+}
+
+.index-grid {
+  display: grid;
+  gap: var(--c-spacing-md);
+
+  @container (width >= 768px) {
+    grid-template-columns:
+      clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+      6fr;
+    align-items: start;
+  }
+}
+
+.index-grid__aside,
+.index-grid__main {
+  display: flex;
+  gap: var(--c-spacing-md);
+  align-items: center;
+}
+
+.index-grid--header {
+  align-items: center;
+  min-height: calc(40rem / 16);
+  padding-block: var(--c-spacing-lg);
+
+  @container (width >= 768px) {
+    padding-block-end: var(--c-spacing-md);
+  }
+}
+
+.index-grid--header .index-grid__main {
+  @container (width >= 768px) {
+    justify-self: end;
+  }
+}
+
+/**
+Prose class, wrap around WYSIWYG text or markdown text.
+Previously `.readable`
+ */
+.prose {
+  > *:first-child {
+    margin-block-start: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-block: 0.5rem;
+  }
+
+  ol,
+  ul {
+    padding-inline-start: 1.5em;
+    display: grid;
+    gap: 0.25em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+}
+
+/**
+CP Table
+
+Applies some basic styling to table elements.
+
+The idea here is that you can just apply `cp-table` to the parent table and have
+most of the element display correctly which is why we don't do BEM or anything here
+
+Modify with `cp-table--compact` to reduce the vertical cell padding
+Modify with `cp-table--borderless` to remove the inline cell padding
+Modify with `cp-table--auto` to apply table-layout: auto
+ */
+.cp-table {
+  --_cell-spacing-inline: var(--c-spacing-md);
+  --_cell-spacing-block: 0;
+  --_row-height: calc(34rem / 16);
+  text-align: left;
+  width: 100%;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+
+  @container (width >= 840px) {
+    table-layout: fixed;
+  }
+
+  thead,
+  th {
+    background-color: var(--c-color-neutral-fill-quiet);
+  }
+
+  th,
+  td {
+    padding-block: var(--_cell-spacing-block);
+    padding-inline: var(--_cell-spacing-inline);
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 0;
+    height: var(--_row-height);
+
+    &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
+      padding: 0;
+    }
+  }
+
+  tbody tr {
+  }
+
+  td,
+  th {
+    border-block-end: 1px solid
+      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+  }
+
+  /* Add a rule to the first cells */
+  tr:first-child {
+    td,
+    th {
+      border-block-start: 1px solid
+        color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+    }
+  }
+
+  textarea,
+  input:not([type='checkbox']):not([type='radio']) {
+    --c-focus-outline-offset: -2px;
+    border: 0;
+    padding-block: var(--_cell-spacing-block);
+    padding-inline: var(--_cell-spacing-inline);
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  textarea {
+    resize: none;
+    line-height: 1.2;
+  }
+}
+
+.cp-table--editable {
+  table-layout: auto;
+  border: 1px solid var(--c-color-border-quiet);
+  border-radius: var(--c-radius-sm);
+
+  thead,
+  th {
+    background-color: transparent;
+  }
+
+  th {
+    font-size: var(--c-text-sm);
+    padding: var(--c-spacing-sm);
+  }
+
+  td {
+    padding: 0;
+  }
+
+  td.thin {
+    padding: var(--c-spacing-sm);
+    white-space: nowrap;
+    width: 0.01%;
+  }
+
+  /* Compat */
+  .editable-table-preview {
+    text-align: start;
+    white-space: pre-wrap;
+  }
+
+  .editable-table-preview + textarea {
+    height: 0;
+    min-height: 0;
+    opacity: 0;
+    padding-block: 0;
+  }
+
+  textarea,
+  textarea.text,
+  input.text,
+  pre,
+  .editable-table-preview {
+    display: block;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding-block: 7px;
+    padding-inline: 10px;
+    line-height: 20px;
+    background-color: transparent;
+    overflow: hidden;
+    transition: none;
+    box-sizing: border-box;
+  }
+}
+
+.cp-table--ruled {
+  td:not(:first-child),
+  th:not(:first-child) {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+}
+
+.cp-table--grid {
+  --table-column-count: auto-fill;
+  --table-template-columns: repeat(var(--table-column-count), 1fr);
+
+  tr {
+    display: grid;
+    grid-template-columns: var(--table-template-columns);
+    grid-template-rows: minmax(var(--c-size-control-md), auto);
+  }
+
+  th,
+  td {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.cp-table--padded {
+  th,
+  td {
+    padding-block: var(--c-spacing-md);
+  }
+}
+
+.cp-table--auto {
+  table-layout: auto;
+}
+
+.cp-table--loading {
+  tbody {
+    opacity: 0.4;
+  }
+}
+
+.cp-table--fixed {
+  table-layout: fixed;
+}
+
+.cp-table--collapsed,
+.cp-table--borderless {
+  --_cell-spacing-block: 0;
+}
+
+.cp-table--compact {
+  --_row-height: calc(40rem / 16);
+}
+
+.cp-table--spacious {
+  --_row-height: calc(50rem / 16);
+}

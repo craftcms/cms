@@ -34,11 +34,12 @@ abstract class BaseUserSettingsController
         ];
     }
 
+    /** @return list<array<string, string>> */
     protected function crumbs(string $title, ?string $url = null): array
     {
         return [
-            ['label' => t('Settings'), 'url' => cp_url('settings')],
-            array_filter(['label' => $title, 'url' => $url]),
+            ['label' => t('Settings'), 'href' => cp_url('settings')],
+            array_filter(['label' => $title, 'href' => $url]),
         ];
     }
 }

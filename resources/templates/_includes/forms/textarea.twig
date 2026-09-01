@@ -1,32 +1,15 @@
-{%- set class = (class ?? [])|explodeClass|merge([
-    'text',
-    not (cols ?? false) ? 'fullwidth',
-]|filter) %}
+{# Renders a <craft-textarea> web component from the legacy textarea
+   variables (`id`, `class`, `inputmode`, `rows`, `cols`, `name`, `maxlength`,
+   `autofocus`, `disabled`, `readonly`, `title`, `placeholder`, `value`,
+   `describedBy`, `showCharsLeft`, `inputAttributes` and an `attr` block).
 
-{%- set inputAttributes = {
-    class: class,
-    id: id ?? false,
-    inputmode: inputmode ?? false,
-    rows: rows ?? 2,
-    cols: cols ?? 50,
-    name: name ?? false,
-    maxlength: maxlength ?? false,
-    autofocus: (autofocus ?? false) and not Request.isMobileBrowser(true),
-    disabled: disabled ?? false,
-    readonly: readonly ?? false,
-    title: title ?? false,
-    placeholder: placeholder ?? false,
-    text: value ?? '',
-    aria: {
-        describedby: describedBy ?? false,
-    },
-    data: {
-        'show-chars-left': showCharsLeft ?? false,
-    },
-}|merge(inputAttributes ?? [], recursive=true) %}
+   The legacy-to-component mapping lives in FormFields::textareaFromConfig();
+   the native textarea renders in the light DOM as the component's form
+   control. #}
 
+{%- set inputAttributes = inputAttributes ?? {} %}
 {%- if block('attr') is defined %}
-    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
-{%- endif %}
+  {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
 
-{{- tag('textarea', inputAttributes) }}
+{{- craft.cp.textarea(_context)|raw -}}

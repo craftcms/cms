@@ -7,8 +7,12 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 
 beforeEach(function () {
     Edition::set(Edition::Team);
@@ -166,7 +170,7 @@ it('returns proper error message on validation failure', function () {
         'email' => 'invalid-email',
     ]);
 
-    $response->assertStatus(400);
+    $response->assertBadRequest();
 
     $content = $response->json();
     expect($content)->toHaveKey('errors');
@@ -204,6 +208,52 @@ it('returns proper response on success', function () {
     expect($content)->toHaveKey('modelId');
     expect($content)->toHaveKey('user');
     expect($content['message'])->toBe('User saved.');
+});
+
+it('shares the success flash with the profile screen after a CP save', function () {
+    $user = User::findOne();
+
+    actingAs($user)->post(cp_url('actions/users/save-user'), [
+        'userId' => $user->id,
+        'firstName' => 'Updated',
+    ])->assertRedirect(cp_url('myaccount'));
+
+    get(cp_url('myaccount'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Edit')
+            ->where('flash.success', t('{type} saved.', ['type' => User::displayName()])));
+});
+
+it('shows validation errors on the profile screen after a failed CP save', function () {
+    $user = User::findOne();
+
+    actingAs($user)->post(cp_url('actions/users/save-user'), [
+        'userId' => $user->id,
+        'username' => '',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasErrors(['username']);
+
+    // The error bag must not contain empty attribute entries — Inertia's
+    // middleware resolves each entry's first message when rendering the
+    // next page, and used to 500 on the empty 'email' entry that the
+    // unverifiedEmail error copying left behind.
+    $errors = session('errors')->getBag('default')->getMessages();
+    expect(array_filter($errors, fn (array $messages) => $messages === []))->toBe([]);
+
+    Pest\Laravel\get(cp_url('myaccount'))->assertOk();
+});
+
+it('redirects CP saves without a redirect param back to the profile screen', function () {
+    $user = User::findOne();
+
+    actingAs($user)->post(cp_url('actions/users/save-user'), [
+        'userId' => $user->id,
+        'firstName' => 'Updated',
+    ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(cp_url('myaccount'));
 });
 
 it('can edit own profile when useEmailAsUsername is true', function () {

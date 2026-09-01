@@ -8,7 +8,6 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\AddressField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\CountryCodeField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField;
@@ -26,43 +25,43 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Users\PhotoField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class FieldLayoutServiceProvider extends ServiceProvider
 {
-    public function boot(Sites $sites): void
+    public function boot(NativeFields $nativeFields): void
     {
-        Event::listen(function (NativeFieldsResolving $event) use ($sites) {
-            switch ($event->fieldLayout->type) {
+        $nativeFields->register('craft', function (FieldLayout $fieldLayout, array $fields, Sites $sites): array {
+            switch ($fieldLayout->type) {
                 case Address::class:
-                    $event->fields[] = LabelField::class;
-                    $event->fields[] = OrganizationField::class;
-                    $event->fields[] = OrganizationTaxIdField::class;
-                    $event->fields[] = FullNameField::class;
-                    $event->fields[] = CountryCodeField::class;
-                    $event->fields[] = AddressField::class;
-                    $event->fields[] = LatLongField::class;
+                    array_push($fields,
+                        LabelField::class,
+                        OrganizationField::class,
+                        OrganizationTaxIdField::class,
+                        FullNameField::class,
+                        CountryCodeField::class,
+                        AddressField::class,
+                        LatLongField::class,
+                    );
                     break;
                 case Asset::class:
-                    $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AltField::class;
+                    array_push($fields, AssetTitleField::class, AltField::class);
                     break;
                 case Entry::class:
-                    $event->fields[] = EntryTitleField::class;
+                    $fields[] = EntryTitleField::class;
                     break;
                 case User::class:
                     if (! Cms::config()->useEmailAsUsername) {
-                        $event->fields[] = UsernameField::class;
+                        $fields[] = UsernameField::class;
                     }
-                    $event->fields[] = UserFullNameField::class;
-                    $event->fields[] = PhotoField::class;
-                    $event->fields[] = EmailField::class;
+                    array_push($fields, UserFullNameField::class, PhotoField::class, EmailField::class);
                     if ($sites->isMultiSite()) {
-                        $event->fields[] = AffiliatedSiteField::class;
+                        $fields[] = AffiliatedSiteField::class;
                     }
                     break;
             }
+
+            return $fields;
         });
     }
 }

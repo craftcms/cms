@@ -36,7 +36,7 @@ it('requires authentication', function () {
 it('requires a file or field for upload', function () {
     postJson(action([UploadController::class, 'upload']), [
         'folderId' => $this->folder->id,
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('uploads to a dynamic field location using posted element context', function () {
@@ -77,6 +77,20 @@ it('requires authentication for replace file', function () {
 });
 
 it('validates replace file parameters', function () {
-    postJson(action([UploadController::class, 'replaceFile']))
-        ->assertStatus(400);
+    postJson(action([UploadController::class, 'replaceFile']))->assertBadRequest();
 });
+
+it('casts posted asset IDs before looking them up', function (Closure $requestData) {
+    post(action([UploadController::class, 'replaceFile']), $requestData(), [
+        'Accept' => 'application/json',
+    ])->assertNotFound();
+})->with([
+    'target asset' => [fn () => [
+        'assetId' => '999999',
+        'replaceFile' => UploadedFile::fake()->image('replacement.jpg'),
+    ]],
+    'source asset' => [fn () => [
+        'sourceAssetId' => '999999',
+        'targetFilename' => 'replacement.jpg',
+    ]],
+]);

@@ -15,6 +15,7 @@ class FullNameField extends BaseFullNameField
     #[Override]
     public bool $mandatory = true;
 
+    /** @return array<string, string|array<string, string>> */
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {

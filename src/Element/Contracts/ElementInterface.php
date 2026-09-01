@@ -21,11 +21,15 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
 use IteratorAggregate;
@@ -39,9 +43,14 @@ use Symfony\Component\HttpFoundation\Response;
  * @phpstan-require-extends Element
  *
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
- * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
+ * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:iterable<EagerLoadingMapItem>,criteria?:array<string,mixed>,createElement?:callable}
+ * @phpstan-type SourceConfig array<string,mixed>
+ * @phpstan-type AttributeConfig array<string,mixed>
+ *
+ * @extends ArrayAccess<array-key,mixed>
+ * @extends IteratorAggregate<array-key,mixed>
  */
-interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, Statusable, Thumbable, Validatable
+interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Statusable, Thumbable, Validatable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -289,19 +298,20 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * :::
      *
      * @param  string  $context  The context ('index', 'modal', 'field', or 'settings').
-     * @return array The sources.
+     * @return SourceConfig[] The sources.
      */
     public static function sources(string $context): array;
 
     /**
      * Returns a source definition by a given source key/path and context.
      */
+    /** @return SourceConfig|null */
     public static function findSource(string $sourceKey, ?string $context): ?array;
 
     /**
      * Returns the source path for a given source key, step key, and context.
      *
-     * @return array[]|null
+     * @return SourceConfig[]|null
      */
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
@@ -318,6 +328,10 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     */
+    /**
+     * @param  SourceConfig  $config
+     * @return SourceConfig
      */
     public static function modifyCustomSource(array $config): array;
 
@@ -352,7 +366,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * :::
      *
      * @param  string  $source  The selected source’s key.
-     * @return array The available element exporters.
+     * @return array<ElementExporterInterface|class-string<ElementExporterInterface>|array{type:class-string<ElementExporterInterface>}> The available element exporters.
      */
     public static function exporters(string $source): array;
 
@@ -388,12 +402,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the base attributes that should be applied when bulk-duplicating elements of this type.
      */
+    /** @return array<string,mixed> */
     public static function baseBulkDuplicateAttributes(): array;
 
     /**
      * Returns the element index HTML.
      *
      * @param  int[]|null  $disabledElementIds
+     * @param  array<string,mixed>  $viewState
      * @return string|Stringable The element index HTML
      */
     public static function indexHtml(
@@ -406,6 +422,23 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
         bool $selectable,
         bool $sortable,
     ): string|Stringable;
+
+    /**
+     * Returns the element index data (the template variables backing [[indexHtml()]]).
+     *
+     * @param  int[]|null  $disabledElementIds
+     * @param  array<string,mixed>  $viewState
+     * @return array<string,mixed> The element index template variables
+     */
+    public static function indexData(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $selectable,
+        bool $sortable,
+    ): array;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
@@ -449,7 +482,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Note that this method will only get called once for the entire index; not each time that a new source is
      * selected.
      *
-     * @return array The attributes that elements can be sorted by
+     * @return array<array-key,mixed> The attributes that elements can be sorted by
      */
     public static function sortOptions(): array;
 
@@ -475,7 +508,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * ];
      *  ```
      *
-     * @return array The view modes.
+     * @return array<array-key,mixed> The view modes.
      */
     public static function indexViewModes(): array;
 
@@ -485,7 +518,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
-     * @return array The table attributes.
+     * @return array<string,AttributeConfig> The table attributes.
      */
     public static function tableAttributes(): array;
 
@@ -506,7 +539,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
-     * @return array The card attributes.
+     * @return array<string,AttributeConfig> The card attributes.
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
 
@@ -523,6 +556,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Return HTML for the attribute in the card preview.
      */
+    /** @param AttributeConfig $attribute */
     public static function attributePreviewHtml(array $attribute): mixed;
 
     /**
@@ -592,7 +626,9 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns any deletion blockers for the given elements.
      *
-     * @param  ElementCollection  $elements  The elements to be deleted
+     * @template TElement of ElementInterface
+     *
+     * @param  ElementCollection<array-key,TElement>  $elements  The elements to be deleted
      * @param  bool  $hardDelete  Whether the elements will be hard-deleted
      * @return DeletionBlockerInterface[]
      */
@@ -608,6 +644,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  mixed  $context  The element’s context, such as a volume, entry type or Matrix block type.
      */
+    /** @return string[] */
     public static function gqlScopesByContext(mixed $context): array;
 
     /**
@@ -711,6 +748,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
      *   (`true` by default)
      */
+    /** @return array<int|string|array{siteId:int|string,propagate?:bool,enabledByDefault?:bool}> */
     public function getSupportedSites(): array;
 
     /**
@@ -761,6 +799,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the breadcrumbs that lead up to the element.
      */
+    /** @return array<array-key,mixed> */
     public function getCrumbs(): array;
 
     /**
@@ -889,6 +928,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function hasRevisions(): bool;
 
     /**
+     * Returns the view model that builds this element type’s edit screen
+     * payload, or null if its editor hasn’t been ported off the legacy screen.
+     *
+     * @return class-string<ElementEditViewModel>|null
+     */
+    public static function editViewModelClass(): ?string;
+
+    /**
      * Prepares the response for the element’s Edit screen.
      *
      * @param  Response  $response  The response being prepared
@@ -916,6 +963,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * {@see CpScreenResponse::altActions()} for documentation on supported action properties.
      */
+    /** @return array<array-key,mixed> */
     public function getAltActions(): array;
 
     /**
@@ -932,6 +980,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * instead of this method.
      * :::
      */
+    /** @return array<array-key,mixed> */
     public function getPreviewTargets(): array;
 
     /**
@@ -951,7 +1000,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * This can also be set to an array of site ID/site-enabled mappings.
      *
-     * @param  bool|bool[]  $enabledForSite
+     * @param  bool|array<int,bool>  $enabledForSite
      */
     public function setEnabledForSite(array|bool $enabledForSite): void;
 
@@ -963,6 +1012,8 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns the same element in other locales.
+     *
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
      */
     #[AllowedInSandbox]
     public function getLocalized(): ElementQueryInterface|ElementCollection;
@@ -1015,24 +1066,32 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns the element’s ancestors.
+     *
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
      */
     #[AllowedInSandbox]
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s descendants.
+     *
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
      */
     #[AllowedInSandbox]
     public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s children.
+     *
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
      */
     #[AllowedInSandbox]
     public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
+     *
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
      */
     #[AllowedInSandbox]
     public function getSiblings(): ElementQueryInterface|ElementCollection;
@@ -1113,7 +1172,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Sets the element’s attributes from an element editor submission.
      *
-     * @param  array  $values  The attribute values
+     * @param  array<string,mixed>  $values  The attribute values
      */
     public function setAttributesFromRequest(array $values): void;
 
@@ -1233,7 +1292,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string[]|null  $fieldHandles  The list of field handles whose values
      *                                       need to be returned. Defaults to null, meaning all fields’ values will be
      *                                       returned. If it is an array, only the fields in the array will be returned.
-     * @return array The field values (handle => value)
+     * @return array<string,mixed> The field values (handle => value)
      */
     #[AllowedInSandbox]
     public function getFieldValues(?array $fieldHandles = null): array;
@@ -1244,6 +1303,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string[]|null  $fieldHandles  The list of field handles whose values
      *                                       need to be returned. Defaults to null, meaning all fields’ values will be
      *                                       returned. If it is an array, only the fields in the array will be returned.
+     * @return array<string,mixed>
      */
     public function getSerializedFieldValues(?array $fieldHandles = null): array;
 
@@ -1254,13 +1314,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string[]|null  $fieldHandles  The list of field handles whose values
      *                                       need to be returned. Defaults to null, meaning all fields’ values will be
      *                                       returned. If it is an array, only the fields in the array will be returned.
+     * @return array<string,mixed>
      */
     public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array;
 
     /**
      * Sets the element’s custom field values.
      *
-     * @param  array  $values  The custom field values (handle => value)
+     * @param  array<string,mixed>  $values  The custom field values (handle => value)
      */
     public function setFieldValues(array $values): void;
 
@@ -1434,7 +1495,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the eager-loaded elements for a given handle.
      *
      * @param  string  $handle  The handle of the eager-loaded elements
-     * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     * @return ElementCollection<array-key,ElementInterface>|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
     #[AllowedInSandbox]
     public function getEagerLoadedElements(string $handle): ?ElementCollection;
@@ -1517,6 +1578,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * :::
      *
      * @param  string  $context  The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
+     * @return array<string,mixed>
      */
     public function getHtmlAttributes(string $context): array;
 
@@ -1549,10 +1611,34 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function getSidebarHtml(bool $static): string|Stringable;
 
     /**
+     * Returns the editor sidebar's meta fields as a Form.
+     *
+     * This is the Form-system replacement for {@see getSidebarHtml()}; the
+     * Inertia editor renders it through the Vue Form renderer, so the fields
+     * submit as ordinary nested inputs rather than scraped DOM values. The
+     * legacy editor and slideouts keep using `getSidebarHtml()`.
+     *
+     * Returns `null` when the element has no sidebar fields.
+     */
+    public function sidebarForm(FormContext $context = new FormContext): ?Form;
+
+    /**
+     * Returns the element's validation errors keyed the way the editor's Forms
+     * address them.
+     *
+     * A Form matches errors to Controls by path, so an attribute validated
+     * under one name but posted under another needs remapping here, or its
+     * messages never reach the field that produced them.
+     *
+     * @return array<string, list<string>>
+     */
+    public function formErrors(): array;
+
+    /**
      * Returns element metadata that should be shown within the editor sidebar.
      *
-     * @return array The data, with keys representing the labels. The values can either be strings or callables.
-     *               If a value is `false`, it will be omitted.
+     * @return array<string,mixed> The data, with keys representing the labels. The values can either be strings or callables.
+     *                             If a value is `false`, it will be omitted.
      */
     public function getMetadata(): array;
 
@@ -1655,6 +1741,8 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Renders the element using its partial template.
      *
      * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param  array<string,mixed>  $variables
      *
      * @throws RuntimeException
      */

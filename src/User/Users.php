@@ -85,7 +85,7 @@ class Users
     ) {}
 
     /**
-     * @var array Cached user preferences.
+     * @var array<int, array<string, mixed>> Cached user preferences.
      *
      * @see getUserPreferences()
      */
@@ -185,7 +185,7 @@ class Users
      * Returns a user’s preferences.
      *
      * @param  int  $userId  The user’s ID
-     * @return array The user’s preferences
+     * @return array<string, mixed> The user’s preferences
      */
     public function getUserPreferences(int $userId): array
     {
@@ -212,7 +212,7 @@ class Users
      * Saves a user’s preferences.
      *
      * @param  CraftUser  $user  The user
-     * @param  array  $preferences  The user’s new preferences
+     * @param  array<string, mixed>  $preferences  The user’s new preferences
      */
     public function saveUserPreferences(CraftUser $user, array $preferences): void
     {
@@ -842,6 +842,19 @@ class Users
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
         }
+    }
+
+    public function invalidateUserSessions(User $user): void
+    {
+        DB::transaction(function () use ($user) {
+            $userModel = UserModel::findOrFail($user->id);
+            $userModel->setRememberToken(Str::random(60));
+            $userModel->save();
+
+            DB::table(Table::SESSIONS)
+                ->where('user_id', $user->id)
+                ->delete();
+        });
     }
 
     /**

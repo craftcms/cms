@@ -14,14 +14,7 @@
 </script>
 
 <template>
-  <craft-button
-    type="button"
-    :id="id"
-    appearance="plain"
-    size="zero"
-    icon
-    variant="inherit"
-  >
+  <craft-button type="button" :id="id" variant="plain" size="zero" icon inherit>
     <slot name="icon">
       <craft-icon :name="icon"></craft-icon>
     </slot>

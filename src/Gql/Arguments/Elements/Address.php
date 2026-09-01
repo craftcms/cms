@@ -9,8 +9,10 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Gql\Arguments\ElementArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Types\QueryArgument;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type ArgumentConfig from Argument */
 class Address extends ElementArguments
 {
     #[\Override]
@@ -52,6 +54,7 @@ class Address extends ElementArguments
     }
 
     #[\Override]
+    /** @return array<string, ArgumentConfig> */
     public static function getRevisionArguments(): array
     {
         return [];

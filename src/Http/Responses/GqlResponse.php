@@ -13,7 +13,7 @@ class GqlResponse extends JsonResponse
      *
      * @param  mixed  $data
      * @param  int  $status
-     * @param  array  $headers
+     * @param  array<string, string>  $headers
      * @param  int  $options
      * @param  bool  $json
      */

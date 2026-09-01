@@ -1,6 +1,6 @@
 ---
 name: testing-guidelines
-description: Guidance for writing and updating Craft CMS 6 tests (Pest/Laravel) including element factories, CP URL rules, custom field setup, trait testing, and event assertions. Use when creating or modifying tests, debugging test patterns, or aligning new tests with repository testing standards.
+description: Guidance for designing, writing, reviewing, and updating Craft CMS 6 tests with Pest and Laravel. Covers suite selection, assertions, test data, dependency isolation, element factories, CP URLs, custom fields, traits, and events. Use when creating, modifying, debugging, or reviewing tests.
 ---
 
 # Testing Guidelines
@@ -36,6 +36,11 @@ uses(UnitTestCase::class)->in('Unit');
 
 ## Core Rules
 
+- Read nearby tests first and follow their declaration and organization conventions.
+- Use Boost's `search-docs` for version-specific Pest and Laravel testing syntax. Confirm an assertion or feature before using it.
+- Test observable behavior and application contracts. Cover each changed decision and applicable high-value failure path, but leave framework behavior to framework tests.
+- Run the narrowest relevant test file or filter. Rerun a test after changing it.
+- Do not delete tests or test files without approval.
 - Do not add comments in test files — no section separators (e.g., `// -- section --`), no inline explanations, no docblocks. Test names should be descriptive enough on their own. Use `describe()` blocks to group related tests instead of comments.
 - Keep test-local abstractions proportional to the repetition they remove. Small one-off helpers such as route wrapper closures or tiny passthrough methods usually shouldn’t exist; inline the setup or request unless the extraction materially improves readability or reuse.
 - Use `CraftCms\Cms\Cms::config()->cpTrigger` when asserting CP URLs; never hard-code `/admin`.
@@ -44,6 +49,11 @@ uses(UnitTestCase::class)->in('Unit');
 - For element traits, create minimal test elements that override only what is needed.
 - Use Laravel event fakes/listeners to assert dispatch, cancellation, or data changes.
 - Use Pest's `->with()` data providers to consolidate tests that share the same structure but differ only in input/expected values. Use named dataset entries for clarity.
+- Prefer subject-specific Laravel assertions and Pest expectations over generic status or boolean assertions. Keep each `expect()` chain focused on one subject.
+- Import `use function Pest\Laravel\mock;` before using Pest's `mock()` helper.
+- Use fixed expected values or calculate them independently from production logic.
+- For write operations, assert the response or return value, persisted state, and relevant side effects. On failure paths, assert that no unintended change occurred.
+- Control time, randomness, sleep, and outbound HTTP when they affect the test. Use Laravel fakes and real database queries instead of mocking the query builder.
 - Avoid long chains of `toContain()` / `not()->toContain()` assertions against rendered HTML. They tend to test incidental markup, labels, ordering, and template structure instead of behavior. Prefer assertions that target the semantic contract directly, such as input names, selected values, option values, or data attributes. Keep raw string containment assertions for small, stable strings that are themselves the contract.
 - Tests that assert Yii2 backwards-compatibility surfaces (legacy aliases, `ValidateMixin` helpers like `hasErrors()`, other adapter-only behavior) must live in `yii2-adapter/tests-laravel/`, not `tests/Feature/` or `tests/Unit/`.
 

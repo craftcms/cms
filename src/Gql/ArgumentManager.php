@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use Closure;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
-use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
-use CraftCms\Cms\Gql\Handlers\RelatedAssets;
-use CraftCms\Cms\Gql\Handlers\RelatedEntries;
-use CraftCms\Cms\Gql\Handlers\RelatedUsers;
 use CraftCms\Cms\Gql\Handlers\RelationArgumentHandler;
-use CraftCms\Cms\Gql\Handlers\Site;
-use CraftCms\Cms\Gql\Handlers\SiteId;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 
 class ArgumentManager extends Component
 {
     /**
-     * @var array<string,class-string<ArgumentHandlerInterface>|ArgumentHandlerInterface>
+     * @var array<string,class-string<ArgumentHandlerInterface>|Closure|ArgumentHandlerInterface>
      */
     private array $_argumentHandlers = [];
 
@@ -29,16 +25,7 @@ class ArgumentManager extends Component
     {
         parent::__construct($config);
 
-        $this->_argumentHandlers = [
-            'relatedToEntries' => RelatedEntries::class,
-            'relatedToAssets' => RelatedAssets::class,
-            'relatedToUsers' => RelatedUsers::class,
-            'site' => Site::class,
-            'siteId' => SiteId::class,
-        ];
-
-        event($event = new GqlArgumentHandlersResolving(handlers: $this->_argumentHandlers));
-        $this->_argumentHandlers = $event->handlers;
+        $this->_argumentHandlers = app(GqlArguments::class)->handlers()->all();
     }
 
     protected function createHandlers(): void
@@ -47,27 +34,23 @@ class ArgumentManager extends Component
             return;
         }
 
-        foreach ($this->_argumentHandlers as &$handler) {
-            // Instantiate in place, if a class name is added.
-            if (is_string($handler)) {
-                $handler = $this->createHandler($handler);
-            }
+        foreach ($this->_argumentHandlers as $argumentName => &$handler) {
+            $handler = $this->resolveHandler($argumentName, $handler);
         }
 
         unset($handler);
         $this->_handlersCreated = true;
     }
 
-    public function setHandler(string $argumentName, ArgumentHandlerInterface|string $handler): void
+    public function setHandler(string $argumentName, ArgumentHandlerInterface|string|Closure $handler): void
     {
-        if (is_string($handler)) {
-            $handler = $this->createHandler($handler);
-        }
-
-        $this->_argumentHandlers[$argumentName] = $handler;
+        $this->_argumentHandlers[$argumentName] = $this->resolveHandler($argumentName, $handler);
     }
 
     /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     *
      * @throws GqlException
      */
     public function prepareArguments(array $arguments): array
@@ -121,9 +104,32 @@ class ArgumentManager extends Component
     protected function createHandler(string $handler): ArgumentHandlerInterface|string
     {
         if (is_a($handler, ArgumentHandlerInterface::class, true)) {
-            $handler = new $handler;
-            $handler->setArgumentManager($this);
+            return app()->build($handler);
         }
+
+        return $handler;
+    }
+
+    /**
+     * @param  class-string<ArgumentHandlerInterface>|Closure|ArgumentHandlerInterface  $handler
+     */
+    private function resolveHandler(string $argumentName, ArgumentHandlerInterface|string|Closure $handler): ArgumentHandlerInterface
+    {
+        $handler = match (true) {
+            $handler instanceof Closure => app()->call($handler, [self::class => $this]),
+            is_string($handler) => $this->createHandler($handler),
+            default => $handler,
+        };
+
+        if (! $handler instanceof ArgumentHandlerInterface) {
+            throw new InvalidArgumentException(sprintf(
+                'Argument handler [%s] must resolve to an instance of [%s].',
+                $argumentName,
+                ArgumentHandlerInterface::class,
+            ));
+        }
+
+        $handler->setArgumentManager($this);
 
         return $handler;
     }

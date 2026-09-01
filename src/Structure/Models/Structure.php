@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure\Models;
 
+use CraftCms\Cms\Database\Factories\StructureFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Structure extends BaseModel
 {
+    /** @use HasFactory<StructureFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

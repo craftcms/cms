@@ -7,7 +7,10 @@ use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+
+use function CraftCms\Cms\cp_url;
 
 beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
@@ -95,7 +98,10 @@ it('renders db update page for cp request when craft update pending', function (
 
     $response = $middleware->handle($request, fn () => 'passed');
 
-    expect($response->getContent())->toContain('Complete the Update');
+    expect($response->getContent())
+        ->toContain('Complete the Update')
+        ->toContain(sprintf('action="%s"', cp_url('updates')))
+        ->not->toContain('name="action"');
 });
 
 it('renders db update page for cp request when plugin update pending', function () {
@@ -134,11 +140,12 @@ it('aborts 503 for site request when plugin update pending', function () {
     $middleware->handle($request, fn () => 'passed');
 })->throws(HttpException::class);
 
-it('allows updater action requests when update pending', function () {
+it('allows updater CP routes when update pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/actions/updater/migrate');
+    $request = Request::create('/'.Cms::config()->cpTrigger.'/updates/migrate');
+    $request->setRouteResolver(fn () => Route::getRoutes()->getByName('craft.cp.updates.migrate'));
 
     $result = $middleware->handle($request, fn () => 'passed');
 
@@ -160,7 +167,7 @@ it('allows migrate action when update pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/actions/app/migrate');
+    $request = Request::create('/'.Cms::config()->actionTrigger.'/migrate');
 
     $result = $middleware->handle($request, fn () => 'passed');
 

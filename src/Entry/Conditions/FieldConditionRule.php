@@ -52,9 +52,9 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
             ->all();
     }
 
+    /** @param EntryQuery<Entry> $query */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $query->field($this->nestedEntryFields()->all());
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
@@ -76,7 +76,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @return Collection<ElementContainerFieldInterface>
+     * @return Collection<int, ElementContainerFieldInterface>
      */
     private function nestedEntryFields(): Collection
     {

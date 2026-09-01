@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use CraftCms\Cms\Blade\BladeRenderer;
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Twig\Variables\Facade as FacadeVariable;
+use CraftCms\Cms\View\TemplateEngine;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +27,8 @@ class LaravelExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('app', app(...)),
-            new TwigFunction('blade', fn (string $view, array $variables = []): string => app(BladeRenderer::class)->renderTemplate($view, $variables), ['is_safe' => ['html']]),
+            new TwigFunction('blade', fn (string $view, array $variables = []): string => Template::renderer(TemplateEngine::Blade)
+                ->renderTemplate($view, $variables, TemplateMode::get()), ['is_safe' => ['html']]),
             new TwigFunction('can', Gate::check(...)),
             new TwigFunction('config', config(...)),
             new TwigFunction('csrf_token', fn () => csrf_token(), ['is_safe' => ['html']]),

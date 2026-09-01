@@ -10,6 +10,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -18,6 +19,7 @@ beforeEach(function () {
 
 afterEach(function () {
     Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+    Date::setTestNow();
 });
 
 function getFakeProjectConfig(?array $internal = null, ?array $external = null): ProjectConfig
@@ -49,6 +51,22 @@ function getFakeProjectConfig(?array $internal = null, ?array $external = null):
 
     return $projectConfig;
 }
+
+it('does not release a lock acquired by another process', function () {
+    $projectConfig = getFakeProjectConfig();
+    $projectConfig->set('a', 'changed');
+
+    Date::setTestNow(now()->addSeconds(31));
+    $newLock = Cache::lock(ProjectConfig::MUTEX_NAME, 30);
+
+    expect($newLock->get())->toBeTrue();
+
+    $projectConfig->saveModifiedConfigData();
+
+    expect(Cache::lock(ProjectConfig::MUTEX_NAME)->get())->toBeFalse();
+
+    $newLock->release();
+});
 
 test('rebuild ignores readonly', function () {
     $projectConfig = app(ProjectConfig::class);

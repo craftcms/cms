@@ -40,7 +40,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @param  string  $tag  the tag name
      * @param  string  $method  the View method the tag represents
-     * @param  array  $config  name-value pairs that will be used to initialize the object properties
+     * @param  array<string, mixed>  $config  name-value pairs that will be used to initialize the object properties
      */
     public function __construct(public string $tag, public string $method, array $config = [])
     {

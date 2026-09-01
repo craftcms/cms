@@ -1,68 +1,14 @@
-{% requireEdition CraftTeam %}
-
-
-{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\UserPermissionsAsset") %}
-
-{% set wrapperClass = "user-permissions-#{random()}" %}
-
 {% set disabled = disabled ?? false %}
+{% set permissionName = permissionName is defined ? permissionName : 'permissions' %}
+{% set selectedPermissions = selectedPermissions ?? (session('_old_input') ? old('permissions', []) : null) %}
 
-{% macro permissionList(subject, groupPermissions, permissions, id, disabled, oldPermissions) %}
-    {% from "_includes/forms" import checkbox %}
-    {% from _self import permissionList %}
+{% if selectedPermissions is null and subject and Request.actionSegments() == ['users', 'save-user'] %}
+    {% set selectedPermissions = Request.input('permissions', []) %}
+{% endif %}
 
-    <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
-        {% for permission in permissions %}
-            {% set isInGroupPermissions = permission.key|lower in groupPermissions %}
-
-            {% if (isInGroupPermissions) %}
-                {% set checked = true %}
-            {% elseif oldPermissions is not null %}
-                {% set checked = permission.key in oldPermissions %}
-            {% else %}
-                {% if subject %}
-                    {% if Request.actionSegments() == ['users', 'save-user'] %}
-                        {% set checked = permission.key in Request.input('permissions', []) %}
-                    {% else %}
-                        {% set checked = subject.can(permission.key) %}
-                    {% endif %}
-                {% else %}
-                    {% set checked = false %}
-                {% endif %}
-            {% endif %}
-
-            <li>
-                {{ checkbox({
-                    label: permission.label,
-                    name: 'permissions[]',
-                    value: permission.key,
-                    checked: checked,
-                    class: isInGroupPermissions ? 'group-permission',
-                    disabled: disabled or isInGroupPermissions,
-                }) }}
-
-                {% if permission.info ?? false %}
-                    <div class="info">{{ permission.info }}</div>
-                {% endif %}
-
-                {% if permission.warning ?? false %}
-                    <div class="info warning">{{ permission.warning }}</div>
-                {% endif %}
-
-                {% if permission.nested ?? false %}
-                    {{ permissionList(subject, groupPermissions, permission.nested, permission.key~'-nested', disabled or not checked, oldPermissions) }}
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-{% endmacro %}
-
-{% from _self import permissionList %}
-{% set oldPermissions = session('_old_input') ? old('permissions', []) : null %}
+{% set modelValue = [] %}
 
 {% for group in permissions %}
-    {% set headingId = "content-heading-#{random()}" %}
-
     {# Include a placeholder for the user group being created? #}
     {% if (includeGroupPlaceholder ?? false) and group.permissions.has('viewUsers') and group.permissions.viewUsers.nested.has('editUsers') %}
         {% do group.permissions.viewUsers.nested.editUsers.nested.add(create('\\CraftCms\\Cms\\User\\Data\\Permission', {
@@ -71,32 +17,15 @@
         })) %}
     {% endif %}
 
-    <div class="user-permissions {{ wrapperClass }}">
-        {{ tag('h3', {
-            id: headingId,
-            class: {
-                'mt-0': loop.first,
-            }|filter|keys,
-            text: group.heading,
-        }) }}
-        {% if not disabled %}
-            {{ tag('button', {
-                type: 'button',
-                class: {
-                    'select-all': true,
-                    'mt-0': loop.first,
-                }|filter|keys,
-                aria: {
-                    describedby: headingId,
-                },
-            }) }}
-        {% endif %}
-        {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled, oldPermissions) }}
-    </div>
+    {% set modelValue = modelValue|merge(selectedPermissions is not null
+        ? selectedPermissions|filter(permission => permission in group.keys)
+        : (subject ? group.keys|filter(permission => subject.can(permission)) : [])) %}
 {% endfor %}
 
-{% js %}
-    $('.{{ wrapperClass }}').each((i, wrapper) => {
-        new Craft.UserPermissions(wrapper);
-    });
-{% endjs %}
+{{ ui('permission-tree', {
+    groups: permissions,
+    modelValue: modelValue,
+    lockedPermissions: groupPermissions ?? [],
+    name: disabled ? null : permissionName,
+    disabled: disabled,
+}) }}

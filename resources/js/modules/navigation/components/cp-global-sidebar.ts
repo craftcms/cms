@@ -2,7 +2,7 @@ import {LitElement} from 'lit';
 import {customElement, property, query, queryAll} from 'lit/decorators.js';
 
 @customElement('cp-global-sidebar')
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line @typescript-eslint/no-unused-vars
 class CpGlobalSidebar extends LitElement {
   @queryAll('craft-nav-item')
   items!: any[];

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Twig\Extensions\HtmlTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -59,6 +59,30 @@ describe('HtmlTwigExtension', function () {
         expect($extension->dataUrlFunction('/no/such/file.txt'))->toBe('');
     });
 
+    it('dedents indented markdown so it is not parsed as a code block', function () {
+        $extension = new HtmlTwigExtension;
+
+        // The shape captured by an indented `{% apply md %}` block: every line
+        // shares six spaces of leading indentation.
+        $indented = "      ## Heading\n      Some text\n\n      - one\n      - two\n";
+
+        expect($extension->markdownFilter($indented))
+            ->toContain('<h2>Heading</h2>')
+            ->toContain('<li>one</li>')
+            ->not->toContain('<pre>');
+    });
+
+    it('preserves genuine code blocks when dedenting', function () {
+        $extension = new HtmlTwigExtension;
+
+        // Flush-left content, so the common indentation is zero and the
+        // four-space code block keeps its relative indentation.
+        $withCode = "Intro\n\n    genuine_code();\n\nOutro\n";
+
+        expect($extension->markdownFilter($withCode))
+            ->toContain('<pre><code>genuine_code();');
+    });
+
     it('rejects custom flavors when encode is enabled', function () {
         $extension = new HtmlTwigExtension;
 
@@ -74,7 +98,7 @@ describe('HtmlTwigExtension', function () {
     });
 
     it('sanitizes html with a registered sanitizer name', function () {
-        app(HtmlSanitizers::class)->register('links-only', new HtmlSanitizer((new HtmlSanitizerConfig)
+        HtmlSanitizers::extend('links-only', new HtmlSanitizer((new HtmlSanitizerConfig)
             ->allowElement('a')
             ->allowAttribute('href', ['a'])
         ));

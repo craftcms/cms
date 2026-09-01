@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Twig\Error\RuntimeError;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('renders a redirect response for the default status', function () {
     $this->expectException(RuntimeError::class);
-    $this->renderer->renderString('{% redirect "/foo" %}');
+    $this->manager->renderString('{% redirect "/foo" %}');
 });
 
 it('renders a redirect response for a custom status', function () {
     try {
-        $this->renderer->renderString('{% redirect "/bar" 301 %}');
+        $this->manager->renderString('{% redirect "/bar" 301 %}');
     } catch (RuntimeError $e) {
         /** @var HttpResponseException $responseException */
         $responseException = $e->getPrevious();
@@ -29,7 +29,7 @@ it('renders a redirect response for a custom status', function () {
 
 it('sets flash notice on redirect', function () {
     try {
-        $this->renderer->renderString('{% redirect "/foo" with notice "Saved!" %}');
+        $this->manager->renderString('{% redirect "/foo" with notice "Saved!" %}');
     } catch (RuntimeError) {
     }
 
@@ -38,7 +38,7 @@ it('sets flash notice on redirect', function () {
 
 it('sets flash error on redirect', function () {
     try {
-        $this->renderer->renderString('{% redirect "/foo" with error "Oops" %}');
+        $this->manager->renderString('{% redirect "/foo" with error "Oops" %}');
     } catch (RuntimeError) {
     }
 

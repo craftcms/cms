@@ -17,6 +17,12 @@ class RenameFile extends ElementAction
         return t('Rename file');
     }
 
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
     public function getTriggerHtml(): ?string
     {
         HtmlStack::jsWithVars(

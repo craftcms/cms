@@ -24,6 +24,10 @@ readonly class MenuHtml
         private Sites $sites,
     ) {}
 
+    /**
+     * @param  list<array<string, mixed>>  $items
+     * @param  array<string, mixed>  $config
+     */
     public function disclosureMenu(array $items, array $config = []): string
     {
         $config += [
@@ -63,6 +67,10 @@ readonly class MenuHtml
         return template('_includes/disclosuremenu', $config, templateMode: TemplateMode::Cp);
     }
 
+    /**
+     * @param  list<array<string, mixed>>  $items
+     * @return list<array<string, mixed>>
+     */
     public function disclosureMenuItems(array $items): array
     {
         $items = Collection::make($this->normalizeMenuItems($items));
@@ -89,6 +97,7 @@ readonly class MenuHtml
         return $items->values()->all();
     }
 
+    /** @param array<string, mixed> $config */
     public function menuItem(array $config, string $menuId): string
     {
         return template('_includes/menuitem', [
@@ -97,6 +106,10 @@ readonly class MenuHtml
         ], templateMode: TemplateMode::Cp);
     }
 
+    /**
+     * @param  array<int, array<string, mixed>>|Collection<int, array<string, mixed>>  $items
+     * @return list<array<string, mixed>>
+     */
     public function normalizeMenuItems(array|Collection $items): array
     {
         if ($items instanceof Collection) {
@@ -129,16 +142,16 @@ readonly class MenuHtml
     }
 
     /**
-     * @param  array<int,Site|array{site:Site,status?:string}>  $sites
+     * @param  array<int,Site|array{site:Site,status?:string}>|Collection<int,Site|array{site:Site,status?:string}>|null  $sites
+     * @param  array<string, mixed>  $config
+     * @return list<array<string, mixed>>
      */
     public function siteMenuItems(
         array|Collection|null $sites = null,
         ?Site $selectedSite = null,
         array $config = [],
     ): array {
-        if ($sites === null) {
-            $sites = $this->sites->getEditableSites()->all();
-        }
+        $sites ??= $this->sites->getEditableSites()->all();
 
         $config += [
             'showSiteGroupHeadings' => null,
@@ -154,7 +167,7 @@ readonly class MenuHtml
         /** @var array<int,array{site:Site,status?:string}> $sites */
         $sites = collect($sites)
             ->map(fn (Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
-            ->keyBy(fn (array $site) => $site['site']->id)
+            ->keyBy(fn (array $site): int => $site['site']->id)
             ->all();
 
         $path = request()->craftPath();

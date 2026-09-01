@@ -67,6 +67,12 @@
     {% endif %}
 {% endmacro %}
 
+{% set keyPrefix = keyPrefix ?? '' %}
+{# Inherited quirk: no caller has ever defined `isTopLevel` (in Craft 5 it
+   resolved to undefined→falsy), so the sourceLink() sort/table-column data
+   attributes never render. Defaulting it keeps that exact output under
+   strict variables. #}
+{% set isTopLevel = isTopLevel ?? false %}
 {% set nestedUnderHeading = false %}
 
 {% tag 'ul' with {

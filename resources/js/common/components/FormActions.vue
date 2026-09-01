@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import type {InertiaForm} from '@inertiajs/vue3';
   import {ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -11,6 +11,8 @@
     actionItems?: Array<ActionItem>;
     additionalActions?: Array<ActionItem>;
     additionalButtons?: Array<ActionItemButton>;
+    /** Overrides the submit button's text (e.g. "Save draft"). */
+    submitLabel?: string;
     readOnly?: boolean;
   }>();
 
@@ -54,14 +56,16 @@
 </script>
 
 <template>
-  <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
+  <div class="flex flex-col justify-center">
+    <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
+  </div>
 
   <div v-if="!readOnly" class="flex items-center justify-end gap-2">
     <craft-button
       v-for="button in additionalButtons"
       :key="button.label"
       type="button"
-      :variant="button.variant ?? 'neutral'"
+      :variant="button.variant ?? ButtonVariant.Solid"
       :loading="isButtonProcessing(button.label)"
       :disabled="form.processing || button.disabled"
       @click="handleAdditionalButtonClick(button, $event)"
@@ -78,16 +82,21 @@
       <slot name="submit-button">
         <craft-button
           type="submit"
-          variant="accent"
+          :variant="ButtonVariant.Primary"
           :loading="isButtonProcessing(primaryButton)"
           :disabled="form.processing"
         >
-          {{ t('Save') }}
+          {{ submitLabel ?? t('Save') }}
         </craft-button>
       </slot>
       <ActionMenu icon="chevron-down" :actions="actionItems">
         <template #invoker="{label}">
-          <craft-button slot="invoker" variant="accent" type="button" icon>
+          <craft-button
+            slot="invoker"
+            :variant="ButtonVariant.Primary"
+            type="button"
+            icon
+          >
             <craft-icon name="chevron-down" :label="label"></craft-icon>
           </craft-button>
         </template>
@@ -97,11 +106,11 @@
     <slot v-else name="submit-button">
       <craft-button
         type="submit"
-        variant="accent"
+        :variant="ButtonVariant.Primary"
         :loading="isButtonProcessing(primaryButton)"
         :disabled="form.processing"
       >
-        {{ t('Save') }}
+        {{ submitLabel ?? t('Save') }}
       </craft-button>
     </slot>
 

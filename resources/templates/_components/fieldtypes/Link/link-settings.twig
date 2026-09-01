@@ -7,7 +7,9 @@
 {% set showLabelFieldErrors = namespace ? field.errors.get("#{namespace}ShowLabelField") : field.errors.get('showLabelField') %}
 {% set advancedFieldsErrors = namespace ? field.errors.get("#{namespace}AdvancedFields") : field.errors.get('advancedFields') %}
 
-{{ forms.checkboxSelectField({
+<craft-field-group>
+
+  {{ forms.checkboxSelectField({
     label: 'Allowed Link Types'|t('app'),
     instructions: 'The link types that should be available when inserting links.'|t('app'),
     id: 'types',
@@ -20,32 +22,31 @@
     required: true,
     errors: allowedTypesErrors ?? null,
     disabled: readOnly,
-}) }}
+  }) }}
 
-{% for typeId, settings in linkTypeSettings %}
-    <div id="types-{{ typeId }}" class="{{ typeId not in allowedTypes ? 'hidden' }} pt-s">
-        <hr>
-        <a class="fieldtoggle mt-s mb-s" data-target="types-{{ typeId }}-settings">{{ settings.label }}</a>
-        <div id="types-{{ typeId }}-settings" class="hidden indent">
-            {{ settings.html|raw }}
-        </div>
-    </div>
-{% endfor %}
+  {% for typeId, settings in linkTypeSettings %}
+    <hr />
+    <craft-disclosure label="{{ settings.label }}" class="inline-block justify-self-start">
+      <div id="types-{{ typeId }}-settings" slot="content">
+        {{ settings.html|raw }}
+      </div>
+    </craft-disclosure>
+  {% endfor %}
 
-<hr>
+  <hr>
 
-{{ forms.lightswitchField({
+  {{ forms.lightswitchField({
     label: 'Show the “Label” field'|t('app'),
     id: 'showLabelField',
     name: showLabelFieldName,
     on: showLabelField,
     errors: showLabelFieldErrors ?? null,
     disabled: readOnly,
-}) }}
+  }) }}
 
-<hr>
+  <hr>
 
-{{ forms.checkboxSelectField({
+  {{ forms.checkboxSelectField({
     label: 'Advanced Fields'|t('app'),
     instructions: 'Choose which advanced fields should be available when inserting links.'|t('app'),
     id: 'advancedFields',
@@ -55,4 +56,5 @@
     sortable: true,
     errors: advancedFieldsErrors ?? null,
     disabled: readOnly,
-}) }}
+  }) }}
+</craft-field-group>

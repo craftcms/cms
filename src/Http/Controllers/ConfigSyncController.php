@@ -10,7 +10,6 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
@@ -62,8 +61,7 @@ class ConfigSyncController extends BaseUpdaterController
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
-            'initialState' => $state,
-            'actionPrefix' => 'config-sync',
+            'initialState' => $this->clientState($state),
             'returnUrl' => $this->returnUrl(),
         ])->toResponse($this->request);
     }
@@ -265,13 +263,13 @@ class ConfigSyncController extends BaseUpdaterController
             case self::ACTION_REGENERATE_YAML:
                 return t('Regenerating project config YAML files from the loaded project config…');
             case self::ACTION_UNINSTALL_PLUGIN:
-                $handle = Arr::first($this->data['uninstallPlugins']);
+                $handle = $this->firstPluginHandle($this->data['uninstallPlugins']);
 
                 return t('Uninstalling {name}', [
                     'name' => $this->pluginName($handle),
                 ]);
             case self::ACTION_INSTALL_PLUGIN:
-                $handle = Arr::first($this->data['installPlugins']);
+                $handle = $this->firstPluginHandle($this->data['installPlugins']);
 
                 return t('Installing {name}', [
                     'name' => $this->pluginName($handle),
@@ -279,6 +277,15 @@ class ConfigSyncController extends BaseUpdaterController
             default:
                 return parent::actionStatus($action);
         }
+    }
+
+    private function firstPluginHandle(mixed $handles): string
+    {
+        if (! is_array($handles) || ! is_string($handle = array_find($handles, is_string(...)))) {
+            throw new \UnexpectedValueException('Invalid plugin handles.');
+        }
+
+        return $handle;
     }
 
     /**

@@ -48,6 +48,7 @@ class DateTimeHelper
         'weeks',
     ];
 
+    /** @var list<DateTimeInterface|null> */
     private static array $_testNowStack = [];
 
     /**
@@ -68,7 +69,7 @@ class DateTimeHelper
      *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
-     * @param  string|int|array|DateTimeInterface|null  $value  The value that should be converted to a DateTime object.
+     * @param  string|int|array<string, mixed>|DateTimeInterface|null  $value  The value that should be converted to a DateTime object.
      * @param  bool  $assumeSystemTimeZone  Whether it should be assumed that the value was set in the system timezone if
      *                                      the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param  bool  $setToSystemTimeZone  Whether to set the resulting DateTime object to the system timezone.
@@ -345,9 +346,7 @@ class DateTimeHelper
         $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
         $secondsOnly = ! $dateInterval->y && ! $dateInterval->m && ! $dateInterval->d && ! $dateInterval->h && ! $dateInterval->i;
 
-        if ($showSeconds === null) {
-            $showSeconds = $secondsOnly;
-        }
+        $showSeconds ??= $secondsOnly;
 
         $timeComponents = [];
 
@@ -434,6 +433,8 @@ class DateTimeHelper
 
     /**
      * Normalizes and returns a date string along with the format it was set in.
+     *
+     * @return array{string, string}
      */
     protected static function parseDate(string $value, Locale $locale): array
     {
@@ -474,6 +475,8 @@ class DateTimeHelper
 
     /**
      * Normalizes and returns a time string along with the format it was set in.
+     *
+     * @return array{string, string}
      */
     protected static function parseTime(string $value, Locale $locale): array
     {

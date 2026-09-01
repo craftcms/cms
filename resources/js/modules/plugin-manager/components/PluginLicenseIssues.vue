@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {capitalize} from '@craftcms/cp';
+  import {capitalize} from '@craftcms/ui';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {computed} from 'vue';
   import Text from '@/common/components/Text.vue';
@@ -30,14 +30,13 @@
         template="This license is for the {name} edition."
         :params="{name: editionName}"
       />
-      <Form :action="switchEdition()" method="post" v-slot="{processing}">
-        <input type="hidden" name="pluginHandle" :value="plugin.handle" />
+      <Form
+        :action="switchEdition({handle: plugin.handle})"
+        method="post"
+        v-slot="{processing}"
+      >
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
-        <craft-button
-          type="submit"
-          appearance="inline"
-          variant="inherit"
-          :loading="processing"
+        <craft-button type="submit" inherit :loading="processing"
           >Switch</craft-button
         >
       </Form>

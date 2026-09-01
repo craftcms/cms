@@ -1,5 +1,5 @@
 import {createApp, nextTick} from 'vue';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 const manager = vi.hoisted(() => ({
   state: {
@@ -24,11 +24,11 @@ vi.mock('./manager', async () => {
   };
 });
 
-vi.mock('@craftcms/cp', () => ({
+vi.mock('@craftcms/ui', () => ({
   ConfigService: {
     getInstance: () => ({
       getCpUrl: (path: string) => `https://example.test/admin/${path}`,
-      get: (key: string, fallback: unknown) =>
+      get: (key: string, fallback: boolean) =>
         key === 'useEmailAsUsername' ? true : fallback,
     }),
   },
@@ -45,9 +45,9 @@ vi.mock('@/common/components/Modal.vue', () => ({
 
 vi.mock('@/modules/auth/components/login/login-form.js', () => ({}));
 
-vi.mock('@/common/components/Pane.vue', () => ({
-  default: {template: '<div><slot /></div>'},
-}));
+// `craft-pane` is a native custom element, so there's nothing to mock: the
+// template compiler passes it straight through and its children stay in the
+// light DOM where these queries can reach them.
 
 vi.mock('@/common/components/HtmlFragmentRenderer.vue', () => ({
   default: {template: '<div></div>'},
@@ -72,6 +72,21 @@ describe('ElevatedSessionHost', () => {
   afterEach(() => {
     app.unmount();
     container.remove();
+  });
+
+  it('renders the dialog surface with its accessible name and description', () => {
+    const pane = container.querySelector('craft-pane');
+    if (!pane) throw new Error('Expected the elevated-session pane.');
+
+    expect(pane).not.toBeNull();
+    expect(pane.getAttribute('role')).toBe('dialog');
+    expect(pane.getAttribute('aria-modal')).toBe('true');
+    expect(pane.getAttribute('aria-labelledby')).toBe('elevated-session-title');
+    expect(pane.getAttribute('aria-describedby')).toBe(
+      'elevated-session-description'
+    );
+    expect(pane.querySelector('#elevated-session-title')).not.toBeNull();
+    expect(pane.querySelector('#elevated-session-description')).not.toBeNull();
   });
 
   it('renders the server-selected identity and confirms login success', () => {

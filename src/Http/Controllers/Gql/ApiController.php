@@ -52,8 +52,6 @@ readonly class ApiController extends GqlController
             ));
         }
 
-        $this->generalConfig->generateTransformsBeforePageLoad = true;
-
         $cacheHeader = $request->headers->get('x-craft-gql-cache');
         $cache = $request->headers->get('x-craft-gql-cache') ? ($cacheHeader === 'cache') : null;
 
@@ -67,6 +65,7 @@ readonly class ApiController extends GqlController
 
         foreach ($queries as $key => [$query, $variables, $operationName]) {
             $query = is_string($query) ? trim($query) : trim((string) ($query ?? ''));
+            $operationName = is_string($operationName) ? $operationName : null;
 
             try {
                 if ($query === '') {
@@ -77,7 +76,7 @@ readonly class ApiController extends GqlController
                     $schema,
                     $query,
                     is_array($variables) ? $variables : null,
-                    is_string($operationName) ? $operationName : null,
+                    $operationName,
                     app()->hasDebugModeEnabled(),
                 );
             } catch (ValueError $e) {
@@ -98,7 +97,7 @@ readonly class ApiController extends GqlController
                 ];
             }
 
-            if (str_starts_with($query, 'mutation')) {
+            if (GqlHelper::isMutation($query, $operationName)) {
                 $hasMutations = true;
             }
         }
@@ -109,7 +108,7 @@ readonly class ApiController extends GqlController
 
         $response = new GqlResponse($singleQuery ? reset($result) : $result);
 
-        if (! ($cache ?? ! $hasMutations)) {
+        if ($hasMutations || $cache === false) {
             $response->nocache();
         }
 
@@ -297,6 +296,7 @@ readonly class ApiController extends GqlController
         return strtolower(trim($contentType));
     }
 
+    /** @return array<string, mixed> */
     private function exceptionAsArray(Throwable $e): array
     {
         $array = [

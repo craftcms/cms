@@ -17,8 +17,6 @@ use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
 use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
-use CraftCms\Cms\Console\Commands\System\OffCommand;
-use CraftCms\Cms\Console\Commands\System\OnCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
@@ -39,6 +37,7 @@ use Illuminate\Support\ServiceProvider;
  */
 class ConsoleServiceProvider extends ServiceProvider
 {
+    /** @var list<class-string> */
     private array $commands = [
         // Install
         UpCommand::class,
@@ -51,10 +50,6 @@ class ConsoleServiceProvider extends ServiceProvider
         SetupCommand::class,
         CloudCommand::class,
         PublishCommand::class,
-
-        // System
-        OffCommand::class,
-        OnCommand::class,
 
         // Env
         EnvShowCommand::class,
@@ -94,21 +89,23 @@ class ConsoleServiceProvider extends ServiceProvider
 
         $this->commands($this->commands);
 
-        foreach (ClearCachesCommand::signatures() as $signature) {
-            $this->commands(new ClearCachesCommand(
-                signature: $signature['signature'],
-                description: $signature['description'],
-                aliases: $signature['aliases'] ?? [],
-            ));
-        }
+        $this->app->booted(function () {
+            foreach (ClearCachesCommand::signatures() as $signature) {
+                $this->commands(new ClearCachesCommand(
+                    signature: $signature['signature'],
+                    description: $signature['description'],
+                    aliases: $signature['aliases'] ?? [],
+                ));
+            }
 
-        foreach (InvalidateTagsCommand::signatures() as $signature) {
-            $this->commands(new InvalidateTagsCommand(
-                signature: $signature['signature'],
-                description: $signature['description'],
-                aliases: $signature['aliases'] ?? [],
-            ));
-        }
+            foreach (InvalidateTagsCommand::signatures() as $signature) {
+                $this->commands(new InvalidateTagsCommand(
+                    signature: $signature['signature'],
+                    description: $signature['description'],
+                    aliases: $signature['aliases'] ?? [],
+                ));
+            }
+        });
 
         $this->optimizes(
             optimize: 'craft:twig:cache',

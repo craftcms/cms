@@ -88,7 +88,7 @@
   // into chips, but for right now this is the only spot
   craft-chip::part(prefix) {
     align-self: start;
-    height: 1lh;
+    min-height: 1lh;
     justify-content: center;
   }
 

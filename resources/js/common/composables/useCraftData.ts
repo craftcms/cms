@@ -24,9 +24,13 @@ export interface CraftData {
     };
   };
   site: {
+    id: number;
+    name: string;
+    handle: string;
     url: string;
-  };
+  } | null;
   readOnly: boolean;
+  maintenanceMode: boolean;
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
@@ -39,7 +43,9 @@ export interface CraftData {
     defaultCpLocale: string;
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
-  [key: string]: any;
+  actionUrl: string;
+  cpUrl: string;
+  baseApiUrl: string;
 }
 
 function getUrl(baseUrl: string, path: string) {
@@ -76,10 +82,5 @@ export default function useCraftData(): CraftData {
     craft: CraftData;
   }>();
 
-  // This is what Statamic does, I'm not sure if it's smart or overly complicated
-  return new Proxy({} as CraftData, {
-    get(target, prop: string) {
-      return page.props.craft?.[prop];
-    },
-  });
+  return page.props.craft;
 }

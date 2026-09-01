@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {useHttp} from '@inertiajs/vue3';
 import type {OverType as OverTypeInstance} from 'overtype';
 import {markdown as renderMarkdown} from '@actions/App/RenderController';

@@ -1,6 +1,7 @@
 import {html} from 'lit';
 import {query} from 'lit/decorators.js';
-import {CraftAuthChallengeForm, t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
+import {CraftAuthChallengeForm} from '../auth-challenge-form';
 
 /**
  * @summary TOTP authentication code form.

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -53,6 +55,7 @@ use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -120,6 +123,8 @@ class ProjectConfig
     public const string PATH_ADDRESSES = 'addresses';
 
     public const string PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES.'.'.'fieldLayouts';
+
+    public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
 
     public const string PATH_DATE_MODIFIED = 'dateModified';
 
@@ -223,7 +228,7 @@ class ProjectConfig
     public bool $forceUpdate = false;
 
     /**
-     * @var array A list of all external files.
+     * @var string[] A list of all external files.
      */
     private array $_configFileList = [];
 
@@ -255,7 +260,7 @@ class ProjectConfig
     private bool $_timestampUpdated = false;
 
     /**
-     * @var array Deferred config sync events
+     * @var array<array{ConfigEvent, string[]|null, callable(ConfigEvent): void}> Deferred config sync events
      *
      * @see defer()
      * @see _applyChanges()
@@ -265,6 +270,7 @@ class ProjectConfig
     /**
      * A running list of all the changes applied during this request
      */
+    /** @var array<int, array<string, mixed>> */
     private array $_appliedChanges = [];
 
     /**
@@ -284,30 +290,19 @@ class ProjectConfig
     private ?ProjectConfigData $_currentWorkingConfig = null;
 
     /**
-     * @var array[] Config change handlers
+     * @var array<class-string<ConfigEvent>, list<array{
+     *     pattern: string,
+     *     handler: callable(ConfigEvent): void,
+     *     data: mixed,
+     *     specificity: int,
+     *     registrationOrder: int,
+     * }>> Config change handlers
      *
      * @see registerChangeEventHandler()
      * @see handleChangeEvent()
+     * @see _sortChangeEventHandlers()
      */
     private array $_changeEventHandlers = [];
-
-    /**
-     * @var array[] The specificity of change event handlers.
-     *
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     */
-    private array $_changeEventHandlerSpecificity = [];
-
-    /**
-     * @var array[] The registration order of change event handlers.
-     *
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     */
-    private array $_changeEventHandlerRegistrationOrder = [];
 
     /**
      * @var bool[] Whether the change event handlers have been sorted.
@@ -318,13 +313,7 @@ class ProjectConfig
      */
     private array $_sortedChangeEventHandlers = [];
 
-    /**
-     * @var bool Whether a mutex lock was acquired for this request
-     *
-     * @see _acquireLock()
-     * @see _releaseLock()
-     */
-    private bool $_locked = false;
+    private ?Lock $_mutex = null;
 
     public function __construct(GeneralConfig $generalConfig)
     {
@@ -405,6 +394,7 @@ class ProjectConfig
      *
      * @param  bool  $fromExternalConfig  whether to find config items in the external config
      */
+    /** @return array<string, array<string|int, mixed>> */
     public function find(callable $callback, bool $fromExternalConfig = false): array
     {
         $items = [];
@@ -414,6 +404,10 @@ class ProjectConfig
         return $items;
     }
 
+    /**
+     * @param  array<string|int, mixed>  $config
+     * @param  array<string, array<string|int, mixed>>  $items
+     */
     private function findInternal(array $config, callable $callback, ?string $path, array &$items): void
     {
         foreach ($config as $key => $item) {
@@ -584,6 +578,7 @@ class ProjectConfig
     /**
      * Applies given changes to the project config.
      */
+    /** @param array<string|int, mixed> $configData */
     public function applyConfigChanges(array $configData): void
     {
         $this->isApplyingExternalChanges = true;
@@ -799,6 +794,7 @@ class ProjectConfig
     /**
      * Remove values from internal config by a list of paths.
      */
+    /** @param string[] $paths */
     private function removeInternalConfigValuesByPaths(array $paths): void
     {
         $chunks = array_chunk($paths, 1000);
@@ -813,6 +809,7 @@ class ProjectConfig
     /**
      * Persist an array of `$path => $value` to the internal config.
      */
+    /** @param array<string, string> $values */
     private function persistInternalConfigValues(array $values): void
     {
         DB::table(Table::PROJECTCONFIG)
@@ -825,6 +822,7 @@ class ProjectConfig
     /**
      * Get the list of applied changes
      */
+    /** @return array<int, array<string, mixed>> */
     public function getAppliedChanges(): array
     {
         return $this->_appliedChanges;
@@ -835,8 +833,8 @@ class ProjectConfig
      * The schemas must match exactly to avoid unpredictable behavior that can occur when running migrations
      * and applying project config changes at the same time.
      *
-     * @param  array  $issues  Passed by reference and populated with issues on error in
-     *                         the following format: `[$pluginName, $existingSchema, $incomingSchema]`
+     * @param  array<int, array{cause: string|null, existing: string, incoming: string}>  $issues  Passed by reference and populated with issues on error in
+     *                                                                                             the following format: `[$pluginName, $existingSchema, $incomingSchema]`
      */
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
@@ -1004,13 +1002,17 @@ class ProjectConfig
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>'.preg_quote($path, '/').')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '('.self::UID_PATTERN.')', $pattern);
 
-        $this->_changeEventHandlers[$event][] = [$pattern, $handler, $data];
-        $this->_changeEventHandlerSpecificity[$event][] = $specificity;
-        $this->_changeEventHandlerRegistrationOrder[$event][] = count($this->_changeEventHandlers[$event]);
+        $this->_changeEventHandlers[$event] ??= [];
+        $this->_changeEventHandlers[$event][] = [
+            'pattern' => $pattern,
+            'handler' => $handler,
+            'data' => $data,
+            'specificity' => ProjectConfigHelper::pathDepth($path),
+            'registrationOrder' => count($this->_changeEventHandlers[$event]),
+        ];
         unset($this->_sortedChangeEventHandlers[$event]);
     }
 
@@ -1026,7 +1028,11 @@ class ProjectConfig
         // Make sure the event handlers are sorted from least-to-most specific
         $this->_sortChangeEventHandlers($event::class);
 
-        foreach ($this->_changeEventHandlers[$event::class] as [$pattern, $handler, $data]) {
+        foreach ($this->_changeEventHandlers[$event::class] as [
+            'pattern' => $pattern,
+            'handler' => $handler,
+            'data' => $data,
+        ]) {
             if (! preg_match($pattern, $event->path, $matches)) {
                 continue;
             }
@@ -1076,10 +1082,9 @@ class ProjectConfig
             return;
         }
 
-        array_multisort(
-            $this->_changeEventHandlerSpecificity[$event], SORT_ASC, SORT_NUMERIC,
-            $this->_changeEventHandlerRegistrationOrder[$event], SORT_ASC, SORT_NUMERIC,
+        usort(
             $this->_changeEventHandlers[$event],
+            fn (array $a, array $b): int => [$a['specificity'], $a['registrationOrder']] <=> [$b['specificity'], $b['registrationOrder']],
         );
 
         $this->_sortedChangeEventHandlers[$event] = true;
@@ -1107,6 +1112,12 @@ class ProjectConfig
         unset($config[self::PATH_META]);
 
         $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
+        $config[self::PATH_ASSET_TRANSFORMERS] = app(AssetTransformers::class)
+            ->getAllAssetTransformers()
+            ->mapWithKeys(fn (AssetTransformer $transformer): array => [
+                $transformer->uid => $transformer->getConfig(),
+            ])
+            ->all();
         $config[self::PATH_DATE_MODIFIED] = now()->getTimestamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
@@ -1151,7 +1162,7 @@ class ProjectConfig
     /**
      * Applies changes from a configuration array.
      *
-     * @param  array  $changes  array nested array with keys `removedItems`, `changedItems` and `newItems`
+     * @param  array{removedItems: string[], changedItems: string[], newItems: string[]}  $changes  nested array with keys `removedItems`, `changedItems` and `newItems`
      * @param  ReadOnlyProjectConfigData  $existingConfig  The config data repository that holds the current data
      * @param  ReadOnlyProjectConfigData  $incomingConfig  The config data repository that holds the incoming data
      *
@@ -1267,9 +1278,7 @@ class ProjectConfig
                 $insertionPoint = &$generatedConfig;
 
                 foreach ($configPath as $pathSegment) {
-                    if (! isset($insertionPoint[$pathSegment])) {
-                        $insertionPoint[$pathSegment] = [];
-                    }
+                    $insertionPoint[$pathSegment] ??= [];
 
                     $insertionPoint = &$insertionPoint[$pathSegment];
                 }
@@ -1297,8 +1306,9 @@ class ProjectConfig
     /**
      * Return a nested array for pending config changes
      *
-     * @param  array|null  $configData  config data to use. If null, the config is fetched from the project config files.
+     * @param  array<string|int, mixed>|null  $configData  config data to use. If null, the config is fetched from the project config files.
      * @param  bool  $existsOnly  whether to just return `true` or `false` depending on whether any changes are found.
+     * @return bool|array{newItems: string[], removedItems: string[], changedItems: string[]}
      */
     protected function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
     {
@@ -1307,9 +1317,7 @@ class ProjectConfig
 
         $currentConfig = $this->getCurrentWorkingConfig()->export();
 
-        if ($configData === null) {
-            $configData = $this->getExternalConfig()->export();
-        }
+        $configData ??= $this->getExternalConfig()->export();
 
         unset($configData['imports'], $currentConfig['imports']);
 
@@ -1396,6 +1404,7 @@ class ProjectConfig
     /**
      * Figure out the entire list of yaml config files
      */
+    /** @return string[] */
     private function _getConfigFileList(): array
     {
         if (! empty($this->_configFileList)) {
@@ -1413,9 +1422,7 @@ class ProjectConfig
      */
     private function _findConfigFiles(?string $path = null): array
     {
-        if ($path === null) {
-            $path = Path::projectConfig(create: false);
-        }
+        $path ??= Path::projectConfig(create: false);
         if (! is_dir($path)) {
             return [];
         }
@@ -1446,7 +1453,7 @@ class ProjectConfig
     /**
      * Store yaml history
      *
-     * @param  array  $configData  config data to be saved as history
+     * @param  array<string, mixed>  $configData  config data to be saved as history
      *
      * @throws Exception
      */
@@ -1631,9 +1638,7 @@ class ProjectConfig
      */
     private function getExternalConfig(): ReadOnlyProjectConfigData
     {
-        if ($this->_externalConfig === null) {
-            $this->_externalConfig = $this->_loadExternalConfig();
-        }
+        $this->_externalConfig ??= $this->_loadExternalConfig();
 
         return $this->_externalConfig;
     }
@@ -1643,9 +1648,7 @@ class ProjectConfig
      */
     private function getInternalConfig(): ReadOnlyProjectConfigData
     {
-        if ($this->_internalConfig === null) {
-            $this->_internalConfig = $this->_loadInternalConfig();
-        }
+        $this->_internalConfig ??= $this->_loadInternalConfig();
 
         return $this->_internalConfig;
     }
@@ -1732,6 +1735,10 @@ class ProjectConfig
     /**
      * Returns the system config array.
      */
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
     private function _systemConfig(array $data): array
     {
         $data['schemaVersion'] = Info::fetch()->schemaVersion;
@@ -1742,6 +1749,7 @@ class ProjectConfig
     /**
      * Return site data config array.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getSiteGroupData(): array
     {
         return SiteGroups::getAllGroups()
@@ -1752,6 +1760,7 @@ class ProjectConfig
     /**
      * Return site data config array.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getSiteData(): array
     {
         return Sites::getAllSites(true)
@@ -1762,6 +1771,7 @@ class ProjectConfig
     /**
      * Return section data config array.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getSectionData(): array
     {
         return Sections::getAllSections()
@@ -1771,6 +1781,10 @@ class ProjectConfig
 
     /**
      * Returns element source data.
+     */
+    /**
+     * @param  array<string, array<int, array<string, mixed>>>  $sourceConfigs
+     * @return array<string, array<int, array<string, mixed>>>
      */
     private function _getElementSourceData(array $sourceConfigs): array
     {
@@ -1792,6 +1806,7 @@ class ProjectConfig
     /**
      * Return entry type data config array.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getEntryTypeData(): array
     {
         return EntryTypes::getAllEntryTypes()
@@ -1802,6 +1817,7 @@ class ProjectConfig
     /**
      * Returns filesystem config data.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getFsData(): array
     {
         return Filesystems::getAllFilesystems()
@@ -1812,6 +1828,7 @@ class ProjectConfig
     /**
      * Return field data config array.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getFieldData(): array
     {
         return Fields::getAllFields('global')
@@ -1822,6 +1839,7 @@ class ProjectConfig
     /**
      * Return volume data config array.
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getVolumeData(): array
     {
         return Volumes::getAllVolumes()
@@ -1831,6 +1849,10 @@ class ProjectConfig
 
     /**
      * Return user data config array.
+     */
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
     private function _getUserData(array $data): array
     {
@@ -1857,6 +1879,7 @@ class ProjectConfig
     /**
      * Return addresses data config array.
      */
+    /** @return array<string, mixed> */
     private function _getAddressesData(): array
     {
         $data = [];
@@ -1875,6 +1898,10 @@ class ProjectConfig
     /**
      * Return plugin data config array
      */
+    /**
+     * @param  array<string, array<string, mixed>>  $currentPluginData
+     * @return array<string, array<string, mixed>>
+     */
     private function _getPluginData(array $currentPluginData): array
     {
         return DB::table(Table::PLUGINS)
@@ -1890,6 +1917,7 @@ class ProjectConfig
     /**
      * Return asset transform config array
      */
+    /** @return array<string, array<string, mixed>> */
     private function _getTransformData(): array
     {
         return app(ImageTransforms::class)->getAllTransforms()
@@ -1900,6 +1928,7 @@ class ProjectConfig
     /**
      * Return GraphQL config array
      */
+    /** @return array<string, mixed> */
     private function _getGqlData(): array
     {
         $publicToken = Gql::getPublicToken();
@@ -1928,7 +1957,7 @@ class ProjectConfig
      */
     private function _acquireLock(): void
     {
-        if ($this->_locked) {
+        if ($this->_mutex !== null) {
             return;
         }
 
@@ -1952,7 +1981,7 @@ class ProjectConfig
             }
         }
 
-        $this->_locked = true;
+        $this->_mutex = $mutex;
     }
 
     /**
@@ -1960,11 +1989,11 @@ class ProjectConfig
      */
     private function _releaseLock(): void
     {
-        if (! $this->_locked) {
+        if ($this->_mutex === null) {
             return;
         }
 
-        Cache::lock(self::MUTEX_NAME)->forceRelease();
-        $this->_locked = false;
+        $this->_mutex->release();
+        $this->_mutex = null;
     }
 }

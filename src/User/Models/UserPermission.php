@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Models;
 
+use CraftCms\Cms\Database\Factories\UserPermissionFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class UserPermission extends BaseModel
 {
+    /** @use HasFactory<UserPermissionFactory> */
     use HasFactory;
+
     use HasUid;
 
     #[\Override]

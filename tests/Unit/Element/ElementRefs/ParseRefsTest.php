@@ -341,22 +341,18 @@ it('logs and falls back when a referenced attribute cannot be converted to a str
 });
 
 it('returns target ids for numeric id refs', function () {
-    $matchingQuery = new TestParseRefsQuery([
+    $query = new TestParseRefsQuery([
         createParseRefsElement(id: 3),
     ]);
-    $missingQuery = new TestParseRefsQuery([]);
 
     expectParseRefsElementType(2);
-    expectParseRefsQueries($matchingQuery, $missingQuery);
+    expectParseRefsQueries($query);
 
     expect($this->action->targetIds('{test:3:url} {test:999}', 7))
         ->toBe([3])
-        ->and($matchingQuery->recordedSiteId)->toBe(7)
-        ->and($matchingQuery->recordedStatus)->toBeNull()
-        ->and($matchingQuery->recordedId)->toBe(3)
-        ->and($missingQuery->recordedSiteId)->toBe(7)
-        ->and($missingQuery->recordedStatus)->toBeNull()
-        ->and($missingQuery->recordedId)->toBe(999);
+        ->and($query->recordedSiteId)->toBe(7)
+        ->and($query->recordedStatus)->toBeNull()
+        ->and($query->recordedId)->toBe([3, 999]);
 });
 
 it('returns target ids for named refs and suffix refs', function () {

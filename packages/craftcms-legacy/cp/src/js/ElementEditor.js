@@ -36,6 +36,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @type {?Craft.FormObserver}
      */
     formObserver: null,
+    formHost: null,
     cancelToken: null,
     ignoreFailedRequest: false,
     queue: null,
@@ -56,7 +57,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
-    activityTooltips: null,
     _checkActivityTimeout: null,
 
     get tipDismissBtn() {
@@ -97,6 +97,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$sidebar =
         this.settings.$sidebar ??
         (this.isFullPage ? $('#details .details') : $());
+      this.formHost = this.$contentContainer.find(
+        'craft-entry-field-layout-form'
+      )[0];
 
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
@@ -299,8 +302,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         });
       }
-
-      this.activityTooltips = {};
 
       if (this.isFullPage) {
         Craft.ui.setFocusOnErrorSummary(this.$container);
@@ -553,7 +554,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         })
         .insertBefore($enabledForSiteField);
       $globalField.find('label').css('font-weight', 'bold');
-      this.$globalLightswitch = $globalField.find('.lightswitch');
+      this.$globalLightswitch = $globalField.find('craft-switch');
 
       if (!this.settings.revisionId) {
         this._showField($globalField);
@@ -573,7 +574,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         (this.settings.enabledForSite ? '1' : '');
 
       this.$siteLightswitches = $enabledForSiteField
-        .find('.lightswitch')
+        .find('craft-switch')
         .on('change', this._updateGlobalStatus.bind(this));
 
       this._getOtherSupportedSites().forEach((s) =>
@@ -584,7 +585,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         encodeURIComponent(this.namespaceInputName('enabled')) +
         `=${originalEnabledValue}`;
       for (let i = 0; i < this.$siteLightswitches.length; i++) {
-        const $input = this.$siteLightswitches.eq(i).data('lightswitch').$input;
+        const $input = this.$siteLightswitches
+          .eq(i)
+          .find('input[type="hidden"]');
         serializedStatuses +=
           '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
       }
@@ -754,7 +757,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       let allEnabled = true,
         allDisabled = true;
       this.$siteLightswitches.each(function () {
-        const enabled = $(this).data('lightswitch').on;
+        const enabled = this.on;
         if (enabled) {
           allDisabled = false;
         } else {
@@ -765,21 +768,21 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       });
       if (allEnabled) {
-        this.$globalLightswitch.data('lightswitch').turnOn(true);
+        this.$globalLightswitch[0].turnOn(true);
       } else if (allDisabled) {
-        this.$globalLightswitch.data('lightswitch').turnOff(true);
+        this.$globalLightswitch[0].turnOff(true);
       } else {
-        this.$globalLightswitch.data('lightswitch').turnIndeterminate(true);
+        this.$globalLightswitch[0].turnIndeterminate(true);
       }
     },
 
     _updateSiteStatuses: function () {
-      const enabled = this.$globalLightswitch.data('lightswitch').on;
+      const enabled = this.$globalLightswitch[0].on;
       this.$siteLightswitches.each(function () {
         if (enabled) {
-          $(this).data('lightswitch').turnOn(true);
+          this.turnOn(true);
         } else {
-          $(this).data('lightswitch').turnOff(true);
+          this.turnOff(true);
         }
       });
     },
@@ -807,7 +810,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (!this.settings.revisionId) {
         $field.addClass('nested');
         const $lightswitch = $field
-          .find('.lightswitch')
+          .find('craft-switch')
           .on('change', this._updateGlobalStatus.bind(this));
         this.$siteLightswitches = this.$siteLightswitches.add($lightswitch);
       }
@@ -1383,6 +1386,8 @@ Craft.ElementEditor = Garnish.Base.extend(
                   console.warn('Couldn’t save draft:', e);
                   reject(e);
                 });
+            } else if (this.formHost) {
+              resolve();
             } else {
               this.updateFieldLayout(data)
                 .then(resolve)
@@ -1400,8 +1405,6 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise<void>}
      */
     async refreshContent(params) {
-      this.settings.visibleLayoutElements = {};
-      this.settings.staticLayoutElements = {};
       const data = [this.serializeForm(true)];
       data.push(
         $.param({
@@ -1489,17 +1492,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .add($field.parentsUntil(this.$container, '.field'));
       }
 
-      params.push(
-        $.param({
-          [this.namespaceInputName('visibleLayoutElements')]:
-            this.settings.visibleLayoutElements,
-        }),
-        $.param({
-          [this.namespaceInputName('staticLayoutElements')]:
-            this.settings.staticLayoutElements,
-        })
-      );
-
       // Are we saving a provisional draft?
       if (this.settings.isProvisionalDraft || !this.settings.draftId) {
         params.push(`${this.namespaceInputName('provisional')}=1`);
@@ -1553,7 +1545,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this._afterSaveDraft();
       this.settings.previewParamValue = response.data.previewParamValue;
-      await this._afterUpdateFieldLayout(data, selectedTabId, response);
+      await this._afterUpdateFieldLayout(response);
       const newInitialDeltaValues = {};
 
       if (response.data.deltaNames?.length) {
@@ -1574,7 +1566,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.serializeForm(),
             newDeltaNames
           );
-          for (const [deltaName, params] of Object.entries(groupedParams)) {
+          for (const params of Object.values(groupedParams)) {
             for (const param of params) {
               const [name, value] = param.split('=', 2);
               newInitialDeltaValues[decodeURIComponent(name)] =
@@ -1771,12 +1763,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Prep the data to be saved, keeping track of the first input name for each delta group
       let preparedData = this.prepareData(data);
 
-      const extraData = {
-        [this.namespaceInputName('visibleLayoutElements')]:
-          this.settings.visibleLayoutElements,
-        [this.namespaceInputName('staticLayoutElements')]:
-          this.settings.staticLayoutElements,
-      };
+      const extraData = {};
 
       // Are we editing a provisional draft?
       if (this.settings.isProvisionalDraft) {
@@ -1821,7 +1808,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
 
-      await this._afterUpdateFieldLayout(data, selectedTabId, response);
+      await this._afterUpdateFieldLayout(response);
     },
 
     /**
@@ -1924,162 +1911,21 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    async _afterUpdateFieldLayout(data, selectedTabId, response) {
-      // Keep track of whether anything changed while we were waiting.
-      // If not, we can safely update lastSerializedValue after swapping out the fields
-      const noChanges = this.serializeForm(true) === data;
-
-      // capture the new selected tab ID, in case it just changed
-      const newSelectedTabId = this.$contentContainer
-        .children('[data-layout-tab]:not(.hidden)')
-        .data('id');
-
-      // Update the visible elements
-      let $allTabContainers = $();
-      const visibleLayoutElements = {};
-      const staticLayoutElements = {};
-      let changedElements = false;
-
-      for (const tabInfo of response.data.missingElements) {
-        let $tabContainer = this.$contentContainer.children(
-          `[data-layout-tab="${tabInfo.uid}"]`
-        );
-
-        if (!$tabContainer.length) {
-          $tabContainer = $('<div/>', {
-            id: this.namespaceId(tabInfo.id),
-            class: 'flex-fields',
-            'data-id': tabInfo.id,
-            'data-layout-tab': tabInfo.uid,
-          });
-          if (tabInfo.id !== selectedTabId) {
-            $tabContainer.addClass('hidden');
-          }
-          $tabContainer.appendTo(this.$contentContainer);
-        }
-
-        $allTabContainers = $allTabContainers.add($tabContainer);
-
-        for (const elementInfo of tabInfo.elements) {
-          if (elementInfo.html !== false) {
-            if (!visibleLayoutElements[tabInfo.uid]) {
-              visibleLayoutElements[tabInfo.uid] = [];
-            }
-            visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
-
-            if (elementInfo.static) {
-              if (!staticLayoutElements[tabInfo.uid]) {
-                staticLayoutElements[tabInfo.uid] = [];
-              }
-              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
-            }
-
-            if (typeof elementInfo.html === 'string') {
-              const $oldElement = $tabContainer.children(
-                `[data-layout-element="${elementInfo.uid}"]`
-              );
-              const $newElement = $(elementInfo.html);
-              if ($oldElement.length) {
-                $oldElement.replaceWith($newElement);
-              } else {
-                $newElement.appendTo($tabContainer);
-              }
-              Craft.cp.elementThumbLoader.load($newElement);
-              changedElements = true;
-            }
-          } else {
-            const $oldElement = $tabContainer.children(
-              `[data-layout-element="${elementInfo.uid}"]`
-            );
-            if (
-              !$oldElement.length ||
-              !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')
-            ) {
-              const $placeholder = $('<div/>', {
-                class: 'hidden',
-                'data-layout-element': elementInfo.uid,
-                'data-layout-element-placeholder': '',
-              });
-
-              if ($oldElement.length) {
-                $oldElement.replaceWith($placeholder);
-              } else {
-                $placeholder.appendTo($tabContainer);
-              }
-
-              changedElements = true;
-            }
-          }
-        }
+    async _afterUpdateFieldLayout(response) {
+      if (!this.formHost || !response.data.form) {
+        throw new Error('Entry Form refresh requires a Form host.');
       }
 
-      // Remove any unused tab content containers
-      // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
-      const $unusedTabContainers = this.$contentContainer
-        .children('[data-layout-tab]')
-        .not($allTabContainers)
-        .not('[data-layout-tab=""]');
-      if ($unusedTabContainers.length) {
-        $unusedTabContainers.remove();
-        changedElements = true;
-      }
-
-      // Make the first tab visible if no others are
-      if (!$allTabContainers.filter(':not(.hidden)').length) {
-        $allTabContainers.first().removeClass('hidden');
-      }
-
-      this.settings.visibleLayoutElements = visibleLayoutElements;
-      this.settings.staticLayoutElements = staticLayoutElements;
-
-      // Update the tabs
+      this.formHost.payload = response.data.form;
       const updateTabs =
         this.settings.updateTabs ??
-        (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : () => {});
-      updateTabs(response.data.tabs);
-
-      // was a new tab selected after the request was kicked off?
-      if (
-        selectedTabId &&
-        newSelectedTabId &&
-        selectedTabId !== newSelectedTabId
-      ) {
-        const tabManager = this.tabManager;
-        if (tabManager) {
-          const $newSelectedTab = tabManager.$tabs.filter(
-            `[data-id="${newSelectedTabId}"]`
-          );
-          if ($newSelectedTab.length) {
-            // if the new tab is visible - switch to it
-            tabManager.selectTab($newSelectedTab);
-          } else {
-            // if the new tab is not visible (e.g. hidden by a condition)
-            // switch to the first tab
-            tabManager.selectTab(tabManager.$tabs.first());
-          }
-        }
+        (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : null);
+      if (!updateTabs) {
+        throw new Error('Entry Form refresh requires a tab updater.');
       }
-
+      updateTabs(response.data.tabs);
       await Craft.appendHeadHtml(response.data.headHtml);
       await Craft.appendBodyHtml(response.data.bodyHtml);
-      Craft.initUiElements(this.$contentContainer);
-
-      // Did any layout elements get added or removed?
-      if (changedElements) {
-        if (response.data.initialDeltaValues) {
-          Object.assign(
-            this.$container.data('initial-delta-values'),
-            response.data.initialDeltaValues
-          );
-        }
-
-        if (noChanges) {
-          // Update our record of the last serialized value to avoid a pointless resave
-          this.lastSerializedValue = this.serializeForm(true);
-        }
-      }
-
-      // re-grab dismissible tips, re-attach listener, hide on re-load
       this.handleDismissibleTips();
     },
 
@@ -2369,13 +2215,14 @@ Craft.ElementEditor = Garnish.Base.extend(
               },
             })
               .then(({data}) => {
-                let focusedTooltip = null;
-                if (this.activityTooltips) {
-                  const tooltips = Object.values(this.activityTooltips);
-                  focusedTooltip = tooltips.find(
-                    (t) => t.$trigger[0] === document.activeElement
-                  );
-                }
+                // Preserve keyboard focus across the re-render: which activity
+                // button (by user) is focused right now?
+                const activeEl = document.activeElement;
+                const focusedUserId =
+                  activeEl instanceof HTMLElement &&
+                  activeEl.classList.contains('activity-btn')
+                    ? activeEl.getAttribute('data-user-id')
+                    : null;
 
                 this.$activityContainer
                   .html('')
@@ -2390,14 +2237,16 @@ Craft.ElementEditor = Garnish.Base.extend(
                   const $ul = $('<ul/>').appendTo(this.$activityContainer);
                   for (let i = 0; i < data.activity.length; i++) {
                     const activity = data.activity[i];
+                    const triggerId = `activity-tooltip-${activity.userId}`;
                     const $li = $('<li/>').appendTo($ul);
                     const $button = $('<button/>', {
                       type: 'button',
+                      id: triggerId,
                       class: 'activity-btn',
+                      'data-user-id': activity.userId,
                       'aria-label': Craft.t('app', '{name} active, more info', {
                         name: activity.userName,
                       }),
-                      'aria-expanded': 'false',
                     }).appendTo($li);
                     const $thumb = $(activity.userThumb)
                       .addClass('elementthumb')
@@ -2407,34 +2256,21 @@ Craft.ElementEditor = Garnish.Base.extend(
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
 
+                    // <craft-tooltip> replaces the legacy Craft.Tooltip
+                    // toggletip; it shows the activity message on hover/focus of
+                    // the button. Recreated alongside the button each poll.
+                    $('<craft-tooltip/>')
+                      .attr('for', triggerId)
+                      .text(activity.message)
+                      .appendTo($li);
+
+                    // Maintain keyboard focus across the re-render.
                     if (
-                      typeof this.activityTooltips[activity.userId] ===
-                      'undefined'
+                      focusedUserId !== null &&
+                      activity.userId == focusedUserId
                     ) {
-                      this.activityTooltips[activity.userId] =
-                        new Craft.Tooltip($button, activity.message);
-                    } else {
-                      this.activityTooltips[activity.userId].$trigger = $button;
-                      this.activityTooltips[activity.userId].message =
-                        activity.message;
-
-                      // maintain trigger focus
-                      if (
-                        this.activityTooltips[activity.userId] ===
-                        focusedTooltip
-                      ) {
-                        this.activityTooltips[activity.userId].$trigger.focus();
-                      }
+                      $button.focus();
                     }
-                  }
-                }
-
-                // hide any tooltips that are no longer relevant
-                for (const userId of Object.keys(this.activityTooltips)) {
-                  if (
-                    !data.activity.find((activity) => activity.userId == userId)
-                  ) {
-                    this.activityTooltips[userId].hide();
                   }
                 }
 
@@ -2550,8 +2386,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       siteStatuses: [],
       saveParams: null,
       siteToken: null,
-      visibleLayoutElements: {},
-      staticLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
       reloadOnBroadcastSave: true,

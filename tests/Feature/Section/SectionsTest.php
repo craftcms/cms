@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
@@ -26,6 +30,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
 
@@ -139,6 +144,37 @@ it('can get available entry move target sections', function () {
     ]);
 });
 
+it('only returns entry move target sections that support every entry type', function () {
+    Edition::set(Edition::Pro);
+
+    $entryTypeA = EntryType::factory()->create();
+    $entryTypeB = EntryType::factory()->create();
+    $currentSection = Section::factory()->withEntryTypes($entryTypeA, $entryTypeB)->create();
+    $compatibleSection = Section::factory()->withEntryTypes($entryTypeA, $entryTypeB)->create();
+    $partiallyCompatibleSection = Section::factory()->withEntryTypes($entryTypeA)->create();
+
+    $user = UserModel::factory()
+        ->withPermissions([
+            "viewEntries:{$compatibleSection->uid}",
+            "saveEntries:{$compatibleSection->uid}",
+            "viewEntries:{$partiallyCompatibleSection->uid}",
+            "saveEntries:{$partiallyCompatibleSection->uid}",
+        ])
+        ->create();
+
+    actingAs($user);
+    $this->sections->refreshSections();
+
+    $availableSections = $this->sections->getAvailableEntryMoveTargetSections(
+        entryTypeIds: [$entryTypeA->id, $entryTypeB->id],
+        siteId: Sites::getCurrentSite()->id,
+        currentSectionUid: $currentSection->uid,
+    );
+
+    expect(array_values(array_map(fn (SectionData $section) => $section->uid, $availableSections)))
+        ->toBe([$compatibleSection->uid]);
+});
+
 it('can get sections by type', function () {
     expect($this->sections->getSectionsByType(SectionType::Single))->toBeEmpty();
 
@@ -215,6 +251,26 @@ it('can save a section', function () {
     Event::assertDispatchedOnce(SectionSaving::class);
     Event::assertDispatchedOnce(SectionSaved::class);
 });
+
+it('queues section jobs after committing section changes', function (string $configKey, string $value, string $jobClass) {
+    $sectionModel = Section::factory()->create([
+        'propagationMethod' => PropagationMethod::All,
+    ]);
+    $this->sections->refreshSections();
+
+    $section = $this->sections->getSectionById($sectionModel->id);
+    $config = $section->getConfig();
+    $config[$configKey] = $value;
+
+    Queue::fake();
+
+    $this->sections->handleChangedSection(new class(path: ProjectConfigService::PATH_SECTIONS.'.'.$section->uid, newValue: $config, tokenMatches: [$section->uid]) extends ConfigEvent {});
+
+    Queue::assertPushed($jobClass, fn (object $job) => $job->afterCommit === true);
+})->with([
+    'propagation updates' => ['propagationMethod', PropagationMethod::SiteGroup->value, ApplyNewPropagationMethod::class],
+    'section resaves' => ['handle', 'updatedSection', ResaveElements::class],
+]);
 
 it('can delete a section by id', function () {
     Event::fake([

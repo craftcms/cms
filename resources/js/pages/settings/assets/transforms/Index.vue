@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import {capitalize, t} from '@craftcms/cp';
-  import Pane from '@/common/components/Pane.vue';
+  import {capitalize, t} from '@craftcms/ui';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {h, ref} from 'vue';
@@ -14,7 +13,6 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   type ExistingImageTransform = Omit<
@@ -26,24 +24,6 @@
     handle: string;
     name: string;
   };
-
-  function deleteTransform(transform: ExistingImageTransform) {
-    if (
-      confirm(
-        t('Are you sure you want to delete the “{name}” transform?', {
-          name: transform.name,
-        })
-      )
-    ) {
-      router
-        .optimistic<{transforms: Array<ExistingImageTransform>}>((props) => ({
-          transforms: props.transforms.filter(({id}) => id !== transform.id),
-        }))
-        .delete(destroy({transformId: transform.id}), {
-          preserveScroll: true,
-        });
-    }
-  }
 
   const props = defineProps<{
     transforms: Array<ExistingImageTransform>;
@@ -86,7 +66,21 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteTransform(row.original),
+        confirm: t('Are you sure you want to delete the “{name}” transform?', {
+          name: row.original.name,
+        }),
+        onClick: () =>
+          router
+            .optimistic<{transforms: Array<ExistingImageTransform>}>(
+              (props) => ({
+                transforms: props.transforms.filter(
+                  ({id}) => id !== row.original.id
+                ),
+              })
+            )
+            .delete(destroy({transformId: row.original.id}), {
+              preserveScroll: true,
+            }),
       }),
     ]),
   ]);
@@ -105,8 +99,6 @@
       },
     },
   });
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>
@@ -120,8 +112,7 @@
     >
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
-    hey hney
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">
@@ -135,5 +126,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

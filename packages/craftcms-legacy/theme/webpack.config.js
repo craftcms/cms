@@ -16,7 +16,7 @@ module.exports = getConfig({
             from: './*.css',
             to: '.',
           },
-        ]
+        ],
       }),
     ],
   },

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
-  import {t} from '@craftcms/cp';
-  import Pane from '@/common/components/Pane.vue';
+  import {t} from '@craftcms/ui';
   import ProjectConfigController from '@actions/Utilities/ProjectConfigController';
   import {useFetch} from '@/common/composables/useFetch';
 
@@ -12,15 +11,18 @@
   // const {isLoading, displayedLines, hasMoreLines, fetchDiff, showAll, cancel} =
   //   useProjectConfigDiff(props.invert);
 
-  const {data, isLoading} = useFetch(ProjectConfigController.diff().url, {
-    params: {invert: props.invert},
-  });
+  const {data, isLoading} = useFetch<string>(
+    ProjectConfigController.diff().url,
+    {
+      params: {invert: props.invert},
+    }
+  );
   const diffLines = ref<string[]>([]);
   const showAllLines = ref(false);
   const maxInitialLines = 20;
 
   watch(data, (newValue) => {
-    diffLines.value = newValue.split(/\n/);
+    diffLines.value = newValue?.split(/\n/) ?? [];
   });
 
   function showAll(): void {
@@ -40,7 +42,13 @@
 </script>
 
 <template>
-  <Pane variant="code" :padding="0" :class="{loading: isLoading}" tabindex="0">
+  <!-- craft-pane makes its own scroll container the tab stop -->
+  <craft-pane
+    variant="code"
+    padding="0"
+    :class="{loading: isLoading}"
+    :aria-label="t('Project config changes')"
+  >
     <!-- Loading state -->
     <div v-if="isLoading" class="diff-loading">
       <craft-spinner :visible="true" class="spinner"></craft-spinner>
@@ -73,7 +81,7 @@
         </craft-button>
       </div>
     </template>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss">

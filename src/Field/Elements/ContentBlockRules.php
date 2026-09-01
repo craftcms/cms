@@ -12,6 +12,7 @@ use Override;
  */
 class ContentBlockRules extends ElementRules
 {
+    /** @return array<string, mixed> */
     #[Override]
     public function rules(): array
     {

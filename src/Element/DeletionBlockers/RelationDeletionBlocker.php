@@ -14,12 +14,15 @@ use function CraftCms\Cms\t;
 
 class RelationDeletionBlocker extends BaseDeletionBlocker
 {
+    /** @var array<string, mixed> */
     public array $elementIndexSettings = [];
 
     protected int $relationCount;
 
     /**
      * @param  class-string<ElementInterface>  $sourceElementType
+     * @param  ElementCollection<int, covariant ElementInterface>  $elements
+     * @param  array<string, mixed>  $config
      */
     public function __construct(
         protected string $sourceElementType,
@@ -75,6 +78,7 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
         ], $this->elementIndexSettings));
     }
 
+    /** @return list<array<string, mixed>> */
     public function getActions(): array
     {
         /** @var class-string<ElementInterface> $targetElementType */

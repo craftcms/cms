@@ -11,6 +11,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
@@ -18,8 +19,8 @@ use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -91,6 +92,18 @@ readonly class RenderController
                     $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
+
+                    // Which actions belong in the rendered menus is the
+                    // server's decision: a nested element rendered for its
+                    // owner (the criterion's `ownerId`) gets its nested
+                    // Duplicate/Delete actions; client-supplied configs
+                    // can't request them.
+                    $instance['showNestedActions'] = (
+                        $ownerId !== null &&
+                        $element instanceof NestedElementInterface &&
+                        (int) $element->getOwnerId() === (int) $ownerId
+                    );
+
                     $elementHtml[$id][$key] = match ($ui) {
                         'chip' => $this->elementHtml->elementChipHtml($element, $instance),
                         'card' => $this->elementHtml->elementCardHtml($element, $instance),
@@ -119,7 +132,7 @@ readonly class RenderController
 
         $components = $validated['components'];
         $withMenuItems = $validated['withMenuItems'] ?? false;
-        $menuId = $validated['menuId'];
+        $menuId = $validated['menuId'] ?? null;
 
         $componentHtml = [];
         $menuItemHtml = [];
@@ -180,7 +193,7 @@ readonly class RenderController
             'encode' => ['boolean'],
             'inlineOnly' => ['boolean'],
             'sanitizeHtml' => ['boolean'],
-            'htmlSanitizer' => ['nullable', 'string', Rule::in(app(HtmlSanitizers::class)->names())],
+            'htmlSanitizer' => ['nullable', 'string', Rule::in(HtmlSanitizers::names())],
         ]);
 
         $encode = $request->boolean('encode');

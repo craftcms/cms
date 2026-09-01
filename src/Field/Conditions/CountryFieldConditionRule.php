@@ -29,6 +29,7 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return parent::inputHtml();
     }
 
+    /** @return list<string>|null */
     protected function elementQueryParam(): ?array
     {
         if (! $this->field() instanceof Country) {
@@ -38,7 +39,8 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return $this->paramValue();
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param string|null $value */
+    protected function matchFieldValue(mixed $value): bool
     {
         if (! $this->field() instanceof Country) {
             return true;

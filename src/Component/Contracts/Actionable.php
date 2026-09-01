@@ -26,5 +26,6 @@ interface Actionable
      *
      * @see MenuHtml::disclosureMenu()
      */
+    /** @return list<array<string, mixed>> */
     public function getActionMenuItems(): array;
 }

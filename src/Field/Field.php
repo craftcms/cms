@@ -41,16 +41,17 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -58,12 +59,15 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
+use GraphQL\Type\Definition\FieldDefinition;
+use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 use RuntimeException;
 use Stringable;
@@ -72,25 +76,15 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ * @phpstan-import-type InputObjectFieldConfig from InputObjectField
+ */
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
     use LegacyFieldConstants;
     use SavableComponent;
-
-    // Translation methods
-    // @TODO: Replace const with the enum everywhere
-    // -------------------------------------------------------------------------
-
-    public const string TRANSLATION_METHOD_NONE = TranslationMethod::None->value;
-
-    public const string TRANSLATION_METHOD_SITE = TranslationMethod::Site->value;
-
-    public const string TRANSLATION_METHOD_SITE_GROUP = TranslationMethod::SiteGroup->value;
-
-    public const string TRANSLATION_METHOD_LANGUAGE = TranslationMethod::Language->value;
-
-    public const string TRANSLATION_METHOD_CUSTOM = TranslationMethod::Custom->value;
 
     // Properties
     // -------------------------------------------------------------------------
@@ -113,7 +107,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
      *
-     * @see FieldInterface::getInputHtml()
+     * @see FieldInterface::formControl()
      */
     public ?string $describedBy = null;
 
@@ -140,6 +134,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         get => $this->_translationMethod->value;
     }
 
+    /** @var list<string> */
     public array $supportedTranslationMethodValues {
         get => array_map(
             static fn (TranslationMethod $translationMethod) => $translationMethod->value,
@@ -150,7 +145,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field’s previous handle */
     public ?string $oldHandle = null;
 
-    /** @var array|null The field’s previous settings */
+    /** @var array<string, mixed>|null The field’s previous settings */
     public ?array $oldSettings = null;
 
     /** @var string|null The field's UID */
@@ -300,6 +295,24 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public static function icon(): string
     {
         return 'i-cursor';
+    }
+
+    public function formControl(FieldContext $context): Control
+    {
+        throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
+    }
+
+    /**
+     * A warning the field itself needs to show, on top of any the field layout
+     * author wrote.
+     *
+     * For misconfiguration the author can't see from the layout — an Assets
+     * field pointed at a volume that no longer exists, say. Returning a string
+     * puts it in the field's warning slot; `null` means nothing to say.
+     */
+    public function formWarning(?ElementInterface $element = null): ?string
+    {
+        return null;
     }
 
     public static function isMultiInstance(): bool
@@ -467,6 +480,20 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return $event->items;
     }
 
+    public function getFieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        $this->static = $context->mode !== ControlMode::Editable;
+
+        return $this->fieldLayoutActionMenuItems($context);
+    }
+
+    /** @return list<array<string, mixed>> */
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        return $this->actionMenuItems();
+    }
+
+    /** @return list<array<string, mixed>> */
     protected function actionMenuItems(): array
     {
         $items = [];
@@ -480,25 +507,23 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         }
 
         if (Cms::config()->allowAdminChanges) {
-            // Edit field
-            $editId = sprintf('action-edit-%s', mt_rand());
+            // Edit field. Behavior travels with the item as a declarative
+            // action — `craft:edit-field` is handled by the slideout module's
+            // window listener, which opens the field's settings slideout and
+            // re-announces a save as a bubbling `field-saved` event. Registered
+            // JS would never reach an Inertia-rendered page.
             $items[] = [
-                'id' => $editId,
+                // The `action-edit-` prefix is load-bearing: `ElementHtml`
+                // marks it `data-edit-action` when the menu is shown on a chip.
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'gear',
                 'label' => t('Field settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-field',
+                    'detail' => ['fieldId' => $this->id],
+                ],
             ];
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-$('#' + $id).on('activate', () => {
-new Craft.CpScreenSlideout('fields/edit-field', {
-  params: $params,
-})
-});
-})();
-JS, [
-                InputNamespace::namespaceId($editId),
-                ['fieldId' => $this->id],
-            ]);
         }
 
         return $items;
@@ -590,21 +615,6 @@ JS, [
         return $this->normalizeValue($value, $element);
     }
 
-    public function getInputHtml(mixed $value, ?ElementInterface $element): string
-    {
-        $html = $this->inputHtml($value, $element, false);
-
-        event($event = new FieldHtmlResolving(
-            field: $this,
-            value: $value,
-            inline: false,
-            element: $element,
-            html: $html,
-        ));
-
-        return $event->html;
-    }
-
     /**
      * @see InlineEditableFieldInterface::getInlineInputHtml()
      */
@@ -631,18 +641,10 @@ JS, [
      * @param  ElementInterface|null  $element  The element the field is associated with, if there is one
      * @param  bool  $inline  Whether this is for an inline edit form.
      * @return string The input HTML.
-     *
-     * @see getInputHtml()
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Html::textarea($this->handle, $value)->render();
-    }
-
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        // Just return the input HTML with disabled inputs by default
-        return Html::disableInputs(fn () => $this->getInputHtml($value, $element));
     }
 
     public function prepareForElementValidation(mixed $value): mixed
@@ -650,6 +652,7 @@ JS, [
         return $value;
     }
 
+    /** @return list<string|object> */
     public function getElementRules(ElementInterface $element): array
     {
         return [];
@@ -722,6 +725,7 @@ JS, [
     /**
      * @see SortableFieldInterface::getSortOption()
      */
+    /** @return array{label:string, orderBy:string|Expression|null, attribute:string} */
     public function getSortOption(): array
     {
         $dbType = static::dbType();
@@ -769,7 +773,7 @@ JS, [
     /**
      * @see MergeableFieldInterface::afterMergeInto()
      */
-    public function afterMergeInto(FieldInterface $persistingField)
+    public function afterMergeInto(FieldInterface $persistingField): void
     {
         event(new FieldMergeIntoCompleted($this, $persistingField));
     }
@@ -777,9 +781,24 @@ JS, [
     /**
      * @see MergeableFieldInterface::afterMergeFrom()
      */
-    public function afterMergeFrom(FieldInterface $outgoingField)
+    public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         if ($this instanceof RelationalFieldInterface) {
+            // find the outgoing field's relations that would collide with the persisting field's relations
+            $conflictingIds = DB::table(Table::RELATIONS.' as outgoing')
+                ->join(Table::RELATIONS.' as persisting', function ($join) {
+                    $join->on('persisting.sourceId', '=', 'outgoing.sourceId')
+                        ->on('persisting.sourceSiteId', '=', 'outgoing.sourceSiteId')
+                        ->on('persisting.targetId', '=', 'outgoing.targetId');
+                })
+                ->where('outgoing.fieldId', $outgoingField->id)
+                ->where('persisting.fieldId', $this->id)
+                ->pluck('outgoing.id');
+
+            if ($conflictingIds->isNotEmpty()) {
+                DB::table(Table::RELATIONS)->whereIn('id', $conflictingIds)->delete();
+            }
+
             DB::table(Table::RELATIONS)
                 ->where('fieldId', $outgoingField->id)
                 ->update([
@@ -961,11 +980,13 @@ JS, [
         return true;
     }
 
+    /** @return Type|FieldDefinitionConfig */
     public function getContentGqlType(): Type|array
     {
         return Type::string();
     }
 
+    /** @return Type|InputObjectFieldConfig */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
@@ -975,6 +996,7 @@ JS, [
         ];
     }
 
+    /** @return Type|InputObjectFieldConfig */
     public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
@@ -1101,6 +1123,7 @@ JS, [
     /**
      * @see EagerLoadingFieldInterface::getEagerLoadingGqlConditions()
      */
+    /** @return array<string, mixed>|null */
     public function getEagerLoadingGqlConditions(): ?array
     {
         // No restrictions

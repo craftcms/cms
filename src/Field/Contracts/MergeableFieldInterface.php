@@ -23,10 +23,12 @@ interface MergeableFieldInterface extends FieldInterface
     /**
      * Performs actions after the field has been merged into the given field.
      */
+    /** @return void */
     public function afterMergeInto(FieldInterface $persistingField);
 
     /**
      * Performs actions after the given field has been merged into this one.
      */
+    /** @return void */
     public function afterMergeFrom(FieldInterface $outgoingField);
 }

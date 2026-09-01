@@ -118,6 +118,24 @@ class VolumeFolder extends Component implements Stringable
         $this->_fs = $fs;
     }
 
+    /**
+     * @return array{
+     *     uri: string,
+     *     folderId: int,
+     *     hasChildren: bool,
+     *     canView: bool,
+     *     canCreate: bool,
+     *     canMoveSubItems: bool,
+     *     key: string,
+     *     label: string,
+     *     icon?: string,
+     *     handle?: string|null,
+     *     criteria?: array{folderId: int|null},
+     *     canRename?: bool,
+     *     canMove?: bool,
+     *     canDelete?: bool,
+     * }|null
+     */
     public function getSourcePathInfo(): ?array
     {
         if (! $this->volumeId) {
@@ -194,9 +212,7 @@ class VolumeFolder extends Component implements Stringable
     /** @return self[] */
     public function getChildren(): array
     {
-        if ($this->_children === null) {
-            $this->_children = Folders::findFolders(['parentId' => $this->id])->all();
-        }
+        $this->_children ??= Folders::findFolders(['parentId' => $this->id])->all();
 
         return $this->_children;
     }

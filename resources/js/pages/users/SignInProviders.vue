@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import {h, ref} from 'vue';
   import {router, useHttp, usePage} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
-  import Pane from '@/common/components/Pane.vue';
+  import {t} from '@craftcms/ui';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Badge from '@/common/components/Badge.vue';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
     inheritAttrs: false,
@@ -24,7 +24,7 @@
   const connectRequest = useHttp<Record<string, never>, ConnectResponse>({});
   const disconnectRequest = useHttp<
     Record<string, never>,
-    Record<string, unknown>
+    Record<string, never>
   >({});
 
   async function connectProvider(provider: Provider) {
@@ -145,7 +145,9 @@
 </script>
 
 <template>
-  <Pane :padding="0" appearance="raised">
-    <AdminTable :table="table" />
-  </Pane>
+  <UserScreen>
+    <craft-pane padding="0" appearance="raised">
+      <AdminTable :table="table" />
+    </craft-pane>
+  </UserScreen>
 </template>

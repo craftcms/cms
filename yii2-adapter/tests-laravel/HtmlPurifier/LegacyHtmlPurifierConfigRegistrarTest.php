@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Tests\HtmlPurifier;
 
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\HtmlPurifier\HtmlPurifierSanitizer;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
@@ -31,16 +31,14 @@ class LegacyHtmlPurifierConfigRegistrarTest extends TestCase
 
         app(LegacyHtmlPurifierConfigRegistrar::class)->boot();
 
-        self::assertTrue(app(HtmlSanitizers::class)->has('test'));
-
-        $sanitized = app(HtmlSanitizers::class)->sanitize('<a id="a" target="_blank" onclick="bad()">Hello</a>', 'test');
+        $sanitized = app(HtmlSanitizerManager::class)->sanitize('<a id="a" target="_blank" onclick="bad()">Hello</a>', 'test');
 
         self::assertSame('<a id="a" target="_blank" rel="noreferrer noopener">Hello</a>', $sanitized);
     }
 
     public function test_html_purifier_sanitizer_can_be_used_directly(): void
     {
-        $sanitized = app(HtmlSanitizers::class)->sanitize('<p id="test">Hello</p>', new HtmlPurifierSanitizer([
+        $sanitized = app(HtmlSanitizerManager::class)->sanitize('<p id="test">Hello</p>', new HtmlPurifierSanitizer([
             'Attr.EnableID' => true,
         ]));
 

@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -25,7 +26,7 @@ readonly class DbBackupController
         }
     }
 
-    public function __invoke(Request $request, Backups $backups)
+    public function __invoke(Request $request, Backups $backups): Response
     {
         try {
             $backupPath = $backups->backup();

@@ -8,10 +8,13 @@ use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 class Asset extends Query
 {
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     public static function getQueries(bool $checkToken = true): array
     {
         if ($checkToken && ! GqlHelper::canQueryAssets()) {

@@ -10,13 +10,11 @@
 namespace craft\helpers;
 
 use craft\base\Event as YiiEvent;
-use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\helpers\ImageTransforms as TransformHelper;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AssetFileKindsResolving;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
@@ -229,14 +227,6 @@ class Assets extends AssetsHelper
                 YiiEvent::trigger(self::class, self::EVENT_SET_FILENAME, $yiiEvent);
                 $event->filename = $yiiEvent->filename;
                 $event->extension = $yiiEvent->extension;
-            }
-        });
-
-        Event::listen(function(AssetFileKindsResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
-                $yiiEvent = new RegisterAssetFileKindsEvent(['fileKinds' => $event->fileKinds]);
-                YiiEvent::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $yiiEvent);
-                $event->fileKinds = $yiiEvent->fileKinds;
             }
         });
     }

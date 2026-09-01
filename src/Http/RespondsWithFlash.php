@@ -22,6 +22,7 @@ use function CraftCms\Cms\renderObjectTemplate;
 
 trait RespondsWithFlash
 {
+    /** @param array<string, mixed> $data */
     public function asFailure(?string $message = null, array $data = []): Response
     {
         if (request()->expectsJson()) {
@@ -32,11 +33,17 @@ trait RespondsWithFlash
 
         request()->flash();
 
+        // Attributes with no messages must not reach the session error bag:
+        // Inertia's middleware resolves each entry's first message and 500s
+        // on an empty one.
+        $errors = array_filter($data['errors'] ?? []);
+
         return back()
             ->with('error', $message)
-            ->with($data)->withErrors($data['errors'] ?? []);
+            ->with($data)->withErrors($errors);
     }
 
+    /** @param array<string, mixed> $data */
     public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
     {
         return new JsonResponse($data + array_filter([
@@ -44,6 +51,10 @@ trait RespondsWithFlash
         ]), 400);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $notificationSettings
+     */
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): Response
     {
         $redirect ??= $this->getPostedRedirectUrl();
@@ -70,6 +81,7 @@ trait RespondsWithFlash
         return back()->with($data);
     }
 
+    /** @param array<string, mixed> $data */
     public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null): JsonResponse
     {
         return new JsonResponse($data + array_filter([
@@ -78,6 +90,7 @@ trait RespondsWithFlash
         ]), 200);
     }
 
+    /** @param array<string, mixed> $data */
     public function asModelFailure(
         object $model,
         ?string $message = null,
@@ -97,6 +110,7 @@ trait RespondsWithFlash
         return $this->asFailure($message, $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function asModelSuccess(
         object $model,
         ?string $message = null,

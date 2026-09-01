@@ -15,18 +15,27 @@ use Override;
  */
 class ValidatableRules extends Ruleset
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return $this->subject->getRules();
     }
 
     #[Override]
+    /**
+     * @return array<string, string>
+     */
     public function attributes(): array
     {
         return $this->subject->attributeLabels();
     }
 
     #[Override]
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return $this->subject->getMessages();

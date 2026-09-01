@@ -17,12 +17,14 @@ class GqlSchema extends Component implements Stringable
 
     public ?string $name = null;
 
+    /** @var list<string> */
     public array $scope = [];
 
     public bool $isPublic = false;
 
     public ?string $uid = null;
 
+    /** @var array<string, array<string, list<string>|true>> */
     private array $_cachedPairs = [];
 
     #[Override]
@@ -47,6 +49,7 @@ class GqlSchema extends Component implements Stringable
         return in_array($name, $this->scope, true);
     }
 
+    /** @return array<string, array<string, list<string>|true>> */
     public function getAllScopePairs(): array
     {
         if ($this->_cachedPairs !== []) {
@@ -76,11 +79,13 @@ class GqlSchema extends Component implements Stringable
         return $this->_cachedPairs;
     }
 
+    /** @return array<string, list<string>|true> */
     public function getAllScopePairsForAction(string $action = 'read'): array
     {
         return $this->getAllScopePairs()[$action] ?? [];
     }
 
+    /** @return array{name: ?string, isPublic: bool, scope?: list<string>} */
     public function getConfig(): array
     {
         $config = [

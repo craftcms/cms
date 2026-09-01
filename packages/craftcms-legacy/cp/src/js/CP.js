@@ -1,8 +1,3 @@
-// Import from the deep service module rather than the package root. The root
-// entry (`@craftcms/cp`) side-effect-registers WebAwesome components (e.g.
-// `wa-icon`); pulling that into this separately-webpacked legacy bundle causes
-// a duplicate custom-element registration when it loads alongside the Vite app.
-import {QueueService} from '@craftcms/cp/services/Queue';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
@@ -13,7 +8,7 @@ import {QueueService} from '@craftcms/cp/services/Queue';
  */
 Craft.CP = Garnish.Base.extend(
   {
-    elementThumbLoader: null,
+    _elementThumbLoader: null,
     animationBlocker: null,
     authManager: null,
     announcerTimeout: null,
@@ -81,12 +76,28 @@ Craft.CP = Garnish.Base.extend(
 
     resizeTimeout: null,
 
-    /** @type QueueService */
-    QueueService: QueueService.getInstance(),
+    // Lazy so this bundle doesn't need its own copy of the queue service.
+    // `Craft.QueueService` is assigned by the Vite-side `modules/queue` shim,
+    // whose deferred module scripts run after this bundle evaluates but before
+    // anything can call the queue delegates — every caller fires on user
+    // interaction or later.
+    get QueueService() {
+      if (!Craft.QueueService) {
+        throw new Error(
+          'Craft.QueueService is not available. The queue service is provided by the modern CP bundle (modules/queue).'
+        );
+      }
+      return Craft.QueueService.getInstance();
+    },
+
+    get elementThumbLoader() {
+      if (!this._elementThumbLoader) {
+        this._elementThumbLoader = new Craft.ElementThumbLoader();
+      }
+      return this._elementThumbLoader;
+    },
 
     init: function () {
-      this.elementThumbLoader = new Craft.ElementThumbLoader();
-
       // Is this session going to expire?
       if (Craft.remainingSessionTime !== 0) {
         this.authManager = new Craft.AuthManager();
@@ -240,18 +251,20 @@ Craft.CP = Garnish.Base.extend(
         }
       }
 
-      this.initTabs();
+      Garnish.$doc.ready(() => {
+        this.initTabs();
 
-      if (this.tabManager) {
-        if (window.LOCATION_HASH) {
-          const $tab = this.tabManager.$tabs.filter(
-            `[href="#${window.LOCATION_HASH}"]`
-          );
-          if ($tab.length) {
-            this.tabManager.selectTab($tab);
+        if (this.tabManager) {
+          if (window.LOCATION_HASH) {
+            const $tab = this.tabManager.$tabs.filter(
+              `[href="#${window.LOCATION_HASH}"]`
+            );
+            if ($tab.length) {
+              this.tabManager.selectTab($tab);
+            }
           }
         }
-      }
+      });
 
       // Should we match the previous scroll position?
       let scrollY;
@@ -386,8 +399,12 @@ Craft.CP = Garnish.Base.extend(
         observer.observe(footer);
       }
 
-      // Load any element thumbs
-      this.elementThumbLoader.load(this.$pageContainer);
+      // Load any element thumbs.
+      // (Deferred until after the Vite-side `modules/element-thumb-loader` shim
+      // has had a chance to load.)
+      setTimeout(() => {
+        this.elementThumbLoader.load(this.$pageContainer);
+      }, 500);
 
       // Add notification close listeners
       this.on('notificationClose', () => {
@@ -879,7 +896,41 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Empty in case it was already populated and not cleared
-      this.$activeLiveRegion?.empty();
+      this.clearLiveRegion();
+    },
+
+    /**
+     * Resolves a live region reference to its underlying element.
+     *
+     * `$liveRegion` comes in two shapes as jQuery gets removed: the jQuery-era
+     * modals (`Garnish.Modal`, `Craft.PreviewFileModal`) and
+     * `$globalLiveRegion` set it to a jQuery collection, while ported
+     * components set it to a plain element — `Craft.Slideout` does today, and
+     * the ported Garnish `Modal` builds one the same way (though it isn't
+     * reachable from `handleLayerUpdates` yet, since it registers itself in a
+     * `WeakMap` rather than via `$container.data('modal')`). Accept either so
+     * both can coexist for the rest of the port.
+     *
+     * @param {jQuery|Element|null} region
+     * @returns {Element|null}
+     */
+    getLiveRegionElement: function (region) {
+      if (!region) {
+        return null;
+      }
+
+      return region instanceof Element ? region : (region[0] ?? null);
+    },
+
+    /**
+     * Empties the active live region, whichever form it takes.
+     */
+    clearLiveRegion: function () {
+      const liveRegion = this.getLiveRegionElement(this.$activeLiveRegion);
+
+      if (liveRegion) {
+        liveRegion.textContent = '';
+      }
     },
 
     updateResponsiveTables: function () {
@@ -1027,11 +1078,9 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} message
      */
     announce: function (message) {
-      if (
-        !message ||
-        !this.$activeLiveRegion ||
-        !document.contains(this.$activeLiveRegion[0])
-      ) {
+      const liveRegion = this.getLiveRegionElement(this.$activeLiveRegion);
+
+      if (!message || !liveRegion || !document.contains(liveRegion)) {
         console.warn('There was an error announcing this message.');
         return;
       }
@@ -1040,11 +1089,13 @@ Craft.CP = Garnish.Base.extend(
         clearTimeout(this.announcerTimeout);
       }
 
-      this.$activeLiveRegion?.empty().text(message);
+      // Assigning `textContent` both clears any previous announcement and sets
+      // the new one, matching the old `.empty().text(message)` pair.
+      liveRegion.textContent = message;
 
       // Clear message after interval
       this.announcerTimeout = setTimeout(() => {
-        this.$activeLiveRegion?.empty();
+        this.clearLiveRegion();
       }, 5000);
     },
 

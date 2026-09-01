@@ -45,6 +45,7 @@ trait SearchesElements
      *
      * @throws QueryAbortedException
      */
+    /** @param ElementQuery<*> $elementQuery */
     private function applySearchParam(ElementQuery $elementQuery): void
     {
         $elementQuery->searchResults = null;

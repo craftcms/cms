@@ -1,0 +1,194 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import BadgeMeta, {
+  Default,
+  AllColors,
+  SemanticColors,
+  CustomPrefix,
+} from './badge.stories';
+
+<Meta of={BadgeMeta} name="Docs" />
+
+# Badge
+
+`<craft-badge>` is a small status pill — a color `<craft-indicator>` dot followed
+by a label. Use it to surface an object's state in lists, tables, and headers
+(for example an entry's status or an order's payment state).
+
+<Canvas of={Default} />
+
+## Usage
+
+```html
+<craft-badge fill="success">Live</craft-badge>
+```
+
+The label is the default slot. By default the badge prepends a
+`<craft-indicator>` tinted to match `fill`; the badge's own surface, border, and
+text render in the quieter tone of the same color.
+
+## Properties
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Attribute</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>ColorValue</code>
+      </td>
+      <td>
+        <code>gray</code>
+      </td>
+      <td>
+        The badge color — a value from the shared <code>Color</code> palette
+        (see <a href="#fill">Fill</a>). Reflected to the <code>fill</code>{' '}
+        attribute.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Fill
+
+`fill` accepts a color **value** from the shared `Color` constant — a palette
+swatch (`red`, `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`,
+`cyan`, `sky`, `blue`, `indigo`, `violet`, `purple`, `fuchsia`, `pink`, `rose`,
+`gray`, `white`, `black`).
+
+Unlike `<craft-indicator>`, the badge is constrained to the palette and does not
+take arbitrary CSS colors — `fill` is typed as `ColorValue`, so only known
+values type-check. Setting `fill` reflects the resolved color onto the host's
+`data-color` attribute, which scopes the `--c-color-*` tokens the badge styles
+read.
+
+<Canvas of={AllColors} />
+
+### Semantic colors
+
+The `Color` constant also exposes semantic aliases that resolve to palette
+values — `Color.Success` → `emerald`, `Color.Warning` → `orange`,
+`Color.Danger` → `red`, `Color.Info` → `blue`, `Color.Neutral` → `slate`, and
+`Color.Accent` → `red`. Prefer these when the color carries meaning so intent
+survives any future palette retune.
+
+```html
+<craft-badge fill="emerald">Success</craft-badge>
+```
+
+<Canvas of={SemanticColors} />
+
+## Slots
+
+<table>
+  <thead>
+    <tr>
+      <th>Slot</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <em>(default)</em>
+      </td>
+      <td>The label content, shown after the indicator.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>prefix</code>
+      </td>
+      <td>
+        Leading content. Defaults to a <code>&lt;craft-indicator&gt;</code>{' '}
+        filled from <code>fill</code>; slot your own element to replace it.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>suffix</code>
+      </td>
+      <td>Trailing content, shown after the label.</td>
+    </tr>
+  </tbody>
+</table>
+
+Slotting `prefix` overrides the default indicator — handy for an icon or a
+custom marker:
+
+<Canvas of={CustomPrefix} />
+
+## CSS parts
+
+<table>
+  <thead>
+    <tr>
+      <th>Part</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>badge</code>
+      </td>
+      <td>The pill wrapper.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>prefix</code>
+      </td>
+      <td>The leading slot, before the label.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>indicator</code>
+      </td>
+      <td>The default indicator rendered in the prefix slot.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>suffix</code>
+      </td>
+      <td>The trailing slot, after the label.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Styling
+
+The badge sizes itself in `em` and reads the generic colorable tokens, so it
+adapts to the surrounding text and to `fill` automatically:
+
+- Surface — `--c-color-fill-quiet`
+- Border — `--c-color-border-quiet`
+- Text — `--c-color-on-quiet`
+
+Because those tokens are scoped by the `data-color` attribute the component sets
+from `fill`, you normally change a badge's color through `fill` rather than by
+overriding the tokens. Set `font-size` on the host to scale the whole pill,
+including its indicator:
+
+```css
+craft-badge {
+  font-size: 0.875rem;
+}
+```
+
+## Accessibility
+
+The default indicator is decorative and is left unlabeled, since the badge's
+text already names the status. If you replace the `prefix` with a meaningful
+graphic, give it its own accessible name (for example a `label` on
+`<craft-indicator>` or `<craft-icon>`).

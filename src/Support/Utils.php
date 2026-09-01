@@ -11,7 +11,7 @@ use ReflectionProperty;
 
 class Utils
 {
-    /** @return Collection<ReflectionProperty> */
+    /** @return Collection<int, ReflectionProperty> */
     public static function getPublicReflectionProperties(object|string $target, ?Closure $filter = null): Collection
     {
         return collect(new ReflectionClass($target)->getProperties())
@@ -19,6 +19,7 @@ class Utils
             ->filter($filter ?? fn () => true);
     }
 
+    /** @return array<string, mixed> */
     public static function getPublicProperties(object|string $target, ?Closure $filter = null): array
     {
         return self::getPublicReflectionProperties($target, $filter)
@@ -38,6 +39,7 @@ class Utils
             ->all();
     }
 
+    /** @return string[] */
     public static function getPublicAttributes(object|string $target, ?Closure $filter = null): array
     {
         return self::getPublicReflectionProperties($target, $filter)

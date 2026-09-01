@@ -34,10 +34,10 @@ class SendAnnouncement extends Job
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(Plugins $plugins): void
     {
         if (isset($this->pluginHandle)) {
-            $pluginInfo = app(Plugins::class)->getStoredPluginInfo($this->pluginHandle);
+            $pluginInfo = $plugins->getStoredPluginInfo($this->pluginHandle);
 
             if ($pluginInfo === null) {
                 Log::warning("Couldn't push announcement because the plugin handle was invalid: $this->pluginHandle", [__METHOD__]);

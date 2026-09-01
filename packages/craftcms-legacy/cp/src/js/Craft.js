@@ -1,4 +1,4 @@
-import {formatMessage, t} from '@craftcms/cp/utilities/translate';
+import {formatMessage, t} from '@craftcms/ui/utilities/translate';
 import * as d3 from 'd3';
 
 /** global: Craft */
@@ -1940,7 +1940,6 @@ $.extend(Craft, {
     $('.grid', $container).grid();
     $('.cp-checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
-    $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
     $('.datetimewrapper', $container).datetime();
     $(
@@ -1955,8 +1954,7 @@ $.extend(Craft, {
 
     /**
      * Swap any instruction text with info icons but avoid those with the class
-     * visually-hidden as those have already been swapped
-     * This needs to happen before the `infoicon` method
+     * visually-hidden as those have already been swapped.
      *
      * The primary place this happens is in the advanced settings of the link field
      * */
@@ -1975,8 +1973,6 @@ $.extend(Craft, {
         $instructions.addClass('sr-only');
       });
 
-    $('.info', $container).infoicon();
-
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
     // ignore items in contenteditable divs (like redactor or ckeditor fields)
@@ -1994,7 +1990,6 @@ $.extend(Craft, {
   },
 
   _elementIndexClasses: {},
-  _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
   _uploaderClasses: {},
   _authFormHandlers: {},
@@ -2033,24 +2028,6 @@ $.extend(Craft, {
     }
 
     this._uploaderClasses[fsType] = func;
-  },
-
-  /**
-   * Registers an element selector modal class for a given element type.
-   *
-   * @param {string} elementType
-   * @param {function} func
-   */
-  registerElementSelectorModalClass: function (elementType, func) {
-    if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
-      throw (
-        'An element selector modal class has already been registered for the element type “' +
-        elementType +
-        '”.'
-      );
-    }
-
-    this._elementSelectorModalClasses[elementType] = func;
   },
 
   registerAuthFormHandler(method, func) {
@@ -2099,24 +2076,6 @@ $.extend(Craft, {
     uploader.fsType = fsType;
 
     return uploader;
-  },
-
-  /**
-   * Creates a new element selector modal for a given element type.
-   *
-   * @param {string} elementType
-   * @param {Object} settings
-   */
-  createElementSelectorModal: function (elementType, settings) {
-    var func;
-
-    if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
-      func = this._elementSelectorModalClasses[elementType];
-    } else {
-      func = Craft.BaseElementSelectorModal;
-    }
-
-    return new func(elementType, settings);
   },
 
   /**
@@ -2472,6 +2431,23 @@ $.extend(Craft, {
   /**
    * Adds actions to a chip or card.
    *
+   * Supports both action-menu shapes:
+   *
+   * - The modern self-booting `<craft-action-menu>`, as rendered by
+   *   `ElementHtml::componentActionMenu()` (chips' `[slot="suffix"]`, or a
+   *   card's `.card-actions`) — `craft-action-item`s are built from the
+   *   action descriptors and injected into its `[slot="content"]`. These
+   *   self-boot, so no `Craft.initUiElements()` pass is required — which is
+   *   what makes this safe to call on chips fetched over AJAX.
+   * - The legacy jQuery `disclosureMenu()` shape (old `div.chip`/card
+   *   markup, or a plugin that still renders it that way).
+   *
+   * When neither shape is present yet (e.g. the chip's action menu was
+   * disabled at render time), a new `<craft-action-menu>` is built if a
+   * recognized container exists to hang it on; otherwise the legacy
+   * button + disclosure-menu markup is built from scratch, matching the
+   * pre-existing fallback.
+   *
    * @param {jQuery|HTMLElement} chip
    * @param {Array} actions
    * @param {boolean} [prepend]
@@ -2481,30 +2457,49 @@ $.extend(Craft, {
       return;
     }
 
-    // Try old-style chip/card containers first
-    let $actions = $(chip).find(
-      '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
-    );
+    // Whichever action container already exists: the modern craft-chip's
+    // `[slot="suffix"]`, or the (chip or card) `*-actions` container from
+    // either markup generation.
+    const $container = $(chip)
+      .find(
+        '> [slot="suffix"], > .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
+      )
+      .first();
 
-    let $actionMenuBtn;
-
-    if ($actions.length) {
-      // Old div.chip — look for existing .action-btn
-      $actionMenuBtn = $actions.find('.action-btn').removeClass('hidden');
-    } else {
-      // New craft-chip — look in [slot="suffix"] for an existing disclosure trigger
-      const $suffixSlot = $(chip).children('[slot="suffix"]');
-      if ($suffixSlot.length) {
-        $actions = $suffixSlot;
-        $actionMenuBtn = $actions
-          .find('[data-disclosure-trigger]')
-          .first()
-          .removeClass('hidden');
-      }
+    // An existing modern menu — the common case for anything rendered by
+    // `ElementHtml::componentActionMenu()`.
+    let $actionMenu = $container.find('> craft-action-menu').first();
+    if ($actionMenu.length) {
+      this._addActionsToActionMenu($actionMenu.get(0), actions, prepend);
+      return;
     }
 
-    if (!$actionMenuBtn?.length) {
-      // No existing action button — create one and wire it up
+    // An existing legacy trigger — old markup, or a plugin that still
+    // renders the disclosure-menu shape.
+    let $actionMenuBtn = $container
+      .find('.action-btn, [data-disclosure-trigger]')
+      .first()
+      .removeClass('hidden');
+
+    if (!$actionMenuBtn.length) {
+      if ($container.length) {
+        // A recognized container exists but has no menu yet — build a
+        // modern one.
+        $actionMenu = this._buildActionMenu().appendTo($container);
+        this._addActionsToActionMenu($actionMenu.get(0), actions, prepend);
+        return;
+      }
+
+      // No container at all — very old/custom markup. Build the legacy
+      // button + disclosure menu from scratch.
+      console.warn(
+        'A chip was given actions without an action container, so a deprecated ' +
+          'disclosure menu was built for it. Render the chip with a ' +
+          '`<div slot="suffix">` (as `craft-chip` and ' +
+          '`ElementHtml::chipHtml()` do) to get a `craft-action-menu` instead.',
+        chip
+      );
+
       const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
       const labelId = `${menuId}-label`;
       const $label = $('<label/>', {
@@ -2525,17 +2520,9 @@ $.extend(Craft, {
         class: 'menu menu--disclosure',
       });
 
-      if ($actions?.length) {
-        // Append into the found container (old chip-actions or [slot="suffix"])
-        $label.appendTo($actions);
-        $actionMenuBtn.appendTo($actions);
-        $menu.appendTo($actions);
-      } else {
-        // No container found — create a chip-actions div and append to the chip
-        const $newContainer = $('<div/>', {class: 'chip-actions'});
-        $newContainer.append($label, $actionMenuBtn, $menu);
-        $(chip).append($newContainer);
-      }
+      const $newContainer = $('<div/>', {class: 'chip-actions'});
+      $newContainer.append($label, $actionMenuBtn, $menu);
+      $(chip).append($newContainer);
     }
 
     const disclosureMenu = $actionMenuBtn
@@ -2564,6 +2551,131 @@ $.extend(Craft, {
     }
 
     Craft.initUiElements(disclosureMenu.$container);
+  },
+
+  /**
+   * Builds a new (empty) `<craft-action-menu>` with the standard "Actions"
+   * invoker — the same markup `ElementHtml::componentActionMenu()` renders —
+   * for chips/cards whose action menu wasn't pre-rendered (e.g.
+   * `showActionMenu: false`) but still need actions added client-side.
+   *
+   * @returns {jQuery}
+   */
+  _buildActionMenu() {
+    const $invoker = $('<craft-button/>', {
+      type: 'button',
+      slot: 'invoker',
+      appearance: 'plain',
+      variant: 'inherit',
+      size: 'small',
+      icon: '',
+      'aria-label': Craft.t('app', 'Actions'),
+    });
+    $('<craft-icon/>', {name: 'ellipsis'}).appendTo($invoker);
+
+    const $content = $('<div/>', {slot: 'content'});
+
+    return $('<craft-action-menu/>').append($invoker, $content);
+  },
+
+  /**
+   * Builds `craft-action-item`s from the same action-descriptor shape the
+   * jQuery `disclosureMenu()` plugin accepts (`icon`/`label`/`onActivate`/
+   * `callback`/`attributes`/`destructive`) and adds them to `actionMenu`'s
+   * `[slot="content"]` (creating it if missing). Safe actions come first,
+   * destructive ones after a separator, mirroring `disclosureMenuItems()`'s
+   * server-side grouping.
+   *
+   * Clicking an injected item closes the menu: `craft-action-menu` only
+   * auto-closes for default-slot items, and these live in the content
+   * container, so a `close-overlay` event is dispatched manually (mirrors
+   * `component-select.ts`'s Choose menu).
+   *
+   * @param {HTMLElement} actionMenu
+   * @param {Array} actions
+   * @param {boolean} [prepend]
+   * @returns {Promise<void>}
+   */
+  async _addActionsToActionMenu(actionMenu, actions, prepend = false) {
+    let $content = $(actionMenu).children('[slot="content"]').first();
+    if (!$content.length) {
+      $content = $('<div/>', {slot: 'content'}).appendTo(actionMenu);
+    }
+
+    const buildItem = async (action) => {
+      const item = document.createElement('craft-action-item');
+
+      if (action.destructive) {
+        item.setAttribute('variant', 'danger');
+      }
+
+      if (action.attributes) {
+        Craft.setElementAttributes(item, action.attributes);
+      }
+
+      if (action.icon) {
+        if (typeof action.icon === 'string') {
+          // A `data-icon`-style icon *name* — craft-action-item resolves it
+          // itself via <craft-icon>.
+          item.setAttribute('icon', action.icon);
+        } else {
+          // An Element, or an (async) factory returning one (e.g.
+          // `Craft.ui.icon()`) — slot it in directly.
+          const icon =
+            typeof action.icon === 'function'
+              ? await action.icon()
+              : action.icon;
+          if (icon instanceof Element) {
+            icon.setAttribute('slot', 'icon');
+            item.append(icon);
+          }
+        }
+      }
+
+      if (action.label) {
+        item.append(document.createTextNode(action.label));
+      }
+
+      const handler = action.onActivate || action.callback;
+      item.addEventListener('click', () => {
+        if (!item.disabled) {
+          handler?.(item);
+        }
+        item.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+      });
+
+      return item;
+    };
+
+    const safeActions = actions.filter((a) => !a.destructive);
+    const destructiveActions = actions.filter((a) => a.destructive);
+
+    const [safeItems, destructiveItems] = await Promise.all([
+      Promise.all(safeActions.map(buildItem)),
+      Promise.all(destructiveActions.map(buildItem)),
+    ]);
+
+    const nodes = [...safeItems];
+
+    if (destructiveItems.length) {
+      if (safeItems.length || $content.children().length) {
+        const hr = document.createElement('hr');
+        hr.className = 'action-menu__separator';
+        Object.assign(hr.style, {
+          margin: '0',
+          border: '0',
+          borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
+        });
+        nodes.push(hr);
+      }
+      nodes.push(...destructiveItems);
+    }
+
+    if (prepend) {
+      $content.prepend(nodes);
+    } else {
+      $content.append(nodes);
+    }
   },
 
   /**
@@ -2954,12 +3066,6 @@ $.extend($.fn, {
     });
   },
 
-  infoicon: function () {
-    return this.each(function () {
-      new Craft.InfoIcon(this);
-    });
-  },
-
   /**
    * Sets the element as a container for a checkbox select.
    */
@@ -2982,47 +3088,6 @@ $.extend($.fn, {
         new Craft.FieldToggle(this);
       }
     });
-  },
-
-  lightswitch: function (settings, settingName, settingValue) {
-    // param mapping
-    if (settings === 'settings') {
-      if (typeof settingName === 'string') {
-        settings = {};
-        settings[settingName] = settingValue;
-      } else {
-        settings = settingName;
-      }
-
-      return this.each(function () {
-        var obj = $.data(this, 'lightswitch');
-        if (obj) {
-          obj.setSettings(settings);
-        }
-      });
-    } else {
-      if (!$.isPlainObject(settings)) {
-        settings = {};
-      }
-
-      return this.each(function () {
-        var thisSettings = $.extend({}, settings);
-
-        if (Garnish.hasAttr(this, 'data-value')) {
-          thisSettings.value = $(this).attr('data-value');
-        }
-
-        if (Garnish.hasAttr(this, 'data-indeterminate-value')) {
-          thisSettings.indeterminateValue = $(this).attr(
-            'data-indeterminate-value'
-          );
-        }
-
-        if (!$.data(this, 'lightswitch')) {
-          new Craft.LightSwitch(this, thisSettings);
-        }
-      });
-    }
   },
 
   nicetext: function () {
@@ -3255,4 +3320,27 @@ Garnish.NiceText.charsLeftHtml = (charsLeft) => {
 
 Garnish.$doc.ready(function () {
   Craft.initUiElements();
+});
+
+// Legacy compat: a lot of core action-menu items (Asset, Entry, User, Field,
+// Matrix, …) still attach custom behavior to a menu item via
+// `$('#' + id).on('activate', ...)` — the old `Garnish.DisclosureMenu`
+// item-selection event. `craft-action-item`s rendered by
+// `ElementHtml::componentActionMenu()` keep that same `id`, so a single
+// delegated listener re-dispatches a native click as `activate` for
+// anything still listening. It's a document-level delegate (not a
+// `Craft.initUiElements()` pass), so it keeps working for fetched/injected
+// chips too — items with no `activate` listener just get a harmless no-op
+// trigger.
+//
+// When the legacy Garnish bundle is loaded, its `$.event.special.activate`
+// already synthesizes `activate` from clicks on any element with a jQuery
+// `activate` listener (its setup binds per-element click handlers at bind
+// time), so re-triggering here would fire the consumer twice — e.g. one
+// click on a field chip's "Field settings" item opening two slideouts.
+// Only bridge when that special event is absent.
+$(document).on('click', 'craft-action-item[id]', function () {
+  if (!$.event.special.activate) {
+    $(this).trigger('activate');
+  }
 });

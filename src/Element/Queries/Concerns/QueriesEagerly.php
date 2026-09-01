@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 trait QueriesEagerly
 {
     /**
-     * @var string|array|null The eager-loading declaration.
+     * @var string|array<array-key, mixed>|null The eager-loading declaration.
      *
      * See [Eager-Loading Elements](https://craftcms.com/docs/5.x/development/eager-loading.html) for supported syntax options.
      *
@@ -47,6 +47,7 @@ trait QueriesEagerly
      */
     public bool $eagerly = false;
 
+    /** @var string[] */
     private array $eagerLoadCriteriaExclusions = [];
 
     protected function initQueriesEagerly(): void
@@ -87,6 +88,7 @@ trait QueriesEagerly
      *     ->all();
      * ```
      */
+    /** @param array<array-key, mixed>|string|null $value */
     public function with(array|string|null $value): static
     {
         $this->with = $value;
@@ -97,6 +99,7 @@ trait QueriesEagerly
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements, in addition to the elements that were already specified by [[with()]]..
      */
+    /** @param array<array-key, mixed>|string|null $value */
     public function andWith(array|string|null $value): static
     {
         if (empty($this->with)) {
@@ -145,6 +148,7 @@ trait QueriesEagerly
         return $this;
     }
 
+    /** @param string[]|string $criteria */
     public function excludeEagerLoadCriteria(array|string $criteria): static
     {
         $criteria = is_array($criteria) ? $criteria : [$criteria];
@@ -198,6 +202,10 @@ trait QueriesEagerly
         return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle) !== null;
     }
 
+    /**
+     * @param  array<string, mixed>  $criteria
+     * @return Collection<int, ElementInterface>|int|null
+     */
     protected function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
     {
         if (

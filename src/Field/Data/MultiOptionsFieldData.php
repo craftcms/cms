@@ -7,13 +7,14 @@ namespace CraftCms\Cms\Field\Data;
 use ArrayObject;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
+/** @extends ArrayObject<int, OptionData> */
 class MultiOptionsFieldData extends ArrayObject
 {
-    /** @var OptionData[] */
+    /** @var list<OptionData> */
     private array $_options = [];
 
     /**
-     * @return OptionData[]
+     * @return list<OptionData>
      */
     #[AllowedInSandbox]
     public function getOptions(): array
@@ -22,7 +23,7 @@ class MultiOptionsFieldData extends ArrayObject
     }
 
     /**
-     * @param  OptionData[]  $options
+     * @param  list<OptionData>  $options
      */
     public function setOptions(array $options): void
     {
@@ -35,7 +36,6 @@ class MultiOptionsFieldData extends ArrayObject
         $value = (string) $value;
 
         foreach ($this as $selectedValue) {
-            /** @var OptionData $selectedValue */
             if ($value === $selectedValue->value) {
                 return true;
             }

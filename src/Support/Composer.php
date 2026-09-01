@@ -70,6 +70,8 @@ class Composer
 
     /**
      * Returns the Composer config defined by composer.json.
+     *
+     * @return array<string, mixed>
      */
     public function getConfig(): array
     {
@@ -83,7 +85,7 @@ class Composer
     /**
      * Installs a given set of packages with Composer.
      *
-     * @param  array|null  $requirements  Package name/version pairs, or set to null to run the equivalent of `composer install`
+     * @param  array<string, string|false>|null  $requirements  Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param  callable|null  $callback  The callback that should be passed to `Process::run()`.
      *
      * @throws Throwable if something goes wrong
@@ -278,6 +280,8 @@ class Composer
 
     /**
      * Updates the composer.json file with new requirements
+     *
+     * @param  array<string, string|false>  $requirements
      */
     private function updateRequirements(string $jsonPath, array $requirements): void
     {
@@ -302,7 +306,10 @@ class Composer
         Json::encodeToFile($jsonPath, $config);
     }
 
-    public function sortPackages(&$packages): void
+    /**
+     * @param  array<string, string>  $packages
+     */
+    public function sortPackages(array &$packages): void
     {
         // Adapted from JsonManipulator::sortPackages()
         uksort($packages, fn ($a, $b) => strnatcmp($this->prefixPackage($a), $this->prefixPackage($b)));
@@ -329,6 +336,7 @@ class Composer
     }
 
     /**
+     * @param  array<string, mixed>  $config
      * @return int|string|false The key in `$config['repositories']` referencing composer.craftcms.com
      */
     private function findCraftRepo(array $config): int|string|false

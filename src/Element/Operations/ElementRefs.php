@@ -122,12 +122,37 @@ readonly class ElementRefs
 
         $targetIds = [];
         $resolvedRefs = [];
+        $numericRefs = [];
 
         foreach ($matches as $match) {
+            if (ctype_digit($match['ref'])) {
+                $elementType = $this->elements->getElementTypeByRefHandle($match['elementType']);
+                $siteId = $this->siteIdForReference($match['site'] ?? null, $defaultSiteId);
+
+                if ($elementType !== null && $siteId !== false) {
+                    $numericRefs[$siteId ?? '*'][$elementType][(int) $match['ref']] = true;
+                }
+
+                continue;
+            }
+
             $targetId = $this->targetIdForRefTag($match, $defaultSiteId, $resolvedRefs);
 
             if ($targetId !== null) {
                 $targetIds[$targetId] = true;
+            }
+        }
+
+        foreach ($numericRefs as $siteId => $refsByType) {
+            foreach ($refsByType as $elementType => $refs) {
+                $query = $this->elements->createElementQuery($elementType)
+                    ->siteId($siteId === '*' ? null : $siteId)
+                    ->status(null)
+                    ->id(array_keys($refs));
+
+                foreach ($query->all() as $element) {
+                    $targetIds[$element->id] = true;
+                }
             }
         }
 
@@ -157,6 +182,10 @@ readonly class ElementRefs
         }, $str) ?? $str;
     }
 
+    /**
+     * @param  array<string|int, string>  $matches
+     * @param  array<string, int|null>  $resolvedRefs
+     */
     private function targetIdForRefTag(array $matches, ?int $defaultSiteId, array &$resolvedRefs = []): ?int
     {
         $elementType = $this->elements->getElementTypeByRefHandle($matches['elementType']);
@@ -173,8 +202,9 @@ readonly class ElementRefs
 
         $ref = $matches['ref'];
 
+        $cacheKey = sprintf('%s:%s:%s', $elementType, $siteId ?? '*', $ref);
+
         if (! ctype_digit((string) $ref)) {
-            $cacheKey = sprintf('%s:%s:%s', $elementType, $siteId ?? '*', $ref);
 
             if (isset($resolvedRefs[$cacheKey])) {
                 return $resolvedRefs[$cacheKey];

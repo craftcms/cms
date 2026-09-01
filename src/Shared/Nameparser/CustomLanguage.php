@@ -8,16 +8,19 @@ use TheIconic\NameParser\LanguageInterface;
 
 readonly class CustomLanguage implements LanguageInterface
 {
+    /** @var array<string, string> */
     private array $suffixes;
 
+    /** @var array<string, string> */
     private array $salutations;
 
+    /** @var array<string, string> */
     private array $lastNamePrefixes;
 
     /**
-     * @param  string[]  $suffixes
-     * @param  string[]  $salutations
-     * @param  string[]  $lastNamePrefixes
+     * @param  array<int|string, string>  $suffixes
+     * @param  array<int|string, string>  $salutations
+     * @param  array<int|string, string>  $lastNamePrefixes
      */
     public function __construct(array $suffixes, array $salutations, array $lastNamePrefixes)
     {
@@ -26,6 +29,10 @@ readonly class CustomLanguage implements LanguageInterface
         $this->lastNamePrefixes = $this->normalizeKeys($lastNamePrefixes);
     }
 
+    /**
+     * @param  array<int|string, string>  $strings
+     * @return array<string, string>
+     */
     private function normalizeKeys(array $strings): array
     {
         $normalized = [];
@@ -39,16 +46,19 @@ readonly class CustomLanguage implements LanguageInterface
         return $normalized;
     }
 
+    /** @return array<string, string> */
     public function getSuffixes(): array
     {
         return $this->suffixes;
     }
 
+    /** @return array<string, string> */
     public function getSalutations(): array
     {
         return $this->salutations;
     }
 
+    /** @return array<string, string> */
     public function getLastnamePrefixes(): array
     {
         return $this->lastNamePrefixes;

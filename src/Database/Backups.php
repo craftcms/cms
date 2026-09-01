@@ -58,6 +58,7 @@ final readonly class Backups
         return $path;
     }
 
+    /** @param string[]|null $ignoreTables */
     public function backup(
         ?Connection $connection = null,
         ?string $backupFormat = null,
@@ -75,6 +76,7 @@ final readonly class Backups
         return $file;
     }
 
+    /** @param string[]|null $ignoreTables */
     public function backupTo(
         string $filePath,
         ?Connection $connection = null,
@@ -129,6 +131,7 @@ final readonly class Backups
         ));
     }
 
+    /** @param string[] $ignoreTables */
     private function resolveBackupCommand(Connection $connection, string $filePath, ?string $backupFormat, array $ignoreTables): string
     {
         return $this->resolveCommand(
@@ -188,6 +191,7 @@ final readonly class Backups
         return $command;
     }
 
+    /** @param string[] $ignoreTables */
     private function defaultBackupCommand(Connection $connection, string $filePath, ?string $backupFormat, array $ignoreTables): string
     {
         return match (true) {
@@ -236,6 +240,7 @@ final readonly class Backups
         return str_replace(array_keys($tokens), $tokens, $command);
     }
 
+    /** @return array<string, string> */
     private function processEnv(Connection $connection): array
     {
         if (! $connection->isPgsql()) {
@@ -249,6 +254,7 @@ final readonly class Backups
         ];
     }
 
+    /** @param array<string, string> $env */
     private function runShellCommand(string $command, array $env = []): void
     {
         $process = Process::fromShellCommandline($command, env: $env ?: null);
@@ -327,6 +333,7 @@ final readonly class Backups
         };
     }
 
+    /** @return array{database: string, host: string, port: string, username: string, password: string, schema: string} */
     private function getConnectionConfig(Connection $connection): array
     {
         return [

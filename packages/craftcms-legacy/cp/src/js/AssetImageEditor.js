@@ -929,18 +929,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       });
 
-      // Straighten slider
-      this.straighteningInput = new Craft.SlideRuleInput('slide-rule', {
-        onStart: () => {
-          this._showGrid();
-        },
-        onChange: (slider) => {
-          this.straighten(slider);
-        },
-        onEnd: () => {
-          this._hideGrid();
-          this._cleanupFocalPointAfterStraighten();
-        },
+      // Straighten slider — the <craft-slide-rule> web component (replaces the
+      // legacy Craft.SlideRuleInput), driven via its start/change/end events.
+      this.straighteningInput = document.getElementById('slide-rule');
+      this.straighteningInput.addEventListener('start', () => {
+        this._showGrid();
+      });
+      this.straighteningInput.addEventListener('change', () => {
+        this.straighten(this.straighteningInput);
+      });
+      this.straighteningInput.addEventListener('end', () => {
+        this._hideGrid();
+        this._cleanupFocalPointAfterStraighten();
       });
 
       // Cropper scale modifier key
@@ -1406,7 +1406,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
 
         var editorCenter = {x: this.editorWidth / 2, y: this.editorHeight / 2};
-        this.straighteningInput.setValue(-this.imageStraightenAngle);
+        this.straighteningInput.value = -this.imageStraightenAngle;
         this.imageStraightenAngle = -this.imageStraightenAngle;
         var properties = {
           angle: this.viewportRotation + this.imageStraightenAngle,
@@ -1482,7 +1482,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     /**
      * Perform the straightening with input slider.
      *
-     * @param {Craft.SlideRuleInput} slider
+     * @param {HTMLElement} slider The <craft-slide-rule> element (reads `.value`).
      */
     straighten: function (slider) {
       if (!this.animationInProgress) {
@@ -1966,7 +1966,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      */
     hide: function () {
       this.removeAllListeners();
-      this.straighteningInput.removeAllListeners();
+      // The <craft-slide-rule> component manages its own listeners; the editor's
+      // start/change/end handlers persist with the element.
       Garnish.$bod.removeClass('no-scroll');
       this.base();
     },

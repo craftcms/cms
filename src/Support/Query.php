@@ -110,7 +110,7 @@ readonly class Query
      *
      * @param  Builder  $query  The query builder to apply the param to.
      * @param  string|Expression  $column  The database column that the param is targeting.
-     * @param  string|int|array  $param  The param value(s).
+     * @param  string|int|array<array-key, mixed>  $param  The param value(s).
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param  bool  $caseInsensitive  Whether the resulting condition should be case-insensitive
@@ -328,7 +328,7 @@ readonly class Query
      *
      * @param  Builder  $query  The query builder to apply the param to.
      * @param  string|Expression  $column  The database column that the param is targeting.
-     * @param  string|array|DateTimeInterface  $value  The param value
+     * @param  string|array<array-key, mixed>|DateTimeInterface  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      */
@@ -376,7 +376,7 @@ readonly class Query
      * @param  Builder  $query  The query builder to apply the param to.
      * @param  string|Expression  $column  The database column that the param is targeting.
      * @param  string  $currency  The currency code to use for the money object.
-     * @param  string|array|Money  $value  The param value
+     * @param  string|array<array-key, mixed>|Money  $value  The param value
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      */
@@ -764,6 +764,7 @@ readonly class Query
     /**
      * Prepares an array or object’s values to be sent to the database.
      */
+    /** @return array<array-key, mixed> */
     public static function prepareValuesForDb(mixed $values): array
     {
         // Normalize to an array

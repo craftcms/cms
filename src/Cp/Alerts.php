@@ -118,7 +118,7 @@ readonly class Alerts
             $this->generalConfig->allowAdminChanges &&
             $this->projectConfig->getHadFileWriteIssues()
         ) {
-            $alerts[] = t('Your {folder} folder isn\'t writable.', [
+            $alerts[] = t('Your {folder} folder isn’t writable.', [
                 'folder' => "config/{$this->projectConfig->folderName}/",
             ]);
         }
@@ -156,6 +156,7 @@ readonly class Alerts
         return $alerts;
     }
 
+    /** @param array<string, mixed> $tagInfo */
     private static function alertTagHtml(array $tagInfo): string
     {
         if ($tagInfo['type'] === 'text') {

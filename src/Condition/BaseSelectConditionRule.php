@@ -21,6 +21,8 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the selectable options in the select input.
+     *
+     * @return array<int|string, string|array{value: string, label: string}>
      */
     abstract protected function options(): array;
 
@@ -57,6 +59,8 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the valid option values.
+     *
+     * @return string[]
      */
     private function _validValues(): array
     {

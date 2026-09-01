@@ -21,6 +21,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 #[Scoped]
 class ElementRequest extends FormRequest
 {
+    /** @var array<string, mixed> */
     private array $overrides = [];
 
     private bool $checkForProvisionalDraft = false;
@@ -34,6 +35,7 @@ class ElementRequest extends FormRequest
 
     public ?ElementInterface $element = null;
 
+    /** @return array<string, list<string>> */
     public function rules(): array
     {
         $fieldsLocation = $this->input('fieldsLocation', 'fields');
@@ -68,8 +70,6 @@ class ElementRequest extends FormRequest
             'provisional' => ['exclude'],
             'dropProvisional' => ['exclude'],
             'addAnother' => ['exclude'],
-            'visibleLayoutElements' => ['exclude'],
-            'staticLayoutElements' => ['exclude'],
             'selectedTab' => ['exclude'],
             'applyParams' => ['exclude'],
             'prevalidate' => ['exclude'],
@@ -83,6 +83,7 @@ class ElementRequest extends FormRequest
         ];
     }
 
+    /** @param array<string, mixed> $overrides */
     public function element(array $overrides = [], bool $checkForProvisionalDraft = false, bool $strictSite = true): ElementInterface|Response|null
     {
         $this->overrides = $overrides;
@@ -116,19 +117,27 @@ class ElementRequest extends FormRequest
             return null;
         }
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         abort_unless($this->craftUser()->can('view', $element), 403, 'User not authorized to view this element.');
 
+        // When site resolution is non-strict, the element may have been resolved
+        // in a fallback site (via preferSites) rather than the requested one. In
+        // that case redirect to its canonical edit URL so the URL reflects the
+        // actual site. `$siteId` here is the list of editable sites used for the
+        // query, so compare against the preferred (requested) site instead.
         if (
             ! $this->strictSite &&
-            $element->siteId !== $siteId &&
+            $preferSites !== null &&
+            ! in_array($element->siteId, $preferSites, true) &&
             ! $this->wantsJson()
         ) {
             return redirect($element->getCpEditUrl());
         }
 
-        if ($element instanceof ElementInterface) {
-            $this->element = $element;
-        }
+        $this->element = $element;
 
         return $element;
     }

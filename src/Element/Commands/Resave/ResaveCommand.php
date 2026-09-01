@@ -120,6 +120,12 @@ abstract class ResaveCommand extends Command
      */
     protected function validateResaveOptions(): bool
     {
+        if ((int) $this->option('batch-size') < 1) {
+            $this->components->error('--batch-size must be at least 1.');
+
+            return false;
+        }
+
         // Normalize drafts/provisionalDrafts/revisions
         foreach (['drafts', 'provisional-drafts', 'revisions'] as $optionName) {
             $value = $this->optionalOption($optionName);

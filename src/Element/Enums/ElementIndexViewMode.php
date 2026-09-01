@@ -31,7 +31,7 @@ enum ElementIndexViewMode: string
     public function icon(): string
     {
         return match ($this) {
-            self::Cards => 'element-cards',
+            self::Cards => 'custom-icons/element-cards',
             self::Structure => I18N::getLocale()->getOrientation() === 'rtl'
                 ? 'structurertl'
                 : 'structure',
@@ -40,6 +40,7 @@ enum ElementIndexViewMode: string
         };
     }
 
+    /** @return array{mode: string, title: string, icon: string} */
     public function toArray(): array
     {
         return [

@@ -87,6 +87,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         }
     }
 
+    /** @var array<string, mixed> */
     public array $config {
         get => $this->getConfig();
     }
@@ -99,9 +100,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         parent::__construct($config);
 
-        if (! isset($this->uid)) {
-            $this->uid = Str::uuid()->toString();
-        }
+        $this->uid ??= Str::uuid()->toString();
     }
 
     public static function supportsProjectConfig(): bool
@@ -134,6 +133,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return null;
     }
 
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [
@@ -150,6 +150,8 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
     /**
      * Returns the operators that should be allowed for this rule.
+     *
+     * @return string[]
      */
     protected function operators(): array
     {

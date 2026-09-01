@@ -12,6 +12,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
  */
 class TransformGenerating
 {
+    /** @param ImageTransform|string|array<string, bool|float|int|string|null>|null $transform */
     public function __construct(
         public Asset $asset,
         public ImageTransform|string|array|null $transform,

@@ -40,8 +40,8 @@ these seams:
 
 - **`Craft.Grid`** on `.fld-tabs` — instantiated and fed via `$(...)`. _TODO:_ a
   later pass can replace it with CSS Grid (out of scope here).
-- **`Craft.SlidePicker`** and **`Craft.Slideout` / `Craft.CpScreenSlideout`** —
-  instantiated at the seam; their jQuery `$container` is unwrapped with `[0]`.
+- **`Craft.Slideout` / `Craft.CpScreenSlideout`** — instantiated at the seam;
+  their jQuery `$container` is unwrapped with `[0]`.
 - **`slideout.$container.serialize()`** (jQuery-only form serialize) and the
   `Craft.ui.addErrorsToField`/`clearErrorsFromField` error path require jQuery
   fields.

@@ -64,6 +64,7 @@ class FormatDateTime extends Directive
         return 'formatDateTime';
     }
 
+    /** @param array<string, mixed> $arguments */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         if (! $value instanceof DateTimeInterface) {

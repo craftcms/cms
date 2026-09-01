@@ -59,6 +59,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public DefaultPlacement $defaultPlacement = DefaultPlacement::End;
 
+    /** @var array<int, array{label: string, urlFormat: string}>|null */
     public ?array $previewTargets = null;
 
     public ?string $uid = null;
@@ -74,6 +75,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
     /** @var SectionSiteSettings[] */
     private ?array $_siteSettings = null;
 
+    /** @var EntryType[] */
     public array $entryTypes {
         get => $this->getEntryTypes();
         set {
@@ -81,6 +83,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
         }
     }
 
+    /** @var EntryType[]|null */
     private ?array $_entryTypes = null;
 
     public function __construct(
@@ -250,6 +253,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
         return 'newspaper';
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|array<string, scalar|null>|null>|null> */
     public function getConfig(): array
     {
         $config = [

@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Database\Query\Builder;
@@ -37,6 +38,7 @@ class AssetQuery extends ElementQuery
     #[Override]
     protected string $table = Table::ASSETS;
 
+    /** @var array<string, int> */
     #[Override]
     protected array $defaultOrderBy = [
         'assets.dateCreated' => SORT_DESC,
@@ -57,9 +59,13 @@ class AssetQuery extends ElementQuery
      */
     public ?bool $savable = null;
 
-    public function __construct(array $config = [])
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  class-string<Asset>  $elementClass
+     */
+    public function __construct(array $config = [], string $elementClass = Asset::class)
     {
-        parent::__construct(Asset::class, $config);
+        parent::__construct($elementClass, $config);
 
         $this->query->addSelect([
             'assets.volumeId as volumeId',
@@ -70,7 +76,6 @@ class AssetQuery extends ElementQuery
             'assets.width as width',
             'assets.height as height',
             'assets.size as size',
-            'assets.alt as alt',
             'assets.focalPoint as focalPoint',
             'assets.keptFile as keptFile',
             'assets.dateModified as dateModified',
@@ -186,15 +191,13 @@ class AssetQuery extends ElementQuery
         });
     }
 
+    /** @param array<string, mixed> $row */
     #[Override]
     public function createElement(array $row): ElementInterface
     {
-        // Use the site-specific alt text, if set
+        // Use the site-specific alt text
         $siteAlt = Arr::pull($row, 'siteAlt');
-
-        if ($siteAlt !== null) {
-            $row['alt'] = $siteAlt;
-        }
+        $row['alt'] = $siteAlt;
 
         return parent::createElement($row);
     }
@@ -213,6 +216,7 @@ class AssetQuery extends ElementQuery
         return $tags;
     }
 
+    /** @return Collection<int, FieldLayout> */
     #[Override]
     protected function fieldLayouts(): Collection
     {

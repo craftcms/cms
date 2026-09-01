@@ -523,7 +523,9 @@ function createEntryTestUser(array $permissions): User
         }
     };
 
-    $user->id = random_int(1, 10000);
+    // Below the file's hardcoded 999 "peer" author/creator id, so a random
+    // user never accidentally becomes its own peer and flips these assertions.
+    $user->id = random_int(1, 998);
     $user->grantedPermissions = $permissions;
 
     return $user;

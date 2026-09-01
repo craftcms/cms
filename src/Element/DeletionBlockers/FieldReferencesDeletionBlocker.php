@@ -16,6 +16,10 @@ class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
 {
     private readonly int $referenceCount;
 
+    /**
+     * @param  ElementCollection<int, covariant ElementInterface>  $elements
+     * @param  array<string, mixed>  $config
+     */
     public function __construct(
         ElementCollection $elements,
         bool $hardDelete,
@@ -72,6 +76,7 @@ class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
             ->join('');
     }
 
+    /** @return list<array<string, mixed>> */
     public function getActions(): array
     {
         $targetElementType = $this->targetElementType();

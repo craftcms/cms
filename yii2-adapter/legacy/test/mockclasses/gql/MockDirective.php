@@ -6,6 +6,7 @@ use craft\gql\base\Directive;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class MockDirective
@@ -21,6 +22,12 @@ class MockDirective extends Directive
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
+            ],
+            'args' => [
+                [
+                    'name' => 'prefix',
+                    'type' => Type::string(),
+                ],
             ],
         ]);
     }

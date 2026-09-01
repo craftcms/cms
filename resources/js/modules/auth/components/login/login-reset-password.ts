@@ -1,7 +1,8 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
-import {actionClient, t} from '@craftcms/cp';
+import {actionClient, t} from '@craftcms/ui';
 import componentStyles from './login-form.styles.js';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 
 /**
  * @summary Password-reset request form. Fires `reset-back` when the user
@@ -35,6 +36,12 @@ export default class CraftLoginResetPassword extends LitElement {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
 
+  #setError(message: string) {
+    const trimmedMessage = message.trim();
+    this._error = trimmedMessage;
+    useAnnouncer().announce(trimmedMessage);
+  }
+
   async #onSubmit(event: Event) {
     event.preventDefault();
 
@@ -47,6 +54,9 @@ export default class CraftLoginResetPassword extends LitElement {
       });
 
       const dialog = document.createElement('craft-dialog');
+      // Labelled so the dialog has an accessible name; without one it renders a
+      // header for the close button alone and exposes no name at all.
+      dialog.setAttribute('label', t('Check your email'));
       dialog.setAttribute('open', '');
       const msg = document.createElement('p');
       msg.textContent = t(
@@ -55,7 +65,9 @@ export default class CraftLoginResetPassword extends LitElement {
       dialog.appendChild(msg);
       document.body.appendChild(dialog);
     } catch (e: any) {
-      this._error = e?.response?.data?.message ?? t('A server error occurred.');
+      this.#setError(
+        e?.response?.data?.message ?? t('A server error occurred.')
+      );
     } finally {
       this._busy = false;
     }
@@ -116,7 +128,7 @@ export default class CraftLoginResetPassword extends LitElement {
 
         <craft-button
           type="button"
-          appearance="plain"
+          variant="link"
           size="small"
           @click="${this.#onBack}"
         >

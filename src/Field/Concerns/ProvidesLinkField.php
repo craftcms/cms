@@ -10,15 +10,34 @@ use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Control;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Template;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @property list<string> $types
+ * @property array<string, array<string, mixed>> $typeSettings
+ * @property bool $showLabelField
+ * @property list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> $advancedFields
+ * @property list<string> $linkSettingsTypes
+ * @property array<string, array<string, mixed>> $linkSettingsTypeSettings
+ * @property bool $linkSettingsShowLabelField
+ * @property list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> $linkSettingsAdvancedFields
+ */
 trait ProvidesLinkField
 {
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     protected function prepareLinkSettingsConfig(
         array $config,
     ): array {
@@ -43,7 +62,7 @@ trait ProvidesLinkField
             ] as $setting) {
                 $attribute = $attributes[$setting];
 
-                if (array_key_exists($setting, $settings) && ! array_key_exists((string) $attribute, $config)) {
+                if (array_key_exists($setting, $settings)) {
                     $config[$attribute] = $settings[$setting];
                 }
             }
@@ -82,6 +101,7 @@ trait ProvidesLinkField
         return $config;
     }
 
+    /** @return array<string, list<string|Closure>> */
     protected function linkSettingsRules(): array
     {
         $typesAttribute = $this->namespacedAttribute('types');
@@ -121,6 +141,7 @@ trait ProvidesLinkField
         ];
     }
 
+    /** @return list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> */
     protected function supportedLinkAdvancedFields(): array
     {
         return [
@@ -135,6 +156,10 @@ trait ProvidesLinkField
         ];
     }
 
+    /**
+     * @param  list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'>|null  $fields
+     * @return list<array{label:string, labelHtml?:string, value:string}>
+     */
     protected function linkAdvancedFieldOptions(?array $fields = null): array
     {
         $fields ??= $this->supportedLinkAdvancedFields();
@@ -144,7 +169,7 @@ trait ProvidesLinkField
             'title' => t('Title Text'),
             'class' => t('Class Name'),
             'id' => t('ID'),
-            'rel' => Template::raw(t('Relation ({ex})', ['ex' => '<code>rel</code>'])),
+            'rel' => t('Relation ({ex})', ['ex' => 'rel']),
             'ariaLabel' => t('ARIA Label'),
             'download' => t('Download'),
         ];
@@ -155,6 +180,9 @@ trait ProvidesLinkField
                 $options[] = [
                     'label' => $labels[$field],
                     'value' => $field,
+                    ...($field === 'rel' ? [
+                        'labelHtml' => t('Relation ({ex})', ['ex' => '<code>rel</code>']),
+                    ] : []),
                 ];
             }
         }
@@ -162,33 +190,68 @@ trait ProvidesLinkField
         return $options;
     }
 
-    protected function linkSettingsProps(bool $readOnly): array
+    /** @return list<Node> */
+    protected function linkSettingsNodes(): array
     {
         $types = $this->orderedLinkSettingsTypes();
         $namespace = $this->linkSettingsNamespace();
-        $typeSettingsNamespace = $namespace === null
-            ? 'typeSettings'
-            : sprintf('%s[typeSettings]', $namespace);
-
-        return [
-            'advancedFieldOptions' => $this->linkAdvancedFieldOptions(),
-            'advancedFields' => $this->{$this->namespacedAttribute('advancedFields')},
-            'allowedTypes' => $this->{$this->namespacedAttribute('types')},
-            'field' => $this,
-            'linkTypeOptions' => $this->linkTypeOptions($types),
-            'linkTypeSettings' => $this->linkTypeSettingsHtml(
-                $types,
-                $this->configuredLinkTypesForSettings(),
-                $this->{$this->namespacedAttribute('typeSettings')},
-                $readOnly,
-                $typeSettingsNamespace,
-            ),
-            'namespace' => $namespace,
-            'readOnly' => $readOnly,
-            'showLabelField' => $this->{$this->namespacedAttribute('showLabelField')},
+        $prefix = $namespace === null ? '' : "{$namespace}.";
+        $configured = $this->configuredLinkTypesForSettings();
+        $typeSettings = $this->{$this->namespacedAttribute('typeSettings')};
+        $nodes = [
+            FormField::make(t('Allowed Link Types'))
+                ->instructions(t('The link types that should be available when inserting links.'))
+                ->required()
+                ->control(Choice::make("{$prefix}types")
+                    ->multiple()
+                    ->presentation(ChoicePresentation::Checkboxes)
+                    ->options($this->linkTypeOptions($types))
+                    ->value($this->{$this->namespacedAttribute('types')})),
         ];
+
+        foreach ($types as $typeId => $typeClass) {
+            $linkType = $configured[$typeId] ?? ComponentHelper::createComponent([
+                'type' => $typeClass,
+                'settings' => $typeSettings[$typeId] ?? [],
+            ], BaseLinkType::class);
+            $settings = $linkType->settingsNodes("{$prefix}typeSettings.{$typeId}");
+
+            if ($settings !== []) {
+                $nodes[] = Group::make("link-type-settings-{$typeId}", $settings)
+                    ->label($this->linkTypeSettingsLabel($typeClass))
+                    ->collapsible();
+            }
+        }
+
+        $nodes[] = FormField::make(t('Show the “Label” field'))
+            ->control(Lightswitch::make("{$prefix}showLabelField")
+                ->value($this->{$this->namespacedAttribute('showLabelField')}));
+        $nodes[] = FormField::make(t('Advanced Fields'))
+            ->instructions(t('Choose which advanced fields should be available when inserting links.'))
+            ->control(Choice::make("{$prefix}advancedFields")
+                ->multiple()
+                ->presentation(ChoicePresentation::Checkboxes)
+                ->options($this->linkAdvancedFieldOptions())
+                ->value($this->{$this->namespacedAttribute('advancedFields')}));
+
+        $this->groupLinkSettingsChanges($nodes);
+
+        return $nodes;
     }
 
+    /** @param list<Node> $nodes */
+    private function groupLinkSettingsChanges(array $nodes): void
+    {
+        foreach ($nodes as $node) {
+            $control = $node->getControl();
+            if ($control instanceof Control) {
+                $control->deltaGroupAtNamespace();
+            }
+            $this->groupLinkSettingsChanges($node->children());
+        }
+    }
+
+    /** @return list<array<string, mixed>> */
     protected function linkPickerConfig(): array
     {
         $availableTypes = Link::types();
@@ -209,7 +272,8 @@ trait ProvidesLinkField
             ->all();
     }
 
-    protected function orderedLinkSettingsTypes(): iterable
+    /** @return Collection<string, class-string<BaseLinkType>> */
+    protected function orderedLinkSettingsTypes(): Collection
     {
         $allTypes = Link::types();
         /** @var Collection<string, class-string<BaseLinkType>> $selectedTypes */
@@ -247,11 +311,18 @@ trait ProvidesLinkField
         return null;
     }
 
+    /** @return array<string, BaseLinkType> */
     protected function configuredLinkTypesForSettings(): array
     {
         return [];
     }
 
+    /**
+     * @return ($attribute is 'types' ? 'types'|'linkSettingsTypes' :
+     *     ($attribute is 'typeSettings' ? 'typeSettings'|'linkSettingsTypeSettings' :
+     *     ($attribute is 'showLabelField' ? 'showLabelField'|'linkSettingsShowLabelField' :
+     *     'advancedFields'|'linkSettingsAdvancedFields')))
+     */
     private function namespacedAttribute(string $attribute): string
     {
         $namespace = $this->linkSettingsNamespace();
@@ -259,6 +330,10 @@ trait ProvidesLinkField
         return $namespace === null ? $attribute : $namespace.ucfirst($attribute);
     }
 
+    /**
+     * @param  iterable<string, class-string<BaseLinkType>>  $types
+     * @return list<array{label:string, value:string}>
+     */
     protected function linkTypeOptions(iterable $types): array
     {
         $options = [];
@@ -270,37 +345,6 @@ trait ProvidesLinkField
         }
 
         return $options;
-    }
-
-    protected function linkTypeSettingsHtml(
-        iterable $types,
-        array $configuredLinkTypes,
-        array $typeSettings,
-        bool $readOnly,
-        string $namespace = 'typeSettings',
-    ): array {
-        $settings = [];
-
-        foreach ($types as $typeId => $typeClass) {
-            /** @var BaseLinkType $linkType */
-            $linkType = $configuredLinkTypes[$typeId] ?? ComponentHelper::createComponent([
-                'type' => $typeClass,
-                'settings' => $typeSettings[$typeId] ?? [],
-            ], BaseLinkType::class);
-            $html = InputNamespace::namespaceInputs(
-                fn () => $readOnly ? $linkType->getReadOnlySettingsHtml() : $linkType->getSettingsHtml(),
-                sprintf('%s[%s]', $namespace, $typeId),
-            );
-
-            if ($html !== null && $html !== '') {
-                $settings[$typeId] = [
-                    'html' => $html,
-                    'label' => $this->linkTypeSettingsLabel($typeClass),
-                ];
-            }
-        }
-
-        return $settings;
     }
 
     private function linkTypeSettingsLabel(string $type): string

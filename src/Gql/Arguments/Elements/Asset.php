@@ -9,9 +9,11 @@ use CraftCms\Cms\Gql\Arguments\ElementArguments;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\Volumes;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type ArgumentConfig from Argument */
 class Asset extends ElementArguments
 {
     #[Override]
@@ -98,12 +100,14 @@ class Asset extends ElementArguments
     }
 
     #[Override]
+    /** @return array<string, ArgumentConfig> */
     public static function getDraftArguments(): array
     {
         return [];
     }
 
     #[Override]
+    /** @return array<string, ArgumentConfig> */
     public static function getRevisionArguments(): array
     {
         return [];

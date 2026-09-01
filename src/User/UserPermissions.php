@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use Closure;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -26,7 +27,6 @@ use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
-use CraftCms\Cms\User\Events\UserPermissionsResolving;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
@@ -43,32 +43,47 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * Manages user permissions and registers additional permission groups.
+ *
+ * ```php
+ * public function boot(UserPermissions $userPermissions): void
+ * {
+ *     $userPermissions->registerPermissionGroup('plugin:my-plugin', fn () => new PermissionGroup(
+ *         handle: 'plugin:my-plugin',
+ *         heading: 'My Plugin',
+ *         permissions: collect([new Permission('manageMyPlugin', 'Manage My Plugin')]),
+ *     ));
+ * }
+ * ```
+ */
 #[Scoped]
 class UserPermissions
 {
     /**
-     * @var Collection<PermissionGroup>
-     *
-     * @see getAllPermissions()
-     */
-    private Collection $allPermissions;
-
-    /**
-     * @var Collection<string, string>
-     *
-     * @see validatePermission()
-     */
-    private Collection $permissionNamesByLowercase;
-
-    /**
-     * @var Collection<int, Collection<string>>
+     * @var Collection<int, Collection<int, string>>
      */
     private Collection $permissionsByGroupId;
 
     /**
-     * @var Collection<int, Collection<string>>
+     * @var Collection<int, Collection<int, string>>
      */
     private Collection $permissionsByUserId;
+
+    public function __construct(
+        private readonly PermissionGroupCatalog $permissionGroupCatalog,
+    ) {}
+
+    /** @param Closure(): (PermissionGroup|null) $factory */
+    public function registerPermissionGroup(string $handle, Closure $factory): void
+    {
+        $this->permissionGroupCatalog->register($handle, $factory);
+    }
+
+    public function removePermissionGroups(string ...$handles): void
+    {
+        $this->permissionGroupCatalog->remove(...$handles);
+    }
 
     /**
      * Returns all of the known permissions, divided into groups.
@@ -87,26 +102,20 @@ class UserPermissions
      * - `nested` _(optional)_ – An array of nested permissions, which can only be assigned if the parent
      *   permission is assigned.
      *
-     * @return Collection<PermissionGroup>
+     * @return Collection<int, PermissionGroup>
      */
     public function getAllPermissions(): Collection
     {
-        if (isset($this->allPermissions)) {
-            return $this->allPermissions;
-        }
+        $permissions = new Collection;
 
-        $this->allPermissions = new Collection;
+        $this->generalPermissions($permissions);
+        $this->userPermissions($permissions);
+        $this->sitePermissions($permissions);
+        $this->entryPermissions($permissions);
+        $this->volumePermissions($permissions);
+        $this->utilityPermissions($permissions);
 
-        $this->generalPermissions($this->allPermissions);
-        $this->userPermissions($this->allPermissions);
-        $this->sitePermissions($this->allPermissions);
-        $this->entryPermissions($this->allPermissions);
-        $this->volumePermissions($this->allPermissions);
-        $this->utilityPermissions($this->allPermissions);
-
-        event($event = new UserPermissionsResolving($this->allPermissions));
-
-        return $this->allPermissions = $event->permissions;
+        return $this->permissionGroupCatalog->apply($permissions);
     }
 
     /**
@@ -115,7 +124,7 @@ class UserPermissions
      * See [[getAllPermissions()]] for an explanation of what will be returned.
      *
      * @param  User|null  $user  The recipient of the permissions. If set, their current permissions will be included as well.
-     * @return Collection<PermissionGroup>
+     * @return Collection<int, PermissionGroup>
      */
     public function getAssignablePermissions(?User $user = null): Collection
     {
@@ -139,7 +148,7 @@ class UserPermissions
     /**
      * Returns all of a given user group's permissions.
      *
-     * @return Collection<string>
+     * @return Collection<int, string>
      */
     public function getPermissionsByGroupId(int $groupId): Collection
     {
@@ -151,14 +160,14 @@ class UserPermissions
                 ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
-                ->map(fn (string $permission) => $this->canonicalPermissionName($permission)),
+                ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
         );
     }
 
     /**
      * Returns all of the group permissions a given user has.
      *
-     * @return Collection<string>
+     * @return Collection<int, string>
      */
     public function getGroupPermissionsByUserId(int $userId): Collection
     {
@@ -173,7 +182,7 @@ class UserPermissions
             ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
-            ->map(fn (string $permission) => $this->canonicalPermissionName($permission));
+            ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
     }
 
     /**
@@ -189,6 +198,7 @@ class UserPermissions
      *
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
+    /** @param string[] $permissions */
     public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
         Edition::require(Edition::Team);
@@ -216,7 +226,7 @@ class UserPermissions
      * Returns all of a given user’s permissions.
      *
      *
-     * @return Collection<string>
+     * @return Collection<int, string>
      */
     public function getPermissionsByUserId(int $userId): Collection
     {
@@ -233,7 +243,7 @@ class UserPermissions
                         ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
                         ->where('p_u.userId', $userId)
                         ->pluck('p.name')
-                        ->map(fn (string $permission) => $this->canonicalPermissionName($permission));
+                        ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
                 } else {
                     $userPermissions = [];
                 }
@@ -245,12 +255,12 @@ class UserPermissions
 
     public function validatePermission(string $permission): bool
     {
-        return $this->permissionNamesByLowercase()->has(strtolower($permission));
+        return $this->permissionNamesByLowercase()->has(Str::lower($permission));
     }
 
     /**
-     * @param  Collection<Permission>  $permissions
-     * @return Collection<string>
+     * @param  Collection<int, Permission>  $permissions
+     * @return Collection<int, string>
      */
     private function collectPermissionNames(Collection $permissions): Collection
     {
@@ -282,6 +292,7 @@ class UserPermissions
      *
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
+    /** @param string[] $permissions */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
         Edition::require(Edition::Pro);
@@ -315,7 +326,6 @@ class UserPermissions
 
         // Cache the new permissions
         $this->permissionsByUserId ??= collect();
-        /** @var Collection<string> $userPermissions */
         $userPermissions = $groupPermissions->merge($permissions)->unique();
         $this->permissionsByUserId[$userId] = $userPermissions;
 
@@ -332,7 +342,9 @@ class UserPermissions
         // Ensure all user groups are ready to roll
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
-        $permissions = $event->newValue;
+        $permissions = is_array($event->newValue)
+            ? array_values(array_filter($event->newValue, is_string(...)))
+            : [];
         $userGroup = UserGroups::getGroupByUid($uid);
 
         // No group - no permissions to change.
@@ -348,7 +360,7 @@ class UserPermissions
         $groupPermissionVals = [];
 
         if ($permissions) {
-            $permissions = $this->canonicalPermissionNames((array) $permissions);
+            $permissions = $this->canonicalPermissionNames($permissions);
             $now = now();
 
             foreach ($permissions as $permissionName) {
@@ -372,19 +384,20 @@ class UserPermissions
         unset($this->permissionsByUserId);
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
     private function generalPermissions(Collection $permissions): void
     {
         $generalPermissions = collect([
             new Permission(
                 key: 'accessSiteWhenSystemIsOff',
-                label: t('Access the site when the system is off'),
+                label: t('Access the site when maintenance mode is enabled'),
             ),
         ]);
 
         $cpPermissions = collect([
             new Permission(
                 key: 'accessCpWhenSystemIsOff',
-                label: t('Access the control panel when the system is offline'),
+                label: t('Access the control panel when maintenance mode is enabled'),
             ),
             new Permission(
                 key: 'performUpdates',
@@ -417,11 +430,13 @@ class UserPermissions
         }
 
         $permissions->add(new PermissionGroup(
+            handle: 'general',
             heading: t('General'),
             permissions: $generalPermissions,
         ));
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
     private function userPermissions(Collection $permissions): void
     {
         $assignGroupPermissions = new Collection;
@@ -438,6 +453,7 @@ class UserPermissions
         }
 
         $permissions->add(new PermissionGroup(
+            handle: 'users',
             heading: t('Users'),
             permissions: collect([
                 new Permission(
@@ -479,6 +495,7 @@ class UserPermissions
         ));
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
     private function sitePermissions(Collection $permissions): void
     {
         if (! Sites::isMultiSite()) {
@@ -486,6 +503,7 @@ class UserPermissions
         }
 
         $permissions->add(new PermissionGroup(
+            handle: 'sites',
             heading: t('Sites'),
             permissions: Sites::getAllSites(true)->map(fn (Site $site) => new Permission(
                 key: "editSite:$site->uid",
@@ -496,6 +514,7 @@ class UserPermissions
         ));
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
     private function entryPermissions(Collection $permissions): void
     {
         $sections = Sections::getAllSections();
@@ -518,6 +537,7 @@ class UserPermissions
             [$section, $sectionPermission] = $result;
 
             return new PermissionGroup(
+                handle: "section:$section->uid",
                 heading: t('Section - {section}', [
                     'section' => t($section->name, category: 'site'),
                 ]),
@@ -666,6 +686,7 @@ class UserPermissions
         );
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
     private function volumePermissions(Collection $permissions): void
     {
         $volumes = Volumes::getAllVolumes();
@@ -678,6 +699,7 @@ class UserPermissions
 
         foreach ($volumes as $volume) {
             $permissions->add(new PermissionGroup(
+                handle: "volume:$volume->uid",
                 heading: t('Volume - {volume}', [
                     'volume' => t($volume->name, category: 'site'),
                 ]),
@@ -712,9 +734,11 @@ class UserPermissions
         }
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
     private function utilityPermissions(Collection $permissions): void
     {
         $permissions->add(new PermissionGroup(
+            handle: 'utilities',
             heading: t('Utilities'),
             permissions: app(Utilities::class)->getAllUtilityTypes()->map(function (string $class) {
                 /** @var class-string<Utility> $class */
@@ -736,9 +760,9 @@ class UserPermissions
     /**
      * Filters out any permissions that aren't assignable by the current user.
      *
-     * @param  Collection  $permissions  The original permissions
+     * @param  Collection<int, Permission>  $permissions  The original permissions
      * @param  User|null  $user  The recipient of the permissions. If set, their current permissions will be included as well.
-     * @return Collection The filtered permissions
+     * @return Collection<int, Permission> The filtered permissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
@@ -768,10 +792,10 @@ class UserPermissions
     /**
      * Filters out any orphaned permissions.
      *
-     * @param  array  $postedPermissions  The posted permissions.
-     * @param  array  $groupPermissions  Permissions the user is already assigned
-     *                                   to via their group, if we’re saving a user’s permissions.
-     * @return array The permissions we'll actually let them save.
+     * @param  string[]  $postedPermissions  The posted permissions.
+     * @param  string[]  $groupPermissions  Permissions the user is already assigned
+     *                                      to via their group, if we’re saving a user’s permissions.
+     * @return string[] The permissions we'll actually let them save.
      */
     private function filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array
     {
@@ -796,7 +820,10 @@ class UserPermissions
     /**
      * Iterates through a group of permissions, returning the ones that were selected.
      *
-     * @param  Collection<Permission>  $permissionsGroup
+     * @param  Collection<int, Permission>  $permissionsGroup
+     * @param  string[]  $postedPermissions
+     * @param  string[]  $groupPermissions
+     * @param  string[]  $filteredPermissions
      * @return bool Whether any permissions were added to $filteredPermissions
      */
     private function findSelectedPermissions(
@@ -844,9 +871,7 @@ class UserPermissions
      */
     private function getPermissionModelByName(string $permissionName): UserPermission
     {
-        $permissionName = $this->canonicalPermissionName($permissionName);
-
-        if ($permissionModel = UserPermission::whereIn('name', [$permissionName, strtolower($permissionName)])->first()) {
+        if ($permissionModel = UserPermission::whereIn('name', [$permissionName, Str::lower($permissionName)])->first()) {
             return $permissionModel;
         }
 
@@ -858,23 +883,28 @@ class UserPermissions
     /** @return Collection<string, string> */
     private function permissionNamesByLowercase(): Collection
     {
-        if (! isset($this->permissionNamesByLowercase)) {
-            $this->permissionNamesByLowercase = $this->getAllPermissions()
-                ->flatMap(fn (PermissionGroup $group) => $this->collectPermissionNames($group->permissions))
-                ->mapWithKeys(fn (string $permission) => [strtolower($permission) => $permission]);
-        }
-
-        return $this->permissionNamesByLowercase;
+        return $this->getAllPermissions()
+            ->flatMap(fn (PermissionGroup $group) => $this->collectPermissionNames($group->permissions))
+            ->mapWithKeys(fn (string $permission) => [Str::lower($permission) => $permission]);
     }
 
     private function canonicalPermissionName(string $permission): string
     {
-        return $this->permissionNamesByLowercase()->get(strtolower($permission), $permission);
+        return $this->permissionNamesByLowercase()->get(Str::lower($permission), $permission);
     }
 
+    /**
+     * @param  string[]  $permissions
+     * @return string[]
+     */
     private function canonicalPermissionNames(array $permissions): array
     {
-        return array_values(array_unique(array_map($this->canonicalPermissionName(...), $permissions)));
+        $permissionNamesByLowercase = $this->permissionNamesByLowercase();
+
+        return array_values(array_unique(array_map(
+            fn (string $permission) => $permissionNamesByLowercase->get(Str::lower($permission), $permission),
+            $permissions,
+        )));
     }
 
     private function createUserPermissionsQuery(): Builder
@@ -888,8 +918,6 @@ class UserPermissions
     public function reset(): void
     {
         unset(
-            $this->allPermissions,
-            $this->permissionNamesByLowercase,
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );

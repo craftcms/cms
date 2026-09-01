@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Models;
 
+use CraftCms\Cms\Database\Factories\EntryTypeFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
@@ -17,7 +18,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EntryType extends BaseModel
 {
+    /** @use HasFactory<EntryTypeFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {h} from 'vue';
-  import {t} from '@craftcms/cp';
-  import Pane from '@/common/components/Pane.vue';
+  import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -38,18 +37,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteToken(token: TokenData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete the “{name}” token?', {
-          name: token.name,
-        })
-      )
-    ) {
-      router.delete(destroy({tokenId: token.id}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<TokenData>();
   const table = useVueTable({
     get columns() {
@@ -67,7 +54,20 @@
           header: t('Expires'),
         }),
         columnHelper.actions(({row}) => [
-          h(DeleteButton, {onClick: () => deleteToken(row.original)}),
+          h(DeleteButton, {
+            confirm: t('Are you sure you want to delete the “{name}” token?', {
+              name: row.original.name,
+            }),
+            onClick: () =>
+              router
+                .optimistic<{tokens: {data: Array<TokenData>}}>(({tokens}) => ({
+                  tokens: {
+                    ...tokens,
+                    data: tokens.data.filter(({id}) => id !== row.original.id),
+                  },
+                }))
+                .delete(destroy({tokenId: row.original.id})),
+          }),
         ]),
       ];
     },
@@ -99,7 +99,7 @@
       >{{ t('New token') }}</CpLink
     >
   </LayoutSlot>
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No GraphQL tokens exist yet.')">
@@ -109,5 +109,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

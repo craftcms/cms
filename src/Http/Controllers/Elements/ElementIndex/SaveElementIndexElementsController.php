@@ -20,17 +20,20 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class SaveElementIndexElementsController
+class SaveElementIndexElementsController
 {
+    private ElementIndexRequest $request;
+
     use RespondsWithFlash;
 
     public function __construct(
-        private ElementIndexRequest $request,
         private Elements $elements,
     ) {}
 
-    public function __invoke(): Response
+    public function __invoke(ElementIndexRequest $request): Response
     {
+        $this->request = $request;
+
         $elementType = $this->request->elementType();
 
         $this->request->validate([
@@ -79,8 +82,8 @@ readonly class SaveElementIndexElementsController
 
     /**
      * @param  class-string<ElementInterface>  $elementType
-     * @param  array<string, array>  $data
-     * @return Collection<ElementInterface>
+     * @param  array<string, array<string, mixed>>  $data
+     * @return Collection<int, ElementInterface>
      */
     private function getElements(string $elementType, int $siteId, array $data): Collection
     {
@@ -89,7 +92,6 @@ readonly class SaveElementIndexElementsController
             array_keys($data),
         );
 
-        /** @var Collection<ElementInterface> */
         return $elementType::find()
             ->id($elementIds)
             ->status(null)
@@ -100,8 +102,8 @@ readonly class SaveElementIndexElementsController
     }
 
     /**
-     * @param  Collection<ElementInterface>  $elements
-     * @param  array<string, array>  $data
+     * @param  Collection<int, ElementInterface>  $elements
+     * @param  array<string, array<string, mixed>>  $data
      * @return array<int, array<string, array<int, string>>>
      */
     private function validateElements(Collection $elements, string $namespace, array $data): array

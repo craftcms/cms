@@ -13,7 +13,7 @@ class ElementSortOptionsResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  array  $sortOptions  The sort options
+     * @param  array<string, mixed>  $sortOptions  The sort options
      */
     public function __construct(
         public string $elementType,

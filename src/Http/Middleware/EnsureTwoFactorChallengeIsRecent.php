@@ -34,7 +34,7 @@ readonly class EnsureTwoFactorChallengeIsRecent
             return $next($request);
         }
 
-        Session::forget(['user.id', 'user.pending_2fa_at']);
+        Session::forget(['user.id', 'user.login_id', 'user.remember', 'user.pending_2fa_at']);
 
         if ($request->wantsJson()) {
             return new JsonResponse(['message' => t('Your verification session has expired. Please sign in again.')], 419);

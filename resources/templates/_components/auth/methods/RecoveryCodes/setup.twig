@@ -1,14 +1,18 @@
 {% import '_includes/forms.twig' as forms %}
 
-<div class="readable mb-xl">
+<div class="flex flex-col gap-6 flex-1">
+
+  <div class="prose">
     <p>{{ 'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.'|t('app') }}</p>
+  </div>
+
+  <div class="flex-1 grid place-items-center">
+    <craft-recovery-codes-setup container-id="{{ containerId }}">
+      <form action="{{ generateUrl }}" method="post">
+        {{ forms.submitButton({
+          label: 'Generate recovery codes'|t('app'),
+        }) }}
+      </form>
+    </craft-recovery-codes-setup>
+  </div>
 </div>
-
-{{ forms.submitButton({
-    label: 'Generate recovery codes'|t('app'),
-    spinner: true,
-}) }}
-
-<script type="module">
-  new Craft.RecoveryCodesSetup('{{ containerId }}');
-</script>

@@ -62,6 +62,47 @@ export function hasAttr(elem: Element, attr: string): boolean {
 }
 
 /**
+ * The nearest sibling matching `selector` in the given direction, or `null`.
+ * Skips any intervening siblings that don't match — a directional analogue of
+ * `Element.closest()` scoped to siblings.
+ */
+export function nearestSibling(
+  elem: Element,
+  selector: string,
+  direction: 'previous' | 'next'
+): HTMLElement | null {
+  const step = (node: Element): Element | null =>
+    direction === 'previous'
+      ? node.previousElementSibling
+      : node.nextElementSibling;
+
+  for (let sibling = step(elem); sibling; sibling = step(sibling)) {
+    if (sibling.matches(selector)) {
+      return sibling as HTMLElement;
+    }
+  }
+  return null;
+}
+
+/**
+ * The value registered in `registry` for the nearest ancestor of `elem`
+ * (self excluded), or `null` — the native, WeakMap-keyed counterpart to
+ * jQuery's `$el.closest(sel).data(key)` back-reference lookup.
+ */
+export function closestRegistered<T>(
+  elem: Element,
+  registry: WeakMap<Element, T>
+): T | null {
+  for (let node = elem.parentElement; node; node = node.parentElement) {
+    const value = registry.get(node);
+    if (value !== undefined) {
+      return value;
+    }
+  }
+  return null;
+}
+
+/**
  * Offset of an element relative to the document, adjusted for a non-window
  * scroll container (parity with legacy `getOffset`).
  */

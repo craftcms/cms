@@ -8,6 +8,7 @@ import {
   ElevatedSessionManager,
   type ElevatedSessionOptions,
 } from './manager';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 class LegacyElevatedSessionManager {
   static minSafeElevatedSessionTimeout = 5;
@@ -41,10 +42,11 @@ class LegacyElevatedSessionManager {
 // `new Craft.ElevatedSessionForm(...)` (EmailField, _password/_team/_permissions
 // screens) and `Craft.elevatedSessionManager` keep working. The manager global is
 // a thin `LegacyElevatedSessionManager` shim over the modern reactive manager.
-const craft = (window as any).Craft ?? ((window as any).Craft = {});
-craft.ElevatedSessionManager = LegacyElevatedSessionManager;
-craft.elevatedSessionManager = new LegacyElevatedSessionManager();
-craft.ElevatedSessionForm = ElevatedSessionForm;
+registerCraftGlobals({
+  ElevatedSessionManager: LegacyElevatedSessionManager,
+  elevatedSessionManager: new LegacyElevatedSessionManager(),
+  ElevatedSessionForm,
+});
 
 // Register the declarative custom element, so Twig can emit
 // `<craft-elevated-session-form>` instead of the manual global constructor.

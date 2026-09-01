@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Models;
 
+use CraftCms\Cms\Database\Factories\SectionSiteSettingsFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SectionSiteSettings extends BaseModel
 {
+    /** @use HasFactory<SectionSiteSettingsFactory> */
     use HasFactory;
+
     use HasUid;
 
     #[\Override]

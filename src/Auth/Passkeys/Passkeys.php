@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Passkeys;
 
-use Carbon\CarbonInterface;
+use Carbon\Carbon;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -43,10 +43,6 @@ class Passkeys
          * @var string The session variable name used to store passkey request options.
          */
         public readonly string $passkeyRequestOptionsParam = 'pkReqOptions',
-        /**
-         * @var string The session variable name used to store updated passkey credential source.
-         */
-        public readonly string $passkeyCredSourceParam = 'pkCredSource',
     ) {}
 
     public function hasPasskeys(CraftUser $user): bool
@@ -63,9 +59,9 @@ class Passkeys
     /**
      * Returns info about the given user’s saved passkeys.
      *
-     * @return Collection<array{
-     *     credentialName:string,
-     *     dateLastUsed:CarbonInterface|null,
+     * @return Collection<int, covariant array{
+     *     credentialName:string|null,
+     *     dateLastUsed:Carbon|null,
      *     uid:string
      * }>
      */
@@ -81,11 +77,20 @@ class Passkeys
             ->select(['credentialName', 'dateLastUsed', 'uid'])
             ->where('userId', $user->id)
             ->get()
-            ->map(fn (WebAuthn $passkey) => [
-                'credentialName' => $passkey->credentialName,
-                'dateLastUsed' => $passkey->dateLastUsed,
-                'uid' => $passkey->uid,
-            ]);
+            ->toBase()
+            ->map($this->passkeyData(...));
+    }
+
+    /**
+     * @return array{credentialName: string|null, dateLastUsed: Carbon|null, uid: string}
+     */
+    private function passkeyData(WebAuthn $passkey): array
+    {
+        return [
+            'credentialName' => $passkey->credentialName,
+            'dateLastUsed' => $passkey->dateLastUsed,
+            'uid' => $passkey->uid,
+        ];
     }
 
     /**
@@ -179,7 +184,7 @@ class Passkeys
     }
 
     /**
-     * Verifies a passkey authentication response and stores the passkey.
+     * Verifies a passkey authentication response and returns the updated credential record.
      *
      * @param  string  $requestOptions  The public key credential request options
      * @param  string  $response  The authentication response data
@@ -189,7 +194,7 @@ class Passkeys
         string $requestOptions,
         string $response,
         bool $checkOldUserHandle = false,
-    ): bool {
+    ): CredentialRecord|false {
         $serializer = $this->webauthnServer()->getSerializer();
 
         $requestOptions = $serializer->deserialize(
@@ -223,19 +228,19 @@ class Passkeys
             return false;
         }
 
+        // if we're re-checking against the old (pre-webauthn-5) user handle format, $credentialRecord->userHandle
+        // was just set to the decoded (raw) user handle by CredentialRepository::findOneByCredentialId(), so the
+        // user handle we compare it with here needs to be decoded as well, rather than the (encoded) $userEntity->id
+        $userHandle = $checkOldUserHandle ? $this->userElement($user)->uid : $userEntity->id;
+
         try {
-            $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+            return $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $requestOptions,
                 request()->host(),
-                $userEntity->id,
+                $userHandle,
             );
-
-            // we can't save the updated credential record to db here as in AuthMethods::authenticateWithPasskey()
-            // we might need to call this method (Passkeys::verifyPasskey()) again, with checkOldUserHandle set to true;
-            // so, we're going to store it in the session and then save from the AuthMethods::authenticateWithPasskey() method
-            Session::put($this->passkeyCredSourceParam, $updatedCredentialRecord);
         } catch (InvalidUserHandleException $exception) {
             throw $exception;
         } catch (Throwable $e) {
@@ -243,10 +248,6 @@ class Passkeys
 
             return false;
         }
-
-        $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($credentialRecord);
-
-        return true;
     }
 
     public function deletePasskey(CraftUser $user, string $uid): void

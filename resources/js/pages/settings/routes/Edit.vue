@@ -2,13 +2,12 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {MixedInputPart} from '@/pages/settings/routes/types';
   import MixedInput from '@/common/form/MixedInput.vue';
-  import Pane from '@/common/components/Pane.vue';
   import Select from '@/common/form/Select.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import type {RouteData, RouteFormData} from './types';
   import {destroy, store, update} from '@actions/Settings/RoutesController';
   import {router, useForm} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed, shallowRef} from 'vue';
   import type {BaseOption, SelectItem} from '@/common/types';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
@@ -70,12 +69,12 @@
   function normalizedUriParts(): Array<MixedInputPart> {
     const parts = [...form.uriParts];
 
-    if (typeof parts[0] === 'string') {
+    if (parts[0] !== undefined && !(parts[0] instanceof Object)) {
       parts[0] = parts[0].replace(/^\/+/, '');
     }
 
     return parts.filter((part) =>
-      typeof part === 'string' ? part !== '' : true
+      part instanceof Object ? true : part !== ''
     );
   }
 
@@ -102,7 +101,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="route-form">
       <Select
         :label="t('Site')"
@@ -166,7 +165,7 @@
         :options="templateOptions"
       />
     </div>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss">

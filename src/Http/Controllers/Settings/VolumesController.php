@@ -4,40 +4,44 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
-use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\VolumeEditViewModel;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-class VolumesController
+class VolumesController extends BaseAssetSettingsController
 {
     use RespondsWithFlash;
 
     private bool $readOnly;
 
-    public function __construct(GeneralConfig $generalConfig)
-    {
+    public function __construct(
+        GeneralConfig $generalConfig,
+        private readonly AssetTransformers $assetTransformers,
+    ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request, Volumes $volumes)
+    public function index(Request $request, Volumes $volumes): \Inertia\Response
     {
         $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
             ['field' => 'sortOrder', 'direction' => 'asc'],
@@ -56,116 +60,75 @@ class VolumesController
 
         return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets')],
                 ['label' => t('Volumes')],
             ],
             'sort' => $sort,
-            'subnav' => [
-                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets'))->selected(true),
-                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms')),
-            ],
+            'subnav' => $this->subnav(),
             'title' => t('Volume Settings'),
             'volumes' => $volumes->getAllVolumes(...),
         ]);
     }
 
-    public function create(Volumes $volumes): CpScreenResponse
+    public function create(Volumes $volumes, FormResolver $formResolver): CpScreenResponse
     {
-        return $this->edit($volumes);
+        abort_if($this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
+
+        return $this->editScreen(new Volume, $volumes, $formResolver);
     }
 
-    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null): CpScreenResponse
+    public function edit(Volumes $volumes, FormResolver $formResolver, int $volumeId): CpScreenResponse
     {
-        if ($volumeId === null && $this->readOnly) {
-            abort(403, 'Administrative changes are disallowed in this environment.');
-        }
+        $volume = $volumes->getVolumeById($volumeId);
 
-        if ($volumeId !== null) {
-            $volume = $volumes->getVolumeById($volumeId);
+        abort_if(is_null($volume), 404, 'Volume not found');
 
-            abort_if(is_null($volume), 404, 'Volume not found');
-        }
-
-        $volume ??= new Volume;
-        $isNewVolume = ! $volume->id;
-
-        $title = $isNewVolume
-            ? t('Create a new asset volume')
-            : (trim((string) $volume->name) ?: t('Edit Volume'));
-
-        $fsTarget = $volume->getResolvedFsTarget();
-        $allVolumes = $volumes->getAllVolumes();
-
-        /** @var Collection<int, string> $takenFsTargets */
-        $takenFsTargets = $allVolumes
-            ->reject(fn (Volume $v): bool => (bool) $v->getSubpath())
-            ->map(fn (Volume $v) => $v->getResolvedFsTarget())
-            ->filter();
-
-        $fsOptions = Collection::make(SelectOptions::getFsOptions())
-            ->map(function (array $option) use ($takenFsTargets, $fsTarget): array {
-                $optionTarget = $this->fsOptionTargetKey($option['value'] ?? null);
-                $option['disabled'] = $optionTarget !== null
-                    && $takenFsTargets->contains($optionTarget)
-                    && $optionTarget !== $fsTarget;
-
-                return $option;
-            })
-            ->partition(fn (array $option): bool => str_starts_with((string) $option['value'], Volume::STORAGE_DISK_PREFIX));
-
-        [$diskOptions, $craftFilesystemOptions] = $fsOptions;
-
-        $groupedFsOptions = $this->groupFsOptions($craftFilesystemOptions, $diskOptions);
-        $fsOptions = $groupedFsOptions;
-        array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '', 'data' => ['hint' => '']]);
-
-        return new CpScreenResponse()
-            ->title($title)
-            ->addCrumb(t('Settings'), 'settings')
-            ->addCrumb(t('Assets'), 'settings/assets')
-            ->addCrumb(t('Volumes'), 'settings/assets')
-            ->contentTemplate('settings/assets/volumes/_edit.twig', [
-                'volumeId' => $volumeId,
-                'volume' => $volume,
-                'isNewVolume' => $isNewVolume,
-                'typeName' => Asset::displayName(),
-                'lowerTypeName' => Asset::lowerDisplayName(),
-                'fsOptions' => $fsOptions,
-                'groupedFsOptions' => $groupedFsOptions,
-                'readOnly' => $this->readOnly,
-            ])
-            ->unless(
-                $this->readOnly,
-                function (CpScreenResponse $response) use ($volume) {
-                    $response
-                        ->action('volumes/save-volume')
-                        ->redirectUrl('settings/assets')
-                        ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'settings/assets/volumes/{id}',
-                            'shortcut' => true,
-                            'retainScroll' => true,
-                        ])
-                        ->editUrl($volume->getCpEditUrl());
-                },
-                function (CpScreenResponse $response) {
-                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
-                },
-            );
+        return $this->editScreen($volume, $volumes, $formResolver);
     }
 
-    public function save(Request $request, Volumes $volumes, Fields $fields): Response
+    public function renderForm(Request $request, Volumes $volumes, FormResolver $formResolver): JsonResponse
     {
-        $volumeId = $request->input('volumeId') ?: null;
-        $oldVolume = null;
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'values.volumeId' => ['nullable', 'integer'],
+            'values.name' => ['nullable', 'string'],
+            'values.handle' => ['nullable', 'string'],
+            'values.fsHandle' => ['nullable', 'string'],
+            'values.subpath' => ['nullable', 'string'],
+            'values.assetTransformer' => ['nullable', 'string'],
+            'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
+            'values.titleTranslationKeyFormat' => ['nullable', 'string'],
+            'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
+            'values.altTranslationKeyFormat' => ['nullable', 'string'],
+            'values.fieldLayout' => ['present', 'array'],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+        $volumeId = $data['values']['volumeId'] ?? null;
+        $volume = $volumeId ? $volumes->getVolumeById((int) $volumeId) : new Volume;
 
-        if ($volumeId) {
-            $volumeId = (int) $volumeId;
-            $oldVolume = $volumes->getVolumeById($volumeId);
+        abort_if($volume === null, 404, 'Volume not found');
 
-            abort_if(is_null($oldVolume), 400, "Invalid volume ID: {$volumeId}");
-        }
+        return new JsonResponse([
+            'form' => new VolumeEditViewModel(
+                $volume,
+                $volumes,
+                $formResolver,
+                $this->assetTransformers,
+                values: $data['values'],
+            )->form(),
+        ]);
+    }
+
+    public function store(Request $request, Volumes $volumes, Fields $fields): Response
+    {
+        $data = $request->validate([
+            'assetTransformer' => ['nullable', 'string'],
+        ]);
+        $volumeId = $request->integer('volumeId') ?: null;
+        $volume = $volumeId ? $volumes->getVolumeById($volumeId) : new Volume;
+
+        abort_if($volume === null, 400, "Invalid volume ID: {$volumeId}");
 
         $subpath = $request->input('subpath');
 
@@ -173,28 +136,22 @@ class VolumesController
             $subpath = File::normalizePath(ltrim(trim((string) $subpath), '/'));
         }
 
-        $volume = new Volume([
-            'id' => $volumeId,
-            'uid' => $oldVolume->uid ?? null,
-            'sortOrder' => $oldVolume->sortOrder ?? null,
-            'name' => $request->input('name'),
-            'handle' => $request->input('handle'),
-            'fsHandle' => $request->input('fsHandle'),
-            'subpath' => $subpath ?? null,
-            'transformFsHandle' => $request->input('transformFsHandle'),
-            'transformSubpath' => $request->input('transformSubpath', ''),
-            'titleTranslationMethod' => $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site),
-            'titleTranslationKeyFormat' => $request->input('titleTranslationKeyFormat'),
-            'altTranslationMethod' => $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None),
-            'altTranslationKeyFormat' => $request->input('altTranslationKeyFormat'),
-        ]);
+        $volume->name = $request->input('name');
+        $volume->handle = $request->input('handle');
+        $volume->fsHandle = $request->input('fsHandle');
+        $volume->subpath = $subpath;
+        $volume->assetTransformer = ($data['assetTransformer'] ?? null) ?: null;
+        $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);
+        $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
+        $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);
+        $volume->altTranslationKeyFormat = $request->input('altTranslationKeyFormat');
 
         $fieldLayout = $fields->assembleLayoutFromPost();
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
         if (! $volumes->saveVolume($volume)) {
-            return $this->asModelFailure($volume, t("Couldn\u{2019}t save volume."), 'volume');
+            throw ValidationException::withMessages($volume->errors()->getMessages());
         }
 
         return $this->asModelSuccess($volume, t('Volume saved.'), 'volume');
@@ -215,35 +172,44 @@ class VolumesController
         return $this->asSuccess();
     }
 
-    private function groupFsOptions(Collection $craftFilesystemOptions, Collection $diskOptions): array
+    private function editScreen(Volume $volume, Volumes $volumes, FormResolver $formResolver): CpScreenResponse
     {
-        $options = [];
+        $isNewVolume = $volume->id === null;
+        $title = $isNewVolume
+            ? t('Create a new asset volume')
+            : (trim((string) $volume->name) ?: t('Edit Volume'));
 
-        $options[] = ['optgroup' => t('Craft Filesystems')];
-        array_push($options, ...$this->sortFsOptions($craftFilesystemOptions));
-
-        if ($diskOptions->isNotEmpty()) {
-            $options[] = ['optgroup' => t('Laravel Disks')];
-            array_push($options, ...$this->sortFsOptions($diskOptions));
-        }
-
-        return $options;
-    }
-
-    private function sortFsOptions(Collection $options): array
-    {
-        return $options
-            ->sortBy(fn (array $option) => $option['label'])
-            ->values()
-            ->all();
-    }
-
-    private function fsOptionTargetKey(mixed $value): ?string
-    {
-        if (! is_string($value) || $value === '') {
-            return null;
-        }
-
-        return Filesystems::resolveDiskName($value);
+        return new CpScreenResponse()
+            ->title($title)
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Assets'), 'settings/assets')
+            ->addCrumb(t('Volumes'), 'settings/assets')
+            ->inertiaPage('Form', new VolumeEditViewModel(
+                $volume,
+                $volumes,
+                $formResolver,
+                $this->assetTransformers,
+                readOnly: $this->readOnly,
+            ))
+            ->unless(
+                $this->readOnly,
+                function (CpScreenResponse $response) use ($volume) {
+                    $response
+                        ->formAttributes([
+                            'action' => Url::cpUrl('settings/assets/volumes'),
+                        ])
+                        ->redirectUrl('settings/assets')
+                        ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
+                        ->addAltAction(t('Save and continue editing'), [
+                            'redirect' => 'settings/assets/volumes/{id}',
+                            'shortcut' => true,
+                            'retainScroll' => true,
+                        ])
+                        ->editUrl($volume->getCpEditUrl());
+                },
+                function (CpScreenResponse $response) {
+                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
+                },
+            );
     }
 }

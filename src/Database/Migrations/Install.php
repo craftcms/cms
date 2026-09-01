@@ -17,7 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -253,9 +253,7 @@ class Install extends Migration
             $table->dateTime('timestamp')->nullable();
             $table->boolean('isDir')->default(false)->nullable();
             $table->integer('recordId')->nullable();
-            $table->boolean('isSkipped')->default(false)->nullable();
-            $table->boolean('inProgress')->default(false)->nullable();
-            $table->boolean('completed')->default(false)->nullable();
+            $table->string('status')->default('pending');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
@@ -286,7 +284,6 @@ class Install extends Migration
             $table->string('filename');
             $table->string('mimeType')->nullable();
             $table->string('kind', 50)->default(FileKind::Unknown->value);
-            $table->text('alt')->nullable();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
@@ -337,6 +334,7 @@ class Install extends Migration
             $table->enum('interlace', ['none', 'line', 'plane', 'partition'])->default('none');
             $table->string('fill', 11)->nullable()->default(null);
             $table->boolean('upscale')->default(true);
+            $table->json('parameters')->nullable();
             $table->dateTime('parameterChangeTime')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -558,12 +556,12 @@ class Install extends Migration
             $table->string('color')->nullable();
             $table->string('uiLabelFormat')->default('{title}');
             $table->boolean('hasTitleField')->default(true);
-            $table->string('titleTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
+            $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('titleFormat')->nullable();
             $table->boolean('allowLineBreaksInTitles')->default(false);
             $table->boolean('showSlugField')->default(true)->nullable();
-            $table->string('slugTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
+            $table->string('slugTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('slugTranslationKeyFormat')->nullable();
             $table->boolean('showStatusField')->default(true)->nullable();
             $table->dateTime('dateCreated');
@@ -591,7 +589,7 @@ class Install extends Migration
             $table->string('context')->default('global');
             $table->text('instructions')->nullable();
             $table->boolean('searchable')->default(true);
-            $table->string('translationMethod')->default(Field::TRANSLATION_METHOD_NONE);
+            $table->string('translationMethod')->default(TranslationMethod::None->value);
             $table->text('translationKeyFormat')->nullable();
             $table->string('type');
             $table->text('settings')->nullable();
@@ -977,11 +975,10 @@ class Install extends Migration
             $table->string('handle');
             $table->string('fs');
             $table->string('subpath')->nullable();
-            $table->string('transformFs')->nullable();
-            $table->string('transformSubpath')->nullable();
-            $table->string('titleTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
+            $table->string('assetTransformer')->nullable();
+            $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
-            $table->string('altTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
+            $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('altTranslationKeyFormat')->nullable();
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->dateTime('dateCreated');
@@ -1035,6 +1032,7 @@ class Install extends Migration
         Schema::createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
         Schema::createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
+        Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
         Schema::createIndex(Table::ASSETS, ['filename', 'folderId']);
         Schema::createIndex(Table::ASSETS, ['folderId']);
@@ -1206,7 +1204,6 @@ class Install extends Migration
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
-        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->nullOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('revisionId')->references('id')->on(Table::REVISIONS)->cascadeOnDelete());
@@ -1404,6 +1401,7 @@ class Install extends Migration
         }
     }
 
+    /** @return array<string, int|array<string, mixed>> */
     private function _generateInitialConfig(): array
     {
         $siteGroupUid = Str::uuid()->toString();
@@ -1430,7 +1428,6 @@ class Install extends Migration
             'system' => [
                 'edition' => Edition::Solo->handle(),
                 'name' => $this->site->getName(),
-                'live' => true,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
                 'timeZone' => $this->timezone ?? 'America/Los_Angeles',
             ],

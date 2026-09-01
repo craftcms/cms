@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User\Models;
 
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
@@ -38,7 +39,10 @@ class User extends BaseModel implements CraftUser
         CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
     }
     use ConfirmsPasswords;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use Notifiable;
 
     #[Override]
@@ -124,6 +128,11 @@ class User extends BaseModel implements CraftUser
             'element',
             'invalidLoginWindowStart',
         ]));
+
+        if ($this->element) {
+            $element->enabled = $this->element->enabled;
+            $element->archived = $this->element->archived;
+        }
 
         $element->password = $this->password;
 

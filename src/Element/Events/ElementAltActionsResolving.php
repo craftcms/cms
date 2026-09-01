@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  */
 class ElementAltActionsResolving
 {
+    /** @param list<array<string, mixed>> $altActions */
     public function __construct(
         public ElementInterface $element,
         public array $altActions = [],

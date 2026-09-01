@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Heading as HeadingNode;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -20,6 +24,18 @@ class Heading extends BaseUiElement
      * @var string The heading text
      */
     public string $heading = '';
+
+    public static function make(string $heading): static
+    {
+        return app(static::class)->heading($heading);
+    }
+
+    public function heading(string $heading): static
+    {
+        $this->heading = $heading;
+
+        return $this;
+    }
 
     protected function selectorLabel(): string
     {
@@ -37,18 +53,21 @@ class Heading extends BaseUiElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return FormFields::textFieldHtml([
-            'label' => t('Heading'),
-            'id' => 'heading',
-            'name' => 'heading',
-            'value' => $this->heading,
-        ]);
+        return [
+            Field::make(t('Heading'), Text::make('heading')->value($this->heading)),
+        ];
     }
 
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
     {
-        return Html::tag('h2', Html::encode(t($this->heading, category: 'site')));
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Heading FieldLayout elements require stable UIDs.');
+        }
+
+        return HeadingNode::make($this->uid, t($this->heading, category: 'site'));
     }
 }

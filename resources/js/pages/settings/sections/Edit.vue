@@ -1,383 +1,140 @@
 <script setup lang="ts">
-  import {useAppLayout} from '@/common/composables/useAppLayout';
-  import {useForm} from '@inertiajs/vue3';
-  import {t, toHandle, toUriFormat} from '@craftcms/cp';
-  import {computed} from 'vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
+  import type {UrlMethodPair} from '@inertiajs/core';
+  import {toUriFormat} from '@craftcms/ui';
+  import {ref} from 'vue';
+  import type {EntryType, SectionSiteSettingsData} from '@/common/types';
   import EntryTypeSelect from '@/modules/entry-types/components/EntryTypeSelect.vue';
-  import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import type {
-    SectionResource,
-    SectionSiteSettingsData,
-    SelectOption,
-  } from '@/common/types';
-  import SiteSettingsTable from '@/modules/sections/components/SiteSettingsTable.vue';
+    FormChange,
+    FormChangeKind,
+    FormControlOverrideProps,
+    FormPayload,
+    FormValue,
+  } from '@/modules/forms/types';
+  import {isRecord, pathsMatch} from '@/modules/forms/runtime';
   import PreviewTargetsTable from '@/modules/sections/components/PreviewTargetsTable.vue';
-  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import Pane from '@/common/components/Pane.vue';
-  import {store} from '@actions/Settings/SectionsController';
-  import useCraftData from '@/common/composables/useCraftData';
+  import SiteSettingsTable from '@/modules/sections/components/SiteSettingsTable.vue';
+  import FormPage from '@/pages/Form.vue';
+
+  type SiteSettings = Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
+  type PreviewTarget = {
+    label: string;
+    urlFormat: string;
+    refresh: boolean;
+  };
 
   const props = defineProps<{
-    title: string;
-    crumbs: Array<any>;
-    section: SectionResource;
+    form: FormPayload;
+    submit: UrlMethodPair;
+    refreshUrl: string | null;
     brandNew: boolean;
-    typeOptions: Array<SelectOption>;
-    entryTypes: Array<any>;
-    propagationOptions: Array<SelectOption>;
-    placementOptions: Array<SelectOption>;
-    siteSettings: Array<SectionSiteSettingsData>;
+    entryTypes: EntryType[];
+    homepageUri: string;
+    templateOptions: Array<unknown>;
     isMultiSite: boolean;
     headlessMode: boolean;
-    flash?: Record<any, any>;
-    errors: Record<any, any> | null;
   }>();
 
-  const {readOnly} = useCraftData();
+  const formPage = ref<{
+    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
+  }>();
 
-  const form = useForm({
-    sectionId: props.section.id,
-    name: props.section.name ?? '',
-    handle: props.section.handle ?? '',
-    type: props.section.type,
-    entryTypes: (props.section.entryTypes ?? []).map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ({actions, ...rest}) => rest
-    ),
-    enableVersioning: props.section.enableVersioning,
-    minAuthors: props.section.minAuthors ?? 0,
-    maxAuthors: props.section.maxAuthors ?? '',
-    maxLevels: props.section.maxLevels ?? '',
-    propagationMethod: props.section.propagationMethod,
-    defaultPlacement: props.section.defaultPlacement,
-    previewTargets: props.section.previewTargets ?? [],
-    sites: Object.fromEntries(
-      props.siteSettings.map((site) => [
-        site.handle,
-        {
-          enabled: site.enabled,
-          siteId: site.siteId ?? null,
-          name: site.name ?? '',
-          singleHomepage: false,
-          singleUri: site.uriFormat ?? '',
-          uriFormat: site.uriFormat ?? '',
-          template: site.template ?? '',
-          enabledByDefault: site.enabledByDefault,
-        },
-      ])
-    ),
-  });
-
-  const isStructure = computed(() => form.type === 'structure');
-  const isChannelOrStructure = computed(
-    () => form.type === 'channel' || form.type === 'structure'
-  );
-
-  // Auto-generate handle from name for new sections
-  const handleGenerator = useInputGenerator(
-    () => form.name,
-    (v) => (form.handle = toHandle(v))
-  );
-
-  const uriGenerator = useInputGenerator(
-    () => form.name,
-    (v) => {
-      if (!form.sites) {
-        return;
-      }
-
-      const uri = toUriFormat(v);
-
-      form.sites = Object.fromEntries(
-        Object.entries(form.sites).map(([key, site]) => [
-          key,
-          {
-            ...site,
-            singleUri: uri && !site.singleHomepage ? `${uri}` : site.singleUri,
-            uriFormat: uri ? `${uri}/{slug}` : '',
-            template: uri ? `${uri}/_entry.twig` : '',
-          },
-        ])
-      );
+  function selectedEntryTypes(value: FormValue): EntryType[] {
+    if (!Array.isArray(value)) {
+      return [];
     }
-  );
 
-  // For existing sections, mark handle as already dirty
-  if (!props.brandNew) {
-    handleGenerator.stop();
-    uriGenerator.stop();
+    return value.flatMap((id) => {
+      const entryType = props.entryTypes.find(
+        (candidate) => candidate.id === Number(id)
+      );
+
+      return entryType ? [entryType] : [];
+    });
   }
 
-  const {save} = useSettingsSave(form, store);
+  function setEntryTypes(
+    entryTypes: EntryType[],
+    setValue: FormControlOverrideProps['setValue']
+  ): void {
+    setValue(
+      entryTypes.map((entryType) => entryType.id),
+      'discrete'
+    );
+  }
 
-  useAppLayout(() => ({title: props.title, form, onSave: save}));
+  function siteSettings(value: FormValue): SiteSettings {
+    if (!isRecord(value)) {
+      return {};
+    }
+    // SAFETY: the section form's `sites` control emits SectionSiteSettingsData rows.
+    return value as SiteSettings;
+  }
+
+  function previewTargets(value: FormValue): PreviewTarget[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    // SAFETY: the preview-targets control owns this array and emits PreviewTarget rows.
+    return value as PreviewTarget[];
+  }
+
+  function onChange(change: FormChange, values: FormPayload['values']): void {
+    if (!props.brandNew || !pathsMatch(change.path, ['name'])) {
+      return;
+    }
+
+    const sites = siteSettings(values.sites);
+    const uri = toUriFormat(String(values.name ?? ''));
+    const generated = Object.fromEntries(
+      Object.entries(sites).map(([handle, site]) => [
+        handle,
+        {
+          ...site,
+          singleUri: uri && !site.singleHomepage ? uri : (site.singleUri ?? ''),
+          uriFormat: uri ? `${uri}/{slug}` : '',
+          template: uri ? `${uri}/_entry.twig` : '',
+        },
+      ])
+    );
+
+    formPage.value?.setValue(['sites'], generated, change.kind);
+  }
 </script>
 
 <template>
-  <Pane appearance="raised">
-    <div class="grid gap-3">
-      <input
-        v-if="section.id"
-        type="hidden"
-        name="sectionId"
-        :value="section.id"
+  <FormPage
+    ref="formPage"
+    :form="form"
+    :submit="submit"
+    :refresh-url="refreshUrl ?? undefined"
+    @change="onChange"
+  >
+    <template #entryTypes="{value, setValue, editable}">
+      <EntryTypeSelect
+        :entry-types="entryTypes"
+        :model-value="selectedEntryTypes(value)"
+        @update:model-value="setEntryTypes($event, setValue)"
       />
-
-      <!-- Name -->
-      <CraftInput
-        :label="t('Name')"
-        :help-text="t('What this section will be called in the control panel.')"
-        id="name"
-        name="name"
-        v-model="form.name"
-        :disabled="readOnly"
-        :error="errors?.name"
-        required
-        autofocus
-      />
-
-      <!-- Handle -->
-      <CraftInputHandle
-        :label="t('Handle')"
-        :help-text="t(`How you'll refer to this section in the templates.`)"
-        id="handle"
-        name="handle"
-        v-model="form.handle"
-        :disabled="readOnly"
-        :error="errors?.handle"
-        required
-        @change="handleGenerator.markDirty()"
-      />
-
-      <!-- Enable Versioning -->
-      <CraftSwitch
-        :label="t('Enable versioning for entries in this section')"
-        id="enableVersioning"
-        name="enableVersioning"
-        :disabled="readOnly"
-        v-model="form.enableVersioning"
-      />
-
-      <!-- Section Type -->
-      <CraftSelect
-        :label="t('Section Type')"
-        :help-text="t('What type of section is this?')"
-        id="type"
-        name="type"
-        v-model="form.type"
-        :disabled="readOnly"
-        :error="errors?.type"
-      >
-        <select slot="input">
-          <option
-            v-for="option in typeOptions"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-
-        <div slot="after" v-if="section.id && form.type !== 'single'">
-          <craft-callout
-            variant="danger"
-            appearance="plain"
-            class="p-0"
-            icon="triangle-exclamation"
-          >
-            {{ t('Changing this may result in data loss.') }}
-          </craft-callout>
-        </div>
-      </CraftSelect>
-    </div>
-
-    <hr class="my-6" />
-
-    <!-- Entry Types -->
-    <div class="grid gap-3">
-      <div>
-        <h3 class="font-bold text-sm">{{ t('Entry Types') }}</h3>
-        <p class="text-sm text-neutral-500 mb-2">
-          {{
-            t(
-              'Choose the types of entries that can be included in this section.'
-            )
-          }}
-        </p>
-        <EntryTypeSelect :entry-types="entryTypes" v-model="form.entryTypes" />
-      </div>
-    </div>
-
-    <hr class="my-6" />
-
-    <!-- Site Settings -->
-    <div class="grid gap-6">
-      <div>
-        <h3 class="font-bold text-sm">{{ t('Site settings') }}</h3>
-        <p class="text-sm text-neutral-500 mb-2">
-          {{
-            t(
-              'Choose which sites this section should be available in, and configure the site-specific settings.'
-            )
-          }}
-        </p>
-
-        <SiteSettingsTable
-          :is-multisite="isMultiSite"
-          :is-headless="headlessMode"
-          :selected-type="form.type"
-          v-model="form.sites"
-        />
-      </div>
-
-      <!-- Propagation Method (multi-site only) -->
-      <template v-if="isMultiSite && isChannelOrStructure">
-        <CraftSelect
-          :label="t('Propagation Method')"
-          :help-text="
-            t(
-              'Of the enabled sites above, which sites should entries in this section be saved to?'
-            )
-          "
-          id="propagationMethod"
-          name="propagationMethod"
-          v-model="form.propagationMethod"
-          :disabled="readOnly"
-        >
-          <select slot="input">
-            <option
-              v-for="option in propagationOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-
-          <div
-            slot="after"
-            v-if="
-              section.id &&
-              section.propagationMethod !== 'none' &&
-              siteSettings.length > 1
-            "
-          >
-            <craft-callout
-              variant="danger"
-              appearance="plain"
-              class="p-0"
-              icon="triangle-exclamation"
-            >
-              {{ t('Changing this may result in data loss.') }}
-            </craft-callout>
-          </div>
-        </CraftSelect>
-      </template>
-    </div>
-
-    <!-- Structure settings -->
-    <template v-if="isStructure">
-      <hr class="my-6" />
-      <div class="grid gap-3">
-        <CraftInput
-          :label="t('Max Levels')"
-          :help-text="t('The maximum number of levels this section can have.')"
-          id="maxLevels"
-          name="maxLevels"
-          v-model="form.maxLevels"
-          :disabled="readOnly"
-          inputmode="numeric"
-          size="5"
-          :error="errors?.maxLevels"
-        />
-
-        <CraftSelect
-          :label="t('Default {type} Placement', {type: t('Entry')})"
-          :help-text="
-            t(
-              'Where new {type} should be placed by default in the structure.',
-              {type: t('entries')}
-            )
-          "
-          id="defaultPlacement"
-          name="defaultPlacement"
-          v-model="form.defaultPlacement"
-          :disabled="readOnly"
-        >
-          <select slot="input">
-            <option
-              v-for="option in placementOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </CraftSelect>
-      </div>
     </template>
 
-    <hr class="my-6" />
-
-    <!-- Preview Targets -->
-    <div class="grid gap-3">
-      <div>
-        <h3 class="font-bold text-sm">{{ t('Preview Targets') }}</h3>
-        <p class="text-sm text-neutral-500 mb-2">
-          {{
-            t(
-              'Locations that should be available for previewing entries in this section.'
-            )
-          }}
-        </p>
-
-        <PreviewTargetsTable
-          v-model="form.previewTargets"
-          :disabled="readOnly"
-        />
-      </div>
-    </div>
-
-    <hr class="my-6" />
-
-    <div class="grid gap-3" v-if="isChannelOrStructure">
-      <!-- Min Authors -->
-      <CraftInput
-        :label="t('Min Authors')"
-        :help-text="
-          t(
-            'The minimum number of authors that entries in this section can have.'
-          )
-        "
-        id="minAuthors"
-        name="minAuthors"
-        v-model="form.minAuthors"
-        :disabled="readOnly"
-        inputmode="numeric"
-        maxlength="5"
-        :error="errors?.minAuthors"
+    <template #sites="{value, values, setValue, editable}">
+      <SiteSettingsTable
+        :is-multisite="isMultiSite"
+        :is-headless="headlessMode"
+        :selected-type="String(values.type ?? '')"
+        :model-value="siteSettings(value)"
+        :disabled="!editable"
+        @update:model-value="setValue($event, 'typing')"
       />
+    </template>
 
-      <!-- Max Authors -->
-      <CraftInput
-        :label="t('Max Authors')"
-        :help-text="
-          t(
-            'The maximum number of authors that entries in this section can have.'
-          )
-        "
-        id="maxAuthors"
-        name="maxAuthors"
-        v-model="form.maxAuthors"
-        :disabled="readOnly"
-        inputmode="numeric"
-        maxlength="5"
-        :error="errors?.maxAuthors"
+    <template #previewTargets="{value, setValue, editable}">
+      <PreviewTargetsTable
+        :model-value="previewTargets(value)"
+        :disabled="!editable"
+        @update:model-value="setValue($event, 'typing')"
       />
-    </div>
-  </Pane>
+    </template>
+  </FormPage>
 </template>

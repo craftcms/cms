@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
+/** @phpstan-import-type UploadedFileData from Assets */
 class AssetsUploadedFilesLocating
 {
     public function __construct(
@@ -16,7 +18,7 @@ class AssetsUploadedFilesLocating
         public ElementInterface $element,
 
         /**
-         * @var array List of files being uploaded for the field.
+         * @var list<UploadedFileData> List of files being uploaded for the field.
          *
          * Each file should be represented as an array with the following keys:
          *

@@ -69,6 +69,7 @@ interface NestedElementInterface extends ElementInterface
     /**
      * Returns each of the element’s owners
      *
+     * @param  array<string,mixed>  $criteria
      * @return ElementInterface[]
      *
      * @throws RuntimeException if the element is misconfigured

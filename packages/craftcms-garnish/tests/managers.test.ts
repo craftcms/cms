@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import {EscManager} from '../src/managers/esc-manager';
 import {UiLayerManager} from '../src/managers/ui-layer-manager';

@@ -129,10 +129,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ComponentManifestDriftTest needs the Custom Elements Manifest, which is
+      # gitignored (packages/craftcms-ui/dist). The cache key hashes everything
+      # the analyzer reads, so a hit is never stale; the cache itself is shared
+      # repo-wide, so whichever workflow generates it first serves the rest. On
+      # a miss the pinned npx run (~seconds) needs no npm install.
+      - name: Restore Custom Elements Manifest
+        id: cem
+        uses: actions/cache@v4
+        with:
+          path: packages/craftcms-ui/dist/custom-elements.json
+          key: cem-${{ hashFiles('packages/craftcms-ui/src/components/**', 'packages/craftcms-ui/custom-elements-manifest.config.mjs', 'packages/craftcms-ui/package.json', 'packages/craftcms-ui/tsconfig.json') }}
+
+      - name: Generate Custom Elements Manifest
+        if: steps.cem.outputs.cache-hit != 'true'
+        working-directory: packages/craftcms-ui
+        run: npx --yes @custom-elements-manifest/analyzer@0.11.0 analyze
+
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --ci --compact --testsuite=Unit
+          test-command: ./vendor/bin/pest --parallel --ci --compact --testsuite=Unit
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
@@ -150,7 +167,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --ci --testsuite=Arch
+          test-command: ./vendor/bin/pest --parallel --ci --testsuite=Arch
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
@@ -196,6 +213,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install libvips
+        if: matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite'
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev
+
       - name: Copy tests .env
         shell: bash
         run: |
@@ -205,8 +226,10 @@ jobs:
 
       - name: Run tests
         uses: ./.github/actions/run-tests
+        env:
+          CRAFT_REQUIRE_VIPS: ${{ matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite' && '1' || '' }}
         with:
-          test-command: ./vendor/bin/pest --ci --compact --testsuite=Feature
+          test-command: ./vendor/bin/pest --parallel --ci --compact --testsuite=Feature
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
@@ -224,7 +247,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
+          test-command: yii2-adapter/vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}

@@ -25,6 +25,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public string $elementType = Entry::class;
 
+    /** @var int[] */
     public array $elementIds {
         get => $this->getElementIds();
         set {
@@ -94,6 +95,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
             );
     }
 
+    /** @return array<int, array{value: class-string<ElementInterface>, label: string}> */
     private function _elementTypeOptions(): array
     {
         return app(Fields::class)->getRelationalFieldTypes()->map(function (string $field) {

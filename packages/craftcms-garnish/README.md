@@ -234,6 +234,29 @@ then the menu hides. `DisclosureMenu.getInstance(triggerOrContainer)` is the nat
 replacement for the legacy `$el.data('disclosureMenu')`. A legacy
 `new Garnish.DisclosureMenu($trigger, settings)` call ports across unchanged.
 
+#### Item selection — `Select`
+
+`Select` is the selection interface over a set of sibling items: click to select,
+shift-click to extend a contiguous range, and ctrl/⌘-click to toggle individual
+items (the ctrl/shift roles swap under `checkboxMode`). Selected items get the
+`selectedClass` (`sel` by default); arrow keys move the selection two-dimensionally
+by measuring item geometry, so it works for vertical lists and wrapping grids alike.
+It pairs naturally with `DragSort` for drag-a-multi-selection lists (see
+`<craft-component-select>`).
+
+```ts
+import {Select} from '@craftcms/garnish';
+
+const select = new Select({multi: true, filter: (t) => !(t as Element)?.closest('button')});
+select.addItems(list.querySelectorAll('li'));
+select.on('selectionChange', () => console.log(select.getSelectedItems()));
+```
+
+The constructor mirrors the legacy shape — `new Select(container, items?, settings?)`,
+with `new Select(settings)` / `new Select(container, settings)` param shifts — so a
+legacy `new Garnish.Select({...})` call ports across unchanged. `getSelectedItems()`
+returns a native `HTMLElement[]` (not a jQuery collection).
+
 **No-jQuery guarantee:** importing from `@craftcms/garnish` (the `.` entry) never
 pulls in jQuery, never reads `window.jQuery`/`$`, and never assigns
 `window.Garnish`. Those behaviors live exclusively in the `compat` entry.
@@ -319,10 +342,10 @@ npm run dev          # Storybook dev server at http://localhost:6006
 npm run storybook    # alias of `npm run dev`
 npm run build:storybook  # static Storybook build
 npm run build        # production build (dual `.` + `/compat` entries)
-npm run build:watch  # tsdown watch build
+npm run build:watch  # Vite+ pack watch build
 npm run test         # Vitest suite
 npm run check:types  # tsc --noEmit (includes stories)
-npm run format       # Prettier (writes ./src ./tests ./stories ./.storybook)
+npm run format       # Oxfmt (writes ./src ./tests ./stories ./.storybook)
 ```
 
 Interactive component demos live in **Storybook** (`npm run dev` or

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -162,6 +163,7 @@ trait QueriesSections
     /**
      * Applies the 'sectionId' param to the query being prepared.
      */
+    /** @param EntryQuery<Entry> $entryQuery */
     private function applySectionIdParam(EntryQuery $entryQuery): void
     {
         if (! $entryQuery->sectionId) {
@@ -172,7 +174,7 @@ trait QueriesSections
 
         // Should we set the structureId param?
         if (
-            $entryQuery->withStructure !== false &&
+            $entryQuery->withStructure &&
             ! isset($entryQuery->structureId) &&
             count($entryQuery->sectionId) === 1
         ) {
@@ -188,6 +190,7 @@ trait QueriesSections
     /**
      * Normalizes the sectionId param to an array of IDs or null
      */
+    /** @param EntryQuery<Entry> $entryQuery */
     private function normalizeSectionId(EntryQuery $entryQuery): void
     {
         $entryQuery->sectionId = match (true) {

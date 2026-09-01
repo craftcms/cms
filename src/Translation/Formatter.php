@@ -44,6 +44,7 @@ class Formatter
      */
     public int $sizeFormatBase = 1024;
 
+    /** @var array<string, int> */
     private array $defaultDateFormats = [
         'short' => IntlDateFormatter::SHORT,
         'medium' => IntlDateFormatter::MEDIUM,
@@ -51,6 +52,7 @@ class Formatter
         'full' => IntlDateFormatter::FULL,
     ];
 
+    /** @var array<string, int|array{date: string, time: string, datetime: string}> */
     public array $dateTimeFormats = [
         'short' => IntlDateFormatter::SHORT,
         'medium' => IntlDateFormatter::MEDIUM,
@@ -141,6 +143,9 @@ class Formatter
         )->format($value->toDateTime());
     }
 
+    /**
+     * @param  array<int, int>  $attributes
+     */
     public function asDecimal(mixed $value, ?int $decimals = null, array $attributes = []): string
     {
         if (is_null($value)) {
@@ -261,7 +266,7 @@ class Formatter
         return $integerPart.$decimalOutput;
     }
 
-    public function asDuration(DateInterval|string|int|float|null $value, $implodeString = ', ', $negativeSign = '-'): string
+    public function asDuration(DateInterval|string|int|float|null $value, string $implodeString = ', ', string $negativeSign = '-'): string
     {
         if (is_null($value)) {
             return '';
@@ -553,7 +558,7 @@ class Formatter
         return (string) $this->normalizeNumericValue($value) !== $this->normalizeNumericStringValue((string) $value);
     }
 
-    private function normalizeNumericStringValue($value): ?string
+    private function normalizeNumericStringValue(string|int|float $value): ?string
     {
         $powerPosition = strrpos((string) $value, 'E');
         if ($powerPosition !== false) {
@@ -662,9 +667,7 @@ class Formatter
             }
         }
 
-        if (! isset($dateTime)) {
-            $dateTime = Date::parse($value);
-        }
+        $dateTime ??= Date::parse($value);
 
         if ($offset = $this->getCorrectOffset($dateTime)) {
             $dateTime = $dateTime->addHours($offset / 3600);

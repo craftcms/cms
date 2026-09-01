@@ -9,6 +9,19 @@ use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\PermissionTree;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Heading;
+use CraftCms\Cms\Form\Nodes\HiddenField;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -16,6 +29,7 @@ use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -35,11 +49,12 @@ class UserGroupsController extends BaseUserSettingsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly UserGroups $userGroups,
+        private readonly FormResolver $formResolver,
     ) {
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
-    public function index()
+    public function index(): RedirectResponse|\Inertia\Response
     {
         if (Edition::get() === Edition::Team) {
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
@@ -55,14 +70,15 @@ class UserGroupsController extends BaseUserSettingsController
 
     public function create(UserPermissions $userPermissions): CpScreenResponse
     {
+        $group = new UserGroup;
+
         return new CpScreenResponse()
             ->title(t('Create a new user group'))
             ->crumbs($this->crumbs(t('User Groups')))
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
-                'group' => new UserGroup,
-                'brandNew' => true,
-                'permissions' => $userPermissions->getAllPermissions(),
+                'form' => $this->form($group, $userPermissions, true),
+                'submit' => $this->submit(),
             ]);
     }
 
@@ -87,12 +103,16 @@ class UserGroupsController extends BaseUserSettingsController
             ]))
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/users/groups/Edit', [
-                'group' => [
-                    'id' => $group->id,
-                    ...$group->getConfig(true),
+                'form' => $this->form($group, $userPermissions),
+                'submit' => $this->submit(),
+                'elevatedFields' => ['permissions'],
+                'deleteAction' => $this->readOnly ? null : [
+                    'label' => t('Delete group'),
+                    'confirm' => t('Are you sure you want to delete “{name}”?', [
+                        'name' => $group->name,
+                    ]),
+                    'url' => action([self::class, 'destroy'], ['groupId' => $group->id]),
                 ],
-                'brandNew' => false,
-                'permissions' => $userPermissions->getAllPermissions(),
             ])
             ->when($this->readOnly, function (CpScreenResponse $response) {
                 $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
@@ -169,5 +189,44 @@ class UserGroupsController extends BaseUserSettingsController
         $this->userGroups->deleteGroupById($groupId);
 
         return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.index'));
+    }
+
+    private function form(UserGroup $group, UserPermissions $userPermissions, bool $brandNew = false): FormPayload
+    {
+        $handle = Handle::make('handle');
+        $values = $group->getConfig(true);
+
+        if ($brandNew) {
+            $handle->source('name');
+        }
+
+        return $this->formResolver->resolve(Form::make([
+            HiddenField::make('id'),
+            Field::make(t('Name'), Text::make('name')->autofocus())->required(),
+            Field::make(t('Handle'), $handle)->required(),
+            Field::make(t('Description'), Textarea::make('description')),
+            Separator::make('permissions-separator'),
+            Heading::make('permissions-heading', t('Permissions')),
+            Field::make(null, PermissionTree::make('permissions')
+                ->ariaLabel(t('Permissions'))
+                ->groups($userPermissions->getAllPermissions())),
+        ]), new FormContext(
+            values: [
+                'id' => $group->id,
+                ...$values,
+                'description' => $group->description ?? '',
+                'permissions' => $values['permissions'] ?? [],
+            ],
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+        ));
+    }
+
+    /** @return array{method: 'post', url: string} */
+    private function submit(): array
+    {
+        return [
+            'method' => 'post',
+            'url' => action([self::class, 'store']),
+        ];
     }
 }

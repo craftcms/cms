@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
-use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -24,26 +23,37 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
-use RuntimeException;
 use SensitiveParameter;
 use Webauthn\Exception\InvalidUserHandleException;
 
-use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/**
+ * Resolves authentication methods for users and registers additional method types.
+ *
+ * ```php
+ * public function boot(AuthMethods $authMethods): void
+ * {
+ *     $authMethods->register(MyAuthMethod::class);
+ * }
+ * ```
+ */
 #[Scoped]
 class AuthMethods
 {
     public private(set) ?AuthError $authError = null;
 
     /**
-     * @var Collection<int, Collection<AuthMethodInterface>>
+     * @var Collection<int, Collection<int, AuthMethodInterface>>
      */
     private Collection $methods;
 
@@ -58,13 +68,13 @@ class AuthMethods
         private readonly Hasher $hasher,
         private readonly Passkeys $passkeys,
         private readonly ProjectConfig $projectConfig,
-        private readonly Impersonation $impersonation,
+        private readonly AuthMethodCatalog $authMethodCatalog,
     ) {
         $this->methods = new Collection;
     }
 
     /**
-     * @return Collection<AuthMethodInterface>
+     * @return Collection<int, covariant AuthMethodInterface>
      */
     public function getAllMethods(?CraftUser $user = null): Collection
     {
@@ -80,18 +90,7 @@ class AuthMethods
             return $this->methods[$user->id];
         }
 
-        $methods = new Collection([
-            TOTP::class,
-            RecoveryCodes::class,
-        ]);
-
-        event($event = new AuthMethodsResolving($methods));
-
-        $this->methods[$user->id] = $event->methods->map(function (string $class) use ($user) {
-            if (! is_subclass_of($class, AuthMethodInterface::class)) {
-                throw new RuntimeException("$class must implement ".AuthMethodInterface::class);
-            }
-
+        $this->methods[$user->id] = $this->authMethodCatalog->types()->map(function (string $class) use ($user) {
             /** @var AuthMethodInterface $method */
             $method = app()->make($class);
             $method->setUser($user);
@@ -115,8 +114,26 @@ class AuthMethods
         return $this->methods[$user->id];
     }
 
+    /** @param class-string<AuthMethodInterface> ...$types */
+    public function register(string ...$types): void
+    {
+        $this->authMethodCatalog->register(...$types);
+    }
+
+    /** @param class-string<AuthMethodInterface> ...$types */
+    public function remove(string ...$types): void
+    {
+        $this->authMethodCatalog->remove(...$types);
+    }
+
+    /** @return Collection<int, class-string<AuthMethodInterface>> */
+    public function types(): Collection
+    {
+        return $this->authMethodCatalog->types();
+    }
+
     /**
-     * @return Collection<AuthMethodInterface>
+     * @return Collection<int, covariant AuthMethodInterface>
      */
     public function getAvailableMethods(?CraftUser $user = null): Collection
     {
@@ -153,7 +170,7 @@ class AuthMethods
     /**
      * Returns the authentication methods that are active for the given user.
      *
-     * @return Collection<AuthMethodInterface>
+     * @return Collection<int, covariant AuthMethodInterface>
      */
     public function getActiveMethods(?CraftUser $user = null): Collection
     {
@@ -164,11 +181,6 @@ class AuthMethods
 
     /**
      * Returns an authentication method by its class name.
-     *
-     * @template T of AuthMethodInterface
-     *
-     * @param  class-string<T>  $class
-     * @return T
      *
      * @throws InvalidArgumentException
      */
@@ -198,15 +210,17 @@ class AuthMethods
         return $this->user;
     }
 
-    public function setUser(?CraftUser $user): void
+    public function setUser(?CraftUser $user, bool $remember = false, ?CraftUser $loginUser = null): void
     {
         $this->user = $user?->asElement();
 
         if ($this->user) {
             Session::put('user.id', $this->user->id);
+            Session::put('user.login_id', ($loginUser ?? $user)->getCraftUserId());
+            Session::put('user.remember', $remember);
             Session::put('user.pending_2fa_at', now()->timestamp);
         } else {
-            Session::forget(['user.id', 'user.pending_2fa_at']);
+            Session::forget(['user.id', 'user.login_id', 'user.remember', 'user.pending_2fa_at']);
         }
     }
 
@@ -241,6 +255,7 @@ class AuthMethods
         return false;
     }
 
+    /** @param array{password: string|null} $credentials */
     public function authenticate(CraftUser $user, #[SensitiveParameter] array $credentials): bool
     {
         event($event = new UserAuthenticating($credentials));
@@ -275,8 +290,6 @@ class AuthMethods
 
         if (! $this->hasher->check($plain, $hashed)) {
             $this->authError = AuthError::InvalidCredentials;
-
-            $this->handleInvalidLogin($user);
 
             return false;
         }
@@ -317,17 +330,20 @@ class AuthMethods
 
         // Validate the security key
         try {
-            $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
+            $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
         } catch (InvalidUserHandleException) {
-            $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
+            // the user handle may have been stored in the old (pre-webauthn-5) format; try again, accounting for that
+            try {
+                $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
+            } catch (InvalidUserHandleException) {
+                $updatedCredentialRecord = false;
+            }
         } catch (InvalidArgumentException) {
-            $keyValid = false;
+            $updatedCredentialRecord = false;
         }
 
-        $updatedCredentialRecord = Session::remove($this->passkeys->passkeyCredSourceParam);
-
-        if (! $keyValid) {
-            $this->handleInvalidLogin($user);
+        if ($updatedCredentialRecord === false) {
+            $this->authError = AuthError::InvalidCredentials;
 
             return false;
         }
@@ -339,37 +355,73 @@ class AuthMethods
         return is_null($this->authError);
     }
 
+    /** @param class-string<AuthMethodInterface> $methodClass */
     public function verifyMethod(string $methodClass, mixed ...$args): bool
     {
         $user = $this->getUser();
 
-        if (! $this->getMethod($methodClass, $user)->verify(...$args)) {
-            if ($user) {
-                $this->handleInvalidLogin($user);
-            }
+        $verify = function () use ($methodClass, $user, $args): bool {
+            $verified = DB::transaction(function () use ($methodClass, $user, $args): bool {
+                if ($user) {
+                    DB::table(Table::USERS)
+                        ->where('id', $user->id)
+                        ->lockForUpdate()
+                        ->firstOrFail();
+                }
 
-            return false;
-        }
+                if ($this->getMethod($methodClass, $user)->verify(...$args)) {
+                    return true;
+                }
 
-        // success!
-        if ($user) {
-            $this->setUser(null);
+                if ($user) {
+                    $this->handleInvalidLogin($user);
+                }
 
-            // if we're impersonating, pass the user we're impersonating to the complete the login
-            if ($this->impersonation->isImpersonating()) {
-                $authUser = currentUser();
-            }
+                return false;
+            });
 
-            $authUser ??= auth()->getProvider()->retrieveById($user->id);
-
-            if (! $authUser) {
+            if (! $verified) {
                 return false;
             }
 
-            auth()->login($authUser, true);
+            // success!
+            if ($user) {
+                $user = User::findOne($user->id);
+                $this->authError = $user
+                    ? $this->getAuthError($user)
+                    : AuthError::InvalidCredentials;
+
+                if ($this->authError) {
+                    $this->setUser(null);
+
+                    return false;
+                }
+
+                $authUser = auth()->getProvider()->retrieveById(Session::get('user.login_id', $user->id));
+                $remember = (bool) Session::get('user.remember', false);
+
+                $this->setUser(null);
+
+                if (! $authUser) {
+                    return false;
+                }
+
+                auth()->login($authUser, $remember);
+            }
+
+            return true;
+        };
+
+        if (! $user) {
+            return $verify();
         }
 
-        return true;
+        try {
+            // Serialize verification attempts per user, so concurrent requests can't race each other.
+            return Cache::lock("auth-verify:{$user->id}", 10)->block(5, $verify);
+        } catch (LockTimeoutException) {
+            return false;
+        }
     }
 
     public function getAuthError(CraftUser $user): ?AuthError
@@ -379,6 +431,7 @@ class AuthMethods
         switch ($user->getStatus()) {
             case User::STATUS_INACTIVE:
             case User::STATUS_ARCHIVED:
+            default:
                 return AuthError::InvalidCredentials;
             case User::STATUS_PENDING:
                 return AuthError::PendingVerification;
@@ -404,33 +457,38 @@ class AuthMethods
                         return AuthError::NoCpAccess;
                     }
 
-                    if (
-                        app()->isLive() === false &&
-                        $user->can('accessCpWhenSystemIsOff') === false
-                    ) {
-                        return AuthError::NoCpOfflineAccess;
-                    }
-
-                    return null;
+                    return $this->getMaintenanceAuthError($user, true);
                 }
 
-                if (
-                    app()->isLive() === false &&
-                    $user->can('accessSiteWhenSystemIsOff') === false
-                ) {
-                    return AuthError::NoSiteOfflineAccess;
-                }
+                return $this->getMaintenanceAuthError($user, false);
+        }
+    }
+
+    public function getMaintenanceAuthError(CraftUser $user, bool $isCpRequest): ?AuthError
+    {
+        $user = $user->asElement();
+
+        if (! app()->isDownForMaintenance()) {
+            return null;
         }
 
-        return null;
+        if ($isCpRequest) {
+            return $user->can('accessCpWhenSystemIsOff')
+                ? null
+                : AuthError::NoCpOfflineAccess;
+        }
+
+        return $user->can('accessSiteWhenSystemIsOff')
+            ? null
+            : AuthError::NoSiteOfflineAccess;
     }
 
     public function getAuthMethodErrorMessage(?string $defaultMessage = null): string
     {
         $user = $this->getUser();
-        $authError = null;
+        $authError = $this->authError;
 
-        if ($user) {
+        if (! $authError && $user) {
             $authError = $this->getAuthError($user);
         }
 
@@ -472,8 +530,8 @@ class AuthMethods
                 : t('You need to reset your password, but an error was encountered when sending the password reset email.'),
             AuthError::AccountSuspended => t('Account suspended.'),
             AuthError::NoCpAccess => t('You cannot access the control panel with that account.'),
-            AuthError::NoCpOfflineAccess => t('You cannot access the control panel while the system is offline with that account.'),
-            AuthError::NoSiteOfflineAccess => t('You cannot access the site while the system is offline with that account.'),
+            AuthError::NoCpOfflineAccess => t('You cannot access the control panel while maintenance mode is enabled with that account.'),
+            AuthError::NoSiteOfflineAccess => t('You cannot access the site while maintenance mode is enabled with that account.'),
             default => $this->generalConfig->useEmailAsUsername
                 ? t('Invalid email or password.')
                 : t('Invalid username or password.'),

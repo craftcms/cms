@@ -7,9 +7,14 @@
 
 namespace craft\helpers;
 
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Template as BaseTemplate;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
+use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\TemplateProfiler;
+use Illuminate\Contracts\Database\Query\Builder;
+use LogicException;
 use yii\db\QueryInterface;
 
 /**
@@ -58,6 +63,21 @@ class Template extends BaseTemplate
     public static function paginateCriteria(QueryInterface $query): array
     {
         return self::paginateQuery($query);
+    }
+
+    public static function paginateQuery(Builder|QueryInterface $query): array
+    {
+        if (!method_exists($query, 'paginate')) {
+            throw new LogicException(sprintf('%s must implement a paginate() method.', $query::class));
+        }
+
+        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
+        $paginator->appends(Arr::except(request()->query(), $pageParam));
+
+        return [
+            Paginate::create($paginator),
+            $paginator->items(),
+        ];
     }
 
     public static function beginProfile(string $type, string $name): void
