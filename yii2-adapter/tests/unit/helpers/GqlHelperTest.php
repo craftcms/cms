@@ -83,7 +83,7 @@ class GqlHelperTest extends TestCase
     public function testSchemaQueryAbility(): void
     {
         $permissionSet = [
-            'usergroups.allUsers:read',
+            'usergroups.everyone:read',
             'globalsets.someSet:read',
             'sections.someSection:read',
         ];
