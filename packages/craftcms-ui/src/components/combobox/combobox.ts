@@ -16,6 +16,8 @@ export interface ComboboxOptionData {
   hint?: string;
   /** Renders a `craft-indicator` before the label. */
   indicator?: {variant?: string} & Record<string, unknown>;
+  /** Name of a `craft-icon` rendered before the label, and in the textbox while this option is selected. */
+  icon?: string;
   [key: string]: unknown;
 }
 
@@ -134,6 +136,14 @@ export default class CraftCombobox extends LionCombobox {
       changed.has('showSelectedHint')
     ) {
       this.#renderOptions();
+    }
+    if (changed.has('options') || changed.has('modelValue')) {
+      // The prefix icon is absolutely positioned over the slotted input, so
+      // the input only gets its leading padding while an icon is showing.
+      this.toggleAttribute(
+        'has-prefix-icon',
+        this.#selectedOption()?.data?.icon != null
+      );
     }
   }
 
@@ -319,6 +329,9 @@ export default class CraftCombobox extends LionCombobox {
                 variant=${data.indicator.variant ?? 'neutral'}
               ></craft-indicator>`
             : nothing}
+          ${data.icon
+            ? html`<craft-icon name="${data.icon}"></craft-icon>`
+            : nothing}
           ${isEnv ? html`<code>${label}</code>` : label}
         </span>
       </craft-option>
@@ -339,8 +352,13 @@ export default class CraftCombobox extends LionCombobox {
   };
 
   override _inputGroupInputTemplate() {
+    const icon = this.#selectedOption()?.data?.icon;
+
     return html`
       <div class="input-group__input">
+        ${icon
+          ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
+          : nothing}
         <slot name="input"></slot>
         ${this.clearable && this.#hasValue()
           ? html`<craft-button
@@ -385,20 +403,45 @@ export default class CraftCombobox extends LionCombobox {
   #optionByLabel(label: string): ComboboxOption | undefined {
     const target = label.trim();
 
-    for (const item of this.options) {
-      if (this.#isGroup(item)) {
-        const found = item.options.find(
-          (option) => this.#displayLabel(option) === target
-        );
-        if (found) {
-          return found;
-        }
-      } else if (this.#displayLabel(item) === target) {
-        return item;
+    for (const option of this.#allOptions()) {
+      if (this.#displayLabel(option) === target) {
+        return option;
       }
     }
 
     return undefined;
+  }
+
+  /**
+   * The option the model value currently holds, if any. Free text (which the
+   * model also carries, `requireOptionMatch` being false) matches nothing, so
+   * a half-typed query never shows a stale option's icon.
+   */
+  #selectedOption(): ComboboxOption | undefined {
+    if (!this.#hasValue()) {
+      return undefined;
+    }
+
+    const target = String(this.modelValue);
+
+    for (const option of this.#allOptions()) {
+      if (String(option.value) === target) {
+        return option;
+      }
+    }
+
+    return undefined;
+  }
+
+  /** Every option in source order, with groups flattened. */
+  *#allOptions(): Generator<ComboboxOption> {
+    for (const item of this.options) {
+      if (this.#isGroup(item)) {
+        yield* item.options;
+      } else {
+        yield item;
+      }
+    }
   }
 
   /**

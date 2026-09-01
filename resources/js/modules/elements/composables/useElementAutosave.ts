@@ -198,7 +198,19 @@ export function useElementAutosave<T extends object>(
 
   // Re-armed per call, so a pending save always waits out the newest change.
   const delay = ref(delays.discrete);
-  const debounced = useDebounceFn(() => void save(), delay);
+
+  // `useDebounceFn` hands back no reference to the timer it arms, so there is
+  // nothing to clear when a save is called off mid-debounce. The callback is
+  // gated instead: `cancel()` disarms it and the timer fires into a no-op.
+  let armed = false;
+  const debounced = useDebounceFn(() => {
+    if (!armed) {
+      return;
+    }
+
+    armed = false;
+    void save();
+  }, delay);
 
   let suspended = false;
 
@@ -214,6 +226,7 @@ export function useElementAutosave<T extends object>(
     }
 
     delay.value = delays[kind];
+    armed = true;
     void debounced();
   }
 
@@ -250,12 +263,15 @@ export function useElementAutosave<T extends object>(
   }
 
   /**
-   * Abandons the in-flight save and any queued follow-up. The baseline only
-   * advances on a save that lands, so the edits go out with the next mutation.
+   * Abandons the in-flight save and any queued follow-up — the one coalesced
+   * behind a request already out, and the one a keystroke armed but whose
+   * debounce has not run yet. The baseline only advances on a save that lands,
+   * so the edits go out with the next mutation.
    */
   function cancel(): void {
     cancelled = true;
     pending = false;
+    armed = false;
     controller?.abort();
 
     if (status.value === 'saving') {

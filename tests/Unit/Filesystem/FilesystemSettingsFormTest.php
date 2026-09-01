@@ -13,8 +13,8 @@ use CraftCms\Cms\Form\FormResolver;
 it('exposes the complete local filesystem settings as a typed form', function () {
     $filesystem = new Local([
         'hasUrls' => true,
-        'url' => '@web/uploads',
-        'path' => '@webroot/uploads',
+        'url' => 'https://example.test/uploads',
+        'path' => '/tmp/uploads',
     ]);
 
     $payload = app(FormResolver::class)->resolve($filesystem->settingsForm(), new FormContext(
@@ -34,9 +34,14 @@ it('exposes the complete local filesystem settings as a typed form', function ()
         ->and($payload->values)->toBe([
             'settings' => [
                 'hasUrls' => true,
-                'url' => '@web/uploads',
-                'path' => '@webroot/uploads',
+                'url' => 'https://example.test/uploads',
+                'path' => '/tmp/uploads',
             ],
+        ])
+        ->and($filesystem->getSettings())->toBe([
+            'hasUrls' => true,
+            'url' => 'https://example.test/uploads',
+            'path' => '/tmp/uploads',
         ]);
 });
 

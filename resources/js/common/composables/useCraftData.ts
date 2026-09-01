@@ -30,6 +30,7 @@ export interface CraftData {
     url: string;
   } | null;
   readOnly: boolean;
+  maintenanceMode: boolean;
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {

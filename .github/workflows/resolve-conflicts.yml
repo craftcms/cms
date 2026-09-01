@@ -47,7 +47,7 @@ jobs:
           echo "Conflicted PRs targeting $BASE: $json"
 
   resolve-conflicts:
-    name: "resolve conflicts: PR #${{ matrix.pr }}"
+    name: 'resolve conflicts: PR #${{ matrix.pr }}'
     needs: find-conflicted-prs
     if: needs.find-conflicted-prs.outputs.prs != '[]'
     runs-on: ubuntu-latest

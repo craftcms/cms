@@ -16,6 +16,8 @@ interface ChoiceInputHost {
 interface ChoiceInputInternals {
   _inputId: string;
   _inputNode: HTMLElement | undefined;
+  _isHandlingUserInput: boolean;
+  _toggleChecked(ev: Event): void;
 }
 
 /**
@@ -65,6 +67,50 @@ export const SsrChoiceInputMixin = <
     override connectedCallback() {
       this.__adoptSlottedInputState();
       super.connectedCallback();
+    }
+
+    /**
+     * Derive the new state from the input the user just toggled, rather than
+     * inverting the host's own.
+     *
+     * Lion toggles relatively (`this.checked = !this.checked`), which assumes
+     * it is the only writer. It isn't: a consumer that also binds `checked`
+     * declaratively — `ChoiceControl` renders `.checked="selected(…)"` on both
+     * checkboxes and radios — updates its model from the input's `change` and
+     * re-renders, and that write can land on the host *before* this handler
+     * runs. The host then already holds the value the user produced, so
+     * inverting it puts it straight back and the click is swallowed. Only
+     * every second click registers.
+     *
+     * Reading the input instead is idempotent, so it lands on the same result
+     * whether or not a re-render got there first. It is also the more correct
+     * reading for a radio, where activating an already-checked one must leave
+     * it checked rather than flip it off.
+     *
+     * `_toggleChecked` is bound in Lion's constructor off the prototype chain,
+     * so this override is what gets subscribed to `user-input-changed`.
+     */
+    protected _toggleChecked(ev: Event) {
+      const internals = this as unknown as ChoiceInputInternals;
+      const input = internals._inputNode;
+
+      if (this.disabled) {
+        return;
+      }
+
+      if (!(input instanceof HTMLInputElement)) {
+        // Nothing to read from — leave Lion's own behavior in place.
+        Object.getPrototypeOf(SsrChoiceInput.prototype)._toggleChecked?.call(
+          this,
+          ev
+        );
+
+        return;
+      }
+
+      internals._isHandlingUserInput = true;
+      this.checked = input.checked;
+      internals._isHandlingUserInput = false;
     }
 
     /**

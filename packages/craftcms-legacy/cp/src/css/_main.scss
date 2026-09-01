@@ -2974,12 +2974,6 @@ table:not(.cp-table) {
 .chips {
   align-items: flex-start;
   gap: var(--xs);
-
-  &.chips-small {
-    li {
-      height: calc(34rem / 16);
-    }
-  }
 }
 
 .inline-chips {
@@ -3156,21 +3150,6 @@ table:not(.cp-table) {
 
     .status-label .status-label-text {
       --status-label-text-color: var(--white) !important;
-    }
-  }
-}
-
-.card-grid {
-  display: grid !important;
-  gap: var(--s) !important;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-
-  & > li {
-    border-radius: var(--radius-lg);
-
-    & > .card {
-      margin: 0 !important;
-      height: 100%;
     }
   }
 }
@@ -4701,11 +4680,6 @@ table.data tbody tr:not(.disabled).active-drop-target {
 /* ----------------------------------------
 /*  Condition builders
 /* ---------------------------------------- */
-
-.condition-container {
-  margin-block: 24px;
-  margin-inline: 0;
-}
 
 .condition-rule,
 .condition-footer {

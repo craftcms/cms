@@ -15,6 +15,7 @@
   import {useEventListener} from '@vueuse/core';
   import FormNodeList from './FormNodeList.vue';
   import {
+    canonical,
     FormFailure,
     FormControlOverrides,
     FormModifiedGroups,
@@ -33,15 +34,6 @@
     FormValue,
     FormValues,
   } from './types';
-
-  type CanonicalFormValue =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | CanonicalFormValue[]
-    | {[key: string]: CanonicalFormValue};
 
   const props = defineProps<{
     payload: FormPayload;
@@ -443,41 +435,6 @@
     }
 
     return raw;
-  }
-
-  function canonical(value: FormValue): string {
-    return JSON.stringify(canonicalValue(value));
-  }
-
-  function canonicalValue(value: FormValue): CanonicalFormValue {
-    // Nothing and empty mean the same thing to a form, so a control reporting
-    // one where the server sent the other has not edited anything. Without
-    // this, populating a field on load can read as a change purely because the
-    // control's idea of empty differs from the server's.
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
-
-    if (Array.isArray(value)) {
-      return value.map(canonicalValue);
-    }
-
-    if (value instanceof File) {
-      return {
-        name: value.name,
-        size: value.size,
-        type: value.type,
-        lastModified: value.lastModified,
-      };
-    }
-
-    if (!isRecord(value)) return value;
-
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, canonicalValue(value[key])])
-    );
   }
 
   function isWithin(path: string[], scope: string[]): boolean {

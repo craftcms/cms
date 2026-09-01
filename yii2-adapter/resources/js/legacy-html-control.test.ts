@@ -20,7 +20,10 @@ describe('Legacy HTML Form Control', () => {
   it('mounts assets in order and expands flat values before mutation', async () => {
     const appendChild = Node.prototype.appendChild;
 
-    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (node) {
+    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (
+      this: Node,
+      node
+    ) {
       if (node instanceof HTMLElement && node.dataset.legacyOrder) {
         ((window as any).legacyOrder ??= []).push(node.dataset.legacyOrder);
       }
@@ -70,7 +73,10 @@ describe('Legacy HTML Form Control', () => {
     const appendChild = document.body.appendChild;
     let failedScript: HTMLScriptElement | undefined;
 
-    vi.spyOn(document.body, 'appendChild').mockImplementation(function (node) {
+    vi.spyOn(document.body, 'appendChild').mockImplementation(function (
+      this: Node,
+      node
+    ) {
       if (
         node instanceof HTMLScriptElement &&
         node.src.endsWith('/missing-legacy.js')
@@ -286,7 +292,7 @@ async function mount(
   },
   options: {
     refreshable?: boolean;
-    refresh?: (values: FormPayload['values'], scope: string[]) => void;
+    refresh?: (values: FormPayload['values'], scope?: string[]) => void;
     scope?: string[];
     path?: string[];
     namespace?: string;
@@ -341,7 +347,7 @@ async function mount(
         h(FormRenderer, {
           payload,
           refresh: options.refresh
-            ? async (values: FormPayload['values'], scope: string[]) => {
+            ? async (values: FormPayload['values'], scope?: string[]) => {
                 options.refresh!(values, scope);
 
                 return payload;

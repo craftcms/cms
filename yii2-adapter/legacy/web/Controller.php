@@ -15,7 +15,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -82,13 +81,13 @@ abstract class Controller extends \yii\web\Controller
      * - `false` or `self::ALLOW_ANONYMOUS_NEVER` (default) – indicates that all controller actions should never be
      *   accessed anonymously
      * - `true` or `self::ALLOW_ANONYMOUS_LIVE` – indicates that all controller actions can be accessed anonymously when
-     *    the system is live
+     *    maintenance mode is disabled
      * - `self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be accessed anonymously when the
-     *    system is offline
+     *    maintenance mode is enabled
      * - `self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be
-     *    accessed anonymously when the system is live or offline
+     *    accessed anonymously regardless of whether maintenance mode is enabled
      * - An array of action IDs (e.g. `['save-guest-entry', 'edit-guest-entry']`) – indicates that the listed action IDs
-     *   can be accessed anonymously when the system is live
+     *   can be accessed anonymously when maintenance mode is disabled
      * - An array of action ID/bitwise pairs (e.g. `['save-guest-entry' => self::ALLOW_ANONYMOUS_OFFLINE]` – indicates
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
@@ -219,7 +218,7 @@ abstract class Controller extends \yii\web\Controller
      * @return bool whether the action should continue to run.
      * @throws BadRequestHttpException if the request is missing a valid CSRF token
      * @throws ForbiddenHttpException if the user is not logged in or lacks the necessary permissions
-     * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
+     * @throws ServiceUnavailableHttpException if maintenance mode is enabled and the user isn't allowed to access it
      * @throws UnauthorizedHttpException
      */
     public function beforeAction($action): bool
@@ -247,7 +246,7 @@ abstract class Controller extends \yii\web\Controller
             return;
         }
 
-        $isLive = app()->isLive();
+        $isLive = !app()->isDownForMaintenance();
         $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
 
         if (is_int($this->allowAnonymous)) {
@@ -265,7 +264,7 @@ abstract class Controller extends \yii\web\Controller
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
-                    $retryDuration = app(ProjectConfig::class)->get('system.retryDuration');
+                    $retryDuration = app()->maintenanceMode()->data()['retry'] ?? null;
                     if ($retryDuration) {
                         $this->response->getHeaders()->setDefault('Retry-After', $retryDuration);
                     }
@@ -273,13 +272,13 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
 
-            // If the system is offline, make sure they have permission to access the control panel/site
+            // If maintenance mode is enabled, make sure they have permission to access the control panel/site
             if (!$isLive) {
                 $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Gate::check($permission)) {
                     $error = $this->request->getIsCpRequest()
-                        ? t('Your account doesn’t have permission to access the control panel when the system is offline.')
-                        : t('Your account doesn’t have permission to access the site when the system is offline.');
+                        ? t('Your account doesn’t have permission to access the control panel when maintenance mode is enabled.')
+                        : t('Your account doesn’t have permission to access the site when maintenance mode is enabled.');
                     throw new ServiceUnavailableHttpException($error);
                 }
             }

@@ -219,10 +219,6 @@
       }
     }
   }
-
-  function checkboxValue(event: Event): boolean {
-    return event.target instanceof HTMLInputElement && event.target.checked;
-  }
 </script>
 
 <template>
@@ -339,6 +335,7 @@
             row: true,
             'cp-table-row': true,
             'cp-table-row--folder': isFolderRow(row.original),
+            sel: row.getIsSelected(),
             'row--dragging':
               !readOnly && getDragState(row.id).type === 'is-dragging',
           }"
@@ -474,5 +471,13 @@
 
   .cp-table-row--folder {
     cursor: pointer;
+  }
+
+  // Selected rows take the accent fill a selected chip or thumbnail does, so a
+  // selection reads the same whichever view mode you're in. Painted on the
+  // cells rather than the row: a `<tr>` background loses to any the cells set.
+  :deep(.cp-table-row.sel > td) {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
   }
 </style>

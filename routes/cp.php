@@ -33,6 +33,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -76,7 +77,7 @@ use function CraftCms\Cms\cp_url;
 /**
  * Admin requests that do not require a login
  */
-Route::prefix('install')->group(function () {
+Route::allowDuringMaintenance()->prefix('install')->group(function () {
     Route::get('/', [InstallController::class, 'index']);
     Route::post('/', [InstallController::class, 'install']);
     Route::post('validate-db', [InstallController::class, 'validateDb']);
@@ -84,7 +85,7 @@ Route::prefix('install')->group(function () {
     Route::post('validate-site', [InstallController::class, 'validateSite']);
 });
 
-Route::prefix('updates')->name('updates.')->group(function () {
+Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(function () {
     Route::post('/', [UpdaterController::class, 'index'])->name('index');
     Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate'])->name('force-update');
     Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
@@ -98,7 +99,7 @@ Route::prefix('updates')->name('updates.')->group(function () {
     Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
 });
 
-Route::middleware('craft.web')->group(function () {
+Route::allowDuringMaintenance()->middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
     Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
@@ -115,7 +116,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
+    Route::allowDuringMaintenance()->any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -158,7 +159,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
     });
 
-    Route::prefix('pluginstore/remove')->middleware(RequireAdminChanges::class)->group(function () {
+    Route::allowDuringMaintenance()->prefix('pluginstore/remove')->middleware(RequireAdminChanges::class)->group(function () {
         Route::post('/', [RemoveController::class, 'index']);
         Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
         Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
@@ -258,7 +259,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
-            Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+            Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 
         // Index page
@@ -292,10 +293,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // General
-        Route::get('settings/general', [GeneralSettingsController::class, 'index'])
+        Route::allowDuringMaintenance()
+            ->get('settings/general', [GeneralSettingsController::class, 'index'])
             ->name('settings.general.index');
-        Route::post('settings/general', [GeneralSettingsController::class, 'store'])
-            ->middleware([RequireAdminChanges::class])
+        Route::allowDuringMaintenance()
+            ->post('settings/general', [GeneralSettingsController::class, 'store'])
             ->name('settings.general.store');
 
         // Email
@@ -422,6 +424,19 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             });
 
             Route::get('{transformHandle}', [ImageTransformsController::class, 'edit'])->name('edit');
+        });
+
+        Route::prefix('settings/assets/transformers')->name('settings.assets.transformers.')->group(function () {
+            Route::get('/', [AssetTransformersController::class, 'index'])->name('index');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [AssetTransformersController::class, 'create'])->name('create');
+                Route::post('/', [AssetTransformersController::class, 'store']);
+                Route::post('form', [AssetTransformersController::class, 'renderForm']);
+                Route::delete('{handle}', [AssetTransformersController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::get('{handle}', [AssetTransformersController::class, 'edit'])->name('edit');
         });
 
         // Sites

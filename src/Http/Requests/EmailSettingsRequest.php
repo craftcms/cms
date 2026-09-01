@@ -18,7 +18,7 @@ class EmailSettingsRequest extends FormRequest
 
         $rules = [
             'fromEmail' => [new EnvValueRule(['required', 'string', 'email'])],
-            'fromName' => ['required', 'string'],
+            'fromName' => [new EnvValueRule(['required', 'string'])],
             'replyToEmail' => [new EnvValueRule(['nullable', 'string', 'email'])],
             'mailer' => [new EnvValueRule(['nullable', 'string', Rule::in($validMailers)])],
             'template' => ['nullable', 'string'],

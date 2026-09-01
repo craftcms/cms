@@ -11,6 +11,16 @@ export interface FormValues {
   [key: string]: FormValue;
 }
 
+/** A {@link FormValue} reduced to its comparable form. See `canonical()`. */
+export type CanonicalFormValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | CanonicalFormValue[]
+  | {[key: string]: CanonicalFormValue};
+
 export type FormPropertyValue =
   | string
   | number

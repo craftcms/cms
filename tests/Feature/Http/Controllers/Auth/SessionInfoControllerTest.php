@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateHooks;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
@@ -145,6 +149,24 @@ test('password confirmation captures alternative login methods and assets', func
         ->assertJsonPath('alternativeLoginMethods.html', '<button>Alternative login</button>')
         ->assertJsonPath('alternativeLoginMethods.headHtml', fn (string $html): bool => str_contains($html, '/alternative-login.css'))
         ->assertJsonPath('alternativeLoginMethods.bodyHtml', fn (string $html): bool => str_contains($html, 'window.alternativeLoginReady = true'));
+});
+
+test('password confirmation includes configured OAuth buttons', function () {
+    Edition::set(Edition::Pro);
+    actingAs(User::findOne());
+    app(GeneralConfig::class)->oauthProviders([
+        'test' => [
+            'driver' => FakeOAuthProvider::class,
+            'clientId' => 'client-id',
+            'clientSecret' => 'client-secret',
+            'label' => 'Continue with Test OAuth',
+        ],
+    ]);
+
+    postJson(action([SessionInfoController::class, 'confirmPassword']))
+        ->assertOk()
+        ->assertJsonPath('alternativeLoginMethods.html', fn (string $html): bool => str_contains($html, 'Continue with Test OAuth') &&
+            str_contains($html, cp_url('oauth/test/redirect')));
 });
 
 test('password confirmation validates its options', function () {
