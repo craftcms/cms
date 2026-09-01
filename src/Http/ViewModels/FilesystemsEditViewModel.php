@@ -42,11 +42,7 @@ class FilesystemsEditViewModel extends ViewModel
             'handle' => $this->filesystem->handle,
             'oldHandle' => $this->oldHandle,
             'type' => $this->filesystem::class,
-            'settings' => [
-                ...$this->filesystem->getSettings(),
-                'hasUrls' => $this->filesystem->hasUrls,
-                'url' => $this->filesystem->url,
-            ],
+            'settings' => $this->filesystem->getSettings(),
         ];
         $errors = $this->filesystem->errors()->getMessages();
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
