@@ -25,7 +25,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
-          coverage: 'xdebug'
+          coverage: 'pcov'
  
       - name: Resolve TIA baseline path
         id: baseline
