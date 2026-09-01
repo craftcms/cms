@@ -33,6 +33,10 @@ export default class CraftShortcut extends LitElement {
   @property({type: Boolean})
   shift: boolean = false;
 
+  /**
+   * Which platform's modifier symbols to render. Detected from the browser
+   * when not set, so a Mac shows ⌘ and Windows shows Ctrl.
+   */
   @property()
   os: 'Mac' | 'Windows' | 'Linux' | 'Unknown' = 'Unknown';
 
