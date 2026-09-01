@@ -19,8 +19,7 @@ trait CraftCommand
     {
         return array_map(
             fn (string $alias) => Str::start($alias, 'craft:'),
-            /** @phpstan-ignore-next-line */
-            $this->aliases ?? [],
+            parent::getAliases(),
         );
     }
 
