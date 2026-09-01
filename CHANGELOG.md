@@ -4,6 +4,7 @@
 
 - Added `craft\helpers\ElementHelper::containsTempSlug()`.
 - Added `craft\services\Config::doesEnvVarExist()`.
+- Improved `craft\helpers\App::parseEnv()` behavior. ([#19524](https://github.com/craftcms/cms/pull/19524), [#19522](https://github.com/craftcms/cms/issues/19522))
 - Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
 - Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
 - Fixed a bug where the primary site’s content wasn’t preferred when propagating a Single section’s entry to new sites. ([#19473](https://github.com/craftcms/cms/issues/19473))
