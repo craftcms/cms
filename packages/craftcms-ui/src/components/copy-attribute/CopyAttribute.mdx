@@ -1,0 +1,26 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CopyAttributeStories from './copy-attribute.stories';
+
+<Meta of={CopyAttributeStories} name="Docs" />
+
+# Copy Attribute
+
+`<craft-copy-attribute>` copies a value read from an element's attribute.
+
+<Canvas of={CopyAttributeStories.Default} sourceState="shown" />
+
+It exists for server-rendered markup, where the value to copy is already on an element in the page and passing it through a property would mean serialising it twice.
+
+For a value you have in script, [Copy Button](?path=/docs/functional-copy-button--docs) takes it directly and is simpler.
+
+## Events
+
+Like the copy button, it emits `craft-copy` on success and `craft-error` on failure — clipboard writes can be refused, and the interface should say so rather than appear to have worked.
+
+## Accessibility
+
+The same rule as the copy button: name the control with what it copies, and announce the result if the surrounding page does not already.
+
+## Properties
+
+<ArgTypes of={CopyAttributeStories} />
