@@ -131,27 +131,25 @@
     pendingSortFocusHeaderId.value ? t('Sorting') : t('Loading')
   );
 
-  function onSortColumn(
-    column: Column<any>,
-    headerId: string,
-    event: MouseEvent
-  ) {
-    pendingSortFocusHeaderId.value = headerId;
-    column.getToggleSortingHandler()?.(event);
+  function captureFocusedHeaderId(): string | null {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) return null;
+    const headerCell = active.closest<HTMLElement>('th[id^="header-"]');
+    return headerCell ? headerCell.id.slice('header-'.length) : null;
   }
 
   watch(
     () => props.loading,
     async (isLoading, wasLoading) => {
-      if (!pendingSortFocusHeaderId.value) return;
-
       if (isLoading) {
+        pendingSortFocusHeaderId.value = captureFocusedHeaderId();
+        if (!pendingSortFocusHeaderId.value) return;
         await nextTick();
         loadingRef.value?.focus();
         return;
       }
 
-      if (wasLoading) {
+      if (wasLoading && pendingSortFocusHeaderId.value) {
         const headerId = pendingSortFocusHeaderId.value;
         pendingSortFocusHeaderId.value = null;
         await nextTick();
@@ -356,7 +354,7 @@
             <ColumnHeaderTitle
               :is-sortable="header.column.getCanSort()"
               :sort-instructions-id="columnSortInstructionId"
-              @sort-column="onSortColumn(header.column, header.id, $event)"
+              @sort-column="header.column.getToggleSortingHandler()?.($event)"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
