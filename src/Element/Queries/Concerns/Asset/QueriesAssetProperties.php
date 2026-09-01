@@ -10,7 +10,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Database\Query\Builder;
-use InvalidArgumentException;
 
 /**
  * @internal
@@ -148,10 +147,10 @@ trait QueriesAssetProperties
     {
         if ($value instanceof User || $value instanceof UserModel) {
             $this->uploaderId = $value->id;
-        } elseif (is_numeric($value)) {
-            $this->uploaderId = $value;
         } else {
-            throw new InvalidArgumentException('Invalid uploader value');
+            // the only remaining possibilities are int|null
+            // and neither should lead to an exception
+            $this->uploaderId = $value;
         }
 
         return $this;

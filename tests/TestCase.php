@@ -29,6 +29,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
@@ -50,10 +51,16 @@ class TestCase extends Orchestra
     use RegistersPackageAliases;
     use WithWorkbench;
 
+    private static bool $parallelDatabaseCreated = false;
+
     #[Override]
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
+
+        if (getenv('TEST_TOKEN') !== false) {
+            return;
+        }
 
         DatabaseLock::acquire();
     }
@@ -88,7 +95,8 @@ class TestCase extends Orchestra
             app(Search::class)->useFullText = false;
         }
 
-        File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(config_path('craft/'.app(ProjectConfig::class)->folderName));
+
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
 
         Factory::guessFactoryNamesUsing(
@@ -100,12 +108,14 @@ class TestCase extends Orchestra
         $this->withoutVite();
 
         // Always start with a fresh default admin user
-        User::first()->update([
-            'username' => 'craftcms',
-            'password' => Hash::make('craftcms2018!!'),
-            'email' => 'support@craftcms.com',
-            'admin' => true,
-        ]);
+        if ($user = User::first()) {
+            $user->update([
+                'username' => 'craftcms',
+                'password' => Hash::make('craftcms2018!!'),
+                'email' => 'support@craftcms.com',
+                'admin' => true,
+            ]);
+        }
     }
 
     protected function connectionsToTransact(): array
@@ -120,7 +130,9 @@ class TestCase extends Orchestra
     #[Override]
     protected function tearDown(): void
     {
+        app()->maintenanceMode()->deactivate();
         Gate::clearResolvedInstances();
+        PreventRequestsDuringMaintenance::flushState();
 
         app(ProjectConfig::class)->reset();
 
@@ -222,7 +234,24 @@ class TestCase extends Orchestra
     #[Override]
     protected function defineEnvironment($app): void
     {
-        File::cleanDirectory(config_path('craft/project'));
+        $projectConfigFolder = 'project';
+
+        if (($token = getenv('TEST_TOKEN')) !== false) {
+            $projectConfigFolder .= "_$token";
+            $storagePath = $app->storagePath("parallel_$token");
+            $app->useStoragePath($storagePath);
+            File::ensureDirectoryExists($storagePath);
+            File::ensureDirectoryExists($app->storagePath('framework'));
+            File::ensureDirectoryExists($app->storagePath('framework/testing'));
+
+            $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig) use ($projectConfigFolder) {
+                $projectConfig->folderName = $projectConfigFolder;
+                $projectConfig->writeYamlAutomatically = false;
+            });
+        }
+
+        File::cleanDirectory(config_path("craft/$projectConfigFolder"));
+
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
         File::cleanDirectory(storage_path('logs'));
 
@@ -250,6 +279,8 @@ class TestCase extends Orchestra
                 $connectionConfig = ConnectionConfig::normalize($connectionConfig);
 
                 if (($connectionConfig['driver'] ?? null) === 'sqlite') {
+                    $connectionConfig['foreign_key_constraints'] = true;
+
                     unset(
                         $connectionConfig['busy_timeout'],
                         $connectionConfig['journal_mode'],
@@ -260,7 +291,23 @@ class TestCase extends Orchestra
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }
 
+                if (($token = getenv('TEST_TOKEN')) !== false && ($database = $connectionConfig['database'] ?? null) !== ':memory:') {
+                    $config->set("database.connections.{$connection}", $connectionConfig);
+                    DB::setDefaultConnection($connection);
+
+                    $parallelDatabase = "{$database}_test_{$token}";
+
+                    if (! self::$parallelDatabaseCreated) {
+                        DB::getSchemaBuilder()->dropDatabaseIfExists($parallelDatabase);
+                        DB::getSchemaBuilder()->createDatabase($parallelDatabase);
+                        self::$parallelDatabaseCreated = true;
+                    }
+
+                    $connectionConfig['database'] = $parallelDatabase;
+                }
+
                 $config->set("database.connections.{$connection}", $connectionConfig);
+                DB::purge($connection);
             }
 
             if ($connection === 'pgsql') {

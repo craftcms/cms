@@ -50,13 +50,13 @@ trait QueriesRolesAndPermissions
      * @var mixed The permission that the resulting users must have.
      *            ---
      *            ```php
-     *            // fetch users who can access the front end when the system is offline
+     *            // fetch users who can access the front end when maintenance mode is enabled
      *            $admins = \CraftCms\Cms\User\Elements\User::find()
      *            ->can('accessSiteWhenSystemIsOff')
      *            ->all();
      *            ```
      *            ```twig
-     *            {# fetch users who can access the front end when the system is offline #}
+     *            {# fetch users who can access the front end when maintenance mode is enabled #}
      *            {% set admins = users()
      *            .can('accessSiteWhenSystemIsOff')
      *            .all() %}
@@ -115,14 +115,14 @@ trait QueriesRolesAndPermissions
      * ---
      *
      * ```twig
-     * {# Fetch users who can access the front end when the system is offline #}
+     * {# Fetch users who can access the front end when maintenance mode is enabled #}
      * {% set {elements-var} = {twig-method}
      *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch users who can access the front end when the system is offline
+     * // Fetch users who can access the front end when maintenance mode is enabled
      * ${elements-var} = {element-class}::find()
      *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();

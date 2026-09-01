@@ -196,6 +196,18 @@ class Security extends \yii\base\Security
         return app(ModernSecurity::class)->isSystemDir($path);
     }
 
+    /**
+     * Returns whether the given file path is located in what's considered a sensitive/restricted directory.
+     *
+     * @param string $path
+     * @return bool
+     * @since 5.10.9
+     */
+    public function isRestrictedDir(string $path): bool
+    {
+        return app(ModernSecurity::class)->isRestrictedDir($path);
+    }
+
     private function supportSecurity(): ModernSecurity
     {
         return new ModernSecurity($this->sensitiveKeywords);

@@ -42,6 +42,7 @@
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   const {
+    selection,
     selectedIds,
     hasSelection,
     showBulkActions,
@@ -117,7 +118,7 @@
     </div>
 
     <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
-      <slot name="body"></slot>
+      <slot name="body" :selection="selection"></slot>
     </div>
 
     <div class="element-index__footer" ref="indexFooter" v-if="showFooter">

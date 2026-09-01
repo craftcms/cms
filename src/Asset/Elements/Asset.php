@@ -17,17 +17,18 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
-use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -35,7 +36,6 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
@@ -47,6 +47,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -65,13 +66,13 @@ use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
-use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -147,7 +148,6 @@ use function CraftCms\Cms\t;
  * @property-read string $imageTransformSourcePath
  * @property User|null $uploader
  * @property-read resource $stream
- * @property-write null|string|array<string, bool|float|int|string|null>|ImageTransform $transform
  * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  *
@@ -328,8 +328,6 @@ class Asset extends Element
      * @var array{x: float, y: float}|null Focal point
      */
     private ?array $_focalPoint = null;
-
-    private ?ImageTransform $_transform = null;
 
     private ?Volume $_volume = null;
 
@@ -1136,69 +1134,6 @@ class Asset extends Element
         return app(CurrentElementIndex::class)->isActive() && request()->boolean('foldersOnly');
     }
 
-    #[Override]
-    public function __toString(): string
-    {
-        if (isset($this->_transform) && $url = $this->getUrl()) {
-            return $url;
-        }
-
-        return parent::__toString();
-    }
-
-    /**
-     * Checks if a property is set.
-     *
-     * This method will check if $name is one of the following:
-     * - a magic property supported by [[Element::__isset()]]
-     * - an image transform handle
-     *
-     * @param  string  $name  The property name
-     * @return bool Whether the property is set
-     */
-    #[Override]
-    public function __isset($name): bool
-    {
-        if (parent::__isset($name)) {
-            return true;
-        }
-
-        if (str_starts_with($name, 'transform:')) {
-            return true;
-        }
-
-        return (bool) app(ImageTransforms::class)->getTransformByHandle($name);
-    }
-
-    /**
-     * Returns a property value.
-     *
-     * This method will check if $name is one of the following:
-     * - a magic property supported by [[Element::__get()]]
-     * - an image transform handle
-     *
-     * @param  string  $name  The property name
-     * @return mixed The property value
-     */
-    #[Override]
-    public function __get(string $name): mixed
-    {
-        if (str_starts_with($name, 'transform:')) {
-            return $this->copyWithTransform(substr($name, 10));
-        }
-
-        try {
-            return parent::__get($name);
-        } catch (UnknownPropertyException $e) {
-            // Is $name a transform handle?
-            if (($transform = app(ImageTransforms::class)->getTransformByHandle($name)) !== null) {
-                return $this->copyWithTransform($transform);
-            }
-
-            throw $e;
-        }
-    }
-
     /** @param array<string, bool|float|int|string|array<string, bool|float|int|string|null>|null> $values */
     #[Override]
     public function setAttributesFromRequest(array $values): void
@@ -1359,8 +1294,9 @@ class Asset extends Element
      * @return list<array<string, mixed>>
      */
     #[Override]
-    protected function extraActionMenuDescriptors(): array
-    {
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
         $user = currentUserElement();
         $items = [];
 
@@ -1404,6 +1340,7 @@ class Asset extends Element
             $items[] = [
                 'label' => t('Replace file'),
                 'icon' => 'upload',
+                'showInChips' => false,
                 'behavior' => [
                     'type' => 'replaceFile',
                     'assetId' => $this->id,
@@ -1413,6 +1350,8 @@ class Asset extends Element
         }
 
         if ($this->getSupportsImageEditor() && $user?->can('editImage', $this)) {
+            $items[] = ['type' => MenuItemType::HR->value];
+
             $items[] = [
                 'label' => t('Open in Image Editor'),
                 'icon' => 'edit',
@@ -1423,7 +1362,7 @@ class Asset extends Element
             ];
         }
 
-        if ($user?->isAdmin() && Cms::config()->allowAdminChanges) {
+        if ($context->isEditor() && $user?->isAdmin() && Cms::config()->allowAdminChanges) {
             $items[] = [
                 'label' => t('Volume settings'),
                 'icon' => 'gear',
@@ -1769,32 +1708,39 @@ JS, [
     #[AllowedInSandbox]
     public function getImg(mixed $transform = null, ?array $sizes = null): ?Markup
     {
-        if ($this->kind !== FileKind::Image->value) {
+        if ($transform === null) {
+            if ($this->kind !== FileKind::Image->value) {
+                return null;
+            }
+
+            $url = $this->getUrl();
+            $width = $this->getWidth();
+            $height = $this->getHeight();
+        }
+
+        if ($transform !== null) {
+            $result = $this->_tryTransform($transform);
+
+            if ($result === null) {
+                return null;
+            }
+
+            $url = $result->url;
+            $width = $result->width;
+            $height = $result->height;
+        }
+
+        if ($url === null) {
             return null;
         }
 
-        if ($transform) {
-            $oldTransform = $this->_transform;
-            $this->setTransform($transform);
-        }
-
-        if ($url = $this->getUrl()) {
-            $img = Html::tag('img', '', [
-                'src' => $url,
-                'width' => $this->getWidth(),
-                'height' => $this->getHeight(),
-                'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->thumbAlt(),
-            ]);
-        } else {
-            $img = null;
-        }
-
-        if ($transform) {
-            $this->setTransform($oldTransform);
-        }
-
-        return $img ? Template::raw($img) : null;
+        return Template::raw(Html::tag('img', '', [
+            'src' => $url,
+            'width' => $width,
+            'height' => $height,
+            'srcset' => $sizes ? $this->getSrcset($sizes, $transform) : false,
+            'alt' => $this->thumbAlt(),
+        ]));
     }
 
     /**
@@ -1872,52 +1818,44 @@ JS, [
     #[AllowedInSandbox]
     public function getUrlsBySize(array $sizes, mixed $transform = null): array
     {
-        if ($this->kind !== FileKind::Image->value) {
-            return [];
-        }
-
-        if (! $this->allowTransforms()) {
-            return [];
-        }
-
         $urls = [];
+        $result = $transform !== null ? $this->_tryTransform($transform) : null;
 
-        if (
-            ($transform !== null || $this->_transform) &&
-            ImageHelper::canManipulateAsImage($this->getExtension())
-        ) {
-            $transform = ImageTransformHelper::normalizeTransform($transform ?? $this->_transform);
-        } else {
-            $transform = null;
+        if ($transform !== null) {
+            if ($result === null) {
+                return [];
+            }
         }
 
-        [$currentWidth, $currentHeight] = $this->_dimensions($transform);
-
-        if (! $currentWidth || ! $currentHeight) {
-            return [];
-        }
+        [$currentWidth, $currentHeight] = $result
+            ? [$result->width, $result->height]
+            : $this->_dimensions();
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $urls[$size] = $this->getUrl($transform);
+                $urls[$size] = $result !== null ? $result->url : $this->getUrl();
 
                 continue;
             }
 
             [$value, $unit] = AssetsHelper::parseSrcsetSize($size);
 
-            $sizeTransform = $transform ? $transform->toArray() : [];
-
-            unset($sizeTransform['name'], $sizeTransform['handle']);
+            $sizeTransform = is_array($transform)
+                ? $transform
+                : ($transform !== null ? ['transform' => $transform] : []);
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int) $value;
             } else {
+                if (! $currentWidth) {
+                    continue;
+                }
+
                 $sizeTransform['width'] = (int) ceil($currentWidth * $value);
             }
 
             // Only set the height if the current transform has a height set on it
-            if ($transform && $transform->height) {
+            if ($this->_transformHasHeight($transform) && $currentWidth && $currentHeight) {
                 if ($unit === 'w') {
                     $sizeTransform['height'] = (int) ceil($currentHeight * $sizeTransform['width'] / $currentWidth);
                 } else {
@@ -1925,7 +1863,7 @@ JS, [
                 }
             }
 
-            $urls["$value$unit"] = $this->getUrl($sizeTransform);
+            $urls["$value$unit"] = $this->_tryTransform($sizeTransform)?->url;
         }
 
         return $urls;
@@ -2043,40 +1981,63 @@ JS, [
         $this->_uploader = $uploader;
     }
 
-    /**
-     * Sets the transform.
-     *
-     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the image
-     *
-     * @throws ImageTransformException if $transform is an invalid transform handle
-     */
-    public function setTransform(mixed $transform): Asset
+    #[AllowedInSandbox]
+    public function transform(
+        #[\SensitiveParameter] mixed $definition,
+        ?string $transformer = null,
+    ): AssetTransformResult {
+        return app(AssetTransformers::class)->transform($this, $definition, $transformer);
+    }
+
+    protected function _tryTransform(
+        #[\SensitiveParameter] mixed $definition,
+    ): ?AssetTransformResult {
+        try {
+            return $this->transform($definition);
+        } catch (AssetTransformException|NotSupportedException $exception) {
+            report($exception);
+
+            return null;
+        }
+    }
+
+    private function _transformHasHeight(mixed $transform): bool
     {
-        if ($this->allowTransforms()) {
-            $this->_transform = ImageTransformHelper::normalizeTransform($transform);
+        if (is_array($transform)) {
+            if (array_key_exists('height', $transform)) {
+                return $transform['height'] !== null;
+            }
+
+            if (! array_key_exists('transform', $transform)) {
+                return false;
+            }
+
+            return $this->_transformHasHeight($transform['transform']);
         }
 
-        return $this;
+        return ImageTransformHelper::normalizeTransform($transform)?->height !== null;
     }
 
     /**
      * Returns the element’s full URL.
      *
-     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the
-     *                                                                 image If an array is passed, it can optionally include a `transform` key that defines a base transform
-     *                                                                 which the rest of the settings should be applied to.
-     * @param  bool|null  $immediately  Whether the image should be transformed immediately
+     * @param  ImageTransform|string|TransformConfig|null  $transform  Deprecated. Use {@see transform()} and read the result’s URL instead.
      *
      * @throws RuntimeException
      */
     #[Override]
-    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
+    public function getUrl(mixed $transform = null): ?string
     {
+        if ($transform !== null) {
+            Deprecator::log(
+                'Asset::getUrl($transform)',
+                'Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.',
+            );
+        }
+
         if ($this->isFolder) {
             return null;
         }
-
-        $transform ??= $this->_transform;
 
         event($event = new AssetUrlResolving($this, $transform));
 
@@ -2084,7 +2045,7 @@ JS, [
 
         // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
-            $url = $this->_url($transform, $immediately);
+            $url = $this->_url($transform);
         }
 
         event($event = new AssetUrlDefined($this, $transform, $url));
@@ -2097,66 +2058,17 @@ JS, [
         return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
-    private function _url(mixed $transform = null, ?bool $immediately = null): ?string
+    private function _url(mixed $transform = null): ?string
     {
+        if ($transform !== null) {
+            return $this->_tryTransform($transform)?->url;
+        }
+
         if (! $this->folderId) {
             return null;
         }
 
         $volume = $this->getVolume();
-
-        if (
-            $transform && (
-                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
-                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
-                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
-                (request()->isSiteRequest() && ! $this->allowTransforms()) ||
-                ! ImageHelper::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
-            )
-        ) {
-            $transform = null;
-        }
-
-        if ($transform) {
-            if (is_array($transform)) {
-                if (isset($transform['width'])) {
-                    $transform['width'] = round((float) $transform['width']);
-                }
-                if (isset($transform['height'])) {
-                    $transform['height'] = round((float) $transform['height']);
-                }
-            }
-
-            $transform = ImageTransformHelper::normalizeTransform($transform);
-
-            if ($immediately === null) {
-                $immediately = Cms::config()->generateTransformsBeforePageLoad;
-            }
-
-            event($event = new TransformGenerating($this, $transform));
-
-            // If a plugin set the url, we'll just use that.
-            if ($event->url !== null) {
-                return Html::encodeSpaces($event->url);
-            }
-
-            $imageTransformer = $transform->getImageTransformer();
-
-            try {
-                $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
-            } catch (NotSupportedException) {
-                return null;
-            } catch (ImageTransformException $e) {
-                Log::warning("Couldn’t get image transform URL: {$e->getMessage()}", [__METHOD__]);
-                report($e);
-
-                return null;
-            }
-
-            event(new AfterGenerateTransform($this, $transform, $url));
-
-            return $url;
-        }
 
         if (! $volume->sourceHasUrls() || $volume->isTemporary()) {
             return null;
@@ -2301,8 +2213,7 @@ JS, [
     /**
      * Returns the file’s MIME type based, if it can be determined.
      *
-     * If a transform is applied (either via the `$transform` argument or [[setTransform()]]),
-     * the MIME type will be based on the transform’s format.
+     * If a transform is applied via the `$transform` argument, the MIME type will be based on the transform’s format.
      *
      * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the mime type
      *
@@ -2311,12 +2222,8 @@ JS, [
     #[AllowedInSandbox]
     public function getMimeType(mixed $transform = null): ?string
     {
-        $transform ??= $this->_transform;
-        $transform = ImageTransformHelper::normalizeTransform($transform);
-
-        if ($transform?->format) {
-            // Prepend with '.' to let pathinfo() work
-            return File::getMimeTypeByExtension('.'.$transform->format);
+        if ($transform !== null) {
+            return $this->transform($transform)->mimeType;
         }
 
         return $this->_mimeType ?? File::getMimeTypeByExtension($this->_filename);
@@ -2341,15 +2248,11 @@ JS, [
     #[AllowedInSandbox]
     public function getFormat(mixed $transform = null): string
     {
-        $ext = $this->getExtension();
-
-        if (! ImageHelper::canManipulateAsImage($ext)) {
-            return $ext;
+        if ($transform !== null) {
+            return File::getExtensionByMimeType($this->transform($transform)->mimeType);
         }
 
-        $transform ??= $this->_transform;
-
-        return ImageTransformHelper::normalizeTransform($transform)->format ?? $ext;
+        return $this->getExtension();
     }
 
     /**
@@ -2360,6 +2263,10 @@ JS, [
     #[AllowedInSandbox]
     public function getHeight(mixed $transform = null): ?int
     {
+        if ($transform !== null) {
+            return $this->transform($transform)->height;
+        }
+
         return $this->_dimensions($transform)[1];
     }
 
@@ -2381,6 +2288,10 @@ JS, [
     #[AllowedInSandbox]
     public function getWidth(array|string|ImageTransform|null $transform = null): ?int
     {
+        if ($transform !== null) {
+            return $this->transform($transform)->width;
+        }
+
         return $this->_dimensions($transform)[0];
     }
 
@@ -3029,22 +2940,6 @@ JS;
         return $names;
     }
 
-    /**
-     * Returns a copy of the asset with the given transform applied to it.
-     *
-     * @param  ImageTransform|string|TransformConfig|null  $transform  The transform handle or configuration that should be applied to the image
-     *
-     * @throws ImageTransformException if $transform is an invalid transform handle
-     */
-    public function copyWithTransform(mixed $transform): Asset
-    {
-        $model = clone $this;
-        $model->setFieldValues($this->getFieldValues());
-        $model->setTransform($transform);
-
-        return $model;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -3258,7 +3153,7 @@ JS;
             }
         }
 
-        app(ImageTransforms::class)->deleteAllTransformData($this);
+        $this->deleteTransformData();
         parent::afterDelete();
     }
 
@@ -3375,8 +3270,6 @@ JS;
             return [null, null];
         }
 
-        $transform ??= $this->_transform;
-
         if ($transform === null || ! ImageHelper::canManipulateAsImage($this->getExtension())) {
             return [$this->_width, $this->_height];
         }
@@ -3481,7 +3374,7 @@ JS;
 
         if ($this->folderId) {
             // Nuke the transforms
-            app(ImageTransforms::class)->deleteAllTransformData($this);
+            $this->deleteTransformData();
         }
 
         // Update file properties
@@ -3573,19 +3466,27 @@ JS;
         return File::normalizePath($path).DIRECTORY_SEPARATOR;
     }
 
-    /**
-     * Returns whether transforming given asset is allowed
-     * based on its mime type and general settings.
-     *
-     * @throws ImageTransformException
-     */
-    private function allowTransforms(): bool
+    private function deleteTransformData(): void
     {
-        return match ($this->getMimeType()) {
-            'image/gif' => Cms::config()->transformGifs,
-            'image/svg+xml' => Cms::config()->transformSvgs,
-            default => true,
-        };
+        app(AssetTransformers::class)->invalidate($this);
+
+        $dir = Path::imageEditorSources((string) $this->id);
+
+        if (file_exists($dir)) {
+            $files = glob($dir.'/[0-9]*/'.$this->id.'.[a-z]*');
+
+            if (! is_array($files)) {
+                Log::info("Could not list files in {$dir} when deleting resized asset versions.");
+            } else {
+                foreach ($files as $path) {
+                    if (! File::delete($path)) {
+                        Log::warning("Unable to delete the asset thumbnail \"{$path}\".", [__METHOD__]);
+                    }
+                }
+            }
+        }
+
+        File::delete(Path::assetSources($this->id.'.'.pathinfo($this->getFilename(), PATHINFO_EXTENSION)));
     }
 
     /**

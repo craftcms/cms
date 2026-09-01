@@ -17,18 +17,21 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    Cms::config()->isSystemLive = true;
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
 
@@ -37,7 +40,6 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    Cms::config()->isSystemLive = null;
     Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
 });
 
@@ -94,6 +96,11 @@ it('prefers fixed routes over matched elements', function () {
         ->assertSeeText('fixed-route');
 });
 
+it('accepts POST requests to the site fallback instead of throwing a method not allowed exception', function () {
+    $this->post('/some-unmatched-path')
+        ->assertNotFound();
+});
+
 it('keeps matched element state out of dehydrated queue context', function () {
     $entry = createRoutableEntry('dehydrated-context-entry', 'entries/show');
 
@@ -103,8 +110,8 @@ it('keeps matched element state out of dehydrated queue context', function () {
         ->and(fn () => Context::dehydrate())->not->toThrow(Throwable::class);
 });
 
-it('denies anonymous matched element template routes when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('denies anonymous matched element template routes during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     createRoutableEntry('offline-entry', 'entries/show');
 
@@ -112,15 +119,8 @@ it('denies anonymous matched element template routes when the system is offline'
         ->assertServiceUnavailable();
 });
 
-it('denies anonymous homepage requests when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
-
-    $this->get('/')
-        ->assertServiceUnavailable();
-});
-
-it('allows matched element template routes with a site token when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('allows matched element template routes with a site token during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     $entry = createRoutableEntry('offline-site-token-entry', 'entries/show');
 
@@ -131,8 +131,17 @@ it('allows matched element template routes with a site token when the system is 
         ->assertSeeText("entry-template:{$entry->id}:offline-site-token-entry", escape: false);
 });
 
-it('allows matched element template routes with a valid route token when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('denies matched element template routes with an empty site token during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
+
+    createRoutableEntry('offline-empty-site-token-entry', 'entries/show');
+
+    $this->get('/offline-empty-site-token-entry?'.Cms::config()->siteToken.'=')
+        ->assertServiceUnavailable();
+});
+
+it('allows matched element template routes with a valid route token during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     $entry = createRoutableEntry('offline-route-token-entry', 'entries/show');
 
@@ -143,8 +152,8 @@ it('allows matched element template routes with a valid route token when the sys
         ->assertSeeText("entry-template:{$entry->id}:offline-route-token-entry", escape: false);
 });
 
-it('denies matched element template routes for users without offline site access', function () {
-    Cms::config()->isSystemLive = false;
+it('denies matched element template routes for users without maintenance mode site access', function () {
+    app()->maintenanceMode()->activate([]);
 
     createRoutableEntry('offline-unpermitted-entry', 'entries/show');
     $user = UserModel::factory()->createElement();
@@ -155,19 +164,33 @@ it('denies matched element template routes for users without offline site access
         ->assertServiceUnavailable();
 });
 
-it('allows matched element template routes for users with offline site access', function () {
-    Cms::config()->isSystemLive = false;
-
-    $entry = createRoutableEntry('offline-permitted-entry', 'entries/show');
+it('allows session-authenticated users with maintenance mode site access', function () {
+    $entry = createRoutableEntry('offline-session-permitted-entry', 'entries/show');
     $user = UserModel::factory()
-        ->withPermissions(['accessSiteWhenSystemIsOff'])
+        ->withPermissions(['accessCp', 'accessSiteWhenSystemIsOff'])
         ->createElement();
 
-    actingAs($user);
+    $this->post(cp_url('login'), [
+        'loginName' => $user->username,
+        'password' => 'password',
+    ])->assertRedirect();
 
-    $this->get('/offline-permitted-entry')
+    $session = app(Session::class);
+    $session->save();
+    $this->withCookie(config('session.cookie'), $session->getId());
+    app(SessionManager::class)->extend(config('session.driver'), fn () => $session->getHandler());
+    app(SessionManager::class)->forgetDrivers();
+    app()->forgetInstance('session.store');
+    app()->forgetInstance(StartSession::class);
+    auth()->forgetGuards();
+    TemplateMode::set(TemplateMode::Site);
+    app()->maintenanceMode()->activate([]);
+
+    $this->get('/offline-session-permitted-entry')
         ->assertOk()
-        ->assertSeeText("entry-template:{$entry->id}:offline-permitted-entry", escape: false);
+        ->assertSeeText("entry-template:{$entry->id}:offline-session-permitted-entry", escape: false);
+
+    expect(auth()->id())->toBe($user->id);
 });
 
 function createRoutableEntry(string $uri, string $template): Entry

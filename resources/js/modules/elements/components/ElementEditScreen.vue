@@ -9,9 +9,7 @@
   import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
-  import Breadcrumbs, {
-    type BreadcrumbItem,
-  } from '@/common/components/Breadcrumbs.vue';
+  import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -260,8 +258,8 @@
             :class="{'element-editor__body--details': hasDetails}"
           >
             <div class="element-editor__content">
-              <craft-pane padding="none" appearance="plain">
-                <div class="py-1">
+              <craft-pane appearance="plain">
+                <div class="py-4">
                   <!-- Tabs are rendered by `FormNodeList` inside the form itself. -->
                   <div class="element-form">
                     <FormRenderer
@@ -290,7 +288,7 @@
                   ></craft-icon>
                 </craft-tab>
                 <div slot="panel">
-                  <craft-pane appearance="plain" padding="none">
+                  <craft-pane appearance="plain">
                     <div
                       slot="header"
                       class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
@@ -312,7 +310,7 @@
                         </craft-field-group>
 
                         <hr />
-                        <div class="px-4">
+                        <div>
                           <DynamicHtmlRenderer
                             v-if="payload.metadataHtml"
                             :html="payload.metadataHtml"

@@ -16,6 +16,8 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
+use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -25,6 +27,10 @@ class Local extends Filesystem
     public const string VISIBILITY_FILE = 'file';
 
     public const string VISIBILITY_DIR = 'dir';
+
+    public bool $hasUrls = false;
+
+    public ?string $url = null;
 
     /**
      * @var int[][] Visibility map
@@ -90,6 +96,7 @@ class Local extends Filesystem
     {
         return array_merge(parent::attributeLabels(), [
             'path' => t('Base Path'),
+            'url' => t('Base URL'),
         ]);
     }
 
@@ -103,7 +110,13 @@ class Local extends Filesystem
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'path' => [
+            'url' => new EnvValueRule([
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $this->hasUrls),
+            ]),
+            'path' => new EnvValueRule([
                 'required',
                 'string',
                 function (string $attribute, mixed $value, Closure $fail): void {
@@ -111,7 +124,7 @@ class Local extends Filesystem
                         $fail(t('Local filesystems cannot be located within or above system directories.'));
                     }
                 },
-            ],
+            ]),
         ]);
     }
 
@@ -120,12 +133,10 @@ class Local extends Filesystem
     {
         $form = Form::make();
 
-        if ($this->getShowHasUrlSetting()) {
-            $form->add(Field::make(t('Files in this filesystem have public URLs'))
-                ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
-        }
+        $form->add(Field::make(t('Files in this filesystem have public URLs'))
+            ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
 
-        if ($this->hasUrls && $this->getShowUrlSetting()) {
+        if ($this->hasUrls) {
             $form->add(Field::make(t('Base URL'))
                 ->instructions(t('The base URL to the files in this filesystem.'))
                 ->required()
@@ -164,6 +175,21 @@ class Local extends Filesystem
 
         // Pass it through realpath() in case the path is symlinked
         return realpath($path) ?: $path;
+    }
+
+    #[Override]
+    public function getRootUrl(): ?string
+    {
+        if (! $this->hasUrls) {
+            return null;
+        }
+
+        $url = Env::parse($this->url);
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/" : null;
     }
 
     #[Override]

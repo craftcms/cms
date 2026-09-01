@@ -41,17 +41,17 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -302,6 +302,19 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
     }
 
+    /**
+     * A warning the field itself needs to show, on top of any the field layout
+     * author wrote.
+     *
+     * For misconfiguration the author can't see from the layout — an Assets
+     * field pointed at a volume that no longer exists, say. Returning a string
+     * puts it in the field's warning slot; `null` means nothing to say.
+     */
+    public function formWarning(?ElementInterface $element = null): ?string
+    {
+        return null;
+    }
+
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;
@@ -467,6 +480,19 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return $event->items;
     }
 
+    public function getFieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        $this->static = $context->mode !== ControlMode::Editable;
+
+        return $this->fieldLayoutActionMenuItems($context);
+    }
+
+    /** @return list<array<string, mixed>> */
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        return $this->actionMenuItems();
+    }
+
     /** @return list<array<string, mixed>> */
     protected function actionMenuItems(): array
     {
@@ -481,31 +507,23 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         }
 
         if (Cms::config()->allowAdminChanges) {
-            // Edit field
-            $editId = sprintf('action-edit-%s', mt_rand());
+            // Edit field. Behavior travels with the item as a declarative
+            // action — `craft:edit-field` is handled by the slideout module's
+            // window listener, which opens the field's settings slideout and
+            // re-announces a save as a bubbling `field-saved` event. Registered
+            // JS would never reach an Inertia-rendered page.
             $items[] = [
-                'id' => $editId,
+                // The `action-edit-` prefix is load-bearing: `ElementHtml`
+                // marks it `data-edit-action` when the menu is shown on a chip.
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'gear',
                 'label' => t('Field settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-field',
+                    'detail' => ['fieldId' => $this->id],
+                ],
             ];
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-const action = $('#' + $id);
-action.on('activate', () => {
-Craft.openSlideout(Craft.getCpUrl('settings/fields/edit', $params), {
-  onSaved: ({data}) => {
-    action[0].dispatchEvent(new CustomEvent('field-saved', {
-      bubbles: true,
-      detail: data,
-    }));
-  },
-})
-});
-})();
-JS, [
-                InputNamespace::namespaceId($editId),
-                ['fieldId' => $this->id],
-            ]);
         }
 
         return $items;
@@ -766,6 +784,21 @@ JS, [
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         if ($this instanceof RelationalFieldInterface) {
+            // find the outgoing field's relations that would collide with the persisting field's relations
+            $conflictingIds = DB::table(Table::RELATIONS.' as outgoing')
+                ->join(Table::RELATIONS.' as persisting', function ($join) {
+                    $join->on('persisting.sourceId', '=', 'outgoing.sourceId')
+                        ->on('persisting.sourceSiteId', '=', 'outgoing.sourceSiteId')
+                        ->on('persisting.targetId', '=', 'outgoing.targetId');
+                })
+                ->where('outgoing.fieldId', $outgoingField->id)
+                ->where('persisting.fieldId', $this->id)
+                ->pluck('outgoing.id');
+
+            if ($conflictingIds->isNotEmpty()) {
+                DB::table(Table::RELATIONS)->whereIn('id', $conflictingIds)->delete();
+            }
+
             DB::table(Table::RELATIONS)
                 ->where('fieldId', $outgoingField->id)
                 ->update([

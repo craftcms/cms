@@ -37,16 +37,6 @@ class Dispatcher extends \yii\log\Dispatcher
     public array $monologTargetConfig = [];
 
     /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        $this->targets = array_merge($this->getDefaultTargets()->all(), $this->targets);
-    }
-
-    /**
      * Gets the active default target, or one specified by key.
      *
      * @param string|null $key The target key to use (`web`, `console`, or `queue`).

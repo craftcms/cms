@@ -336,7 +336,7 @@ readonly class SitesController
                     ...$this->booleanEnvOptions(),
                 ])
                 ->requireOptionMatch())
-                ->tip(t('This can be set to an environment variable with a boolean value ({examples})', [
+                ->tip(t('This can be set to an environment variable with a boolean value ({examples}).', [
                     'examples' => '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
                 ]));
 

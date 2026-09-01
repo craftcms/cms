@@ -12,14 +12,18 @@ export default css`
     border: 1px solid var(--c-color-border-quiet);
     color: var(--c-color-on-quiet);
     border-radius: var(--c-radius-full);
-    font-size: 0.9em;
+    font-size: var(--c-text-sm);
+  }
+
+  .badge--small {
+    font-size: var(--c-text-xs);
   }
 
   .badge__prefix {
-    padding-inline: calc(var(--c-spacing-md) / 2);
+    padding-inline: 0.25em;
   }
 
   .badge__suffix {
-    padding-inline: calc(var(--c-spacing-md) / 2);
+    padding-inline: 0.25em;
   }
 `;

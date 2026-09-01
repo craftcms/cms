@@ -54,21 +54,11 @@ class Filesystems
     /** @return array<string,mixed> */
     public function createFilesystemConfig(FsInterface $fs): array
     {
-        $config = [
+        return [
             'name' => $fs->name,
             'type' => $fs::class,
             'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
         ];
-
-        if ($fs->getShowHasUrlSetting()) {
-            $config['hasUrls'] = $fs->hasUrls;
-        }
-
-        if ($fs->getShowUrlSetting()) {
-            $config['url'] = $fs->url;
-        }
-
-        return $config;
     }
 
     /**
@@ -526,13 +516,8 @@ class Filesystems
 
     private function diskFilesystem(string $diskName): DiskFilesystem
     {
-        $url = config("filesystems.disks.$diskName.url");
-        $hasUrls = is_string($url) && $url !== '';
-
         return new DiskFilesystem([
             'disk' => $diskName,
-            'hasUrls' => $hasUrls,
-            'url' => $hasUrls ? rtrim($url, '/') : null,
         ]);
     }
 

@@ -25,6 +25,27 @@ it('renders an element index shell with toolbar and elements container', functio
         ->and($html)->toContain('class="elements"');
 });
 
+it('renders a sidebar-less index when sources are disabled', function () {
+    // The site menu resolves to `true` here (entries are localized), which used
+    // to take the site-ID filtering path with a plain array of sources.
+    $html = app(ElementIndexHtml::class)->html(Entry::class, [
+        'sources' => false,
+        'registerJs' => false,
+    ]);
+
+    expect($html)->toContain('class="sidebar hidden"')
+        ->and($html)->toContain('__IMP__');
+});
+
+it('restricts the source list to the given source keys', function () {
+    $html = app(ElementIndexHtml::class)->html(Entry::class, [
+        'sources' => ['*'],
+        'registerJs' => false,
+    ]);
+
+    expect($html)->toContain('data-key="*"');
+});
+
 it('includes footer in administrative contexts and omits it otherwise', function () {
     $indexHtml = app(ElementIndexHtml::class)->html(Entry::class, [
         'context' => 'index',
