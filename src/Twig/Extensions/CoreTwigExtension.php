@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Sequence;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template as TemplateHelper;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
