@@ -260,7 +260,7 @@ class App
         }
 
         // …/$VAR/…
-        $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', function($m) {
+        $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)/', function($m) {
             $result = self::env($m[1]);
 
             if (is_bool($result)) {
