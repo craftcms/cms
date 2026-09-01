@@ -19,7 +19,6 @@ sequenceDiagram
     Action->>Type: Construct after the action succeeds
     Action->>Activities: record($event)
     Activities->>Recorder: record($event)
-    Recorder->>Recorder: Check payload shape and JSON encoding
     Recorder->>Recorder: Resolve actor, subject, site, and labels
     Recorder->>DB: Insert event and snapshots
     DB-->>Action: ActivityEvent model
@@ -28,10 +27,9 @@ sequenceDiagram
 The recorder performs these steps:
 
 1. Reads the event type's source, subject, actor, site, data, and changes.
-2. Checks that event data is a JSON object and that the payload can be encoded as JSON.
-3. Resolves the actor when the event type did not supply one.
-4. Captures labels for the source, event, actor, subject, and site.
-5. Inserts an `ActivityEvent` with the current time.
+2. Resolves the actor when the event type did not supply one.
+3. Captures labels for the source, event, actor, subject, and site.
+4. Inserts an `ActivityEvent` with the current time.
 
 The insert uses the caller's database transaction. If the action and activity event run in one transaction, rolling back the action also removes the event. Record an event only after the corresponding action has succeeded, but before committing its transaction.
 
@@ -119,7 +117,7 @@ new ActivityChange(
 );
 ```
 
-The change type groups similar values. The change ID must be stable, and the label is captured for display. Old and new values must be JSON-encodable. Avoid secrets, access tokens, full request bodies, and other data that should not remain in an audit history.
+The change type groups similar values. The change ID must be stable, and the label is captured for display. Old and new values must be JSON-encodable. Laravel throws while applying the payload cast if encoding fails. Avoid secrets, access tokens, full request bodies, and other data that should not remain in an audit history.
 
 ## Logging activity from a plugin
 

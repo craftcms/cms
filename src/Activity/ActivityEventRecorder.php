@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
-use Closure;
 use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Support\Facades\Validator;
-use JsonException;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -32,8 +28,6 @@ class ActivityEventRecorder
             fn (ActivityChange $change) => $change->toArray(),
             $event->changes(),
         );
-
-        $this->validatePayload($data, $changes);
 
         $subject = $event->subject();
         $actor = $this->resolveActor($event->actor());
@@ -92,33 +86,5 @@ class ActivityEventRecorder
         return $isHttpRequest
             ? ActivityActor::anonymous()
             : ActivityActor::system();
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @param  list<array<string, mixed>>  $changes
-     */
-    private function validatePayload(array $data, array $changes): void
-    {
-        $validJson = static function (string $attribute, mixed $value, Closure $fail): void {
-            try {
-                Json::encode($value, JSON_THROW_ON_ERROR);
-            } catch (JsonException) {
-                $fail("The $attribute must be valid JSON.");
-            }
-        };
-
-        Validator::make(['data' => $data, 'changes' => $changes], [
-            'data' => [
-                'array',
-                static function (string $attribute, mixed $value, Closure $fail): void {
-                    if ($value !== [] && array_is_list($value)) {
-                        $fail('The activity event data must be a JSON object.');
-                    }
-                },
-                $validJson,
-            ],
-            'changes' => ['list', $validJson],
-        ])->validate();
     }
 }

@@ -29,7 +29,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\HtmlString;
-use Illuminate\Validation\ValidationException;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\get;
@@ -122,17 +121,9 @@ it('attributes unauthenticated HTTP activity to an anonymous actor', function ()
         ->assertSeeText(ActivityActorType::Anonymous->value);
 });
 
-it('rejects invalid payload sections', function () {
+it('rejects invalid changes', function () {
     expect(fn () => new ActivityChange('field', 'summary', '', null, 'Ready'))
-        ->toThrow(InvalidArgumentException::class)
-        ->and(fn () => $this->activities->record(new TestPluginPayload(['value'])))
-        ->toThrow(ValidationException::class)
-        ->and(fn () => $this->activities->record(new TestPluginPayload(['value' => NAN])))
-        ->toThrow(ValidationException::class)
-        ->and(fn () => $this->activities->record(new TestPluginEntryUpdated(
-            reason: 'Edited',
-            changes: [new ActivityChange('field', 'summary', 'Summary', NAN, null)],
-        )))->toThrow(ValidationException::class);
+        ->toThrow(InvalidArgumentException::class);
 });
 
 it('rolls records back with their semantic action', function () {
@@ -303,19 +294,6 @@ abstract class TestPluginActivityEventType extends ActivityEventType
     public static function source(): ActivitySource
     {
         return ActivitySource::fromPlugin(TestPlugin::getInstance());
-    }
-}
-
-class TestPluginPayload extends TestPluginActivityEventType
-{
-    public function __construct(private readonly array $payload)
-    {
-        parent::__construct();
-    }
-
-    public function data(): array
-    {
-        return $this->payload;
     }
 }
 
