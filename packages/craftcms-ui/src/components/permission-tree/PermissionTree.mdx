@@ -1,0 +1,38 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Permission Tree" />
+
+# Permission Tree
+
+`<craft-permission-tree>` renders Craft's nested permission checkboxes.
+
+There are no stories on this page: the component takes a full permission structure as data, and a representative one is large enough that an example would obscure rather than explain. It is used in one place — the user and group permission screens.
+
+```html
+<craft-permission-tree name="permissions"></craft-permission-tree>
+```
+
+```js
+tree.groups = [...];              // the permission structure
+tree.modelValue = [...];          // the permissions currently granted
+tree.lockedPermissions = [...];   // permissions that cannot be changed
+```
+
+`groups`, `modelValue`, and `locked-permissions` carry the data. All three are properties as well as attributes, so bind them rather than serialising.
+
+## Nesting
+
+Permissions nest: granting a child implies its parents, and revoking a parent revokes what it contains. The tree enforces that, which is why it exists rather than being a flat list of checkboxes.
+
+Locked permissions render as fixed — granted by something other than this screen, such as an admin flag — so the interface shows them without pretending they can be changed here.
+
+## Accessibility
+
+The nesting is structural, so the relationship between a permission and the ones it contains is available rather than being conveyed by indentation alone.
+
+A tree this size is hard to navigate by ear regardless. Where a screen offers one, it is worth also providing a way to search or filter it.
+
+## Properties
+
+Five attributes cover the data and the field wiring: `groups`, `model-value`,
+`locked-permissions`, `name`, and `disabled`.
