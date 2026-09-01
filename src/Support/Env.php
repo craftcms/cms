@@ -122,7 +122,7 @@ class Env extends \Illuminate\Support\Env
 
         // …/$VAR/…
         $value = preg_replace_callback(
-            '/(?<=^|\/)\$(\w+)(?=$|\/)?/',
+            '/(?<=^|\/)\$(\w+)(?=$|\/)/',
             function ($m) {
                 $result = self::get($m[1]);
 
