@@ -17,6 +17,12 @@
 - Fixed a bug where typing an environment variable name into a plugin’s license key input could result in multiple additions to the `.env` file, and cause the license key input to disappear. ([#19518](https://github.com/craftcms/cms/issues/19518))
 - Fixed an error that could occur when running the `fields/auto-merge` command. ([#19519](https://github.com/craftcms/cms/issues/19519))
 - Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-g48f-wc2q-4rrv, GHSA-wr79-9v6x-5rfq, GHSA-qm9x-rmcj-h2rc, GHSA-xmwr-88vw-5ghh)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7rr3-4jcm-x526)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) account hijack vulnerability. (GHSA-xh42-494x-2xgv)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j697-8x93-7mp2)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-w643-x88w-6wcm)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-j6r9-fxgv-j7x5)
 
 ## 5.10.14 - 2026-08-18
 

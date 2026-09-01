@@ -251,6 +251,10 @@ class Entry extends ElementMutationResolver
      */
     protected function getEntryElement(array $arguments): EntryElement
     {
+        if (isset($arguments['siteId'])) {
+            $this->requireAllowedSite($arguments['siteId']);
+        }
+
         /** @var Section|null $section */
         $section = $this->getResolutionData('section');
         /** @var ElementContainerFieldInterface|null $field */
@@ -280,7 +284,6 @@ class Entry extends ElementMutationResolver
 
         if ($canIdentify) {
             if (isset($arguments['siteId'])) {
-                $this->requireAllowedSite($arguments['siteId']);
                 $siteId = $arguments['siteId'];
             } else {
                 $siteId = array_map(fn(Site $site) => $site->id, Gql::getAllowedSites());
