@@ -220,9 +220,7 @@ class Typecast
 
                 return;
             case self::TYPE_ARRAY:
-                if ($value === null) {
-                    $value = [];
-                }
+                $value ??= [];
                 if (is_array($value)) {
                     return;
                 }

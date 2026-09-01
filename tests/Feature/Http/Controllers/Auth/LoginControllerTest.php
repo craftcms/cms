@@ -86,7 +86,7 @@ test('attemptLogin fails with wrong password', function () {
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'wrongpassword',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     Event::assertDispatched(Failed::class);
 });
@@ -99,7 +99,7 @@ test('attemptLogin counts a wrong password once', function () {
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'wrongpassword',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     expect(UserModel::findOrFail($user->id)->invalidLoginCount)->toBe(1);
 });
@@ -111,7 +111,7 @@ test('attemptLogin is limited to five failed attempts per minute', function () {
         postJson(action([LoginController::class, 'attemptLogin']), [
             'loginName' => $attempt % 2 === 0 ? mb_strtoupper($user->email) : $user->email,
             'password' => 'wrongpassword',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 
     postJson(action([LoginController::class, 'attemptLogin']), [
@@ -142,7 +142,7 @@ test('attemptLogin clears failed attempts after valid credentials', function () 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'wrongpassword',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
@@ -155,7 +155,7 @@ test('attemptLogin clears failed attempts after valid credentials', function () 
         postJson(action([LoginController::class, 'attemptLogin']), [
             'loginName' => $user->email,
             'password' => 'wrongpassword',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 });
 
@@ -201,7 +201,7 @@ test('attemptLogin fails for user without password', function () {
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->email,
         'password' => 'craftcms2018!!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     expect(Auth::check())->toBeFalse();
 });

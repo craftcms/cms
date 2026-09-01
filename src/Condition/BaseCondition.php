@@ -113,13 +113,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     {
         parent::__construct($config);
 
-        if (! isset($this->id)) {
-            $this->id = 'condition'.mt_rand();
-        }
+        $this->id ??= 'condition'.mt_rand();
 
-        if (! isset($this->addRuleLabel)) {
-            $this->addRuleLabel = t('Add a rule');
-        }
+        $this->addRuleLabel ??= t('Add a rule');
 
         if (! isset($this->_conditionRules)) {
             $this->setConditionRules([]);

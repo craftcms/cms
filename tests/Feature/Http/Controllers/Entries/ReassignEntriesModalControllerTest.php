@@ -88,8 +88,7 @@ it('fails when no new author is selected', function () {
     postJson(action([ReassignEntriesModalController::class, 'store']), [
         'oldUserIds' => [1],
         'newUserId' => 0,
-    ])
-        ->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonPath('message', 'No new author selected.');
 });
 

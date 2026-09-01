@@ -99,9 +99,7 @@ it('does not duplicate pending before query callbacks when cloned while preparin
     $clone = null;
 
     $query->beforeQuery(function (ElementQuery $query) use (&$clone) {
-        if ($clone === null) {
-            $clone = clone $query;
-        }
+        $clone ??= clone $query;
     });
 
     $query->beforeQuery(function (ElementQuery $query) {

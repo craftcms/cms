@@ -221,9 +221,7 @@ class Locale implements Stringable
         }
 
         // If no target locale is specified, default to this locale
-        if ($inLocale === null) {
-            $inLocale = $this->id;
-        }
+        $inLocale ??= $this->id;
 
         return \Locale::getDisplayName($this->id, $inLocale);
     }

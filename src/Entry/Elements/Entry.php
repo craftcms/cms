@@ -2011,8 +2011,10 @@ JS, [
     {
         match ($plan->handle) {
             'author', 'authors' => $this->setAuthors($elements),
-            default => $this->traitSetEagerLoadedElements($handle, $elements, $plan),
+            default => null,
         };
+
+        $this->traitSetEagerLoadedElements($handle, $elements, $plan);
     }
 
     // Indexes, etc.
@@ -2730,15 +2732,12 @@ JS;
 
     private function _saveAuthors(): void
     {
-        if (! isset($this->_oldAuthorIds)) {
-            // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $this->_oldAuthorIds = DB::table(Table::ENTRIES_AUTHORS)
-                ->where('entryId', $this->duplicateOf->id ?? $this->id)
-                ->orderBy('sortOrder')
-                ->pluck('authorId')
-                ->map(fn ($id) => (int) $id)
-                ->all();
-        }
+        $this->_oldAuthorIds ??= DB::table(Table::ENTRIES_AUTHORS)
+            ->where('entryId', $this->duplicateOf->id ?? $this->id)
+            ->orderBy('sortOrder')
+            ->pluck('authorId')
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
         // Only issue the delete if there’s something to delete: an unconditional delete for a brand-new
         // entry ID can take a gap lock on the primary index and deadlock against other transactions
@@ -2949,9 +2948,7 @@ JS;
     /** @param EntryType[]|null $entryTypes */
     public function isEntryTypeAllowed(?array $entryTypes = null): bool
     {
-        if ($entryTypes === null) {
-            $entryTypes = $this->getAvailableEntryTypes();
-        }
+        $entryTypes ??= $this->getAvailableEntryTypes();
 
         return in_array($this->typeId, array_map(fn ($entryType) => $entryType->id, $entryTypes));
     }

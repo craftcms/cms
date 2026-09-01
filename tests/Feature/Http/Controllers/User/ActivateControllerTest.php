@@ -189,8 +189,7 @@ it('returns 400 for non-existent user on sendActivationEmail', function () {
 
     actingAs(UserElement::findOne());
 
-    postJson(action([ActivateController::class, 'sendActivationEmail']), ['userId' => 999999])
-        ->assertStatus(400)
+    postJson(action([ActivateController::class, 'sendActivationEmail']), ['userId' => 999999])->assertBadRequest()
         ->assertJsonPath('message', 'User not found');
 });
 
@@ -214,6 +213,6 @@ it('returns 400 for active users on sendActivationEmail', function () {
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $activeUser->id,
-    ])->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonPath('message', 'Activation emails can only be sent to inactive or pending users');
 });

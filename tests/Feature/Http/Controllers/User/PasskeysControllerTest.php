@@ -90,8 +90,7 @@ describe('verifyCreation', function () {
         postJson(action([PasskeysController::class, 'verifyCreation']), [
             'credentials' => json_encode(['invalid' => 'data']),
             'credentialName' => 'Test Passkey',
-        ])
-            ->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJson(['message' => 'Passkey creation failed.']);
     });
 });

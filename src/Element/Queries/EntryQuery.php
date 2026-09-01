@@ -95,11 +95,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     public function __construct(array $config = [])
     {
         // Default status
-        if (! isset($config['status'])) {
-            $config['status'] = [
-                Entry::STATUS_LIVE,
-            ];
-        }
+        $config['status'] ??= [
+            Entry::STATUS_LIVE,
+        ];
 
         parent::__construct(Entry::class, $config);
 

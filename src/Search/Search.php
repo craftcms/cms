@@ -389,9 +389,7 @@ class Search
         foreach ($results as $row) {
             $key = sprintf('%s-%s', $row['elementId'], $row['siteId']);
 
-            if (! isset($scores[$key])) {
-                $scores[$key] = 0;
-            }
+            $scores[$key] ??= 0;
 
             $scores[$key] += $this->scoreRow($row, $terms, $groups);
         }

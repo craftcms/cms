@@ -173,9 +173,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     public function normalizeValue(mixed $value, ?ElementInterface $element): bool
     {
         // If this is a new entry, look for a default option
-        if ($value === null) {
-            $value = $this->default;
-        }
+        $value ??= $this->default;
 
         return (bool) $value;
     }

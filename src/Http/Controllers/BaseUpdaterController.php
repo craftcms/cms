@@ -432,9 +432,7 @@ abstract class BaseUpdaterController
     {
         $state['nextAction'] = $nextAction;
 
-        if (! isset($state['status'])) {
-            $state['status'] = $this->actionStatus($nextAction);
-        }
+        $state['status'] ??= $this->actionStatus($nextAction);
 
         return $state;
     }

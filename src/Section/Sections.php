@@ -464,13 +464,11 @@ class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        if (! isset($this->sectionSiteSettings[$sectionId])) {
-            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
-                ->where('sections_sites.sectionId', $sectionId)
-                ->get()
-                ->mapInto(SectionSiteSettings::class)
-                ->all();
-        }
+        $this->sectionSiteSettings[$sectionId] ??= $this->_createSectionSiteSettingsQuery()
+            ->where('sections_sites.sectionId', $sectionId)
+            ->get()
+            ->mapInto(SectionSiteSettings::class)
+            ->all();
 
         return $this->sectionSiteSettings[$sectionId];
     }
@@ -913,9 +911,7 @@ class Sections
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
-        if ($siteSettings === null) {
-            $siteSettings = $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
-        }
+        $siteSettings ??= $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
 
         if (empty($siteSettings)) {
             throw new Exception('No site settings exist for section '.$section->id);

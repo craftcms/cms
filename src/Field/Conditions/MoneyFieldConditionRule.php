@@ -58,17 +58,13 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         }
 
         if (isset($value, $this->_fieldUid)) {
-            if (! isset($value['currency'])) {
-                $value['currency'] = $field->currency;
-            }
+            $value['currency'] ??= $field->currency;
 
             $this->value = MoneyHelper::toDecimal(MoneyHelper::toMoney($value));
         }
 
         if (isset($maxValue, $this->_fieldUid)) {
-            if (! isset($maxValue['currency'])) {
-                $maxValue['currency'] = $field->currency;
-            }
+            $maxValue['currency'] ??= $field->currency;
             $this->maxValue = MoneyHelper::toDecimal(MoneyHelper::toMoney($maxValue));
         }
     }
