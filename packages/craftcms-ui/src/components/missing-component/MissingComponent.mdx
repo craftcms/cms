@@ -1,0 +1,28 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Missing Component" />
+
+# Missing Component
+
+`<craft-missing-component>` renders in place of a component that could not be loaded.
+
+There are no stories here because the component only appears when something has gone wrong — a field type whose plugin is missing, disabled, or failed to load.
+
+```html
+<craft-missing-component
+  error="Unable to load the field type."
+  plugin-name="Super Table"
+></craft-missing-component>
+```
+
+## Why It Exists
+
+Without it, a page containing a broken component would either fail to render or show a gap where something used to be — and a gap tells a person nothing about what happened or how to fix it.
+
+Naming the plugin is the useful part. "Unable to load the field type" is a dead end; naming _which_ plugin is missing points at the action: install it, enable it, or remove the field.
+
+## Accessibility
+
+The message is text, so it is announced like any other content.
+
+The important property is that it is _in the flow_ rather than hidden behind an icon or a tooltip. A person who cannot see the broken layout still learns that something is missing and what it was.
