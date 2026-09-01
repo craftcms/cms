@@ -1,4 +1,4 @@
-import {globSync, readFileSync, readdirSync} from 'node:fs';
+import {existsSync, globSync, readFileSync, readdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
 
@@ -98,6 +98,33 @@ describe('docs pages reference stories that exist', () => {
     const missing = [...referenced].filter((name) => !exported.has(name));
 
     expect(missing).toEqual([]);
+  });
+});
+
+describe('docs pages import stories that exist', () => {
+  /**
+   * An MDX page importing a stories file that is not there fails the Storybook
+   * build rather than degrading — but the build takes a minute and this takes
+   * milliseconds.
+   */
+  it.each(
+    globSync(join(COMPONENTS, '*', '*.mdx')).map((mdx) => ({
+      component: mdx.split('/').at(-2)!,
+      mdx,
+    }))
+  )('$component', ({mdx}) => {
+    const imported = /from '\.\/([a-z-]+\.stories)'/.exec(
+      readFileSync(mdx, 'utf8')
+    )?.[1];
+
+    if (!imported) {
+      return;
+    }
+
+    expect(
+      existsSync(join(mdx, '..', `${imported}.ts`)),
+      `${mdx} imports ${imported}, which does not exist`
+    ).toBe(true);
   });
 });
 
