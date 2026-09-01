@@ -21,7 +21,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --compact --tia --coverage
+          test-command: ./vendor/bin/pest --compact --tia --coverage --fresh
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
