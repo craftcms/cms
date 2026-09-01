@@ -2,9 +2,21 @@
 
 ## Unreleased
 
+- Added `craft\helpers\ElementHelper::containsTempSlug()`.
+- Added `craft\services\Config::doesEnvVarExist()`.
+- Improved `craft\helpers\App::parseEnv()` behavior. ([#19524](https://github.com/craftcms/cms/pull/19524), [#19522](https://github.com/craftcms/cms/issues/19522))
 - Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
 - Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
 - Fixed a bug where the primary site’s content wasn’t preferred when propagating a Single section’s entry to new sites. ([#19473](https://github.com/craftcms/cms/issues/19473))
+- Fixed a bug where asset bundles could be only partially published, if two requests attempted to publish and clear them concurrently. ([#19477](https://github.com/craftcms/cms/issues/19477))
+- Fixed a bug where propagated entries were getting URIs assigned based on their temporary slugs, if the section didn’t specify a URI format for the site the entry was initially saved in. ([#19495](https://github.com/craftcms/cms/issues/19495))
+- Fixed a bug where password managers could attempt to submit the TOTP 2FA form before the application was ready for it, causing the login page to reload. ([#19497](https://github.com/craftcms/cms/pull/19497))
+- Fixed an exception that was thrown if `null` was passed to an asset query’s `uploader` param. ([#19484](https://github.com/craftcms/cms/issues/19484))
+- Fixed a bug where cached GraphQL queries weren’t registering the original queries’ cache tags or cache expiration date. ([#19508](https://github.com/craftcms/cms/pull/19508)) 
+- Fixed a bug where the control panel could become non-interactive after a slideout was closed. ([#9912](https://github.com/craftcms/cms/issues/9912), [#19511](https://github.com/craftcms/cms/pull/19511))
+- Fixed a bug where typing an environment variable name into a plugin’s license key input could result in multiple additions to the `.env` file, and cause the license key input to disappear. ([#19518](https://github.com/craftcms/cms/issues/19518))
+- Fixed an error that could occur when running the `fields/auto-merge` command. ([#19519](https://github.com/craftcms/cms/issues/19519))
+- Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530))
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-g48f-wc2q-4rrv, GHSA-wr79-9v6x-5rfq, GHSA-qm9x-rmcj-h2rc, GHSA-xmwr-88vw-5ghh)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7rr3-4jcm-x526)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) account hijack vulnerability. (GHSA-xh42-494x-2xgv)
@@ -41,11 +53,11 @@
 - Fixed an error that could occur when listing an element without a slug in an element index.
 - Fixed a bug where Matrix and Addresses fields could have empty field action menus. ([#19355](https://github.com/craftcms/cms/issues/19355))
 - Fixed a bug where success/failure notifications weren’t being shown after deleting elements. ([#19028](https://github.com/craftcms/cms/pull/19028))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5jmw-g85v-7jv2, GHSA-9c4j-cjw3-r3xx, GHSA-5r92-75j8-c534)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-4mgp-5vf2-7c9m)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-hfjh-gw6x-7pv5)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-h9jh-v8vc-m5rp)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-6fp2-8j9w-7mj8)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. ([GHSA-5jmw-g85v-7jv2](https://github.com/craftcms/cms/security/advisories/GHSA-5jmw-g85v-7jv2), [GHSA-9c4j-cjw3-r3xx](https://github.com/craftcms/cms/security/advisories/GHSA-9c4j-cjw3-r3xx), [GHSA-5r92-75j8-c534](https://github.com/craftcms/cms/security/advisories/GHSA-5r92-75j8-c534))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-4mgp-5vf2-7c9m](https://github.com/craftcms/cms/security/advisories/GHSA-4mgp-5vf2-7c9m))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-hfjh-gw6x-7pv5](https://github.com/craftcms/cms/security/advisories/GHSA-hfjh-gw6x-7pv5))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-h9jh-v8vc-m5rp](https://github.com/craftcms/cms/security/advisories/GHSA-h9jh-v8vc-m5rp))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-6fp2-8j9w-7mj8](https://github.com/craftcms/cms/security/advisories/GHSA-6fp2-8j9w-7mj8))
 
 ## 5.10.12 - 2026-07-22
 
