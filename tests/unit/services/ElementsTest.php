@@ -12,6 +12,7 @@ namespace crafttests\unit\services;
 
 use Craft;
 use craft\elements\Entry;
+use craft\helpers\DateTimeHelper;
 use craft\services\Elements;
 use craft\test\TestCase;
 use craft\test\TestSetup;
@@ -81,6 +82,20 @@ class ElementsTest extends TestCase
         foreach ($strings as $label => [$expected, $text]) {
             self::assertEquals($expected, $this->elements->parseRefs($text), $label);
         }
+    }
+
+    public function testNestedCacheInfoPreservesExpiry(): void
+    {
+        $this->elements->startCollectingCacheInfo();
+        $this->elements->collectCacheTags(['test']);
+        $this->elements->startCollectingCacheInfo();
+        $this->elements->setCacheExpiryDate(DateTimeHelper::now()->modify('+60 seconds'));
+        $this->elements->stopCollectingCacheInfo();
+        [, $duration] = $this->elements->stopCollectingCacheInfo();
+
+        self::assertNotNull($duration);
+        self::assertGreaterThan(0, $duration);
+        self::assertLessThanOrEqual(60, $duration);
     }
 
     /**
