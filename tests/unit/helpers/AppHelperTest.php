@@ -138,9 +138,10 @@ class AppHelperTest extends TestCase
         // https://github.com/craftcms/cms/issues/19522
         self::assertSame('$58 million', App::parseEnv('$58 million'));
         self::assertSame('the $58 million', App::parseEnv('the $58 million'));
-        self::assertSame('test/', App::parseEnv('test/$58'));
+        self::assertSame('the $58', App::parseEnv('the $58'));
         self::assertSame('/test', App::parseEnv('$58/test'));
         self::assertSame('test//test', App::parseEnv('test/$58/test'));
+        self::assertSame('test/', App::parseEnv('test/$58'));
 
         foreach (array_keys($variables) as $name) {
             putenv($name);
