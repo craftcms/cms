@@ -2,6 +2,11 @@ name: 'ci / Pest'
 on:
   push: { branches: [6.x, "feature/pest-tia"] }
   workflow_dispatch:
+
+concurrency:
+  group: tia-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   baseline:
     name: 'Tia Baseline'
