@@ -16,6 +16,7 @@
 - Fixed a bug where the control panel could become non-interactive after a slideout was closed. ([#9912](https://github.com/craftcms/cms/issues/9912), [#19511](https://github.com/craftcms/cms/pull/19511))
 - Fixed a bug where typing an environment variable name into a plugin’s license key input could result in multiple additions to the `.env` file, and cause the license key input to disappear. ([#19518](https://github.com/craftcms/cms/issues/19518))
 - Fixed an error that could occur when running the `fields/auto-merge` command. ([#19519](https://github.com/craftcms/cms/issues/19519))
+- Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530))
 
 ## 5.10.14 - 2026-08-18
 
