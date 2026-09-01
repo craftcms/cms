@@ -164,15 +164,15 @@ it('renders card parts only for the card view modes', function (string $viewMode
     'cards-grid' => [ElementSelect::VIEW_MODE_CARDS_GRID, true],
 ]);
 
-// A list field shouldn't pay to build markup it will never show.
-it('renders a thumbnail only for the thumbs view mode', function (string $viewMode, bool $expected) {
+it('renders thumbnails for list and thumbs view modes', function (string $viewMode, bool $expected) {
     fakeElementHtml();
     $method = new ReflectionMethod(ElementSelect::class, 'viewPayload');
     $keys = array_keys($method->invoke(null, new Entry, $viewMode));
 
     expect(in_array('thumbHtml', $keys, true))->toBe($expected);
 })->with([
-    'list' => [ElementSelect::VIEW_MODE_LIST, false],
+    'list' => [ElementSelect::VIEW_MODE_LIST, true],
+    'list-inline' => [ElementSelect::VIEW_MODE_LIST_INLINE, true],
     'thumbs' => [ElementSelect::VIEW_MODE_THUMBS, true],
     'cards' => [ElementSelect::VIEW_MODE_CARDS, false],
 ]);

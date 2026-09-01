@@ -104,7 +104,10 @@ it('resolves non-empty modern relationship values', function (Closure $createEle
 
     expect($payload->nodes[0]->control->props['elements'][0]['id'])->toBe($element->getId());
 })->with([
-    'assets' => fn () => AssetModel::factory()->createElement(),
+    'assets' => fn () => AssetModel::factory()->createElement([
+        'filename' => 'file.txt',
+        'kind' => 'text',
+    ]),
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);
@@ -131,7 +134,10 @@ it('resolves JSON-safe props for every element type', function (Closure $createE
 
     expect(json_encode($payload->nodes[0]->control->props, JSON_THROW_ON_ERROR))->toBeString();
 })->with([
-    'assets' => fn () => AssetModel::factory()->createElement(),
+    'assets' => fn () => AssetModel::factory()->createElement([
+        'filename' => 'file.txt',
+        'kind' => 'text',
+    ]),
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);
