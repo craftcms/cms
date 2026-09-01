@@ -79,6 +79,28 @@ readonly class Cp
             ->useBuildDirectory('vendor/craft/build');
     }
 
+    /**
+     * Returns the URL for a file under `resources/public`.
+     *
+     * Those files are Vite's `publicDir`: copied into the build verbatim rather
+     * than hashed into the manifest, so `Vite::asset()` can't resolve them.
+     * Served from the dev server while it's running, and from the published
+     * build directory otherwise.
+     */
+    public static function publicAssetUrl(string $path): string
+    {
+        $path = ltrim($path, '/');
+        $vite = static::vite();
+
+        if ($vite->isRunningHot()) {
+            $hot = trim((string) file_get_contents(CmsAssets::resourcesPath('hot')));
+
+            return rtrim($hot, '/')."/$path";
+        }
+
+        return asset("vendor/craft/build/$path");
+    }
+
     public static function viteScripts(): Vite
     {
         return static::vite()->withEntryPoints([

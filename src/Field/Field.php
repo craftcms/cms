@@ -303,6 +303,19 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
     }
 
+    /**
+     * A warning the field itself needs to show, on top of any the field layout
+     * author wrote.
+     *
+     * For misconfiguration the author can't see from the layout — an Assets
+     * field pointed at a volume that no longer exists, say. Returning a string
+     * puts it in the field's warning slot; `null` means nothing to say.
+     */
+    public function formWarning(?ElementInterface $element = null): ?string
+    {
+        return null;
+    }
+
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;

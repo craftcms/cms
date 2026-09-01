@@ -17,9 +17,37 @@ import {
  */
 const stub = vi.hoisted(() => ({
   clearSelection: vi.fn(),
+  refresh: vi.fn(),
   lastProps: null as Record<string, any> | null,
   emit: null as ((event: string, payload?: unknown) => void) | null,
 }));
+
+/** The upload button reaches for jQuery and `Craft.createUploader`. */
+const upload = vi.hoisted(() => ({
+  lastProps: null as Record<string, any> | null,
+  emit: null as ((event: string, payload?: unknown) => void) | null,
+}));
+
+vi.mock('@/pages/assets/AssetUploadButton.vue', async () => {
+  const {defineComponent: define, h: create} = await import('vue');
+
+  return {
+    default: define({
+      name: 'AssetUploadButtonStub',
+      props: ['canUpload', 'folderId', 'fsType', 'reloadOnComplete'],
+      emits: ['uploaded'],
+      setup(props, {emit}) {
+        upload.emit = emit as (event: string, payload?: unknown) => void;
+
+        // Read inside render so each re-render republishes the current props.
+        return () => {
+          upload.lastProps = props as Record<string, any>;
+          return create('div', {class: 'upload-stub'});
+        };
+      },
+    }),
+  };
+});
 
 const menu = vi.hoisted(() => ({
   actions: null as any[] | null,
@@ -50,11 +78,11 @@ vi.mock('./ModalElementIndex.vue', async () => {
     default: define({
       name: 'ModalElementIndexStub',
       props: ['action', 'initial', 'params', 'disabledElementIds'],
-      emits: ['selection-change', 'choose'],
+      emits: ['selection-change', 'choose', 'source-change'],
       setup(props, {emit, expose}) {
         stub.lastProps = props as Record<string, any>;
         stub.emit = emit as (event: string, payload?: unknown) => void;
-        expose({clearSelection: stub.clearSelection});
+        expose({clearSelection: stub.clearSelection, refresh: stub.refresh});
         return () => create('div', {class: 'index-stub'});
       },
     }),
@@ -112,9 +140,12 @@ async function mountModal(instance: ElementSelectorController) {
 beforeEach(() => {
   document.body.innerHTML = '';
   stub.clearSelection.mockClear();
+  stub.refresh.mockClear();
   stub.lastProps = null;
   stub.emit = null;
   menu.actions = null;
+  upload.lastProps = null;
+  upload.emit = null;
 });
 
 afterEach(() => {
@@ -304,6 +335,120 @@ describe('the transform menu', () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0]![1]).toEqual({transform: 'thumb'});
     expect(onSelect.mock.calls[0]![0][0].url).toBe('/t/thumb/1.jpg');
+    unmount();
+  });
+});
+
+describe('the upload button', () => {
+  const uploadable = {
+    'can-upload': true,
+    'folder-id': 7,
+    'fs-type': 'craft\\fs\\Local',
+  };
+
+  /** Mount with the index showing, which is when a source exists at all. */
+  async function open() {
+    const instance = controller();
+    const mounted = await mountModal(instance);
+
+    await instance.open();
+    await nextTick();
+
+    return mounted;
+  }
+
+  /** Publish a source the way the index does when one is shown. */
+  async function showSource(data?: Record<string, unknown>) {
+    stub.emit!(
+      'source-change',
+      data ? {type: 'native', key: 'volume:1', label: 'Uploads', data} : null
+    );
+    await nextTick();
+  }
+
+  it('stays away until a source says files can go there', async () => {
+    const {host, unmount} = await open();
+
+    // An entry source carries no upload keys at all.
+    await showSource({});
+    expect(host.querySelector('.upload-stub')).toBeNull();
+
+    unmount();
+  });
+
+  it('stays away when the folder refuses uploads', async () => {
+    const {host, unmount} = await open();
+
+    await showSource({...uploadable, 'can-upload': false});
+    expect(host.querySelector('.upload-stub')).toBeNull();
+
+    unmount();
+  });
+
+  /**
+   * A volume whose filesystem is missing reports `can-upload` without the
+   * things an uploader is built from, and the button can't target anything.
+   */
+  it('stays away when the folder is unusable', async () => {
+    const {host, unmount} = await open();
+
+    await showSource({'can-upload': true});
+    expect(host.querySelector('.upload-stub')).toBeNull();
+
+    unmount();
+  });
+
+  it('targets the folder on screen', async () => {
+    const {host, unmount} = await open();
+
+    await showSource(uploadable);
+
+    expect(host.querySelector('.upload-stub')).not.toBeNull();
+    expect(upload.lastProps).toMatchObject({
+      canUpload: true,
+      folderId: 7,
+      fsType: 'craft\\fs\\Local',
+      // There is no page behind a modal to reload.
+      reloadOnComplete: false,
+    });
+
+    unmount();
+  });
+
+  it('sits in the footer, not in the index', async () => {
+    const {host, unmount} = await open();
+
+    await showSource(uploadable);
+
+    expect(
+      host.querySelector('.upload-stub')?.closest('[slot="secondary-actions"]')
+    ).not.toBeNull();
+
+    unmount();
+  });
+
+  it('retargets when the index moves to another folder', async () => {
+    const {host, unmount} = await open();
+
+    await showSource(uploadable);
+    await showSource({...uploadable, 'folder-id': 12});
+
+    expect(upload.lastProps).toMatchObject({folderId: 12});
+
+    // …and leaves when the next source can't take uploads.
+    await showSource({});
+    expect(host.querySelector('.upload-stub')).toBeNull();
+
+    unmount();
+  });
+
+  it('refreshes the index once an upload lands', async () => {
+    const {unmount} = await open();
+
+    await showSource(uploadable);
+    upload.emit!('uploaded', {id: 3, label: 'photo.jpg'});
+
+    expect(stub.refresh).toHaveBeenCalledOnce();
     unmount();
   });
 });

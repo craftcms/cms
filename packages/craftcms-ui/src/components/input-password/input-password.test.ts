@@ -48,4 +48,14 @@ describe('craft-input-password', () => {
     expect(element.querySelectorAll('craft-button')).toHaveLength(1);
     expect(revealButton(element)?.getAttribute('slot')).toBe('suffix');
   });
+
+  it('forwards password rules to the native input', async () => {
+    const element = await createInputPassword();
+    element.passwordRules = 'minlength: 8; maxlength: 160;';
+    await element.updateComplete;
+
+    expect(element.querySelector('input')?.getAttribute('passwordrules')).toBe(
+      element.passwordRules
+    );
+  });
 });

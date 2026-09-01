@@ -1,5 +1,5 @@
-import {css, html} from 'lit';
-import {state} from 'lit/decorators.js';
+import {css, html, type PropertyValues} from 'lit';
+import {property, state} from 'lit/decorators.js';
 import {LionInput} from '@lion/ui/input.js';
 import {inputStyles, baseFormControlStyles} from '@src/styles/form.styles';
 import {t} from '@src/utilities/translate';
@@ -7,6 +7,8 @@ import '../icon/icon.js';
 import '../button/button.js';
 
 export default class CraftInputPassword extends LionInput {
+  @property({attribute: 'passwordrules'}) passwordRules = '';
+
   @state()
   protected _visible = false;
 
@@ -26,11 +28,17 @@ export default class CraftInputPassword extends LionInput {
           transform: translateY(calc(-50%));
           border: none;
         }
-        
+
         ::slotted(.form-control) {
           ${baseFormControlStyles}
-          --_input-end-end-radius: var(--c-input-radius, var(--c-radius-sm)) !important;
-          --_input-start-end-radius: var(--c-input-radius, var(--c-radius-sm)) !important;
+          --_input-end-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
+          --_input-start-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
         }
       `,
     ];
@@ -39,6 +47,29 @@ export default class CraftInputPassword extends LionInput {
   constructor() {
     super();
     this.type = 'password';
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.#syncPasswordRules();
+  }
+
+  override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+
+    if (changedProperties.has('passwordRules')) {
+      this.#syncPasswordRules();
+    }
+  }
+
+  #syncPasswordRules() {
+    if (this.passwordRules) {
+      this._inputNode?.setAttribute('passwordrules', this.passwordRules);
+
+      return;
+    }
+
+    this._inputNode?.removeAttribute('passwordrules');
   }
 
   reveal = () => {

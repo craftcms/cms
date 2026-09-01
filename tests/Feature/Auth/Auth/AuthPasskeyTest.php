@@ -8,7 +8,6 @@ use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Passkeys\CredentialRepository;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -16,10 +15,6 @@ use Illuminate\Support\Facades\Event;
 use Symfony\Component\Uid\Uuid;
 use Webauthn\CredentialRecord;
 use Webauthn\TrustPath\EmptyTrustPath;
-
-beforeEach(function () {
-    Cms::config()->isSystemLive = true;
-});
 
 test('authenticateWithPasskey enforces user status after a valid response', function (
     array $elementAttributes,

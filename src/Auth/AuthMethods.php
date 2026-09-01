@@ -452,25 +452,30 @@ class AuthMethods
                         return AuthError::NoCpAccess;
                     }
 
-                    if (
-                        app()->isLive() === false &&
-                        $user->can('accessCpWhenSystemIsOff') === false
-                    ) {
-                        return AuthError::NoCpOfflineAccess;
-                    }
-
-                    return null;
+                    return $this->getMaintenanceAuthError($user, true);
                 }
 
-                if (
-                    app()->isLive() === false &&
-                    $user->can('accessSiteWhenSystemIsOff') === false
-                ) {
-                    return AuthError::NoSiteOfflineAccess;
-                }
-
-                return null;
+                return $this->getMaintenanceAuthError($user, false);
         }
+    }
+
+    public function getMaintenanceAuthError(CraftUser $user, bool $isCpRequest): ?AuthError
+    {
+        $user = $user->asElement();
+
+        if (! app()->isDownForMaintenance()) {
+            return null;
+        }
+
+        if ($isCpRequest) {
+            return $user->can('accessCpWhenSystemIsOff')
+                ? null
+                : AuthError::NoCpOfflineAccess;
+        }
+
+        return $user->can('accessSiteWhenSystemIsOff')
+            ? null
+            : AuthError::NoSiteOfflineAccess;
     }
 
     public function getAuthMethodErrorMessage(?string $defaultMessage = null): string
@@ -520,8 +525,8 @@ class AuthMethods
                 : t('You need to reset your password, but an error was encountered when sending the password reset email.'),
             AuthError::AccountSuspended => t('Account suspended.'),
             AuthError::NoCpAccess => t('You cannot access the control panel with that account.'),
-            AuthError::NoCpOfflineAccess => t('You cannot access the control panel while the system is offline with that account.'),
-            AuthError::NoSiteOfflineAccess => t('You cannot access the site while the system is offline with that account.'),
+            AuthError::NoCpOfflineAccess => t('You cannot access the control panel while maintenance mode is enabled with that account.'),
+            AuthError::NoSiteOfflineAccess => t('You cannot access the site while maintenance mode is enabled with that account.'),
             default => $this->generalConfig->useEmailAsUsername
                 ? t('Invalid email or password.')
                 : t('Invalid username or password.'),

@@ -1,11 +1,15 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed, ref} from 'vue';
-  import type {Table} from '@tanstack/vue-table';
   import {usePage} from '@inertiajs/vue3';
   import Empty from '@/common/components/Empty.vue';
+  import DragShadow from '@/common/components/DragShadow.vue';
+  import {
+    useReorderableItems,
+    type DropState,
+  } from '@/common/composables/useReorderableItems';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
+  import type {Selectable} from '@/common/composables/useSelectable';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
 
   interface ThumbElement {
@@ -14,34 +18,73 @@
     folderUrl?: string;
     folderId?: string | number;
     canMoveTo?: boolean;
-    url?: string;
+    // The server sends the element's edit URL, which is null when it has none.
+    url?: string | null;
     thumbHtml?: string;
     label?: string;
   }
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      selection: Selectable<any>;
       data?: Array<ThumbElement>;
       selectable?: boolean;
+      /**
+       * Whether to draw the select-all header. Off for a host that has its own
+       * selection toolbar — the chrome belongs with the count and bulk actions
+       * it goes with, not duplicated per body.
+       */
+      selectAll?: boolean;
+      /** Offer drag-and-drop and the reorder button. */
+      sortable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
     }>(),
-    {data: () => [], selectable: false, loading: false}
+    {
+      data: () => [],
+      selectable: false,
+      selectAll: true,
+      sortable: false,
+      loading: false,
+    }
   );
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
-    useElementIndexSelection(() => props.table, {
-      selectable: () => props.selectable,
-      readOnly,
-      actions: () => [],
+  // Selection is handed in rather than derived from a table, so this body works
+  // for anything with an ordered list of ids.
+
+  const emit = defineEmits<{
+    (event: 'reorder', startIndex: number, finishIndex: number): void;
+  }>();
+
+  const ids = computed(() => props.data.map((element) => element.id));
+
+  const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
+    useReorderableItems({
+      getItemIds: () => ids.value,
+      onReorder: (startIndex, finishIndex) =>
+        emit('reorder', startIndex, finishIndex),
+      enabled: () => props.sortable,
     });
 
-  function rowFor(id: number | string) {
-    return props.table.getRow(String(id));
+  function overDropState(
+    id: string | number
+  ): Extract<DropState, {type: 'is-over'}> | null {
+    const state = getDropState(id);
+
+    return state.type === 'is-over' ? state : null;
+  }
+
+  function move(index: number, delta: number): void {
+    const target = index + delta;
+
+    if (target < 0 || target >= props.data.length) {
+      return;
+    }
+
+    emit('reorder', index, target);
   }
 
   const pendingShiftKey = ref(false);
@@ -92,7 +135,7 @@
           window.location.assign(element.url);
           break;
         }
-        toggleRow(rowFor(id));
+        props.selection.toggle(id);
         break;
       }
       case 'ArrowRight':
@@ -100,7 +143,7 @@
         event.preventDefault();
         const nextIndex = Math.min(index + 1, last);
         const nextEl = props.data[nextIndex];
-        if (event.shiftKey && nextEl) extendSelectionTo(rowFor(nextEl.id));
+        if (event.shiftKey && nextEl) props.selection.extendTo(nextEl.id);
         focusTileByIndex(nextIndex, target);
         break;
       }
@@ -109,7 +152,7 @@
         event.preventDefault();
         const prevIndex = Math.max(index - 1, 0);
         const prevEl = props.data[prevIndex];
-        if (event.shiftKey && prevEl) extendSelectionTo(rowFor(prevEl.id));
+        if (event.shiftKey && prevEl) props.selection.extendTo(prevEl.id);
         focusTileByIndex(prevIndex, target);
         break;
       }
@@ -117,7 +160,11 @@
   }
 
   function checkboxValue(event: Event): boolean {
-    return event.target instanceof HTMLInputElement && event.target.checked;
+    // `craft-checkbox` dispatches `model-value-changed` from the host, not from
+    // an inner `<input>`, so an `instanceof HTMLInputElement` test reads every
+    // change as unchecked. Since it also re-fires on programmatic `.checked`
+    // updates, that turned each selection into an immediate deselection.
+    return Boolean((event.target as {checked?: boolean} | null)?.checked);
   }
 </script>
 
@@ -126,13 +173,13 @@
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
-    <div class="thumbsview-header" v-if="selectable">
+    <div class="thumbsview-header" v-if="selectable && selectAll">
       <craft-checkbox
         label-sr-only
-        .checked="table.getIsAllRowsSelected()"
-        .indeterminate="table.getIsSomeRowsSelected()"
+        .checked="selection.allSelected.value"
+        .indeterminate="selection.someSelected.value"
         .disabled="readOnly"
-        @model-value-changed="onToggleAllSelected(checkboxValue($event))"
+        @model-value-changed="selection.toggleAll(checkboxValue($event))"
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
@@ -142,32 +189,65 @@
       <li
         v-for="(element, thumbIdx) in data"
         :key="element.id"
+        :ref="(el) => setItemRef(el as HTMLElement, element.id)"
         v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
+        data-color="white"
         :class="{
           element: true,
           'element--folder': isFolderRow(element),
-          sel: rowFor(element.id)?.getIsSelected(),
+          'element--selected': selection.isSelected(element.id),
+          'element--dragging': getDragState(element.id).type === 'is-dragging',
+          'element--hidden':
+            getDragState(element.id).type === 'is-dragging-and-left-self',
         }"
       >
-        <craft-checkbox
-          v-if="selectable"
-          class="thumb-check"
-          label-sr-only
-          .checked="rowFor(element.id)?.getIsSelected()"
-          .disabled="readOnly || !rowFor(element.id)?.getCanSelect()"
-          @click="rememberShift($event)"
-          @model-value-changed="
-            selectRow(rowFor(element.id), {
-              checked: checkboxValue($event),
-              shiftKey: pendingShiftKey,
-            })
-          "
-        >
-          <label slot="label">{{ t('Select') }}</label>
-        </craft-checkbox>
+        <div class="element__header">
+          <craft-checkbox
+            v-if="selectable"
+            label-sr-only
+            class="thumb-check"
+            .checked="selection.isSelected(element.id)"
+            .disabled="readOnly || !selection.canSelect(element.id)"
+            @click="rememberShift($event)"
+            @model-value-changed="
+              selection.setChecked(element.id, checkboxValue($event), {
+                shiftKey: pendingShiftKey,
+              })
+            "
+          >
+            <label slot="label">{{ t('Select') }}</label>
+          </craft-checkbox>
+
+          <div class="thumb-actions">
+            <slot name="actions" :element="element" :index="thumbIdx"></slot>
+            <!--
+            Kept outside the tile link below, so reaching for an action never
+            navigates to the element instead.
+          -->
+            <span
+              v-if="sortable"
+              :ref="(el) => setHandleRef(el as HTMLElement, element.id)"
+              class="thumb-handle drag-handle"
+            >
+              <craft-reorder-button
+                :position="getRowPosition(thumbIdx)"
+                orientation="horizontal"
+                @reorder="
+                  (event: CustomEvent<{direction: 'up' | 'down'}>) =>
+                    move(thumbIdx, event.detail.direction === 'up' ? -1 : 1)
+                "
+              ></craft-reorder-button>
+            </span>
+          </div>
+        </div>
+
+        <DragShadow
+          v-if="overDropState(element.id)?.closestEdge === 'top'"
+          :height="overDropState(element.id)?.draggingRect?.height"
+        />
 
         <component
           :is="element.url ? 'a' : 'div'"
@@ -185,6 +265,10 @@
             element.label
           }}</craft-truncate>
         </component>
+        <DragShadow
+          v-if="overDropState(element.id)?.closestEdge === 'bottom'"
+          :height="overDropState(element.id)?.draggingRect?.height"
+        />
       </li>
     </ul>
   </template>
@@ -206,7 +290,6 @@
     display: grid;
     gap: var(--c-spacing-sm);
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    padding: var(--c-spacing-md);
   }
 
   .thumbsview > li {
@@ -215,7 +298,7 @@
     border: 1px solid var(--c-color-neutral-border-quiet);
   }
 
-  .thumbsview > li:has(a.thumb-tile) {
+  .element:not(.element--selected):has(a.thumb-tile) {
     &:hover {
       background-color: var(--c-color-neutral-fill-quiet);
     }
@@ -226,10 +309,33 @@
   }
 
   .thumb-check {
-    position: absolute;
-    inset-block-start: var(--c-spacing-sm);
-    inset-inline-start: var(--c-spacing-sm);
+    // position: absolute;
+    // inset-block-start: var(--c-spacing-sm);
+    // inset-inline-start: var(--c-spacing-sm);
     z-index: 1;
+  }
+
+  // Opposite corner from the checkbox, above the tile so it stays reachable.
+  .thumb-actions {
+    // position: absolute;
+    // inset-block-start: var(--c-spacing-sm);
+    // inset-inline-end: var(--c-spacing-sm);
+    z-index: 1;
+    display: flex;
+    gap: var(--c-spacing-xs);
+    align-items: center;
+  }
+
+  // Dragging, but still over itself — dim rather than remove, so the grid
+  // doesn't reflow under the cursor.
+  .thumbsview > li.element--dragging {
+    opacity: 0.4;
+  }
+
+  // Dragged away from itself: hide it but keep the footprint, so the grid
+  // doesn't reshuffle around the gap.
+  .thumbsview > li.element--hidden {
+    visibility: hidden;
   }
 
   .thumb-tile {
@@ -237,15 +343,20 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    gap: var(--c-spacing-sm);
+    // gap: var(--c-spacing-sm);
     padding: var(--c-spacing-md);
     border-radius: var(--c-radius-lg);
     text-decoration: none;
     color: inherit;
-    min-height: 100%;
   }
 
-  .thumbsview > li.sel .thumb-tile {
+  .element {
+    background-color: var(--c-color-fill-quiet);
+    border-color: var(--c-color-border-quiet);
+    color: var(--c-color-on-quiet);
+  }
+
+  .element--selected {
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-quiet);
   }
@@ -288,5 +399,12 @@
     font-weight: 500;
     text-align: center;
     height: 1lh;
+  }
+
+  .element__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: var(--c-spacing-sm);
   }
 </style>

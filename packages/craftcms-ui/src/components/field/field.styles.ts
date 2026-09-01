@@ -25,14 +25,10 @@ export default css`
     display: none;
   }
 
-  .form-field {
-    padding-inline: var(--c-spacing-lg);
-  }
-
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
-    inset-inline-start: 0;
+    inset-inline-start: calc(var(--c-spacing-lg) * -1);
     width: 2px;
     height: 100%;
     cursor: help;
@@ -146,11 +142,17 @@ export default css`
   }
 
   /* Error styling hook, mirroring .field.has-errors / .input.errors */
-  :host([has-errors]) ::slotted([slot='input']) {
-    border-color: var(--c-color-danger-border-loud);
-  }
+  :host([has-errors='true']) {
+    ::slotted([slot='label']) {
+      color: var(--c-color-danger-on-quiet);
+    }
 
-  :host([has-errors]) .form-field__feedback {
-    color: var(--c-color-danger-on-normal);
+    ::slotted([slot='input']) {
+      border-color: var(--c-color-danger-border-loud);
+    }
+
+    .form-field__feedback {
+      color: var(--c-color-danger-on-quiet);
+    }
   }
 `;

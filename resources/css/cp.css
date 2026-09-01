@@ -217,3 +217,18 @@ doesn't leave a trail of selected text behind it.
     cursor: col-resize !important;
     user-select: none !important;
 }
+
+/*
+ * Choice option illustrations (View Mode and friends). The label is `for`-bound
+ * to its radio, so clicking the illustration selects the option — what Craft 5
+ * got from wrapping the image and the input in a single label.
+ */
+.radio-thumbnail {
+    display: block;
+    margin-block-end: var(--c-spacing-xs);
+    cursor: pointer;
+}
+
+.radio-thumbnail img {
+    display: block;
+}

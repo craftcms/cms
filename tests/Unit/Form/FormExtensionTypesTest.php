@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Address;
+use CraftCms\Cms\Form\Controls\AssetSelect;
 use CraftCms\Cms\Form\Controls\Checkbox;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
@@ -69,6 +70,7 @@ it('registers core and plugin Node and Control types separately', function () {
     expect($nodeTypes->types()->all())->toBe([Action::class, ActionMenu::class, Callout::class, CopyAttribute::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
         ->and($controlTypes->types()->all())->toBe([
             Address::class,
+            AssetSelect::class,
             Checkbox::class,
             Choice::class,
             ConditionBuilder::class,

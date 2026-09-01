@@ -25,27 +25,26 @@ export const queue = QueueService.getInstance();
 registerFormComponents(cpComponentRegistry);
 
 export function installCpApp(app: App): void {
-    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
 
-    app.provide(Queue, queue);
-    app.provide(Axios, axios);
-    app.provide(Config, config);
-    app.provide(Craft, config);
+  app.provide(Queue, queue);
+  app.provide(Axios, axios);
+  app.provide(Config, config);
 
-    app.component('QueueManager', QueueManager);
-    app.component('QueueManagerToolbar', QueueManagerToolbar);
-    app.component('DeprecationErrors', DeprecationErrors);
-    app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
-    app.component('ClearCaches', ClearCaches);
-    app.component('FindReplace', FindReplace);
-    app.component('DatabaseBackup', DatabaseBackup);
-    app.component('Migrations', Migrations);
-    app.component('Updates', Updates);
-    app.component('ProjectConfig', ProjectConfig);
-    app.component('AssetIndexes', AssetIndexes);
-    app.component('SystemMessages', SystemMessages);
-    app.component('CpLink', CpLink);
+  app.component('QueueManager', QueueManager);
+  app.component('QueueManagerToolbar', QueueManagerToolbar);
+  app.component('DeprecationErrors', DeprecationErrors);
+  app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
+  app.component('ClearCaches', ClearCaches);
+  app.component('FindReplace', FindReplace);
+  app.component('DatabaseBackup', DatabaseBackup);
+  app.component('Migrations', Migrations);
+  app.component('Updates', Updates);
+  app.component('ProjectConfig', ProjectConfig);
+  app.component('AssetIndexes', AssetIndexes);
+  app.component('SystemMessages', SystemMessages);
+  app.component('CpLink', CpLink);
 
-    cpComponentRegistry.install(app);
-    app.onUnmount(() => cpComponentRegistry.uninstall(app));
+  cpComponentRegistry.install(app);
+  app.onUnmount(() => cpComponentRegistry.uninstall(app));
 }

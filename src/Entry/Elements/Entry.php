@@ -28,6 +28,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -1886,8 +1887,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @return list<array<string, mixed>>
      */
     #[Override]
-    protected function extraActionMenuDescriptors(): array
-    {
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
         if (! currentUser()?->isAdmin() || ! Cms::config()->allowAdminChanges) {
             return [];
         }

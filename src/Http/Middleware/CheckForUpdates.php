@@ -96,7 +96,7 @@ readonly class CheckForUpdates
 
             if (
                 $actionSegments === ['app', 'health-check'] ||
-                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {
                 return $this->handleActionRequest->handle($request, $next);

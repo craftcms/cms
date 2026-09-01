@@ -1,5 +1,9 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputWrapperStyles, baseComboboxStyles} from '../../styles/form.styles';
+import {
+  baseFieldStyles,
+  baseInputWrapperStyles,
+  baseComboboxStyles,
+} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -44,6 +48,18 @@ export default css`
     inset-block-start: 50%;
     inset-inline-end: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
     transform: translateY(-50%);
+  }
+
+  .prefix {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: var(--c-input-spacing-inline);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  :host([has-prefix-icon]) ::slotted(.form-control) {
+    padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
   .combobox__option {

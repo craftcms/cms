@@ -419,6 +419,22 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
      * @throws RuntimeException
      * @throws FieldNotFoundException
      */
+    /**
+     * The layout author's warning, plus anything the field itself needs to
+     * flag — a misconfigured volume, say, which the author can't see from the
+     * layout. Both are shown when both apply.
+     */
+    #[Override]
+    protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        $warnings = array_filter([
+            parent::warningText($element, $static),
+            $this->getField()->formWarning($element),
+        ]);
+
+        return $warnings !== [] ? implode(' ', $warnings) : null;
+    }
+
     public function getField(): FieldInterface
     {
         if (isset($this->_field)) {

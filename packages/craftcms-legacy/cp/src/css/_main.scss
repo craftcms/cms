@@ -3193,21 +3193,6 @@ table:not(.cp-table) {
     }
 }
 
-.card-grid {
-    display: grid !important;
-    gap: var(--s) !important;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-
-    & > li {
-        border-radius: var(--radius-lg);
-
-        & > .card {
-            margin: 0 !important;
-            height: 100%;
-        }
-    }
-}
-
 // Adjust the columns when in live preview
 .lp-editor-container .card-grid,
 .width-50 .card-grid,
@@ -4746,11 +4731,6 @@ table.data tbody tr:not(.disabled).active-drop-target {
 /* ----------------------------------------
 /*  Condition builders
 /* ---------------------------------------- */
-
-.condition-container {
-    margin-block: 24px;
-    margin-inline: 0;
-}
 
 .condition-rule,
 .condition-footer {

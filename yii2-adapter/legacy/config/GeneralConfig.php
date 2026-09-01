@@ -53,6 +53,16 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
+     * @deprecated in 6.0.0. Use Laravel maintenance mode instead.
+     */
+    public ?bool $isSystemLive = null {
+        set {
+            $this->deprecateIsSystemLive();
+            $this->isSystemLive = $value;
+        }
+    }
+
+    /**
      * @var bool Whether Craft image transforms should be generated before page load.
      *
      * @deprecated in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.
@@ -571,6 +581,14 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             // misc
             ->maxUploadFileSize($this->maxUploadFileSize)
             ->disabledPlugins($this->disabledPlugins);
+    }
+
+    #[Deprecated(message: 'in 6.0.0. Use Laravel maintenance mode instead.')]
+    public function isSystemLive(?bool $value): self
+    {
+        $this->isSystemLive = $value;
+
+        return $this;
     }
 
     /**
@@ -1451,6 +1469,14 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         app()->booted(fn() => Deprecator::log(
             'generalConfig.generateTransformsBeforePageLoad',
             'generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.',
+        ));
+    }
+
+    private function deprecateIsSystemLive(): void
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.isSystemLive',
+            '`craft\\config\\GeneralConfig::$isSystemLive` and `craft\\config\\GeneralConfig::isSystemLive()` are deprecated. Use Laravel maintenance mode instead.',
         ));
     }
 }

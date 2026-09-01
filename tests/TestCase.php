@@ -29,6 +29,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
@@ -120,7 +121,9 @@ class TestCase extends Orchestra
     #[Override]
     protected function tearDown(): void
     {
+        app()->maintenanceMode()->deactivate();
         Gate::clearResolvedInstances();
+        PreventRequestsDuringMaintenance::flushState();
 
         app(ProjectConfig::class)->reset();
 
