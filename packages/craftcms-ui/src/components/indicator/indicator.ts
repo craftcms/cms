@@ -7,9 +7,11 @@ import {variants} from '@src/constants/variants';
 import {Appearance} from '@src/constants/appearances';
 
 /**
- * @summary Indicators are used to visually represent the status of an object.
- * Most of the time, you won't want to use the component directly but instead
- * should use one of the status components.
+ * @summary A small dot representing the status of an object.
+ *
+ * Most of the time you want `craft-status`, which covers the fixed vocabulary
+ * of object states. Reach for this when the dot means something that
+ * vocabulary does not cover, since it takes any palette colour or CSS colour.
  *
  * @since 1.0
  */
@@ -50,16 +52,37 @@ export default class CraftIndicator extends LitElement {
     `,
   ];
 
+  /**
+   * Dot size. Both are defined in `em`, so either scales with the surrounding
+   * font size — set `font-size` on the host to fine-tune.
+   */
   @property()
   size: 'md' | 'lg' = 'md';
 
-  /** @phpType {Color|string} */
+  /**
+   * The dot's colour. A status variant (`success`, `warning`, `danger`,
+   * `info`) or a palette swatch resolves to the matching `--c-color-*` token;
+   * any other value — a hex code, `rgb()`, a custom property — is used
+   * verbatim.
+   *
+   * @phpType {Color|string}
+   */
   @property({reflect: true})
   fill: string = 'var(--c-color-fill-loud)';
 
+  /**
+   * Accessible name, exposed as `aria-label`. Set it whenever the dot is not
+   * purely decorative — a status conveyed by colour alone is conveyed to
+   * nobody who cannot see it.
+   */
   @property()
   label: string | null = null;
 
+  /**
+   * How the dot is drawn: `outline-fill` is filled with a subtle outline,
+   * `solid` is filled with none, and `outline` is a hollow ring over a
+   * transparent centre.
+   */
   @property({reflect: true})
   appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.OutlineFill;
 
