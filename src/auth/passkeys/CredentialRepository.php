@@ -14,7 +14,9 @@ use craft\helpers\Json;
 use craft\records\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\CredentialRecord;
+use Webauthn\Exception\InvalidDataException;
 use Webauthn\PublicKeyCredentialUserEntity;
+use Webauthn\Util\Base64;
 
 /**
  * Passkey credential repository.
@@ -40,12 +42,19 @@ class CredentialRepository
                 'json',
             );
 
-            // if the record was created using webauthn v4 then the credential was run through Json::encode() before storing in the DB
-            // deserialising such value base64 decodes the userHandle too, and leads to user handle mismatch;
-            // so, if we failed to log user in based on the handle mismatch exception, we'll try again but using the encoded (old) handle
+            // if the record was created using webauthn v4 then the credential was run through Json::encode() before storing in the DB,
+            // without the extra base64 encoding pass that webauthn 5's CredentialRecordDenormalizer::normalize() applies;
+            // deserialising such a value therefore leaves the userHandle one decode pass short of where it should be,
+            // so if we failed to log the user in based on the handle mismatch exception, we'll try again, decoding the
+            // stored (old, singly-encoded) handle ourselves to get it to the same (raw) form the assertion response is in
             if ($checkOldUserHandle) {
                 $credential = Json::decodeIfJson($record->credential);
-                $credentialRecord->userHandle = $credential['userHandle'];
+                try {
+                    $credentialRecord->userHandle = Base64::decode($credential['userHandle']);
+                } catch (InvalidDataException) {
+                    // not base64-encoded after all; fall back to using it as-is
+                    $credentialRecord->userHandle = $credential['userHandle'];
+                }
             }
 
             return $credentialRecord;

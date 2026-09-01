@@ -1455,8 +1455,13 @@ class User extends Element implements IdentityInterface
         // Validate the security key
         try {
             $keyValid = $authService->verifyPasskey($this, $requestOptions, $response);
-        } catch (InvalidUserHandleException $e) {
-            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
+        } catch (InvalidUserHandleException) {
+            // the user handle may have been stored in the old (pre-webauthn-5) format; try again, accounting for that
+            try {
+                $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
+            } catch (InvalidUserHandleException) {
+                $keyValid = false;
+            }
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }
