@@ -12,7 +12,7 @@
 ## 4.18.6 - 2026-08-04
 
 - Added `craft\helpers\StringHelper::isMd5()`.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-5r92-75j8-c534)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-5r92-75j8-c534](https://github.com/craftcms/cms/security/advisories/GHSA-5r92-75j8-c534))
 
 ## 4.18.5 - 2026-07-15
 
