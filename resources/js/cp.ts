@@ -46,7 +46,6 @@ import './modules/element-selector-modal';
 import './modules/element-select-input';
 import './modules/preview-file-modal';
 import './modules/asset-select-input';
-import './modules/customize-sources-modal';
 import './modules/element-deletion-manager';
 import './modules/uploader';
 import './modules/nested-element-manager';

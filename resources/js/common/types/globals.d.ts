@@ -227,14 +227,7 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: LegacyWidgetSettings): SlideoutInstance;
   };
-  createElementEditor(
-    elementType: string,
-    settings?: LegacyWidgetSettings
-  ): SlideoutInstance;
-  CustomizeSourcesModal: new (
-    elementIndex: ElementIndexInstance,
-    settings?: LegacyWidgetSettings
-  ) => {destroy(): void};
+  createElementEditor(elementType: string, settings?: object): SlideoutInstance;
   FieldLayoutDesigner: {
     new (
       container: HTMLElement | JQuery,
