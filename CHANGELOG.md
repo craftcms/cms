@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530), [#19536](https://github.com/craftcms/cms/pull/19536))
+- Fixed a bug where eager-loaded native fields could be incorrectly returned as a collection via their magic properties. ([#19537](https://github.com/craftcms/cms/issues/19537))
 
 ## 5.11.0 - 2026-09-01
 
@@ -49,7 +50,6 @@
 - Fixed an error that could occur when running the `fields/auto-merge` command. ([#19519](https://github.com/craftcms/cms/issues/19519))
 - Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530))
 - Fixed an error that could occur when editing an element. ([#17268](https://github.com/craftcms/cms/issues/17268))
-- Fixed a bug where `getEagerLoadedElements()` wasn’t returning results for eager-loaded native fields, such as `authors`. ([#19471](https://github.com/craftcms/cms/pull/19471))
 - Fixed a bug where field condition rules within field layout components weren’t getting updated when a custom field was replaced within the layout. ([#19515](https://github.com/craftcms/cms/pull/19515))
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-g48f-wc2q-4rrv, GHSA-wr79-9v6x-5rfq, GHSA-qm9x-rmcj-h2rc, GHSA-xmwr-88vw-5ghh)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7rr3-4jcm-x526)

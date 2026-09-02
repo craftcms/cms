@@ -2419,9 +2419,9 @@ JS, [
                 /** @var User[] $elements */
                 $this->setAuthors($elements);
                 break;
+            default:
+                $this->traitSetEagerLoadedElements($handle, $elements, $plan);
         }
-
-        $this->traitSetEagerLoadedElements($handle, $elements, $plan);
     }
 
     // Indexes, etc.
