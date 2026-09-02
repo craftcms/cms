@@ -1,6 +1,59 @@
 packages:
   - 'packages/*'
 
+# Single source of truth for every dependency more than one workspace package
+# needs. Manifests reference these as `catalog:` (or `catalog:legacy`), so two
+# packages can't silently drift onto different ranges. pnpm substitutes the real
+# version at publish time, exactly as it does for `workspace:`.
+#
+# `vite` and `vitest` are deliberately absent: Vite+ has to replace Vite inside
+# third-party packages too (Storybook, Vitest, the Tailwind plugin), which only
+# `overrides` below can do. A catalog would only cover our own manifests.
+catalog:
+  '@awesome.me/kit-ddaed3f5c5': ^1.0.74
+  '@lion/ui': ^0.16.1
+  '@playwright/test': ^1.59.1
+  '@simplewebauthn/browser': ^13.3.0
+  '@storybook/addon-a11y': ^10.5.5
+  '@storybook/addon-docs': ^10.5.5
+  '@storybook/addon-themes': ^10.5.5
+  '@total-typescript/tsconfig': ^1.0.4
+  '@types/node': ^25.6.0
+  '@vitest/coverage-v8': 4.1.10
+  axios: ^1.17.0
+  d3: ^7.9.0
+  dotenv: ^16.6.1
+  esbuild: ^0.28.0
+  happy-dom: ^20.9.0
+  inputmask: ^5.0.10
+  jquery: ^3.7.1
+  lit: ^3.3.2
+  punycode: ^2.3.1
+  storybook: ^10.5.5
+  stylelint: ^17.9.1
+  stylelint-config-standard: ^40.0.0
+  stylelint-config-standard-scss: ^17.0.0
+  stylelint-prettier: ^5.0.3
+  stylelint-use-logical-spec: ^5.0.1
+  tailwindcss: ^4.2.4
+  typescript: ^6.0.3
+  vite-plus: 0.2.6
+  vue: ^3.5.33
+  webpack: ^5.89.0
+  webpack-dev-server: ^4.15.1
+
+# @craftcms/legacy is intentionally held on older majors — it builds the Craft 5
+# control panel bundles. Keeping those in their own catalog makes the split
+# explicit instead of looking like drift.
+catalogs:
+  legacy:
+    stylelint: ^16.26.1
+    stylelint-config-standard: ^36.0.1
+    stylelint-config-standard-scss: ^13.1.0
+    tailwindcss: ^3.4.19
+    typescript: ^5.9.3
+    vue: ^2.7.16
+
 # `prebuild`/`predev`/`prestorybook` hooks are load-bearing here (see the root
 # and @craftcms/ui scripts). pnpm doesn't run them by default the way npm does.
 enablePrePostScripts: true

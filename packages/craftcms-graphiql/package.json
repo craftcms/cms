@@ -14,8 +14,8 @@
   "devDependencies": {
     "@craftcms/webpack": "workspace:*",
     "@craftcms/sass": "workspace:*",
-    "webpack": "^5.89.0",
-    "webpack-dev-server": "^4.15.1"
+    "webpack": "catalog:",
+    "webpack-dev-server": "catalog:"
   },
   "engines": {
     "node": ">=20"

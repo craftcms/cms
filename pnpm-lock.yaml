@@ -203,6 +203,118 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@lion/ui':
+      specifier: ^0.16.1
+      version: 0.16.1
+    '@playwright/test':
+      specifier: ^1.59.1
+      version: 1.59.1
+    '@simplewebauthn/browser':
+      specifier: ^13.3.0
+      version: 13.3.0
+    '@storybook/addon-a11y':
+      specifier: ^10.5.5
+      version: 10.5.5
+    '@storybook/addon-docs':
+      specifier: ^10.5.5
+      version: 10.5.5
+    '@storybook/addon-themes':
+      specifier: ^10.5.5
+      version: 10.5.5
+    '@total-typescript/tsconfig':
+      specifier: ^1.0.4
+      version: 1.0.4
+    '@types/node':
+      specifier: ^25.6.0
+      version: 25.6.0
+    '@vitest/coverage-v8':
+      specifier: 4.1.10
+      version: 4.1.10
+    axios:
+      specifier: ^1.17.0
+      version: 1.17.0
+    d3:
+      specifier: ^7.9.0
+      version: 7.9.0
+    dotenv:
+      specifier: ^16.6.1
+      version: 16.6.1
+    esbuild:
+      specifier: ^0.28.0
+      version: 0.28.1
+    happy-dom:
+      specifier: ^20.9.0
+      version: 20.9.0
+    inputmask:
+      specifier: ^5.0.10
+      version: 5.0.10
+    jquery:
+      specifier: ^3.7.1
+      version: 3.7.1
+    lit:
+      specifier: ^3.3.2
+      version: 3.3.2
+    punycode:
+      specifier: ^2.3.1
+      version: 2.3.1
+    storybook:
+      specifier: ^10.5.5
+      version: 10.5.5
+    stylelint:
+      specifier: ^17.9.1
+      version: 17.9.1
+    stylelint-config-standard:
+      specifier: ^40.0.0
+      version: 40.0.0
+    stylelint-config-standard-scss:
+      specifier: ^17.0.0
+      version: 17.0.0
+    stylelint-prettier:
+      specifier: ^5.0.3
+      version: 5.0.3
+    stylelint-use-logical-spec:
+      specifier: ^5.0.1
+      version: 5.0.1
+    tailwindcss:
+      specifier: ^4.2.4
+      version: 4.2.4
+    typescript:
+      specifier: ^6.0.3
+      version: 6.0.3
+    vite-plus:
+      specifier: 0.2.6
+      version: 0.2.6
+    vue:
+      specifier: ^3.5.33
+      version: 3.5.33
+    webpack:
+      specifier: ^5.89.0
+      version: 5.102.1
+    webpack-dev-server:
+      specifier: ^4.15.1
+      version: 4.15.2
+  legacy:
+    stylelint:
+      specifier: ^16.26.1
+      version: 16.26.1
+    stylelint-config-standard:
+      specifier: ^36.0.1
+      version: 36.0.1
+    stylelint-config-standard-scss:
+      specifier: ^13.1.0
+      version: 13.1.0
+    tailwindcss:
+      specifier: ^3.4.19
+      version: 3.4.19
+    typescript:
+      specifier: ^5.9.3
+      version: 5.9.3
+    vue:
+      specifier: ^2.7.16
+      version: 2.7.16
+
 overrides:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.6
   vitest: 4.1.10
@@ -236,10 +348,10 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3(axios@1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2))(vue@3.5.33(typescript@6.0.3))
       '@lion/ui':
-        specifier: ^0.16.1
+        specifier: 'catalog:'
         version: 0.16.1
       '@simplewebauthn/browser':
-        specifier: ^13.3.0
+        specifier: 'catalog:'
         version: 13.3.0
       '@tanstack/table-core':
         specifier: ^8.21.3
@@ -254,28 +366,28 @@ importers:
         specifier: ^14.3.0
         version: 14.3.0(vue@3.5.33(typescript@6.0.3))
       axios:
-        specifier: ^1.17.0
+        specifier: 'catalog:'
         version: 1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       d3:
-        specifier: ^7.9.0
+        specifier: 'catalog:'
         version: 7.9.0
       laravel-vite-plugin:
         specifier: ^3.1.0
         version: 3.1.0(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       lit:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       overtype:
         specifier: ^2.4.0
         version: 2.4.0
       punycode:
-        specifier: ^2.3.1
+        specifier: 'catalog:'
         version: 2.3.1
       tailwindcss:
-        specifier: ^4.2.4
+        specifier: 'catalog:'
         version: 4.2.4
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.33(typescript@6.0.3)
     devDependencies:
       '@craftcms/garnish':
@@ -291,16 +403,16 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@playwright/test':
-        specifier: ^1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@storybook/addon-a11y':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))
       '@storybook/addon-docs':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(@types/react@19.2.15)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))(webpack@5.102.1)
       '@storybook/addon-themes':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))
       '@storybook/vue3-vite':
         specifier: ^10.5.5
@@ -309,7 +421,7 @@ importers:
         specifier: ^4.2.4
         version: 4.2.4(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       '@total-typescript/tsconfig':
-        specifier: ^1.0.4
+        specifier: 'catalog:'
         version: 1.0.4
       '@types/jquery':
         specifier: ^3.5.34
@@ -318,43 +430,43 @@ importers:
         specifier: ^6.0.6
         version: 6.0.6(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vue@3.5.33(typescript@6.0.3))
       esbuild:
-        specifier: ^0.28.0
+        specifier: 'catalog:'
         version: 0.28.1
       jquery:
-        specifier: ^3.7.1
+        specifier: 'catalog:'
         version: 3.7.1
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
       storybook:
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       stylelint:
-        specifier: ^17.9.1
+        specifier: 'catalog:'
         version: 17.9.1(supports-color@10.2.2)(typescript@6.0.3)
       stylelint-config-standard:
-        specifier: ^40.0.0
+        specifier: 'catalog:'
         version: 40.0.0(stylelint@17.9.1(supports-color@10.2.2)(typescript@6.0.3))
       stylelint-config-standard-scss:
-        specifier: ^17.0.0
+        specifier: 'catalog:'
         version: 17.0.0(postcss@8.5.12)(stylelint@17.9.1(supports-color@10.2.2)(typescript@6.0.3))
       stylelint-prettier:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.0.3(prettier@3.8.3)(stylelint@17.9.1(supports-color@10.2.2)(typescript@6.0.3))
       stylelint-use-logical:
         specifier: ^2.1.3
         version: 2.1.3(stylelint@17.9.1(supports-color@10.2.2)(typescript@6.0.3))
       stylelint-use-logical-spec:
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1(stylelint@17.9.1(supports-color@10.2.2)(typescript@6.0.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.2.6
         version: '@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)'
       vite-plus:
-        specifier: 0.2.6
+        specifier: 'catalog:'
         version: 0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)
       vitest:
         specifier: 4.1.10
@@ -376,40 +488,40 @@ importers:
         version: 3.7.1
     devDependencies:
       '@storybook/addon-a11y':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))
       '@storybook/addon-docs':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(@types/react@19.2.15)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))(webpack@5.102.1)
       '@storybook/addon-themes':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))
       '@storybook/html-vite':
         specifier: ^10.5.5
         version: 10.5.5(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))(webpack@5.102.1)
       '@total-typescript/tsconfig':
-        specifier: ^1.0.4
+        specifier: 'catalog:'
         version: 1.0.4
       '@types/node':
-        specifier: ^25.6.0
+        specifier: 'catalog:'
         version: 25.6.0
       '@vitest/coverage-v8':
-        specifier: 4.1.10
+        specifier: 'catalog:'
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       happy-dom:
-        specifier: ^20.9.0
+        specifier: 'catalog:'
         version: 20.9.0
       storybook:
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.2.6
         version: '@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)'
       vite-plus:
-        specifier: 0.2.6
+        specifier: 'catalog:'
         version: 0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)
       vitest:
         specifier: 4.1.10
@@ -440,10 +552,10 @@ importers:
         specifier: workspace:*
         version: link:../craftcms-webpack
       webpack:
-        specifier: ^5.89.0
+        specifier: 'catalog:'
         version: 5.102.1(esbuild@0.28.1)(uglify-js@3.19.3)(webpack-cli@5.1.4)
       webpack-dev-server:
-        specifier: ^4.15.1
+        specifier: 'catalog:'
         version: 4.15.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(webpack-cli@5.1.4)(webpack@5.102.1)
 
   packages/craftcms-legacy:
@@ -467,7 +579,7 @@ importers:
         specifier: git+https://github.com/selectize/selectize.js.git#e6ca6d3ba8f902c38da157f2caf7962c38e82095
         version: https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095(jquery-ui@1.14.2)(jquery@3.7.1)
       '@simplewebauthn/browser':
-        specifier: ^13.3.0
+        specifier: 'catalog:'
         version: 13.3.0
       '@types/jquery':
         specifier: ^3.5.34
@@ -479,7 +591,7 @@ importers:
         specifier: ^5.10.6
         version: 5.10.6
       axios:
-        specifier: ^1.17.0
+        specifier: 'catalog:'
         version: 1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       blueimp-file-upload:
         specifier: ^10.32.0
@@ -488,7 +600,7 @@ importers:
         specifier: ^5.65.21
         version: 5.65.21
       d3:
-        specifier: ^7.9.0
+        specifier: 'catalog:'
         version: 7.9.0
       fabric:
         specifier: ^1.7.22
@@ -500,10 +612,10 @@ importers:
         specifier: ^4.4.5
         version: 4.4.5
       inputmask:
-        specifier: ^5.0.9
+        specifier: 'catalog:'
         version: 5.0.10
       jquery:
-        specifier: ^3.7.1
+        specifier: 'catalog:'
         version: 3.7.1
       jquery-ui:
         specifier: ^1.14.2
@@ -515,7 +627,7 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       punycode:
-        specifier: ^2.3.1
+        specifier: 'catalog:'
         version: 2.3.1
       swiper:
         specifier: ^8.4.7
@@ -527,7 +639,7 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(bluebird@3.7.2)(supports-color@10.2.2)
       typescript:
-        specifier: ^5.9.3
+        specifier: catalog:legacy
         version: 5.9.3
       v-tooltip:
         specifier: ^2.1.3
@@ -536,7 +648,7 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
       vue:
-        specifier: ^2.7.16
+        specifier: catalog:legacy
         version: 2.7.16
       vue-autosuggest:
         specifier: ^2.2.0
@@ -570,7 +682,7 @@ importers:
         specifier: workspace:*
         version: link:../craftcms-webpack
       '@playwright/test':
-        specifier: ^1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       husky:
         specifier: ^9.1.7
@@ -582,34 +694,34 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       stylelint:
-        specifier: ^16.26.1
+        specifier: catalog:legacy
         version: 16.26.1(supports-color@10.2.2)(typescript@5.9.3)
       stylelint-config-standard:
-        specifier: ^36.0.1
+        specifier: catalog:legacy
         version: 36.0.1(stylelint@16.26.1(supports-color@10.2.2)(typescript@5.9.3))
       stylelint-config-standard-scss:
-        specifier: ^13.1.0
+        specifier: catalog:legacy
         version: 13.1.0(postcss@8.5.12)(stylelint@16.26.1(supports-color@10.2.2)(typescript@5.9.3))
       stylelint-prettier:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.0.3(prettier@3.8.3)(stylelint@16.26.1(supports-color@10.2.2)(typescript@5.9.3))
       stylelint-use-logical-spec:
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1(stylelint@16.26.1(supports-color@10.2.2)(typescript@5.9.3))
       tailwindcss:
-        specifier: ^3.4.19
+        specifier: catalog:legacy
         version: 3.4.19(yaml@2.8.3)
       vite-plus:
-        specifier: 0.2.6
+        specifier: 'catalog:'
         version: 0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.94.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@1.21.7)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3)
       vue-apexcharts:
         specifier: ^1.7.0
         version: 1.7.0(apexcharts@5.10.6)(vue@2.7.16)
       webpack:
-        specifier: ^5.89.0
+        specifier: 'catalog:'
         version: 5.102.1(esbuild@0.28.1)(uglify-js@3.19.3)(webpack-cli@5.1.4)
       webpack-dev-server:
-        specifier: ^4.15.1
+        specifier: 'catalog:'
         version: 4.15.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(webpack-cli@5.1.4)(webpack@5.102.1)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
@@ -619,10 +731,10 @@ importers:
   packages/craftcms-playwright:
     dependencies:
       '@playwright/test':
-        specifier: ^1.47.0
+        specifier: 'catalog:'
         version: 1.59.1
       dotenv:
-        specifier: ^16.6.1
+        specifier: 'catalog:'
         version: 16.6.1
       events:
         specifier: ^3.3.0
@@ -651,7 +763,7 @@ importers:
         specifier: ^2.11.8
         version: 2.11.8
       '@simplewebauthn/browser':
-        specifier: ^13.3.0
+        specifier: 'catalog:'
         version: 13.3.0
       '@vitest/browser-playwright':
         specifier: 4.1.10
@@ -660,13 +772,13 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       axios:
-        specifier: ^1.17.0
+        specifier: 'catalog:'
         version: 1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       dom-input-range:
         specifier: ^2.0.1
         version: 2.0.1
       inputmask:
-        specifier: ^5.0.10
+        specifier: 'catalog:'
         version: 5.0.10
     devDependencies:
       '@adobe/leonardo-contrast-colors':
@@ -679,7 +791,7 @@ importers:
         specifier: ^0.11.0
         version: 0.11.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
       '@lion/ui':
-        specifier: ^0.16.1
+        specifier: 'catalog:'
         version: 0.16.1
       '@open-wc/dedupe-mixin':
         specifier: ^2.0.1
@@ -688,13 +800,13 @@ importers:
         specifier: ^2.20.1
         version: 2.20.1(@floating-ui/utils@0.2.11)(@types/react@19.2.15)
       '@storybook/addon-a11y':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))
       '@storybook/addon-docs':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(@types/react@19.2.15)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))(webpack@5.102.1)
       '@storybook/addon-themes':
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))
       '@storybook/addon-vitest':
         specifier: ^10.5.5
@@ -706,7 +818,7 @@ importers:
         specifier: ^10.5.5
         version: 10.5.5(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(lit@3.3.2)(storybook@10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)))(webpack@5.102.1)
       '@total-typescript/tsconfig':
-        specifier: ^1.0.4
+        specifier: 'catalog:'
         version: 1.0.4
       '@types/humanize-duration':
         specifier: ^3.27.4
@@ -715,10 +827,10 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       '@types/node':
-        specifier: ^25.6.0
+        specifier: 'catalog:'
         version: 25.6.0
       '@vitest/coverage-v8':
-        specifier: 4.1.10
+        specifier: 'catalog:'
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       '@wc-toolkit/storybook-helpers':
         specifier: ^10.3.0
@@ -730,19 +842,19 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       esbuild:
-        specifier: ^0.28.0
+        specifier: 'catalog:'
         version: 0.28.1
       globby:
         specifier: ^16.2.0
         version: 16.2.4
       happy-dom:
-        specifier: ^20.9.0
+        specifier: 'catalog:'
         version: 20.9.0
       humanize-duration:
         specifier: ^3.33.2
         version: 3.33.2
       lit:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       ora:
         specifier: ^9.4.0
@@ -760,10 +872,10 @@ importers:
         specifier: ^6.1.3
         version: 6.1.3
       storybook:
-        specifier: ^10.5.5
+        specifier: 'catalog:'
         version: 10.5.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/react@19.2.15)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       unplugin-dts:
         specifier: ^1.0.0
@@ -775,7 +887,7 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(supports-color@10.2.2)(typescript@6.0.3)(webpack@5.102.1)
       vite-plus:
-        specifier: 0.2.6
+        specifier: 'catalog:'
         version: 0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)
       vite-tsconfig-paths:
         specifier: ^6.1.1
@@ -844,7 +956,7 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(webpack@5.102.1)
       dotenv:
-        specifier: ^16.3.1
+        specifier: 'catalog:'
         version: 16.6.1
       dotenv-webpack:
         specifier: ^8.0.1
@@ -889,13 +1001,13 @@ importers:
         specifier: ^4.1.3
         version: 4.1.3
       webpack:
-        specifier: ^5.89.0
+        specifier: 'catalog:'
         version: 5.102.1(esbuild@0.28.1)(uglify-js@3.19.3)(webpack-cli@5.1.4)
       webpack-cli:
         specifier: ^5.1.4
         version: 5.1.4(webpack-dev-server@4.15.2)(webpack@5.102.1)
       webpack-dev-server:
-        specifier: ^4.15.1
+        specifier: 'catalog:'
         version: 4.15.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(webpack-cli@5.1.4)(webpack@5.102.1)
       webpack-manifest-plugin:
         specifier: ^5.0.0
@@ -12605,7 +12717,7 @@ snapshots:
       '@vitest/mocker': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       playwright: 1.59.1
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10))(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
+      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -12629,7 +12741,7 @@ snapshots:
       '@testing-library/dom': 10.4.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
       '@vitest/browser': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10)
-      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10))(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
+      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -12662,7 +12774,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10))(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
+      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
       ws: 8.21.1
     transitivePeerDependencies:
       - bufferutil
@@ -12682,7 +12794,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10))(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
+      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
     optionalDependencies:
       '@vitest/browser': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10)
 
@@ -18992,7 +19104,7 @@ snapshots:
       oxfmt: 0.60.0(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       oxlint: 1.75.0(oxlint-tsgolint@7.0.2001)(vite-plus@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@3.1.2)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
       oxlint-tsgolint: 7.0.2001
-      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10))(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
+      vitest: 4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2)
     optionalDependencies:
       '@vitest/browser-playwright': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(playwright@1.59.1)(vitest@4.1.10)
       '@voidzero-dev/vite-plus-darwin-arm64': 0.2.6
@@ -19043,38 +19155,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
       - typescript
-
-  vitest@4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10))(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2):
-    dependencies:
-      '@vitest/expect': 4.1.10
-      '@vitest/mocker': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))
-      '@vitest/pretty-format': 4.1.10
-      '@vitest/runner': 4.1.10
-      '@vitest/snapshot': 4.1.10
-      '@vitest/spy': 4.1.10
-      '@vitest/utils': 4.1.10
-      es-module-lexer: 2.1.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.1
-      pathe: 2.0.3
-      picomatch: 4.0.4
-      std-env: 4.1.0
-      tinybench: 2.9.0
-      tinyexec: 1.1.2
-      tinyglobby: 0.2.16
-      tinyrainbow: 3.1.1
-      vite: '@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3)'
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 25.6.0
-      '@vitest/browser-playwright': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(playwright@1.59.1)(vitest@4.1.10)
-      '@vitest/browser-preview': 4.1.10(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vitest@4.1.10)
-      '@vitest/coverage-v8': 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
-      happy-dom: 20.9.0
-      jsdom: 3.1.2
-    transitivePeerDependencies:
-      - msw
 
   vitest@4.1.10(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.94.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3))(happy-dom@20.9.0)(jsdom@3.1.2):
     dependencies:
