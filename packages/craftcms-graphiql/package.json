@@ -13,7 +13,9 @@
   "author": "Brandon Kelly <brandon@pixelandtonic.com>",
   "devDependencies": {
     "@craftcms/webpack": "workspace:*",
-    "@craftcms/sass": "workspace:*"
+    "@craftcms/sass": "workspace:*",
+    "webpack": "^5.89.0",
+    "webpack-dev-server": "^4.15.1"
   },
   "engines": {
     "node": ">=20"
