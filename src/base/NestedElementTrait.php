@@ -434,9 +434,9 @@ trait NestedElementTrait
             case 'primaryOwner':
                 $this->setPrimaryOwner(reset($elements) ?: null);
                 break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
-
-        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
