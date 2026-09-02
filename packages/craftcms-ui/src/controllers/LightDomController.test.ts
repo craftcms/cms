@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, test} from 'vitest';
+import {beforeEach, describe, expect, test} from 'vite-plus/test';
 import {html, LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
