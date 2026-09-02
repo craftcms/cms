@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
-import {expect} from 'storybook/test';
+import {expect, waitFor} from 'storybook/test';
 
 import {html} from 'lit';
 
@@ -347,11 +347,24 @@ export const ExternalPanels: Story = {
   },
 };
 
-/** Waits out the animation frames the overflow measurement schedules. */
+/**
+ * Waits out the animation frames the overflow measurement schedules.
+ *
+ * A fixed number of frames is not enough on its own: `requestAnimationFrame`
+ * is starved when several browser tests run at once, so the measurement had
+ * not always finished by the time the assertions ran. Pair this with
+ * `settleUntil()` wherever the result of a measurement is being read.
+ */
 async function settle() {
   for (let frame = 0; frame < 3; frame++) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
+}
+
+/** Settles, then waits for the measurement to actually land. */
+async function settleUntil(condition: () => boolean) {
+  await settle();
+  await waitFor(() => expect(condition()).toBe(true));
 }
 
 const OVERFLOW_LABELS = [
@@ -390,8 +403,9 @@ export const Overflow: Story = {
 
     const collapsed = () => tabs.filter((tab) => tab.hasAttribute('hidden'));
 
-    // The strip measures off a rAF, so settle before reading it.
-    await settle();
+    // The strip measures off a rAF, so wait for the measurement to land
+    // rather than for a fixed number of frames.
+    await settleUntil(() => collapsed().length > 0);
 
     // Some tabs don't fit, so the menu is showing and holds exactly them.
     await expect(collapsed().length).toBeGreaterThan(0);
@@ -408,7 +422,9 @@ export const Overflow: Story = {
     const label = target.textContent!.trim();
 
     await userEvent.click(menu.querySelector('[slot="invoker"]')!);
-    await settle();
+    await settleUntil(
+      () => menu.querySelectorAll('craft-action-item').length > 0
+    );
 
     // The items are the menu's own light DOM, which lives inside the strip's
     // shadow root — a document-level query wouldn't reach them.
@@ -417,7 +433,7 @@ export const Overflow: Story = {
     );
     await expect(item).toBeTruthy();
     await userEvent.click(item as HTMLElement);
-    await settle();
+    await settleUntil(() => !target.hasAttribute('hidden'));
 
     // It swapped into the strip, selected, and something else took its place
     // in the menu.

@@ -1,49 +1,70 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './input-copy.js';
+import type CraftInputCopy from './input-copy.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `input-copy.ts` surfaces it here without touching this file.
+ *
+ * The template is written out rather than generated: the value is Lion's
+ * `modelValue`, a property rather than an attribute, and the label is a slot.
+ */
+const {args, argTypes} =
+  getStorybookHelpers<CraftInputCopy>('craft-input-copy');
+
+type CraftInputCopyArgs = CraftInputCopy & typeof args;
+
+/** The shell every story shares, so each one only supplies its args. */
+const field = (args: Record<string, unknown>) => html`
+  <craft-input-copy
+    copy-value="${(args['copy-value'] as string) ?? ''}"
+    ?disabled="${args.disabled}"
+    .modelValue="${args.value ?? ''}"
+  >
+    <label slot="label">${args['label-slot']}</label>
+    ${args['help-text-slot']
+      ? html`<span slot="help-text">${args['help-text-slot']}</span>`
+      : ''}
+  </craft-input-copy>
+`;
 
 const meta = {
   title: 'Form Controls/Text Controls/Input Copy',
   component: 'craft-input-copy',
-  render: () => html`
-    <craft-input-copy
-      label="Site URL"
-      help-text="Click the copy button to copy this value."
-      value="https://craftcms.com"
-    ></craft-input-copy>
-  `,
-} satisfies Meta<any>;
+  args: {
+    ...args,
+    'label-slot': 'Site URL',
+    'help-text-slot': 'Click the copy button to copy this value.',
+    value: 'https://craftcms.com',
+  },
+  argTypes,
+  render: (args) => field(args),
+} satisfies Meta<CraftInputCopyArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftInputCopyArgs>;
 
-export const Default: Story = {
-  args: {},
-};
+/** A read-only value with a copy button in the suffix. */
+export const Default: Story = {};
 
 /**
- * Use \`copy-value\` when the value sent to the clipboard should differ from
- * what is displayed in the textbox — for example, showing a truncated token
- * while copying the full one.
+ * `copy-value` sends something other than what is shown — a full token behind
+ * a masked one, say.
  */
 export const WithSeparateCopyValue: Story = {
-  render: () => html`
-    <craft-input-copy
-      label="API Token"
-      value="sk-••••••••••••••••••••••••1234"
-      copy-value="sk-abcdefghijklmnopqrstuvwxyz1234"
-    ></craft-input-copy>
-  `,
+  args: {
+    'label-slot': 'API Token',
+    'help-text-slot': '',
+    value: 'sk-••••••••••••••••••••••••1234',
+    'copy-value': 'sk-abcdefghijklmnopqrstuvwxyz1234',
+  },
 };
 
 export const Disabled: Story = {
-  render: () => html`
-    <craft-input-copy
-      label="Site URL"
-      value="https://craftcms.com"
-      disabled
-    ></craft-input-copy>
-  `,
+  args: {disabled: true, 'help-text-slot': ''},
 };

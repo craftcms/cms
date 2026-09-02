@@ -1,34 +1,56 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './input-handle.js';
 import '../input/input.js';
+import type CraftInputHandle from './input-handle.js';
 
 /**
- * Lion's `label` and `value` are not in the custom elements manifest, so they
- * cannot be driven through the storybook helpers' `template()`. These stories
- * render the element themselves and read the args they need.
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `input-handle.ts` surfaces it here without touching this file.
+ *
+ * The template is written out rather than generated: the value is Lion's
+ * `modelValue`, a property rather than an attribute, and the label is a slot.
  */
+const {args, argTypes} =
+  getStorybookHelpers<CraftInputHandle>('craft-input-handle');
+
+type CraftInputHandleArgs = CraftInputHandle & typeof args;
+
+/** The shell every story shares, so each one only supplies its args. */
+const field = (args: Record<string, unknown>) => html`
+  <craft-input-handle
+    autocorrect="${(args.autocorrect as string) ?? 'off'}"
+    autocapitalize="${(args.autocapitalize as string) ?? 'off'}"
+    maxlength="${(args.maxlength as number) ?? ''}"
+    ?disabled="${args.disabled}"
+    .modelValue="${args.value ?? ''}"
+  >
+    <label slot="label">${args['label-slot']}</label>
+    ${args['help-text-slot']
+      ? html`<span slot="help-text">${args['help-text-slot']}</span>`
+      : ''}
+  </craft-input-handle>
+`;
+
 const meta = {
   title: 'Form Controls/Text Controls/Input Handle',
   component: 'craft-input-handle',
   args: {
-    label: 'Handle',
+    ...args,
+    'label-slot': 'Handle',
+    'help-text-slot': 'Used in templates.',
     value: 'entryType',
-    helpText: 'Used in templates.',
   },
-  render: ({label, value, helpText}) => html`
-    <craft-input-handle
-      label="${label}"
-      help-text="${helpText}"
-      .modelValue="${value}"
-    ></craft-input-handle>
-  `,
-} satisfies Meta<any>;
+  argTypes,
+  render: (args) => field(args),
+} satisfies Meta<CraftInputHandleArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftInputHandleArgs>;
 
 /** A monospace field with the browser's text conveniences turned off. */
 export const Default: Story = {};
@@ -38,14 +60,12 @@ export const ComparedToInput: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`
     <div style="display: flex; flex-direction: column; gap: 0.75rem">
-      <craft-input
-        label="craft-input"
-        .modelValue="${'entryType'}"
-      ></craft-input>
-      <craft-input-handle
-        label="craft-input-handle"
-        .modelValue="${'entryType'}"
-      ></craft-input-handle>
+      <craft-input .modelValue="${'entryType'}">
+        <label slot="label">craft-input</label>
+      </craft-input>
+      <craft-input-handle .modelValue="${'entryType'}">
+        <label slot="label">craft-input-handle</label>
+      </craft-input-handle>
     </div>
   `,
 };
@@ -55,37 +75,19 @@ export const ComparedToInput: Story = {
  * `on`/`off` rather than as bare boolean attributes.
  */
 export const AutocorrectOn: Story = {
-  parameters: {controls: {disable: true}},
-  render: () => html`
-    <craft-input-handle
-      label="Handle"
-      help-text='autocorrect="on" — the browser may correct what is typed.'
-      autocorrect="on"
-      autocapitalize="sentences"
-      .modelValue="${'entryType'}"
-    ></craft-input-handle>
-  `,
+  args: {
+    autocorrect: 'on',
+    autocapitalize: 'sentences',
+    'help-text-slot':
+      'autocorrect="on" — the browser may correct what is typed.',
+  },
 };
 
 /** Everything from `craft-input` still applies, including the width rules. */
 export const WithMaxLength: Story = {
-  parameters: {controls: {disable: true}},
-  render: () => html`
-    <craft-input-handle
-      label="Handle"
-      maxlength="12"
-      .modelValue="${'entryType'}"
-    ></craft-input-handle>
-  `,
+  args: {maxlength: 12, 'help-text-slot': ''},
 };
 
 export const Disabled: Story = {
-  parameters: {controls: {disable: true}},
-  render: () => html`
-    <craft-input-handle
-      label="Handle"
-      disabled
-      .modelValue="${'entryType'}"
-    ></craft-input-handle>
-  `,
+  args: {disabled: true, 'help-text-slot': ''},
 };

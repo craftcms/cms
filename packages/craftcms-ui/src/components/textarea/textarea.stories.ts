@@ -45,16 +45,6 @@ export const Monospace: Story = {
 
 export const Disabled: Story = {
   args: {disabled: true},
-  parameters: {
-    a11y: {
-      config: {
-        // WCAG 1.4.3 exempts inactive controls from the contrast minimum, and
-        // the help text dims with the field it belongs to. axe cannot tell
-        // that the text is part of the disabled control, so it reports it.
-        rules: [{id: 'color-contrast', enabled: false}],
-      },
-    },
-  },
 };
 
 export const Readonly: Story = {

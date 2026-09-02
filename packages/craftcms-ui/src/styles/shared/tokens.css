@@ -114,6 +114,15 @@
   --c-status-disabled-text: var(--color-slate-600);
   --c-status-disabled-border: var(--color-slate-600);
 
+  /*
+    Lion reads this for the label, help text, and value of a disabled field,
+    and falls back to its own #767676 — which is 4.09:1 on our default surface,
+    under the 4.5:1 a disabled field's help text still has to meet to be read.
+    Pointing it at the token above puts it at 5.05:1, the same as the enabled
+    help text.
+  */
+  --disabled-text-color: var(--c-status-disabled-text);
+
   /**
  Static colors
   */
