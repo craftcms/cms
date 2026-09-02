@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added support for symfony/filesystem 7.x and 8.x. ([#19538](https://github.com/craftcms/cms/discussions/19538))
 - Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530), [#19536](https://github.com/craftcms/cms/pull/19536))
 - Fixed a bug where eager-loaded native fields could be incorrectly returned as a collection via their magic properties. ([#19537](https://github.com/craftcms/cms/issues/19537))
 
