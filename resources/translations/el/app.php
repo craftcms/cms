@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Ταξινόμηση κατά',
     'Sort descending' => 'Ταξινόμηση φθίνουσα',
     'Sort direction' => 'Κατεύθυνση ταξινόμησης',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Κωδικός ταξινόμησης',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Οι ρυθμίσεις πηγής αποθηκεύτηκαν',
