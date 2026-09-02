@@ -3,6 +3,7 @@
   import {ButtonVariant, t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
+  import type {DragData} from '@/common/composables/useReorderableItems';
   import CustomSourceList from './CustomSourceList.vue';
   import type {PageRow, SourceRow, SourceType} from './types';
 
@@ -43,6 +44,18 @@
   /** A source with no key can't be addressed; fall back to its position. */
   function itemId(source: SourceRow, index: number): string {
     return source.key ?? `unkeyed-${index}`;
+  }
+
+  /**
+   * What the pages sidebar reads off a source dragged into it, to give the
+   * source a page of its own. A keyless source can't be moved, and a page
+   * holding nothing but a heading isn't shown at all, so neither carries
+   * anything and the pages list won't take them.
+   */
+  function dragData(source: SourceRow): DragData {
+    return source.key && source.type !== 'heading'
+      ? {sourceKey: source.key, sourceLabel: source.label}
+      : {};
   }
 
   function unkeyed(source: SourceRow): boolean {
@@ -94,6 +107,7 @@
       :selected="selectedKey"
       :disabled="unkeyed"
       :actions="actions"
+      :drag-data="dragData"
       @select="(key) => emit('select', key)"
       @reorder="onReorder"
     />
