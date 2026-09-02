@@ -41,8 +41,8 @@ class Announcement extends BaseModel
     }
 
     /**
-     * @param  Builder<Announcement>  $query
-     * @return Builder<Announcement>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function visible(Builder $query): Builder

@@ -127,9 +127,7 @@ class FieldsController
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 
-        if ($field === null) {
-            $field = $found;
-        }
+        $field ??= $found;
 
         return $this->editScreenResponse($field, $request->boolean('multiInstanceTypesOnly'));
     }
@@ -645,6 +643,9 @@ class FieldsController
                     // If fieldId is set, we're replacing the selected field
                     if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
                         if (! empty($elementConfig['fieldId'])) {
+                            // Keep track of the old field's UUID so we can update any conditions referencing it on save
+                            $elementConfig['oldFieldUid'] ??= $elementConfig['fieldUid'] ?? null;
+
                             unset($elementConfig['fieldUid']);
                         } else {
                             unset($elementConfig['fieldId']);

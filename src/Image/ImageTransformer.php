@@ -775,7 +775,7 @@ class ImageTransformer
             throw new FilesystemException('The configured Asset Transform output filesystem does not exist.');
         }
 
-        return $filesystem->hasUrls;
+        return $filesystem->getRootUrl() !== null;
     }
 
     /**

@@ -375,7 +375,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     public function sourceHasUrls(): bool
     {
-        return $this->getFs()->hasUrls;
+        return $this->getFs()->getRootUrl() !== null;
     }
 
     /** @return class-string<FsInterface> */

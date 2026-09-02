@@ -76,7 +76,8 @@ foreach ($context['_seq'] as $context["_key"] => $context["item"]) {
 }
 $_parent = $context['_parent'];
 unset($context['_seq'], $context['_key'], $context['item'], $context['_parent'], $context['loop']);
-$context = array_intersect_key($context, $_parent) + $_parent;
+$context = array_intersect_key($context, $_parent);
+$context += $_parent;
 if (isset($_thisItemLevel)) {
     $_tmpContext = $context;
     if ($_thisItemLevel > $_firstItemLevel) {

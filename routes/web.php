@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Controllers\SiteRouteController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Site\Sites;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
 $routes = app(CraftRoutes::class);
@@ -71,6 +72,9 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
         return redirect($uri);
     });
 }
+
+// Signals support for passkeys without leaking the CP URL, per https://www.w3.org/TR/passkey-endpoints/.
+Route::get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
 
 // Route::fallback() only registers GET/HEAD by default
 Route::any('{fallbackPlaceholder}', SiteRouteController::class)

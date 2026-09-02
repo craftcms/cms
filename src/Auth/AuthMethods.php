@@ -332,7 +332,12 @@ class AuthMethods
         try {
             $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
         } catch (InvalidUserHandleException) {
-            $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
+            // the user handle may have been stored in the old (pre-webauthn-5) format; try again, accounting for that
+            try {
+                $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
+            } catch (InvalidUserHandleException) {
+                $updatedCredentialRecord = false;
+            }
         } catch (InvalidArgumentException) {
             $updatedCredentialRecord = false;
         }

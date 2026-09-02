@@ -284,9 +284,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
 
             foreach ($columnListing as $column) {
-                if (! isset($this->columnMap[$column])) {
-                    $this->columnMap[$column] = "$this->table.$column";
-                }
+                $this->columnMap[$column] ??= "$this->table.$column";
             }
         }
 

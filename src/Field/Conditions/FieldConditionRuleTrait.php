@@ -51,6 +51,11 @@ trait FieldConditionRuleTrait
         return t('Fields');
     }
 
+    public function getFieldUid(): string
+    {
+        return $this->_fieldUid;
+    }
+
     public function setFieldUid(string $uid): void
     {
         $this->_fieldUid = $uid;
@@ -89,10 +94,15 @@ trait FieldConditionRuleTrait
 
         foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
-                if ($field->uid === $this->_fieldUid) {
+                if ($field->uid === $this->_fieldUid || $field->layoutElement->oldFieldUid === $this->_fieldUid) {
                     // skip if it doesn't have a label
                     $label = $field->layoutElement->label();
                     if ($label === null) {
+                        continue;
+                    }
+
+                    // make sure this is the expected condition rule class for the field
+                    if (! $this->isExpectedType($field)) {
                         continue;
                     }
 
@@ -141,6 +151,21 @@ trait FieldConditionRuleTrait
         }
 
         return $this->_fieldInstances;
+    }
+
+    private function isExpectedType(FieldInterface $field): bool
+    {
+        $expectedType = $field->getElementConditionRuleType();
+
+        if ($expectedType === null) {
+            return false;
+        }
+
+        if (is_array($expectedType)) {
+            $expectedType = $expectedType['class'];
+        }
+
+        return is_a($this, $expectedType);
     }
 
     /**

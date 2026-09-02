@@ -103,8 +103,7 @@ describe('generate', function () {
     });
 
     it('rejects invalid private transform tokens', function () {
-        get(action([TransformController::class, 'generate'], ['transformToken' => 'invalid']))
-            ->assertStatus(400);
+        get(action([TransformController::class, 'generate'], ['transformToken' => 'invalid']))->assertBadRequest();
     });
 
     it('generates Craft driver transform results from private sources', function () {
@@ -191,7 +190,7 @@ describe('generate', function () {
 
         postJson(action([TransformController::class, 'generate']), [
             'handle' => '_100x100_crop_center-center_none',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     });
 
     it('returns error for missing handle', function () {
@@ -204,6 +203,6 @@ describe('generate', function () {
 
         postJson(action([TransformController::class, 'generate']), [
             'assetId' => $asset->id,
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     });
 });
