@@ -1,5 +1,6 @@
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
+import {html as staticHtml, unsafeStatic} from 'lit/static-html.js';
 import {property, state} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {Paddable} from '@src/mixins/Paddable.js';
@@ -172,6 +173,21 @@ export default class CraftPane extends Paddable(LitElement, {
    * and be announced in addition to the visible heading.
    */
   @property() label = '';
+
+  /**
+   * The heading level `label` renders at. A pane sits inside a page that has
+   * its own `<h1>`, and pages routinely stack two or three panes, so the
+   * default is `2` — a run of `<h1>`s would leave a screen reader's heading
+   * list flat and unnavigable. Set it to `1` for a pane that really is the
+   * page's main heading, or deeper for a nested one.
+   */
+  @property({type: Number, attribute: 'heading-level'}) headingLevel:
+    | 1
+    | 2
+    | 3
+    | 4
+    | 5
+    | 6 = 2;
 
   /**
    * Whether header content is currently slotted. The header and footer slots
@@ -355,6 +371,18 @@ export default class CraftPane extends Paddable(LitElement, {
     this._observeScrollable();
   }
 
+  /**
+   * `staticHtml` because the tag name is part of the template, not a value —
+   * an interpolated tag would be escaped as text. The level is clamped to the
+   * six real heading elements so a bad attribute cannot emit an `<h0>`.
+   */
+  private _renderTitle() {
+    const level = Math.min(6, Math.max(1, Number(this.headingLevel) || 2));
+    const tag = unsafeStatic(`h${level}`);
+
+    return staticHtml`<${tag} class="cp-pane__title">${this.label}</${tag}>`;
+  }
+
   protected override render() {
     const showHeader = !!this.label || this._hasSlottedHeader;
 
@@ -371,9 +399,7 @@ export default class CraftPane extends Paddable(LitElement, {
           ? html`<slot name="header">
               <div class="cp-pane__header" part="header">
                 <slot name="title" part="title">
-                  ${this.label
-                    ? html`<h1 class="cp-pane__title">${this.label}</h1>`
-                    : nothing}
+                  ${this.label ? this._renderTitle() : nothing}
                 </slot>
                 <div class="cp-pane__header-actions" part="header-actions">
                   <slot name="header-actions"></slot>

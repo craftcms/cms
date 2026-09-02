@@ -75,9 +75,17 @@ The pane exposes seven CSS parts — `base`, `header`, `title`, `header-actions`
 
 ## Accessibility
 
-The `label` renders as an `<h1>` in the header by default, which puts the pane in the document outline.
+The `label` renders as a heading in the header, which puts the pane in the document outline.
 
-That is worth being deliberate about: a page of panes is a page of `<h1>`s unless you slot a different heading level into `title`. Use `label` for the pane that _is_ the page, and slot an appropriate heading for the rest.
+It renders at `heading-level`, which defaults to `2`. A CP page has its own `<h1>`, and pages routinely stack two or three panes, so a pane that claimed `<h1>` would flatten the heading list a screen reader navigates by.
+
+Set `heading-level="1"` for a pane that really is the page's main heading, or a deeper level for a nested one:
+
+```html
+<craft-pane label="Settings" heading-level="3"></craft-pane>
+```
+
+Slotting your own heading into `title` still overrides all of this.
 
 ## Properties
 

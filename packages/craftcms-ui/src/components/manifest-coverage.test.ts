@@ -1,4 +1,4 @@
-import {existsSync, readFileSync} from 'node:fs';
+import {existsSync, globSync, readFileSync, statSync} from 'node:fs';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
 
@@ -69,6 +69,23 @@ describe('the manifest is built', () => {
       manifest,
       `${MANIFEST} is missing — run \`npm run build:manifest\``
     ).not.toBeNull();
+  });
+
+  /**
+   * Every check below reads the built manifest, so a stale one fails all of
+   * them at once and blames the components rather than the build. `npm test`
+   * rebuilds it first; running vitest directly does not, which is exactly when
+   * this happens.
+   */
+  it('is newer than the components it describes', () => {
+    const newest = globSync(join(import.meta.dirname, '*', '*.ts'))
+      .filter((file) => !/\.(test|stories|styles)\.ts$/.test(file))
+      .reduce((latest, file) => Math.max(latest, statSync(file).mtimeMs), 0);
+
+    expect(
+      statSync(MANIFEST).mtimeMs,
+      'the manifest is older than a component — run `npm run build:manifest`'
+    ).toBeGreaterThan(newest);
   });
 
   /** A guard that silently matches nothing would be worse than none at all. */
