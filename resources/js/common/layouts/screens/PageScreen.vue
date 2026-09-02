@@ -41,6 +41,7 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {useFlash} from '@/common/composables/useFlash';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+  import useCraftData from '@/common/composables/useCraftData';
   import {useResizable} from '@/common/composables/useResizable';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
@@ -69,6 +70,7 @@
 
   const registry = provideLayoutSlotRegistry();
   provideScreenContext('page');
+  const craftData = useCraftData();
 
   // A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
   // second one — it renders transparently instead.
@@ -278,6 +280,9 @@
                 >
                   <craft-icon name="search" :label="t('Search')"></craft-icon>
                 </craft-button>
+                <cp-notification-center
+                  :notifications.prop="craftData.general.notifications"
+                ></cp-notification-center>
                 <UserMenu />
               </div>
             </div>

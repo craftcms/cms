@@ -73,7 +73,10 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
@@ -81,6 +84,7 @@ use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
+use LogicException;
 use Override;
 use Stringable;
 
@@ -410,6 +414,18 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getKey(): ?int
     {
         return $this->id;
+    }
+
+    /** @return MorphMany<DatabaseNotification, Model> */
+    public function notifications(): MorphMany
+    {
+        $user = Auth::getProvider()->retrieveById($this->getAuthIdentifier());
+
+        if (! $user instanceof Model || ! method_exists($user, 'notifications')) {
+            throw new LogicException('The configured auth model must be an Eloquent model using Laravel\'s Notifiable trait to receive database notifications.');
+        }
+
+        return $user->notifications();
     }
 
     #[Override]

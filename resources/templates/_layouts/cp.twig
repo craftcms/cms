@@ -133,15 +133,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         </div>
                     {% endif %}
                 </div>
-                <button
-                    type="button"
-                    id="announcements-btn"
-                    class="btn hidden"
-                    title="{{ 'What’s New'|t('app') }}"
-                >
-                    <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
-                    {{ iconSvg('gift') }}
-                </button>
+                <cp-notification-center></cp-notification-center>
 
                 {# New account dropdown #}
                 <div class="account-toggle-wrapper">

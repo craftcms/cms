@@ -28,6 +28,7 @@ use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\NotificationsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
@@ -117,6 +118,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::allowDuringMaintenance()->any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
+
+    Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
