@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.11.1 - 2026-09-02
 
 - Added support for symfony/filesystem 7.x and 8.x. ([#19538](https://github.com/craftcms/cms/discussions/19538))
 - Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530), [#19536](https://github.com/craftcms/cms/pull/19536))
