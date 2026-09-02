@@ -130,7 +130,7 @@ const OVERFLOW_TOLERANCE = 1;
  *   Defaults to `--c-color-neutral-border-quiet`.
  * @cssproperty --c-pane-padding - Fallback spacing used when the `padding`
  *   attribute is absent. Defaults to `--c-spacing-lg`.
- * @cssproperty --c-pane-title-font-size - Font size of the default `<h1>`
+ * @cssproperty --c-pane-title-font-size - Font size of the default heading
  *   title. Defaults to `1.125rem`.
  * @cssproperty --c-pane-title-line-height - Line height of the default title.
  * @cssproperty --c-pane-title-font-weight - Font weight of the default title.

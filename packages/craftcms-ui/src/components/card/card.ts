@@ -1,6 +1,8 @@
 import {property} from 'lit/decorators.js';
 import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
+import {styleMap} from 'lit/directives/style-map.js';
+import {Paddable} from '@src/mixins/Paddable.js';
 import styles from './card.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {
@@ -35,7 +37,14 @@ import {
  *   only while `show-thumb` is set; `thumb-alignment` puts the column at the
  *   start or the end of the body.
  *
+ * @csspart base - The card's outermost element, which carries the surface and
+ *   the border.
+ * @csspart header - The default header region.
  * @csspart label - The label slot within the header.
+ * @csspart actions - The wrapper around the `actions` slot.
+ * @csspart body - The region holding the thumbnail column and the content.
+ * @csspart thumbnail - The fixed column the `thumbnail` slot renders into.
+ * @csspart footer - The default footer region.
  *
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-card-shadow - Box shadow. Defaults to `--c-shadow-sm`.
@@ -44,8 +53,17 @@ import {
  * @cssproperty --c-card-padding-block - Block (vertical) padding of the header,
  *   body, and footer. Defaults to `--c-spacing-sm` for the header/footer and
  *   `--c-spacing-md` for the body.
+ *
+ * @property padding - Spacing for every padded region, from the shared spacing
+ *   scale. Supplied by the `Paddable` mixin, the same as `craft-pane` and
+ *   `craft-callout`. Leave it unset to keep the per-region defaults above; set
+ *   the custom properties for anything the scale cannot express.
  */
-export default class CraftCard extends LitElement {
+export default class CraftCard extends Paddable(LitElement, {
+  // The public properties, so an unset `padding` leaves the stylesheet's
+  // per-region defaults alone and only an explicit value overrides them.
+  customProperty: ['--c-card-padding-block', '--c-card-padding-inline'],
+}) {
   // In the CP, an element's server-rendered card attributes are spread onto
   // the host with `attrs(element.cardAttributes)`, excluding `class` — the
   // component draws its own chrome rather than the server's `.card` classes.
@@ -88,23 +106,30 @@ export default class CraftCard extends LitElement {
 
     return html`
       <div
+        part="base"
         class="${classMap({
           card: true,
           'card--has-thumbnail': showThumbnail,
         })}"
+        style="${styleMap(this.paddingStyles)}"
       >
         ${hasSlottedHeader
-          ? html`<div class="card__header">
+          ? html`<div class="card__header" part="header">
               <slot name="header">
                 <slot name="label" class="card__label" part="label"
                   >${this.label}</slot
                 >
-                <slot name="actions" class="card__actions"></slot>
+                <slot
+                  name="actions"
+                  class="card__actions"
+                  part="actions"
+                ></slot>
               </slot>
             </div>`
           : nothing}
 
         <div
+          part="body"
           class="${classMap({
             'card-body': true,
             'card-body--thumb-start':
@@ -113,7 +138,11 @@ export default class CraftCard extends LitElement {
               showThumbnail && this.thumbAlignment === 'end',
           })}"
         >
-          <div class="card-body__thumb" ?hidden="${!showThumbnail}">
+          <div
+            class="card-body__thumb"
+            part="thumbnail"
+            ?hidden="${!showThumbnail}"
+          >
             <slot name="thumbnail"></slot>
           </div>
 
@@ -123,7 +152,9 @@ export default class CraftCard extends LitElement {
         </div>
 
         ${hasSlottedFooter
-          ? html`<div class="card__footer"><slot name="footer"></slot></div>`
+          ? html`<div class="card__footer" part="footer">
+              <slot name="footer"></slot>
+            </div>`
           : nothing}
       </div>
     `;

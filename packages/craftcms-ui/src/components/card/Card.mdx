@@ -67,8 +67,15 @@ It does not make the card focusable or announce a selection, so a selectable lis
 
 ## Styling
 
-The card exposes one CSS part, `label`, and four `--c-card-*` custom properties for radius, shadow, and the two padding axes.
-Both are listed in full under [Properties](#properties).
+`padding` sets the spacing of every padded region from the shared spacing scale, the same as [Pane](?path=/docs/components-pane--docs) and [Callout](?path=/docs/components-callout--docs):
+
+```html
+<craft-card label="Entry" padding="lg"></craft-card>
+```
+
+Leave it unset and each region keeps its own default — the header is tighter than the body — which is what a card in an index renders with.
+
+For the rest, the card exposes seven CSS parts and four `--c-card-*` custom properties, both listed in full under [Properties](#properties).
 
 <Canvas of={CardStories.CustomProperties} sourceState="shown" />
 
