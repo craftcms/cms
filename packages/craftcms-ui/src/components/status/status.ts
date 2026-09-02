@@ -34,7 +34,7 @@ export default class CraftStatus extends LitElement {
     | 'enabled'
     | null = null;
 
-  getLabel() {
+  protected getLabel() {
     if (!this.label && this.status) {
       return t('Status: {status}', {status: this.status});
     }

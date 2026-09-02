@@ -89,9 +89,14 @@ export default class CraftInputColor extends CraftInput {
 
   protected _pickerListId = `${this._inputId}-presets`;
 
+  /**
+   * Fixed to `text`. The swatch beside the field is a separate native colour
+   * input, so the text field keeps the hex value editable.
+   */
+  override type = 'text';
+
   constructor() {
     super();
-    this.type = 'text';
   }
 
   /**
@@ -110,6 +115,9 @@ export default class CraftInputColor extends CraftInput {
     return CraftInputColor._browserSupportsColorInputs;
   }
 
+  /**
+   * Adds the colour swatch alongside the native input.
+   */
   override get slots() {
     return {
       ...super.slots,
@@ -132,22 +140,38 @@ export default class CraftInputColor extends CraftInput {
     };
   }
 
+  /**
+   * Parses the typed hex string into the model value.
+   */
   override parser(value: string) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Formats the model value for display in the field.
+   */
   override formatter(value: unknown) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Serialises the model value for form submission.
+   */
   override serializer(value: unknown) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Restores a model value from its serialised form.
+   */
   override deserializer(value: string) {
     return normalizeColorValue(value);
   }
 
+  /**
+   * Normalises what is typed before it is parsed, so a value pasted with or
+   * without a leading `#` lands the same way.
+   */
   override preprocessor(value: string) {
     const normalizedValue = normalizeColorValue(value);
 

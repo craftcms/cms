@@ -27,6 +27,9 @@ export default class CraftInputFile extends LionInputFile {
     return [...super.styles, inputStyles, styles];
   }
 
+  /**
+   * Adds the file input and its chrome to the field.
+   */
   override get slots() {
     return {
       ...super.slots,
@@ -41,6 +44,9 @@ export default class CraftInputFile extends LionInputFile {
     };
   }
 
+  /**
+   * Registers the elements the file input renders into its own shadow root.
+   */
   static override get scopedElements() {
     return {
       ...super.scopedElements,

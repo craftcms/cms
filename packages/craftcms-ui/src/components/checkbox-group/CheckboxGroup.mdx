@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as CheckboxGroupStories from './checkbox-group.stories';
 
 <Meta of={CheckboxGroupStories} name="Docs" />
@@ -24,3 +24,7 @@ Validation belongs at the group level too, since a rule like "choose at least on
 A group rendered by the server adopts the name already present on its inputs.
 
 That is load-bearing rather than a convenience: Lion syncs every registered child's name to the group's, so a group that upgraded without a name would strip the server's names off the inputs and break native posting.
+
+## Properties
+
+<ArgTypes of={CheckboxGroupStories} />

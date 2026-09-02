@@ -86,7 +86,7 @@ export default class CraftIndicator extends LitElement {
   @property({reflect: true})
   appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.OutlineFill;
 
-  getFill() {
+  protected getFill() {
     // If the fill is known swatch
     if ((colors as string[]).includes(this.fill)) {
       return `var(--c-color-${this.fill}-fill-loud)`;
@@ -100,7 +100,7 @@ export default class CraftIndicator extends LitElement {
     return this.fill;
   }
 
-  getSize() {
+  protected getSize() {
     switch (this.size) {
       case 'md':
         return '0.6em';

@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as SwitchStories from './switch.stories';
 
 <Meta of={SwitchStories} name="Docs" />
@@ -41,3 +41,7 @@ It is only meaningful while the switch is off, and is cleared as soon as the swi
 The control is exposed as a switch with its checked state, and the mixed state as `aria-checked="mixed"`.
 
 Label it with the thing being switched, not with the states. "Enable comments" tells a person what the control governs; "On/Off" tells them only what a switch already looks like.
+
+## Properties
+
+<ArgTypes of={SwitchStories} />

@@ -24,8 +24,8 @@ type BreadcrumbItem = {
  */
 export default class CraftBreadcrumbs extends LitElement {
   static override styles = [styles];
-  @query('slot') defaultSlot: HTMLSlotElement;
-  @query('slot[name="separator"]') separatorSlot: HTMLSlotElement;
+  @query('slot') protected defaultSlot: HTMLSlotElement;
+  @query('slot[name="separator"]') protected separatorSlot: HTMLSlotElement;
 
   @queryAssignedElements({selector: 'craft-breadcrumb-item'})
   private breadcrumbsElements!: CraftBreadcrumbItem[];

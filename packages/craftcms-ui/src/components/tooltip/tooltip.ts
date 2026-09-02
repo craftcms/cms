@@ -176,10 +176,22 @@ export default class CraftTooltip extends LionTooltip {
     }
   }
 
+  /**
+
+   * Shows the tooltip, regardless of `trigger`. Resolves once it is open.
+
+   */
+
   async show(): Promise<void> {
     this.opened = true;
     await this.updateComplete;
   }
+
+  /**
+
+   * Hides the tooltip. Resolves once it is closed.
+
+   */
 
   async hide(): Promise<void> {
     this.opened = false;

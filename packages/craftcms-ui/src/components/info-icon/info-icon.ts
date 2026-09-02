@@ -44,7 +44,7 @@ export default class CraftInfoIcon extends LitElement {
    */
   @property() override id: string;
 
-  @query('craft-tooltip') tooltip!: HTMLElement;
+  @query('craft-tooltip') protected tooltip!: HTMLElement;
 
   #eventController = new AbortController();
 

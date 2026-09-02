@@ -1,7 +1,7 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as ButtonStories from './button.stories';
 
-<Meta of={ButtonStories} />
+<Meta of={ButtonStories} name="Docs" />
 
 # Button
 
@@ -48,3 +48,7 @@ Add the boolean `inherit` property to a button placed inside a [Colorable](?path
 ## Links
 
 <Canvas of={ButtonStories.Links} />
+
+## Properties
+
+<ArgTypes of={ButtonStories} />

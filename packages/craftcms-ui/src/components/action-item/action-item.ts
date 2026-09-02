@@ -136,7 +136,7 @@ export default class CraftActionItem extends LitElement {
   shortcut: string | {alt?: boolean; shift?: boolean; key: string} | null =
     null;
 
-  renderShortcut() {
+  protected renderShortcut() {
     if (typeof this.shortcut === 'string') {
       return html`<craft-shortcut>${this.shortcut}</craft-shortcut>`;
     }
@@ -162,6 +162,14 @@ export default class CraftActionItem extends LitElement {
     this.removeEventListener('click', this);
   }
 
+  /**
+
+   * Moves the item into an async state, optionally with feedback to announce.
+   * Called by the item itself while running an action; call it directly when
+   * driving the item from outside.
+
+   */
+
   setState(state: AsyncState, detail: FeedbackData = {}) {
     this.state = state;
     this.feedbackMessage = detail.message ?? null;
@@ -178,6 +186,13 @@ export default class CraftActionItem extends LitElement {
       })
     );
   }
+
+  /**
+
+   * The DOM `EventListener` interface, so the item can be passed to
+   * `addEventListener()` directly. Runs the item's action.
+
+   */
 
   async handleEvent(event: Event) {
     if (this.disabled) {
@@ -209,7 +224,7 @@ export default class CraftActionItem extends LitElement {
     }
   }
 
-  renderCheckbox() {
+  protected renderCheckbox() {
     return html`<span class="action-item__check">
       <slot name="checkmark">
         ${this.checked ? html`<craft-icon name="check"></craft-icon>` : nothing}
@@ -217,7 +232,7 @@ export default class CraftActionItem extends LitElement {
     </span>`;
   }
 
-  renderIcon() {
+  protected renderIcon() {
     switch (this.state) {
       case AsyncStates.Loading:
         return html`<craft-spinner style="--size: 0.8em"></craft-spinner>`;
@@ -247,7 +262,7 @@ export default class CraftActionItem extends LitElement {
     }
   }
 
-  renderPrefix() {
+  protected renderPrefix() {
     const hasIcon = !!this.querySelector('[slot="icon"]') || !!this.icon;
 
     return html`
@@ -258,7 +273,7 @@ export default class CraftActionItem extends LitElement {
     `;
   }
 
-  renderBody() {
+  protected renderBody() {
     return html`
       ${this.renderPrefix()}
 

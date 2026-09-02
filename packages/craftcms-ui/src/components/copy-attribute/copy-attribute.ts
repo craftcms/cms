@@ -20,7 +20,7 @@ import CraftCopyButton from '../copy-button/copy-button.js';
 export default class CraftCopyAttribute extends LitElement {
   static override styles: CSSResultGroup = [hostStyles, styles];
 
-  @query('craft-copy-button') copyButtonEl!: CraftCopyButton;
+  @query('craft-copy-button') protected copyButtonEl!: CraftCopyButton;
 
   /** The text value to copy */
   @property({type: String})
@@ -30,7 +30,7 @@ export default class CraftCopyAttribute extends LitElement {
   @property({type: Boolean, reflect: true})
   disabled: boolean = false;
 
-  getId(): string {
+  protected getId(): string {
     return `attribute-${this.value
       .replace(/([a-z])([A-Z])/g, '$1-$2')
       .replace(/[\s_]+/g, '-')

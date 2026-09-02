@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as RadioGroupStories from './radio-group.stories';
 
 <Meta of={RadioGroupStories} name="Docs" />
@@ -26,3 +26,7 @@ The group takes its own `label`, `help-text`, and `feedback`. The radios name th
 ## Server-Rendered Markup
 
 A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
+
+## Properties
+
+<ArgTypes of={RadioGroupStories} />

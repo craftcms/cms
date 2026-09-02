@@ -1,4 +1,4 @@
-import {Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Meta} from '@storybook/addon-docs/blocks';
 
 <Meta title="Components/Tab" />
 
@@ -34,3 +34,7 @@ That is the escape hatch for a server-rendered field layout, where the tab bar s
 The tab is padded in `em`, so it scales with whatever font size it inherits — which is how the strip's `size` resizes every tab without touching any of them.
 
 The selected indicator's geometry comes from custom properties the strip sets according to its `placement`. Override them to reposition the indicator; see the API table for the full set.
+
+## Properties
+
+<ArgTypes of="craft-tab" />

@@ -30,17 +30,35 @@ export default class CraftSpinner extends LitElement {
   visible: boolean = true;
 
   @query('.wrapper')
-  wrapper!: HTMLElement | null;
+  protected wrapper!: HTMLElement | null;
+
+  /**
+
+   * Shows the spinner and announces it, firing `show`.
+
+   */
 
   show() {
     this.visible = true;
     this.dispatchEvent(new CustomEvent('show'));
   }
 
+  /**
+
+   * Hides the spinner, firing `hide`. It keeps its place in the layout.
+
+   */
+
   hide() {
     this.visible = false;
     this.dispatchEvent(new CustomEvent('hide'));
   }
+
+  /**
+
+   * Moves focus to the spinner, so a screen reader reaches the busy state.
+
+   */
 
   override focus() {
     this.wrapper?.focus();

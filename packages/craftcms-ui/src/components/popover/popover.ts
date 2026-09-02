@@ -192,11 +192,23 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     }
   }
 
+  /**
+
+   * Opens the popover. Resolves once the overlay has finished opening.
+
+   */
+
   async show(): Promise<void> {
     this.opened = true;
     await this.updateComplete;
     await this.open();
   }
+
+  /**
+
+   * Closes the popover. Resolves once the overlay has finished closing.
+
+   */
 
   async hide(): Promise<void> {
     this.opened = false;

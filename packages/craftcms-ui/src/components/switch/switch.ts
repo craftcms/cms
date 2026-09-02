@@ -86,6 +86,10 @@ export default class CraftSwitch extends LionSwitch {
   // backing the `muteEvent` argument of turnOn()/turnOff()/turnIndeterminate().
   #suppressNativeChange = false;
 
+  /**
+   * Adds the switch's own input to Lion's slot map, so the component owns the
+   * native control rather than expecting one to be slotted in.
+   */
   override get slots() {
     return {
       ...super.slots,
@@ -119,6 +123,9 @@ export default class CraftSwitch extends LionSwitch {
     };
   }
 
+  /**
+   * Registers the elements the switch renders into its own shadow root.
+   */
   static override get scopedElements() {
     return {
       ...super.scopedElements,
@@ -312,14 +319,26 @@ export default class CraftSwitch extends LionSwitch {
     return this._postedValue;
   }
 
+  /**
+   * Turns the switch on. Pass `true` to suppress the `change` event, mirroring
+   * the legacy `Craft.LightSwitch` API that code migrating off
+   * `$el.data('lightswitch')` still calls.
+   */
   turnOn(muteEvent = false): void {
     this.#applyState(() => this._setCheckedState(true), muteEvent);
   }
 
+  /**
+   * Turns the switch off. Pass `true` to suppress the `change` event.
+   */
   turnOff(muteEvent = false): void {
     this.#applyState(() => this._setCheckedState(false), muteEvent);
   }
 
+  /**
+   * Puts the switch in the indeterminate state — neither on nor off. Pass
+   * `true` to suppress the `change` event.
+   */
   turnIndeterminate(muteEvent = false): void {
     this.#applyState(() => {
       if (this.indeterminate && !this.checked) {

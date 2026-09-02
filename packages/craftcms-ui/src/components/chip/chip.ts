@@ -133,7 +133,7 @@ export default class CraftChip extends LitElement {
     }
   }
 
-  renderPrefix() {
+  protected renderPrefix() {
     const showStatus = this.showStatus || hasSlotted(this, 'status');
 
     return html`<div class="cp-chip__prefix" part="prefix">

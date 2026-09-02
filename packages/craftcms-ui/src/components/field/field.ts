@@ -236,6 +236,10 @@ export default class CraftField extends FormControlMixin(LitElement) {
     super.addToAriaLabelledBy(element, {...customConfig, reorder: false});
   }
 
+  /**
+   * Adds an element to the field's `aria-describedby`, so a control outside
+   * the field can still be described by it.
+   */
   override addToAriaDescribedBy(
     element: HTMLElement,
     customConfig: {idPrefix?: string; reorder?: boolean} = {}

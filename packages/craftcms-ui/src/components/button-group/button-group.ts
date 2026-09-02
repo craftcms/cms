@@ -14,6 +14,10 @@ import styles from './button-group.styles.js';
  */
 export default class CraftButtonGroup extends LitElement {
   static override styles: CSSResultGroup = [styles];
+  /**
+   * Makes the group a form-associated custom element, so its selected value
+   * posts with the form in radio mode.
+   */
   static formAssociated = true;
 
   private _internals: ElementInternals;

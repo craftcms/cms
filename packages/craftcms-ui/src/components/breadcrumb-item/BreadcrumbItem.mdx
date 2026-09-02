@@ -1,4 +1,4 @@
-import {Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Meta} from '@storybook/addon-docs/blocks';
 
 <Meta title="Components/Breadcrumb Item" />
 
@@ -23,3 +23,7 @@ A crumb with `href` renders as a link; one without renders as plain text.
 **Leave `href` off the last crumb.** It is the page the person is already on, so a link there goes nowhere — and announcing it as a link suggests otherwise.
 
 `target` and `rel` behave as they do on a native anchor. `rel` defaults to `noreferrer noopener`, which is what a crumb opening in a new tab should carry.
+
+## Properties
+
+<ArgTypes of="craft-breadcrumb-item" />

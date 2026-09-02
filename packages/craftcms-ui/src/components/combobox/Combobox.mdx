@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as ComboboxStories from './combobox.stories';
 
 <Meta of={ComboboxStories} name="Docs" />
@@ -50,3 +50,5 @@ The filtering is the part worth thinking about. A list that renders only matches
 ## Properties
 
 The `options` array is a property rather than an attribute, so bind it with `.options`.
+
+<ArgTypes of={ComboboxStories} />

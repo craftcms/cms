@@ -47,6 +47,13 @@ export default class CraftButton extends LionButtonSubmit {
     return [...super.styles, visuallyHiddenStyles, styles];
   }
 
+  /**
+   * Defaults to `button` rather than Lion's `submit`: a plain action button is
+   * far the more common case, and Lion gates its submit and reset wiring
+   * behind this, so the default also skips that work.
+   */
+  override type = 'button';
+
   constructor() {
     super();
     // We extend LionButtonSubmit so `type="submit"`/`"reset"` Just Work inside
@@ -226,7 +233,7 @@ export default class CraftButton extends LionButtonSubmit {
   @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
     'prefix';
 
-  @query('[data-live-region]') liveRegion: HTMLElement;
+  @query('[data-live-region]') protected liveRegion: HTMLElement;
 
   /**
    * The name the button actually computes to, kept only so a button that ends

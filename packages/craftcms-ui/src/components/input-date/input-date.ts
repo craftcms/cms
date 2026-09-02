@@ -10,9 +10,14 @@ import CraftInput from '../input/input.js';
  * `craft-input-time` and submits them as one value.
  */
 export default class CraftInputDate extends CraftInput {
+  /**
+   * Fixed to `date`, which is the point of the component — it renders the
+   * browser's date picker rather than a text field.
+   */
+  override type = 'date';
+
   constructor() {
     super();
-    this.type = 'date';
   }
 }
 

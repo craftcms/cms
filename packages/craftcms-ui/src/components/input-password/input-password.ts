@@ -41,12 +41,18 @@ export default class CraftInputPassword extends CraftInput {
     ];
   }
 
+  /**
+   * Starts at `password` and flips to `text` while the value is revealed, which
+   * is how the reveal button works.
+   */
+  override type = 'password';
+
   constructor() {
     super();
     this.type = 'password';
   }
 
-  reveal = () => {
+  protected reveal = () => {
     this._visible = !this._visible;
     this.type = this._visible ? 'text' : 'password';
   };
@@ -54,7 +60,7 @@ export default class CraftInputPassword extends CraftInput {
   // Note: no leading/trailing whitespace inside the template — with
   // `renderAsDirectHostChild` every root node is appended to the host, and
   // text nodes don't get a slot attribute.
-  renderSuffix = () => {
+  protected renderSuffix = () => {
     return html`<craft-button
       type="button"
       icon
@@ -73,6 +79,9 @@ export default class CraftInputPassword extends CraftInput {
     </craft-button>`;
   };
 
+  /**
+   * Adds the reveal button to the field, in the suffix slot.
+   */
   override get slots() {
     return {
       ...super.slots,

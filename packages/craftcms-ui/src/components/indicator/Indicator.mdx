@@ -1,11 +1,7 @@
 import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
-import IndicatorMeta, {
-  ArbitraryColor,
-  ArbitrarySize,
-  Default,
-} from './indicator.stories';
+import * as IndicatorStories from './indicator.stories';
 
-<Meta of={IndicatorMeta} name="Docs" />
+<Meta of={IndicatorStories} name="Docs" />
 
 # Indicator
 
@@ -13,7 +9,7 @@ import IndicatorMeta, {
 object — for example, the live/draft state of an entry or a "has updates" marker
 in a list.
 
-<Canvas of={Default} />
+<Canvas of={IndicatorStories.Default} />
 
 ## Usage
 
@@ -23,10 +19,6 @@ in a list.
 
 The element renders a single `role="img"` dot. It has no slot — all of its
 appearance is driven by attributes.
-
-## Properties
-
-<ArgTypes of={IndicatorMeta} />
 
 ## Fill
 
@@ -41,7 +33,7 @@ verbatim.
 Prefer the variant and swatch names so indicators stay consistent with the rest
 of the palette; reach for an arbitrary value only when a color falls outside it.
 
-<Canvas of={ArbitraryColor} />
+<Canvas of={IndicatorStories.ArbitraryColor} />
 
 ## Appearance
 
@@ -57,7 +49,7 @@ of the palette; reach for an arbitrary value only when a color falls outside it.
 `em`, the dot scales with the font size of its container — set `font-size` on a
 wrapper to fine-tune it.
 
-<Canvas of={ArbitrarySize} />
+<Canvas of={IndicatorStories.ArbitrarySize} />
 
 ## Accessibility
 
@@ -79,3 +71,7 @@ craft-indicator {
   font-size: 1.25rem;
 }
 ```
+
+## Properties
+
+<ArgTypes of={IndicatorStories} />

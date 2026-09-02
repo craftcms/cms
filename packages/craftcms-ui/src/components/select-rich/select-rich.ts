@@ -28,6 +28,9 @@ export default class CraftSelectRich extends LionSelectRich {
     return [...super.styles, styles];
   }
 
+  /**
+   * Registers the elements the select renders into its own shadow root.
+   */
   static override get scopedElements() {
     return {
       ...super.scopedElements,

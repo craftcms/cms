@@ -132,10 +132,10 @@ export default class CraftActionMenu extends CraftPopover {
   @property({type: Boolean, reflect: true}) searchable = false;
 
   @queryAssignedElements({slot: 'invoker'})
-  invokerNodes!: HTMLElement[];
+  protected invokerNodes!: HTMLElement[];
 
   @queryAssignedElements({slot: 'content'})
-  contentNodes!: HTMLElement[];
+  protected contentNodes!: HTMLElement[];
 
   private uid: string = uuid();
 

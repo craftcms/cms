@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as SelectColorStories from './select-color.stories';
 
 <Meta of={SelectColorStories} name="Docs" />
@@ -26,3 +26,7 @@ An optional "transparent" entry sits alongside the colours, for a value meaning 
 Each option is named by its colour, so the list is usable without seeing the swatches.
 
 Colour names are not meanings, though. If a colour carries significance in your interface — red for a problem, green for a healthy state — say so in the label or help text, because "Red" alone does not tell a person what choosing red will do.
+
+## Properties
+
+<ArgTypes of={SelectColorStories} />

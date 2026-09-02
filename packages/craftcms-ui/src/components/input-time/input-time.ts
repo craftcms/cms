@@ -43,9 +43,13 @@ export default class CraftInputTime extends CraftInput {
   @property({type: Boolean, attribute: 'force-round-time'})
   forceRoundTime = false;
 
+  /**
+   * Fixed to `time`, so the browser renders its own time picker.
+   */
+  override type = 'time';
+
   constructor() {
     super();
-    this.type = 'time';
   }
 
   override connectedCallback() {

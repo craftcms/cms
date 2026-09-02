@@ -110,6 +110,36 @@ export default {
         });
       },
     },
+    // The manifest is the package's public API description: Storybook's
+    // property tables and editors' IntelliSense are generated from it. The
+    // analyzer records every class member it finds, so without this the tables
+    // list internals — `craft-permission-tree` advertised a `#treeId`, and 45
+    // elements between them exposed 408 members no consumer can call.
+    //
+    // Dropped: TypeScript `private`/`protected`, JS `#private` fields, and the
+    // `_`/`__` prefixes Lion and this package use for the same thing. Anything
+    // meant to be public and prefixed should be renamed rather than exempted.
+    {
+      name: 'drop-internal-members',
+      packageLinkPhase({customElementsManifest}) {
+        const isInternal = (member) =>
+          member.privacy === 'private' ||
+          member.privacy === 'protected' ||
+          member.name?.startsWith('#') ||
+          member.name?.startsWith('_');
+
+        customElementsManifest?.modules?.forEach((module) => {
+          module?.declarations?.forEach((declaration) => {
+            if (declaration.members) {
+              declaration.members = declaration.members.filter(
+                (member) => !isInternal(member)
+              );
+            }
+          });
+        });
+      },
+    },
+
     // The analyzer also infers events from `dispatchEvent()` calls, reading the
     // first argument literally — so a helper that dispatches
     // `new CustomEvent(type, …)` is recorded as an event named `type`. That is

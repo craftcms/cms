@@ -140,6 +140,9 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
+  /**
+   * Registers an option with the combobox. Called by Lion as options render.
+   */
   override addFormElement(option: CraftOption, indexToInsertAt: number) {
     super.addFormElement(option, indexToInsertAt);
     option.updateComplete.then(() => {

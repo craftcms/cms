@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as NavListStories from './nav-list.stories';
 
 <Meta of={NavListStories} name="Docs" />
@@ -19,4 +19,4 @@ That is the whole reason this component exists rather than a wrapper `<div>` —
 
 ## Properties
 
-This component takes no attributes. Its only slot is the default one, holding the nav items.
+<ArgTypes of={NavListStories} />

@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as SelectStories from './select.stories';
 
 <Meta of={SelectStories} name="Docs" />
@@ -30,3 +30,7 @@ Reach for the plainest one that fits. Each step up trades platform behaviour for
 The native select brings its own semantics, keyboard handling, and mobile affordances, and Lion wires the label and validation feedback around it.
 
 Label it with the thing being chosen. A select is announced with its current value, so an unlabelled one reads as a value with no question attached.
+
+## Properties
+
+<ArgTypes of={SelectStories} />

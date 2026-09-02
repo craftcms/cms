@@ -125,7 +125,7 @@ export default class CraftCallout extends Paddable(LitElement, {
     this.resolvedIcon = this.icon ?? this.getDefaultIcon();
   }
 
-  getDefaultIcon() {
+  protected getDefaultIcon() {
     switch (this.variant) {
       case Variant.Info:
         return 'lightbulb';

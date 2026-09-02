@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as FieldStories from './field.stories';
 
 <Meta of={FieldStories} name="Docs" />
@@ -77,4 +77,4 @@ The field is where a control's accessible name and description come from, which 
 
 ## Properties
 
-See the API table for the full attribute surface — the shell takes ten, covering the label, the notices, the status, and the layout.
+<ArgTypes of={FieldStories} />

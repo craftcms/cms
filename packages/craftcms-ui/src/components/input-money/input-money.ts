@@ -88,9 +88,15 @@ export default class CraftInputMoney extends CraftInput {
    */
   @property({converter: defaultTrueBoolean}) clearable = true;
 
+  /**
+   * Fixed to `text` rather than `number`: the value is a formatted, masked
+   * amount, and a number input would fight the grouping and currency symbols.
+   */
+  override type = 'text';
+
   constructor() {
     super();
-    this.type = 'text';
+
     this.inputMode = 'decimal';
   }
 

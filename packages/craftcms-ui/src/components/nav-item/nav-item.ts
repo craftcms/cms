@@ -83,7 +83,7 @@ export default class CraftNavItem extends LitElement {
   togglePosition: 'prefix' | 'suffix' = 'suffix';
 
   @state()
-  subnavState: string = 'closed';
+  protected subnavState: string = 'closed';
 
   /**
    * Whether the icon-only flyout is showing. Collapsed to an icon, an item has
@@ -161,13 +161,19 @@ export default class CraftNavItem extends LitElement {
     this.flyoutOpen = (event.target as {opened?: boolean}).opened === true;
   };
 
+  /**
+
+   * Expands or collapses the subnav.
+
+   */
+
   toggleSubnav(event: Event) {
     event.preventDefault();
     event.stopPropagation();
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
-  renderIconItem(hasSubnav: boolean) {
+  protected renderIconItem(hasSubnav: boolean) {
     const itemId = `item-${this.id}`;
     // Without an href there's nothing to link to, so render a plain span.
     const tag = this.href ? literal`a` : literal`span`;
@@ -208,7 +214,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderSubnavToggle() {
+  protected renderSubnavToggle() {
     return html`
       <craft-button
         @click="${this.toggleSubnav}"
@@ -231,7 +237,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderPrefix(showToggle: boolean = false) {
+  protected renderPrefix(showToggle: boolean = false) {
     if (showToggle && this.togglePosition === 'prefix') {
       return html`
         <span class="nav-item__prefix">${this.renderSubnavToggle()}</span>
@@ -259,7 +265,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderSuffix(showToggle: boolean = false) {
+  protected renderSuffix(showToggle: boolean = false) {
     return html`
       <div class="nav-item__suffix">
         <slot name="suffix">
@@ -271,7 +277,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderItem(showToggle: boolean, hasPrefix: boolean = false) {
+  protected renderItem(showToggle: boolean, hasPrefix: boolean = false) {
     // Without an href there's nothing to link to, so render a plain span.
     const tag = this.href ? literal`a` : literal`span`;
 

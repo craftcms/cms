@@ -1,10 +1,14 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
-import TooltipMeta, {Playground} from './tooltip.stories';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as TooltipStories from './tooltip.stories';
 
-<Meta of={TooltipMeta} />
+<Meta of={TooltipStories} name="Docs" />
 
 # Tooltip
 
 `<craft-tooltip>` shows contextual text for an external trigger element referenced by id via the `for` attribute. It is built on [Lion's tooltip/overlay system](https://lion.js.org/components/tooltip/overview/) and supports `placement` (Popper placement strings) and `trigger` (`hover focus`, `click`, or `manual`). It emits `craft-show`, `craft-after-show`, `craft-hide`, and `craft-after-hide` events.
 
-<Canvas of={Playground} />
+<Canvas of={TooltipStories.Playground} sourceState="shown" />
+
+## Properties
+
+<ArgTypes of={TooltipStories} />

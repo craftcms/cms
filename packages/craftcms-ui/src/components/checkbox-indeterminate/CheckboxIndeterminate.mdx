@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as CheckboxIndeterminateStories from './checkbox-indeterminate.stories';
 
 <Meta of={CheckboxIndeterminateStories} name="Docs" />
@@ -22,3 +22,7 @@ That is why this is a different component from a [Checkbox](?path=/docs/form-con
 The mixed state is exposed as `aria-checked="mixed"`, which is announced as such — so a person hears that some of the set is selected rather than being told it is simply off.
 
 Label the parent with what the set contains rather than with "Select all". "All entry types" says what is being selected; "Select all" says only what the control does, which the checkbox shape already conveys.
+
+## Properties
+
+<ArgTypes of={CheckboxIndeterminateStories} />

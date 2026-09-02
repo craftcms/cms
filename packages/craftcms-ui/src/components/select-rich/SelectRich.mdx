@@ -1,4 +1,4 @@
-import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
 import * as SelectRichStories from './select-rich.stories';
 
 <Meta of={SelectRichStories} name="Docs" />
@@ -28,3 +28,7 @@ The invoker sizes itself to its content rather than to a fixed width, so a contr
 Lion supplies the listbox semantics, roving focus, and the wiring between label, invoker, and options.
 
 The thing to watch is what an option _announces_. Rich markup is read out too, so an option carrying an icon, a label, and a hint is announced as all three. Keep the visible label first and the decoration after it, and mark purely decorative artwork as such — otherwise every option in the list starts with the same noise.
+
+## Properties
+
+<ArgTypes of={SelectRichStories} />

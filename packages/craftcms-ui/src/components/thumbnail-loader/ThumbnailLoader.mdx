@@ -1,4 +1,4 @@
-import {Meta} from '@storybook/addon-docs/blocks';
+import {ArgTypes, Meta} from '@storybook/addon-docs/blocks';
 
 <Meta title="Components/Thumbnail Loader" />
 
@@ -33,3 +33,7 @@ Loading runs through a small worker pool and defers anything off screen until it
 Only with server-rendered thumb placeholders. For a single image in a component you control, use [Thumbnail](?path=/docs/components-thumbnail--docs) — it renders a real `<img>` with native lazy loading and needs no wrapper.
 
 The underlying `ThumbnailLoader` class is also exported from `@craftcms/ui` for imperative use, and `craft-chip` instantiates one directly.
+
+## Properties
+
+<ArgTypes of="craft-thumbnail-loader" />
