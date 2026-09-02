@@ -36,12 +36,6 @@ abstract class Filesystem extends Component implements FsInterface
 
     public ?string $uid = null;
 
-    public ?string $rootUrl {
-        get => $this->getRootUrl();
-        set {
-        }
-    }
-
     public function getRootUrl(): ?string
     {
         return null;
