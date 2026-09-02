@@ -128,8 +128,22 @@ describe('docs pages import stories that exist', () => {
   });
 });
 
+/**
+ * Every MDX page in the package, not just the ones sitting beside a story
+ * file — the Getting Started and Tokens pages carry cross-links too, and a
+ * dead one there is the first thing a new reader would hit.
+ */
+const allPages = globSync(join(SRC, '**/*.mdx')).map((mdx) => ({
+  page: mdx.slice(SRC.length + 1),
+  mdx,
+}));
+
 describe('docs pages link to pages that exist', () => {
-  it.each(pages)('$component', ({mdx}) => {
+  it('finds every page in the package', () => {
+    expect(allPages.length).toBeGreaterThan(pages.length);
+  });
+
+  it.each(allPages)('$page', ({mdx}) => {
     const linked = matchAll(readFileSync(mdx, 'utf8'), CROSS_LINK);
     const dead = linked.filter((id) => !knownIds.has(id));
 

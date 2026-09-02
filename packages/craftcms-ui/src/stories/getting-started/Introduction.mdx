@@ -1,0 +1,51 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Getting Started/Introduction" />
+
+# Craft UI
+
+`@craftcms/ui` is the component library behind the Craft CMS control panel.
+Every element in it is a standard custom element built on [Lit](https://lit.dev), so it works in any page that can run JavaScript — a Craft plugin, a module's own CP section, or an application that has nothing to do with Craft.
+
+```html
+<craft-button variant="primary" icon="plus">New entry</craft-button>
+```
+
+## What is in here
+
+The sidebar has four groups:
+
+- **Components** — everything that is not a form control: buttons, cards, panes, menus, overlays, and the smaller pieces they are built from.
+- **Form Controls** — anything that collects a value, split into choice controls, select controls, and text controls.
+- **Tokens** — the design tokens the components are styled from: [Color Palette](?path=/docs/tokens-color-palette--docs), [Variants & Appearances](?path=/docs/tokens-variants-appearances--docs), and the [Colorable](?path=/docs/tokens-colorable--docs) contract that ties a colour to a component.
+- **Getting Started** — this page, [Installation](?path=/docs/getting-started-installation--docs), and [Theming](?path=/docs/getting-started-theming--docs).
+
+Every component page is generated from the component itself.
+The properties, attributes, slots, events, CSS parts, and CSS custom properties in each "Properties" table come from the [custom elements manifest](https://github.com/webcomponents/custom-elements-manifest), which is built from the source, so a table can never drift from the element it documents.
+
+## Why custom elements
+
+The control panel renders from two directions: Twig and PHP on the server, Vue and Inertia in the browser.
+A custom element is the one component model both can use.
+The server writes `<craft-button>` into a template and the browser upgrades it in place; Vue renders the same tag and treats it as a native element.
+
+That has two consequences worth knowing before you start:
+
+**Attributes are the API.** Anything the server needs to set is an attribute, so it can be written as markup. Rich values — arrays, objects, functions — are properties instead, and the pages say so where it matters.
+
+**Server-rendered markup is adopted, not replaced.** A control that arrives with its `<input>` already in place keeps that input's `name`, `value`, and `checked` when the component upgrades. A page rendered checked stays checked.
+
+## Conventions
+
+A few things hold across every component, so they are stated once here rather than on each page:
+
+- **Sizes** are `small`, `medium`, and `large`, and mean the same thing everywhere.
+- **Booleans** are ordinary HTML boolean attributes: absent is false, present is true. The handful that default to _on_ are documented as such and read `="false"` to turn off.
+- **Nothing is focusable unless it is a control.** Containers like [Card](?path=/docs/components-card--docs) and [Chip](?path=/docs/components-chip--docs) take no focus of their own; the content you put in them carries its own semantics.
+- **Labels are your responsibility.** Components will not invent an accessible name from context, and several of them warn in the console when they cannot find one.
+
+## Where to start
+
+If you are adding a component to a page, go to [Installation](?path=/docs/getting-started-installation--docs).
+If you are making one match a site's palette, go to [Theming](?path=/docs/getting-started-theming--docs).
+If you are looking for the right component, the sidebar is grouped by what things do rather than what they are called.

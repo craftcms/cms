@@ -6,7 +6,7 @@ import './copy-button.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Functional/Copy Button',
+  title: 'Components/Copy Button',
   component: 'craft-copy-button',
   parameters: {
     layout: 'centered',

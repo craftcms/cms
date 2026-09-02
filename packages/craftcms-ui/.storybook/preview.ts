@@ -60,6 +60,17 @@ const preview: Preview = {
     options: {
       storySort: {
         method: 'alphabetical',
+        // Everything else sorts alphabetically beneath these. Getting Started
+        // leads because a first-time reader lands on the sidebar, and Tokens
+        // trails because it explains what the component pages reference.
+        order: [
+          'Getting Started',
+          ['Introduction', 'Installation', 'Theming'],
+          'Components',
+          'Form Controls',
+          ['Choice Controls', 'Select Controls', 'Text Controls'],
+          'Tokens',
+        ],
       },
     },
 

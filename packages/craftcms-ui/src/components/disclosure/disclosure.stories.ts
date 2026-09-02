@@ -5,7 +5,7 @@ import {html} from 'lit';
 import './disclosure.js';
 
 const meta = {
-  title: 'Functional/Disclosure',
+  title: 'Components/Disclosure',
   component: 'craft-disclosure',
   argTypes: {
     state: {

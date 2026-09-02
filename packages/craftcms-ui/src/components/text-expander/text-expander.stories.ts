@@ -33,7 +33,7 @@ const triggers: TextExpanderTriggers = [
 ];
 
 const meta = {
-  title: 'Functional/Text Expander',
+  title: 'Components/Text Expander',
   component: 'craft-text-expander',
   parameters: {layout: 'centered'},
 } satisfies Meta<any>;

@@ -4,7 +4,7 @@ import {html} from 'lit';
 import './popover.js';
 
 const meta = {
-  title: 'Functional/Popover',
+  title: 'Components/Popover',
   component: 'craft-popover',
   parameters: {
     layout: 'centered',
