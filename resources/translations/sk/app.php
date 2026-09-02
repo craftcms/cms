@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Zoradiť podľa',
     'Sort descending' => 'Zoradiť zostupne',
     'Sort direction' => 'Smer zoradenia',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Triediaci kód',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Nastavenia zdruja boli uložené',
