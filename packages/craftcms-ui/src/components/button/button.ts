@@ -3,6 +3,7 @@ import {html, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import styles from './button.styles.js';
+import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
@@ -44,7 +45,7 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, visuallyHiddenStyles, styles];
+    return [...super.styles, visuallyHiddenStyles, a11yErrorStyles, styles];
   }
 
   /**

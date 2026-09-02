@@ -102,7 +102,7 @@ Focus is delegated into the shadow root, which means `item.focus()` lands on the
 Two things are on you:
 
 - **Give an icon-only item a label.** The default slot is the accessible name. An item with nothing but an `icon` is nameless.
-- **Do not put controls in the `suffix` slot.** The slot sits inside the item's own button, so an interactive suffix nests a control inside a control, which assistive technology cannot present sensibly.
+- **Do not put controls in the `suffix` slot.** The slot sits inside the item's own button, so an interactive suffix nests a control inside a control — a shape assistive technology cannot present, and one that swallows the click meant for the item. The item marks the suffix in red when it finds one, the same way [Button](?path=/docs/components-button--docs) marks itself when it has no accessible name.
 
 ## Properties
 

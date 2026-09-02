@@ -6,6 +6,18 @@ import CraftInputTime, {
   type DisabledTimeRange,
 } from '../input-time/input-time.js';
 import {defaultTrueBoolean, jsonAttribute} from '@src/utilities/converters';
+import {t} from '@src/utilities/translate';
+
+/**
+ * Accessible names for the inputs the component owns. Functions rather than
+ * strings so they translate against the locale in play when they are read,
+ * not the one loaded when the module was first imported.
+ */
+const PART_LABELS: Record<string, () => string> = {
+  date: () => t('Date'),
+  time: () => t('Time'),
+  timezone: () => t('Time zone'),
+};
 
 /**
  * @summary A paired date and time field. It owns a `craft-input-date`, a
@@ -255,6 +267,12 @@ export default class CraftInputDateTime extends LitElement {
     } else {
       input.removeAttribute('aria-describedby');
     }
+
+    // A wrapping `craft-field` names the pair, not the parts. Without a name
+    // of its own each input is announced only as an edit field, so a person
+    // tabbing between them is told twice that they are somewhere they can
+    // type and never which half they are in.
+    input.setAttribute('aria-label', PART_LABELS[part]?.() ?? part);
   }
 
   #onModelValueChanged = (event: Event) => {

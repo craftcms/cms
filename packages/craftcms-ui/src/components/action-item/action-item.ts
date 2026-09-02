@@ -3,6 +3,8 @@ import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
 import {type AsyncState, AsyncStates} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
+import {LightDomController} from '@src/controllers/LightDomController';
+import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
@@ -16,6 +18,20 @@ import {
   runAction,
 } from '@src/actions';
 import {Variant, type VariantValue} from '@src/constants/variants';
+
+/** Anything that takes focus, and so cannot sit inside the item's own button. */
+const INTERACTIVE = [
+  'a[href]',
+  'button',
+  'input',
+  'select',
+  'textarea',
+  '[tabindex]:not([tabindex="-1"])',
+  'craft-button',
+  'craft-action-item',
+  'craft-checkbox',
+  'craft-switch',
+].join(', ');
 
 /**
  * @summary A single entry in a menu, rendered as a button or — when `href` is
@@ -38,7 +54,7 @@ import {Variant, type VariantValue} from '@src/constants/variants';
  *   the new `state`, the action's `actionType`, and any feedback data.
  */
 export default class CraftActionItem extends LitElement {
-  static override styles = [variantsStyles, styles];
+  static override styles = [variantsStyles, a11yErrorStyles, styles];
 
   /**
    * Delegate focus into the shadow root, so `host.focus()` (used by
@@ -273,6 +289,33 @@ export default class CraftActionItem extends LitElement {
     `;
   }
 
+  /**
+   * Whether something focusable has been slotted into `suffix`. The slot sits
+   * inside the item's own button or link, so a control there nests a control
+   * inside a control — a shape assistive technology cannot present, and one
+   * that swallows the click meant for the item.
+   *
+   * Flagged the way `craft-button` flags a button with no accessible name:
+   * loudly, in the place it went wrong, because it is a mistake to fix rather
+   * than a state to handle.
+   */
+  @state() private _hasNestedControl = false;
+
+  /**
+   * Re-checks whenever the light DOM moves, rather than on `slotchange`:
+   * content is commonly slotted in after the item mounts, and a menu built at
+   * runtime is exactly where this mistake gets made.
+   */
+  private _lightDom = new LightDomController(this, {
+    onChange: () => this._checkSuffixForControls(),
+  });
+
+  private _checkSuffixForControls() {
+    this._hasNestedControl = Array.from(this.children).some(
+      (child) => child.slot === 'suffix' && child.matches(INTERACTIVE)
+    );
+  }
+
   protected renderBody() {
     return html`
       ${this.renderPrefix()}
@@ -281,7 +324,12 @@ export default class CraftActionItem extends LitElement {
         ${this.feedbackMessage ? this.feedbackMessage : html`<slot></slot>`}
       </span>
 
-      <span class="action-item__suffix">
+      <span
+        class="${classMap({
+          'action-item__suffix': true,
+          'a11y-error': this._hasNestedControl,
+        })}"
+      >
         <slot name="suffix"></slot>
         ${this.shortcut ? this.renderShortcut() : nothing}
       </span>

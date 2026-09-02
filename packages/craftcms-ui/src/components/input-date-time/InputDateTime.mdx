@@ -97,11 +97,10 @@ Wrapping in `craft-field` is what supplies the label, help text, and error handl
 
 ## Accessibility
 
-**The date and time inputs do not currently carry names of their own.**
-Each is a field whose label slot is empty, and a wrapping `craft-field` names the pair rather than the parts — so a screen reader reaches two unlabelled controls inside a labelled group.
-The stories on this page surface that finding rather than failing on it, and it is worth fixing before this field is relied on.
+Each input the component owns carries its own accessible name — "Date", "Time", "Time zone" — because a wrapping `craft-field` names the pair rather than the parts.
+Without them a screen reader reached two controls announced only as edit fields inside a labelled group, with nothing to say which half was which.
 
-Until then, keep the field's label specific enough that the two inputs read sensibly beneath it, and prefer showing both halves over a date-only field whose label says "time".
+The names are translated, so keep the field's own label describing what the value _is_ ("Post Date") rather than repeating what the parts are.
 
 ## Properties
 

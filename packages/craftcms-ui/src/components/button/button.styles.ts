@@ -410,25 +410,6 @@ export default css`
     justify-content: end;
   }
 
-  .a11y-error {
-    position: relative;
-    outline: 2px solid var(--c-color-danger-border-normal) !important;
-    background-color: rgba(255, 0, 0, 0.1) !important;
-
-    &:after {
-      content: '!';
-      position: absolute;
-      display: inline-flex;
-      font-size: calc(11rem / 16);
-      padding: 0.125em 0.5em 0.25em;
-      inset-block-start: -2px;
-      inset-inline-start: 0;
-      background: var(--c-color-danger-bg-emphasis);
-      color: white;
-      transform: translateX(-100%);
-    }
-  }
-
   /*
   Link mode: the inner <a> is the full interactive surface.
   Move inline padding from :host to the anchor so the whole button is clickable.
