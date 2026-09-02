@@ -1,5 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {expect} from 'storybook/test';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
@@ -38,12 +39,36 @@ const meta = {
 export default meta;
 type Story = StoryObj<SelectColorArgs>;
 
-/** A colour is selected on load, so the invoker shows its swatch. */
-export const Default: Story = {};
+/**
+ * A colour is selected on load, so the invoker shows its swatch.
+ *
+ * The assertions live here rather than in a unit test: the component renders a
+ * `craft-select-rich`, whose Lion internals need layout that happy-dom does not
+ * provide, so this is the only place the rendered control can be checked.
+ */
+export const Default: Story = {
+  play: async ({canvasElement}) => {
+    const host = canvasElement.querySelector('craft-select-color')!;
+
+    // It forwards its label and name onto the select it wraps.
+    const select = host.shadowRoot!.querySelector('craft-select-rich')!;
+    await expect(select).toBeTruthy();
+    await expect(select.getAttribute('label')).toBe('Color');
+    await expect(select.getAttribute('name')).toBe('color');
+
+    // And the selection reaches it as a model value.
+    await expect((host as {modelValue?: unknown}).modelValue).toBe('red');
+  },
+};
 
 /** Nothing selected — the invoker shows the placeholder with no swatch. */
 export const Empty: Story = {
   args: {'model-value': null},
+  play: async ({canvasElement}) => {
+    const host = canvasElement.querySelector('craft-select-color')!;
+
+    await expect((host as {modelValue?: unknown}).modelValue).toBeNull();
+  },
 };
 
 /** Preselected blue, so the blue swatch appears in the invoker. */
@@ -57,6 +82,15 @@ export const Preselected: Story = {
  */
 export const AllowTransparent: Story = {
   args: {'allow-transparent': true, 'model-value': '__blank__'},
+  play: async ({canvasElement}) => {
+    const host = canvasElement.querySelector('craft-select-color')!;
+
+    // The transparent option is opt-in, and carries its own sentinel value.
+    await expect((host as {allowTransparent?: boolean}).allowTransparent).toBe(
+      true
+    );
+    await expect((host as {modelValue?: unknown}).modelValue).toBe('__blank__');
+  },
 };
 
 /** The same option offered but nothing selected yet. */

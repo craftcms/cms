@@ -52,7 +52,8 @@ describe('craft-breadcrumbs', () => {
 
   it('renders its items from the default slot', async () => {
     const element = await createBreadcrumbs();
-    const slot = element.shadowRoot!.querySelector('slot:not([name])')!;
+    const slot =
+      element.shadowRoot!.querySelector<HTMLSlotElement>('slot:not([name])')!;
 
     expect(slot.assignedElements()).toHaveLength(3);
   });

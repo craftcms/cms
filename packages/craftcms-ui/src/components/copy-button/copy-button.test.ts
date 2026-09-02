@@ -56,7 +56,8 @@ describe('craft-copy-button', () => {
     await element.copyValue();
 
     expect(copied).toHaveBeenCalled();
-    expect(copied.mock.calls[0][0].detail.value).toBe('handle');
+    const [event] = copied.mock.calls[0] as [CustomEvent<{value: string}>];
+    expect(event.detail.value).toBe('handle');
   });
 
   it('announces a failure rather than swallowing it', async () => {
