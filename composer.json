@@ -60,7 +60,7 @@
     "seld/cli-prompt": "^1.0.4",
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
-    "symfony/filesystem": "^6.3",
+    "symfony/filesystem": "^6.3|^7.0|^8.0",
     "symfony/http-client": "^6.0.3|^7.0",
     "symfony/property-access": "^7.0",
     "symfony/property-info": "^7.0",
