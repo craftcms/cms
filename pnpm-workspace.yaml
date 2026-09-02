@@ -1,6 +1,19 @@
 packages:
   - 'packages/*'
 
+# Supply-chain quarantine: refuse versions published less than 7 days ago.
+# Compromised npm releases are typically caught and yanked within hours, so a
+# week's delay costs us almost nothing and skips the window in which those
+# versions are installable. pnpm re-applies this when resolving AND as a
+# verification pass over the lockfile.
+#
+# To take something faster than the window allows -- an urgent security patch --
+# add it to minimumReleaseAgeExclude below rather than lowering the window.
+# `pnpm install --trust-lockfile` skips the verification pass for an already
+# committed lockfile.
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude: []
+
 # Single source of truth for every dependency more than one workspace package
 # needs. Manifests reference these as `catalog:` (or `catalog:legacy`), so two
 # packages can't silently drift onto different ranges. pnpm substitutes the real
@@ -63,6 +76,11 @@ enablePrePostScripts: true
 overrides:
   vite: 'npm:@voidzero-dev/vite-plus-core@0.2.6'
   vitest: '4.1.10'
+  # Transitive deps of @codemirror/language, pulled in on open ranges. Their
+  # newest releases landed inside the minimumReleaseAge window above, so they're
+  # held at the newest versions that clear it. Safe to drop once those age out.
+  '@codemirror/state': '6.7.1'
+  '@codemirror/view': '6.43.9'
 
 # Was npm's `allowScripts` block: which dependencies may run install lifecycle
 # scripts. pnpm 10+ spells this `allowBuilds`, keys on the bare package name
