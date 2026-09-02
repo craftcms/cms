@@ -1,8 +1,11 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 
 import './button.js';
+import type CraftButton from './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
 import {ButtonVariant} from '@src/components/button/button';
@@ -10,30 +13,27 @@ import {ButtonVariant} from '@src/components/button/button';
 const buttonVariants = Object.values(ButtonVariant);
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `button.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftButton>('craft-button');
+
+type CraftButtonArgs = CraftButton & typeof args;
+
 const meta = {
   title: 'Components/Button',
   component: 'craft-button',
   parameters: {
     layout: 'centered',
   },
-  args: {
-    label: 'Button',
-    loading: false,
-    variant: ButtonVariant.Fill,
-  },
-  argTypes: {
-    variant: {
-      control: {type: 'select'},
-      options: buttonVariants,
-    },
-    loading: {
-      control: {type: 'boolean'},
-    },
-  },
-} satisfies Meta<any>;
+  args: {...args, label: 'Button', variant: ButtonVariant.Fill},
+  argTypes,
+} satisfies Meta<CraftButtonArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftButtonArgs>;
 
 /**
  * Every variant. `primary` and `danger` are solid and colored; the rest are the

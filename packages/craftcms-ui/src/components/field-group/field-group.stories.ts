@@ -1,18 +1,33 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 
 import './field-group.js';
+import type CraftFieldGroup from './field-group.js';
 import '../field/field.js';
 import '../input/input.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `field-group.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} =
+  getStorybookHelpers<CraftFieldGroup>('craft-field-group');
+
+type CraftFieldGroupArgs = CraftFieldGroup & typeof args;
 
 const meta = {
   title: 'Form Controls/Field Group',
   component: 'craft-field-group',
-} satisfies Meta<any>;
+  args,
+  argTypes,
+} satisfies Meta<CraftFieldGroupArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftFieldGroupArgs>;
 
 const field = (label: string, widthClass = '') => html`
   <craft-field class="${widthClass}">

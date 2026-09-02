@@ -1,5 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 
@@ -11,10 +13,21 @@ import type CraftActionMenu from './action-menu.js';
 import type {ActionMenuItem} from './action-menu.types.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `action-menu.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} =
+  getStorybookHelpers<CraftActionMenu>('craft-action-menu');
+
+type CraftActionMenuArgs = CraftActionMenu & typeof args;
+
 const meta = {
   title: 'Components/Action Menu',
   component: 'craft-action-menu',
-  argTypes: {},
+  args,
+  argTypes,
   render: ({label, open}) => {
     return html`
       <craft-action-menu ?opened="${open}">
@@ -51,10 +64,10 @@ const meta = {
       </craft-action-menu>
     `;
   },
-} satisfies Meta<any>;
+} satisfies Meta<CraftActionMenuArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftActionMenuArgs>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {

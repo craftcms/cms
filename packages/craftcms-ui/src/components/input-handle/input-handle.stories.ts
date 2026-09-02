@@ -23,7 +23,7 @@ type CraftInputHandleArgs = CraftInputHandle & typeof args;
 /** The shell every story shares, so each one only supplies its args. */
 const field = (args: Record<string, unknown>) => html`
   <craft-input-handle
-    autocorrect="${(args.autocorrect as string) ?? 'off'}"
+    autocorrect="${args.autocorrect ? 'on' : 'off'}"
     autocapitalize="${(args.autocapitalize as string) ?? 'off'}"
     maxlength="${(args.maxlength as number) ?? ''}"
     ?disabled="${args.disabled}"
@@ -71,12 +71,12 @@ export const ComparedToInput: Story = {
 };
 
 /**
- * `autocorrect` and `autocapitalize` are off by default here, and serialise as
- * `on`/`off` rather than as bare boolean attributes.
+ * `autocorrect` is a boolean here, but it serialises as `on`/`off` rather than
+ * as a bare boolean attribute, which is how the native attribute spells it.
  */
 export const AutocorrectOn: Story = {
   args: {
-    autocorrect: 'on',
+    autocorrect: true,
     autocapitalize: 'sentences',
     'help-text-slot':
       'autocorrect="on" — the browser may correct what is typed.',

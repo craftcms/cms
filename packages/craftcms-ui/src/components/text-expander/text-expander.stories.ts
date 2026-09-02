@@ -1,4 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import {expect, waitFor} from 'storybook/test';
 import {html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
@@ -9,6 +11,7 @@ import type {
   TextExpanderTriggers,
 } from './text-expander.js';
 import './text-expander.js';
+import type CraftTextExpander from './text-expander.js';
 
 const people = [
   {label: 'Ada Lovelace', value: '@ada', keywords: ['lovelace']},
@@ -32,14 +35,27 @@ const triggers: TextExpanderTriggers = [
   },
 ];
 
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `text-expander.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftTextExpander>(
+  'craft-text-expander'
+);
+
+type CraftTextExpanderArgs = CraftTextExpander & typeof args;
+
 const meta = {
   title: 'Components/Text Expander',
   component: 'craft-text-expander',
+  args,
+  argTypes,
   parameters: {layout: 'centered'},
-} satisfies Meta<any>;
+} satisfies Meta<CraftTextExpanderArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftTextExpanderArgs>;
 
 export const TextInput: Story = {
   render: () => html`

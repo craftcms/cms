@@ -1,12 +1,25 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 
 import './button-group.js';
+import type CraftButtonGroup from './button-group.js';
 import '../button/button.js';
 import '../icon/icon.js';
 import '../action-menu/action-menu.js';
 import '../action-item/action-item.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `button-group.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} =
+  getStorybookHelpers<CraftButtonGroup>('craft-button-group');
+
+type CraftButtonGroupArgs = CraftButtonGroup & typeof args;
 
 const meta = {
   title: 'Components/Button Group',
@@ -25,17 +38,8 @@ The group is form-associated and submits its value with the surrounding form.
       },
     },
   },
-  argTypes: {
-    name: {
-      description: 'Form field name. When set, enables radio mode.',
-      control: {type: 'text'},
-    },
-    value: {
-      description: 'The currently selected value (radio mode only).',
-      control: {type: 'text'},
-    },
-  },
-  args: {},
+  args,
+  argTypes,
   render: () => html`
     <craft-button-group>
       <craft-button>One</craft-button>
@@ -43,10 +47,10 @@ The group is form-associated and submits its value with the surrounding form.
       <craft-button>Three</craft-button>
     </craft-button-group>
   `,
-} satisfies Meta<any>;
+} satisfies Meta<CraftButtonGroupArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftButtonGroupArgs>;
 
 /** Standard button group with no selection behavior — buttons act independently. */
 export const Default: Story = {

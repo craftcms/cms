@@ -1,7 +1,19 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import {html} from 'lit';
 
 import './popover.js';
+import type CraftPopover from './popover.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `popover.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftPopover>('craft-popover');
+
+type CraftPopoverArgs = CraftPopover & typeof args;
 
 const meta = {
   title: 'Components/Popover',
@@ -9,32 +21,12 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    placement: {
-      control: {type: 'select'},
-      options: [
-        'top',
-        'top-start',
-        'top-end',
-        'bottom',
-        'bottom-start',
-        'bottom-end',
-        'left',
-        'left-start',
-        'left-end',
-        'right',
-        'right-start',
-        'right-end',
-      ],
-    },
-    matchInvokerWidth: {
-      control: {type: 'boolean'},
-    },
-  },
+  args: {...args, placement: 'bottom-start'},
+  argTypes,
   render: (args) => html`
     <craft-popover
       placement="${args.placement || 'bottom-start'}"
-      ?match-invoker-width="${args.matchInvokerWidth}"
+      ?match-invoker-width="${args['match-invoker-width']}"
     >
       <button slot="invoker" type="button">Toggle Popover</button>
       <div slot="content">
@@ -43,10 +35,10 @@ const meta = {
       </div>
     </craft-popover>
   `,
-} satisfies Meta<any>;
+} satisfies Meta<CraftPopoverArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftPopoverArgs>;
 
 export const Basic: Story = {
   args: {

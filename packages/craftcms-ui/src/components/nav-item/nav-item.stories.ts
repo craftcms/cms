@@ -1,17 +1,30 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 
 import '../icon/icon.js';
 import '../nav-list/nav-list.js';
 import '../button/button.js';
 import './nav-item.js';
+import type CraftNavItem from './nav-item.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `nav-item.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftNavItem>('craft-nav-item');
+
+type CraftNavItemArgs = CraftNavItem & typeof args;
+
 const meta = {
   title: 'Components/Nav Item',
   component: 'craft-nav-item',
-  argTypes: {},
+  args,
+  argTypes,
   parameters: {
     a11y: {
       config: {
@@ -40,10 +53,10 @@ const meta = {
       </craft-nav-list>
     `;
   },
-} satisfies Meta<any>;
+} satisfies Meta<CraftNavItemArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftNavItemArgs>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},

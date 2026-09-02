@@ -1,4 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import {expect, waitFor} from 'storybook/test';
 
 import {html} from 'lit';
@@ -7,39 +9,38 @@ import {sizes} from '@src/constants/size';
 
 import '../tab/tab.js';
 import './tabs.js';
+import type CraftTabs from './tabs.js';
 import {tabsPlacements} from './tabs.js';
 
 import '../icon/icon.js';
 
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `tabs.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftTabs>('craft-tabs');
+
+type CraftTabsArgs = CraftTabs & typeof args;
+
 const meta = {
   title: 'Components/Tabs',
   component: 'craft-tabs',
+  // `selected-index` is Lion's, so it is not in the manifest and is declared
+  // alongside the generated set.
   argTypes: {
-    placement: {
-      control: {type: 'inline-radio'},
-      options: tabsPlacements,
-      description: 'Where the strip sits relative to the panels.',
-    },
-    size: {
-      control: {type: 'inline-radio'},
-      options: sizes,
-      description: 'How large the strip is.',
-    },
+    ...argTypes,
     selectedIndex: {
       name: 'selected-index',
       control: {type: 'number'},
       description: 'Index of the selected tab. -1 selects nothing.',
     },
-    collapsible: {
-      control: {type: 'boolean'},
-      description: 'Whether clicking the selected tab deselects it.',
-    },
   },
   args: {
+    ...args,
     placement: 'block-start',
     size: 'medium',
     selectedIndex: 0,
-    collapsible: false,
   },
   render: (args) => html`
     <craft-tabs
@@ -62,10 +63,10 @@ const meta = {
       </div>
     </craft-tabs>
   `,
-} satisfies Meta<any>;
+} satisfies Meta<CraftTabsArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftTabsArgs>;
 
 /*
  * These play functions are the real test bed for the Lion-driven behavior:

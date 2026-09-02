@@ -1,18 +1,32 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 
 import './tooltip.js';
+import type CraftTooltip from './tooltip.js';
 import '../button/button.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `tooltip.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftTooltip>('craft-tooltip');
+
+type CraftTooltipArgs = CraftTooltip & typeof args;
+
 const meta = {
   title: 'Components/Tooltip',
   component: 'craft-tooltip',
   args: {
+    ...args,
     placement: 'top',
     content: 'This is some content within a tooltip',
   },
+  argTypes,
   parameters: {
     layout: 'centered',
   },
@@ -32,10 +46,10 @@ const meta = {
       <craft-button id="my-button">Hover me</craft-button>
     `;
   },
-} satisfies Meta<any>;
+} satisfies Meta<CraftTooltipArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftTooltipArgs>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Playground: Story = {

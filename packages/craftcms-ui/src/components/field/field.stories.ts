@@ -1,36 +1,28 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+
 import {html} from 'lit';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
 import './field.js';
+import type CraftField from './field.js';
 import '../input/input.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `field.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftField>('craft-field');
+
+type CraftFieldArgs = CraftField & typeof args;
 
 const meta = {
   title: 'Form Controls/Field',
   component: 'craft-field',
-  args: {
-    label: 'Field label',
-    helpText: '',
-    required: false,
-    translatable: false,
-    fieldset: false,
-    readOnly: false,
-    disabled: false,
-    status: undefined,
-    statusLabel: undefined,
-    orientation: undefined,
-  },
-  argTypes: {
-    orientation: {
-      control: 'select',
-      options: ['ltr', 'rtl'],
-    },
-    status: {
-      control: 'select',
-      options: ['modified', 'outdated'],
-    },
-  },
+  args: {...args, label: 'Field label', helpText: ''},
+  argTypes,
   render: ({
     label,
     helpText,
@@ -58,10 +50,10 @@ const meta = {
       <input slot="input" type="text" />
     </craft-field>`;
   },
-} satisfies Meta<any>;
+} satisfies Meta<CraftFieldArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftFieldArgs>;
 
 export const Default: Story = {
   args: {},

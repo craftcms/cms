@@ -1,18 +1,27 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import {expect} from 'storybook/test';
 import {html} from 'lit';
 
 import './disclosure.js';
+import type CraftDisclosure from './disclosure.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `disclosure.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} =
+  getStorybookHelpers<CraftDisclosure>('craft-disclosure');
+
+type CraftDisclosureArgs = CraftDisclosure & typeof args;
 
 const meta = {
   title: 'Components/Disclosure',
   component: 'craft-disclosure',
-  argTypes: {
-    state: {
-      control: {type: 'select'},
-      options: ['collapsed', 'expanded'],
-    },
-  },
+  args,
+  argTypes,
   render: (args) => html`
     <craft-disclosure state="${args.state || 'collapsed'}">
       <button type="button" aria-controls="disclosure-target">
@@ -39,10 +48,10 @@ const meta = {
       }
     </style>
   `,
-} satisfies Meta<any>;
+} satisfies Meta<CraftDisclosureArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CraftDisclosureArgs>;
 
 export const Collapsed: Story = {
   args: {

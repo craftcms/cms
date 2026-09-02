@@ -1,7 +1,10 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import {html} from 'lit';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
+import type CraftCombobox from './combobox.js';
 
 const countries: ComboboxItem[] = [
   {label: 'United States', value: 'us'},
@@ -45,13 +48,24 @@ const manyOptions: ComboboxItem[] = Array.from({length: 400}, (_, i) => ({
   data: {keywords: `item number ${i}`},
 }));
 
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `combobox.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes} = getStorybookHelpers<CraftCombobox>('craft-combobox');
+
+type CraftComboboxArgs = CraftCombobox & typeof args;
+
 const meta = {
   title: 'Form Controls/Select Controls/Combobox',
   component: 'craft-combobox',
-} satisfies Meta;
+  args,
+  argTypes,
+} satisfies Meta<CraftComboboxArgs>;
 
 export default meta;
-type Story = StoryObj;
+type Story = StoryObj<CraftComboboxArgs>;
 
 export const Default: Story = {
   render: () =>
