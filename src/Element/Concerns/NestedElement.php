@@ -386,10 +386,8 @@ trait NestedElement
         match ($plan->handle) {
             'owner' => $this->setOwner(reset($elements) ?: null),
             'primaryOwner' => $this->setPrimaryOwner(reset($elements) ?: null),
-            default => null,
+            default => parent::setEagerLoadedElements($handle, $elements, $plan),
         };
-
-        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**

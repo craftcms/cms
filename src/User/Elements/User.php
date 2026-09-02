@@ -1968,9 +1968,9 @@ JS, [
                 /** @var Address[] $elements */
                 $this->_addresses = ElementCollection::make($elements);
                 break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
-
-        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**

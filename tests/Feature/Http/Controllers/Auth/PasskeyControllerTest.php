@@ -55,7 +55,6 @@ test('login counts an invalid passkey once', function () {
             CraftUser $user,
             string $requestOptions,
             string $response,
-            bool $checkOldUserHandle = false,
         ): false {
             return false;
         }

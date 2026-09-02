@@ -2011,10 +2011,8 @@ JS, [
     {
         match ($plan->handle) {
             'author', 'authors' => $this->setAuthors($elements),
-            default => null,
+            default => $this->traitSetEagerLoadedElements($handle, $elements, $plan),
         };
-
-        $this->traitSetEagerLoadedElements($handle, $elements, $plan);
     }
 
     // Indexes, etc.
