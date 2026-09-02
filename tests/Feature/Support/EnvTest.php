@@ -119,6 +119,7 @@ test('parse', function () {
     expect(Env::parse('$CRAFT_TESTS_PATH/foo/bar'))->toBe(CRAFT_TESTS_PATH.'/foo/bar');
     expect(Env::parse('CRAFT_TESTS_PATH'))->toBe('CRAFT_TESTS_PATH');
     expect(Env::parse('@vendor/foo/bar'))->toBe(Aliases::get('@vendor/foo/bar'));
+    expect(Env::parse('@missingEnvParseAlias'))->toBe('@missingEnvParseAlias');
     expect(Env::parse('$TEST_MISSING'))->toBeNull();
     expect(Env::parse(null))->toBeNull();
 
