@@ -72,7 +72,7 @@ readonly class NotificationCenter
     /** @return MorphMany<DatabaseNotification, Model>|null */
     private function notifications(CraftUser $user): ?MorphMany
     {
-        if (! $user instanceof Model || ! method_exists($user, 'notifications')) {
+        if (! method_exists($user, 'notifications')) {
             return null;
         }
 

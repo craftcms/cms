@@ -9,6 +9,8 @@ use CraftCms\Cms\Cp\Notifications\NotificationCenter;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\travel;
@@ -49,10 +51,13 @@ it('shows unread and recently read notifications for the current user', function
         ->and($unreadNotification->buttons[0]->variant)->toBe(ButtonVariant::Primary);
 });
 
-it('uses notifications from the configured auth model', function () {
+it('sends notifications to user elements using the configured auth model', function () {
+    config()->set('auth.providers.users.model', ConfiguredNotificationUser::class);
+    Auth::forgetGuards();
+
     $user = ConfiguredNotificationUser::query()->firstOrFail();
     actingAs($user);
-    $user->notify(new CpNotification('Custom auth model')->title('Custom model notification'));
+    Notification::send($user->asElement(), new CpNotification('Custom auth model')->title('Custom model notification'));
     $notifications = app(NotificationCenter::class)->get();
 
     expect($notifications)
