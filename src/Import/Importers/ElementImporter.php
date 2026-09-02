@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -430,6 +431,12 @@ class ElementImporter extends BaseImporter
 
         if (! $hasChanges) {
             return;
+        }
+
+        if ($element->enabled && $element->getEnabledForSite()) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        } else {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
 
         if (! Elements::saveElement($element)) {

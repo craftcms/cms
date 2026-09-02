@@ -34,6 +34,7 @@ trait HasStatuses
      * @var bool Whether the element is enabled
      */
     #[AllowedInSandbox]
+    #[Importable('enabled', 'Enabled', canBeMatchCriteria: false, canBeCleared: false)]
     public bool $enabled = true;
 
     /**
@@ -48,7 +49,6 @@ trait HasStatuses
      * @see getEnabledForSite()
      * @see setEnabledForSite()
      */
-    #[Importable('enabledForSite', 'Enabled For Site')]
     private array|bool $_enabledForSite = true;
 
     /**

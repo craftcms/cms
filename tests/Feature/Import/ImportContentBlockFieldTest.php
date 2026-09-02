@@ -13,7 +13,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -70,9 +69,7 @@ beforeEach(function () {
             'hasTitleField' => true,
         ]);
 
-    $section = Section::factory()->withEntryTypes($entryType)->create([
-        'type' => SectionType::Channel,
-    ]);
+    $section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
 
     $result = Entry::factory()
         ->forSection($section)
