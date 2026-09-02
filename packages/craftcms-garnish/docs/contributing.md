@@ -14,18 +14,18 @@ and interactive demos run in [Storybook](https://storybook.js.org).
 ## Scripts
 
 ```bash
-npm run dev          # Storybook dev server at http://localhost:6006
-npm run storybook    # alias of `npm run dev`
-npm run build:storybook  # static Storybook build (compiles every story — the CI proof)
-npm run build        # production build (dual `.` + `/compat` entries)
-npm run build:watch  # Vite+ pack watch build
-npm run test         # Vitest suite (one run)
-npm run test:dev     # Vitest watch mode
-npm run test:coverage  # Vitest with V8 coverage
-npm run check:types  # tsc --noEmit (includes stories + .storybook)
-npm run check:format # Oxfmt check
-npm run format       # Oxfmt write (./src ./tests ./stories ./.storybook)
-npm run lint         # check:types + check:format
+pnpm run dev          # Storybook dev server at http://localhost:6006
+pnpm run storybook    # alias of `pnpm run dev`
+pnpm run build:storybook  # static Storybook build (compiles every story — the CI proof)
+pnpm run build        # production build (dual `.` + `/compat` entries)
+pnpm run build:watch  # Vite+ pack watch build
+pnpm run test         # Vitest suite (one run)
+pnpm run test:dev     # Vitest watch mode
+pnpm run test:coverage  # Vitest with V8 coverage
+pnpm run check:types  # tsc --noEmit (includes stories + .storybook)
+pnpm run check:format # Oxfmt check
+pnpm run format       # Oxfmt write (./src ./tests ./stories ./.storybook)
+pnpm run lint         # check:types + check:format
 ```
 
 ## Verification gates
@@ -33,10 +33,10 @@ npm run lint         # check:types + check:format
 Before opening a PR, confirm the gates are green:
 
 ```bash
-npm run check:types && npm run test && npm run build
+pnpm run check:types && pnpm run test && pnpm run build
 ```
 
-Run `npm run format` to apply Oxfmt; CI uses `check:format`. New behavior needs
+Run `pnpm run format` to apply Oxfmt; CI uses `check:format`. New behavior needs
 test coverage — the suite favors **real code paths** over heavy mocking, and uses the
 happy-dom environment. Note that happy-dom has no layout engine, so
 `offsetWidth`/`offsetHeight` are always `0`; tests that depend on element visibility
@@ -91,7 +91,7 @@ are imported but never picked up as stories. Each story imports the **real sourc
 (`../src/index`, `../src/compat`) — never the built `dist/` — so changes
 hot-reload.
 
-`tsconfig.json` includes `stories` and `.storybook` so `npm run check:types`
+`tsconfig.json` includes `stories` and `.storybook` so `pnpm run check:types`
 type-checks them; Oxfmt's globs include them too.
 
 Storybook's `html-vite` builder uses Vite under the hood and supplies its own

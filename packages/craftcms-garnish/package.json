@@ -29,7 +29,7 @@
     "check:format": "vp fmt --check ./src ./tests ./stories ./.storybook",
     "check:types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "lint": "npm run check:types && npm run check:format"
+    "lint": "pnpm run check:types && pnpm run check:format"
   },
   "exports": {
     "./package.json": "./package.json",

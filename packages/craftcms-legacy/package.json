@@ -18,8 +18,8 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/playwright": "file:../craftcms-playwright",
-    "@craftcms/webpack": "file:../craftcms-webpack",
+    "@craftcms/playwright": "workspace:*",
+    "@craftcms/webpack": "workspace:*",
     "@playwright/test": "^1.59.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
@@ -34,9 +34,9 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/ui": "file:../craftcms-ui",
-    "@craftcms/sass": "file:../craftcms-sass",
-    "@craftcms/vue": "file:../craftcms-vue",
+    "@craftcms/ui": "workspace:*",
+    "@craftcms/sass": "workspace:*",
+    "@craftcms/vue": "workspace:*",
     "@floating-ui/dom": "^1.7.6",
     "@selectize/selectize": "git+https://github.com/selectize/selectize.js.git#e6ca6d3ba8f902c38da157f2caf7962c38e82095",
     "@simplewebauthn/browser": "^13.3.0",

@@ -12,6 +12,7 @@
   "scripts": {},
   "dependencies": {
     "@playwright/test": "^1.47.0",
+    "dotenv": "^16.6.1",
     "events": "^3.3.0",
     "signale": "^1.4.0"
   },

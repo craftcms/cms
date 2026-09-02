@@ -89,7 +89,7 @@ reads it back through a settings callback).
    `{% js %}` boot.
 3. Delete the legacy `cp/src/js/Thing.js`, remove its `import` from
    `packages/craftcms-legacy/cp/src/Craft.js`, and **rebuild the legacy bundle**
-   (`cd packages/craftcms-legacy && npm run build`) — confirm the built
+   (`cd packages/craftcms-legacy && pnpm run build`) — confirm the built
    `cms-assets/resources/legacy/cp/dist/cp.js` no longer references it.
 
 ## Verification
@@ -107,4 +107,4 @@ edits under `packages/craftcms-garnish/src` are live with no rebuild. But
 `dist/*.d.ts` (the app tsconfig has no `customConditions`, and adding one drags
 in `@craftcms/cp` source, which relies on that package's own path aliases). So
 after editing a package's `src`, **rebuild that package's `dist`**
-(`npm run build` in the package) or `npm run typecheck` won't see the change.
+(`pnpm run build` in the package) or `pnpm run typecheck` won't see the change.

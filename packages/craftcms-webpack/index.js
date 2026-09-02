@@ -281,6 +281,13 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
       optimization: {},
       devServer: getDevServer({context, watchPaths}),
       devtool: 'source-map',
+      // Loaders (babel-loader, sass-loader, vue-loader, ...) are dependencies of
+      // THIS package, but webpack resolves them from the consuming config's
+      // context. npm's hoisting made that work by accident; pnpm's isolated
+      // node_modules does not, so point webpack at our own node_modules first.
+      resolveLoader: {
+        modules: [path.join(__dirname, 'node_modules'), 'node_modules'],
+      },
       resolve: {
         extensions: ['.wasm', '.ts', '.tsx', '.mjs', '.js', '.json', '.vue'],
         // Never match the "development" exports condition: workspace packages

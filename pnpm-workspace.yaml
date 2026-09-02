@@ -1,0 +1,28 @@
+packages:
+  - 'packages/*'
+
+# `prebuild`/`predev`/`prestorybook` hooks are load-bearing here (see the root
+# and @craftcms/ui scripts). pnpm doesn't run them by default the way npm does.
+enablePrePostScripts: true
+
+# Was npm's top-level `overrides` block: pin the whole tree to the Vite+ build
+# of Vite and to a single Vitest.
+overrides:
+  vite: 'npm:@voidzero-dev/vite-plus-core@0.2.6'
+  vitest: '4.1.10'
+
+# Was npm's `allowScripts` block: which dependencies may run install lifecycle
+# scripts. pnpm 10+ spells this `allowBuilds`, keys on the bare package name
+# (not name@version), and wants every candidate answered explicitly. The four
+# `true` entries are the ones npm allowed; the rest stay blocked, as before.
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  rs-module-lexer: true
+  ttf2woff2: true
+  canvas: false
+  contextify: false
+  core-js: false
+  core-js-pure: false
+  iframe-resizer: false
+  swiper: false

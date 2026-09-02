@@ -155,7 +155,7 @@ async function pruneOrphanedChunks() {
  * to error types here. That much is survivable: `typeof LitElement` stays in
  * the intersection and keeps carrying the DOM prototype chain. What is not
  * survivable is a build that additionally fails to resolve `lit` — typically
- * one racing an `npm install`. The emitter then collapses the entire base to
+ * one racing a `pnpm install`. The emitter then collapses the entire base to
  * `any`, every component extending it stops being an HTMLElement, and the
  * damage surfaces as type errors in consumer code rather than here. Left alone
  * this is emitted silently, with a zero exit code.
@@ -185,8 +185,8 @@ async function assertDeclarationsResolved() {
     console.error(
       '\nThese bases resolved to `any`, so their subclasses are no longer' +
         '\nHTMLElements and consumers will fail to typecheck against them.' +
-        '\nUsually caused by a build racing an `npm install`. Rebuild from a' +
-        '\nclean dist once installs have settled:\n\n  rm -rf dist && npm run build\n'
+        '\nUsually caused by a build racing a `pnpm install`. Rebuild from a' +
+        '\nclean dist once installs have settled:\n\n  rm -rf dist && pnpm run build\n'
     );
 
     if (!isDeveloping) {

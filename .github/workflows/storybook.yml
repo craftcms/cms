@@ -59,7 +59,7 @@ jobs:
         # Keep this in sync with .github/workflows/js-ci.yml so the built assets
         # and generated files are shared between the two workflows.
         run: |
-          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -84,7 +84,11 @@ jobs:
 
           - name: Install frontend dependencies
             if: steps.cache.outputs.cache-hit != 'true'
-            run: vp install --frozen-lockfile
+            # pnpm won't expand env vars in credentials coming from the project
+            # .npmrc, so the Font Awesome token goes in the user-level one.
+            run: |
+              echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+              vp install --frozen-lockfile
             env:
               CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 

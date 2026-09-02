@@ -69,9 +69,14 @@ If you would like to work on a new core feature or improvement, first create a [
 
 ## Control Panel Front End
 
-In order to work on the control panel front end, run `npm run dev`. On first run, this ensures the build artifacts the dev server depends on exist (building them if they don't), then starts the Vite development server together with the `@craftcms/ui` watcher, with output from each prefixed so you can tell them apart.
+This repo uses [pnpm](https://pnpm.io) as its package manager, pinned via the
+`packageManager` field in `package.json`. Install dependencies with `pnpm install`
+(or `vp install`, which resolves the pinned pnpm for you). `npm install` will not
+work — the workspace packages are linked with pnpm's `workspace:` protocol.
 
-That covers most control panel work. If you also need to edit files under `packages/craftcms-legacy`, run `npm run dev:legacy` instead, which additionally starts the legacy webpack watcher.
+In order to work on the control panel front end, run `pnpm run dev`. On first run, this ensures the build artifacts the dev server depends on exist (building them if they don't), then starts the Vite development server together with the `@craftcms/ui` watcher, with output from each prefixed so you can tell them apart.
+
+That covers most control panel work. If you also need to edit files under `packages/craftcms-legacy`, run `pnpm run dev:legacy` instead, which additionally starts the legacy webpack watcher.
 
 If getting into the weeds is your thing, more detail on these pieces is provided below.
 
@@ -80,10 +85,10 @@ If getting into the weeds is your thing, more detail on these pieces is provided
 The source files specific to the control panel live in the `resources` folder. Production builds are written to the local `cms-assets` package so they can be published through `craftcms/cms-assets`. To develop assets for the control panel, there are two commands:
 ```shell
 # Run the Vite development server
-npm run dev
+pnpm run dev
 
 # Build assets for production
-npm run build
+pnpm run build
 ```
 
 ### `@craftcms/ui` package
@@ -91,17 +96,17 @@ npm run build
 The control panel is largely backed by web components that live in the `@craftcms/ui` package within the `packages/craftcms-ui` directory. Like other packages, it has its own build process that can be run independently of the control panel.
 ```shell
 # Run the build in watch mode. Assets will be rebuilt on every change
-npm run dev:ui
+pnpm run dev:ui
 
 # Run the build for production
-npm run build:ui
+pnpm run build:ui
 ```
 
-In practice, you rarely work on one without the other, which is why `npm run dev` runs both together.
+In practice, you rarely work on one without the other, which is why `pnpm run dev` runs both together.
 
 ### `@craftcms/garnish` package
 
-`@craftcms/garnish` doesn't need its own watcher during development. The Vite dev server resolves it directly from source in `packages/craftcms-garnish/src`, so changes show up immediately. Production builds (and typechecking) use its built `dist` output instead, produced by `npm run build:garnish` or `npm run build:all`.
+`@craftcms/garnish` doesn't need its own watcher during development. The Vite dev server resolves it directly from source in `packages/craftcms-garnish/src`, so changes show up immediately. Production builds (and typechecking) use its built `dist` output instead, produced by `pnpm run build:garnish` or `pnpm run build:all`.
 
 ### Legacy Bundles
 
@@ -111,10 +116,10 @@ In practice, you rarely work on one without the other, which is why `npm run dev
 All the styles and scripts used to support the control panel up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
 ```sh
 # Build assets for production
-npm run build:bundles
+pnpm run build:bundles
 
 # Run dev server to develop a specific package
-npm run dev:bundles -- -- --config-name=cp
+pnpm run dev:bundles -- --config-name=cp
 ```
 
 ## Pull Requests
