@@ -86,14 +86,14 @@ describe('fieldLayouts', function () {
         expect($layouts)->toBeArray();
     });
 
-    test('returns array for singles source', function () {
+    test('returns array for a single’s section source', function () {
         $entryType = EntryType::factory()->create();
 
-        Section::factory()->withEntryTypes($entryType)->create([
+        $section = Section::factory()->withEntryTypes($entryType)->create([
             'type' => SectionType::Single,
         ]);
 
-        $layouts = Entry::fieldLayouts('singles');
+        $layouts = Entry::fieldLayouts("section:{$section->uid}");
 
         expect($layouts)->toBeArray()
             ->and($layouts)->not()->toBeEmpty();
