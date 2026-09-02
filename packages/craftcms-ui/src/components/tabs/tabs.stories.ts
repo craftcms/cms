@@ -383,6 +383,18 @@ const OVERFLOW_LABELS = [
  * Storybook viewport to watch tabs move in and out of the menu.
  */
 export const Overflow: Story = {
+  parameters: {
+    a11y: {
+      config: {
+        // This story opens the overflow menu and leaves it open, so the scan
+        // reaches Lion's overlay wrapper — a `<dialog role="none">` it creates
+        // to position the content without adding a second dialog around it.
+        // The role is deliberate on Lion's side and the element is not ours to
+        // change; the menu inside it carries the real semantics.
+        rules: [{id: 'aria-allowed-role', enabled: false}],
+      },
+    },
+  },
   render: () => html`
     <div style="max-inline-size: 26rem; resize: horizontal; overflow: auto;">
       <craft-tabs>
