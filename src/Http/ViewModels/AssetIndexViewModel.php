@@ -23,6 +23,10 @@ use function CraftCms\Cms\t;
  *
  * A `defaultSource` path like `volumeHandle/sub/folder` selects the volume's
  * source and resolves the subfolder chain into `breadcrumbs`.
+ *
+ * Those breadcrumbs, in the index pane, are this screen's trail — so it leaves
+ * {@see ContentIndexViewModel::indexUrl()} at `null` and renders no header
+ * crumbs, which would only repeat the chain's first steps.
  */
 class AssetIndexViewModel extends ContentIndexViewModel
 {

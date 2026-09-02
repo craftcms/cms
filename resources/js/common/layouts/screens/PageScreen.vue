@@ -20,7 +20,6 @@
   import {computed, provide, useId, useTemplateRef, watch} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
-  import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import DebugPanel from '@/common/components/DebugPanel.vue';
@@ -50,6 +49,8 @@
   import type {ActionItem, FormSaveOptions} from '@/common/types';
   import {ButtonVariant} from '@craftcms/ui';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from './types';
+  import CpTopBar from '@/common/components/CpTopBar.vue';
+  import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
 
   /** Resize bounds for the details column, in px — 12rem to 30rem. */
   const DETAILS_MIN_WIDTH = 192;
@@ -77,10 +78,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
-    crumbs?: Array<{
-      href?: string;
-      label: string;
-    }> | null;
+    crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   }>();
 
@@ -134,6 +132,7 @@
     toggle: toggleSidebar,
     toggleButton,
     width: sidebarWidth,
+    icon: toggleIcon,
   } = useGlobalSidebar();
 
   /** Registers the reopen button so focus can return to it when the sidebar hides. */
@@ -217,6 +216,7 @@
 <template>
   <Head :title="pageTitle" />
   <LiveRegion />
+  <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
   <div class="cp">
     <div class="cp__sidebar">
       <!-- No props: the sidebar reads the shared store directly, and renders
@@ -254,32 +254,7 @@
                 <craft-icon name="bars" :label="t('Show sidebar')"></craft-icon>
               </craft-button>
 
-              <slot name="breadcrumbs">
-                <div
-                  class="py-1 flex flex-nowrap items-center gap-2"
-                  v-show="crumbs || hasContextMenu"
-                >
-                  <Breadcrumbs v-if="crumbs" :items="crumbs" />
-                  <div v-show="hasContextMenu" class="context-menu-container">
-                    <LayoutSlotOutlet name="context-menu">
-                      <slot name="context-menu"></slot>
-                    </LayoutSlotOutlet>
-                  </div>
-                </div>
-              </slot>
-
               <div class="ml-auto"></div>
-              <div class="flex gap-2 items-center">
-                <craft-button
-                  icon
-                  :variant="ButtonVariant.Plain"
-                  type="button"
-                  size="small"
-                >
-                  <craft-icon name="search" :label="t('Search')"></craft-icon>
-                </craft-button>
-                <UserMenu />
-              </div>
             </div>
           </div>
         </header>

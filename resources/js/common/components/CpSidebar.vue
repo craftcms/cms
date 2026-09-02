@@ -47,22 +47,6 @@
     :inert="sidebar.mode === 'floating' && sidebar.visibility === 'hidden'"
     :aria-label="t('Primary')"
   >
-    <div class="cp-sidebar__header">
-      <div class="sidebar-header">
-        <SystemInfo :icon-only="collapsed" />
-        <craft-button
-          v-if="!collapsed"
-          id="sidebar-toggle"
-          type="button"
-          size="small"
-          :icon="icon"
-          :variant="ButtonVariant.Outline"
-          @click="toggle"
-          :aria-label="t('Toggle menu')"
-        >
-        </craft-button>
-      </div>
-    </div>
     <div class="cp-sidebar__body">
       <MainNav :icon-only="collapsed" />
     </div>
@@ -106,10 +90,12 @@
     flex-direction: column;
     inset-block-start: 0;
     flex: 0 0 auto;
-    background-color: white;
+    background-color: var(--c-color-fill-quiet);
+    color: var(--c-color-on-quiet);
+    border-inline-end: 1px solid
+      color-mix(transparent 75%, var(--c-color-border-quiet));
     overflow: clip;
     margin-inline-end: var(--c-spacing-md);
-    box-shadow: var(--c-shadow-md);
   }
 
   .cp-sidebar[data-mode='docked'] {

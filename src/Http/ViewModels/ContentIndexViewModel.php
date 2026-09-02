@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 
@@ -195,10 +196,31 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * The element index page title: a custom index page's own name wins,
-     * otherwise the element type's plural display name.
+     * The element index page title: the selected source's name — “All entries”,
+     * “Posts”, a volume, a user group — since that's what the screen is
+     * actually showing.
+     *
+     * The screen it belongs to is named by the breadcrumb above it
+     * ({@see crumbs()}), so the title doesn't repeat it. Falls back to the
+     * index's own name — a custom index page's, otherwise the element type's
+     * plural display name — when no source resolves.
      */
     public function title(): string
+    {
+        $sourceLabel = $this->sourceState()[1]['label'] ?? null;
+
+        if (is_string($sourceLabel) && $sourceLabel !== '') {
+            return $sourceLabel;
+        }
+
+        return $this->indexTitle();
+    }
+
+    /**
+     * The index screen's own name: a custom index page's wins, otherwise the
+     * element type's plural display name.
+     */
+    protected function indexTitle(): string
     {
         if ($this->page !== null) {
             $pageName = $this->sources()[0]['page'] ?? null;
@@ -209,6 +231,66 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $this->elementType::pluralDisplayName();
+    }
+
+    /**
+     * The breadcrumb trail for the CP header bar (`PageScreen`'s `crumbs` page
+     * prop): the index screen itself, then the selected source — including the
+     * “all elements” source the bare index opens on, which gets a crumb of its
+     * own (“All entries”, “All users”) rather than being left implicit.
+     *
+     * The source crumb carries the screen's other sources as an action menu, so
+     * it doubles as a source switcher. That's the same trail, in the same
+     * shape, that an element's own edit screen opens with (see the element
+     * types' own `crumbs()`) — so stepping from an index into an element on it
+     * doesn't move the breadcrumbs around.
+     *
+     * Screens with no URL of their own ({@see indexUrl()}) opt out: the element
+     * selector modal has no header to put a trail in, and the asset index shows
+     * its volume-and-folder chain in the index pane instead
+     * ({@see AssetIndexViewModel::breadcrumbs()}), which this would only repeat
+     * the first steps of.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function crumbs(): array
+    {
+        $indexUrl = $this->indexUrl();
+
+        if ($indexUrl === null) {
+            return [];
+        }
+
+        $crumbs = [[
+            // The index's own name, not title() — that now names the selected
+            // source, which is the crumb below this one.
+            'label' => $this->indexTitle(),
+            'href' => $indexUrl,
+        ]];
+
+        [$sourceKey] = $this->sourceState();
+
+        if ($sourceKey === null) {
+            return $crumbs;
+        }
+
+        $options = $this->sourceCrumbOptions($sourceKey);
+        $current = collect($options)->first(fn (array $option) => $option['selected']);
+
+        if ($current === null) {
+            return $crumbs;
+        }
+
+        $crumbs[] = [
+            'label' => $current['label'],
+            'href' => $current['href'],
+            // A crumb is shaped like a link action item, so the full set
+            // doubles as the current one's switcher menu. One source is no
+            // choice at all, so it gets a plain crumb.
+            ...(count($options) > 1 ? ['actions' => $options] : []),
+        ];
+
+        return $crumbs;
     }
 
     /** @return list<array<string, mixed>> */
@@ -458,6 +540,78 @@ abstract class ContentIndexViewModel extends ViewModel
             'from' => $paginator->firstItem(),
             'to' => $paginator->lastItem(),
         ];
+    }
+
+    /**
+     * The index screen's own URL — the breadcrumb trail's first crumb, and what
+     * per-source URLs hang off.
+     *
+     * `null` (the default) opts the screen out of breadcrumbs entirely; see
+     * {@see crumbs()} for which screens do and why.
+     */
+    protected function indexUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * The URL that selects a source on this index.
+     *
+     * Defaults to the `?source=` query the sidebar's source links use. Screens
+     * whose sources have tidier URLs of their own — a section handle, a user
+     * group slug — override this so a crumb lands on the same URL the rest of
+     * the CP links that source by.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    protected function sourceUrl(array $source): ?string
+    {
+        $indexUrl = $this->indexUrl();
+
+        if ($indexUrl === null) {
+            return null;
+        }
+
+        // The “all elements” source is what the bare index shows, so it's
+        // addressed by the index's own URL rather than a query naming it.
+        return $source['key'] === '*'
+            ? $indexUrl
+            : Url::urlWithParams($indexUrl, ['source' => (string) $source['key']]);
+    }
+
+    /**
+     * The index's selectable sources as link action items, with the current one
+     * flagged — the source crumb, and the switcher menu hanging off it.
+     *
+     * @return list<array{type: string, label: string, href: string, selected: bool}>
+     */
+    private function sourceCrumbOptions(string $sourceKey): array
+    {
+        $options = [];
+
+        foreach ($this->sources() as $source) {
+            $key = $source['key'] ?? null;
+
+            // Headings aren't selectable.
+            if ($source['type'] === ElementSources::TYPE_HEADING || $key === null) {
+                continue;
+            }
+
+            $url = $this->sourceUrl($source);
+
+            if ($url === null) {
+                continue;
+            }
+
+            $options[] = [
+                'type' => 'link',
+                'label' => $source['label'] ?? $key,
+                'href' => $url,
+                'selected' => $key === $sourceKey,
+            ];
+        }
+
+        return $options;
     }
 
     /** @return array{0: ?string, 1: ?array<string, mixed>} */

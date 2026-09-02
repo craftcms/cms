@@ -171,6 +171,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'maintenanceMode' => app()->isDownForMaintenance(),
+                'devMode' => app()->hasDebugModeEnabled(),
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),

@@ -52,26 +52,28 @@
 </script>
 
 <template>
-  <form :action="logout().url" method="post" ref="logoutForm">
-    <input
-      v-if="csrfTokenName && csrfTokenValue"
-      type="hidden"
-      :name="csrfTokenName"
-      :value="csrfTokenValue"
-    />
-  </form>
-  <ActionMenu :actions="menuItems" :label="currentUser!.username">
-    <template #invoker>
-      <craft-button
-        slot="invoker"
-        type="button"
-        aria-label="User menu"
-        variant="none"
-      >
-        <UserThumbnail />
-      </craft-button>
-    </template>
-  </ActionMenu>
+  <div>
+    <form :action="logout().url" method="post" ref="logoutForm">
+      <input
+        v-if="csrfTokenName && csrfTokenValue"
+        type="hidden"
+        :name="csrfTokenName"
+        :value="csrfTokenValue"
+      />
+    </form>
+    <ActionMenu :actions="menuItems" :label="currentUser!.username">
+      <template #invoker>
+        <craft-button
+          slot="invoker"
+          type="button"
+          aria-label="User menu"
+          variant="none"
+        >
+          <UserThumbnail />
+        </craft-button>
+      </template>
+    </ActionMenu>
+  </div>
 </template>
 
 <style scoped lang="css">

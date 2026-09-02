@@ -363,3 +363,89 @@ it('renders title cells as element chips carrying the CP element metadata', func
             })
         );
 });
+
+it('crumbs the “all entries” source by name on the bare index', function () {
+    // The bare index opens on the “all entries” source, which gets a crumb of
+    // its own — and, being what the index itself shows, is addressed by the
+    // index's own URL rather than a `?source=*` query.
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Entries')
+            ->where('crumbs.0.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/content/entries"))
+            ->where('crumbs.1.label', 'All entries')
+            ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/content/entries"))
+        );
+});
+
+it('adds a section crumb that links the section’s own index URL', function () {
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    get("/{$this->cpTrigger}/content/entries/{$section->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Entries')
+            ->where('crumbs.1.label', 'Blog')
+            // The same URL Section::getCpIndexUri() hands the rest of the CP,
+            // not a `?source=` query — a crumb shouldn't link a section by a
+            // different URL than the sidebar and the edit screen do.
+            ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/content/entries/blog"))
+        );
+});
+
+it('resolves the section crumb from a ?source= query too', function () {
+    // How the sidebar navigates: same screen, source in the query rather than
+    // the path.
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.1.label', 'Blog')
+        );
+});
+
+it('hangs a source switcher off the section crumb', function () {
+    Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+    Section::factory()->create(['name' => 'News', 'handle' => 'news']);
+
+    get("/{$this->cpTrigger}/content/entries/blog")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs.1.actions', function ($actions) {
+                $actions = collect($actions);
+
+                // Link action items, with exactly the current one flagged —
+                // the shape Breadcrumbs.vue feeds to its ActionMenu.
+                return $actions->pluck('label')->contains('Blog')
+                    && $actions->pluck('label')->contains('News')
+                    // The bare index is reachable from the menu too.
+                    && $actions->pluck('label')->contains('All entries')
+                    && $actions->every(fn ($action) => $action['type'] === 'link' && ! empty($action['href']))
+                    && $actions->where('selected', true)->pluck('label')->all() === ['Blog'];
+            })
+        );
+});
+
+it('titles the screen after the selected source', function () {
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    // The bare index is showing “all entries”, and says so.
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('title', 'All entries'));
+
+    // A section index is named for the section, not the screen — the screen is
+    // already named by the crumb above it.
+    get("/{$this->cpTrigger}/content/entries/{$section->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('title', 'Blog')
+            ->where('crumbs.0.label', 'Entries')
+        );
+});

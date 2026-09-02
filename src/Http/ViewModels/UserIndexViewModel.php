@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use Override;
@@ -47,6 +48,29 @@ class UserIndexViewModel extends ContentIndexViewModel
         return mb_ucfirst(t('New {type}', [
             'type' => User::lowerDisplayName(),
         ]));
+    }
+
+    /** The user index is a page of its own. */
+    #[Override]
+    protected function indexUrl(): ?string
+    {
+        return Url::cpUrl('users');
+    }
+
+    /**
+     * Every user source publishes the slug that selects it — the same segment
+     * {@see defaultSourceKey()} maps back to a source key.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    #[Override]
+    protected function sourceUrl(array $source): ?string
+    {
+        $slug = $source['data']['slug'] ?? null;
+
+        return $slug === null
+            ? parent::sourceUrl($source)
+            : Url::cpUrl(sprintf('users/%s', $slug));
     }
 
     /**

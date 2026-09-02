@@ -31,6 +31,7 @@ export interface CraftData {
   } | null;
   readOnly: boolean;
   maintenanceMode: boolean;
+  devMode: boolean;
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {

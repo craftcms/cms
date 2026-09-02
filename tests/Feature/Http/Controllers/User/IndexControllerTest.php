@@ -134,3 +134,31 @@ it('404s on Solo', function () {
 
     get("/{$this->cpTrigger}/users")->assertNotFound();
 });
+
+it('crumbs the “all users” source by name on the bare index', function () {
+    get("/{$this->cpTrigger}/users")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Users')
+            ->where('crumbs.0.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/users"))
+            ->where('crumbs.1.label', 'All users')
+        );
+});
+
+it('adds a source crumb that links the source’s own slug URL', function () {
+    // Every user source publishes the slug that selects it, so the crumb links
+    // `users/admins` rather than a `?source=` query.
+    get("/{$this->cpTrigger}/users/admins")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Users')
+            ->where('crumbs.1.label', 'Admins')
+            ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/users/admins"))
+            ->where('crumbs.1.actions', fn ($actions) => collect($actions)
+                ->where('selected', true)
+                ->pluck('label')
+                ->all() === ['Admins'])
+        );
+});
