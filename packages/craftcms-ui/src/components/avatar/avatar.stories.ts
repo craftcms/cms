@@ -49,7 +49,7 @@ export const Themed: Story = {
       <craft-avatar label="Ryan Irelan" style="--size: 3rem"></craft-avatar>
       <craft-avatar
         label="Sara Fisher"
-        style="--size: 3rem; --color-start: #7ab55c; --color-end: #2e7d5b"
+        style="--size: 3rem; --c-avatar-color-start: #7ab55c; --c-avatar-color-end: #2e7d5b"
       ></craft-avatar>
     </div>
   `,

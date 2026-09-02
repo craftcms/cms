@@ -2,9 +2,9 @@ import {css} from 'lit';
 
 export default css`
   :host {
-    --color-start: red;
-    --color-end: blue;
-    --color-text: inherit;
+    --c-avatar-color-start: red;
+    --c-avatar-color-end: blue;
+    --c-avatar-color-text: inherit;
 
     --size: calc(30rem / 16);
     display: contents;

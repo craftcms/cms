@@ -28,7 +28,7 @@ export const Default: Story = {
 
 export const ReadOnly: Story = {
   args: {
-    readOnly: true,
+    readonly: true,
   },
 };
 

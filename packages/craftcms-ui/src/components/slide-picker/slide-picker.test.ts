@@ -131,7 +131,7 @@ describe('craft-slide-picker', () => {
       step: 10,
       value: 50,
     });
-    element.readOnly = true;
+    element.readonly = true;
     await element.updateComplete;
 
     const handler = vi.fn();

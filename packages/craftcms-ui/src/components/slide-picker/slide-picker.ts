@@ -40,9 +40,11 @@ export default class CraftSlidePicker extends LitElement {
    * A property rather than an attribute, so bind it with `.valueLabel`.
    */
   @property({attribute: false}) valueLabel?: (value: number) => string;
-  /** Renders the current value without allowing it to be changed. */
-  @property({type: Boolean, reflect: true, attribute: 'read-only'})
-  readOnly = false;
+  /**
+   * Renders the current value without allowing it to be changed. Spelled the
+   * way HTML spells it, and the way the other controls do.
+   */
+  @property({type: Boolean, reflect: true}) readonly = false;
 
   protected override willUpdate(changed: PropertyValues<this>) {
     super.willUpdate(changed);
@@ -121,14 +123,14 @@ export default class CraftSlidePicker extends LitElement {
   }
 
   #handleSegmentClick(value: number) {
-    if (this.readOnly) {
+    if (this.readonly) {
       return;
     }
     this.#setValue(value, true);
   }
 
   #handleKeyDown(event: KeyboardEvent) {
-    if (this.readOnly) {
+    if (this.readonly) {
       return;
     }
 
@@ -169,13 +171,13 @@ export default class CraftSlidePicker extends LitElement {
       <div
         class="slide-picker"
         role="slider"
-        tabindex=${this.readOnly ? -1 : 0}
+        tabindex=${this.readonly ? -1 : 0}
         aria-label=${this.label}
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
         aria-valuenow=${this.value}
         aria-valuetext=${this.#valueText(this.value)}
-        aria-readonly=${this.readOnly ? 'true' : 'false'}
+        aria-readonly=${this.readonly ? 'true' : 'false'}
         aria-describedby=${ifDefined(this.describedBy)}
         @keydown=${this.#handleKeyDown}
       >

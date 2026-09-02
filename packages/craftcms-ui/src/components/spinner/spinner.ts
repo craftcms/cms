@@ -17,6 +17,9 @@ import '../visually-hidden/visually-hidden';
  *
  * @fires show - Emitted when the spinner is shown via `show()`.
  * @fires hide - Emitted when the spinner is hidden via `hide()`.
+ * @cssproperty [--size=24px] - The spinner's diameter. Shared with avatar,
+ * status, and indicator, so one declaration sizes a row of them together.
+ *
  */
 export default class CraftSpinner extends LitElement {
   static override styles = [visuallyHiddenStyles, componentStyles];

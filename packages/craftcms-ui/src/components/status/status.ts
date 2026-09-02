@@ -15,6 +15,9 @@ import {t} from '@src/utilities/translate';
  * Reach for `craft-indicator` instead when the dot means something the status
  * vocabulary does not cover: indicator takes any palette colour, where this
  * takes a fixed set of states.
+ * @cssproperty [--size=var(--c-size-icon-xs)] - The dot's diameter. Shared
+ * with avatar, spinner, and indicator.
+ *
  */
 export default class CraftStatus extends LitElement {
   static override styles: CSSResultGroup = [styles];
