@@ -226,7 +226,7 @@ readonly class CraftSupportController
         // project.yaml
         $projectConfig = app(ProjectConfig::class)->get();
         $projectConfig = Security::redactIfSensitive('', $projectConfig);
-        $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
+        $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING));
 
         // project.yaml backups
         $configBackupPath = Path::configBackup(create: false);

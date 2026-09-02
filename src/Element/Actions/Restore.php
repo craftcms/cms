@@ -26,23 +26,17 @@ class Restore extends ElementAction
     {
         parent::setElementType($elementType);
 
-        if (! isset($this->successMessage)) {
-            $this->successMessage = t('{type} restored.', [
-                'type' => $elementType::pluralDisplayName(),
-            ]);
-        }
+        $this->successMessage ??= t('{type} restored.', [
+            'type' => $elementType::pluralDisplayName(),
+        ]);
 
-        if (! isset($this->partialSuccessMessage)) {
-            $this->partialSuccessMessage = t('Some {type} restored.', [
-                'type' => $elementType::pluralLowerDisplayName(),
-            ]);
-        }
+        $this->partialSuccessMessage ??= t('Some {type} restored.', [
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
 
-        if (! isset($this->failMessage)) {
-            $this->failMessage = t('{type} not restored.', [
-                'type' => $elementType::pluralDisplayName(),
-            ]);
-        }
+        $this->failMessage ??= t('{type} not restored.', [
+            'type' => $elementType::pluralDisplayName(),
+        ]);
     }
 
     #[\Override]

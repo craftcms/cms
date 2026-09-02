@@ -1177,9 +1177,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
-        if (! isset($this->_friendlyName)) {
-            $this->_friendlyName = $this->_defineFriendlyName() ?? false;
-        }
+        $this->_friendlyName ??= $this->_defineFriendlyName() ?? false;
 
         return $this->_friendlyName ?: null;
     }
@@ -1960,13 +1958,19 @@ JS, [
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'photo') {
-            /** @var Asset|null $photo */
-            $photo = $elements[0] ?? null;
-            $this->setPhoto($photo);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'photo':
+                /** @var Asset|null $photo */
+                $photo = $elements[0] ?? null;
+                $this->setPhoto($photo);
+                break;
+            case 'addresses':
+                /** @var Address[] $elements */
+                $this->_addresses = ElementCollection::make($elements);
+                break;
         }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**

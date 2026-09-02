@@ -222,6 +222,28 @@ it('serializes and validates combobox behavior', function () {
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
 });
 
+it('renders an icon-only choice button with an accessible name and no label', function () {
+    $crawler = renderChoice(
+        Choice::make('choice')
+            ->options([
+                ['label' => 'Sort ascending', 'icon' => 'asc', 'value' => 'asc'],
+                ['label' => 'Display as cards', 'icon' => 'custom-icons/element-cards', 'value' => 'cards'],
+            ])
+            ->presentation(ChoicePresentation::Buttons),
+        'asc',
+    );
+    $buttons = $crawler->filter('craft-button');
+
+    // The legacy alias and the family-prefixed custom icon both survive as a
+    // name the web component can resolve.
+    expect($buttons->eq(0)->attr('icon'))->toBe('arrow-down-short-wide')
+        ->and($buttons->eq(1)->attr('icon'))->toBe('custom-icons/element-cards')
+        // No slotted label: `<craft-button>` only stays square while empty.
+        ->and(trim($buttons->eq(0)->html()))->toBe('')
+        ->and($buttons->eq(0)->attr('aria-label'))->toBe('Sort ascending')
+        ->and($buttons->eq(1)->attr('aria-label'))->toBe('Display as cards');
+});
+
 it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option, int $expectedOptions = 2) {
     $choice = Choice::make('choice')
         ->options([
@@ -247,6 +269,60 @@ it('renders choice presentations through CP components', function (ChoicePresent
     'buttons' => [ChoicePresentation::Buttons, false, 'craft-button-group', 'craft-button'],
     'multiple buttons' => [ChoicePresentation::Buttons, true, 'craft-button-group[multiple]', 'craft-button'],
 ]);
+
+function renderChoice(Choice $choice, mixed $value): Crawler
+{
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([Field::make()->control($choice)]),
+        new FormContext(namespace: 'settings', values: ['settings' => ['choice' => $value]]),
+    );
+
+    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+}
+
+it('only serializes sortable when set', function () {
+    expect(Choice::make('choice')->multiple()->props())
+        ->not->toHaveKey('sortable')
+        ->and(Choice::make('choice')->sortable()->props())->toMatchArray([
+            'sortable' => true,
+            'multiple' => true,
+            'presentation' => 'checkboxes',
+        ]);
+});
+
+it('implies a multi-select checkbox list for an All option', function () {
+    expect(Choice::make('choice')->allOption()->props())->toMatchArray([
+        'multiple' => true,
+        'presentation' => 'checkboxes',
+        'allValue' => Choice::ALL_VALUE,
+    ]);
+});
+
+it('rejects combining reordering with an All option', function () {
+    // Reordering renders a flat cp-checkbox-select; All nests the options
+    // inside the checkbox that governs them. No markup is both.
+    expect(fn () => Choice::make('choice')->allOption()->sortable())
+        ->toThrow(InvalidArgumentException::class)
+        ->and(fn () => Choice::make('choice')->sortable()->allOption())
+        ->toThrow(InvalidArgumentException::class);
+});
+
+it('renders sortable choices selected-first inside the sortable wrapper', function () {
+    $crawler = renderChoice(
+        Choice::make('choice')
+            ->options([
+                ['label' => 'One', 'value' => 'one'],
+                ['label' => 'Two', 'value' => 'two'],
+                ['label' => 'Three', 'value' => 'three'],
+            ])
+            ->sortable(),
+        ['three', 'two'],
+    );
+    $values = $crawler->filter('craft-sortable-checkbox-select input[type="checkbox"]')
+        ->each(fn (Crawler $node) => $node->attr('value'));
+
+    expect($values)->toBe(['three', 'two', 'one']);
+});
 
 it('uses scalar and choice Controls in built-in field settings', function () {
     $payload = app(FormResolver::class)->resolve(new PlainText()->settingsForm(), new FormContext(namespace: 'settings'));

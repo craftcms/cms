@@ -43,9 +43,7 @@ trait HasSettings
 
     public function getSettings(): ?Validatable
     {
-        if (! isset($this->settings)) {
-            $this->settings = $this->createSettingsModel() ?: false;
-        }
+        $this->settings ??= $this->createSettingsModel() ?: false;
 
         return $this->settings ?: null;
     }

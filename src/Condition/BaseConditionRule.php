@@ -100,9 +100,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         parent::__construct($config);
 
-        if (! isset($this->uid)) {
-            $this->uid = Str::uuid()->toString();
-        }
+        $this->uid ??= Str::uuid()->toString();
     }
 
     public static function supportsProjectConfig(): bool

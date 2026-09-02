@@ -145,11 +145,12 @@ export default css`
     justify-content: space-between;
     align-items: center;
     padding-inline: var(--_pane-spacing);
-    padding-block: var(--_pane-spacing) 0;
+    padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
     inset-block-start: 0;
     z-index: 10;
     background-color: var(--_pane-background);
+    border-block-end: 1px solid var(--_pane-divider-color);
   }
 
   .cp-pane__title {

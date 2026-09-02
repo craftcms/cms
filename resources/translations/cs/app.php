@@ -2316,9 +2316,9 @@ return [
     'six' => 'šest',
     'tag' => 'značka',
     'tags' => 'tagy',
-    'test_email_body' => "Ahoj {{user.friendlyName|e}},
+    'test_email_body' => 'Ahoj {{user.friendlyName|e}},
 
-Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následující nastavení:{{ settings }}",
+Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následující nastavení:{{ settings }}',
     'test_email_heading' => 'Když testujete nastavení emailu:',
     'test_email_subject' => 'Toto je testovací email z Craft CMS',
     'three' => 'tři',

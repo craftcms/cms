@@ -7,7 +7,9 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
-  import {computed} from 'vue';
+  import {computed, ref, watch} from 'vue';
+  import type {CheckboxOption} from '@/common/types';
+  import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FormControlPayload, FormValue} from './types';
   import type {Slots} from 'vue';
   import {inputName, serverErrorValidators} from './runtime';
@@ -17,6 +19,8 @@
   type ChoiceOption = {
     label: string;
     labelHtml?: string;
+    /** Icon name; `craft-button` resolves and renders it. */
+    icon?: string;
     value: ChoiceValue;
     disabled?: boolean;
     /**
@@ -39,6 +43,7 @@
     /** What “All” posts in `singleValue` mode. */
     allValue?: string;
     allMode?: 'singleValue' | 'eachValue';
+    sortable?: boolean;
   };
 
   const props = defineProps<{
@@ -196,6 +201,86 @@
   function hasThumbnails(): boolean {
     return props.control.props.options.some((option) => option.thumbnail);
   }
+
+  // Reordering needs a drag affordance `craft-checkbox-group` doesn't have on
+  // its own, so it renders through the CP's CheckboxGroup instead.
+  const useCheckboxGroup = computed(
+    () =>
+      props.control.props.presentation === 'checkboxes' &&
+      props.control.props.sortable === true
+  );
+
+  // Display order is owned by the client: the server sends the selected options
+  // first, and a drag only reorders — it never changes what is checked.
+  const order = ref<string[]>(optionValues(props.control.props.options));
+
+  watch(
+    () => props.control.props.options,
+    (options) => {
+      const values = optionValues(options);
+      order.value = [
+        ...order.value.filter((value) => values.includes(value)),
+        ...values.filter((value) => !order.value.includes(value)),
+      ];
+    }
+  );
+
+  function optionValues(options: ChoiceOption[]): string[] {
+    return options.map((option) => inputValue(option.value));
+  }
+
+  function optionHtml(value: string): string | undefined {
+    return props.control.props.options.find(
+      (option) => inputValue(option.value) === value
+    )?.labelHtml;
+  }
+
+  const groupOptions = computed<CheckboxOption[]>(() => {
+    const byValue = new Map(
+      props.control.props.options.map((option) => [
+        inputValue(option.value),
+        option,
+      ])
+    );
+
+    return order.value.flatMap((value) => {
+      const option = byValue.get(value);
+
+      return option
+        ? [
+            {
+              label: option.label,
+              value,
+              disabled: !props.editable || option.disabled,
+            },
+          ]
+        : [];
+    });
+  });
+
+  const groupValue = computed<string[]>(() =>
+    Array.isArray(props.value) ? props.value.map(inputValue) : []
+  );
+
+  function onGroupValue(values: string[]): void {
+    emit(
+      'update:value',
+      order.value.filter((value) => values.includes(value))
+    );
+  }
+
+  function onGroupReorder(options: CheckboxOption[]): void {
+    order.value = options.map((option) => option.value);
+
+    // The value carries the display order, so a reorder changes it too.
+    const selected = Array.isArray(props.value)
+      ? props.value.map(inputValue)
+      : [];
+    emit(
+      'update:value',
+      order.value.filter((value) => selected.includes(value))
+    );
+  }
 </script>
 
 <template>
@@ -255,6 +340,8 @@
       :name="`${inputName(control.path)}[]`"
       :value="inputValue(option.value)"
     />
+    <!-- `icon` is bound as an attribute because `craft-button` doesn't reflect
+         it, and its square icon-only treatment keys on the attribute. -->
     <craft-button
       v-for="option in control.props.options"
       :key="inputValue(option.value)"
@@ -262,12 +349,31 @@
       :value="inputValue(option.value)"
       :active="selected(option.value)"
       :disabled="!editable || option.disabled"
+      :icon.attr="option.icon"
+      :aria-label="option.icon || option.labelHtml ? option.label : undefined"
       @click="onButtonClicked(option.value)"
     >
-      <span v-if="option.labelHtml" v-html="option.labelHtml" />
-      <template v-else>{{ option.label }}</template>
+      <!-- An icon option slots nothing: `craft-button` renders the icon
+           itself, and only stays square while its light DOM is empty. -->
+      <span v-if="!option.icon && option.labelHtml" v-html="option.labelHtml" />
+      <template v-else-if="!option.icon">{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
+  <CheckboxGroup
+    v-else-if="useCheckboxGroup"
+    :name="editable ? `${inputName(control.path)}[]` : undefined"
+    :disabled="!editable"
+    :model-value="groupValue"
+    :options="groupOptions"
+    :sortable="control.props.sortable"
+    @update:model-value="onGroupValue"
+    @update:options="onGroupReorder"
+  >
+    <template #label="{option}">
+      <span v-if="optionHtml(option.value)" v-html="optionHtml(option.value)" />
+      <template v-else>{{ option.label }}</template>
+    </template>
+  </CheckboxGroup>
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else

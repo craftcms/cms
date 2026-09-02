@@ -62,9 +62,7 @@ class FieldLayoutDesigner
         // (We do this here instead of from FieldLayoutComponent::init() because the we don't want field layout forms to
         // get the impression that tabs/elements have persisting UUIDs if they don't.)
         foreach ($tabs as $tab) {
-            if (! isset($tab->uid)) {
-                $tab->uid = Str::uuid()->toString();
-            }
+            $tab->uid ??= Str::uuid()->toString();
 
             $layoutElements = [];
 
@@ -78,9 +76,7 @@ class FieldLayoutDesigner
                     }
                 }
 
-                if (! isset($layoutElement->uid)) {
-                    $layoutElement->uid = Str::uuid()->toString();
-                }
+                $layoutElement->uid ??= Str::uuid()->toString();
 
                 $layoutElements[] = $layoutElement;
             }
@@ -119,9 +115,7 @@ class FieldLayoutDesigner
         if (isset($fieldLayoutConfig['tabs'])) {
             foreach ($fieldLayoutConfig['tabs'] as &$tabConfig) {
                 foreach ($tabConfig['elements'] as &$elementConfig) {
-                    if (! isset($elementConfig['dateAdded'])) {
-                        $elementConfig['dateAdded'] = DateTimeHelper::toIso8601(now()->subMinute());
-                    }
+                    $elementConfig['dateAdded'] ??= DateTimeHelper::toIso8601(now()->subMinute());
                 }
             }
         }

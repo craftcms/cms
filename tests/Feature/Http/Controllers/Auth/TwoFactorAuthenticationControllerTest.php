@@ -33,8 +33,7 @@ test('showForm aborts when user has no active 2fa methods', function () {
     $user = User::findOne();
     withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
-    get(action([TwoFactorAuthenticationController::class, 'showForm']))
-        ->assertStatus(400);
+    get(action([TwoFactorAuthenticationController::class, 'showForm']))->assertBadRequest();
 });
 
 test('showForm aborts with invalid method class', function () {
@@ -43,7 +42,7 @@ test('showForm aborts with invalid method class', function () {
 
     get(action([TwoFactorAuthenticationController::class, 'showForm'], [
         'method' => 'InvalidMethodClass',
-    ]))->assertStatus(400);
+    ]))->assertBadRequest();
 });
 
 test('verify fails with invalid totp code', function () {
@@ -52,7 +51,7 @@ test('verify fails with invalid totp code', function () {
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
         'code' => '000000',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('verifyRecoveryCode fails with invalid recovery code', function () {
@@ -61,7 +60,7 @@ test('verifyRecoveryCode fails with invalid recovery code', function () {
 
     postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [
         'code' => 'invalid-recovery-code',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('verify returns success with valid TOTP code', function () {
@@ -98,8 +97,7 @@ test('verify rejects a user suspended after the first factor', function () {
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
         'code' => (new Google2FA)->getCurrentOtp($secret),
-    ])
-        ->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonPath('message', 'Account suspended.');
 
     expect(Auth::check())->toBeFalse()
@@ -161,7 +159,7 @@ test('impersonation verifies the impersonator and retains the impersonated user'
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
         'code' => (new Google2FA)->getCurrentOtp($impersonatedSecret),
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 
     $response = postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
         'code' => (new Google2FA)->getCurrentOtp($impersonatorSecret),
@@ -249,13 +247,13 @@ test('TOTP and recovery code verification share an attempt budget', function () 
     foreach (range(1, 3) as $_) {
         postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
             'code' => '000000',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 
     foreach (range(1, 2) as $_) {
         postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [
             'code' => 'invalid-recovery-code',
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [

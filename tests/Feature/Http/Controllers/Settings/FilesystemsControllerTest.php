@@ -320,8 +320,7 @@ test('save returns failure on invalid data', function () {
         'settings' => [],
     ]);
 
-    $response
-        ->assertStatus(400)
+    $response->assertBadRequest()
         ->assertJsonStructure(['errors' => ['name', 'handle', 'settings.path']]);
 });
 
@@ -333,7 +332,7 @@ test('save rejects missing environment variables for required settings', functio
         'settings' => [
             'path' => '$FILESYSTEM_SETTINGS_MISSING',
         ],
-    ])->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonStructure(['errors' => ['settings.path']]);
 
     postJson(action([FilesystemsController::class, 'store']), [
@@ -345,7 +344,7 @@ test('save rejects missing environment variables for required settings', functio
             'url' => '$FILESYSTEM_SETTINGS_MISSING',
             'path' => sys_get_temp_dir().'/missing-url',
         ],
-    ])->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJsonStructure(['errors' => ['settings.url']]);
 });
 

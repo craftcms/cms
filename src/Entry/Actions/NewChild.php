@@ -31,11 +31,9 @@ class NewChild extends ElementAction
     {
         parent::setElementType($elementType);
 
-        if (! isset($this->label)) {
-            $this->label = t('Create a new child {type}', [
-                'type' => $elementType::lowerDisplayName(),
-            ]);
-        }
+        $this->label ??= t('Create a new child {type}', [
+            'type' => $elementType::lowerDisplayName(),
+        ]);
     }
 
     #[\Override]

@@ -200,9 +200,7 @@ class MemoizableArray implements Countable, IteratorAggregate
             return $this->elements[$key];
         }
 
-        if (! isset($this->normalized[$key])) {
-            $this->normalized[$key] = call_user_func($this->normalizer, $this->elements[$key], $key);
-        }
+        $this->normalized[$key] ??= call_user_func($this->normalizer, $this->elements[$key], $key);
 
         return $this->normalized[$key];
     }

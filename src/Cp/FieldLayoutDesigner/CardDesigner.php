@@ -183,9 +183,7 @@ class CardDesigner
         }
 
         foreach ($allOptions as $key => &$option) {
-            if (! isset($option['value'])) {
-                $option['value'] = $key;
-            }
+            $option['value'] ??= $key;
         }
 
         return $allOptions;
@@ -225,9 +223,7 @@ class CardDesigner
         }
 
         foreach ($allOptions as $key => &$option) {
-            if (! isset($option['value'])) {
-                $option['value'] = $key;
-            }
+            $option['value'] ??= $key;
         }
 
         return $allOptions;

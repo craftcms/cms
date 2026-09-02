@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed a bug where validating filesystem attributes could resolve `CraftCms\Cms\Filesystem\Filesystems\Filesystem::getRootUrl()`. ([#19535](https://github.com/craftcms/cms/pull/19535))
+- Fixed `CraftCms\Cms\Support\Env::parse()` to preserve unknown aliases rather than throw an exception. ([#19535](https://github.com/craftcms/cms/pull/19535))
+
+## 6.0.0-alpha.18 - 2026-09-01
+
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
 - Added `CraftCms\Cms\Asset\AssetTransformers` and `CraftCms\Cms\Asset\AssetTransformDrivers`.
 - Added `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`.

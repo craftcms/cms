@@ -313,7 +313,7 @@ class Config extends Component
      *
      * @param string $name The environment variable name
      * @return bool
-     * @since 5.10.15
+     * @since 5.11.0
      * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::variableExists()` instead.
      */
     public function doesEnvVarExist(string $name): bool

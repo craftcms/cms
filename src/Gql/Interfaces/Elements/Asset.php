@@ -216,7 +216,7 @@ class Asset extends Element
     /** @return array<string, FieldDefinitionConfig> */
     protected static function getConditionalFields(): array
     {
-        if (GqlHelper::canQueryUsers()) {
+        if (GqlHelper::canQueryAllUsers()) {
             return [
                 'uploaderId' => [
                     'name' => 'uploaderId',

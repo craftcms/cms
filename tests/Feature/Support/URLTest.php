@@ -213,6 +213,61 @@ describe('query and encoding helpers', function () {
         ],
     ]);
 
+    test('removes multiple query params from a URL', function (string $expected, string $url, array $params) {
+        expect(Url::removeParams($url, $params))->toBe($expected);
+    })->with([
+        'removes-multiple' => [
+            'https://craftcms.com/?bar=2#anchor',
+            'https://craftcms.com/?foo=1&bar=2&baz=3#anchor',
+            ['foo', 'baz'],
+        ],
+        'removes-all-listed' => [
+            'https://craftcms.com/#anchor',
+            'https://craftcms.com/?foo=1&bar=2#anchor',
+            ['foo', 'bar'],
+        ],
+        'keeps-url-when-params-are-missing' => [
+            'https://craftcms.com/?foo=1',
+            'https://craftcms.com/?foo=1',
+            ['bar', 'baz'],
+        ],
+        'empty-params' => [
+            'https://craftcms.com/?foo=1',
+            'https://craftcms.com/?foo=1',
+            [],
+        ],
+    ]);
+
+    test('removes all query params from a URL', function (string $expected, string $url, array $except) {
+        expect(Url::removeAllParams($url, $except))->toBe($expected);
+    })->with([
+        'removes-all' => [
+            'https://craftcms.com/',
+            'https://craftcms.com/?foo=1&bar=2',
+            [],
+        ],
+        'keeps-fragment' => [
+            'https://craftcms.com/#anchor',
+            'https://craftcms.com/?foo=1&bar=2#anchor',
+            [],
+        ],
+        'except' => [
+            'https://craftcms.com/?bar=2',
+            'https://craftcms.com/?foo=1&bar=2&baz=3',
+            ['bar'],
+        ],
+        'except-multiple' => [
+            'https://craftcms.com/?foo=1&baz=3',
+            'https://craftcms.com/?foo=1&bar=2&baz=3',
+            ['foo', 'baz'],
+        ],
+        'except-missing' => [
+            'https://craftcms.com/',
+            'https://craftcms.com/?foo=1&bar=2',
+            ['baz'],
+        ],
+    ]);
+
     test('adds token params to a URL', function (string $expected, string $url, string $token) {
         Cms::config()->useSslOnTokenizedUrls = true;
 
@@ -387,6 +442,13 @@ describe('generated URLs', function () {
         ['{siteUrl}endpoint?redirect=some%2Fpath%2F{id}', 'endpoint', ['redirect' => 'some/path/{id}'], 'https', null],
         ['{siteUrl}endpoint?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'endpoint', ['returnUrl' => 'https://example.test/admin/entries?site={handle}'], 'https', null],
     ]);
+
+    it('removes all params from a full URL when params is false', function () {
+        swapUrlRequest('https://localhost/news');
+
+        expect(Url::url('https://craftcms.com/?x-craft-preview=foo&test=bar', false))
+            ->toBe('https://craftcms.com/');
+    });
 
     it('creates action URLs', function () {
         swapUrlRequest('https://localhost/news');

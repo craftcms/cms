@@ -8,7 +8,7 @@ test('alt', function () {
     Asset::factory()->create();
 
     // With alt
-    Asset::factory()->create([
+    Asset::factory()->create()->sites()->attach(Site::all(), [
         'alt' => 'Alt text',
     ]);
 

@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxIndeterminate;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
@@ -17,21 +18,34 @@ use CraftCms\Cms\Form\Enums\AllOptionMode;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
 class Choice extends Control
 {
-    /** @var list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
+    /** The token {@see self::allOption()} posts by default. */
+    public const string ALL_VALUE = '*';
+
+    /**
+     * Reordering renders a flat `cp-checkbox-select` while “All” nests the
+     * options inside {@see CheckboxIndeterminate} to govern them, so no single
+     * markup can be both.
+     */
+    private const string SORTABLE_ALL_CONFLICT = 'A sortable Choice cannot also have an “All” option.';
+
+    /** @var list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
     private array $options = [];
 
     private bool $multiple = false;
+
+    private bool $sortable = false;
 
     private ChoicePresentation $presentation = ChoicePresentation::Select;
 
     private ?string $allLabel = null;
 
-    private string $allValue = '*';
+    private string $allValue = self::ALL_VALUE;
 
     private AllOptionMode $allMode = AllOptionMode::SingleValue;
 
@@ -62,7 +76,7 @@ class Choice extends Control
      * the radio in the Radios presentation. Its `aspectRatio` maps to the CSS
      * property of the same name.
      *
-     * @param  list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
+     * @param  list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {
@@ -77,6 +91,25 @@ class Choice extends Control
 
         if ($multiple && $this->presentation === ChoicePresentation::Select) {
             $this->presentation = ChoicePresentation::Checkboxes;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Lets the options be reordered, with the value stored in display order.
+     * Implies a multi-select checkbox list.
+     */
+    public function sortable(bool $sortable = true): static
+    {
+        if ($sortable && $this->allLabel !== null) {
+            throw new InvalidArgumentException(self::SORTABLE_ALL_CONFLICT);
+        }
+
+        $this->sortable = $sortable;
+
+        if ($sortable) {
+            $this->asCheckboxes();
         }
 
         return $this;
@@ -100,12 +133,17 @@ class Choice extends Control
      */
     public function allOption(
         ?string $label = null,
-        string $value = '*',
+        string $value = self::ALL_VALUE,
         AllOptionMode $mode = AllOptionMode::SingleValue,
     ): static {
+        if ($this->sortable) {
+            throw new InvalidArgumentException(self::SORTABLE_ALL_CONFLICT);
+        }
+
         $this->allLabel = $label ?? t('All');
         $this->allValue = $value;
         $this->allMode = $mode;
+        $this->asCheckboxes();
 
         return $this;
     }
@@ -113,7 +151,7 @@ class Choice extends Control
     #[\Override]
     public function props(mixed $value = null): array
     {
-        return [
+        $props = [
             'options' => $this->options,
             'multiple' => $this->multiple,
             'presentation' => $this->presentation->value,
@@ -123,6 +161,20 @@ class Choice extends Control
                 'allMode' => $this->allMode->value,
             ] : []),
         ];
+
+        // Only emitted when set, so ordinary Choice payloads are unchanged.
+        if ($this->sortable) {
+            $props['sortable'] = true;
+        }
+
+        return $props;
+    }
+
+    /** Reordering and “All” are only meaningful on a multi-select checkbox list. */
+    private function asCheckboxes(): void
+    {
+        $this->multiple = true;
+        $this->presentation = ChoicePresentation::Checkboxes;
     }
 
     /**
@@ -197,10 +249,14 @@ class Choice extends Control
         mixed $value,
         array $attributes,
     ): string {
+        if ($control->props['sortable'] ?? false) {
+            return self::checkboxSelectHtml($control, $value, $attributes);
+        }
+
         $values = self::values($value);
         $name = self::multipleName($attributes['name']);
         $allLabel = $control->props['allLabel'] ?? null;
-        $allValue = (string) ($control->props['allValue'] ?? '*');
+        $allValue = (string) ($control->props['allValue'] ?? self::ALL_VALUE);
         $singleValue = $allLabel !== null
             && ($control->props['allMode'] ?? null) === AllOptionMode::SingleValue->value;
         // In single-value mode “All” speaks for the options: they render checked
@@ -234,6 +290,63 @@ class Choice extends Control
                 : $checkboxes)
             ->attributes(self::groupAttributes($attributes, 'group'))
             ->toHtml();
+    }
+
+    /**
+     * Renders through {@see CheckboxSelect}, which owns the drag-reordering
+     * wrapper.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private static function checkboxSelectHtml(ControlPayload $control, mixed $value, array $attributes): string
+    {
+        $name = $attributes['name'];
+        $disabled = $name === null;
+        $values = self::values($value);
+
+        /** @var list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool}> $options */
+        $options = $control->props['options'];
+
+        // The value carries the display order, so selected options lead.
+        if ($values !== []) {
+            usort($options, fn (array $a, array $b): int => self::valueOrder($a, $values) <=> self::valueOrder($b, $values));
+        }
+
+        $checkboxes = array_map(function (array $option, int $index) use ($attributes, $name, $values, $disabled): Checkbox {
+            $optionValue = (string) $option['value'];
+
+            return Checkbox::make()
+                ->id("{$attributes['id']}-{$index}")
+                ->name(self::multipleName($name))
+                ->value($optionValue)
+                ->checked(in_array($optionValue, $values, true))
+                ->disabled($disabled || ($option['disabled'] ?? false))
+                ->label(self::optionLabel($option))
+                ->describedBy($attributes['aria']['describedby'] ?? null)
+                ->inputAttributes([
+                    'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
+                ]);
+        }, $options, array_keys($options));
+
+        return CheckboxSelect::make()
+            ->id($attributes['id'])
+            ->name($name)
+            ->options($checkboxes)
+            ->sortable()
+            ->disabled($disabled)
+            ->attributes(self::groupAttributes($attributes, 'group'))
+            ->toHtml();
+    }
+
+    /**
+     * @param  array{value: bool|float|int|string}  $option
+     * @param  list<string>  $values
+     */
+    private static function valueOrder(array $option, array $values): int
+    {
+        $index = array_search((string) $option['value'], $values, true);
+
+        return $index === false ? PHP_INT_MAX : $index;
     }
 
     /**
@@ -331,8 +444,15 @@ class Choice extends Control
         return array_map(function (array $option) use ($attributes, $values): Button {
             $optionValue = (string) $option['value'];
 
+            $icon = $option['icon'] ?? null;
+
             return Button::make()
-                ->label(self::optionLabel($option))
+                ->icon($icon)
+                // An icon-only button keeps its light DOM empty, which is what
+                // `<craft-button>` keys its square treatment on. The option's
+                // label becomes the button's accessible name instead.
+                ->label($icon !== null ? null : self::optionLabel($option))
+                ->attributes($icon !== null ? ['aria' => ['label' => $option['label']]] : [])
                 ->value($optionValue)
                 ->active(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false));

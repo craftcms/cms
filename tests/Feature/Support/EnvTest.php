@@ -119,8 +119,17 @@ test('parse', function () {
     expect(Env::parse('$CRAFT_TESTS_PATH/foo/bar'))->toBe(CRAFT_TESTS_PATH.'/foo/bar');
     expect(Env::parse('CRAFT_TESTS_PATH'))->toBe('CRAFT_TESTS_PATH');
     expect(Env::parse('@vendor/foo/bar'))->toBe(Aliases::get('@vendor/foo/bar'));
+    expect(Env::parse('@missingEnvParseAlias'))->toBe('@missingEnvParseAlias');
     expect(Env::parse('$TEST_MISSING'))->toBeNull();
     expect(Env::parse(null))->toBeNull();
+
+    // https://github.com/craftcms/cms/issues/19522
+    expect(Env::parse('$58 million'))->toBe('$58 million');
+    expect(Env::parse('the $58 million'))->toBe('the $58 million');
+    expect(Env::parse('the $58'))->toBe('the $58');
+    expect(Env::parse('$58/test'))->toBe('/test');
+    expect(Env::parse('test/$58/test'))->toBe('test//test');
+    expect(Env::parse('test/$58'))->toBe('test/');
 
     foreach (array_keys($variables) as $name) {
         putenv($name);
