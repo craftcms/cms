@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
+
 ## 5.11.1 - 2026-09-02
 
 - Added support for symfony/filesystem 7.x and 8.x. ([#19538](https://github.com/craftcms/cms/discussions/19538))

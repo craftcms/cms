@@ -501,15 +501,23 @@ class ContentBlock extends Field implements
                 ->all();
 
             if (count($sameSiteElements) > 1) {
-                $contentBlocks = ContentBlockElement::find()
+                $query = ContentBlockElement::find()
                     ->fieldId($this->id)
                     ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
                     ->siteId($element->siteId)
-                    // explicitly fetch revisions if the owner element is a revision
-                    // (see https://github.com/craftcms/cms/pull/18161)
-                    ->revisions($element->getIsRevision())
-                    ->indexBy('ownerId')
-                    ->collect();
+                    ->indexBy('ownerId');
+
+                // If the owner element is a revision, allow revision content blocks to be returned as
+                // well (see https://github.com/craftcms/cms/pull/18161) -- as well as trashed/canonical
+                // ones, since a nested content block isn't necessarily forked into its own revision row
+                // just because its owner was revisioned (it may still be the canonical row, merely
+                // relinked to the revision-owned owner). This mirrors the single-owner code path in
+                // createContentBlockQuery(). (see https://github.com/craftcms/cms/issues/19543)
+                if ($element->getIsRevision()) {
+                    $query->revisions(null)->trashed(null);
+                }
+
+                $contentBlocks = $query->collect();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
