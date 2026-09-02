@@ -19,8 +19,6 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Models\User;
 
-use function Pest\Laravel\actingAs;
-
 function makeTitleFieldLayout(): FieldLayout
 {
     $config = FieldLayoutConfig::make(EntryElement::class);
@@ -108,8 +106,6 @@ it('succeeds importing a disabled entry into an author-requiring section without
 
 it('succeeds importing an enabled entry into a section requiring an author when an author is mapped', function () {
     $author = User::factory()->create();
-    // TODO (iwona): this is temporary, we need to handle items like that properly
-    actingAs($author);
 
     $this->import->importItem($this->importer, [
         'title' => 'imported entry',
