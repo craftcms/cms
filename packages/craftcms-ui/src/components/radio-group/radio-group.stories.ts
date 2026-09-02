@@ -1,39 +1,64 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './radio-group.js';
 import '../radio/radio.js';
+import type CraftRadioGroup from './radio-group.js';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `radio-group.ts` surfaces it here without touching this file.
+ *
+ * Lion's own `label` and `help-text` are slots here, so they are set through
+ * the `label-slot` and `help-text-slot` args rather than as attributes.
+ */
+const {args, argTypes} =
+  getStorybookHelpers<CraftRadioGroup>('craft-radio-group');
+
+type RadioGroupArgs = CraftRadioGroup & typeof args;
+
 const meta = {
   title: 'Form Controls/Choice Controls/Radio Group',
   component: 'craft-radio-group',
-  args: {},
-  render: function () {
-    return html`<craft-radio-group name="scientist" label="Scientists">
-      <craft-radio label="Marie Curie" .choiceValue=${'curie'}></craft-radio>
-      <craft-radio
-        label="Ada Lovelace"
-        .choiceValue=${'lovelace'}
-        .checked=${true}
-      ></craft-radio>
-      <craft-radio label="Grace Hopper" .choiceValue=${'hopper'}></craft-radio>
-    </craft-radio-group>`;
-  },
-} satisfies Meta<any>;
+  args: {...args, name: 'scientist', 'label-slot': 'Scientists'},
+  argTypes,
+  // The options are written out rather than generated: each one carries a
+  // `choiceValue`, which is a property rather than an attribute, so it cannot
+  // be expressed in a slot's markup string.
+  render: (args) => html`
+    <craft-radio-group name="${args.name ?? ''}" ?disabled="${args.disabled}">
+      <label slot="label">${args['label-slot']}</label>
+      <craft-radio .choiceValue="${'curie'}">
+        <label slot="label">Marie Curie</label>
+      </craft-radio>
+      <craft-radio .choiceValue="${'lovelace'}" checked>
+        <label slot="label">Ada Lovelace</label>
+      </craft-radio>
+      <craft-radio .choiceValue="${'hopper'}">
+        <label slot="label">Grace Hopper</label>
+      </craft-radio>
+    </craft-radio-group>
+  `,
+} satisfies Meta<RadioGroupArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<RadioGroupArgs>;
 
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Default: Story = {
-  args: {},
-};
+/** Exactly one option may be selected, and the group owns the value. */
+export const Default: Story = {};
 
+/**
+ * A group rendered by the server adopts the name already on its inputs, so the
+ * markup keeps posting the way it did before the component upgraded.
+ */
 export const ServerRendered: Story = {
+  parameters: {controls: {disable: true}},
   render: () =>
-    html`<craft-radio-group label="Color">
+    html`<craft-radio-group>
+      <label slot="label">Color</label>
       <div>
         <craft-radio>
           <input
