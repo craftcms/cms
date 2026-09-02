@@ -5,6 +5,10 @@ import {styleMap} from 'lit/directives/style-map.js';
 import {Paddable} from '@src/mixins/Paddable.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 import styles from './pane.styles.js';
 
 export const PaneAppearance = {
@@ -172,7 +176,7 @@ export default class CraftPane extends Paddable(LitElement, {
   /**
    * Whether header content is currently slotted. The header and footer slots
    * only render when filled, so their presence can't be tracked with
-   * `slotchange` — an unrendered slot never fires one. A light-DOM observer
+   * `slotchange` — an unrendered slot never fires one. `LightDomController`
    * keeps this fresh when a consumer adds, removes, or re-slots content.
    */
   @state() private _hasSlottedHeader = false;
@@ -189,7 +193,11 @@ export default class CraftPane extends Paddable(LitElement, {
   /** The host's `aria-label`, mirrored into state so it re-renders the region. */
   @state() private _hostLabel = '';
 
-  private _lightDomObserver = new MutationObserver(() => this._syncLightDom());
+  private _lightDom = new LightDomController(this, {
+    attributeFilter: ['aria-label'],
+    characterData: true,
+    onChange: () => this._syncLightDom(),
+  });
 
   private _resizeObserver?: ResizeObserver;
 
@@ -202,21 +210,8 @@ export default class CraftPane extends Paddable(LitElement, {
    */
   private _observedBoxes = new Set<Element>();
 
-  override connectedCallback() {
-    super.connectedCallback();
-    this._syncLightDom();
-    this._lightDomObserver.observe(this, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['slot', 'aria-label'],
-    });
-  }
-
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this._lightDomObserver.disconnect();
     this._resizeObserver?.disconnect();
     this._observedBoxes.clear();
   }
@@ -226,20 +221,15 @@ export default class CraftPane extends Paddable(LitElement, {
     return this.renderRoot?.querySelector('.cp-pane') ?? null;
   }
 
-  /**
-   * Only direct children can be assigned to this pane's slots, so presence is
-   * checked against them rather than the whole subtree — a nested component
-   * with its own `footer`/`actions` slot must not light up the pane's chrome.
-   */
-  private _hasSlot(...names: string[]): boolean {
-    return Array.from(this.children).some((child) =>
-      names.includes(child.slot)
-    );
-  }
-
   private _syncSlotPresence() {
-    this._hasSlottedHeader = this._hasSlot('header', 'title', 'header-actions');
-    this._hasSlottedFooter = this._hasSlot(
+    this._hasSlottedHeader = hasSlotted(
+      this,
+      'header',
+      'title',
+      'header-actions'
+    );
+    this._hasSlottedFooter = hasSlotted(
+      this,
       'footer',
       'footer-content',
       'feedback',

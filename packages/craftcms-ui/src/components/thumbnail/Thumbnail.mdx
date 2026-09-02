@@ -29,7 +29,7 @@ It is the image counterpart to [Avatar](?path=/docs/components-avatar--docs): a 
 
 <Canvas of={ThumbnailStories.Rounded} sourceState="shown" />
 
-Both are **default-true string booleans**: they respond to `checkered="false"`, not to the attribute's absence, so server-rendered markup can switch them off explicitly.
+Both are ordinary boolean attributes: absent means off, present means on. On the server they follow the element — `Asset` sets `checkered` for images that can be transparent, and leaves it off for everything else.
 
 ## Sizing
 

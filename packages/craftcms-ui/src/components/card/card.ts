@@ -1,8 +1,12 @@
-import {property, state} from 'lit/decorators.js';
+import {property} from 'lit/decorators.js';
 import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './card.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 
 /**
  * @summary A surface that groups related content into a bordered, rounded
@@ -68,61 +72,19 @@ export default class CraftCard extends LitElement {
     'start';
 
   /**
-   * Whether the thumbnail slot currently has assigned content. Tracked as reactive
-   * state and updated from the slot's `slotchange` event, since Lit doesn't
-   * re-render on slotted light-DOM changes on its own — without this the card's
-   * presence-derived rendering would go stale (e.g. when the CVD swaps the thumb).
+   * The header, footer, and thumbnail regions only render when they have
+   * something in them, so their slots can't report their own changes — an
+   * unrendered slot never fires `slotchange`. The controller re-renders the
+   * card whenever its light DOM moves, which is how a thumbnail swapped in
+   * by the element index shows up.
    */
-  @state() private _hasThumbnail = false;
-
-  /**
-   * Whether header/footer content is currently slotted. The header and footer
-   * slots only render when filled, so (unlike the always-rendered thumbnail
-   * slot) their presence can't be tracked via `slotchange` — a light-DOM
-   * observer keeps them fresh when a consumer swaps slotted content.
-   */
-  @state() private _hasSlottedHeader = false;
-
-  @state() private _hasSlottedFooter = false;
-
-  private _lightDomObserver = new MutationObserver(() =>
-    this._syncSlotPresence()
-  );
-
-  override connectedCallback() {
-    super.connectedCallback();
-    this._syncSlotPresence();
-    this._lightDomObserver.observe(this, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['slot'],
-    });
-  }
-
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this._lightDomObserver.disconnect();
-  }
-
-  private _syncSlotPresence() {
-    this._hasSlottedHeader =
-      !!this.querySelector('[slot="header"]') ||
-      !!this.querySelector('[slot="label"]') ||
-      !!this.querySelector('[slot="actions"]');
-    this._hasSlottedFooter = !!this.querySelector('[slot="footer"]');
-    this._hasThumbnail = !!this.querySelector('[slot="thumbnail"]');
-  }
-
-  private _handleThumbnailSlotChange(event: Event) {
-    const slot = event.target as HTMLSlotElement;
-    this._hasThumbnail = slot.assignedElements({flatten: true}).length > 0;
-  }
+  private _lightDom = new LightDomController(this);
 
   override render() {
-    const hasSlottedHeader = !!this.label || this._hasSlottedHeader;
-    const hasSlottedFooter = this._hasSlottedFooter;
-    const showThumbnail = this.showThumb && this._hasThumbnail;
+    const hasSlottedHeader =
+      !!this.label || hasSlotted(this, 'header', 'label', 'actions');
+    const hasSlottedFooter = hasSlotted(this, 'footer');
+    const showThumbnail = this.showThumb && hasSlotted(this, 'thumbnail');
 
     return html`
       <div
@@ -152,10 +114,7 @@ export default class CraftCard extends LitElement {
           })}"
         >
           <div class="card-body__thumb" ?hidden="${!showThumbnail}">
-            <slot
-              name="thumbnail"
-              @slotchange="${this._handleThumbnailSlotChange}"
-            ></slot>
+            <slot name="thumbnail"></slot>
           </div>
 
           <div class="card-body__main">

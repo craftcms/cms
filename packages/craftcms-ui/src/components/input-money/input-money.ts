@@ -3,6 +3,7 @@ import {css, html, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import CraftInput from '../input/input.js';
+import {defaultTrueBoolean} from '@src/utilities/converters';
 import '../button/button.js';
 import '../icon/icon.js';
 
@@ -12,21 +13,6 @@ type MaskedInput = HTMLInputElement & {
     remove(): void;
     setValue(value: string): void;
   };
-};
-
-/**
- * Default-on boolean: only the exact string `"false"` turns it off, so
- * `show-currency` behaves like a config flag rather than a bare HTML boolean
- * attribute (where mere presence would mean true). A boolean binding cannot
- * express it — write the literal string.
- */
-const defaultTrueBooleanConverter = {
-  fromAttribute(value: string | null): boolean {
-    return value !== 'false';
-  },
-  toAttribute(value: boolean): string {
-    return String(value);
-  },
 };
 
 /**
@@ -91,7 +77,7 @@ export default class CraftInputMoney extends CraftInput {
    * set `show-currency="false"` to hide it.
    */
   @property({
-    converter: defaultTrueBooleanConverter,
+    converter: defaultTrueBoolean,
     attribute: 'show-currency',
   })
   showCurrency = true;
@@ -100,7 +86,7 @@ export default class CraftInputMoney extends CraftInput {
    * Whether a button to clear the amount is shown once there is one. On by
    * default — set `clearable="false"` to remove it.
    */
-  @property({converter: defaultTrueBooleanConverter}) clearable = true;
+  @property({converter: defaultTrueBoolean}) clearable = true;
 
   constructor() {
     super();

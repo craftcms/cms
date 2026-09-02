@@ -1,6 +1,7 @@
 import {property} from 'lit/decorators.js';
 import type {PropertyValues} from 'lit';
 import CraftInput from '../input/input.js';
+import {jsonAttribute} from '@src/utilities/converters';
 
 /** A `[start, end]` pair of `HH:MM` times that cannot be selected. */
 export type DisabledTimeRange = [string, string];
@@ -31,12 +32,7 @@ export default class CraftInputTime extends CraftInput {
    */
   @property({
     attribute: 'disabled-time-ranges',
-    converter: {
-      // An absent attribute is `null` and an empty one is `''`; neither is
-      // valid JSON, so both have to fall back rather than reach `JSON.parse`.
-      fromAttribute: (value) => (value ? JSON.parse(value) : []),
-      toAttribute: (value) => JSON.stringify(value),
-    },
+    converter: jsonAttribute<DisabledTimeRange[]>(() => []),
   })
   disabledTimeRanges: DisabledTimeRange[] = [];
 

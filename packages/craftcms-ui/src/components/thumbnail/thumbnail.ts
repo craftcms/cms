@@ -6,18 +6,6 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import styles from './thumbnail.styles.js';
 
 /**
- * Boolean attribute converter that treats the string `"false"` as `false`.
- * Lit's built-in boolean converter is presence-based, so `checkered="false"`
- * would otherwise be truthy — this lets server-rendered markup disable the
- * attribute with `checkered="false"`.
- */
-const defaultTrueBoolean = {
-  fromAttribute: (value: string | null): boolean =>
-    value !== null && value !== 'false',
-  toAttribute: (value: boolean): string | null => (value ? '' : null),
-};
-
-/**
  * @summary Displays an image thumbnail with an optional checkered backing and
  * rounded corners. Images are lazy-loaded natively via the browser.
  *
@@ -60,9 +48,12 @@ export default class CraftThumbnail extends LitElement {
   /** Native browser loading strategy for the image. Defaults to `lazy`. */
   @property() loading: 'lazy' | 'eager' = 'lazy';
 
-  /** Whether to render a checkered pattern behind the image. Enabled by default. */
-  @property({reflect: true, converter: defaultTrueBoolean})
-  checkered = true;
+  /**
+   * Whether to render a checkered pattern behind the image, to show where a
+   * transparent image ends. Off by default, and set only for the images that
+   * warrant it — `Asset::hasCheckeredThumb()` decides on the server.
+   */
+  @property({type: Boolean, reflect: true}) checkered = false;
 
   /** Whether to round the corners of the image. */
   @property({type: Boolean, reflect: true}) rounded = false;

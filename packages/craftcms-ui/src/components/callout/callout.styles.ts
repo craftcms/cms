@@ -8,10 +8,10 @@ export default css`
   .callout {
     --_radius: var(--c-callout-radius, var(--c-radius-md));
     /*
-      The two padding axes are declared separately because the callout's
-      default is asymmetric — a tight block edge, a roomier inline one. The
-      \`padding\` attribute writes both of these on this element when it's set,
-      so these fallbacks are what a callout with no \`padding\` renders with.
+      The two axes are declared separately so the padding attribute can write
+      either one on its own. These fallbacks are what a callout with no padding
+      renders with; the inline gap to the text is finished by the padding on
+      the icon, title, and description.
     */
     --_callout-padding-block: var(
       --c-callout-padding-block,

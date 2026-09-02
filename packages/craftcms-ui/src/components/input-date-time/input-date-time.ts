@@ -5,16 +5,7 @@ import CraftInputDate from '../input-date/input-date.js';
 import CraftInputTime, {
   type DisabledTimeRange,
 } from '../input-time/input-time.js';
-
-/**
- * Default-on boolean: only the exact string `"false"` turns it off, so
- * `show-date` behaves like a config flag rather than a bare HTML boolean
- * attribute (where mere presence would mean true).
- */
-const booleanAttribute = {
-  fromAttribute: (value: string | null) => value !== 'false',
-  toAttribute: (value: boolean) => String(value),
-};
+import {defaultTrueBoolean, jsonAttribute} from '@src/utilities/converters';
 
 /**
  * @summary A paired date and time field. It owns a `craft-input-date`, a
@@ -63,14 +54,14 @@ export default class CraftInputDateTime extends LitElement {
    * Whether the date input is shown. On by default — set `show-date="false"`
    * to drop it and leave a time-only field. Any other value counts as on.
    */
-  @property({attribute: 'show-date', converter: booleanAttribute})
+  @property({attribute: 'show-date', converter: defaultTrueBoolean})
   showDate = true;
 
   /**
    * Whether the time input is shown. On by default — set `show-time="false"`
    * to drop it and leave a date-only field. Any other value counts as on.
    */
-  @property({attribute: 'show-time', converter: booleanAttribute})
+  @property({attribute: 'show-time', converter: defaultTrueBoolean})
   showTime = true;
 
   /**
@@ -102,12 +93,7 @@ export default class CraftInputDateTime extends LitElement {
    */
   @property({
     attribute: 'disabled-time-ranges',
-    converter: {
-      // An absent attribute is `null` and an empty one is `''`; neither is
-      // valid JSON, so both have to fall back rather than reach `JSON.parse`.
-      fromAttribute: (value) => (value ? JSON.parse(value) : []),
-      toAttribute: (value) => JSON.stringify(value),
-    },
+    converter: jsonAttribute<DisabledTimeRange[]>(() => []),
   })
   disabledTimeRanges: DisabledTimeRange[] = [];
 

@@ -1,4 +1,4 @@
-import {property, state} from 'lit/decorators.js';
+import {property} from 'lit/decorators.js';
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './chip.styles.js';
@@ -9,6 +9,10 @@ import type {SizeValue} from '@src/constants/size';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
 import {t} from '@src/utilities/translate';
 import variantsStyles from '@src/styles/variants.styles.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 
 /**
  * @summary A container that pairs a label with an optional
@@ -113,18 +117,13 @@ export default class CraftChip extends LitElement {
   #thumbLoader = new ThumbnailLoader();
 
   /**
-   * Bumped whenever the light DOM changes, so the slot checks in `render()`
-   * run again.
-   *
-   * Those checks are plain `querySelector()` calls rather than `slotchange`
-   * listeners: a `<slot>` that isn't rendered can't report a change, so the
-   * first thing slotted into an empty prefix or suffix would never appear.
-   * Chips are commonly filled in after their first render — `addActionsToChip()`
-   * injects an action menu into `[slot="suffix"]` long after the chip mounts.
+   * Re-renders the chip when its light DOM changes, so the slot checks in
+   * `render()` run again. A `<slot>` that isn't rendered can't report a change
+   * of its own, and chips are commonly filled in after their first render —
+   * `addActionsToChip()` injects an action menu into `[slot="suffix"]` long
+   * after the chip mounts.
    */
-  @state() private lightDom = 0;
-
-  #observer = new MutationObserver(() => this.lightDom++);
+  #lightDom = new LightDomController(this);
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -132,25 +131,10 @@ export default class CraftChip extends LitElement {
     if (!this.getAttribute('data-color')) {
       this.setAttribute('data-color', 'white');
     }
-
-    // Attributes included: content moves between slots by having its `slot`
-    // attribute set, not only by being added or removed.
-    this.#observer.observe(this, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['slot'],
-    });
-  }
-
-  override disconnectedCallback(): void {
-    this.#observer.disconnect();
-    super.disconnectedCallback();
   }
 
   renderPrefix() {
-    const showStatus =
-      this.showStatus || !!this.querySelector('[slot="status"]');
+    const showStatus = this.showStatus || hasSlotted(this, 'status');
 
     return html`<div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
@@ -175,18 +159,11 @@ export default class CraftChip extends LitElement {
   }
 
   override render() {
-    // Read so Lit re-renders when the light DOM changes; see `lightDom`.
-    void this.lightDom;
-
-    // query the element Light DOM children for slotted elements
     const renderPrefix =
-      !!this.querySelector('[slot="prefix"]') ||
-      !!this.querySelector('[slot="icon"]') ||
-      !!this.querySelector('[slot="status"]') ||
-      !!this.querySelector('[slot="thumbnail"]') ||
+      hasSlotted(this, 'prefix', 'icon', 'status', 'thumbnail') ||
       this.showStatus ||
       this.icon;
-    const renderSuffix = !!this.querySelector('[slot="suffix"]');
+    const renderSuffix = hasSlotted(this, 'suffix');
 
     return html`
       <div
