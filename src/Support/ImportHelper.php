@@ -20,11 +20,6 @@ class ImportHelper
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
         $class = new \ReflectionClass($importer->className);
         $properties = $class->getProperties();
-
-        // now walk up and getParentClass() so that we can get all the props for classes that this one extends (e.g. Element class for Entry)
-        while ($class = $class->getParentClass()) {
-            $properties = array_merge($properties, $class->getProperties());
-        }
         $properties = array_values(array_filter($properties, fn ($property) => ! empty($property->getAttributes(Importable::class))));
 
         return array_map(function ($property) {
