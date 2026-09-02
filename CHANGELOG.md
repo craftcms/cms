@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Fixed a bug where validating filesystem attributes could resolve `CraftCms\Cms\Filesystem\Filesystems\Filesystem::getRootUrl()`. ([#19535](https://github.com/craftcms/cms/pull/19535))
 - Fixed `CraftCms\Cms\Support\Env::parse()` to preserve unknown aliases rather than throw an exception. ([#19535](https://github.com/craftcms/cms/pull/19535))
 
