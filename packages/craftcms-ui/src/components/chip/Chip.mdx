@@ -67,6 +67,16 @@ Set `data-color` on the chip to override that. Because the attribute lands on th
 
 <Canvas of={ChipStories.Colors} />
 
+## Sizing
+
+`size` sets how much room the chip gives its contents — the padding around the label, and the thumbnail in the prefix:
+
+<Canvas of={ChipStories.Sizes} sourceState="shown" />
+
+The step shows most clearly with a prefix and a suffix in place, since the thumbnail grows with it:
+
+<Canvas of={ChipStories.SizesWithContent} sourceState="shown" />
+
 ## Styling
 
 The chip exposes three CSS parts — `chip`, `prefix`, and `suffix` — and a set of `--c-chip-*` custom properties for its height, radius, padding, shadow, and border.

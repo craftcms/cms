@@ -64,10 +64,10 @@ export default class CraftChip extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
 
   /**
-   * How much vertical space the chip takes. `small` adds a small amount of
-   * block padding, and `medium` applies a minimum height. `large` is accepted,
-   * but has no styles of its own and renders the same as an unset `size`.
-   * Leave it unset to size the chip from its content.
+   * How much room the chip gives its contents. Each step sets the padding
+   * around the label and the size of the thumbnail in the prefix — `small`
+   * is tight enough for a chip in a table cell, `large` suits one standing on
+   * its own.
    */
   @property() size: SizeValue = 'small';
 
