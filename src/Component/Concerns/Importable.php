@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Component\Concerns;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Transformers\ElementTransformer;
+use Override;
 
 /**
  * Importable defines the common interface to be implemented by components that
@@ -16,25 +17,19 @@ trait Importable
 {
     public private(set) bool $importing = false;
 
-    /**
-     * Returns whether the component can be imported into directly.
-     */
+    #[Override]
     public static function isImportable(): bool
     {
         return true;
     }
 
-    /**
-     * Returns the class name of the default transformer for the component.
-     */
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return ElementTransformer::class;
     }
 
-    /**
-     * Prepares a new element instance for import.
-     */
+    #[Override]
     public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
     {
         // ensure site is set
@@ -48,18 +43,14 @@ trait Importable
         return $this;
     }
 
-    /**
-     * Prepare query that searches for the root element we're importing into
-     */
+    #[Override]
     public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
     {
         // by default, we don't need to adjust the element query
         return $query;
     }
 
-    /**
-     * Sets element's importable attributes.
-     */
+    #[Override]
     public function setAttributesForImport(array $attributes): void
     {
         // the ID and UID can only be used to match on, we cannot have them be set via the import

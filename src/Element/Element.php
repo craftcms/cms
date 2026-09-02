@@ -9,6 +9,7 @@ use BadMethodCallException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\Importable;
+use CraftCms\Cms\Component\Contracts\ImportableInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
@@ -42,7 +43,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules<static> $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements AllowableInSandbox, ElementInterface // , Importable
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface, ImportableInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
