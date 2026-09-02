@@ -71,6 +71,30 @@ function isFormChange(value: unknown): value is FormChange {
   );
 }
 
+/**
+ * The id a control's input is rendered with, mirroring
+ * `FormHtmlRenderer::id()` so both renderers agree on how a path becomes an id.
+ *
+ * PHP uses `rawurlencode`, which differs from `encodeURIComponent` on `!'()*` —
+ * unreachable for ordinary field handles, but cheap to match exactly rather
+ * than leave the two renderers free to disagree on an exotic path segment.
+ */
+export function inputId(path: string[]): string {
+  const encoded = path.map((segment) =>
+    encodeURIComponent(segment).replace(
+      /[!'()*]/g,
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+    )
+  );
+
+  return `form-${encoded.join('-')}`;
+}
+
+/** The id of the field wrapping a control's input. */
+export function fieldId(path: string[]): string {
+  return `${inputId(path)}-field`;
+}
+
 export function inputName(path: string[]): string {
   return `${path[0]}${path
     .slice(1)

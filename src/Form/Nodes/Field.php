@@ -72,6 +72,11 @@ class Field implements Node
         $actions = $node->children ?? [];
 
         return FieldComponent::make()
+            // Derived from the control's path, like the input's own id and
+            // name, so a field is addressable without reaching for the DOM
+            // around its input. Suffixed because the input already holds `$id`,
+            // matching what the Twig fields do (see FormFields::field()).
+            ->id("$id-field")
             ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
             ->label($label)
             ->instructions($instructions)

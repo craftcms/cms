@@ -9,6 +9,7 @@
     FormFailure,
     FormModifiedGroups,
     formChangeFromEvent,
+    fieldId,
     pathsMatch,
     setValue as setPathValue,
     valueAt,
@@ -126,6 +127,7 @@
 
 <template>
   <craft-field
+    :id="fieldId(control.path)"
     :label="node.props.label ?? undefined"
     :help-text="node.props.instructions ?? undefined"
     :instructions-position="node.props.instructionsPosition"
