@@ -92,8 +92,8 @@
     flex: 0 0 auto;
     background-color: var(--c-color-fill-quiet);
     color: var(--c-color-on-quiet);
-    border-inline-end: 1px solid
-      color-mix(transparent 75%, var(--c-color-border-quiet));
+    // border-inline-end: 1px solid
+    //   color-mix(transparent 75%, var(--c-color-border-quiet));
     overflow: clip;
     margin-inline-end: var(--c-spacing-md);
   }

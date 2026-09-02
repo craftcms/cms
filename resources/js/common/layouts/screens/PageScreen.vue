@@ -453,6 +453,8 @@
   .cp__main {
     container-type: inline-size;
     container-name: cp-main;
+    background-color: white;
+    border-radius: var(--c-radius-lg);
   }
 
   /* Fills whatever the sidebar leaves. `min-width: 0` so wide content inside

@@ -110,11 +110,11 @@
 
 <style scoped lang="scss">
   .cp-top-bar {
-    padding-block: calc(var(--spacing));
+    padding-block: calc(var(--spacing) * 2);
     padding-inline: calc(var(--spacing) * 2);
     background-color: var(--c-color-fill-quiet);
     color: var(--c-color-on-quiet);
-    border-block-end: 1px solid
-      color-mix(transparent 75%, var(--c-color-border-quiet));
+    // border-block-end: 1px solid
+    //   color-mix(transparent 75%, var(--c-color-border-quiet));
   }
 </style>
