@@ -14,6 +14,7 @@
     type BreadcrumbItem,
   } from '@/common/components/Breadcrumbs.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import {fieldId} from '@/modules/forms/runtime';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -35,6 +36,13 @@
   const devMode = computed(() => page.props.craft.devMode);
   const generalSettingsUrl = computed(() =>
     generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
+  );
+
+  // Deep-linked to the field itself, which `useFieldHighlight` scrolls to and
+  // rings on arrival. Built from the same helper the field's id comes from, so
+  // the badge and the field can't drift apart.
+  const maintenanceModeUrl = computed(
+    () => `${generalSettingsUrl.value}#${fieldId(['maintenanceMode'])}`
   );
 </script>
 
@@ -78,7 +86,7 @@
           </template>
 
           <template v-if="maintenanceMode">
-            <CpLink :href="generalSettingsUrl">
+            <CpLink :href="maintenanceModeUrl">
               <craft-badge fill="warning">
                 <craft-icon name="person-digging" slot="prefix"></craft-icon>
                 {{ t('Maintenance mode') }}

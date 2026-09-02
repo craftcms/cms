@@ -41,7 +41,7 @@ class Action implements Node
         return $renderer->renderControl(
             $node->control,
             $payload->values,
-            $renderer->id($node->control->path),
+            $renderer->inputId($node->control->path),
             $renderer->errorsFor($payload->errors, $node->control->path) !== [],
             false,
         );

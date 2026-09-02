@@ -40,6 +40,7 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {useFlash} from '@/common/composables/useFlash';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+  import {useFieldHighlight} from '@/common/composables/useFieldHighlight';
   import {useResizable} from '@/common/composables/useResizable';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
@@ -70,6 +71,9 @@
 
   const registry = provideLayoutSlotRegistry();
   provideScreenContext('page');
+
+  // Deep links like `#form-maintenanceMode` point at a field on a long form.
+  useFieldHighlight();
 
   // A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
   // second one — it renders transparently instead.

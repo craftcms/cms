@@ -229,3 +229,24 @@ doesn't leave a trail of selected text behind it.
 .radio-thumbnail img {
   display: block;
 }
+
+/*
+ * The field a deep link points at — see `useFieldHighlight`. Styled on the host
+ * element rather than inside `craft-field`'s shadow root, so the ring can sit
+ * outside the field's own box without the component knowing about it.
+ */
+craft-field[data-highlighted] {
+  background-color: var(--c-color-accent-fill-quiet);
+  outline: 1px solid
+    var(--c-color-focus-ring, var(--c-color-accent-border-quiet));
+  outline-offset: var(--c-spacing-xs);
+  transition-property: outline, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  craft-field[data-highlighted] {
+    transition: none;
+  }
+}

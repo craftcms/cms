@@ -986,6 +986,16 @@ describe('FormRenderer', () => {
     ).not.toBeNull();
   });
 
+  it('gives every field an id matching its path', async () => {
+    const fields = [...container.querySelectorAll<HTMLElement>('craft-field')];
+
+    expect(fields.length).toBeGreaterThan(0);
+    expect(fields.map((field) => field.id)).toContain(
+      'form-settings-placeholder'
+    );
+    expect(fields.every((field) => field.id.startsWith('form-'))).toBe(true);
+  });
+
   it('renders FieldLayout tabs and semantic content', async () => {
     app.unmount();
     await mount({

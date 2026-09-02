@@ -175,10 +175,25 @@ class FormHtmlRenderer
         }
     }
 
-    /** @param list<string> $path */
+    /**
+     * The id of the field wrapping a control, derived from the same path its
+     * input's name comes from.
+     *
+     * @param  list<string>  $path
+     */
     public function id(array $path): string
     {
         return 'form-'.implode('-', array_map(rawurlencode(...), $path));
+    }
+
+    /**
+     * The id of the control's own input, which sits inside that field.
+     *
+     * @param  list<string>  $path
+     */
+    public function inputId(array $path): string
+    {
+        return $this->id($path).'-input';
     }
 
     /** @param list<string> $path */

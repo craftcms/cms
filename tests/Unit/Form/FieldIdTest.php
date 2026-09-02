@@ -20,18 +20,15 @@ function renderField(string $path = 'title'): Crawler
     return new Crawler(app(FormHtmlRenderer::class)->render($payload));
 }
 
-it('gives the field an id derived from the control path', function () {
-    // Suffixed because the input already holds the path-derived id — the same
-    // shape the Twig fields use (FormFields::field()).
-    expect(renderField()->filter('craft-field')->attr('id'))->toBe('form-title-field');
+it('gives the field the id derived from the control path', function () {
+    expect(renderField()->filter('craft-field')->attr('id'))->toBe('form-title');
 });
 
-it('leaves the input holding the id the name is derived from', function () {
-    // The id lands on the native input inside `craft-input`, which is what the
-    // field's label points `for` at.
+it('puts the input inside on a distinct id of its own', function () {
+    // The label points `for` at this, and Handle's generator targets it by id.
     $input = renderField()->filter('craft-input input');
 
-    expect($input->attr('id'))->toBe('form-title')
+    expect($input->attr('id'))->toBe('form-title-input')
         ->and($input->attr('name'))->toBe('title');
 });
 

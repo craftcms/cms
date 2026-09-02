@@ -64,7 +64,7 @@ class Field implements Node
         $input = $renderer->renderControl(
             $control,
             $payload->values,
-            $id,
+            $renderer->inputId($control->path),
             $errors !== [],
             (bool) ($node->props['required'] ?? false),
         );
@@ -72,11 +72,9 @@ class Field implements Node
         $actions = $node->children ?? [];
 
         return FieldComponent::make()
-            // Derived from the control's path, like the input's own id and
-            // name, so a field is addressable without reaching for the DOM
-            // around its input. Suffixed because the input already holds `$id`,
-            // matching what the Twig fields do (see FormFields::field()).
-            ->id("$id-field")
+            // Derived from the control's path, the same path the input's
+            // name comes from. The input sits inside on `{$id}-input`.
+            ->id($id)
             ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
             ->label($label)
             ->instructions($instructions)

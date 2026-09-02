@@ -41,6 +41,14 @@
     return formTabPanelId(tab.uid, props.scope);
   }
 
+  function panelAttributes(node: FormNodePayload): {id?: string} {
+    if (tabs.value.length <= 1 || node.component !== 'craft:tab' || !node.uid) {
+      return {};
+    }
+
+    return {id: `${formTabPanelId(node.uid, props.scope)}-tab`};
+  }
+
   function nodeHasErrors(node: FormNodePayload): boolean {
     const controlPath = node.control?.path;
 
@@ -100,11 +108,7 @@
     :node="node"
     slot="panel"
     :initially-hidden="node.component === 'craft:tab' && node.uid !== activeTab"
-    :id="
-      tabs.length > 1 && node.component === 'craft:tab' && node.uid
-        ? `${formTabPanelId(node.uid, scope)}-tab`
-        : undefined
-    "
+    v-bind="panelAttributes(node)"
     :values="values"
     :errors="errors"
     :touched-paths="touchedPaths"

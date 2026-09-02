@@ -35,8 +35,8 @@ it('resolves and renders an editable handle with its relative source path', func
         ->and($crawler->filter('input[name="settings[identity][name]"][value="Example handle"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-handle input[name="settings[identity][handle]"][value="exampleHandle"][required][aria-invalid="true"]'))->toHaveCount(1)
         ->and($bodyHtml)->toContain('new Craft.HandleGenerator')
-        ->toContain('form-settings-identity-name')
-        ->toContain('form-settings-identity-handle');
+        ->toContain('form-settings-identity-name-input')
+        ->toContain('form-settings-identity-handle-input');
 });
 
 it('displays handle values without submitting them in non-editable modes', function (ControlMode $mode) {
