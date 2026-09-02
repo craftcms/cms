@@ -20,8 +20,7 @@ it('shows unread and recently read notifications for the current user', function
     $user->notify(new CpNotification('Hello <script>alert(1)</script> **world**')
         ->title('A title')
         ->byline('Editorial team')
-        ->image('https://example.com/avatar.jpg')
-        ->imageAlt('')
+        ->image(url: 'https://example.com/avatar.jpg', alt: '')
         ->buttons([new NotificationButtonData('Open', '/admin', variant: ButtonVariant::Primary)]));
     travel(1)->seconds();
     $user->notify(new CpNotification('Recently read')->title('Recently read title'));

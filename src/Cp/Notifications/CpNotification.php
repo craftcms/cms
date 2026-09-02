@@ -96,18 +96,14 @@ class CpNotification extends Notification
         return $this;
     }
 
-    /** @param string|Closure(object): string|null $image */
-    public function image(string|Closure|null $image): static
+    /**
+     * @param  string|Closure(object): string  $url
+     * @param  string|Closure(object): string  $alt
+     */
+    public function image(string|Closure $url, string|Closure $alt): static
     {
-        $this->image = $image;
-
-        return $this;
-    }
-
-    /** @param string|Closure(object): string|null $imageAlt */
-    public function imageAlt(string|Closure|null $imageAlt): static
-    {
-        $this->imageAlt = $imageAlt;
+        $this->image = $url;
+        $this->imageAlt = $alt;
 
         return $this;
     }

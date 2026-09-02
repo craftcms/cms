@@ -119,8 +119,7 @@ class DatabaseSeeder extends Seeder
             $user->notify(new CpNotification('Rias mentioned you in an entry. This sample has multiple actions.')
                 ->title('New mention')
                 ->byline('Editorial team')
-                ->image('https://i.pravatar.cc/80?img=12')
-                ->imageAlt('Rias')
+                ->image(url: 'https://i.pravatar.cc/80?img=12', alt: 'Rias')
                 ->url('/admin/entries')
                 ->buttons([
                     new NotificationButtonData('Open entry', '/admin/entries', variant: ButtonVariant::Primary),
