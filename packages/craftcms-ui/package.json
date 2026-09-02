@@ -15,6 +15,7 @@
     "web-components"
   ],
   "scripts": {
+    "pretest": "npm run build:manifest",
     "test": "vp test run",
     "test:dev": "vp test",
     "test:coverage": "vp test run --coverage",

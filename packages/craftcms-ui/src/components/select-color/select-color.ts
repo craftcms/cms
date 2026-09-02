@@ -23,6 +23,9 @@ function titleCase(value: string): string {
  * colour, use `craft-input-color`, which takes any hex value.
  *
  * @since 1.0
+ *
+ * @fires model-value-changed - The selected colour changed. Re-dispatched from
+ *   the host as a composed event so it crosses the shadow boundary.
  */
 export default class CraftSelectColor extends LitElement {
   static override styles = [styles];

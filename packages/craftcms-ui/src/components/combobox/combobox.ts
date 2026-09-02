@@ -58,6 +58,9 @@ interface VisibleEntry {
  * @slot label - Field label.
  * @slot after - Supplementary content rendered below the field.
  * @slot feedback - Validation feedback.
+ *
+ * @fires model-value-changed - The selection changed. Bubbles, so a form can
+ *   listen for it once on an ancestor rather than per field.
  */
 export default class CraftCombobox extends LionCombobox {
   static override get styles() {

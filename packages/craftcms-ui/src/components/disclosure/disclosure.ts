@@ -20,6 +20,9 @@ import '../button/button.js';
  * persists the state to a cookie (`cookie-name`). This is the contract of the
  * legacy `CraftDisclosure` element and `_includes/disclosure-toggle.twig`.
  * The mode is chosen automatically when such a button is present.
+ *
+ * @fires open - The content was expanded.
+ * @fires close - The content was collapsed.
  */
 export default class CraftDisclosure extends LionCollapsible {
   static override get styles() {

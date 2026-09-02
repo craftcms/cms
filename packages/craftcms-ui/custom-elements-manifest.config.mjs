@@ -110,6 +110,32 @@ export default {
         });
       },
     },
+    // The analyzer also infers events from `dispatchEvent()` calls, reading the
+    // first argument literally — so a helper that dispatches
+    // `new CustomEvent(type, …)` is recorded as an event named `type`. That is
+    // an artifact of the call site, not API, and it reaches the docs tables.
+    //
+    // Once a class declares its events with `@fires`, that list is taken as the
+    // whole story and inferred extras are dropped. A class with no `@fires` is
+    // left alone, so nothing is hidden from the guard that requires every
+    // remaining event to be described.
+    {
+      name: 'declared-events-win',
+      packageLinkPhase({customElementsManifest}) {
+        customElementsManifest?.modules?.forEach((module) => {
+          module?.declarations?.forEach((declaration) => {
+            const events = declaration.events;
+
+            if (!events?.some((event) => event.description)) {
+              return;
+            }
+
+            declaration.events = events.filter((event) => event.description);
+          });
+        });
+      },
+    },
+
     // Strip any leaked TS AST nodes so the analyzer can serialize the manifest.
     // analyzer@0.11.0 (under Node 24) leaks `SourceFile` nodes into the manifest,
     // and their circular `parent` pointers crash the final `JSON.stringify`. Runs
