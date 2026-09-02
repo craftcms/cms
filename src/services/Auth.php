@@ -625,7 +625,6 @@ class Auth extends Component
 
         $credentialRecord = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
             $publicKeyCredential->rawId,
-            $checkOldUserHandle,
         );
 
         if ($credentialRecord === null) {
@@ -633,24 +632,16 @@ class Auth extends Component
             return false;
         }
 
-        // if we're re-checking against the old (pre-webauthn-5) user handle format, $credentialRecord->userHandle
-        // was just set to the decoded (raw) user handle by CredentialRepository::findOneByCredentialId(), so the
-        // user handle we compare it with here needs to be decoded as well, rather than the (encoded) $userEntity->id
-        $userHandle = $checkOldUserHandle ? $user->uid : $userEntity->id;
-
         try {
             $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $publicKeyCredentialRequestOptions,
                 Craft::$app->getRequest()->getHostName(),
-                $userHandle,
+                $userEntity->id,
             );
 
-            // we can't save the updated credential record to db here as in User::authenticateWithPasskey()
-            // we might need to call this method (Auth::verifyPasskey()) again, with checkOldUserHandle set to true;
-            // so, we're going to store it in the session and then save from the User::authenticateWithPasskey() method
-            SessionHelper::set($this->passkeyCredSourceParam, $updatedCredentialRecord);
+            $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
         } catch (InvalidUserHandleException $e) {
             throw $e;
         } catch (Throwable $e) {

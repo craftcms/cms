@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where passkeys created before updating to Craft 5.10 could no longer be used to log in. ([#19530](https://github.com/craftcms/cms/issues/19530), [#19536](https://github.com/craftcms/cms/pull/19536))
+
 ## 5.11.0 - 2026-09-01
 
 > [!WARNING]  
