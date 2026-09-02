@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Workbench\Database\Seeders;
 
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Cp\Data\NotificationButtonData;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
+use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Edition;
@@ -29,6 +32,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
@@ -84,6 +88,46 @@ class DatabaseSeeder extends Seeder
         app(LaravelMigrations::class)->ensureSessionsTable();
 
         $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
+
+        $this->components->task('Creating notifications', function (): void {
+            $user = User::query()->firstOrFail();
+
+            $user->notify(new CpNotification('The workbench is ready for testing.')
+                ->kind('announcement')
+                ->title('Welcome to Craft 6')
+                ->byline('Craft CMS')
+                ->icon('custom-icons/craft-cms'));
+            $user->notifications()->firstOrFail()->markAsRead();
+
+            $user->notify(new CpNotification('This announcement demonstrates **Markdown** formatting.')
+                ->kind('announcement')
+                ->title('Unread Craft announcement')
+                ->byline('Craft CMS')
+                ->icon('custom-icons/craft-cms'));
+            $user->notify(new CpNotification('This announcement belongs to the Test Plugin.')
+                ->kind('announcement')
+                ->title('Unread plugin announcement')
+                ->byline('Test Plugin'));
+            $user->notify(new CpNotification('Review the **release notes** before updating.')
+                ->title('Craft 6.1 is available')
+                ->byline('Updates')
+                ->icon('arrows-rotate')
+                ->url('/admin/utilities/updates')
+                ->buttons([
+                    new NotificationButtonData('View updates', '/admin/utilities/updates', variant: ButtonVariant::Primary),
+                ]));
+            $user->notify(new CpNotification('Rias mentioned you in an entry. This sample has multiple actions.')
+                ->title('New mention')
+                ->byline('Editorial team')
+                ->image('https://i.pravatar.cc/80?img=12')
+                ->imageAlt('Rias')
+                ->url('/admin/entries')
+                ->buttons([
+                    new NotificationButtonData('Open entry', '/admin/entries', variant: ButtonVariant::Primary),
+                    new NotificationButtonData('View profile', '/admin/myaccount'),
+                ]));
+            $user->notifications()->latest()->firstOrFail()->markAsRead();
+        });
 
         $this->components->task('Creating assets filesystem', function (): void {
             $_SERVER['DOCUMENT_ROOT'] = Env::get('DOCUMENT_ROOT') ?: public_path();

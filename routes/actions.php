@@ -6,7 +6,6 @@ use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
-use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
@@ -365,9 +364,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
-
-        // Users
-        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
 
         Route::middleware('password.confirm')->group(function () {
             Route::post('users/save-password', [PasswordController::class, 'store']);
