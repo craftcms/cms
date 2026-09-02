@@ -8,6 +8,14 @@ import {
 const meta = {
   title: 'Elements/DataTable',
   component: DataTable,
+  args: {
+    loading: false,
+  },
+  argTypes: {
+    reorderable: {control: 'boolean'},
+    selectable: {control: 'boolean'},
+    loading: {control: 'boolean'},
+  },
   parameters: {
     docs: {
       description: {
@@ -30,40 +38,54 @@ interface DataTableStoryArgs {
 
 type Story = StoryObj<DataTableStoryArgs>;
 
-function render(extraProps: Record<string, boolean> = {}) {
-  return (args: NonNullable<Story['args']>) => ({
+function render(args: NonNullable<Story['args']>) {
+  return {
     components: {DataTable},
     setup() {
       const table = createSampleTable();
-      return {args: {...args, ...extraProps}, table};
+      return {args, table};
     },
     template: '<DataTable v-bind="args" :table="table" />',
-  });
+  };
 }
 
 export const Default: Story = {
-  render: render(),
+  render,
 };
 
 /**
  * With `selectable`, every row gets a checkbox plus a select-all header.
  * Selection supports shift-click range selection, and keyboard control on a
  * focused row: Space/Enter toggles, Arrow Up/Down moves, Shift+Arrow extends.
+ * `selectable`'s control is disabled so this story always demonstrates it.
  */
 export const Selectable: Story = {
-  render: render({selectable: true}),
+  args: {selectable: true},
+  argTypes: {
+    selectable: {control: false},
+  },
+  render,
 };
 
 /**
  * With `reorderable`, rows grow a drag handle. The component only reports the
  * move — persist it by listening for `@reorder="(start, finish) => …"`.
+ * `reorderable`'s control is disabled so this story always demonstrates it.
  */
 export const Reorderable: Story = {
-  render: render({reorderable: true}),
+  args: {reorderable: true},
+  argTypes: {
+    reorderable: {control: false},
+  },
+  render,
 };
 
 export const Loading: Story = {
-  render: render({loading: true}),
+  args: {loading: true},
+  argTypes: {
+    loading: {control: false},
+  },
+  render,
 };
 
 export const Empty: Story = {
