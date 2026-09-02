@@ -1,16 +1,36 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import '../icon/icon.js';
 import '../nav-item/nav-item.js';
 import './nav-list.js';
+import type CraftNavList from './nav-list.js';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `nav-list.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes, template} =
+  getStorybookHelpers<CraftNavList>('craft-nav-list');
+
+type NavListArgs = CraftNavList & typeof args;
+
 const meta = {
   title: 'Components/Nav List',
   component: 'craft-nav-list',
-  argTypes: {},
+  args: {
+    ...args,
+    'default-slot': `
+      <craft-nav-item icon="gauge" active>Dashboard</craft-nav-item>
+      <craft-nav-item icon="pencil">Entries</craft-nav-item>
+      <craft-nav-item icon="image">Assets</craft-nav-item>
+      <craft-nav-item icon="users">Users</craft-nav-item>
+    `,
+  },
+  argTypes,
   parameters: {
     a11y: {
       config: {
@@ -27,29 +47,21 @@ const meta = {
       },
     },
   },
-  render: () => {
-    return html`
-      <craft-nav-list style="max-width: 300px">
-        <craft-nav-item icon="gauge" active>Dashboard</craft-nav-item>
-        <craft-nav-item icon="pencil">Entries</craft-nav-item>
-        <craft-nav-item icon="image">Assets</craft-nav-item>
-        <craft-nav-item icon="users">Users</craft-nav-item>
-      </craft-nav-list>
-    `;
-  },
-} satisfies Meta<any>;
+  // Render from args alone so the slot control drives the story. The
+  // composition stories below supply their own markup instead, and disable the
+  // controls that no longer reach them.
+  render: (args) => template(args),
+} satisfies Meta<NavListArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<NavListArgs>;
 
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Default: Story = {
-  args: {},
-};
+/** A flat list of items. */
+export const Default: Story = {};
 
 /** Nested in a nav item's `subnav` slot for a collapsible hierarchy. */
 export const Nested: Story = {
-  args: {},
+  parameters: {controls: {disable: true}},
   render() {
     return html`
       <craft-nav-list style="max-width: 300px">
@@ -82,7 +94,7 @@ export const Nested: Story = {
  * - Grouped children carry a `data-group` attribute naming their heading.
  */
 export const ContentSources: Story = {
-  args: {},
+  parameters: {controls: {disable: true}},
   render() {
     return html`
       <craft-nav-list style="max-width: 300px">
@@ -129,7 +141,7 @@ export const ContentSources: Story = {
  * no toggle, subnav always open.
  */
 export const SecondaryNav: Story = {
-  args: {},
+  parameters: {controls: {disable: true}},
   render() {
     return html`
       <craft-nav-list style="max-width: 300px">
@@ -168,7 +180,7 @@ export const SecondaryNav: Story = {
  * an `icon` and slotted label text.
  */
 export const IconOnly: Story = {
-  args: {},
+  parameters: {controls: {disable: true}},
   render() {
     return html`
       <craft-nav-list>

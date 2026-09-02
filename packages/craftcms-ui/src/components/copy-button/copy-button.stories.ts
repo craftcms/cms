@@ -1,40 +1,64 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './copy-button.js';
+import type CraftCopyButton from './copy-button.js';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `copy-button.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes, template} =
+  getStorybookHelpers<CraftCopyButton>('craft-copy-button');
+
+type CopyButtonArgs = CraftCopyButton & typeof args;
+
+/** A field to paste into, so the copy can actually be checked. */
+const withPasteTarget = (button: unknown) => html`
+  <div style="display: grid; gap: 1em">
+    <div>${button}</div>
+    <input
+      type="text"
+      placeholder="Test your paste here"
+      aria-label="Paste here"
+    />
+  </div>
+`;
+
 const meta = {
   title: 'Components/Copy Button',
   component: 'craft-copy-button',
-  parameters: {
-    layout: 'centered',
+  args: {
+    ...args,
+    value: 'You copied me!',
+    'default-slot': 'Copy to clipboard',
   },
-  argTypes: {},
-  render: (args) => html`
-    <div style="display: grid; gap: 1em;">
-      <div>
-        <craft-copy-button value="You copied me!" data-testId="button"
-          >Clicking will copy "You copied me!" to the clipboard.
-        </craft-copy-button>
-      </div>
-      <div>
-        <input
-          type="text"
-          value=""
-          placeholder="Test your paste here"
-          data-testId="pastezone"
-        />
-      </div>
-    </div>
-  `,
-} satisfies Meta<any>;
+  argTypes,
+  parameters: {layout: 'centered'},
+  // Render from args alone so every control — attributes and slot — drives the
+  // story. Stories below vary the args, not the template.
+  render: (args) => withPasteTarget(template(args)),
+} satisfies Meta<CopyButtonArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<CopyButtonArgs>;
 
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Default: Story = {
-  args: {},
+/** Clicking copies `value` and shows the outcome for a moment. */
+export const Default: Story = {};
+
+/** `tooltip-label` names the button when its content is an icon. */
+export const WithTooltipLabel: Story = {
+  args: {'tooltip-label': 'Copy the handle', 'default-slot': 'Copy'},
+};
+
+/** `feedback-duration` sets how long the outcome stays up, in milliseconds. */
+export const SlowFeedback: Story = {
+  args: {'feedback-duration': 4000},
+};
+
+export const Disabled: Story = {
+  args: {disabled: true},
 };

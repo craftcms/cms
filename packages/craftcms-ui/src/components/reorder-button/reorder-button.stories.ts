@@ -1,51 +1,43 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
-import {html} from 'lit';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './reorder-button.js';
+import type CraftReorderButton from './reorder-button.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `reorder-button.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes, template} = getStorybookHelpers<CraftReorderButton>(
+  'craft-reorder-button'
+);
+
+type ReorderButtonArgs = CraftReorderButton & typeof args;
 
 const meta = {
   title: 'Components/Reorder Button',
   component: 'craft-reorder-button',
-  parameters: {
-    layout: 'centered',
-  },
   args: {
+    ...args,
     label: 'Reorder',
     position: 'middle',
     variant: 'neutral',
     orientation: 'vertical',
-    disabled: false,
   },
-  argTypes: {
-    position: {
-      control: {type: 'select'},
-      options: ['first', 'middle', 'last'],
-    },
-    orientation: {
-      control: {type: 'select'},
-      options: ['vertical', 'horizontal'],
-    },
-  },
-  render: (args) => html`
-    <craft-reorder-button
-      label="${args.label}"
-      position="${args.position}"
-      variant="${args.variant}"
-      orientation="${args.orientation}"
-      ?disabled="${args.disabled}"
-      @reorder="${(e: CustomEvent<{direction: 'up' | 'down'}>) =>
-        console.log('reorder', e.detail.direction)}"
-    ></craft-reorder-button>
-  `,
-} satisfies Meta<any>;
+  argTypes,
+  parameters: {layout: 'centered'},
+  // Render from args alone so every control drives the story. Stories below
+  // vary the args, not the template.
+  render: (args) => template(args),
+} satisfies Meta<ReorderButtonArgs>;
 
 export default meta;
-type Story = StoryObj<any>;
+type Story = StoryObj<ReorderButtonArgs>;
 
-export const Default: Story = {
-  args: {},
-};
+/** Both directions available, for an item in the middle of a list. */
+export const Default: Story = {};
 
 export const First: Story = {
   name: 'First (move-up disabled)',

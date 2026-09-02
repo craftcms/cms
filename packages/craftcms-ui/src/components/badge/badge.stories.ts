@@ -2,32 +2,36 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
 import {expect} from 'storybook/test';
+import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './badge.js';
 import type CraftBadge from './badge.js';
-import {Color, colors} from '@src/constants/colors';
+import {Color} from '@src/constants/colors';
 import {capitalize} from '@src/utilities/string';
 import '../icon/icon.js';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc. Adding a property
+ * to `badge.ts` surfaces it here without touching this file.
+ */
+const {args, argTypes, template} =
+  getStorybookHelpers<CraftBadge>('craft-badge');
+
+type BadgeArgs = CraftBadge & typeof args;
+
 const meta = {
   title: 'Components/Badge',
   component: 'craft-badge',
-  args: {
-    fill: 'gray',
-  },
-  argTypes: {
-    fill: {control: 'select', options: colors},
-  },
-  render: (args) => html`
-    <craft-badge fill=${args.fill}>
-      ${capitalize(String(args.fill))}
-    </craft-badge>
-  `,
-} satisfies Meta<CraftBadge>;
+  args: {...args, fill: 'gray', 'default-slot': 'Gray'},
+  argTypes,
+  // Render from args alone so every control — attributes and slots — drives
+  // the story. Stories below vary the args, not the template.
+  render: (args) => template(args),
+} satisfies Meta<BadgeArgs>;
 
 export default meta;
-type Story = StoryObj<CraftBadge>;
+type Story = StoryObj<BadgeArgs>;
 
 export const Default: Story = {
   play: async ({canvasElement}) => {
@@ -48,7 +52,7 @@ export const Default: Story = {
 
 /** `fill` takes a color value from `Color` (e.g. `red`). */
 export const FromColorValue: Story = {
-  render: () => html`<craft-badge fill="red">Value: red</craft-badge>`,
+  args: {fill: 'red', 'default-slot': 'Value: red'},
   play: async ({canvasElement}) => {
     const badge = canvasElement.querySelector('craft-badge')!;
     // The badge reflects the resolved color for its own surface styling.
@@ -57,6 +61,7 @@ export const FromColorValue: Story = {
 };
 
 export const AllColors: Story = {
+  parameters: {controls: {disable: true}},
   render: () => html`
     <div style="display: grid; gap: 0.5rem; justify-items: start">
       ${Object.entries(Color).map(
@@ -68,6 +73,7 @@ export const AllColors: Story = {
 };
 
 export const SemanticColors: Story = {
+  parameters: {controls: {disable: true}},
   render: () => html`
     <div style="display: grid; gap: 0.5rem; justify-items: start">
       ${(
@@ -88,12 +94,11 @@ export const SemanticColors: Story = {
 };
 
 export const CustomPrefix: Story = {
-  render: () => html`
-    <craft-badge fill=${Color.Green}>
-      <craft-icon slot="prefix" name="circle-check" label="Done"></craft-icon>
-      Custom prefix
-    </craft-badge>
-  `,
+  args: {
+    fill: Color.Green,
+    'prefix-slot': '<craft-icon name="circle-check" label="Done"></craft-icon>',
+    'default-slot': 'Custom prefix',
+  },
   play: async ({canvasElement}) => {
     const host = canvasElement.querySelector('craft-badge')!;
     // A slotted prefix overrides the default indicator fallback.
