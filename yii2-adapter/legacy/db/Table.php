@@ -20,7 +20,6 @@ abstract class Table
     /** @since 4.0.0 */
     public const ADDRESSES = '{{%addresses}}';
     /** @since 3.7.0 */
-    public const ANNOUNCEMENTS = '{{%announcements}}';
     public const ASSETINDEXDATA = '{{%assetindexdata}}';
     /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';

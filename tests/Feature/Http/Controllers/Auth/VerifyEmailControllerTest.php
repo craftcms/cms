@@ -65,7 +65,7 @@ test('store aborts for invalid user uid', function () {
     postJson(action([VerifyEmailController::class, 'store']), [
         'uid' => 'invalid-uuid',
         'code' => 'some-code',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('store returns invalid token response for invalid code', function () {
@@ -74,7 +74,7 @@ test('store returns invalid token response for invalid code', function () {
     postJson(action([VerifyEmailController::class, 'store']), [
         'uid' => $user->uid,
         'code' => 'invalid-code',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('store verifies email when user has unverified email and is active', function () {

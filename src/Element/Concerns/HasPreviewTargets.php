@@ -55,9 +55,7 @@ trait HasPreviewTargets
 
                 $previewTarget['url'] = Url::siteUrl($previewTarget['url'], siteId: $this->siteId);
 
-                if (! isset($previewTarget['refresh'])) {
-                    $previewTarget['refresh'] = true;
-                }
+                $previewTarget['refresh'] ??= true;
 
                 return $previewTarget;
             })

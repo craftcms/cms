@@ -41,6 +41,7 @@ export interface CraftData {
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
+    notifications: CraftCms.Cms.Cp.Data.NotificationData[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
   actionUrl: string;

@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use SensitiveParameter;
-use Webauthn\Exception\InvalidUserHandleException;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -330,25 +329,16 @@ class AuthMethods
 
         // Validate the security key
         try {
-            $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
-        } catch (InvalidUserHandleException) {
-            // the user handle may have been stored in the old (pre-webauthn-5) format; try again, accounting for that
-            try {
-                $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
-            } catch (InvalidUserHandleException) {
-                $updatedCredentialRecord = false;
-            }
+            $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response) !== false;
         } catch (InvalidArgumentException) {
-            $updatedCredentialRecord = false;
+            $keyValid = false;
         }
 
-        if ($updatedCredentialRecord === false) {
+        if (! $keyValid) {
             $this->authError = AuthError::InvalidCredentials;
 
             return false;
         }
-
-        $this->passkeys->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
 
         $this->authError = $this->getAuthError($user);
 

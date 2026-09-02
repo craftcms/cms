@@ -18,7 +18,8 @@
 +         tabs:
 +           -
 +             elements:
-+               - autocapitalize: true
++               -
++                 autocapitalize: true
 +                 autocomplete: false
 +                 autocorrect: true
 +                 autofocus: false
@@ -42,7 +43,8 @@
 +                 type: craft\fieldlayoutelements\entries\EntryTitleField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: aef80333-1412-4130-bb84-ac3bdbbcbbe2
++               -
++                 fieldUid: aef80333-1412-4130-bb84-ac3bdbbcbbe2
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -50,7 +52,8 @@
 +                 type: craft\fieldlayoutelements\CustomField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: 9bb293f8-c659-4035-b5d3-e30dbf8d1c5b
++               -
++                 fieldUid: 9bb293f8-c659-4035-b5d3-e30dbf8d1c5b
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -58,7 +61,8 @@
 +                 type: craft\fieldlayoutelements\CustomField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: 674e53a6-d62c-4322-ae09-349765f1ef17
++               -
++                 fieldUid: 674e53a6-d62c-4322-ae09-349765f1ef17
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -66,7 +70,8 @@
 +                 type: craft\fieldlayoutelements\CustomField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: 82ac4aa6-3b63-4cb9-a1f6-6cb6a5210a2e
++               -
++                 fieldUid: 82ac4aa6-3b63-4cb9-a1f6-6cb6a5210a2e
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -74,7 +79,8 @@
 +                 type: craft\fieldlayoutelements\CustomField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: a988d6b4-6983-48e6-b08e-8fd72e31e483
++               -
++                 fieldUid: a988d6b4-6983-48e6-b08e-8fd72e31e483
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -86,7 +92,8 @@
 +             sortOrder: 1
 +           -
 +             elements:
-+               - fieldUid: 0cbb9736-a84b-4e83-803c-5077f56394a9
++               -
++                 fieldUid: 0cbb9736-a84b-4e83-803c-5077f56394a9
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -94,7 +101,8 @@
 +                 type: craft\fieldlayoutelements\CustomField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: 0305c984-3934-4c7a-9de9-b0162c5b0112
++               -
++                 fieldUid: 0305c984-3934-4c7a-9de9-b0162c5b0112
 +                 instructions: null
 +                 label: null
 +                 required: '0'
@@ -102,7 +110,8 @@
 +                 type: craft\fieldlayoutelements\CustomField
 +                 warning: null
 +                 width: 100
-+               - fieldUid: cdcff4b0-ece0-4d03-8d9f-6ab5939c1bea
++               -
++                 fieldUid: cdcff4b0-ece0-4d03-8d9f-6ab5939c1bea
 +                 instructions: null
 +                 label: null
 +                 required: '0'

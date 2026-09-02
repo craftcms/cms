@@ -275,9 +275,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         parent::__construct($config);
 
-        if (! isset($this->addRowLabel)) {
-            $this->addRowLabel = t('Add a row');
-        }
+        $this->addRowLabel ??= t('Add a row');
 
         if ($this->staticRows) {
             $this->minRows = null;

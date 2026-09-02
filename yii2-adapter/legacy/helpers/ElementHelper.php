@@ -62,7 +62,7 @@ class ElementHelper
      *
      * @param string|null $str
      * @return bool
-     * @since 5.10.15
+     * @since 5.11.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::containsTempSlug()} instead.
      */
     public static function containsTempSlug(?string $str): bool

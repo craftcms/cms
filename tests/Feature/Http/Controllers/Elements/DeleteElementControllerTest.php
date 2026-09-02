@@ -91,7 +91,7 @@ describe('destroy', function () {
         postJson(action([DeleteElementController::class, 'destroy']), [
             'elementId' => $entry->id,
             'siteId' => $entry->siteId,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', t('Couldn’t delete {type}.', ['type' => $entry::lowerDisplayName()]));
     });
 });

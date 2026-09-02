@@ -242,9 +242,7 @@ class NestedElementManager extends Component
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
-            if (! isset(self::$renderedPropagationFormats[$cacheKey])) {
-                self::$renderedPropagationFormats[$cacheKey] = renderObjectTemplate($this->propagationKeyFormat, $owner);
-            }
+            self::$renderedPropagationFormats[$cacheKey] ??= renderObjectTemplate($this->propagationKeyFormat, $owner);
             $propagationKey = self::$renderedPropagationFormats[$cacheKey];
         }
 
@@ -700,11 +698,9 @@ class NestedElementManager extends Component
             'maxElements' => null,
         ];
 
-        if ($config['createButtonLabel'] === null) {
-            $config['createButtonLabel'] = t('New {type}', [
-                'type' => $this->elementType::lowerDisplayName(),
-            ]);
-        }
+        $config['createButtonLabel'] ??= t('New {type}', [
+            'type' => $this->elementType::lowerDisplayName(),
+        ]);
 
         return $config;
     }

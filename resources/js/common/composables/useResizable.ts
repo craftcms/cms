@@ -10,6 +10,7 @@ import {
 import type {ComputedRef, MaybeRefOrGetter, Ref} from 'vue';
 import {useElementSize} from '@vueuse/core';
 import {BaseDrag, X_AXIS} from '@craftcms/garnish';
+import type {ResizeHandleControls} from '@/common/composables/resizeHandle';
 import {useLocalStorage} from '@/common/composables/useStorage';
 
 /**
@@ -90,7 +91,7 @@ export interface UseResizableOptions {
   onReset?: (detail: ResizeDetail) => void;
 }
 
-export interface UseResizableReturn {
+export interface UseResizableReturn extends ResizeHandleControls {
   /** Explicit width in px, or `null` when CSS is in charge. */
   width: Ref<number | null>;
   /** The width to report to assistive tech: the explicit width, else the measured one. */
@@ -103,8 +104,6 @@ export interface UseResizableReturn {
   atMax: ComputedRef<boolean>;
   /** `{[cssVariable]: '<width>px'}`, or `{}` when the width is CSS-driven. */
   style: ComputedRef<Record<string, string>>;
-  /** Template ref callback for the handle element. */
-  setHandle: (el: HTMLElement | null) => void;
   /** Set the width directly. `null` hands the column back to CSS. */
   setWidth: (
     width: number | null,
@@ -112,10 +111,6 @@ export interface UseResizableReturn {
   ) => void;
   /** Grow or shrink by `delta` px along the physical X axis (RTL-aware). */
   nudge: (deltaX: number) => void;
-  /** Return to `defaultWidth`. Wired to the handle's double-click and Enter key. */
-  reset: () => void;
-  /** Keydown handler implementing the WAI-ARIA window splitter keys. */
-  onKeydown: (ev: KeyboardEvent) => void;
 }
 
 /** Class put on `<html>` for the duration of a drag; see `cp.css`. */

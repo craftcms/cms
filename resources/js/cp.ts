@@ -5,6 +5,7 @@ import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
+import './modules/notifications/components/cp-notification-center.js';
 
 /**
  * Legacy ports, assigns window.Craft.* so PHP-emitted code still works
@@ -46,7 +47,6 @@ import './modules/element-selector-modal';
 import './modules/element-select-input';
 import './modules/preview-file-modal';
 import './modules/asset-select-input';
-import './modules/customize-sources-modal';
 import './modules/element-deletion-manager';
 import './modules/uploader';
 import './modules/nested-element-manager';
