@@ -772,9 +772,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                     ->visible($useTargetSite),
             );
 
+            // The inverse of the picker above: relating from one fixed site
+            // leaves nothing for a site menu to switch between.
             if (static::canShowSiteMenu()) {
                 $advanced->add(FormField::make(t('Show the site menu'))
-                    ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu)));
+                    ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu))
+                    ->visible(! $useTargetSite));
             }
         }
 
