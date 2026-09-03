@@ -101,6 +101,23 @@ export default class CraftCombobox extends LionCombobox {
     // We own filtering (see `matchCondition`), so keep Lion in list mode and
     // avoid its inline-autofill, which would fight our pre-filtered set.
     this.autocomplete = 'list';
+
+    // Lion announces while it still holds the previous value: a requested value
+    // is only adopted once the option naming it registers, so until then
+    // `pendingModelValue` runs ahead of `modelValue`. A bound v-model writes
+    // every announcement straight back, so letting that one out puts the old
+    // value into the consumer's state and marks it changed. Registered in the
+    // constructor so it precedes any listener the consumer attaches.
+    this.addEventListener('model-value-changed', (event: Event) => {
+      if (
+        event.target === this &&
+        !(event as CustomEvent).detail?.isTriggeredByUser &&
+        this.pendingModelValue !== undefined &&
+        this.modelValue !== this.pendingModelValue
+      ) {
+        event.stopImmediatePropagation();
+      }
+    });
   }
 
   /** Last model value we've announced via `model-value-changed`. */

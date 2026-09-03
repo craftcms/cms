@@ -460,7 +460,9 @@ it('adopts a model value naming an option from a replaced option set', async () 
   await combobox.updateComplete;
 
   expect(combobox.modelValue).toBe('matrix');
-  // What the bound v-model ends up holding: the last value announced.
-  expect(announced.at(-1)).toBe('matrix');
+  // Nothing stale escapes: the bound v-model is written on every announcement,
+  // so an interim one carrying the previous value lands in the form's values
+  // and marks it changed before being corrected.
+  expect(announced).toEqual(['matrix']);
   expect(combobox.querySelector('input')?.value).toBe('Matrix');
 });
