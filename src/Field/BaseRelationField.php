@@ -759,7 +759,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $sites = Sites::getAllSites()->map(fn ($site): array => [
                 'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
-            ])->all();
+            ])->values()->all();
             $advanced->add(
                 FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
                     ->control(Lightswitch::make('useTargetSite')->value(! empty($this->targetSiteId))),
