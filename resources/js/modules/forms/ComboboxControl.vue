@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
   import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
-  import type {FormControlPayload} from './types';
+  import type {FormChangeKind, FormControlPayload} from './types';
   import {inputName, serverErrorValidators} from './runtime';
 
   type ComboboxControlProps = {
@@ -15,7 +15,7 @@
     dir?: string;
   };
 
-  defineProps<{
+  const props = defineProps<{
     control: FormControlPayload<ComboboxControlProps>;
     value: unknown;
     label?: string;
@@ -24,11 +24,25 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind: 'typing'): void;
+    (event: 'update:value', value: string, kind: FormChangeKind): void;
   }>();
 
+  function namesAnOption(value: string): boolean {
+    return props.control.props.options.some((item) =>
+      'options' in item
+        ? item.options.some((option) => String(option.value) === value)
+        : String(item.value) === value
+    );
+  }
+
   function onValueChanged(value: string | number | boolean | undefined): void {
-    emit('update:value', String(value ?? ''), 'typing');
+    const next = String(value ?? '');
+
+    // The combobox reports each keystroke as well as the eventual selection.
+    // A value naming an option is a committed choice, so it shouldn't sit out
+    // the long typing debounce before the form refreshes; free text on its way
+    // to a match still should.
+    emit('update:value', next, namesAnOption(next) ? 'discrete' : 'typing');
   }
 </script>
 

@@ -456,6 +456,79 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('refreshes promptly when a combobox selection names an option', async () => {
+    // The combobox reports each keystroke as well as the eventual selection.
+    // Treating a committed selection as typing made a field type change sit on
+    // the long debounce before anything happened — including the loader.
+    vi.useFakeTimers();
+    const refresh = vi.fn(
+      async (values: FormPayload['values']): Promise<FormPayload> => ({
+        ...status,
+        values,
+      })
+    );
+    const status: FormPayload = {
+      scope: [],
+      refreshable: true,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'System Status'},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+            component: 'craft:combobox',
+            props: {
+              options: [
+                {label: 'Online', value: '1'},
+                {label: 'Offline', value: '0'},
+              ],
+            },
+            path: ['live'],
+            mode: 'editable',
+            deltaGroup: ['live'],
+          },
+        },
+      ],
+      values: {live: '1'},
+      errors: [],
+      globalErrors: [],
+    };
+
+    app.unmount();
+    await mount(status, {refresh});
+
+    const combobox = required(
+      container.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-combobox'
+      ),
+      'Expected the combobox.'
+    );
+
+    function announce(value: string) {
+      combobox.modelValue = value;
+      combobox.dispatchEvent(
+        new CustomEvent('model-value-changed', {bubbles: true})
+      );
+    }
+
+    // Part-typed: still waits out the typing debounce.
+    announce('Off');
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(100);
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(900);
+    expect(refresh).toHaveBeenCalledOnce();
+
+    // Naming an option: committed, so it goes out on the discrete delay.
+    announce('0');
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(100);
+    expect(refresh).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
   it('displays a combobox option label for its initial value', async () => {
     const status: FormPayload = {
       scope: ['settings'],
