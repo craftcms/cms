@@ -2,19 +2,20 @@
   import {ButtonVariant} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
-  import SystemInfo from '@/common/components/SystemInfo.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import type {CraftData} from '@/common/composables/useCraftData';
   import {index as generalSettings} from '@routes/cp/settings/general';
-  import DevModeIndicator from '@/common/components/DevModeIndicator.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Breadcrumbs, {
     type BreadcrumbItem,
   } from '@/common/components/Breadcrumbs.vue';
-  import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {fieldId} from '@/modules/forms/runtime';
+  import {useMediaQuery} from '@vueuse/core';
+  import SystemInfo from '@/common/components/SystemInfo.vue';
+  import VarDump from '@/common/components/VarDump.vue';
+  import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -23,11 +24,12 @@
     hasContextMenu?: boolean;
   }>();
 
+  const isLarge = useMediaQuery('(min-width: 768px)');
+
   const {
-    sidebar: globalSidebar,
+    sidebar,
     toggle: toggleSidebar,
-    toggleButton,
-    width: sidebarWidth,
+    width,
     icon: toggleIcon,
   } = useGlobalSidebar();
 
@@ -48,33 +50,17 @@
 
 <template>
   <div class="cp-top-bar">
-    <div class="flex items-center justify-between">
-      <div class="flex gap-3 items-center">
-        <craft-button
-          id="sidebar-toggle"
-          type="button"
-          size="small"
-          :icon="toggleIcon"
-          :variant="ButtonVariant.Plain"
-          @click="toggleSidebar"
-          :aria-label="t('Toggle menu')"
-        >
-        </craft-button>
-        <SystemInfo />
-
-        <div
-          class="py-1 flex flex-nowrap items-center gap-2"
-          v-show="crumbs || hasContextMenu"
-        >
-          <span class="text-xs text-(--c-text-quiet)">/</span>
-          <Breadcrumbs v-if="crumbs" :items="crumbs" />
-          <div v-show="hasContextMenu" class="context-menu-container">
-            <LayoutSlotOutlet name="context-menu">
-              <slot name="context-menu"></slot>
-            </LayoutSlotOutlet>
-          </div>
-        </div>
-      </div>
+    <div class="flex gap-1 items-center justify-between">
+      <craft-button
+        id="sidebar-toggle"
+        type="button"
+        size="small"
+        :icon="isLarge ? toggleIcon : 'bars'"
+        :variant="ButtonVariant.Outline"
+        @click="toggleSidebar"
+        :aria-label="t('Toggle menu')"
+      >
+      </craft-button>
 
       <div class="flex gap-3 items-center">
         <div class="flex gap-1 items-center">
@@ -105,6 +91,21 @@
         <UserMenu />
       </div>
     </div>
+    <div class="flex gap-2 items-center">
+      <SystemInfo v-if="isLarge" />
+      <div
+        class="py-1 flex flex-nowrap items-center gap-2"
+        v-show="crumbs || hasContextMenu"
+      >
+        <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
+        <Breadcrumbs v-if="crumbs" :items="crumbs" />
+        <div v-show="hasContextMenu" class="context-menu-container">
+          <LayoutSlotOutlet name="context-menu">
+            <slot name="context-menu"></slot>
+          </LayoutSlotOutlet>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -114,6 +115,8 @@
     padding-inline: calc(var(--spacing) * 2);
     background-color: var(--c-color-fill-quiet);
     color: var(--c-color-on-quiet);
+    display: grid;
+    gap: var(--spacing);
     // border-block-end: 1px solid
     //   color-mix(transparent 75%, var(--c-color-border-quiet));
   }

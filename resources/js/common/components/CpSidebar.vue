@@ -36,6 +36,8 @@
       }
     }
   );
+
+  const {toggle: toggleSidebar, icon: toggleIcon} = useGlobalSidebar();
 </script>
 
 <template>
@@ -47,32 +49,24 @@
     :inert="sidebar.mode === 'floating' && sidebar.visibility === 'hidden'"
     :aria-label="t('Primary')"
   >
+    <div class="cp-sidebar__header">
+      <SystemInfo />
+      <craft-button
+        id="sidebar-toggle"
+        type="button"
+        size="small"
+        icon="x"
+        :variant="ButtonVariant.Plain"
+        @click="toggleSidebar"
+        :aria-label="t('Toggle menu')"
+      >
+      </craft-button>
+    </div>
     <div class="cp-sidebar__body">
       <MainNav :icon-only="collapsed" />
     </div>
     <div class="cp-sidebar__footer">
-      <div class="grid place-items-center py-2" v-if="collapsed">
-        <craft-tooltip for="sidebar-toggle" placement="right-start">{{
-          t('Toggle sidebar')
-        }}</craft-tooltip>
-        <craft-button
-          id="sidebar-toggle"
-          type="button"
-          size="small"
-          :icon="icon"
-          :variant="ButtonVariant.Outline"
-          @click="toggle"
-          :aria-label="t('Toggle menu')"
-        >
-        </craft-button>
-      </div>
       <EditionInfo v-if="!collapsed" />
-      <DevModeIndicator v-if="!collapsed" />
-      <DevModeIndicator v-if="!collapsed && maintenanceMode">
-        <CpLink :href="generalSettingsUrl">
-          {{ t('Maintenance mode enabled') }}
-        </CpLink>
-      </DevModeIndicator>
     </div>
   </nav>
 </template>
@@ -125,19 +119,15 @@
   .cp-sidebar--collapsed {
     width: var(--global-sidebar-collapsed-width);
 
-    .cp-sidebar__body,
-    .sidebar-header {
+    .cp-sidebar__body {
       padding-inline: var(--c-spacing-sm);
-    }
-
-    /* Stacked, because the name and the toggle can't sit side by side in a rail. */
-    .sidebar-header {
-      flex-direction: column;
-      gap: var(--c-spacing-sm);
     }
   }
 
   .cp-sidebar__header {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--c-spacing-md);
     flex: 0 0 auto;
   }
 
@@ -146,6 +136,8 @@
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   .cp-sidebar__footer {
@@ -153,18 +145,5 @@
     position: sticky;
     inset-block-end: 0;
     background-color: inherit;
-  }
-
-  .sidebar-header {
-    padding-block: var(--c-spacing-md);
-    padding-inline: var(--c-spacing-md);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .cp-sidebar__body {
-    overflow-y: auto;
-    scrollbar-gutter: stable;
   }
 </style>
