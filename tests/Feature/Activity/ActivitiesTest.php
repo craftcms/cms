@@ -21,7 +21,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Activities as ActivitiesFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Date;
@@ -101,14 +101,29 @@ it('distinguishes system anonymous and known user actors and captures impersonat
         ]);
 });
 
-it('uses the email for unnamed user actors', function () {
-    $actor = User::factory()->createElement(['email' => 'editor@example.com']);
+it('uses the username for unnamed user actors', function () {
+    $actor = User::factory()->createElement([
+        'username' => 'editor',
+        'email' => 'editor@example.com',
+    ]);
     $actor->setName('');
     $this->actingAs($actor);
 
     $event = $this->activities->record(new TestPluginEntryUpdated(reason: 'Edited'));
 
-    expect($event->snapshots['actor']['label'])->toBe('editor@example.com');
+    expect($event->snapshots['actor']['label'])->toBe('editor');
+});
+
+it('accepts Eloquent user models as actors', function () {
+    $actor = User::factory()->create(['fullName' => 'Ada Lovelace']);
+
+    $event = $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Edited',
+        actor: $actor,
+    ));
+
+    expect($event->actorId)->toBe($actor->id)
+        ->and($event->snapshots['actor']['label'])->toBe('Ada Lovelace');
 });
 
 it('attributes unauthenticated HTTP activity to an anonymous actor', function () {
@@ -305,7 +320,7 @@ class TestPluginEntryUpdated extends TestPluginActivityEventType
     public function __construct(
         private readonly string $reason,
         ElementInterface|ActivitySubject|null $subject = null,
-        UserElement|ActivityActor|null $actor = null,
+        CraftUser|ActivityActor|null $actor = null,
         ?SiteData $site = null,
         array $changes = [],
     ) {

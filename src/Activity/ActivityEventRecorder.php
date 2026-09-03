@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
-use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
 use Illuminate\Container\Attributes\Scoped;
@@ -24,10 +23,6 @@ class ActivityEventRecorder
     public function record(ActivityEventTypeInterface $event): ActivityEvent
     {
         $data = $event->data();
-        $changes = array_map(
-            fn (ActivityChange $change) => $change->toArray(),
-            $event->changes(),
-        );
 
         $subject = $event->subject();
         $actor = $this->resolveActor($event->actor());
@@ -63,7 +58,7 @@ class ActivityEventRecorder
             'siteId' => $site?->id,
             'payload' => [
                 'snapshots' => $snapshots,
-                'changes' => $changes,
+                'changes' => collect($event->changes())->toArray(),
                 'data' => $data === [] ? (object) [] : $data,
             ],
             'occurredAt' => now(),

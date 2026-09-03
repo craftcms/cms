@@ -32,17 +32,17 @@ class AssetActivity
             ?? throw new LogicException("Could not load asset $asset->id before replacing its file.");
     }
 
-    public static function recordReplaced(Asset $asset, Asset $original): void
+    public static function recordReplaced(Asset $newAsset, Asset $originalAsset): void
     {
         Activities::record(new AssetFileReplaced(
-            subject: $asset,
-            site: Sites::getSiteById($asset->siteId),
-            oldFilename: $original->getFilename(),
-            newFilename: $asset->getFilename(),
-            oldMimeType: $original->getMimeType(),
-            newMimeType: $asset->getMimeType(),
-            oldSize: $original->size,
-            newSize: $asset->size,
+            subject: $newAsset,
+            site: Sites::getSiteById($newAsset->siteId),
+            oldFilename: $originalAsset->getFilename(),
+            newFilename: $newAsset->getFilename(),
+            oldMimeType: $originalAsset->getMimeType(),
+            newMimeType: $newAsset->getMimeType(),
+            oldSize: $originalAsset->size,
+            newSize: $newAsset->size,
         ));
     }
 }

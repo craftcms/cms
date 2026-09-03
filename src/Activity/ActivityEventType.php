@@ -12,7 +12,7 @@ use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Contracts\Support\Htmlable;
 
 abstract class ActivityEventType implements ActivityEventTypeInterface
@@ -26,7 +26,7 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
      */
     public function __construct(
         private readonly ElementInterface|ActivitySubject|null $subject = null,
-        private readonly User|ActivityActor|null $actor = null,
+        private readonly CraftUser|ActivityActor|null $actor = null,
         private readonly ?Site $site = null,
         private readonly array $changes = [],
     ) {}
@@ -40,7 +40,7 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
 
     public function actor(): ?ActivityActor
     {
-        return $this->actor instanceof User
+        return $this->actor instanceof CraftUser
             ? ActivityActor::user($this->actor)
             : $this->actor;
     }

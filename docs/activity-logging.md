@@ -162,7 +162,7 @@ use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 
 use function CraftCms\Cms\t;
 
@@ -178,7 +178,7 @@ class CampaignSent extends CampaignActivityEventType
         private readonly string $provider,
         private readonly string $deliveryId,
         private readonly int $recipientCount,
-        User|ActivityActor|null $actor = null,
+        CraftUser|ActivityActor|null $actor = null,
     ) {
         parent::__construct(subject: $subject, actor: $actor, site: $site);
     }

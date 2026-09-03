@@ -30,9 +30,9 @@ readonly class ActivitySubject
         $label = $canonical->getUiLabel();
 
         return new self(
-            $canonical::class,
-            $canonical->uid,
-            $label !== '' ? $label : sprintf('%s %s', $canonical::displayName(), $canonical->id),
+            type: $canonical::class,
+            id: $canonical->uid,
+            label: $label !== '' ? $label : sprintf('%s %s', $canonical::displayName(), $canonical->id),
         );
     }
 }

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity\Data;
 
+use Illuminate\Contracts\Support\Arrayable;
 use InvalidArgumentException;
 
-readonly class ActivityChange
+/** @implements Arrayable<string, mixed> */
+readonly class ActivityChange implements Arrayable
 {
     /**
      * @param  string  $label  The human-readable name captured when the change occurred.
