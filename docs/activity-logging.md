@@ -67,7 +67,7 @@ flowchart LR
 | `payload.data`             | Data defined by the event type                        |
 | `occurredAt`               | Time the action occurred                              |
 
-Snapshots keep an event readable after a user, subject, site, or plugin has been removed. If the event type class is no longer available, Craft displays the captured event label and the default activity icon.
+Snapshots keep an event readable after a user, subject, site, or plugin has been removed. If the event type class is no longer available, Craft returns the captured event label.
 
 ### Actors
 
@@ -279,7 +279,7 @@ Available query scopes are:
 | `occurredUntil(DateTimeInterface $date)` | Events on or before the date                    |
 | `newestFirst()`                          | Newest timestamp and ID first                   |
 
-Use the formatter instead of calling an event type's `format()` method yourself. `Activities::format()` handles translation, sanitization, missing event classes, and formatter failures. `Activities::icon()` provides the same fallback behavior for icons.
+Use the formatter instead of calling an event type's `format()` method yourself. `Activities::format()` handles translation, sanitization, missing event classes, and formatter failures. `Activities::icon()` returns the event type's icon.
 
 ## Retention
 

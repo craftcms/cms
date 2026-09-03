@@ -176,7 +176,7 @@ class ActivityEvent extends BaseModel
     protected function newestFirst(Builder $query): Builder
     {
         return $query
-            ->orderByDesc('occurredAt')
+            ->latest('occurredAt')
             ->orderByDesc('id');
     }
 }

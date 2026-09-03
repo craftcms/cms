@@ -64,15 +64,15 @@ class Activities
         }
     }
 
-    public function icon(ActivityEvent $event): string
+    public function icon(ActivityEvent $event): ?string
     {
         $type = $event->eventType;
 
         if (! is_a($type, ActivityEventTypeInterface::class, true)) {
-            return 'wave-pulse';
+            return null;
         }
 
-        return $type::icon() ?: 'wave-pulse';
+        return $type::icon();
     }
 
     private function capturedLabel(ActivityEvent $event): string

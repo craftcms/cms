@@ -30,7 +30,7 @@ interface ActivityEventTypeInterface
 
     public static function label(): string;
 
-    public static function icon(): string;
+    public static function icon(): ?string;
 
     public static function format(ActivityEvent $event): string|Htmlable|null;
 }

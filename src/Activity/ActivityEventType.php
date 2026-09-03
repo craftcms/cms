@@ -19,7 +19,7 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
 {
     protected const string LABEL = '';
 
-    protected const string ICON = 'wave-pulse';
+    protected const ?string ICON = null;
 
     /**
      * @param  list<ActivityChange>  $changes
@@ -74,7 +74,7 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
         return static::LABEL;
     }
 
-    public static function icon(): string
+    public static function icon(): ?string
     {
         return static::ICON;
     }

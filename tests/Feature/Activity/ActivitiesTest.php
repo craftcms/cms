@@ -256,7 +256,8 @@ it('formats plugin events in the application locale as text or safe HTML', funct
         ->and(ActivitiesFacade::format(
             ActivitiesFacade::record(new TestPluginEntryUpdated(reason: 'Klaar')),
         ))->toBe('Entry updated')
-        ->and(ActivitiesFacade::format($translatedEvent))->toBe('Bewaren');
+        ->and(ActivitiesFacade::format($translatedEvent))->toBe('Bewaren')
+        ->and(ActivitiesFacade::icon($translatedEvent))->toBeNull();
 });
 
 it('translates status labels for the application locale', function () {
@@ -285,7 +286,7 @@ it('reports formatter failures and keeps retained events readable when their cla
 
     expect(ActivitiesFacade::format($event))->toBe('Entry formatting failed')
         ->and(ActivitiesFacade::format($retainedEvent))->toBe('Entry formatting failed')
-        ->and(ActivitiesFacade::icon($retainedEvent))->toBe('wave-pulse');
+        ->and(ActivitiesFacade::icon($retainedEvent))->toBeNull();
     Exceptions::assertReported(RuntimeException::class);
 });
 
