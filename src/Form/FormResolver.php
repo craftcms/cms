@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form;
 
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Control as BaseControl;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
@@ -150,6 +151,12 @@ class FormResolver
             ? $this->get($context->values, $path)
             : $control->getValue();
         $props = $control->props($value);
+
+        // Set here rather than in each control's props() so any control can opt in.
+        if ($control instanceof BaseControl && $control->getRebuildsForm()) {
+            $props['rebuildsForm'] = true;
+        }
+
         $this->ensureJsonSafe($props, "Form Control [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($path === []) {

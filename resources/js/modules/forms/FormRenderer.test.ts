@@ -1584,6 +1584,72 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('covers the form while a rebuilding control is refreshing, but not otherwise', async () => {
+    // Editing an ordinary control refreshes too, but the form that comes back
+    // is the same one — only a control that decides what the form contains
+    // (a field's type) should make it look like it's being replaced.
+    vi.useFakeTimers();
+    let resolveRefresh: ((payload: FormPayload) => void) | undefined;
+    const refresh = vi.fn(
+      () =>
+        new Promise<FormPayload>((resolve) => {
+          resolveRefresh = resolve;
+        })
+    );
+    function payloadWithRebuild(rebuilds: boolean): FormPayload {
+      const next = clonePayload();
+      Object.assign(next, {refreshable: true});
+      required(
+        next.nodes[1],
+        'Expected the placeholder field node.'
+      ).control!.props.rebuildsForm = rebuilds;
+
+      return next;
+    }
+
+    app.unmount();
+    await mount(payloadWithRebuild(false), {refresh});
+
+    async function edit(name: string, value: string) {
+      const input = required(
+        container.querySelector<HTMLInputElement>(`input[name="${name}"]`),
+        `Expected the ${name} input.`
+      );
+      input.value = value;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+
+    // Unmarked: it refreshes, but nothing is covered.
+    await edit('settings[placeholder]', 'First');
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(container.querySelector('craft-spinner')).toBeNull();
+
+    // Reconcile to a payload whose control does decide the form's contents.
+    required(
+      resolveRefresh,
+      'Expected a refresh in flight.'
+    )(payloadWithRebuild(true));
+    await Promise.resolve();
+    await nextTick();
+
+    // Marked: the wait is covered until the rebuilt form lands.
+    await edit('settings[placeholder]', 'Second');
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('craft-spinner')).not.toBeNull();
+
+    required(
+      resolveRefresh,
+      'Expected a refresh in flight.'
+    )(payloadWithRebuild(true));
+    await Promise.resolve();
+    await nextTick();
+    expect(container.querySelector('craft-spinner')).toBeNull();
+
+    vi.useRealTimers();
+  });
+
   it('ignores stale refreshes and retains the last valid presentation on failure', async () => {
     vi.useFakeTimers();
     const requests: Array<{

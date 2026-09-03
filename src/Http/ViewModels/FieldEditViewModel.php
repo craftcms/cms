@@ -72,7 +72,8 @@ class FieldEditViewModel extends ViewModel
             FormField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
         $typeField = FormField::make(t('Field Type'), Combobox::make('type')
-            ->options($this->fieldTypeOptions()))
+            ->options($this->fieldTypeOptions())
+            ->rebuildsForm())
             ->instructions(t('What type of field is this?'))
             ->required();
 

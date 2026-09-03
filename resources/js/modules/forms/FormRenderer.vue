@@ -13,6 +13,8 @@
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
+  // Deep import: the package barrel would pull in every component.
+  import {t} from '@craftcms/ui/utilities/translate';
   import FormNodeList from './FormNodeList.vue';
   import {
     canonical,
@@ -61,6 +63,10 @@
   const values = reactive(cloneRaw(props.payload.values));
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  // Scopes whose pending refresh was triggered by a control that decides what
+  // the form contains, so the wait can be covered rather than left looking idle.
+  const rebuildingScopes = new Set<string>();
+  const rebuilding = ref(false);
   const refreshVersions = new Map<string, number>();
   const lastRefreshValues = new Map([
     [
@@ -102,6 +108,18 @@
     emit('change', change, currentValues());
   }
 
+  function rebuildsForm(path: string[]): boolean {
+    let found = false;
+
+    visitControls(payload.value.nodes, (control) => {
+      if (pathsMatch(control.path, path) && control.props.rebuildsForm) {
+        found = true;
+      }
+    });
+
+    return found;
+  }
+
   function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
     emitMutation(change.kind);
@@ -113,6 +131,10 @@
 
     if (!props.refresh || !refreshable) {
       return;
+    }
+
+    if (rebuildsForm(change.path)) {
+      rebuildingScopes.add(key);
     }
 
     clearTimeout(refreshTimers.get(key));
@@ -138,12 +160,19 @@
     const serialized = canonical(snapshot);
 
     if (serialized === lastRefreshValues.get(key)) {
+      rebuildingScopes.delete(key);
+
       return;
     }
 
     lastRefreshValues.set(key, serialized);
     const request = (refreshVersions.get(key) ?? 0) + 1;
     refreshVersions.set(key, request);
+    const isRebuild = rebuildingScopes.delete(key);
+
+    if (isRebuild) {
+      rebuilding.value = true;
+    }
 
     try {
       const refreshed = await props.refresh!(snapshot, scope);
@@ -154,6 +183,11 @@
     } catch {
       lastRefreshValues.delete(key);
       // The current presentation and values are already the last valid state.
+    } finally {
+      // Superseded requests leave the cover to whichever one replaced them.
+      if (isRebuild && request === refreshVersions.get(key)) {
+        rebuilding.value = false;
+      }
     }
   }
 
@@ -240,6 +274,8 @@
     renderError.value = undefined;
     refreshTimers.forEach(clearTimeout);
     refreshTimers.clear();
+    rebuildingScopes.clear();
+    rebuilding.value = false;
     // Dropping the versions abandons any refresh still in flight: it was asked
     // for with the values being discarded, so its answer describes them too.
     refreshVersions.clear();
@@ -449,6 +485,11 @@
     <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
+    <!-- A sibling rather than a wrapper: `craft-field-group` slots these nodes
+      directly, so an extra element around them would break its spacing. -->
+    <div v-if="rebuilding" class="flex justify-center py-4">
+      <craft-spinner :label="t('Loading')" />
+    </div>
     <FormNodeList
       :nodes="payload.nodes"
       :values="values"

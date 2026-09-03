@@ -17,6 +17,8 @@ abstract class Control implements ControlContract
     /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
 
+    protected bool $rebuildsForm = false;
+
     /**
      * Creates a Control bound to a path relative to its Form context.
      *
@@ -123,6 +125,24 @@ abstract class Control implements ControlContract
     /**
      * Returns the locally declared mode before FormContext policy is applied.
      */
+    /**
+     * Marks a control whose value decides what the rest of the form even is —
+     * a field's type, say — so the renderer can cover the form while it's being
+     * rebuilt. Editing an ordinary control also refreshes, but the form that
+     * comes back is the same one, so it shouldn't flash.
+     */
+    final public function rebuildsForm(bool $rebuilds = true): static
+    {
+        $this->rebuildsForm = $rebuilds;
+
+        return $this;
+    }
+
+    final public function getRebuildsForm(): bool
+    {
+        return $this->rebuildsForm;
+    }
+
     final public function getMode(): ControlMode
     {
         return $this->mode;
