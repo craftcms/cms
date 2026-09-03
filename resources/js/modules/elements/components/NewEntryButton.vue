@@ -104,6 +104,9 @@
         type: 'link',
         href: createUrl(section.handle),
         label: t('New {section} entry', {section: section.name}),
+        // A full navigation, matching this button's own primary click below:
+        // the entry editor these point at is still the legacy stack.
+        external: true,
       })
     )
   );

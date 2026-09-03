@@ -64,8 +64,29 @@ function control(props: Record<string, unknown> = {}): FormControlPayload<any> {
 }
 
 /** Menu labels, with separators spelled out so the grouping is visible. */
-function actionLabels(actions: Array<any>): string[] {
-  return actions.map((action) => (action.type === 'hr' ? '---' : action.label));
+/**
+ * The menus are rendered by Vue into the element's `content` slot rather than
+ * built by `craft-action-menu` from a descriptor array, so these read the items
+ * a user would actually see.
+ */
+function actionLabels(menu: Element | null | undefined): string[] {
+  return [...(menu?.querySelectorAll('craft-action-item, hr') ?? [])].map(
+    (item) => (item.tagName === 'HR' ? '---' : (item.textContent?.trim() ?? ''))
+  );
+}
+
+function menuItem(menu: Element, label: string): HTMLElement {
+  const item = [
+    ...menu.querySelectorAll<HTMLElement>('craft-action-item'),
+  ].find((candidate) => candidate.textContent?.trim() === label);
+
+  if (!item) {
+    throw new Error(
+      `Expected a ${label} item, found: ${actionLabels(menu).join(', ')}`
+    );
+  }
+
+  return item;
 }
 
 describe('ElementSelectControl', () => {
@@ -144,29 +165,20 @@ describe('ElementSelectControl', () => {
 
     expect(root.querySelectorAll('craft-chip')).toHaveLength(1);
     expect(menus(root)).toHaveLength(1);
-    expect(actionLabels(menus(root)[0].actions)).toEqual([
-      'Replace',
-      '---',
-      'Remove',
-    ]);
+    expect(actionLabels(menus(root)[0])).toEqual(['Replace', '---', 'Remove']);
   });
 
   it('removes the chip from the value', async () => {
     const root = await mount({value: [5, 6]});
-    const [remove] = menus(root)[0].actions.slice(-1);
-
-    remove.onClick();
+    // Remove is the last item; it's `danger`, which sinks to the bottom.
+    menuItem(menus(root)[0], 'Remove').click();
 
     expect(updates).toEqual([[6]]);
   });
 
   it('opens the selector to replace the chip, excluding the others', async () => {
     const root = await mount({value: [5, 6]});
-    const replace = menus(root)[0].actions.find(
-      (action: any) => action.label === 'Replace'
-    );
-
-    replace.onClick();
+    menuItem(menus(root)[0], 'Replace').click();
     await flushSelector();
 
     expect(stub.createElementSelectorModal).toHaveBeenCalled();
@@ -192,7 +204,7 @@ describe('ElementSelectControl', () => {
   it('drops Replace when there is no element type to pick from', async () => {
     const root = await mount({props: {elementType: null}});
 
-    expect(actionLabels(menus(root)[0].actions)).toEqual(['Remove']);
+    expect(actionLabels(menus(root)[0])).toEqual(['Remove']);
   });
 
   it('renders no chip actions when the control is read-only', async () => {
@@ -218,7 +230,7 @@ describe('ElementSelectControl', () => {
       },
     });
 
-    expect(actionLabels(menus(root)[0].actions)).toEqual([
+    expect(actionLabels(menus(root)[0])).toEqual([
       // The element's own actions, then the field's, then detaching it.
       'View in a new tab',
       'Copy entry',
@@ -237,11 +249,7 @@ describe('ElementSelectControl', () => {
       },
     });
 
-    expect(actionLabels(menus(root)[0].actions)).toEqual([
-      'Replace',
-      '---',
-      'Remove',
-    ]);
+    expect(actionLabels(menus(root)[0])).toEqual(['Replace', '---', 'Remove']);
   });
 
   it('keeps the element’s actions on a read-only field', async () => {
@@ -253,7 +261,7 @@ describe('ElementSelectControl', () => {
       },
     });
 
-    expect(actionLabels(menus(root)[0].actions)).toEqual(['Edit entry']);
+    expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
   });
   function addButton(root: HTMLElement): HTMLElement | null {
     return root.querySelector('[data-element-select-add]');
@@ -828,7 +836,7 @@ describe('ElementSelectControl', () => {
     }
 
     function labels(root: HTMLElement): string[] {
-      return actionLabels(bulkMenu(root)?.actions ?? []);
+      return actionLabels(bulkMenu(root));
     }
 
     async function mountSelected(props: Record<string, unknown> = {}) {
@@ -856,10 +864,7 @@ describe('ElementSelectControl', () => {
     it('removes every selected element', async () => {
       const root = await mountSelected();
 
-      labels(root); // menu is built
-      bulkMenu(root)
-        .actions.find((a: any) => a.label === 'Remove selected')
-        .onClick();
+      menuItem(bulkMenu(root)!, 'Remove selected').click();
       await nextTick();
 
       expect(updates.at(-1)).toEqual([]);
@@ -878,9 +883,7 @@ describe('ElementSelectControl', () => {
       );
       await nextTick();
 
-      bulkMenu(root)
-        .actions.find((a: any) => a.label === 'Remove selected')
-        .onClick();
+      menuItem(bulkMenu(root)!, 'Remove selected').click();
       await nextTick();
 
       expect(updates.at(-1)).toEqual([6, 7]);
@@ -894,9 +897,7 @@ describe('ElementSelectControl', () => {
       });
 
       const root = await mountSelected();
-      bulkMenu(root)
-        .actions.find((a: any) => a.label === 'Copy selected')
-        .onClick();
+      menuItem(bulkMenu(root)!, 'Copy selected').click();
 
       // Only the two the server said may be copied.
       expect(copyElements).toHaveBeenCalledTimes(1);
@@ -939,7 +940,7 @@ describe('ElementSelectControl', () => {
         'craft-chip [slot="suffix"] craft-action-menu'
       ) as any;
 
-      return actionLabels(menu?.actions ?? []);
+      return actionLabels(menu);
     }
 
     /**
@@ -1054,10 +1055,8 @@ describe('ElementSelectControl', () => {
 
       const menu = root.querySelector(
         'craft-chip [slot="suffix"] craft-action-menu'
-      ) as any;
-      menu.actions
-        .find((action: any) => action.label === 'Show in folder')
-        .onClick();
+      )!;
+      menuItem(menu, 'Show in folder').click();
 
       expect(open).toHaveBeenCalledWith('/show-in-folder', '_self', undefined);
     });
@@ -1132,7 +1131,7 @@ describe('ElementSelectControl', () => {
       });
 
       expect(cardMenu(root)).not.toBeNull();
-      expect(actionLabels(cardMenu(root).actions)).toContain('Preview file');
+      expect(actionLabels(cardMenu(root))).toContain('Preview file');
     });
 
     // The pencil covers editing on a card, so the menu doesn't repeat it.
@@ -1148,7 +1147,7 @@ describe('ElementSelectControl', () => {
 
       expect(pencil(root)).not.toBeNull();
       expect(pencil(root)!.closest('craft-card')).not.toBeNull();
-      expect(actionLabels(cardMenu(root).actions)).not.toContain('Edit asset');
+      expect(actionLabels(cardMenu(root))).not.toContain('Edit asset');
     });
 
     it('opens the editor from the card pencil', async () => {
@@ -1197,7 +1196,7 @@ describe('ElementSelectControl', () => {
       ) as any;
 
       expect(pencil(root)).toBeNull();
-      expect(actionLabels(menu.actions)).toContain('Edit asset');
+      expect(actionLabels(menu)).toContain('Edit asset');
     });
   });
   describe('thumb actions', () => {
@@ -1233,7 +1232,7 @@ describe('ElementSelectControl', () => {
       const root = await mountThumbs();
 
       expect(thumbMenu(root)).not.toBeNull();
-      expect(actionLabels(thumbMenu(root).actions)).toContain('Preview file');
+      expect(actionLabels(thumbMenu(root))).toContain('Preview file');
     });
 
     // Tiles are a link to the element, so the actions have to sit outside it or
@@ -1251,13 +1250,13 @@ describe('ElementSelectControl', () => {
       expect(
         root.querySelector('craft-button[aria-label="Edit asset"]')
       ).toBeNull();
-      expect(actionLabels(thumbMenu(root).actions)).toContain('Edit asset');
+      expect(actionLabels(thumbMenu(root))).toContain('Edit asset');
     });
   });
   describe('menu grouping', () => {
     it('never opens or closes on a separator', async () => {
       const root = await mount({props: {elements: [{id: 5, label: 'One'}]}});
-      const labels = actionLabels(menus(root)[0].actions);
+      const labels = actionLabels(menus(root)[0]);
 
       expect(labels.at(0)).not.toBe('---');
       expect(labels.at(-1)).not.toBe('---');
@@ -1274,7 +1273,7 @@ describe('ElementSelectControl', () => {
         editable: false,
       });
 
-      expect(actionLabels(menus(root)[0].actions)).toEqual(['Edit entry']);
+      expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
     });
   });
   describe('reordering', () => {
@@ -1371,20 +1370,21 @@ describe('ElementSelectControl', () => {
     });
   });
   describe('destructive actions', () => {
-    function variantOf(actions: Array<any>, label: string): string | undefined {
-      return actions.find((action) => action.label === label)?.variant;
+    function variantOf(menu: Element, label: string): string | undefined {
+      return menuItem(menu, label).getAttribute('variant') ?? undefined;
     }
 
     it('marks the chip’s Remove as danger', async () => {
       const root = await mount({props: {limit: 3}, value: [5, 6]});
 
-      expect(variantOf(menus(root)[0].actions, 'Remove')).toBe('danger');
+      expect(variantOf(menus(root)[0], 'Remove')).toBe('danger');
     });
 
     it('leaves the chip’s other actions unstyled', async () => {
       const root = await mount({props: {limit: 3}, value: [5, 6]});
 
-      expect(variantOf(menus(root)[0].actions, 'Replace')).toBeUndefined();
+      // The element's own default, not a variant the descriptor asked for.
+      expect(variantOf(menus(root)[0], 'Replace')).toBe('neutral');
     });
 
     it('marks the toolbar’s Remove selected as danger', async () => {
@@ -1401,7 +1401,7 @@ describe('ElementSelectControl', () => {
         root.querySelector('craft-checkbox')!.parentElement?.parentElement;
       const menu = bar?.querySelector(':scope > craft-action-menu') as any;
 
-      expect(variantOf(menu.actions, 'Remove selected')).toBe('danger');
+      expect(variantOf(menu, 'Remove selected')).toBe('danger');
     });
 
     // The server flags its own; the mapper turns that into the same variant.
@@ -1425,7 +1425,7 @@ describe('ElementSelectControl', () => {
         value: [5],
       });
 
-      expect(variantOf(menus(root)[0].actions, 'Delete asset')).toBe('danger');
+      expect(variantOf(menus(root)[0], 'Delete asset')).toBe('danger');
     });
   });
 });

@@ -1,21 +1,10 @@
 <script setup lang="ts">
-  import {type ActionMenuItem, ButtonVariant, t} from '@craftcms/ui';
-  import {
-    type Component,
-    computed,
-    createVNode,
-    getCurrentInstance,
-    onBeforeUnmount,
-    render as vueRender,
-  } from 'vue';
+  import {ButtonVariant, t} from '@craftcms/ui';
+  import {computed} from 'vue';
+  import ActionList from '@/common/components/ActionList.vue';
   import type {ActionItem} from '@/common/types';
 
-  interface ActionItemDisplay {
-    type: 'display';
-    is: Component;
-  }
-
-  export type ActionItems = Array<ActionItem | ActionItemDisplay>;
+  export type ActionItems = Array<ActionItem>;
 
   const props = withDefaults(
     defineProps<{
@@ -29,58 +18,21 @@
     }
   );
 
-  // Containers that host Vue-rendered `display` components. We keep references
-  // so we can tear down the Vue render trees on unmount / re-compute.
-  let displayContainers: HTMLElement[] = [];
-  const appContext = getCurrentInstance()?.appContext;
-
-  function clearDisplayContainers() {
-    for (const container of displayContainers) {
-      // Unmount the Vue subtree to avoid leaks.
-      vueRender(null, container);
-    }
-    displayContainers = [];
-  }
-
   /**
-   * Convert a Vue `display` component into a DOM node the web component can
-   * consume via its `{type: 'display', node}` contract. The normalize / sort /
-   * item-rendering logic itself lives ONLY in the web component — this adapter
-   * just bridges Vue components into DOM nodes.
+   * Destructive items sink to the bottom, stably.
+   *
+   * `craft-action-menu` does this itself, but only for the menus it builds
+   * from its `actions` property — and this one is slotted, so the convention
+   * has to be applied here instead.
    */
-  function displayToNode(component: Component): Node {
-    const container = document.createElement('div');
-    container.style.display = 'contents';
-    const vnode = createVNode(component);
-    if (appContext) {
-      vnode.appContext = appContext;
-    }
-    vueRender(vnode, container);
-    displayContainers.push(container);
-    return container;
+  const sorted = computed<ActionItems>(() => [
+    ...props.actions.filter((action) => !isDanger(action)),
+    ...props.actions.filter((action) => isDanger(action)),
+  ]);
+
+  function isDanger(action: ActionItem): boolean {
+    return 'variant' in action && action.variant === 'danger';
   }
-
-  // Map the Vue-flavored action list onto the web component's `ActionMenuItem`
-  // descriptors. `display` items are the only ones needing conversion; every
-  // other shape passes straight through.
-  const wcActions = computed<ActionMenuItem[]>(() => {
-    clearDisplayContainers();
-
-    return props.actions.map((action): ActionMenuItem => {
-      if (action.type === 'display') {
-        return {
-          type: 'display',
-          node: displayToNode(action.is),
-        };
-      }
-
-      return {...action};
-    });
-  });
-
-  onBeforeUnmount(() => {
-    clearDisplayContainers();
-  });
 
   /**
    `v-once` is load-bearing, not an optimization. `craft-action-menu` (Lion
@@ -94,15 +46,19 @@
    Vue never re-patches the overlay-managed DOM. Invokers are static triggers
    (an icon / avatar), so freezing them is safe. `inline-flex` keeps the wrapper
    sized to the invoker so the overlay positions against a real box.
+
+   The items are a different matter: they change, and they're rendered here
+   rather than by the element so link actions can be `CpLink`s and make Inertia
+   visits. `craft-popover` moves unslotted children into a `slot="content"`
+   container it creates once, which would strand anything Vue added afterwards
+   outside the slot — so the wrapper below is ours, which stops the auto-wrap
+   from running at all. Keep every comment outside `craft-action-menu`: the
+   auto-wrap counts any non-empty child node, comment nodes included.
    */
 </script>
 
 <template>
-  <craft-action-menu
-    :actions="wcActions"
-    :icon="icon"
-    :label="label ?? undefined"
-  >
+  <craft-action-menu :icon="icon" :label="label ?? undefined">
     <span slot="invoker" style="display: inline-flex" v-once>
       <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
         <craft-button
@@ -115,6 +71,9 @@
         </craft-button>
       </slot>
     </span>
+    <div slot="content">
+      <ActionList :actions="sorted" as="craft-action-item" />
+    </div>
   </craft-action-menu>
 </template>
 

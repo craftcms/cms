@@ -58,6 +58,25 @@ export interface ChipIndicator {
   icon?: string;
 }
 
+export interface BreadcrumbItem {
+  href?: string | null;
+  /** What the navigation and the legacy templates used to call `href`. */
+  url?: string | null;
+  label?: string | null;
+  /** Server-rendered crumb content, e.g. an element chip. */
+  html?: string | null;
+  icon?: string;
+  /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
+  attrs?: Record<string, string>;
+  /**
+   * A menu on the crumb, listing what else sits at this level — the sources
+   * beside this one, the sibling nav entries, and so on.
+   *
+   * Named for `Cp\Data\ActionItem::$items`, which is what fills it.
+   */
+  items?: ActionItems;
+}
+
 export interface ActionItemHr {
   type: 'hr';
 }
@@ -79,6 +98,13 @@ export interface ActionItemDisplay {
 export interface ActionItemButton {
   type?: 'button';
   label: string;
+  /**
+   * Marks this as the one currently in effect, for a list that's a choice
+   * rather than a set of commands — a source switcher, say. When any item in a
+   * list says so, the whole list renders with a checkmark gutter, so the
+   * labels stay aligned whichever one is current.
+   */
+  selected?: boolean;
   variant?: VariantKey | string;
   icon?: string;
   disabled?: boolean;
@@ -94,6 +120,19 @@ export interface ActionItemLink {
   type: 'link';
   href: string;
   label: string;
+  icon?: string;
+  /**
+   * Leaves the page rather than making an Inertia visit. For links out of the
+   * CP, and for the handful of places still handing off to the legacy stack.
+   */
+  external?: boolean;
+  /**
+   * Marks this as the one currently in effect, for a list that's a choice
+   * rather than a set of commands — a source switcher, say. When any item in a
+   * list says so, the whole list renders with a checkmark gutter, so the
+   * labels stay aligned whichever one is current.
+   */
+  selected?: boolean;
   variant?: VariantKey | string;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
@@ -103,9 +142,24 @@ export interface ActionItemLink {
   iconColor?: string;
 }
 
+/**
+ * A heading over a run of items — the shape a source list's headings and the
+ * navigation's groups both take.
+ *
+ * One level deep. The heading labels its items visually but is never itself a
+ * choice, and the items stay siblings of any ungrouped ones so a menu's roving
+ * focus and search filter keep treating them alike.
+ */
+export interface ActionItemGroup {
+  type: 'group';
+  heading?: string;
+  items: Array<ActionItemButton | ActionItemLink>;
+}
+
 export type ActionItem =
   | ActionItemDisplay
   | ActionItemHr
+  | ActionItemGroup
   | ActionItemButton
   | ActionItemLink;
 
