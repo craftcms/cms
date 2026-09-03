@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Sorteer op',
     'Sort descending' => 'Aflopend sorteren',
     'Sort direction' => 'Sorteerrichting',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sorteercode',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Bron instellingen opgeslagen',
