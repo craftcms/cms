@@ -37,4 +37,11 @@ interface ImportableInterface
      * Sets element's importable attributes.
      */
     public function setAttributesForImport(array $attributes): void;
+
+    /**
+     * Marks the component as currently being imported.
+     * That way we don't need a logged-in user for some data to import
+     * (e.g. the element's authors)
+     */
+    public function markAsImporting(): void;
 }

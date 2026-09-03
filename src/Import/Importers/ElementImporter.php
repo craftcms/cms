@@ -397,6 +397,7 @@ class ElementImporter extends BaseImporter
     {
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
+        $element->markAsImporting();
 
         $item = Import::processData($this, $data, $element);
 

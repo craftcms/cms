@@ -35,11 +35,6 @@ trait Importable
         // ensure site is set
         $this->siteId = $importer->site->id;
 
-        // mark as being imported
-        // that way we don't need a logged in user for some data to import
-        // (e.g. the element's authors)
-        $this->importing = true;
-
         return $this;
     }
 
@@ -58,5 +53,11 @@ trait Importable
 
         // by default, simply set the attributes
         $this->setAttributesFromRequest($attributes);
+    }
+
+    #[Override]
+    public function markAsImporting(): void
+    {
+        $this->importing = true;
     }
 }
