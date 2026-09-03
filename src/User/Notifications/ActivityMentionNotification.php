@@ -7,6 +7,7 @@ namespace CraftCms\Cms\User\Notifications;
 use CraftCms\Cms\Activity\ActivityComments;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Template;
@@ -18,24 +19,34 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Notifications\Channels\MailChannel;
-use Illuminate\Notifications\Notification;
 use LogicException;
 
-class ActivityMentionNotification extends Notification implements ShouldQueueAfterCommit
+class ActivityMentionNotification extends CpNotification implements ShouldQueueAfterCommit
 {
     use Queueable;
 
     public int $tries = 3;
 
-    public function __construct(public string $versionEventId)
+    public function __construct(public ActivityEvent $event)
     {
+        parent::__construct(
+            static fn (CraftUser $notifiable): string => app(ActivityComments::class)
+                ->notificationText($event, $notifiable->asElement()),
+        );
+
         $this->queue = Cms::config()->queueName;
+        $this
+            ->title('comment_mention_subject')
+            ->byline($event->data['author']['label'])
+            ->icon('comment')
+            ->url($this->subject()?->getCpEditUrl());
     }
 
     /** @return class-string[] */
-    public function via(mixed $notifiable): array
+    #[\Override]
+    public function via(CraftUser $notifiable): array
     {
-        return [MailChannel::class];
+        return [...parent::via($notifiable), MailChannel::class];
     }
 
     public function shouldSend(CraftUser $notifiable, string $channel): bool
@@ -53,8 +64,7 @@ class ActivityMentionNotification extends Notification implements ShouldQueueAft
 
     public function toMail(CraftUser $notifiable): SystemMessageMailable
     {
-        $version = $this->version();
-        $subject = $this->subject($version);
+        $subject = $this->subject();
         $editUrl = $subject?->getCpEditUrl();
 
         if ($subject === null || $editUrl === null) {
@@ -66,34 +76,27 @@ class ActivityMentionNotification extends Notification implements ShouldQueueAft
             key: 'comment_mention',
             user: $recipient,
             variables: [
-                'author' => $version->data['author']['label'],
-                'subject' => $version->snapshots['subject']['label'],
-                'comment' => app(ActivityComments::class)->notificationText($version, $recipient),
+                'author' => $this->event->data['author']['label'],
+                'subject' => $this->event->snapshots['subject']['label'],
+                'comment' => app(ActivityComments::class)->notificationText($this->event, $recipient),
                 'link' => Template::raw(Url::cpUrl($editUrl)),
             ],
         );
-        $mailable->siteId = $version->siteId;
+        $mailable->siteId = $this->event->siteId;
 
         return $mailable;
     }
 
-    private function version(): ActivityEvent
+    private function subject(): ?ElementInterface
     {
-        return ActivityEvent::query()->findOrFail($this->versionEventId);
-    }
-
-    private function subject(?ActivityEvent $version = null): ?ElementInterface
-    {
-        $version ??= $this->version();
-
-        if ($version->subjectId === null) {
+        if ($this->event->subjectId === null) {
             return null;
         }
 
         return Elements::getElementByUid(
-            $version->subjectId,
-            $version->subjectType,
-            $version->siteId,
+            $this->event->subjectId,
+            $this->event->subjectType,
+            $this->event->siteId,
         );
     }
 }

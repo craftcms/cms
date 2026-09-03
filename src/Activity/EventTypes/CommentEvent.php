@@ -17,7 +17,7 @@ abstract class CommentEvent extends ActivityEventType
     public function __construct(
         ElementInterface|ActivitySubject $subject,
         User|ActivityActor $actor,
-        Site $site,
+        ?Site $site,
         private readonly string $markdown,
         private readonly int $authorId,
         private readonly string $authorLabel,
