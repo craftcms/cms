@@ -8,7 +8,6 @@ use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySource;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
-use CraftCms\Cms\Activity\Enums\ActivityActorType;
 use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
@@ -60,7 +59,7 @@ it('records durable actor subject site and payload snapshots', function () {
     expect($event->id)->toBeString()
         ->and($event->eventType)->toBe(TestPluginEntryUpdated::class)
         ->and($event->source)->toBe('test-plugin')
-        ->and($event->actorType)->toBe(ActivityActorType::User)
+        ->and($event->actorType)->toBe(ActivityActor::TYPE_USER)
         ->and($event->actorId)->toBe($actor->id)
         ->and($event->subjectType)->toBe($subject::class)
         ->and($event->subjectId)->toBe($subject->uid)
@@ -92,13 +91,23 @@ it('distinguishes system anonymous and known user actors and captures impersonat
 
     $user = $this->activities->record(new TestPluginEntryUpdated(reason: 'Edited'));
 
-    expect($system->actorType)->toBe(ActivityActorType::System)
-        ->and($anonymous->actorType)->toBe(ActivityActorType::Anonymous)
-        ->and($user->actorType)->toBe(ActivityActorType::User)
+    expect($system->actorType)->toBe(ActivityActor::TYPE_SYSTEM)
+        ->and($anonymous->actorType)->toBe(ActivityActor::TYPE_ANONYMOUS)
+        ->and($user->actorType)->toBe(ActivityActor::TYPE_USER)
         ->and($user->snapshots['impersonator'])->toBe([
             'id' => $operator->id,
             'label' => $operator->name,
         ]);
+});
+
+it('accepts plugin-defined actor types', function () {
+    $event = $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Automated',
+        actor: new ActivityActor('test-plugin:automation', 'Campaign automation'),
+    ));
+
+    expect($event->actorType)->toBe('test-plugin:automation')
+        ->and($event->snapshots['actor']['label'])->toBe('Campaign automation');
 });
 
 it('uses the username for unnamed user actors', function () {
@@ -129,11 +138,11 @@ it('accepts Eloquent user models as actors', function () {
 it('attributes unauthenticated HTTP activity to an anonymous actor', function () {
     Route::get('test/activity-actor', fn () => ActivitiesFacade::record(
         new TestPluginEntryUpdated(reason: 'Public request'),
-    )->actorType->value);
+    )->actorType);
 
     get('test/activity-actor')
         ->assertOk()
-        ->assertSeeText(ActivityActorType::Anonymous->value);
+        ->assertSeeText(ActivityActor::TYPE_ANONYMOUS);
 });
 
 it('rejects invalid changes', function () {

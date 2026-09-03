@@ -8,7 +8,6 @@ use Carbon\CarbonImmutable;
 use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
-use CraftCms\Cms\Activity\Enums\ActivityActorType;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Data\Site;
@@ -22,7 +21,7 @@ use InvalidArgumentException;
  * @property string $id
  * @property string $eventType
  * @property string $source
- * @property ActivityActorType $actorType
+ * @property string $actorType
  * @property int|null $actorId
  * @property string|null $subjectType
  * @property string|null $subjectId
@@ -46,7 +45,6 @@ class ActivityEvent extends BaseModel
     {
         return [
             'id' => 'string',
-            'actorType' => ActivityActorType::class,
             'actorId' => 'integer',
             'siteId' => 'integer',
             'payload' => 'array',

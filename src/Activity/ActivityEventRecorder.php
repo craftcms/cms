@@ -51,7 +51,7 @@ class ActivityEventRecorder
         return ActivityEvent::query()->create([
             'eventType' => $event::class,
             'source' => $source->id,
-            'actorType' => $actor->type->value,
+            'actorType' => $actor->type,
             'actorId' => $actor->id,
             'subjectType' => $subject?->type,
             'subjectId' => $subject?->id,
