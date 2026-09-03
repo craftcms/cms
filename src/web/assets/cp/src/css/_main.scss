@@ -9988,6 +9988,11 @@ body.licensing-issues {
     padding-block: 6px;
     padding-inline: 9px;
     white-space: nowrap;
+
+    & + .text {
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
+    }
   }
 }
 
