@@ -239,6 +239,28 @@ test('logout honors a configured post-logout redirect', function () {
         ->assertRedirect('https://localhost/goodbye');
 });
 
+test('logout does not stash itself as the post-login return URL', function () {
+    get(cp_url(CpAuthPath::Logout->value))
+        ->assertRedirect(cp_url(CpAuthPath::Login->value));
+
+    expect(session('url.intended'))->toBeNull();
+});
+
+test('logging in ignores a stashed logout return URL', function () {
+    $user = User::findOne();
+
+    session(['url.intended' => cp_url(CpAuthPath::Logout->value)]);
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'craftcms2018!!',
+    ])
+        ->assertOk()
+        ->assertJsonPath('returnUrl', cp_url(Cms::config()->getPostCpLoginRedirect()));
+
+    expect(session('url.intended'))->toBeNull();
+});
+
 test('showLoginModal requires email parameter', function () {
     postJson(action([LoginController::class, 'showLoginModal']), [])
         ->assertJsonValidationErrors(['email']);
