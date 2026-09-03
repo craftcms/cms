@@ -101,6 +101,8 @@ class NestedElementManager extends Component
 
     public ?string $propagationKeyFormat = null;
 
+    public bool $keepOtherNestedElements = false;
+
     public function getIsTranslatable(?ElementInterface $owner = null): bool
     {
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
@@ -1001,7 +1003,9 @@ class NestedElementManager extends Component
                 $elementIds[] = $element->id;
             }
 
-            $this->deleteOtherNestedElements($owner, $elementIds);
+            if (! $this->keepOtherNestedElements) {
+                $this->deleteOtherNestedElements($owner, $elementIds);
+            }
 
             if (
                 $this->propagationMethod !== PropagationMethod::All &&

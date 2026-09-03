@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -35,6 +37,17 @@ class ElementImporter extends BaseImporter
     public protected(set) ?string $fieldLayout = null;
 
     /**
+     * Whether an `Elements::saveElement()` call is currently in progress, so the `ElementDeleted`
+     * listener registered in the constructor knows to collect deletions caused by it.
+     */
+    private bool $trackingNestedElementDeletions = false;
+
+    /**
+     * Element IDs deleted (via nested-item pruning) during the current `Elements::saveElement()` call.
+     */
+    private array $deletedNestedElementIds = [];
+
+    /**
      * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
      *
      * @param  array|null  $config  Optional config array, potentially containing a `uid` key.
@@ -43,6 +56,12 @@ class ElementImporter extends BaseImporter
     {
         parent::__construct($config);
         $this->matchCriteria = ['id' => 'id'];
+
+        Event::listen(function (ElementDeleted $event) {
+            if ($this->trackingNestedElementDeletions) {
+                $this->deletedNestedElementIds[] = $event->element->id;
+            }
+        });
     }
 
     #[Override]
@@ -439,13 +458,93 @@ class ElementImporter extends BaseImporter
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
 
-        if (! Elements::saveElement($element)) {
-            ImportLog::warning(
-                'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.
-                print_r($element->errors()->all(), true),
-                ['data' => $item]
+        $restoreKeepFlagFields = $this->enableKeepMissingNestedElements($element);
+
+        $this->trackingNestedElementDeletions = true;
+        $this->deletedNestedElementIds = [];
+
+        try {
+            if (! Elements::saveElement($element)) {
+                ImportLog::warning(
+                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.
+                    print_r($element->errors()->all(), true),
+                    ['data' => $item]
+                );
+            }
+        } finally {
+            $this->trackingNestedElementDeletions = false;
+
+            foreach ($restoreKeepFlagFields as $field) {
+                $field->setKeepMissingNestedElements(false);
+            }
+        }
+
+        if (! empty($this->deletedNestedElementIds)) {
+            ImportLog::info(
+                'Pruned nested elements missing from imported data (elementId: '.($element->id ?? 'new').')',
+                ['elementId' => $element->id, 'prunedElementIds' => $this->deletedNestedElementIds]
             );
         }
+    }
+
+    /**
+     * Enables keeping missing nested elements for any container field opted in via
+     * `keepMissingNestedElements`, returning the fields that should be restored after the save.
+     *
+     * @return ImportableElementContainerFieldInterface[]
+     */
+    private function enableKeepMissingNestedElements(ElementInterface $element): array
+    {
+        return $this->collectAndEnableKeepFields($element->getFieldLayout(), []);
+    }
+
+    /**
+     * Recursively walks a field layout's container fields (and, for each one, the field layouts of
+     * every provider it offers, e.g. a Matrix field's entry types) looking for fields opted in to
+     * keeping missing nested elements via `keepMissingNestedElements`, enabling each one it finds.
+     *
+     * Fields are resolved strictly through the given `FieldLayout` object (never via a direct
+     * lookup like `Fields::getFieldById()`), so the instance mutated here is the exact same one
+     * the real, recursive `Elements::saveElement()` cascade will encounter later.
+     *
+     * @param  array<int, string>  $path  The path segments (handle/provider handle/`fields`) leading to $fieldLayout.
+     * @return ImportableElementContainerFieldInterface[]
+     */
+    private function collectAndEnableKeepFields(?FieldLayout $fieldLayout, array $path): array
+    {
+        if (! $fieldLayout) {
+            return [];
+        }
+
+        $restoreKeepFlagFields = [];
+
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            if (! $field instanceof ImportableElementContainerFieldInterface) {
+                continue;
+            }
+
+            $fieldPath = [...$path, $field->handle];
+
+            if ($field->canKeepMissingNestedElements()) {
+                // loose cast: a real checkbox submission survives as int 1/0 (or even the
+                // string "1"/"0") after json_decode(), not strictly bool true/false
+                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, implode('.', [...$fieldPath, '__keep__']));
+
+                if ($shouldKeep) {
+                    $field->setKeepMissingNestedElements(true);
+                    $restoreKeepFlagFields[] = $field;
+                }
+            }
+
+            foreach ($field->getFieldLayoutProviders() as $provider) {
+                $restoreKeepFlagFields = [
+                    ...$restoreKeepFlagFields,
+                    ...$this->collectAndEnableKeepFields($provider->getFieldLayout(), [...$fieldPath, $provider->getHandle(), 'fields']),
+                ];
+            }
+        }
+
+        return $restoreKeepFlagFields;
     }
 
     /**
@@ -537,6 +636,7 @@ class ElementImporter extends BaseImporter
             // and the values from incoming data should have been applied to it
             $criteria = $data['matchCriteria'];
 
+            // if we still don't have criteria, return a new Element
             if (empty($criteria)) {
                 $element->siteId = $this->site?->id;
 
@@ -549,9 +649,11 @@ class ElementImporter extends BaseImporter
             // that's why we haven't set it earlier on
             $query->siteId = $this->site?->id;
 
+            // return found or new element
             return $query->one() ?? $element;
         }
 
+        // return new element
         return $element;
     }
 

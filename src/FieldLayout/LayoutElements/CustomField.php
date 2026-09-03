@@ -992,7 +992,15 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         $attribute = $this->attribute();
-        [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+        [
+            $prefixedHandleForMap,
+            $prefixedHandleForMatchCriteria,
+            $prefixedHandleForClear,
+            $prefixedHandle,
+            $prefixedHandleAsArray,
+            $prefixedHandleForKeep,
+            $prefixedHandleForKeepFlag,
+        ] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
 
         $content = [
             'handle' => $attribute,
@@ -1005,10 +1013,13 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
             'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
             'canBeCleared' => $this->canBeCleared(),
+            'canKeepMissingNestedElements' => $this->canKeepMissingNestedElements(),
         ];
 
         if ($content['isContainer']) {
             $content['fieldUid'] = $field->uid;
+            $content['prefixedHandleForKeep'] = $prefixedHandleForKeep;
+            $content['prefixedHandleForKeepFlag'] = $prefixedHandleForKeepFlag;
         }
 
         return $content;
@@ -1062,5 +1073,22 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         return true;
+    }
+
+    /**
+     * Returns whether this field supports keeping nested elements missing from imported data.
+     * Only container fields (Matrix, Addresses) that declare support for it do.
+     */
+    public function canKeepMissingNestedElements(): bool
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        return $field instanceof ImportableElementContainerFieldInterface && $field->canKeepMissingNestedElements();
     }
 }

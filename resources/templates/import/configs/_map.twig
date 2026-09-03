@@ -18,6 +18,14 @@
 {% endif %}
 
 {% if nested %}
+    {% if canKeepMissingNestedElements ?? false %}
+        {{ forms.checkboxField({
+            name: prefixedHandleForKeepFlag,
+            label: 'Keep existing nested elements missing from the imported data.'|t('app'),
+            checked: keepMissingNestedElementsChecked ?? false,
+            value: 1,
+        }) }}
+    {% endif %}
     {% for item in destinationCols %}
         <h3>{{ item.provider.name ?? field.name ?? 'Nested Field Mapping' }}</h3>
         {{ _self.fieldLayoutTable(item.destinationCols, sourceDataCols, import, field) }}
@@ -80,6 +88,11 @@
                 {% set nestedFieldValueForClear = nestedFieldValueForClear|boolean %}
             {% endif %}
 
+            {% set nestedFieldValueForKeep = import.keepMissingNestedElements ? col.prefixedHandleAsArray|reduce(
+                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part) : null,
+                import.keepMissingNestedElements
+            ) : null %}
+
             {% if col.isContainer %}
                 {{ hiddenInput(
                     col.prefixedHandleForMap,
@@ -93,12 +106,18 @@
                     col.prefixedHandleForClear,
                     nestedFieldValueForClear ? nestedFieldValueForClear|json_encode : null
                 ) }}
+                {{ hiddenInput(
+                    col.prefixedHandleForKeep,
+                    nestedFieldValueForKeep is not null ? nestedFieldValueForKeep|json_encode : null
+                ) }}
                 <a href="#"
                    class="btn mapping-slideout"
                    data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
                    data-field-handle="{{ col.prefixedHandle }}" {# this will be the layout handle, so can be the overwritten one #}
                    data-field-is-property="{{ col.isProperty ?? false }}" {# this will be the layout handle, so can be the overwritten one #}
                    data-import-uid="{{ import.uid }}"
+                   data-field-can-keep-missing="{{ col.canKeepMissingNestedElements ?? false }}"
+                   data-field-keep-name="{{ col.prefixedHandleForKeepFlag ?? '' }}"
                 >
                     Map field
                 </a>
@@ -147,9 +166,12 @@ $('.mapping-slideout').on('activate', function(e) {
     const fieldHandle = $(this).data('field-handle');
     const fieldIsProperty = $(this).data('field-is-property');
     const importUid = $(this).data('import-uid');
+    const fieldCanKeepMissing = $(this).data('field-can-keep-missing');
+    const fieldKeepName = $(this).data('field-keep-name');
     let $mapInput = $(this).prevAll('input[type="hidden"][name^="map["], input[type="hidden"][name*="[map]["]');
     let $matchCriteriaInput = $(this).prevAll('input[type="hidden"][name^="matchCriteria["], input[type="hidden"][name*="[matchCriteria]["]');
     let $clearableItemsInput = $(this).prevAll('input[type="hidden"][name^="clearableItems["], input[type="hidden"][name*="[clearableItems]["]');
+    let $keepInput = $(this).prevAll('input[type="hidden"][name^="keepMissingNestedElements["], input[type="hidden"][name*="[keepMissingNestedElements]["]');
     let data;
 
     try {
@@ -164,6 +186,9 @@ $('.mapping-slideout').on('activate', function(e) {
                     'currentMap': $mapInput.val(),
                     'currentMatchCriteria': $matchCriteriaInput.val(),
                     'currentClearableItems': $clearableItemsInput.val(),
+                    'fieldCanKeepMissing': fieldCanKeepMissing,
+                    'fieldKeepName': fieldKeepName,
+                    'currentKeepMissingNestedElements': $keepInput.val(),
                 },
             }
         );
@@ -173,6 +198,7 @@ $('.mapping-slideout').on('activate', function(e) {
             $mapInput.val(JSON.stringify(data.map));
             $matchCriteriaInput.val(JSON.stringify(data.matchCriteria));
             $clearableItemsInput.val(JSON.stringify(data.clearableItems));
+            $keepInput.val(JSON.stringify(data.keepMissingNestedElements));
         });
 {#        slideout.on('close', () => {#}
 {#            slideout.destroy();#}

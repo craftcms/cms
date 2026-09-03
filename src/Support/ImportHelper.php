@@ -141,8 +141,10 @@ class ImportHelper
         $prefixedHandleForMatchCriteria = Html::namespaceInputName($prefixedHandle, 'matchCriteria');
         $prefixedHandleForClear = Html::namespaceInputName($prefixedHandle, 'clearableItems');
         $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
+        $prefixedHandleForKeep = Html::namespaceInputName($prefixedHandle, 'keepMissingNestedElements');
+        $prefixedHandleForKeepFlag = Html::namespaceInputName($prefixedHandle.'[__keep__]', 'keepMissingNestedElements');
 
-        return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray];
+        return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray, $prefixedHandleForKeep, $prefixedHandleForKeepFlag];
     }
 
     /**

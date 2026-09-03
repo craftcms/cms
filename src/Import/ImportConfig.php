@@ -178,6 +178,7 @@ class ImportConfig
                 'map' => $importer->map,
                 'matchCriteria' => $importer->matchCriteria,
                 'clearableItems' => $importer->clearableItems,
+                'keepMissingNestedElements' => $importer->keepMissingNestedElements,
             ];
             if (property_exists($importer, 'site')) {
                 $settings['site'] = $importer->site->uid;

@@ -34,4 +34,16 @@ interface ImportableElementContainerFieldInterface extends ElementContainerField
      * Validates field's mapping.
      */
     public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool;
+
+    /**
+     * Returns whether this field type supports keeping nested elements missing from imported data at all.
+     */
+    public function canKeepMissingNestedElements(): bool;
+
+    /**
+     * Sets whether nested elements missing from imported data should be kept (not pruned) on the next save.
+     *
+     * @param  bool  $keep  Whether missing nested elements should be kept.
+     */
+    public function setKeepMissingNestedElements(bool $keep): void;
 }

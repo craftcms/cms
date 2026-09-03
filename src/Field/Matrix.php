@@ -1531,6 +1531,22 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /**
+     * @see ImportableElementContainerFieldInterface::canKeepMissingNestedElements()
+     */
+    public function canKeepMissingNestedElements(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @see ImportableElementContainerFieldInterface::setKeepMissingNestedElements()
+     */
+    public function setKeepMissingNestedElements(bool $keep): void
+    {
+        $this->entryManager()->keepOtherNestedElements = $keep;
+    }
+
+    /**
      * Handles nested entry saves.
      */
     public function afterSaveEntries(NestedElementsSaved $event): void

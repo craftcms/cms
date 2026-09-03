@@ -64,6 +64,24 @@ abstract class BaseImporter
      */
     public protected(set) ?array $clearableItems = null;
 
+    /**
+     * @var array|null
+     *
+     * array => a tree keyed by field handle, mirroring $matchCriteria's shape (including a
+     *  `fields` segment and provider/entry-type handle for each level of nesting). Since a
+     *  container field (Matrix, Addresses) is the only kind of node in this tree that both
+     *  has its own decision *and* may contain further nested container fields, each
+     *  container field's own decision lives under a reserved `__keep__` leaf sitting
+     *  alongside its children, e.g. `['outerMatrix' => ['__keep__' => true, 'someEntryType' =>
+     *  ['fields' => ['innerMatrix' => ['__keep__' => false]]]]]`; a `true` leaf keeps that
+     *  field's nested items missing from the incoming data instead of pruning them; a field
+     *  with no `__keep__` entry is pruned (the default), matching how Craft already saves
+     *  that field type outside of import;
+     *
+     *  null => nothing is kept; missing nested items are pruned for every field that supports it
+     */
+    public protected(set) ?array $keepMissingNestedElements = null;
+
     public ?string $uid = null;
 
     /**
@@ -299,11 +317,43 @@ abstract class BaseImporter
     }
 
     /**
-     * Ensure that any json values that might be present in the array are unpacked.
+     * Sets the container field handles that should keep nested elements missing from the
+     * incoming data instead of pruning them, and returns the current instance.
+     *
+     * @param  array|null  $keepMissingNestedElements  The field handles to keep, either as the nested
+     *                                                 `__keep__`-leaf tree (matching $matchCriteria's
+     *                                                 shape) or a flat list of dot-notation handles to keep.
+     */
+    public function keepMissingNestedElements(?array $keepMissingNestedElements = null): self
+    {
+        if ($keepMissingNestedElements !== null) {
+            $keepMissingNestedElements = $this->unpackJson($keepMissingNestedElements);
+
+            if (array_is_list($keepMissingNestedElements)) {
+                $keepMissingNestedElements = Arr::undot(array_fill_keys(
+                    array_map(fn ($handle) => $handle.'.__keep__', $keepMissingNestedElements),
+                    true
+                ));
+            }
+
+            $this->keepMissingNestedElements = $keepMissingNestedElements;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Ensure that any json values that might be present in the array are unpacked, recursively.
      */
     private function unpackJson(array $data): array
     {
         foreach ($data as &$value) {
+            if (is_array($value)) {
+                $value = $this->unpackJson($value);
+
+                continue;
+            }
+
             if (! is_string($value)) {
                 continue;
             }

@@ -334,6 +334,12 @@ class ImportConfigController
                 // we're intentionally using validateMap() here as we basically want to check the same thing for map and clearableItems
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
             ],
+            //            'keepMissingNestedElements' => [
+            //                'nullable',
+            //                'array',
+            //                // we're intentionally using validateMap() here as we basically want to check the same thing for map and keepMissingNestedElements
+            //                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
+            //            ],
         ]);
 
         if (property_exists($import, 'fieldLayoutId')) {
@@ -344,6 +350,7 @@ class ImportConfigController
         $import->map($this->request->input('map', $import->map));
         $import->matchCriteria($this->request->input('matchCriteria', $import->matchCriteria));
         $import->clearableItems($this->request->input('clearableItems', $import->clearableItems ?? []));
+        $import->keepMissingNestedElements($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? []));
 
         if (! $this->importConfigService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -366,10 +373,24 @@ class ImportConfigController
         $currentPartialMap = $this->request->input('currentMap');
         $currentPartialMatchCriteria = $this->request->input('currentMatchCriteria');
         $currentPartialClearableItems = $this->request->input('currentClearableItems');
+        $currentPartialKeepMissingNestedElements = $this->request->input('currentKeepMissingNestedElements');
+
+        // a container field's own keep decision lives under a reserved `__keep__` leaf, since
+        // the field's own handle also needs to hold any of its nested containers' own decisions
+        $fieldHandleForKeep = $fieldHandle.'[__keep__]';
 
         $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMap, 'map');
         $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMatchCriteria, 'matchCriteria');
         $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialClearableItems, 'clearableItems');
+        // the relayed value is the field's whole branch (its own __keep__ plus any nested
+        // containers' own branches), so it's applied at the bare handle, not the __keep__ leaf
+        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialKeepMissingNestedElements, 'keepMissingNestedElements');
+
+        $keepMissingNestedElementsChecked = $import->keepMissingNestedElements ? array_reduce(
+            Arr::bracketsToArray($fieldHandleForKeep),
+            static fn ($value, $part) => $value && is_iterable($value) ? $value[$part] ?? null : null,
+            $import->keepMissingNestedElements
+        ) : null;
 
         $cols = [];
 
@@ -403,6 +424,9 @@ class ImportConfigController
             'sourceDataCols' => $import->getSourceDataCols(),
             'nested' => true,
             'fieldHandle' => $fieldHandle,
+            'canKeepMissingNestedElements' => $this->request->boolean('fieldCanKeepMissing'),
+            'prefixedHandleForKeepFlag' => $this->request->input('fieldKeepName'),
+            'keepMissingNestedElementsChecked' => $keepMissingNestedElementsChecked,
         ];
 
         return new CpScreenResponse()
@@ -487,15 +511,23 @@ class ImportConfigController
                 // we're intentionally using validateMap() here as we basically want to check the same thing for map and clearableItems
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
             ],
+            //            "keepMissingNestedElements.$fieldHandle" => [
+            //                'nullable',
+            //                'array',
+            //                // we're intentionally using validateMap() here as we basically want to check the same thing for map and keepMissingNestedElements
+            //                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
+            //            ],
         ]);
 
-        $map = $this->request->input("map.$fieldHandle");
-        $matchCriteria = $this->request->input("matchCriteria.$fieldHandle");
-        $clearableItems = $this->request->input("clearableItems.$fieldHandle");
+        $map = $this->request->input("map.$fieldHandle") ?? [];
+        $matchCriteria = $this->request->input("matchCriteria.$fieldHandle") ?? [];
+        $clearableItems = $this->request->input("clearableItems.$fieldHandle") ?? [];
+        $keepMissingNestedElements = $this->request->input("keepMissingNestedElements.$fieldHandle") ?? [];
 
         $map = array_map(ImportHelper::ensureCleanArray(...), $map);
         $matchCriteria = array_map(ImportHelper::ensureCleanArray(...), $matchCriteria);
         $clearableItems = array_map(ImportHelper::ensureCleanArray(...), $clearableItems);
+        $keepMissingNestedElements = array_map(ImportHelper::ensureCleanArray(...), $keepMissingNestedElements);
 
         // and return it
         return $this->asJsonSuccess(null, [
@@ -503,6 +535,7 @@ class ImportConfigController
             'map' => $map,
             'matchCriteria' => $matchCriteria,
             'clearableItems' => $clearableItems,
+            'keepMissingNestedElements' => $keepMissingNestedElements,
             'namespace' => $this->request->header('X-Craft-Namespace'),
         ]);
     }

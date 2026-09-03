@@ -62,4 +62,24 @@ trait ImportableElementContainerField
     {
         return true;
     }
+
+    /**
+     * By default, this concept doesn't apply (no list of nested elements to prune).
+     *
+     * @see ImportableElementContainerFieldInterface::canKeepMissingNestedElements()
+     */
+    public function canKeepMissingNestedElements(): bool
+    {
+        return false;
+    }
+
+    /**
+     * By default, this is a no-op.
+     *
+     * @see ImportableElementContainerFieldInterface::setKeepMissingNestedElements()
+     */
+    public function setKeepMissingNestedElements(bool $keep): void
+    {
+        // by default, this doesn't do anything
+    }
 }
