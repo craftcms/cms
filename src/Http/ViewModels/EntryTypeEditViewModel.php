@@ -79,7 +79,7 @@ class EntryTypeEditViewModel extends ViewModel
                 Field::make(
                     t('Title Translation Method'),
                     Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions()),
-                )->instructions(t('How should the title be translated?')),
+                )->reactive()->instructions(t('How should the title be translated?')),
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
@@ -99,7 +99,7 @@ class EntryTypeEditViewModel extends ViewModel
                 ->instructions(t('The format that {type} titles should take when generated.', ['type' => Entry::lowerDisplayName()]))
                 ->tip($objectTemplateTip),
             Field::make(t('Allow line breaks in titles'), Lightswitch::make('allowLineBreaksInTitles')),
-            Field::make(t('Show the Slug field'), Lightswitch::make('showSlugField')),
+            Field::make(t('Show the Slug field'), Lightswitch::make('showSlugField'))->reactive(),
         );
 
         if (Sites::isMultiSite() && ($values['showSlugField'] ?? false)) {
@@ -107,7 +107,7 @@ class EntryTypeEditViewModel extends ViewModel
                 Field::make(
                     t('Slug Translation Method'),
                     Choice::make('slugTranslationMethod')->options(TranslationMethod::asOptions()),
-                )->instructions(t('How should slugs be translated?')),
+                )->reactive()->instructions(t('How should slugs be translated?')),
             );
 
             if (($values['slugTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {

@@ -377,6 +377,7 @@ abstract class BaseField extends FieldLayoutElement
             ->value($labelHidden ? null : $this->label)
             ->placeholder($this->defaultLabel())
             ->mode($labelHidden ? ControlMode::Disabled : ControlMode::Editable))
+            ->reactive()
             ->actions(Action::make(
                 Checkbox::make('labelHidden')->label(t('Hide'))->value($labelHidden),
             ));
@@ -427,6 +428,7 @@ abstract class BaseField extends FieldLayoutElement
             $this->showLabel() ? $this->label() : null,
             $control,
         )
+            ->reactive()
             ->instructions($this->instructionsText($context->element))
             ->instructionsPosition($this->instructionsPosition)
             ->tip($this->tipText($context->element))

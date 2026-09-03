@@ -91,7 +91,7 @@ class UserSettingsViewModel extends ViewModel
                 Field::make(
                     t('Allow public registration'),
                     Lightswitch::make('allowPublicRegistration'),
-                ),
+                )->reactive(),
             );
 
             if ($values['allowPublicRegistration']) {

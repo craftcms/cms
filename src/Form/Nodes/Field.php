@@ -32,6 +32,8 @@ class Field implements Node
 
     private bool $required = false;
 
+    private bool $reactive = false;
+
     private string $instructionsPosition = 'before';
 
     private ?string $tip = null;
@@ -124,6 +126,13 @@ class Field implements Node
     public function required(bool $required = true): static
     {
         $this->required = $required;
+
+        return $this;
+    }
+
+    public function reactive(bool $reactive = true): static
+    {
+        $this->reactive = $reactive;
 
         return $this;
     }
@@ -234,6 +243,7 @@ class Field implements Node
                 'status' => $this->status,
                 'statusLabel' => $this->status !== null ? $this->statusLabel : null,
                 'hasActions' => $this->actions === [] ? null : true,
+                'reactive' => $this->reactive ?: null,
             ]),
             ...$this->visibilityProps(),
         ];

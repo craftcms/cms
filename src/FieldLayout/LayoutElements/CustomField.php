@@ -629,6 +629,7 @@ class CustomField extends BaseField
                 $originalField === null ? null : Field::make(t('Field'), FieldSelect::make('fieldId')
                     ->limit(1)
                     ->value($originalField->id))
+                    ->reactive()
                     ->warning(t('Changing this may result in data loss.')),
                 $this->labelSettingsNode($context),
                 Field::make(t('Handle'), Text::make('handle')

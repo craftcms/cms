@@ -117,7 +117,8 @@
           "props": {
             "label": "Allow line breaks",
             "instructions": null,
-            "required": false
+            "required": false,
+            "reactive": true
           },
           "control": {
             "type": "CraftCms\\Cms\\Form\\Controls\\Lightswitch",

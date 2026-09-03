@@ -354,7 +354,7 @@ readonly class SitesController
             $nodes[] = HiddenField::make('primary');
         }
 
-        $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls'));
+        $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls'))->reactive();
 
         if ($values['hasUrls'] ?? false) {
             $nodes[] = Field::make(t('Base URL'), Text::make('baseUrl')

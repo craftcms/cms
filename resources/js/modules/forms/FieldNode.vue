@@ -35,6 +35,7 @@
     status?: string;
     statusLabel?: string;
     hasActions?: boolean;
+    reactive?: boolean;
     /** Hidden from view; the control still resolves and still holds its value. */
     hidden?: boolean;
   };
@@ -83,6 +84,9 @@
     )
   );
   const value = computed(() => valueAt(props.values, control.value.path));
+  const refreshable = computed(
+    () => props.refreshable && Boolean(props.node.props.reactive)
+  );
 
   // Matched on the delta group, so a field split across several controls badges
   // as one unit.
@@ -98,7 +102,7 @@
       kind,
       path: control.value.path,
       scope: props.scope,
-      refreshable: props.refreshable,
+      refreshable: refreshable.value,
     });
   }
 

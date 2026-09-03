@@ -382,6 +382,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $form = Form::make([
             FormField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
+                ->reactive()
                 ->control(GroupedEntryTypeManager::make('entryTypes')
                     ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))),
         ]);

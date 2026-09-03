@@ -107,11 +107,10 @@
     emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
-    const refreshable = change.refreshable ?? payload.value.refreshable;
     const key = JSON.stringify(scope);
     refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
 
-    if (!props.refresh || !refreshable) {
+    if (!props.refresh || !change.refreshable) {
       return;
     }
 

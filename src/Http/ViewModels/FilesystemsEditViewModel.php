@@ -57,6 +57,7 @@ class FilesystemsEditViewModel extends ViewModel
             Field::make(t('Name'), Text::make('name')->autocomplete(false)->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
             Field::make(t('Filesystem Type'), Choice::make('type')->options($this->filesystemOptions()))
+                ->reactive()
                 ->instructions(t('What type of filesystem is this?')),
         ]), new FormContext(
             values: $values,

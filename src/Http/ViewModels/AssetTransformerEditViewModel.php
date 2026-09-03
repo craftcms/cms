@@ -61,7 +61,7 @@ class AssetTransformerEditViewModel extends ViewModel
             Field::make(
                 t('Driver'),
                 Choice::make('driver')->options($this->driverOptions())->mode($identityMode),
-            )->required(),
+            )->reactive()->required(),
         ]), new FormContext(
             values: $values,
             errors: Arr::only($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),

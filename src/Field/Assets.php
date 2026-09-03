@@ -259,7 +259,8 @@ class Assets extends BaseRelationField
         // “Maintain hierarchy”, so it was permanently hidden here.
         return Form::make(array_values(array_filter([
             FormField::make(t('Restrict assets to a single location'))
-                ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
+                ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation))
+                ->reactive(),
             Group::make('restricted-location', [
                 FormField::make()
                     ->label(t('Source'))
@@ -277,12 +278,13 @@ class Assets extends BaseRelationField
                 ->visible($this->restrictLocation),
             FormField::make(t('Allow subfolders'))
                 ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders))
+                ->reactive()
                 ->visible($this->restrictLocation),
             FormField::make(t('Default Upload Subpath'))
                 ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
                 ->tip($objectTemplateTip)
                 ->visible($this->restrictLocation && $this->allowSubfolders),
-            $this->sourcesField()->visible(! $this->restrictLocation),
+            $this->sourcesField()->reactive()->visible(! $this->restrictLocation),
 
             Group::make('default-upload-location', [
                 FormField::make()
@@ -308,7 +310,8 @@ class Assets extends BaseRelationField
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
                 ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
             FormField::make(t('Restrict allowed file types'))
-                ->control(Lightswitch::make('restrictFiles')->value($this->restrictFiles)),
+                ->control(Lightswitch::make('restrictFiles')->value($this->restrictFiles))
+                ->reactive(),
             FormField::make(t('Allowed Kinds'))
                 ->control(Choice::make('allowedKinds')
                     ->multiple()

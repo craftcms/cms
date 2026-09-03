@@ -122,6 +122,16 @@ it('keeps stable identities for pathless presentational leaves', function () {
     ]);
 });
 
+it('only serializes reactive fields when enabled', function () {
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Field::make('Static', Text::make('static')),
+        Field::make('Reactive', Text::make('reactive'))->reactive(),
+    ]), new FormContext);
+
+    expect($payload->nodes[0]->props)->not->toHaveKey('reactive')
+        ->and($payload->nodes[1]->props['reactive'])->toBeTrue();
+});
+
 it('serializes switch configuration', function () {
     $control = Lightswitch::make('enabled')
         ->indeterminate()

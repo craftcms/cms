@@ -134,7 +134,8 @@ class Local extends Filesystem
         $form = Form::make();
 
         $form->add(Field::make(t('Files in this filesystem have public URLs'))
-            ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
+            ->control(Lightswitch::make('hasUrls')->value($this->hasUrls))
+            ->reactive());
 
         if ($this->hasUrls) {
             $form->add(Field::make(t('Base URL'))

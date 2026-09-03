@@ -137,6 +137,7 @@ class QuickPost extends Widget
         return $form->add(
             Field::make(t('Section'))
                 ->instructions(t('Which section do you want to save entries to?'))
+                ->reactive()
                 ->control(Choice::make('section')->value($section->id)->options(array_map(
                     fn (Section $section): array => [
                         'label' => t($section->name, category: 'site'),

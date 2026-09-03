@@ -73,6 +73,7 @@ class FieldEditViewModel extends ViewModel
         ];
         $typeField = FormField::make(t('Field Type'), Combobox::make('type')
             ->options($this->fieldTypeOptions()))
+            ->reactive()
             ->instructions(t('What type of field is this?'))
             ->required();
 
@@ -92,7 +93,7 @@ class FieldEditViewModel extends ViewModel
             $nodes[] = FormField::make(
                 t('Translation Method'),
                 Choice::make('translationMethod')->options($translationOptions),
-            )->instructions(t('How should this field’s values be translated?'));
+            )->reactive()->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
                 $nodes[] = FormField::make(
