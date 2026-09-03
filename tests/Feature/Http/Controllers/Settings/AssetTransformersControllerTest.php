@@ -16,6 +16,7 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
@@ -34,6 +35,20 @@ it('requires authentication', function () {
 
     get(action([AssetTransformersController::class, 'index']))->assertRedirect();
     postJson(action([AssetTransformersController::class, 'store']))->assertUnauthorized();
+});
+
+it('gives its breadcrumbs links the Vue breadcrumbs can follow', function () {
+    // Crumbs are `Cp\Data\ActionItem`s, which spell the link `url` — the same
+    // as a nav item and the same as the legacy template has always read.
+    get(action([AssetTransformersController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs
+                ->every(fn (array $crumb): bool => ! array_key_exists('url', $crumb))
+            )
+            ->where('crumbs.0.href', fn (?string $href): bool => is_string($href) && str_contains($href, 'settings'))
+            ->etc()
+        );
 });
 
 it('lists the required Craft transformer', function () {

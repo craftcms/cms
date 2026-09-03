@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Settings;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +20,7 @@ class SettingsIndexController
             'title' => t('Settings'),
             'readOnly' => ! $generalConfig->allowAdminChanges,
             'crumbs' => [
-                ['label' => t('Settings')],
+                new ActionItem()->label(t('Settings')),
             ],
             'settings' => $cpSettings->all(),
         ]);

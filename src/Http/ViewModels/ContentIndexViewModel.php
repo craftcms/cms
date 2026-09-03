@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -251,7 +252,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * ({@see AssetIndexViewModel::breadcrumbs()}), which this would only repeat
      * the first steps of.
      *
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     public function crumbs(): array
     {
@@ -261,12 +262,11 @@ abstract class ContentIndexViewModel extends ViewModel
             return [];
         }
 
-        $crumbs = [[
+        $crumbs = [
             // The index's own name, not title() — that now names the selected
             // source, which is the crumb below this one.
-            'label' => $this->indexTitle(),
-            'href' => $indexUrl,
-        ]];
+            new ActionItem()->label($this->indexTitle())->href($indexUrl),
+        ];
 
         [$sourceKey] = $this->sourceState();
 
@@ -275,20 +275,24 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         $options = $this->sourceCrumbOptions($sourceKey);
-        $current = collect($options)->first(fn (array $option) => $option['selected']);
+        // The options mirror the sources sidebar, headings and all, so the
+        // selectable ones are a level down inside any group.
+        $choices = collect($options)->flatMap(
+            fn (array $option): array => $option['type'] === 'group' ? $option['items'] : [$option],
+        );
+        $current = $choices->first(fn (array $option): bool => $option['selected']);
 
         if ($current === null) {
             return $crumbs;
         }
 
-        $crumbs[] = [
-            'label' => $current['label'],
-            'href' => $current['href'],
-            // A crumb is shaped like a link action item, so the full set
-            // doubles as the current one's switcher menu. One source is no
-            // choice at all, so it gets a plain crumb.
-            ...(count($options) > 1 ? ['actions' => $options] : []),
-        ];
+        // A crumb is an action item like the options are, so the full set
+        // doubles as the current one's switcher menu. One source is no choice
+        // at all, so it gets a plain crumb.
+        $crumbs[] = new ActionItem()
+            ->label($current['label'])
+            ->href($current['href'])
+            ->items($choices->count() > 1 ? $options : []);
 
         return $crumbs;
     }
@@ -580,20 +584,40 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * The index's selectable sources as link action items, with the current one
-     * flagged — the source crumb, and the switcher menu hanging off it.
+     * The index's sources as action items, with the current one flagged — the
+     * source crumb, and the switcher menu hanging off it.
      *
-     * @return list<array{type: string, label: string, href: string, selected: bool}>
+     * Headings come through as groups over the sources they head, so the menu
+     * reads the same as the sources sidebar beside it rather than flattening
+     * into an ungrouped list.
+     *
+     * @return list<
+     *     array{type: 'link', label: string, href: string, selected: bool}
+     *     |array{type: 'group', heading: string, items: list<array{type: 'link', label: string, href: string, selected: bool}>}
+     * >
      */
     private function sourceCrumbOptions(string $sourceKey): array
     {
         $options = [];
+        // A heading collects the sources after it, so the switcher groups them
+        // the way the sources sidebar does.
+        $groupIndex = null;
 
         foreach ($this->sources() as $source) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
+                $options[] = [
+                    'type' => 'group',
+                    'heading' => $source['heading'] ?? '',
+                    'items' => [],
+                ];
+                $groupIndex = array_key_last($options);
+
+                continue;
+            }
+
             $key = $source['key'] ?? null;
 
-            // Headings aren't selectable.
-            if ($source['type'] === ElementSources::TYPE_HEADING || $key === null) {
+            if ($key === null) {
                 continue;
             }
 
@@ -603,15 +627,26 @@ abstract class ContentIndexViewModel extends ViewModel
                 continue;
             }
 
-            $options[] = [
+            $option = [
                 'type' => 'link',
                 'label' => $source['label'] ?? $key,
                 'href' => $url,
                 'selected' => $key === $sourceKey,
             ];
+
+            if ($groupIndex !== null) {
+                $options[$groupIndex]['items'][] = $option;
+            } else {
+                $options[] = $option;
+            }
         }
 
-        return $options;
+        // A heading whose sources the user can't reach is left standing on its
+        // own, so drop it rather than show a heading over nothing.
+        return array_values(array_filter(
+            $options,
+            fn (array $option): bool => $option['type'] !== 'group' || count($option['items']) > 0,
+        ));
     }
 
     /** @return array{0: ?string, 1: ?array<string, mixed>} */
@@ -837,7 +872,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * when its column selection changes.
      *
      * @param  list<ElementInterface>  $elements
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     private function tableRows(array $elements): array
     {
@@ -896,7 +931,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * Vue owns the selection process, so cards render non-selectable.
      *
      * @param  list<ElementInterface>  $elements
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     private function cardData(array $elements): array
     {
@@ -935,7 +970,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * the `ElementThumbs` component); folders navigate via their own row data.
      *
      * @param  ElementInterface[]  $elements
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     private function thumbData(array $elements): array
     {

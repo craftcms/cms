@@ -17,9 +17,9 @@ abstract class BaseAssetSettingsController
         $path = request()->craftPath();
 
         return [
-            new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets'))->selected($path === 'settings/assets'),
-            new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms'))->selected($path === 'settings/assets/transforms'),
-            new NavItem()->label(t('Asset Transformers'))->url(Url::cpUrl('settings/assets/transformers'))->selected($path === 'settings/assets/transformers'),
+            new NavItem()->label(t('Volumes'))->href(Url::cpUrl('settings/assets'))->selected($path === 'settings/assets'),
+            new NavItem()->label(t('Image Transforms'))->href(Url::cpUrl('settings/assets/transforms'))->selected($path === 'settings/assets/transforms'),
+            new NavItem()->label(t('Asset Transformers'))->href(Url::cpUrl('settings/assets/transformers'))->selected($path === 'settings/assets/transformers'),
         ];
     }
 }

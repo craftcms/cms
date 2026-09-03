@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -90,7 +91,7 @@ class CpScreenResponse implements Responsable
     public ?string $selectedSubnavItem = null;
 
     /**
-     * @var list<array<string, mixed>>|callable|null Breadcrumbs.
+     * @var list<ActionItem|array<string, mixed>>|callable|null Breadcrumbs.
      *
      * This will only be used by full-page screens.
      *
@@ -322,28 +323,33 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the breadcrumbs.
      *
-     * A breadcrumb is shaped like a link action item, so the same array can be
-     * used as a crumb and as an entry in another crumb's menu:
+     * A crumb is an [[ActionItem]], the same shape as a navigation entry or a
+     * menu item — one thing described once and drawn differently:
      *
-     * - `label` – The breadcrumb label, to be HTML-encoded
-     * - `href` – The URL the breadcrumb links to. Absolute: nothing normalizes
-     *   it downstream, so build it with [[\CraftCms\Cms\Support\Url::cpUrl()]]
-     * - `icon` – The icon displayed beside the label
+     * ```php
+     * ->crumbs([
+     *     new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+     *     new ActionItem()->label(t('Volumes')),
+     * ])
+     * ```
      *
-     * Plus three keys only a crumb uses:
+     * `url` is left off for the crumb naming the page you're already on.
+     * `html` renders server-built content (an element chip) in place of a
+     * label, and `items` hangs a switcher menu off the crumb, listing what
+     * else sits at that level.
      *
-     * - `html` – Server-rendered crumb content (e.g. an element chip), used
-     *   instead of `label`
-     * - `attrs` – Extra HTML attributes for the crumb
-     * - `actions` – A dropdown of link action items shown alongside the crumb
-     *   (e.g. the other sections available from an entry's section crumb)
+     * URLs are absolute: nothing normalizes them downstream, so build them
+     * with [[\CraftCms\Cms\Support\Url::cpUrl()]].
      *
-     * The last crumb is treated as the current page — `aria-current` is derived
-     * from position, so there is no `current` key.
+     * The last crumb is treated as the current page — `aria-current` is
+     * derived from position, so there is nothing to set for it.
+     *
+     * Arrays are still accepted, and are configured into [[ActionItem]]s.
      *
      * This will only be used by full-page screens.
+     *
+     * @param  list<ActionItem|array<string, mixed>>|callable|null  $value
      */
-    /** @param list<array<string, mixed>>|callable|null $value */
     public function crumbs(callable|array|null $value): self
     {
         $this->crumbs = $value;
@@ -362,10 +368,9 @@ class CpScreenResponse implements Responsable
             $this->crumbs = [];
         }
 
-        $this->crumbs[] = [
-            'label' => $label,
-            'href' => $url ? Url::cpUrl($url) : null,
-        ];
+        $this->crumbs[] = new ActionItem()
+            ->label($label)
+            ->href($url !== null ? Url::cpUrl($url) : null);
 
         return $this;
     }

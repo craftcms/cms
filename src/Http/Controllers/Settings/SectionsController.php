@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -57,8 +58,8 @@ readonly class SectionsController
         return new CpScreenResponse()
             ->title(t('Sections'))
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Sections')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Sections')),
             ])
             ->inertiaPage('settings/sections/Index', [
                 'data' => fn () => $tableData,

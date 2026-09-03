@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -83,17 +84,15 @@ trait EditUserTrait
         // `aria-current="page"` from position, and that now belongs to the screen.
         $response->crumbs([
             ...$user->getCrumbs(),
-            [
-                'html' => app(ElementHtml::class)->elementChipHtml($user, [
-                    'showDraftName' => false,
-                    'class' => 'chromeless',
-                    'hyperlink' => true,
-                    'attributes' => [
-                        'appearance' => Appearance::Plain->value,
-                    ],
-                ]),
-            ],
-            ['label' => $pageName],
+            new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($user, [
+                'showDraftName' => false,
+                'class' => 'chromeless',
+                'hyperlink' => true,
+                'attributes' => [
+                    'appearance' => Appearance::Plain->value,
+                ],
+            ])),
+            new ActionItem()->label($pageName),
         ]);
 
         if ($screen !== EditUserScreens::PROFILE) {

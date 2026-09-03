@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -45,9 +46,9 @@ class AssetTransformersController extends BaseAssetSettingsController
 
         return Inertia::render('settings/assets/transformers/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
-                ['label' => t('Asset Transformers')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets')),
+                new ActionItem()->label(t('Asset Transformers')),
             ],
             'readOnly' => $this->readOnly,
             'subnav' => $this->subnav(),

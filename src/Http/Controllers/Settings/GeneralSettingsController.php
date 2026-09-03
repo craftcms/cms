@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -47,8 +48,8 @@ readonly class GeneralSettingsController
         return new CpScreenResponse()
             ->title(t('General Settings'))
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('General Settings')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('General Settings')),
             ])
             ->redirectUrl('settings')
             ->inertiaPage('Form', [

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\FieldHtml;
@@ -75,8 +76,8 @@ class FieldsController
 
         return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Fields')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Fields')),
             ],
             'title' => t('Fields'),
             'sort' => $request->sort(),

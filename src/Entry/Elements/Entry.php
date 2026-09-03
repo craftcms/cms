@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Entry\Elements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -1196,7 +1197,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /** @return array<int, array<string, bool|string|array<string, string|array<int, array<string, bool|string>>>>|null> */
+    /** @return list<ActionItem> */
     #[Override]
     protected function crumbs(): array
     {
@@ -1208,10 +1209,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         $page = $section->getPage();
         $crumbs = [
-            [
-                'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'href' => Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries')),
-            ],
+            new ActionItem()
+                ->label($page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'))
+                ->href(Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'))),
         ];
 
         // Is the section’s source enabled?
@@ -1259,25 +1259,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $current = $sectionOptions->first(fn (array $o) => $o['selected'])
                 ?? $sectionOptions->first();
 
-            if ($sectionOptions->count() > 1) {
-                // A crumb is shaped like a link action item, so the current
-                // option doubles as the crumb and the whole set as its menu.
-                $crumbs[] = [
-                    'label' => $current['label'],
-                    'href' => $current['href'],
-                    'actions' => $sectionOptions->all(),
-                ];
-            } else {
-                $crumbs[] = [
-                    'label' => $current['label'],
-                    'href' => $current['href'],
-                ];
-            }
+            // A crumb is an action item like the options are, so the current
+            // one doubles as the crumb and the whole set as its menu. One
+            // option is no choice at all, so it gets a plain crumb.
+            $crumbs[] = new ActionItem()
+                ->label($current['label'])
+                ->href($current['href'])
+                ->items($sectionOptions->count() > 1 ? $sectionOptions->all() : []);
         } elseif ($section->type !== SectionType::Single) {
             // Just show its name w/o a link
-            $crumbs[] = [
-                'label' => $section->getUiLabel(),
-            ];
+            $crumbs[] = new ActionItem()->label($section->getUiLabel());
         }
 
         if ($section->type === SectionType::Structure) {

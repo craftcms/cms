@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -50,8 +51,8 @@ readonly class EmailSettingsController
         return new CpScreenResponse()
             ->title(t('Email Settings'))
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Email')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Email')),
             ])
             ->redirectUrl('settings')
             ->inertiaPage('settings/Email', [

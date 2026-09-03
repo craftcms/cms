@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Resources\GqlTokenResource;
@@ -33,8 +34,8 @@ readonly class TokensController extends GqlController
     {
         return Inertia::render('graphql/tokens/Index', [
             'crumbs' => fn () => [
-                ['label' => t('GraphQL'), 'href' => Url::cpUrl('graphql/tokens')],
-                ['label' => t('Tokens')],
+                new ActionItem()->label(t('GraphQL'))->href(Url::cpUrl('graphql/tokens')),
+                new ActionItem()->label(t('Tokens')),
             ],
             'title' => t('GraphQL Tokens'),
             'tokens' => GqlTokenResource::collection($this->gql->getTokens()),
@@ -138,8 +139,8 @@ readonly class TokensController extends GqlController
             ->title($title)
             ->selectedSubnavItem('tokens')
             ->crumbs([
-                ['label' => t('GraphQL Tokens'), 'href' => Url::cpUrl('graphql/tokens')],
-                ['label' => $title],
+                new ActionItem()->label(t('GraphQL Tokens'))->href(Url::cpUrl('graphql/tokens')),
+                new ActionItem()->label($title),
             ])
             ->redirectUrl('graphql/tokens')
             ->inertiaPage('graphql/tokens/Edit', [

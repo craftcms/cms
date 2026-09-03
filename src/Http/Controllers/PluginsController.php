@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -42,8 +43,8 @@ readonly class PluginsController
         return new CpScreenResponse()
             ->title(t('Plugins'))
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Plugins')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Plugins')),
             ])
             ->inertiaPage('settings/Plugins', [
                 'pluginInfo' => fn () => $info,

@@ -417,19 +417,56 @@ it('hangs a source switcher off the section crumb', function () {
     get("/{$this->cpTrigger}/content/entries/blog")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('crumbs.1.actions', function ($actions) {
+            ->where('crumbs.1.items', function ($actions) {
                 $actions = collect($actions);
+
+                $choices = $actions->flatMap(
+                    fn (array $action): array => $action['type'] === 'group' ? $action['items'] : [$action],
+                );
 
                 // Link action items, with exactly the current one flagged —
                 // the shape Breadcrumbs.vue feeds to its ActionMenu.
-                return $actions->pluck('label')->contains('Blog')
-                    && $actions->pluck('label')->contains('News')
+                return $choices->pluck('label')->contains('Blog')
+                    && $choices->pluck('label')->contains('News')
                     // The bare index is reachable from the menu too.
-                    && $actions->pluck('label')->contains('All entries')
-                    && $actions->every(fn ($action) => $action['type'] === 'link' && ! empty($action['href']))
-                    && $actions->where('selected', true)->pluck('label')->all() === ['Blog'];
+                    && $choices->pluck('label')->contains('All entries')
+                    && $choices->every(fn ($action) => $action['type'] === 'link' && ! empty($action['href']))
+                    && $choices->where('selected', true)->pluck('label')->all() === ['Blog'];
             })
         );
+});
+
+it('gives the source crumb the same list the sources sidebar shows', function () {
+    Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+    Section::factory()->create(['name' => 'News', 'handle' => 'news']);
+
+    get("/{$this->cpTrigger}/content/entries/blog")
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) {
+            /** @var array<int, array<string, mixed>> $sources */
+            $sources = $page->toArray()['props']['sources'];
+            /** @var array<int, array<string, mixed>> $actions */
+            $actions = $page->toArray()['props']['crumbs'][1]['items'];
+
+            // The switcher and the sidebar are the same list in two places, so
+            // the headings and their order have to survive into the menu —
+            // they used to be dropped, leaving an ungrouped run of sources
+            // next to a grouped sidebar.
+            $outline = fn (array $list): array => collect($list)
+                ->flatMap(fn (array $entry): array => match ($entry['type']) {
+                    'heading', 'group' => ['# '.($entry['heading'] ?? '')],
+                    default => [$entry['label']],
+                })
+                ->all();
+
+            $menuOutline = collect($actions)
+                ->flatMap(fn (array $action): array => $action['type'] === 'group'
+                    ? ['# '.$action['heading'], ...collect($action['items'])->pluck('label')->all()]
+                    : [$action['label']])
+                ->all();
+
+            expect($menuOutline)->toBe($outline($sources));
+        });
 });
 
 it('titles the screen after the selected source', function () {

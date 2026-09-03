@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\Requests\RouteRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -33,8 +34,8 @@ readonly class RoutesController
         return new CpScreenResponse()
             ->title(t('Routes'))
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Routes')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Routes')),
             ])
             ->inertiaPage('settings/routes/Index', [
                 'readOnly' => ! Cms::config()->allowAdminChanges,
@@ -98,9 +99,9 @@ readonly class RoutesController
         return new CpScreenResponse()
             ->title($title)
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Routes'), 'href' => Url::cpUrl('settings/routes')],
-                ['label' => $title],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Routes'))->href(Url::cpUrl('settings/routes')),
+                new ActionItem()->label($title),
             ])
             ->redirectUrl('settings/routes')
             ->inertiaPage('settings/routes/Edit', [

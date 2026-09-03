@@ -12,6 +12,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -840,7 +841,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'users';
     }
 
-    /** @return array<int, array<string, string>> */
+    /** @return list<ActionItem> */
     #[Override]
     protected function crumbs(): array
     {
@@ -849,10 +850,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         return [
-            [
-                'label' => t('Users'),
-                'href' => Url::cpUrl('users'),
-            ],
+            new ActionItem()->label(t('Users'))->href(Url::cpUrl('users')),
         ];
     }
 

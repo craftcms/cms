@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -1130,14 +1131,12 @@ JS,
         if ($owner = $this->getOwner()) {
             return [
                 ...$owner->getCrumbs(),
-                [
-                    'html' => app(ElementHtml::class)->elementChipHtml($owner, [
-                        'appearance' => 'plain',
-                        'showDraftName' => false,
-                        'class' => 'chromeless',
-                        'hyperlink' => true,
-                    ]),
-                ],
+                new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($owner, [
+                    'appearance' => 'plain',
+                    'showDraftName' => false,
+                    'class' => 'chromeless',
+                    'hyperlink' => true,
+                ])),
             ];
         }
 
@@ -1149,7 +1148,7 @@ JS,
      *
      * @see getCrumbs()
      */
-    /** @return array<array-key,mixed> */
+    /** @return list<ActionItem|array<string, mixed>> */
     protected function crumbs(): array
     {
         return [];

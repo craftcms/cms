@@ -156,7 +156,7 @@ it('adds a source crumb that links the source’s own slug URL', function () {
             ->where('crumbs.0.label', 'Users')
             ->where('crumbs.1.label', 'Admins')
             ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/users/admins"))
-            ->where('crumbs.1.actions', fn ($actions) => collect($actions)
+            ->where('crumbs.1.items', fn ($actions) => collect($actions)
                 ->where('selected', true)
                 ->pluck('label')
                 ->all() === ['Admins'])

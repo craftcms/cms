@@ -11,6 +11,7 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
@@ -799,7 +800,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the breadcrumbs that lead up to the element.
      */
-    /** @return array<array-key,mixed> */
+    /** @return list<ActionItem|array<string, mixed>> */
     public function getCrumbs(): array;
 
     /**

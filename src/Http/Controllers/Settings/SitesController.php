@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
@@ -79,10 +80,10 @@ readonly class SitesController
             'group' => $group ?? null,
             'groups' => $groups,
             'subnav' => [
-                new NavItem()->label(t('All Sites'))->url(Url::cpUrl('settings/sites'))->selected(! isset($group)),
+                new NavItem()->label(t('All Sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
                 ...$groups->map(fn ($siteGroup) => new NavItem()
                     ->label($siteGroup->name)
-                    ->url(Url::cpUrl('settings/sites', ['groupId' => $siteGroup->id]))
+                    ->href(Url::cpUrl('settings/sites', ['groupId' => $siteGroup->id]))
                     ->selected(isset($group) && $siteGroup->id === $group->id)
                 )->all(),
             ],
@@ -115,18 +116,9 @@ readonly class SitesController
             ->title(t('Create a new site'))
             ->redirectUrl('settings/sites')
             ->crumbs([
-                [
-                    'label' => t('Settings'),
-                    'href' => Url::url('settings'),
-                ],
-                [
-                    'label' => t('Sites'),
-                    'href' => Url::url('settings/sites'),
-                ],
-                [
-                    'label' => t('Create site'),
-                    'href' => Url::url('settings/sites/new'),
-                ],
+                new ActionItem()->label(t('Settings'))->href(Url::url('settings')),
+                new ActionItem()->label(t('Sites'))->href(Url::url('settings/sites')),
+                new ActionItem()->label(t('Create site'))->href(Url::url('settings/sites/new')),
             ])
             ->inertiaPage('settings/sites/Edit', [
                 ...$this->formProps($site),
@@ -147,22 +139,10 @@ readonly class SitesController
             ->title(trim($siteData->getName()) ?: t('Edit Site'))
             ->redirectUrl('settings/sites')
             ->crumbs([
-                [
-                    'label' => t('Settings'),
-                    'href' => Url::url('settings'),
-                ],
-                [
-                    'label' => t('Sites'),
-                    'href' => Url::url('settings/sites'),
-                ],
-                [
-                    'label' => $siteData->getGroup()->getName(),
-                    'href' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
-                ],
-                [
-                    'label' => $siteData->getName(),
-                ],
-
+                new ActionItem()->label(t('Settings'))->href(Url::url('settings')),
+                new ActionItem()->label(t('Sites'))->href(Url::url('settings/sites')),
+                new ActionItem()->label($siteData->getGroup()->getName())->href(Url::url('settings/sites', ['groupId' => $siteGroup->id])),
+                new ActionItem()->label($siteData->getName()),
             ])
             ->redirectUrl('settings/sites')
             ->inertiaPage('settings/sites/Edit', [

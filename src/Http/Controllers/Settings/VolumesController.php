@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
@@ -60,9 +61,9 @@ class VolumesController extends BaseAssetSettingsController
 
         return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets')],
-                ['label' => t('Volumes')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets')),
+                new ActionItem()->label(t('Volumes')),
             ],
             'sort' => $sort,
             'subnav' => $this->subnav(),
