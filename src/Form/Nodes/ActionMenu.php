@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\t;
 
@@ -25,6 +26,8 @@ use function CraftCms\Cms\t;
  */
 class ActionMenu implements Node
 {
+    use Conditionable;
+
     private ?string $label = null;
 
     private string $icon = 'ellipsis';

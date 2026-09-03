@@ -1278,9 +1278,7 @@ class ProjectConfig
                 $insertionPoint = &$generatedConfig;
 
                 foreach ($configPath as $pathSegment) {
-                    if (! isset($insertionPoint[$pathSegment])) {
-                        $insertionPoint[$pathSegment] = [];
-                    }
+                    $insertionPoint[$pathSegment] ??= [];
 
                     $insertionPoint = &$insertionPoint[$pathSegment];
                 }
@@ -1319,9 +1317,7 @@ class ProjectConfig
 
         $currentConfig = $this->getCurrentWorkingConfig()->export();
 
-        if ($configData === null) {
-            $configData = $this->getExternalConfig()->export();
-        }
+        $configData ??= $this->getExternalConfig()->export();
 
         unset($configData['imports'], $currentConfig['imports']);
 
@@ -1426,9 +1422,7 @@ class ProjectConfig
      */
     private function _findConfigFiles(?string $path = null): array
     {
-        if ($path === null) {
-            $path = Path::projectConfig(create: false);
-        }
+        $path ??= Path::projectConfig(create: false);
         if (! is_dir($path)) {
             return [];
         }
@@ -1479,7 +1473,7 @@ class ProjectConfig
             }
         }
 
-        file_put_contents($basePath, Yaml::dump($configData, 20, 2));
+        file_put_contents($basePath, Yaml::dump($configData, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING));
     }
 
     /**
@@ -1534,7 +1528,7 @@ class ProjectConfig
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = join_paths($basePath, $relativeFile);
-                $yamlContent = Yaml::dump($configData, 20, 2);
+                $yamlContent = Yaml::dump($configData, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
                 if (! empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
@@ -1644,9 +1638,7 @@ class ProjectConfig
      */
     private function getExternalConfig(): ReadOnlyProjectConfigData
     {
-        if ($this->_externalConfig === null) {
-            $this->_externalConfig = $this->_loadExternalConfig();
-        }
+        $this->_externalConfig ??= $this->_loadExternalConfig();
 
         return $this->_externalConfig;
     }
@@ -1656,9 +1648,7 @@ class ProjectConfig
      */
     private function getInternalConfig(): ReadOnlyProjectConfigData
     {
-        if ($this->_internalConfig === null) {
-            $this->_internalConfig = $this->_loadInternalConfig();
-        }
+        $this->_internalConfig ??= $this->_loadInternalConfig();
 
         return $this->_internalConfig;
     }

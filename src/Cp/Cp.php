@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\CpDataResolving;
+use CraftCms\Cms\Cp\Notifications\NotificationCenter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
@@ -165,7 +165,7 @@ readonly class Cp
 
         if (request()->isCpRequest()) {
             $data += [
-                'announcements' => $upToDate ? app(Announcements::class)->get() : [],
+                'notifications' => $upToDate ? app(NotificationCenter::class)->get() : [],
                 'baseCpUrl' => Url::cpUrl(),
                 'cpTrigger' => $generalConfig->cpTrigger,
             ];

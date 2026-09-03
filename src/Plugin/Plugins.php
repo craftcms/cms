@@ -484,10 +484,7 @@ class Plugins
         }
 
         // Set the edition
-        if ($edition === null) {
-            // See if one is already set in the project config
-            $edition = $projectConfig->get($configKey.'.edition');
-        }
+        $edition ??= $projectConfig->get($configKey.'.edition');
 
         $editions = $plugin::editions();
 

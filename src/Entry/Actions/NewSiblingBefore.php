@@ -26,11 +26,9 @@ class NewSiblingBefore extends ElementAction
     {
         parent::setElementType($elementType);
 
-        if (! isset($this->label)) {
-            $this->label = t('Create a new {type} before', [
-                'type' => $elementType::lowerDisplayName(),
-            ]);
-        }
+        $this->label ??= t('Create a new {type} before', [
+            'type' => $elementType::lowerDisplayName(),
+        ]);
     }
 
     #[\Override]

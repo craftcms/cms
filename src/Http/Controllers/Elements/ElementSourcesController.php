@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
-use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementSourceForm;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
-use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\User\Data\UserGroup;
-use CraftCms\Cms\User\UserGroups;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -28,194 +22,92 @@ readonly class ElementSourcesController
 {
     use RespondsWithFlash;
 
-    public function show(ElementIndexRequest $request, ElementSources $elementSources, Fields $fields, UserGroups $userGroups): JsonResponse
+    public function show(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceForm $sourceForm): JsonResponse
+    {
+        /** @var class-string<ElementInterface> $elementType */
+        $elementType = $request->elementType();
+        $multiPage = $elementType::multiPageSources();
+        $sources = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
+
+        return new JsonResponse([
+            'multiPage' => $multiPage,
+            'sources' => $sources
+                ->map(fn (array $source) => [
+                    'key' => $source['key'] ?? null,
+                    'type' => $source['type'],
+                    'label' => $source['label'] ?? null,
+                    'heading' => $source['heading'] ?? null,
+                    'page' => $multiPage ? ($source['page'] ?? $this->defaultPage($elementType)) : null,
+                    // ElementSources synthesizes a keyless blank heading as a
+                    // separator. Nothing can address it by Control path and
+                    // store() can't save it, so it gets no Form.
+                    'form' => ($source['key'] ?? '') !== ''
+                        ? $sourceForm->payload($elementType, $source)
+                        : null,
+                ])
+                ->values()
+                ->all(),
+            'pageSettings' => $elementSources->getPageSettings($elementType),
+            'elementTypeName' => $elementType::displayName(),
+        ]);
+    }
+
+    /**
+     * Returns the settings Form for a single source — for one the client just
+     * added, and for {@see FormPayload} refreshes.
+     */
+    public function form(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceForm $sourceForm): JsonResponse
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $request->elementType();
 
-        // Global sort options
-        $baseSortOptions = collect($elementType::sortOptions())
-            ->map(fn ($option, $key) => [
-                'label' => $option['label'] ?? $option,
-                'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
-
-        // Get the source info
-        $sources = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true)->all();
-        $multiPage = $elementType::multiPageSources();
-
-        foreach ($sources as &$source) {
-            if ($multiPage) {
-                // ensure we're using the EN translation here
-                $language = app()->getLocale();
-                app()->setLocale('en');
-                $source['page'] ??= $elementType::pluralDisplayName();
-                app()->setLocale($language);
-            }
-
-            if ($source['type'] === ElementSources::TYPE_HEADING) {
-                continue;
-            }
-
-            // Sort options
-            $source['sortOptions'] = array_merge(
-                array_filter([
-                    ($source['structureId'] ?? false)
-                        ? [
-                            'label' => t('Structure'),
-                            'attr' => 'structure',
-                            'defaultDir' => 'asc',
-                        ]
-                        : null,
-                ]),
-                $baseSortOptions,
-                $elementSources->getSourceSortOptions($elementType, $source['key'])
-                    ->map(fn ($option) => [
-                        'label' => $option['label'],
-                        'attr' => $option['attribute'] ?? $option['orderBy'],
-                        'defaultDir' => $option['defaultDir'] ?? 'asc',
-                    ])
-                    ->values()
-                    ->all()
-            );
-
-            $defaultSortOption = null;
-            $defaultSortDir = null;
-
-            if (isset($source['defaultSort'])) {
-                if (is_string($source['defaultSort'])) {
-                    $defaultSortOption = collect($source['sortOptions'])->firstWhere('attr', $source['defaultSort']);
-                } elseif (is_array($source['defaultSort']) && isset($source['defaultSort'][0])) {
-                    $defaultSortOption = collect($source['sortOptions'])->firstWhere('attr', $source['defaultSort'][0]);
-                    if ($defaultSortOption && isset($source['defaultSort'][1])) {
-                        $defaultSortDir = $source['defaultSort'][1];
-                    }
-                }
-            }
-
-            if (! $defaultSortOption) {
-                $defaultSortOption = reset($source['sortOptions']);
-            }
-
-            $source['defaultSort'] = [
-                $defaultSortOption['attr'],
-                $defaultSortDir ?? $defaultSortOption['defaultDir'],
-            ];
-
-            // Available custom field attributes
-            $source['availableTableAttributes'] = [];
-            foreach ($elementSources->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
-                $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
-            }
-
-            // Selected table attributes
-            $tableAttributes = $elementSources->getTableAttributes($elementType, $source['key'])->all();
-            array_shift($tableAttributes);
-            $source['tableAttributes'] = array_map(fn ($a) => [$a[0], $a[1]['label']], $tableAttributes);
-
-            if ($source['type'] === ElementSources::TYPE_CUSTOM) {
-                if (isset($source['condition'])) {
-                    /** @var ElementConditionInterface $condition */
-                    $condition = Conditions::createCondition(Arr::pull($source, 'condition'));
-                    $condition->mainTag = 'div';
-                    $condition->name = "sources[{$source['key']}][condition]";
-                    $condition->forProjectConfig = true;
-                    $condition->queryParams = ['site', 'status'];
-                    $condition->addRuleLabel = t('Add a filter');
-
-                    HtmlStack::startJsBuffer();
-                    $conditionBuilderHtml = $condition->getBuilderHtml();
-                    $conditionBuilderJs = HtmlStack::clearJsBuffer();
-                    $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
-                }
-
-                if (isset($source['sites'])) {
-                    $source['sites'] = array_values(array_filter(array_map(
-                        fn (int $siteId) => Sites::getSiteById($siteId)?->uid,
-                        $source['sites'] ?: [],
-                    )));
-                }
-                if (isset($source['sites']) && $source['sites'] === false) {
-                    $source['sites'] = [];
-                }
-
-                if (isset($source['userGroups']) && $source['userGroups'] === false) {
-                    $source['userGroups'] = [];
-                }
-            }
-        }
-        unset($source);
-
-        $viewModes = array_map(fn (array $viewMode) => array_merge($viewMode, [
-            'iconSvg' => Icons::svg($viewMode['icon'] ?? 'table'),
-        ]), $elementType::indexViewModes());
-
-        // Get the default sort options for custom sources
-        $defaultSortOptions = $elementSources->getSourceSortOptions($elementType, 'custom:x')
-            ->map(fn (array $option) => [
-                'label' => $option['label'],
-                'attr' => $option['attribute'] ?? $option['orderBy'],
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
-
-        // Get the available table attributes
-        $availableTableAttributes = [];
-
-        foreach ($elementSources->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
-            $availableTableAttributes[] = [$key, $labelInfo['label']];
-        }
-
-        // Get previewable custom fields that should be available for all custom sources
-        $customFieldAttributes = [];
-
-        foreach ($fields->getLayoutsByType($elementType) as $fieldLayout) {
-            foreach ($fieldLayout->getCustomFields() as $field) {
-                if ($field instanceof PreviewableFieldInterface) {
-                    $customFieldAttributes[] = ["field:$field->uid", t($field->name, category: 'site')];
-                }
-            }
-        }
-
-        $condition = $elementType::createCondition();
-        $condition->id = '__ID__';
-        $condition->name = 'sources[__SOURCE_KEY__][condition]';
-        $condition->mainTag = 'div';
-        $condition->forProjectConfig = true;
-        $condition->queryParams = ['site', 'status'];
-        $condition->addRuleLabel = t('Add a filter');
-
-        HtmlStack::startJsBuffer();
-        $conditionBuilderHtml = $condition->getBuilderHtml();
-        $conditionBuilderJs = HtmlStack::clearJsBuffer();
-
-        $userGroups = $userGroups->getAllGroups()
-            ->map(fn (UserGroup $group) => [
-                'label' => t($group->name, category: 'site'),
-                'value' => $group->uid,
-            ])
-            ->all();
-
-        return new JsonResponse([
-            'multiPage' => $multiPage,
-            'sources' => $sources,
-            'pageSettings' => $elementSources->getPageSettings($elementType),
-            'viewModes' => $viewModes,
-            'baseSortOptions' => $baseSortOptions,
-            'defaultSortOptions' => $defaultSortOptions,
-            'availableTableAttributes' => $availableTableAttributes,
-            'customFieldAttributes' => $customFieldAttributes,
-            'elementTypeName' => $elementType::displayName(),
-            'conditionBuilderHtml' => $conditionBuilderHtml,
-            'conditionBuilderJs' => $conditionBuilderJs,
-            'userGroups' => $userGroups,
-            'headHtml' => HtmlStack::headHtml(),
-            'bodyHtml' => HtmlStack::bodyHtml(),
+        $data = $request->validate([
+            'sourceKey' => ['required', 'string'],
+            'type' => ['required', Rule::in([
+                ElementSources::TYPE_NATIVE,
+                ElementSources::TYPE_CUSTOM,
+                ElementSources::TYPE_HEADING,
+            ])],
+            'settings' => ['nullable', 'array'],
+            'scope' => ['nullable', 'array'],
+            'scope.*' => ['string'],
         ]);
+
+        $source = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true)
+            ->firstWhere('key', $data['sourceKey']);
+
+        $payload = $sourceForm->payload(
+            $elementType,
+            $source ?? $sourceForm->blankSource($data['type'], $data['sourceKey']),
+            $data['settings'] ?? [],
+            isNew: $source === null,
+        );
+
+        $scope = $data['scope'] ?? [];
+
+        // No head/body HTML: this endpoint resolves a Form payload and renders
+        // nothing, so draining HtmlStack would ship the whole CP asset bootstrap
+        // — initializers for elements that only exist on a full page render.
+        // A server-rendered Control fetches its own assets when it renders.
+        return new JsonResponse([
+            'form' => $scope === [] ? $payload : $payload->forScope($scope),
+        ]);
+    }
+
+    /**
+     * The page a multi-page source falls back to. It's a project config key, so
+     * it must not be localized.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private function defaultPage(string $elementType): string
+    {
+        $language = app()->getLocale();
+        app()->setLocale('en');
+        $page = $elementType::pluralDisplayName();
+        app()->setLocale($language);
+
+        return $page;
     }
 
     public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig): Response
@@ -267,7 +159,7 @@ readonly class ElementSourcesController
                 }
 
                 if (isset($postedSettings['defaultSort'])) {
-                    $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
+                    $sourceConfig['defaultSort'] = $this->defaultSort($postedSettings['defaultSort']);
                 }
 
                 if (isset($postedSettings['defaultViewMode'])) {
@@ -280,15 +172,15 @@ readonly class ElementSourcesController
                         'condition' => Conditions::createCondition($postedSettings['condition'])->getConfig(),
                     ];
 
-                    if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
-                        $sourceConfig['sites'] = is_array($postedSettings['sites']) ? $postedSettings['sites'] : false;
+                    if (isset($postedSettings['sites']) && ! self::isAllScope($postedSettings['sites'])) {
+                        $sourceConfig['sites'] = $this->sourceScope($postedSettings['sites']);
                     }
 
-                    if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
-                        $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
+                    if (isset($postedSettings['userGroups']) && ! self::isAllScope($postedSettings['userGroups'])) {
+                        $sourceConfig['userGroups'] = $this->sourceScope($postedSettings['userGroups']);
                     }
                 } elseif ($type === ElementSources::TYPE_HEADING) {
-                    $sourceConfig['heading'] = $postedSettings['heading'];
+                    $sourceConfig['heading'] = $postedSettings['heading'] ?? '';
                 } elseif (isset($postedSettings['enabled'])) {
                     $sourceConfig['disabled'] = ! $postedSettings['enabled'];
                     if ($sourceConfig['disabled']) {
@@ -308,7 +200,7 @@ readonly class ElementSourcesController
             $newSourceConfigs[] = $sourceConfig;
 
             if ($multiPage) {
-                $sourcePageIndexes[] = array_search($sourceConfig['page'], array_keys($pageSettings));
+                $sourcePageIndexes[] = array_search($sourceConfig['page'] ?? null, array_keys($pageSettings));
             }
         }
 
@@ -328,6 +220,52 @@ readonly class ElementSourcesController
         return $this->asSuccess(t('Source settings saved'), data: [
             'disabledSourceKeys' => $disabledSourceKeys,
         ]);
+    }
+
+    /**
+     * Accepts the Form's `['attr' => …, 'dir' => …]` and the legacy
+     * `[attr, dir]` list alike.
+     */
+    private function defaultSort(mixed $defaultSort): mixed
+    {
+        if (is_array($defaultSort) && (isset($defaultSort['attr']) || isset($defaultSort['dir']))) {
+            return array_values(array_filter(
+                [$defaultSort['attr'] ?? null, $defaultSort['dir'] ?? null],
+                fn (mixed $value) => $value !== null && $value !== '',
+            ));
+        }
+
+        return $defaultSort;
+    }
+
+    /**
+     * Whether a posted `sites`/`userGroups` scope means “all”, which project
+     * config records by omitting the key.
+     *
+     * The “All” checkbox posts {@see Choice::ALL_VALUE} as the sole member of
+     * the control's array. A scope that has never been narrowed is seeded as
+     * the bare token instead, and posts back unchanged.
+     */
+    private static function isAllScope(mixed $scope): bool
+    {
+        return $scope === Choice::ALL_VALUE || $scope === [Choice::ALL_VALUE];
+    }
+
+    /**
+     * Normalizes a custom source's `sites`/`userGroups` scope. An empty
+     * selection means “none”, which project config stores as `false` — the
+     * legacy modal posted nothing at all here, so the setting silently
+     * reverted to “all” on every save.
+     *
+     * @return list<mixed>|false
+     */
+    private function sourceScope(mixed $scope): array|false
+    {
+        if (! is_array($scope) || $scope === []) {
+            return false;
+        }
+
+        return array_values($scope);
     }
 
     /**

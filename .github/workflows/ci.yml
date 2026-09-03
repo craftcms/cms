@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - 6.x
-      - 6.x-internal
+      - '*-internal'
   pull_request:
 permissions:
   contents: read

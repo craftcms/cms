@@ -147,7 +147,7 @@ it('requires password confirmation for passwordResetUrl', function () {
 
     postJson(action([PasswordController::class, 'passwordResetUrl']), [
         'userId' => auth()->id(),
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('returns password reset URL when password is confirmed', function () {
@@ -248,7 +248,7 @@ it('returns error for non-existent userId when logged in with editUsers for send
 
     postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'userId' => 999999,
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('requires login for store', function () {
@@ -274,7 +274,7 @@ it('aborts for users without current password', function () {
 
     post(action([PasswordController::class, 'store']), [
         'newPassword' => 'validPassword123!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('returns to previous page when newPassword is empty', function () {
@@ -330,13 +330,12 @@ describe('verifyPassword', function () {
     test('verifyPassword fails with incorrect password', function () {
         postJson(action([PasswordController::class, 'verifyPassword']), [
             'currentPassword' => 'wrong-password',
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonFragment(['message' => t('Invalid password.')]);
     });
 
     test('verifyPassword fails when no password provided', function () {
-        postJson(action([PasswordController::class, 'verifyPassword']), [])
-            ->assertStatus(400)
+        postJson(action([PasswordController::class, 'verifyPassword']), [])->assertBadRequest()
             ->assertJsonFragment(['message' => t('Invalid password.')]);
     });
 });

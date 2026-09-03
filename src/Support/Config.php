@@ -57,10 +57,7 @@ class Config
             return null;
         }
 
-        if ($siteHandle === null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $siteHandle = Sites::getCurrentSite()->handle;
-        }
+        $siteHandle ??= Sites::getCurrentSite()->handle;
 
         if (is_callable($value, true)) {
             return $value($siteHandle);

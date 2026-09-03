@@ -44,8 +44,7 @@ describe('deleteAsset', function () {
     });
 
     it('returns 400 for missing asset id', function () {
-        postJson(action([ActionController::class, 'deleteAsset']))
-            ->assertStatus(400);
+        postJson(action([ActionController::class, 'deleteAsset']))->assertBadRequest();
     });
 });
 

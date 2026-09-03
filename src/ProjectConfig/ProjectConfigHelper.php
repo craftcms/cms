@@ -643,9 +643,7 @@ class ProjectConfigHelper
      */
     public static function touch(?int $timestamp = null): void
     {
-        if ($timestamp === null) {
-            $timestamp = now()->getTimestamp();
-        }
+        $timestamp ??= now()->getTimestamp();
 
         $timestampLine = "dateModified: $timestamp\n";
 

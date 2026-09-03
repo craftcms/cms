@@ -40,8 +40,7 @@ it('creates a draft and redirects to it', function () {
         'handle' => 'blog',
     ]);
 
-    get(cp_url('entries/blog/new'))
-        ->assertStatus(302)
+    get(cp_url('entries/blog/new'))->assertFound()
         ->assertRedirectContains(cp_url('content/entries/blog/'))
         ->assertRedirectContains('draftId')
         ->assertRedirectContains('fresh=1');

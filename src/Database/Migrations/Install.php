@@ -10,6 +10,7 @@ use Closure;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
 use CraftCms\Cms\Database\Migrator;
@@ -197,6 +198,8 @@ class Install extends Migration
                 $table->integer('last_activity')->index();
             });
         }
+
+        app(LaravelMigrations::class)->ensureNotificationsTable();
     }
 
     /**
@@ -245,18 +248,6 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('announcements');
-        Schema::create('announcements', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('userId');
-            $table->integer('pluginId')->nullable();
-            $table->string('heading');
-            $table->text('body');
-            $table->boolean('unread')->default(true);
-            $table->dateTime('dateRead')->nullable();
-            $table->dateTime('dateCreated');
-        });
-
         $logger?->subLabel('assetindexdata');
         Schema::create('assetindexdata', function (Blueprint $table) {
             $table->integer('id', true);
@@ -298,7 +289,6 @@ class Install extends Migration
             $table->string('filename');
             $table->string('mimeType')->nullable();
             $table->string('kind', 50)->default(FileKind::Unknown->value);
-            $table->text('alt')->nullable();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
@@ -1046,8 +1036,6 @@ class Install extends Migration
     {
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
-        Schema::createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
-        Schema::createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
@@ -1195,8 +1183,6 @@ class Install extends Migration
     {
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
-        Schema::table(Table::ANNOUNCEMENTS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
-        Schema::table(Table::ANNOUNCEMENTS, fn (Blueprint $table) => $table->foreign('pluginId')->references('id')->on(Table::PLUGINS)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('sessionId')->references('id')->on(Table::ASSETINDEXINGSESSIONS)->cascadeOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('folderId')->references('id')->on(Table::VOLUMEFOLDERS)->cascadeOnDelete());
@@ -1221,7 +1207,6 @@ class Install extends Migration
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
-        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->nullOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('revisionId')->references('id')->on(Table::REVISIONS)->cascadeOnDelete());

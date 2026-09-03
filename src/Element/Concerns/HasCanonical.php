@@ -141,15 +141,13 @@ trait HasCanonical
             return $this->_canonical->uid;
         }
 
-        if (! isset($this->_canonicalUid)) {
-            $this->_canonicalUid = static::find()
-                ->id($this->_canonicalId)
-                ->site('*')
-                ->status(null)
-                ->ignorePlaceholders()
-                ->select(['elements.uid'])
-                ->one()?->uid;
-        }
+        $this->_canonicalUid ??= static::find()
+            ->id($this->_canonicalId)
+            ->site('*')
+            ->status(null)
+            ->ignorePlaceholders()
+            ->select(['elements.uid'])
+            ->one()?->uid;
 
         return $this->_canonicalUid;
     }

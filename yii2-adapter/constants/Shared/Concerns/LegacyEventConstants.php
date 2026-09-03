@@ -47,8 +47,9 @@ trait LegacyEventConstants
 
     /**
      * @event DefineShowFieldLayoutComponentInFormEvent The event that is triggered when determining whether the component should be shown in a field layout.
-     * @see showInForm()
+     * @see FieldLayoutComponent::showInForm()
      * @since 5.3.0
+     * @deprecated 6.0.0 Use {@see FieldLayoutComponentShowInFormResolving} instead.
      */
     public const EVENT_DEFINE_SHOW_IN_FORM = 'defineShowInForm';
 
@@ -57,8 +58,9 @@ trait LegacyEventConstants
     /**
      * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
      *
-     * @see actionMenuItems()
+     * @see FieldLayoutComponent::actionMenuItems()
      * @since 5.9.0
+     * @deprecated 6.0.0 Use {@see FieldLayoutComponentActionMenuItemsResolving} instead.
      */
     public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
 

@@ -8,6 +8,7 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
@@ -296,7 +297,7 @@ it('passes the reference element context into element conditions', function () {
         }
     };
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), $referenceEntry) extends Elements
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $referenceEntry) extends Elements
     {
         public ?int $requestedElementId = null;
 
@@ -307,9 +308,10 @@ it('passes the reference element context into element conditions', function () {
         public function __construct(
             ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
+            ElementCaches $elementCaches,
             private readonly Entry $referenceEntry,
         ) {
-            parent::__construct($placeholders, $elementTypes);
+            parent::__construct($placeholders, $elementTypes, $elementCaches);
         }
 
         public function getElementById(

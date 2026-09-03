@@ -784,6 +784,21 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         if ($this instanceof RelationalFieldInterface) {
+            // find the outgoing field's relations that would collide with the persisting field's relations
+            $conflictingIds = DB::table(Table::RELATIONS.' as outgoing')
+                ->join(Table::RELATIONS.' as persisting', function ($join) {
+                    $join->on('persisting.sourceId', '=', 'outgoing.sourceId')
+                        ->on('persisting.sourceSiteId', '=', 'outgoing.sourceSiteId')
+                        ->on('persisting.targetId', '=', 'outgoing.targetId');
+                })
+                ->where('outgoing.fieldId', $outgoingField->id)
+                ->where('persisting.fieldId', $this->id)
+                ->pluck('outgoing.id');
+
+            if ($conflictingIds->isNotEmpty()) {
+                DB::table(Table::RELATIONS)->whereIn('id', $conflictingIds)->delete();
+            }
+
             DB::table(Table::RELATIONS)
                 ->where('fieldId', $outgoingField->id)
                 ->update([

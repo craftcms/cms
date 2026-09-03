@@ -64,12 +64,10 @@ class Entries
         }
 
         // Get the structure ID
-        if (! isset($criteria['structureId'])) {
-            $criteria['structureId'] = DB::table(Table::ENTRIES, 'entries')
-                ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
-                ->where('entries.id', $entryId)
-                ->value('sections.structureId');
-        }
+        $criteria['structureId'] ??= DB::table(Table::ENTRIES, 'entries')
+            ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
+            ->where('entries.id', $entryId)
+            ->value('sections.structureId');
 
         return $this->elements->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
@@ -86,9 +84,7 @@ class Entries
         $siteId = Sites::getCurrentSite()->id;
         $missingEntries = [];
 
-        if (! isset($this->singleEntries[$siteId])) {
-            $this->singleEntries[$siteId] = [];
-        }
+        $this->singleEntries[$siteId] ??= [];
 
         foreach ($handles as $handle) {
             if (isset($this->singleEntries[$siteId][$handle])) {

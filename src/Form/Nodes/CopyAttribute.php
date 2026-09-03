@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Traits\Conditionable;
 
 /**
  * A `<craft-copy-attribute>` — the field handle, shown inline and copyable.
@@ -20,6 +21,8 @@ use CraftCms\Cms\Support\Html;
  */
 class CopyAttribute implements Node
 {
+    use Conditionable;
+
     private function __construct(
         private readonly string $uid,
         private readonly string $value,

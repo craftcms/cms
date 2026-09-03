@@ -126,5 +126,5 @@ it('re-keys rename errors onto the field that posts them', function () {
 });
 
 it('rejects an id that doesn’t resolve to an asset', function () {
-    get(cp_url('assets/edit/999999999-nope'))->assertStatus(400);
+    get(cp_url('assets/edit/999999999-nope'))->assertBadRequest();
 });

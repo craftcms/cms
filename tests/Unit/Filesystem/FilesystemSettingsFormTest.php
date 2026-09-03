@@ -14,7 +14,7 @@ it('exposes the complete local filesystem settings as a typed form', function ()
     $filesystem = new Local([
         'hasUrls' => true,
         'url' => 'https://example.test/uploads',
-        'path' => '@webroot/uploads',
+        'path' => '/tmp/uploads',
     ]);
 
     $payload = app(FormResolver::class)->resolve($filesystem->settingsForm(), new FormContext(
@@ -35,8 +35,13 @@ it('exposes the complete local filesystem settings as a typed form', function ()
             'settings' => [
                 'hasUrls' => true,
                 'url' => 'https://example.test/uploads',
-                'path' => '@webroot/uploads',
+                'path' => '/tmp/uploads',
             ],
+        ])
+        ->and($filesystem->getSettings())->toBe([
+            'hasUrls' => true,
+            'url' => 'https://example.test/uploads',
+            'path' => '/tmp/uploads',
         ]);
 });
 

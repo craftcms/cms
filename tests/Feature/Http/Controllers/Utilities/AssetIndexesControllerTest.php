@@ -32,8 +32,7 @@ test('start indexing with no allowed volumes returns error', function () {
     // Pass an invalid volume ID that won't be in the allowed list
     postJson(action([AssetIndexesController::class, 'startIndexing']), [
         'volumes' => [99999],
-    ])
-        ->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJson(['message' => 'No volumes specified.']);
 });
 
@@ -71,8 +70,7 @@ test('indexing session overview requires sessionId parameter', function () {
 test('indexing session overview with non-existent session returns error', function () {
     postJson(action([AssetIndexesController::class, 'indexingSessionOverview']), [
         'sessionId' => 999,
-    ])
-        ->assertStatus(400)
+    ])->assertBadRequest()
         ->assertJson(['message' => 'Cannot find the indexing session, or there’s nothing to review.']);
 });
 

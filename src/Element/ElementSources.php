@@ -137,9 +137,7 @@ class ElementSources
      */
     private function sources(string $elementType, string $context): Collection
     {
-        if (! isset($this->sources[$elementType][$context])) {
-            $this->sources[$elementType][$context] = $this->defineSources($elementType, $context);
-        }
+        $this->sources[$elementType][$context] ??= $this->defineSources($elementType, $context);
 
         return collect($this->sources[$elementType][$context]);
     }
@@ -313,9 +311,7 @@ class ElementSources
                 return $source;
             }
 
-            if ($rootSource === null) {
-                $rootSource = $source;
-            }
+            $rootSource ??= $source;
 
             $sources = $source['nested'] ?? [];
         }

@@ -90,17 +90,15 @@ readonly class DashboardController
                     return;
                 }
 
-                if (! isset($widgetTypeInfo[$info['type']])) {
-                    $widgetTypeInfo[$info['type']] = [
-                        'iconSvg' => $this->getWidgetIconSvg($widget),
-                        'name' => $widget->getDisplayName(),
-                        'maxColspan' => $widget->getMaxColspan(),
-                        'settingsForm' => null,
-                        'settingsHtml' => '',
-                        'settingsJs' => '',
-                        'selectable' => false,
-                    ];
-                }
+                $widgetTypeInfo[$info['type']] ??= [
+                    'iconSvg' => $this->getWidgetIconSvg($widget),
+                    'name' => $widget->getDisplayName(),
+                    'maxColspan' => $widget->getMaxColspan(),
+                    'settingsForm' => null,
+                    'settingsHtml' => '',
+                    'settingsJs' => '',
+                    'selectable' => false,
+                ];
 
                 $variables['widgets'][] = $info;
                 $allWidgetJs .= 'new Craft.Widget("#widget'.$widget->id.'", '.

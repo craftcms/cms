@@ -98,8 +98,7 @@ describe('download', function () {
     });
 
     it('returns 400 when no recovery codes exist', function () {
-        postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertStatus(400);
+        postJson(action([RecoveryCodesController::class, 'download']))->assertBadRequest();
     });
 
     it('downloads recovery codes as text file', function () {

@@ -38,6 +38,13 @@ CP Styles
     var(--workspace-bg-image);
 }
 
+/* Held by overlays — modals and slideouts — while any of them is open. The
+   legacy stylesheet and panel-stack.css each define this too; repeated here so
+   the lock still works on a CP page that loads neither. */
+body.no-scroll {
+  overflow: hidden;
+}
+
 /**
 Temporary holding for cp-pane styles until craft-pane is a thing
  */

@@ -85,7 +85,7 @@ test('store aborts for invalid user uid', function () {
         'uid' => 'invalid-uuid',
         'code' => 'some-code',
         'newPassword' => 'validpassword123!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('store returns invalid token response for invalid code', function () {
@@ -95,7 +95,7 @@ test('store returns invalid token response for invalid code', function () {
         'uid' => $user->uid,
         'code' => 'invalid-code',
         'newPassword' => 'validpassword123!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('store successfully sets password with valid token', function () {

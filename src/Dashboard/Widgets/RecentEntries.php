@@ -115,9 +115,7 @@ class RecentEntries extends Widget
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (! isset($title)) {
-            $title = t('Recent Entries');
-        }
+        $title ??= t('Recent Entries');
 
         // See if they are pulling entries from a different site
         $targetSiteId = $this->getTargetSiteId();

@@ -26,6 +26,8 @@ class ConditionBuilder extends Control
     /** @var list<array<string, mixed>> */
     private array $fieldLayouts = [];
 
+    private ?string $addRuleLabel = null;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         return self::builderHtml(
@@ -36,6 +38,7 @@ class ConditionBuilder extends Control
             $attributes['name'],
             $attributes['name'] === null,
             $control->props['fieldLayouts'] ?? [],
+            $control->props['addRuleLabel'] ?? null,
         );
     }
 
@@ -53,6 +56,7 @@ class ConditionBuilder extends Control
         ?string $name,
         bool $disabled,
         array $fieldLayouts = [],
+        ?string $addRuleLabel = null,
     ): string {
         $config = [...$value, 'class' => $conditionClass];
 
@@ -71,6 +75,9 @@ class ConditionBuilder extends Control
         $condition->mainTag = 'div';
         $condition->name = $name === null ? 'condition' : self::leafName($name);
         $condition->forProjectConfig = $forProjectConfig;
+        if ($addRuleLabel !== null) {
+            $condition->addRuleLabel = $addRuleLabel;
+        }
         if (property_exists($condition, 'queryParams')) {
             $condition->queryParams = array_values(array_unique([...$condition->queryParams, ...$queryParams]));
         }
@@ -124,6 +131,14 @@ class ConditionBuilder extends Control
         return $this;
     }
 
+    /** Overrides the add-button label, e.g. “Add a filter”. */
+    public function addRuleLabel(?string $addRuleLabel): static
+    {
+        $this->addRuleLabel = $addRuleLabel;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -131,11 +146,18 @@ class ConditionBuilder extends Control
             throw new InvalidArgumentException('ConditionBuilder Controls require a condition class.');
         }
 
-        return [
+        $props = [
             'conditionClass' => $this->conditionClass,
             'queryParams' => $this->queryParams,
             'forProjectConfig' => $this->forProjectConfig,
             'fieldLayouts' => $this->fieldLayouts,
         ];
+
+        // Only emitted when set, so the condition's own default survives.
+        if ($this->addRuleLabel !== null) {
+            $props['addRuleLabel'] = $this->addRuleLabel;
+        }
+
+        return $props;
     }
 }
