@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Activity\DraftActivity;
-use CraftCms\Cms\Activity\EventTypes\DraftApplied as DraftAppliedActivityEvent;
-use CraftCms\Cms\Activity\EventTypes\DraftCreated as DraftCreatedActivityEvent;
 use CraftCms\Cms\Activity\EventTypes\DraftDiscarded as DraftDiscardedActivityEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -151,13 +149,6 @@ readonly class Drafts
                             ->where('ownerId', $draft->id);
                     }),
             );
-
-            if (! $provisional) {
-                Activities::record(new DraftCreatedActivityEvent(
-                    subject: $canonical,
-                    site: Sites::getSiteById($canonical->siteId),
-                ));
-            }
 
             DB::commit();
         } catch (Throwable $e) {
@@ -307,11 +298,6 @@ readonly class Drafts
 
             if ($entryActivity !== null && $newCanonical instanceof Entry) {
                 $this->activity->recordProvisionalApplied($newCanonical, ...$entryActivity);
-            } elseif (! $draft->isProvisionalDraft) {
-                Activities::record(new DraftAppliedActivityEvent(
-                    subject: $newCanonical,
-                    site: Sites::getSiteById($newCanonical->siteId),
-                ));
             }
 
             DB::commit();
@@ -329,6 +315,7 @@ readonly class Drafts
         event(new DraftApplied(
             canonical: $newCanonical,
             creatorId: $draft->draftCreatorId,
+            provisional: $draft->isProvisionalDraft,
             draftName: $draft->draftName,
             draftNotes: $draft->draftNotes,
             draft: $draft,

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
-use CraftCms\Cms\Activity\EventTypes\DraftCreated;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied as DraftAppliedActivityEvent;
+use CraftCms\Cms\Activity\EventTypes\DraftCreated as DraftCreatedActivityEvent;
 use CraftCms\Cms\Activity\EventTypes\DraftSaved;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Events\DraftApplied;
+use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -83,10 +86,34 @@ readonly class DraftActivity
         }
 
         $activity = $write['isNew']
-            ? new DraftCreated(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId))
+            ? new DraftCreatedActivityEvent(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId))
             : new DraftSaved(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId));
 
         Activities::record($activity);
+    }
+
+    public function handleDraftCreated(DraftCreated $event): void
+    {
+        if ($event->provisional) {
+            return;
+        }
+
+        Activities::record(new DraftCreatedActivityEvent(
+            subject: $event->canonical,
+            site: $this->sites->getSiteById($event->canonical->siteId),
+        ));
+    }
+
+    public function handleDraftApplied(DraftApplied $event): void
+    {
+        if ($event->provisional) {
+            return;
+        }
+
+        Activities::record(new DraftAppliedActivityEvent(
+            subject: $event->canonical,
+            site: $this->sites->getSiteById($event->canonical->siteId),
+        ));
     }
 
     /** @return array<class-string, string> */
@@ -95,6 +122,8 @@ readonly class DraftActivity
         return [
             ElementSaving::class => 'handleElementSaving',
             ElementSaved::class => 'handleElementSaved',
+            DraftCreated::class => 'handleDraftCreated',
+            DraftApplied::class => 'handleDraftApplied',
         ];
     }
 
