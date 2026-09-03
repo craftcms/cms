@@ -13,9 +13,12 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Traits\Conditionable;
 
 class Callout implements Node
 {
+    use Conditionable;
+
     private string $variant = 'info';
 
     private ?string $appearance = null;
