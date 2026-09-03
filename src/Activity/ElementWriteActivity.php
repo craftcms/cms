@@ -4,92 +4,140 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
-use CraftCms\Cms\Activity\Data\ElementWriteActivityState;
 use CraftCms\Cms\Activity\EventTypes\ElementSiteAdded;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
 use Illuminate\Container\Attributes\Singleton;
+use WeakMap;
 
 /** @internal */
 #[Singleton]
 readonly class ElementWriteActivity
 {
+    /** @var WeakMap<ElementInterface, bool> */
+    private WeakMap $writes;
+
+    /** @var WeakMap<ElementInterface, Entry> */
+    private WeakMap $originalEntries;
+
+    /** @var WeakMap<ElementInterface, Asset> */
+    private WeakMap $originalAssets;
+
     public function __construct(
         private Sites $sites,
-    ) {}
+    ) {
+        $this->writes = new WeakMap;
+        $this->originalEntries = new WeakMap;
+        $this->originalAssets = new WeakMap;
+    }
 
-    public function capture(
-        ElementInterface $element,
-        bool $recordActivity,
-        bool $isNewElement,
-    ): ElementWriteActivityState {
-        $recordEntry = $element instanceof Entry && EntryActivity::shouldRecord($element, $recordActivity);
-        $originalEntry = $recordEntry && ! $isNewElement ? EntryActivity::original($element) : null;
-        $originalAsset = $element instanceof Asset && AssetActivity::shouldRecord($element, $recordActivity)
-            ? AssetActivity::original($element)
-            : null;
+    public function handleElementSaving(ElementSaving $event): void
+    {
+        $element = $event->element;
+        $this->forgetWrite($element);
 
-        return new ElementWriteActivityState(
-            $recordActivity,
-            $recordEntry,
-            $originalEntry,
-            $originalAsset,
+        if ($element->duplicateOf !== null) {
+            return;
+        }
+
+        $recordEntry = $element instanceof Entry && EntryActivity::shouldRecord($element, true);
+        $recordAsset = $element instanceof Asset && AssetActivity::shouldRecord($element, true);
+        $recordElement = ElementActivity::shouldRecordWrite($element);
+
+        if (! $recordEntry && ! $recordAsset && ! $recordElement) {
+            return;
+        }
+
+        $this->writes[$element] = $event->isNew;
+
+        if ($recordEntry && ! $event->isNew) {
+            $original = EntryActivity::original($element);
+
+            if ($original !== null) {
+                $this->originalEntries[$element] = $original;
+            }
+        }
+
+        if ($recordAsset) {
+            $this->originalAssets[$element] = AssetActivity::original($element);
+        }
+    }
+
+    public function handleElementSaved(ElementSaved $event): void
+    {
+        $element = $event->element;
+
+        if ($element->propagatingFrom !== null) {
+            $isNew = $this->writes[$element->propagatingFrom] ?? null;
+
+            if ($isNew === true && $element instanceof Entry) {
+                EntryActivity::recordCreated($element);
+            } elseif ($isNew === false && $element->isNewForSite) {
+                $this->recordSiteAdded($element);
+            }
+
+            return;
+        }
+
+        $isNew = $this->writes[$element] ?? null;
+        $originalEntry = $this->originalEntries[$element] ?? null;
+        $originalAsset = $this->originalAssets[$element] ?? null;
+        $this->forgetWrite($element);
+
+        if ($isNew === null) {
+            return;
+        }
+
+        if ($element instanceof Entry) {
+            if ($isNew) {
+                EntryActivity::recordCreated($element);
+            } elseif ($originalEntry !== null) {
+                EntryActivity::recordUpdated(
+                    $element,
+                    $originalEntry,
+                    $element->getDirtyAttributes(),
+                    $element->getDirtyFields(),
+                );
+            }
+        }
+
+        if ($element instanceof Asset && $originalAsset !== null) {
+            AssetActivity::recordReplaced($element, $originalAsset);
+        }
+
+        if (! $isNew && $element->isNewForSite) {
+            $this->recordSiteAdded($element);
+        }
+    }
+
+    private function recordSiteAdded(ElementInterface $element): void
+    {
+        Activities::record(new ElementSiteAdded(
+            subject: $element,
+            site: $this->sites->getSiteById($element->siteId),
+        ));
+    }
+
+    private function forgetWrite(ElementInterface $element): void
+    {
+        unset(
+            $this->writes[$element],
+            $this->originalEntries[$element],
+            $this->originalAssets[$element],
         );
     }
 
-    /**
-     * @param  string[]  $dirtyAttributes
-     * @param  string[]  $dirtyFields
-     * @param  array<int, ElementInterface>  $siteElements
-     */
-    public function record(
-        ElementWriteActivityState $state,
-        ElementInterface $element,
-        bool $isNewElement,
-        array $dirtyAttributes,
-        array $dirtyFields,
-        array $siteElements,
-    ): void {
-        if ($state->recordEntry && $element instanceof Entry) {
-            if ($isNewElement) {
-                EntryActivity::recordCreated($element);
-
-                foreach ($siteElements as $siteElement) {
-                    if ($siteElement instanceof Entry) {
-                        EntryActivity::recordCreated($siteElement);
-                    }
-                }
-            } elseif ($state->originalEntry !== null) {
-                EntryActivity::recordUpdated($element, $state->originalEntry, $dirtyAttributes, $dirtyFields);
-            }
-        }
-
-        if ($element instanceof Asset && $state->originalAsset !== null) {
-            AssetActivity::recordReplaced($element, $state->originalAsset);
-        }
-
-        if (
-            $state->recordActivity &&
-            ! $isNewElement &&
-            ElementActivity::shouldRecordWrite($element)
-        ) {
-            $addedSiteElements = $element->isNewForSite ? [$element] : [];
-
-            foreach ($siteElements as $siteElement) {
-                if (in_array($siteElement->siteId, $element->newSiteIds, true)) {
-                    $addedSiteElements[] = $siteElement;
-                }
-            }
-
-            foreach ($addedSiteElements as $siteElement) {
-                Activities::record(new ElementSiteAdded(
-                    subject: $siteElement,
-                    site: $this->sites->getSiteById($siteElement->siteId),
-                ));
-            }
-        }
+    /** @return array<class-string, string> */
+    public function subscribe(): array
+    {
+        return [
+            ElementSaving::class => 'handleElementSaving',
+            ElementSaved::class => 'handleElementSaved',
+        ];
     }
 }
