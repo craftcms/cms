@@ -930,15 +930,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       // Straighten slider — the <craft-slide-rule> web component (replaces the
-      // legacy Craft.SlideRuleInput), driven via its start/change/end events.
+      // legacy Craft.SlideRuleInput). The grid follows the drag gesture, and
+      // the image follows `input`, which fires continuously through the drag
+      // (`change` only fires once, on release).
       this.straighteningInput = document.getElementById('slide-rule');
-      this.straighteningInput.addEventListener('start', () => {
+      this.straighteningInput.addEventListener('craft-drag-start', () => {
         this._showGrid();
       });
-      this.straighteningInput.addEventListener('change', () => {
+      this.straighteningInput.addEventListener('input', () => {
         this.straighten(this.straighteningInput);
       });
-      this.straighteningInput.addEventListener('end', () => {
+      this.straighteningInput.addEventListener('craft-drag-end', () => {
         this._hideGrid();
         this._cleanupFocalPointAfterStraighten();
       });

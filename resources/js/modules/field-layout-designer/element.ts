@@ -110,11 +110,8 @@ export class Element extends Base {
         widthSlider.setAttribute('readonly', '');
       }
 
-      widthSlider.addEventListener('value-change', (event: Event) => {
-        if (!(event instanceof CustomEvent)) {
-          return;
-        }
-        const width = Number(event.detail?.value);
+      widthSlider.addEventListener('change', () => {
+        const width = widthSlider.value;
         this.updateConfig((config: any) => {
           config.width = width;
           return config;

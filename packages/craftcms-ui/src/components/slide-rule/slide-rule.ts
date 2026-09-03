@@ -1,6 +1,7 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {FormAssociated} from '@src/mixins/FormAssociated';
 import {t} from '@src/utilities/translate';
 import styles from './slide-rule.styles.js';
 
@@ -15,11 +16,21 @@ const SENSITIVITY = 3;
  *
  * @since 1.0
  *
- * @fires {CustomEvent<{value:number}>} start - A drag/interaction began.
- * @fires {CustomEvent<{value:number}>} change - The value changed.
- * @fires {CustomEvent<{value:number}>} end - A drag/interaction ended.
+ * @attr {string} name - Field name. The control posts under this, like any
+ * other input. Supplied by the `FormAssociated` mixin.
+ * @attr {boolean} disabled - Whether the control responds to input. A disabled
+ * control is left out of form submission. Supplied by the `FormAssociated`
+ * mixin.
+ *
+ * @fires input - Emitted on every alteration to the value — continuously
+ * through a drag, and once per keyboard step.
+ * @fires change - Emitted when an alteration is committed: the end of a drag,
+ * or each keyboard step. Not emitted when a gesture leaves the value where it
+ * started.
+ * @fires {CustomEvent<{value:number}>} craft-drag-start - A drag began.
+ * @fires {CustomEvent<{value:number}>} craft-drag-end - A drag ended.
  */
-export default class CraftSlideRule extends LitElement {
+export default class CraftSlideRule extends FormAssociated(LitElement) {
   static override styles = [styles];
 
   /** Minimum selectable value (the slide range floor). */
@@ -40,6 +51,19 @@ export default class CraftSlideRule extends LitElement {
   /** Accessible name for the slider. */
   @property() label = t('Rotate');
 
+  /** Whether the control responds to input. */
+  get #editable(): boolean {
+    return !this.disabled;
+  }
+
+  override _formValue(): string | null {
+    return this.name ? String(this.value) : null;
+  }
+
+  override _restoreFormValue(value: string | null): void {
+    this.value = Math.min(Math.max(Number(value ?? 0), this.min), this.max);
+  }
+
   @query('.slide-rule') private _root!: HTMLElement;
   @query('.graduations') private _graduations!: HTMLElement;
   @query('.graduations ul') private _list!: HTMLElement;
@@ -47,6 +71,8 @@ export default class CraftSlideRule extends LitElement {
 
   #dragging = false;
   #rotateIntent = false;
+  /** Value when the current drag began, so `change` only fires on a real move. */
+  #valueAtDragStart = 0;
   #startPositionX = 0;
   #startLeft = 0;
   #calculatedWidth = 0;
@@ -79,6 +105,9 @@ export default class CraftSlideRule extends LitElement {
   }
 
   override updated(changed: PropertyValues<this>): void {
+    // The mixin re-posts the form value from here, so this must chain.
+    super.updated(changed);
+
     if (
       changed.has('value') ||
       changed.has('min') ||
@@ -128,17 +157,25 @@ export default class CraftSlideRule extends LitElement {
     );
   }
 
-  #setValue(rawValue: number, emitChange = true): void {
+  /** Sets the value and emits `input`. Returns whether the value moved. */
+  #setValue(rawValue: number): boolean {
     const value = Math.min(Math.max(rawValue, this.min), this.max);
 
-    this.value = value;
-
-    if (emitChange) {
-      this.#emit('change');
+    if (value === this.value) {
+      return false;
     }
+
+    this.value = value;
+    this.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+
+    return true;
   }
 
-  #emit(type: 'start' | 'change' | 'end'): void {
+  #emitChange(): void {
+    this.dispatchEvent(new Event('change', {bubbles: true, composed: true}));
+  }
+
+  #emitDrag(type: 'craft-drag-start' | 'craft-drag-end'): void {
     this.dispatchEvent(
       new CustomEvent<{value: number}>(type, {
         detail: {value: this.value},
@@ -154,6 +191,7 @@ export default class CraftSlideRule extends LitElement {
     // Only rotate when the press lands inside the graduations, matching the
     // legacy `.graduations *` intent check.
     this.#rotateIntent =
+      this.#editable &&
       this._graduations.contains(event.target as Node) &&
       event.target !== this._graduations;
 
@@ -164,8 +202,9 @@ export default class CraftSlideRule extends LitElement {
     event.preventDefault();
     this.#startPositionX = event.clientX;
     this.#startLeft = this._list.offsetLeft;
+    this.#valueAtDragStart = this.value;
     this._root.setPointerCapture(event.pointerId);
-    this.#emit('start');
+    this.#emitDrag('craft-drag-start');
   }
 
   #handlePointerMove(event: PointerEvent) {
@@ -195,7 +234,11 @@ export default class CraftSlideRule extends LitElement {
       this.#setValueFromPointer(event);
     }
 
-    this.#emit('end');
+    if (this.value !== this.#valueAtDragStart) {
+      this.#emitChange();
+    }
+
+    this.#emitDrag('craft-drag-end');
     this._root.releasePointerCapture(event.pointerId);
     this.#startPositionX = 0;
     this.#rotateIntent = false;
@@ -216,31 +259,41 @@ export default class CraftSlideRule extends LitElement {
   }
 
   #handleKeyDown(event: KeyboardEvent) {
+    if (!this.#editable) {
+      return;
+    }
+
     const current = this.value;
+    let moved: boolean;
 
     switch (event.key) {
       case 'ArrowUp':
       case 'ArrowRight':
-        this.#setValue(current + 1);
+        moved = this.#setValue(current + 1);
         break;
       case 'ArrowDown':
       case 'ArrowLeft':
-        this.#setValue(current - 1);
+        moved = this.#setValue(current - 1);
         break;
       case 'PageUp':
-        this.#setValue(current + 10);
+        moved = this.#setValue(current + 10);
         break;
       case 'PageDown':
-        this.#setValue(current - 10);
+        moved = this.#setValue(current - 10);
         break;
       case 'Home':
-        this.#setValue(this.min);
+        moved = this.#setValue(this.min);
         break;
       case 'End':
-        this.#setValue(this.max);
+        moved = this.#setValue(this.max);
         break;
       default:
         return;
+    }
+
+    // A keyboard step commits as it moves, the way a native range input does.
+    if (moved) {
+      this.#emitChange();
     }
 
     event.preventDefault();
@@ -258,12 +311,13 @@ export default class CraftSlideRule extends LitElement {
       <div
         class="slide-rule"
         role="slider"
-        tabindex="0"
+        tabindex=${this.#editable ? 0 : -1}
         aria-label=${this.label}
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
         aria-valuenow=${this.value}
         aria-valuetext=${this.#valueText(this.value)}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
         @keydown=${this.#handleKeyDown}
         @pointerdown=${this.#handlePointerDown}
         @pointermove=${this.#handlePointerMove}

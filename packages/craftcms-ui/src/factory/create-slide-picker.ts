@@ -19,8 +19,9 @@ export interface SlidePickerConfig {
 }
 
 /**
- * Creates a `<craft-slide-picker>` (segmented slider). A hidden input carries the
- * value for form posting; `onChange` fires on the element's `value-change` event.
+ * Creates a `<craft-slide-picker>` (segmented slider). The element is
+ * form-associated, so `name` is all it takes to post the value; `onChange`
+ * fires on the element's `change` event.
  */
 export function createSlidePicker(
   config: SlidePickerConfig = {}
@@ -44,7 +45,13 @@ export function createSlidePicker(
     el.setAttribute('described-by', config.describedBy);
   }
   if (readOnly) {
-    el.setAttribute('read-only', '');
+    el.readonly = true;
+  }
+  if (config.disabled) {
+    el.disabled = true;
+  }
+  if (config.name) {
+    el.name = config.name;
   }
   if (config.id) {
     el.id = config.id;
@@ -53,25 +60,8 @@ export function createSlidePicker(
     el.classList.add(...config.class.split(/\s+/).filter(Boolean));
   }
 
-  let hidden: HTMLInputElement | null = null;
-  if (config.name) {
-    hidden = document.createElement('input');
-    hidden.type = 'hidden';
-    hidden.name = config.name;
-    hidden.setAttribute('value', String(el.value));
-    hidden.disabled = !!config.disabled;
-    el.append(hidden);
-  }
-
-  el.addEventListener('value-change', (event) => {
-    const next = (event as CustomEvent<{value: number}>).detail?.value;
-    if (typeof next !== 'number') {
-      return;
-    }
-    if (hidden) {
-      hidden.value = String(next);
-    }
-    config.onChange?.(next);
+  el.addEventListener('change', () => {
+    config.onChange?.(el.value);
   });
 
   return el;

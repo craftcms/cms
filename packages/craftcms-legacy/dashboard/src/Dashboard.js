@@ -774,8 +774,8 @@ import './dashboard.scss';
 
       refreshColspanPicker();
 
-      this.colspanPicker.addEventListener('value-change', ({detail}) => {
-        const colspan = detail.value;
+      this.colspanPicker.addEventListener('change', () => {
+        const colspan = this.colspanPicker.value;
 
         // Update the widget and grid
         this.setColspan(colspan);

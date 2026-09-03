@@ -148,7 +148,7 @@ describe('createSwitch', () => {
 });
 
 describe('createSlidePicker', () => {
-  it('sets the numeric props and a form-posting hidden input', () => {
+  it('sets the numeric props and posts under its name', () => {
     const el = createSlidePicker({
       min: 0,
       max: 100,
@@ -163,8 +163,10 @@ describe('createSlidePicker', () => {
     expect(el.step).toBe(25);
     expect(el.value).toBe(50);
 
-    const hidden = el.querySelector<HTMLInputElement>('input[type="hidden"]');
-    expect(hidden?.name).toBe('cols');
+    // The element is form-associated, so the name goes on it — there is no
+    // hidden input standing in for the value.
+    expect(el.name).toBe('cols');
+    expect(el.querySelector('input[type="hidden"]')).toBeNull();
   });
 
   it('resolves function min/max', () => {

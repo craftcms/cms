@@ -15,6 +15,25 @@ It is built for rotation — image cropping, focal points — where a person adj
 
 For a short set of discrete steps, use [Slide Picker](?path=/docs/form-controls-slide-picker--docs).
 
+## Posting a Value
+
+The control is form-associated: give it a `name` and the angle posts with the form, and comes back on `form.reset()`.
+
+<Canvas of={SlideRuleStories.InAForm} sourceState="shown" />
+
+## Events
+
+It behaves like a range input, so the two native events mean different things. `input` fires on every alteration — continuously through a drag, and once per keyboard step. `change` fires only when the value is committed: the end of a drag, or each keyboard step. A drag that ends where it started emits no `change` at all.
+
+Follow the value live with `input`, and react to a settled value with `change`:
+
+```js
+rule.addEventListener('input', () => preview(rule.value));
+rule.addEventListener('change', () => save(rule.value));
+```
+
+`craft-drag-start` and `craft-drag-end` bracket a pointer drag, for anything that should only be visible while the person is dragging — the image editor shows its alignment grid between the two.
+
 ## Accessibility
 
 A drag-to-rotate ruler is a pointer-first control, which makes the keyboard path the one to check rather than assume.

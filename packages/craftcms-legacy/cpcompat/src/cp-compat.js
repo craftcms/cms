@@ -566,15 +566,8 @@
       this.setValue(value, false);
 
       var self = this;
-      this.$container.on('value-change', function (event) {
-        if (
-          event &&
-          event.originalEvent &&
-          event.originalEvent.detail &&
-          typeof event.originalEvent.detail.value === 'number'
-        ) {
-          self.setValue(event.originalEvent.detail.value);
-        }
+      this.$container.on('change', function () {
+        self.setValue(self.$container[0].value);
       });
     }
 
@@ -604,11 +597,7 @@
         el.removeAttribute('described-by');
       }
 
-      if (this.settings.readOnly) {
-        el.setAttribute('read-only', '');
-      } else {
-        el.removeAttribute('read-only');
-      }
+      el.readonly = !!this.settings.readOnly;
 
       this.$buttons = this.$container.find('.slide-picker__segment');
 

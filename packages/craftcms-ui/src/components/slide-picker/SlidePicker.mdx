@@ -15,6 +15,22 @@ Use it where the range is short and every step is meaningful — a column count,
 
 <Canvas of={SlidePickerStories.ReadOnly} sourceState="shown" />
 
+## Posting a Value
+
+The control is form-associated. Give it a `name` and it posts with the form the way a native input does — `new FormData(form)` reads it, `form.reset()` puts back the value the markup started with, and there is no hidden input to keep in sync.
+
+<Canvas of={SlidePickerStories.InAForm} sourceState="shown" />
+
+`readonly` and `disabled` differ in what they post: a read-only control still submits its value, a disabled one is left out of submission entirely.
+
+It emits the same events a radio group does. Every step is a commit, so `change` follows each `input`:
+
+```js
+picker.addEventListener('change', () => {
+  console.log(picker.value);
+});
+```
+
 ## Announcing the Value
 
 A slider's value is a number, and a number on its own rarely means anything.

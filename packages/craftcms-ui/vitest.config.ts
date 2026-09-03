@@ -43,6 +43,7 @@ export default defineConfig({
           name: 'components',
           root: './src/components',
           environment: 'happy-dom',
+          setupFiles: ['../../test/element-internals.setup.ts'],
         },
       },
       {
@@ -53,6 +54,7 @@ export default defineConfig({
           name: 'mixins',
           root: './src/mixins',
           environment: 'happy-dom',
+          setupFiles: ['../../test/element-internals.setup.ts'],
         },
       },
       {

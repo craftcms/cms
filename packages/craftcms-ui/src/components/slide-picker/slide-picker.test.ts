@@ -56,24 +56,35 @@ describe('craft-slide-picker', () => {
     expect(lastActive[0]!.getAttribute('title')).toBe('50');
   });
 
-  it('emits value-change with the selected value on segment click', async () => {
+  it('emits input then change on segment click', async () => {
     const element = await createSlidePicker({
       min: 0,
       max: 100,
       step: 10,
       value: 0,
     });
-    const handler = vi.fn();
-    element.addEventListener('value-change', handler as EventListener);
+    const order: string[] = [];
+    element.addEventListener('input', () => order.push('input'));
+    element.addEventListener('change', () => order.push('change'));
 
     segments(element)[3]!.click(); // 0, 10, 20, 30 -> 30
     await element.updateComplete;
 
     expect(element.value).toBe(30);
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect((handler.mock.calls[0]![0] as CustomEvent).detail).toEqual({
-      value: 30,
-    });
+    // Every step is a commit, so the pair fires together.
+    expect(order).toEqual(['input', 'change']);
+  });
+
+  it('does not emit when the value is set programmatically', async () => {
+    const element = await createSlidePicker({value: 0});
+    const handler = vi.fn();
+    element.addEventListener('input', handler as EventListener);
+    element.addEventListener('change', handler as EventListener);
+
+    element.value = 40;
+    await element.updateComplete;
+
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it('clamps out-of-range values and snaps off-step values', async () => {
@@ -102,7 +113,7 @@ describe('craft-slide-picker', () => {
       value: 50,
     });
     const handler = vi.fn();
-    element.addEventListener('value-change', handler as EventListener);
+    element.addEventListener('change', handler as EventListener);
 
     const press = (key: string) =>
       slider(element).dispatchEvent(
@@ -135,7 +146,7 @@ describe('craft-slide-picker', () => {
     await element.updateComplete;
 
     const handler = vi.fn();
-    element.addEventListener('value-change', handler as EventListener);
+    element.addEventListener('change', handler as EventListener);
 
     segments(element)[0]!.click();
     slider(element).dispatchEvent(
@@ -165,6 +176,23 @@ describe('craft-slide-picker', () => {
     expect(s.getAttribute('aria-valuetext')).toBe('50');
   });
 
+  it('ignores input while disabled', async () => {
+    const element = await createSlidePicker({value: 50});
+    element.disabled = true;
+    await element.updateComplete;
+
+    const handler = vi.fn();
+    element.addEventListener('change', handler as EventListener);
+
+    segments(element)[0]!.click();
+    await element.updateComplete;
+
+    expect(element.value).toBe(50);
+    expect(handler).not.toHaveBeenCalled();
+    expect(slider(element).getAttribute('tabindex')).toBe('-1');
+    expect(slider(element).getAttribute('aria-disabled')).toBe('true');
+  });
+
   it('formats the value text with valueUnit and valueLabel', async () => {
     const withUnit = await createSlidePicker({
       min: 0,
@@ -185,5 +213,63 @@ describe('craft-slide-picker', () => {
     withLabel.valueLabel = (value) => `${value} columns`;
     await withLabel.updateComplete;
     expect(slider(withLabel).getAttribute('aria-valuetext')).toBe('50 columns');
+  });
+});
+
+/**
+ * happy-dom has no `ElementInternals`, so these run against
+ * `element-internals-polyfill` (wired up in the components project's setup).
+ * The polyfill carries `setFormValue` and `FormData`, but not the parts the
+ * user agent itself performs — leaving a disabled control out of submission,
+ * and calling `formResetCallback` on reset. Those are covered in the browser,
+ * in `slide-picker.stories.ts`.
+ */
+describe('craft-slide-picker form association', () => {
+  async function createInForm(
+    props: Partial<Pick<CraftSlidePicker, 'name' | 'value'>> = {}
+  ): Promise<{form: HTMLFormElement; element: CraftSlidePicker}> {
+    const form = document.createElement('form');
+    const element = document.createElement('craft-slide-picker');
+    Object.assign(element, {min: 0, max: 100, step: 10, value: 0, ...props});
+    form.append(element);
+    document.body.append(form);
+    await element.updateComplete;
+
+    return {form, element};
+  }
+
+  it('posts its value under its name', async () => {
+    const {form} = await createInForm({name: 'columns', value: 30});
+
+    expect(new FormData(form).get('columns')).toBe('30');
+  });
+
+  it('posts the updated value after user input', async () => {
+    const {form, element} = await createInForm({name: 'columns', value: 0});
+
+    segments(element)[5]!.click(); // -> 50
+    await element.updateComplete;
+
+    expect(new FormData(form).get('columns')).toBe('50');
+  });
+
+  it('posts nothing without a name', async () => {
+    const {form} = await createInForm({value: 30});
+
+    expect([...new FormData(form).keys()]).toEqual([]);
+  });
+
+  it('restores the value it was given back', async () => {
+    const {element} = await createInForm({name: 'columns', value: 30});
+
+    segments(element)[8]!.click(); // -> 80
+    await element.updateComplete;
+    expect(element.value).toBe(80);
+
+    // What the user agent hands back on `form.reset()`.
+    element._restoreFormValue('30');
+    await element.updateComplete;
+
+    expect(element.value).toBe(30);
   });
 });
