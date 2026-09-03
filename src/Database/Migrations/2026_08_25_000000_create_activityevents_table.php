@@ -28,6 +28,7 @@ return new class extends Migration
             $table->dateTime('occurredAt');
         });
 
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['actorType', 'actorId']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
     }

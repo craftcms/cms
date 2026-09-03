@@ -1034,6 +1034,7 @@ class Install extends Migration
 
     public function createIndexes(): void
     {
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['actorType', 'actorId']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
