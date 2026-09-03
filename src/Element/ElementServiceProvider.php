@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand;
@@ -21,6 +22,7 @@ class ElementServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        Event::subscribe(DraftActivity::class);
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
         app()->terminating(fn () => app(BulkOpDeferrals::class)->persistPending());

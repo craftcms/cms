@@ -4,36 +4,49 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
-use CraftCms\Cms\Activity\Data\DraftWriteActivityState;
 use CraftCms\Cms\Activity\EventTypes\DraftCreated;
 use CraftCms\Cms\Activity\EventTypes\DraftSaved;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\DB;
 use LogicException;
+use WeakMap;
 
 /** @internal */
 #[Singleton]
 readonly class DraftActivity
 {
-    public function __construct(private Sites $sites) {}
+    /** @var WeakMap<ElementInterface, array{isNew: bool, metadataChanged: bool}> */
+    private WeakMap $writes;
 
-    public function capture(ElementInterface $element): ?DraftWriteActivityState
+    public function __construct(private Sites $sites)
     {
+        $this->writes = new WeakMap;
+    }
+
+    public function handleElementSaving(ElementSaving $event): void
+    {
+        $element = $event->element;
+
         if (
             ! $element->getIsDraft() ||
             ! $element->markDraftAsSaved ||
+            $element->duplicateOf !== null ||
             $element->isProvisionalDraft ||
             $element->applyingDraft ||
             $element->propagating ||
             $element->resaving ||
             $element->mergingCanonicalChanges
         ) {
-            return null;
+            unset($this->writes[$element]);
+
+            return;
         }
 
         $draft = DB::table(Table::DRAFTS)
@@ -45,35 +58,44 @@ readonly class DraftActivity
             ->whereNotNull('draftId')
             ->exists();
 
-        return new DraftWriteActivityState(
-            isNew: ! $wasDraft || (bool) $draft->provisional || ! (bool) $draft->saved,
-            metadataChanged: (bool) $draft->provisional !== $element->isProvisionalDraft ||
+        $this->writes[$element] = [
+            'isNew' => ! $wasDraft || (bool) $draft->provisional || ! (bool) $draft->saved,
+            'metadataChanged' => (bool) $draft->provisional !== $element->isProvisionalDraft ||
                 $draft->name !== $element->draftName ||
                 $draft->notes !== $element->draftNotes ||
                 (bool) $draft->saved !== $element->markDraftAsSaved,
-        );
+        ];
     }
 
-    /** @param string[] $dirtyFields */
-    public function captureContentChanges(
-        ?DraftWriteActivityState $state,
-        ElementInterface $element,
-        array $dirtyFields,
-    ): void {
-        if ($state !== null) {
-            $state->contentChanged = $element->getDirtyAttributes() !== [] || $dirtyFields !== [];
-        }
-    }
-
-    public function recordWrite(?DraftWriteActivityState $state, ElementInterface $element): void
+    public function handleElementSaved(ElementSaved $event): void
     {
-        if ($state !== null && ($state->isNew || $state->metadataChanged || $state->contentChanged)) {
-            $event = $state->isNew
-                ? new DraftCreated(subject: $element, site: $this->sites->getSiteById($element->siteId))
-                : new DraftSaved(subject: $element, site: $this->sites->getSiteById($element->siteId));
+        $write = $this->writes[$event->element] ?? null;
+        unset($this->writes[$event->element]);
 
-            Activities::record($event);
+        $contentChanged = $event->element->getDirtyAttributes() !== []
+            || $event->element->getDirtyFields() !== [];
+
+        if (
+            $write === null ||
+            (! $write['isNew'] && ! $write['metadataChanged'] && ! $contentChanged)
+        ) {
+            return;
         }
+
+        $activity = $write['isNew']
+            ? new DraftCreated(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId))
+            : new DraftSaved(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId));
+
+        Activities::record($activity);
+    }
+
+    /** @return array<class-string, string> */
+    public function subscribe(): array
+    {
+        return [
+            ElementSaving::class => 'handleElementSaving',
+            ElementSaved::class => 'handleElementSaved',
+        ];
     }
 
     /**

@@ -19,7 +19,6 @@ readonly class ElementWriteActivity
 {
     public function __construct(
         private Sites $sites,
-        private DraftActivity $drafts,
     ) {}
 
     public function capture(
@@ -38,17 +37,7 @@ readonly class ElementWriteActivity
             $recordEntry,
             $originalEntry,
             $originalAsset,
-            $recordActivity ? $this->drafts->capture($element) : null,
         );
-    }
-
-    /** @param string[] $dirtyFields */
-    public function captureContentChanges(
-        ElementWriteActivityState $state,
-        ElementInterface $element,
-        array $dirtyFields,
-    ): void {
-        $this->drafts->captureContentChanges($state->draft, $element, $dirtyFields);
     }
 
     /**
@@ -102,7 +91,5 @@ readonly class ElementWriteActivity
                 ));
             }
         }
-
-        $this->drafts->recordWrite($state->draft, $element);
     }
 }

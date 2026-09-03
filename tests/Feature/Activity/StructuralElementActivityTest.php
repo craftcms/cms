@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\DraftCreated;
 use CraftCms\Cms\Activity\EventTypes\ElementDuplicated;
 use CraftCms\Cms\Activity\EventTypes\ElementMerged;
 use CraftCms\Cms\Activity\EventTypes\ElementMoved;
@@ -45,6 +46,15 @@ it('records duplication instead of nested creation', function () {
             'label' => $source->getUiLabel(),
         ])
         ->and($this->activities->format($events->first()))->toBe('Duplicated from Source entry.');
+});
+
+it('does not record draft creation for unpublished draft duplicates', function () {
+    $source = EntryModel::factory()->createElement(['title' => 'Source entry']);
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    app(ElementDuplicates::class)->duplicateElement($source, asUnpublishedDraft: true);
+
+    expect($this->activities->query()->eventTypes(DraftCreated::class)->get())->toBeEmpty();
 });
 
 it('records one duplication event for each affected site', function () {

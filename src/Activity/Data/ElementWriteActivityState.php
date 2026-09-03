@@ -15,6 +15,5 @@ class ElementWriteActivityState
         public readonly bool $recordEntry,
         public readonly ?Entry $originalEntry,
         public readonly ?Asset $originalAsset,
-        public readonly ?DraftWriteActivityState $draft,
     ) {}
 }

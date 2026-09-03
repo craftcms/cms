@@ -383,7 +383,6 @@ readonly class ElementWrites
 
             $fieldLayout = $element->getFieldLayout();
             $dirtyFields = $element->getDirtyFields();
-            $this->activity->captureContentChanges($activityState, $element, $dirtyFields);
 
             if (! $isNewElement && ! $element->isNewForSite) {
                 $siteSettingsRecord = ElementSiteSettings::query()
@@ -642,7 +641,6 @@ readonly class ElementWrites
                         $dirtyFields,
                         $siteElements,
                     );
-
                     DB::commit();
                 } catch (Throwable $throwable) {
                     DB::rollBack();
