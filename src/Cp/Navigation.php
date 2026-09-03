@@ -44,7 +44,7 @@ readonly class Navigation
         $navItems = collect([
             new NavItem()
                 ->label(t('Dashboard'))
-                ->url('dashboard')
+                ->href('dashboard')
                 ->icon('gauge'),
         ]);
 
@@ -61,14 +61,14 @@ readonly class Navigation
                             fn (NavItem $item) => $item->label(t('Entries')),
                             fn (NavItem $item) => $item->label(t($page, category: 'site')),
                         )
-                        ->url(sprintf('content/%s', Str::slug($page)))
+                        ->href(sprintf('content/%s', Str::slug($page)))
                         ->icon($entryPageSettings[$page]['icon'] ?? 'newspaper')
                     )
                 );
             } else {
                 $navItems->add(new NavItem()
                     ->label(t('Entries'))
-                    ->url('content/entries')
+                    ->href('content/entries')
                     ->icon('newspaper'));
             }
         }
@@ -76,7 +76,7 @@ readonly class Navigation
         if (Volumes::getTotalViewableVolumes()) {
             $navItems->add(new NavItem()
                 ->label(t('Assets'))
-                ->url('assets')
+                ->href('assets')
                 ->icon('image'));
         }
 
@@ -86,7 +86,7 @@ readonly class Navigation
         ) {
             $navItems->add(new NavItem()
                 ->label(t('Users'))
-                ->url('users')
+                ->href('users')
                 ->icon('user-group'));
         }
 
@@ -118,15 +118,15 @@ readonly class Navigation
                     fn (Collection $subNavItems) => $subNavItems->add(
                         new NavItem()
                             ->label(t('Schemas'))
-                            ->url(cp_url('graphql/schemas')),
+                            ->href(cp_url('graphql/schemas')),
                     )
                 )
-                ->add(new NavItem()->label(t('Tokens'))->url(cp_url('graphql/tokens')))
-                ->add(new NavItem()->label('GraphiQL')->url(cp_url('graphql/explore')));
+                ->add(new NavItem()->label(t('Tokens'))->href(cp_url('graphql/tokens')))
+                ->add(new NavItem()->label('GraphiQL')->href(cp_url('graphql/explore')));
 
             $navItems->add(new NavItem()
                 ->label('GraphQL')
-                ->url('graphql')
+                ->href('graphql')
                 ->icon('custom-icons/graphql')
                 ->subnav($subNavItems->all()));
         }
@@ -141,7 +141,7 @@ readonly class Navigation
 
             $navItems->add(new NavItem()
                 ->label(t('Utilities'))
-                ->url('utilities')
+                ->href('utilities')
                 ->icon('wrench')
                 ->badgeCount($badgeCount));
         }
@@ -149,12 +149,12 @@ readonly class Navigation
         if ($isAdmin) {
             $navItems->add(new NavItem()
                 ->label(t('Settings'))
-                ->url('settings')
+                ->href('settings')
                 ->icon($this->generalConfig->allowAdminChanges ? 'gear' : 'gear-slash'));
 
             $navItems->add(new NavItem()
                 ->label(t('Plugin Store'))
-                ->url('plugin-store')
+                ->href('plugin-store')
                 ->icon('plug'));
         }
 
@@ -170,12 +170,12 @@ readonly class Navigation
         $foundSelectedItem = false;
 
         return collect($event->navItems)->map(function (NavItem $item) use ($path, &$foundSelectedItem) {
-            $itemPath = $this->navItemPath($item->url);
+            $itemPath = $this->navItemPath($item->href);
             $subnavSelected = false;
 
             if (is_array($item->subnav)) {
-                $item->subnav = collect($item->subnav)->map(function (NavItem $subnavItem) use ($path, &$subnavSelected) {
-                    $subnavItemPath = $this->navItemPath($subnavItem->url);
+                $item->subnav = collect($item->subnav)->map(function (NavItem $subnavItem) use ($path, &$subnavSelected): NavItem {
+                    $subnavItemPath = $this->navItemPath($subnavItem->href);
                     $subnavItemSelected = $this->pathMatches($path, $subnavItemPath);
 
                     if ($subnavItemSelected) {
@@ -184,7 +184,7 @@ readonly class Navigation
                         $subnavItem->linkAttributes['aria']['current'] = $subnavItemPath === $path ? 'page' : 'true';
                     }
 
-                    $subnavItem->url = Url::url($subnavItem->url);
+                    $subnavItem->href = Url::url($subnavItem->href);
 
                     return $subnavItem;
                 })->all();
@@ -198,8 +198,8 @@ readonly class Navigation
                 $item->linkAttributes['aria']['current'] = $itemPath === $path ? 'page' : 'true';
             }
 
-            $item->id ??= 'nav-'.preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
-            $item->url = Url::url($item->url);
+            $item->id ??= 'nav-'.preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', (string) $item['href'])));
+            $item->href = Url::url($item->href);
 
             return $item;
         })->all();

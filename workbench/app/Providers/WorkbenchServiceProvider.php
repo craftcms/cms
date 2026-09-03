@@ -43,13 +43,13 @@ class WorkbenchServiceProvider extends ServiceProvider
                     $label = Str::headline(class_basename($component));
                     $subnav[] = new NavItem()
                         ->label("{$label} ".Str::singular($type))
-                        ->url("workbench/forms/{$type}/{$slug}");
+                        ->href("workbench/forms/{$type}/{$slug}");
                 }
             }
 
             $event->navItems[] = new NavItem()
                 ->label('Kitchen Sink')
-                ->url('workbench/forms')
+                ->href('workbench/forms')
                 ->icon('flask')
                 ->subnav($subnav);
         });

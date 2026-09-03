@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
@@ -65,6 +66,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     FormPayload::class,
                     NodePayload::class,
                     FilesystemsEditViewModel::class,
+                    ActionItem::class,
                     NavItem::class,
                     Permission::class,
                     PermissionGroup::class,

@@ -22,7 +22,7 @@ trait InteractsWithCp
     {
         return new NavItem()
             ->label($this->name)
-            ->url($this->handle)
+            ->href($this->handle)
             ->icon($this->cpNavIconPath());
     }
 

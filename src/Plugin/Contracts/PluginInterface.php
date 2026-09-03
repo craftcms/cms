@@ -273,14 +273,14 @@ interface PluginInterface
      * ```php
      * return new NavItem()
      *     ->label('Commerce')
-     *     ->url('commerce')
+     *     ->href('commerce')
      *     ->subnav([
      *         'orders' => new NavItem()
      *             ->label('Orders')
-     *             ->url('commerce/orders'),
+     *             ->href('commerce/orders'),
      *         'discounts' => new NavItem()
      *             ->label('Discounts')
-     *             ->url('commerce/discounts'),
+     *             ->href('commerce/discounts'),
      *     ]);
      * ```
      *
