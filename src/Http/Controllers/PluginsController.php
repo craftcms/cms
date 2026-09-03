@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -13,7 +15,9 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use LogicException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -25,6 +29,7 @@ readonly class PluginsController
     public function __construct(
         private Plugins $plugins,
         private GeneralConfig $generalConfig,
+        private FormResolver $formResolver,
     ) {}
 
     public function index(): CpScreenResponse
@@ -144,5 +149,39 @@ readonly class PluginsController
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))
             : $this->editSettings($handle, $plugin);
+    }
+
+    public function renderSettingsForm(Request $request, string $handle): JsonResponse
+    {
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'scope' => ['required', 'array', 'min:1'],
+            'scope.0' => ['required', 'in:settings'],
+            'scope.*' => ['string'],
+        ]);
+        $plugin = $this->plugins->getPlugin($handle);
+
+        abort_if(is_null($plugin), 404, 'Plugin not found.');
+
+        $scope = $data['scope'];
+        $settings = $plugin->getSettings()?->validationData() ?? [];
+        $settings = $scope === ['settings']
+            ? $data['values']
+            : data_set($settings, array_slice($scope, 1), $data['values']);
+        $plugin->setSettings($settings);
+        $context = new FormContext(
+            namespace: 'settings',
+            values: ['settings' => $settings],
+            refreshable: true,
+        );
+        $form = $plugin->settingsForm($context);
+
+        if ($form === null) {
+            throw new LogicException("Plugin [{$plugin->handle}] must return a Form from settingsForm().");
+        }
+
+        return new JsonResponse([
+            'form' => $this->formResolver->resolve($form, $context)->forScope($scope),
+        ]);
     }
 }

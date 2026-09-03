@@ -68,9 +68,7 @@ class InternalAssetRegistry
             return;
         }
 
-        if (! isset($this->pendingBundles[$bundle])) {
-            $this->pendingBundles[$bundle] = true;
-        }
+        $this->pendingBundles[$bundle] ??= true;
 
         /** @var LegacyAssetInterface $bundle */
         $bundle = app($bundle);

@@ -166,9 +166,7 @@ trait QueriesCustomFields
 
     private function addToColumnMap(string $alias, string|callable|Expression $column): void
     {
-        if (! isset($this->columnMap[$alias])) {
-            $this->columnMap[$alias] = [];
-        }
+        $this->columnMap[$alias] ??= [];
 
         if (! is_array($this->columnMap[$alias])) {
             $this->columnMap[$alias] = [$this->columnMap[$alias]];

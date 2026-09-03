@@ -1,0 +1,47 @@
+name: 'ci / Pest'
+on:
+  push: { branches: [6.x] }
+  workflow_dispatch:
+
+concurrency:
+  group: tia-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    name: 'Tia Baseline'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Copy tests .env
+        shell: bash
+        run: |
+          cp ./tests/.env.example.sqlite ./tests/.env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+          touch database/craft_tests.sqlite
+
+      - name: Run tests
+        uses: ./.github/actions/run-tests
+        with:
+          test-command: ./vendor/bin/pest --parallel --compact --tia --fresh
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          packagist-username: ${{ secrets.packagist_username }}
+          packagist-token: ${{ secrets.packagist_token }}
+          coverage: 'pcov'
+        env:
+          SKIP_ARCH: true
+      
+      - name: Resolve TIA baseline path
+        id: baseline
+        run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
+ 
+      - name: Upload TIA baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: pest-tia-baseline
+          path: ${{ steps.baseline.outputs.path }}
+          include-hidden-files: true
+          retention-days: 30

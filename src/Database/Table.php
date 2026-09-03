@@ -11,8 +11,6 @@ readonly class Table
 {
     public const string ADDRESSES = 'addresses';
 
-    public const string ANNOUNCEMENTS = 'announcements';
-
     public const string ASSETINDEXDATA = 'assetindexdata';
 
     public const string ASSETINDEXINGSESSIONS = 'assetindexingsessions';

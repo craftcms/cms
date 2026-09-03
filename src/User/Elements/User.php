@@ -78,7 +78,10 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
@@ -87,6 +90,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
+use LogicException;
 use Override;
 use Stringable;
 
@@ -422,6 +426,18 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getKey(): ?int
     {
         return $this->id;
+    }
+
+    /** @return MorphMany<DatabaseNotification, Model> */
+    public function notifications(): MorphMany
+    {
+        $user = Auth::getProvider()->retrieveById($this->getAuthIdentifier());
+
+        if (! $user instanceof Model || ! method_exists($user, 'notifications')) {
+            throw new LogicException('The configured auth model must be an Eloquent model using Laravel\'s Notifiable trait to receive database notifications.');
+        }
+
+        return $user->notifications();
     }
 
     #[Override]
@@ -1189,9 +1205,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
-        if (! isset($this->_friendlyName)) {
-            $this->_friendlyName = $this->_defineFriendlyName() ?? false;
-        }
+        $this->_friendlyName ??= $this->_defineFriendlyName() ?? false;
 
         return $this->_friendlyName ?: null;
     }
@@ -1972,12 +1986,18 @@ JS, [
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'photo') {
-            /** @var Asset|null $photo */
-            $photo = $elements[0] ?? null;
-            $this->setPhoto($photo);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'photo':
+                /** @var Asset|null $photo */
+                $photo = $elements[0] ?? null;
+                $this->setPhoto($photo);
+                break;
+            case 'addresses':
+                /** @var Address[] $elements */
+                $this->_addresses = ElementCollection::make($elements);
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 

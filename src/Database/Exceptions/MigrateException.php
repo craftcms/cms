@@ -16,9 +16,7 @@ class MigrateException extends Exception
         int $code = 0,
         ?Throwable $previous = null
     ) {
-        if ($message === null) {
-            $message = 'An error occurred while migrating '.$ownerName.'.';
-        }
+        $message ??= 'An error occurred while migrating '.$ownerName.'.';
 
         parent::__construct($message, $code, $previous);
     }

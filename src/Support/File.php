@@ -520,9 +520,7 @@ class File extends \Illuminate\Support\Facades\File
             throw new InvalidArgumentException("No file/directory exists at $path");
         }
 
-        if ($to === null) {
-            $to = "$path.zip";
-        }
+        $to ??= "$path.zip";
 
         $zip = new ZipArchive;
 

@@ -76,7 +76,6 @@ class AssetQuery extends ElementQuery
             'assets.width as width',
             'assets.height as height',
             'assets.size as size',
-            'assets.alt as alt',
             'assets.focalPoint as focalPoint',
             'assets.keptFile as keptFile',
             'assets.dateModified as dateModified',
@@ -196,12 +195,9 @@ class AssetQuery extends ElementQuery
     #[Override]
     public function createElement(array $row): ElementInterface
     {
-        // Use the site-specific alt text, if set
+        // Use the site-specific alt text
         $siteAlt = Arr::pull($row, 'siteAlt');
-
-        if ($siteAlt !== null) {
-            $row['alt'] = $siteAlt;
-        }
+        $row['alt'] = $siteAlt;
 
         return parent::createElement($row);
     }

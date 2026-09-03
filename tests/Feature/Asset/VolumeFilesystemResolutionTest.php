@@ -33,7 +33,7 @@ it('resolves explicit disk targets to Laravel disk wrappers', function () {
         ->and($volume->getFs()->disk)->toBe('explicit-disk');
 });
 
-it('hydrates URL settings on Laravel disk wrappers resolved from volumes', function () {
+it('resolves root URLs on Laravel disk wrappers resolved from volumes', function () {
     config()->set('filesystems.disks.url-disk', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-disks/url-disk'),
@@ -49,8 +49,7 @@ it('hydrates URL settings on Laravel disk wrappers resolved from volumes', funct
     $filesystem = $volume->getFs();
 
     expect($filesystem)->toBeInstanceOf(DiskFilesystem::class)
-        ->and($filesystem->hasUrls)->toBeTrue()
-        ->and($filesystem->url)->toBe('https://cdn.example.test/assets');
+        ->and($filesystem->getRootUrl())->toBe('https://cdn.example.test/assets/');
 });
 
 it('resolves plain values as Craft filesystems first, then Laravel disks', function () {

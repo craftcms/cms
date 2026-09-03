@@ -95,10 +95,7 @@ readonly class Revisions
                 }
             }
 
-            if ($creatorId === null) {
-                // Default to the logged-in user ID if there is one
-                $creatorId = currentUser()?->getCraftUserId();
-            }
+            $creatorId ??= currentUser()?->getCraftUserId();
 
             event($event = new RevisionCreating(
                 canonical: $canonical,
@@ -138,9 +135,7 @@ readonly class Revisions
                 $newAttributes['revisionNum'] = $num;
                 $newAttributes['revisionNotes'] = $notes;
 
-                if (! isset($newAttributes['dateCreated'])) {
-                    $newAttributes['dateCreated'] = $canonical->dateUpdated;
-                }
+                $newAttributes['dateCreated'] ??= $canonical->dateUpdated;
 
                 $revision = $this->elements->duplicateElement(
                     element: $canonical,

@@ -667,9 +667,7 @@ class Formatter
             }
         }
 
-        if (! isset($dateTime)) {
-            $dateTime = Date::parse($value);
-        }
+        $dateTime ??= Date::parse($value);
 
         if ($offset = $this->getCorrectOffset($dateTime)) {
             $dateTime = $dateTime->addHours($offset / 3600);

@@ -26,25 +26,25 @@ class ArrayTwigExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('column', Arr::pluck(...)),
-            new TwigFilter('contains', Arr::contains(...)),
+            new TwigFilter('column', $this->columnFilter(...), ['needs_is_sandboxed' => true]),
+            new TwigFilter('contains', $this->containsFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
-            new TwigFilter('firstWhere', $this->firstWhereFilter(...)),
+            new TwigFilter('firstWhere', $this->firstWhereFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('flatten', Arr::flatten(...)),
-            new TwigFilter('group', $this->groupFilter(...)),
+            new TwigFilter('group', $this->groupFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),
             new TwigFilter('intersect', 'array_intersect'),
             new TwigFilter('map', $this->mapFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('merge', $this->mergeFilter(...)),
-            new TwigFilter('multisort', $this->multisortFilter(...)),
+            new TwigFilter('multisort', $this->multisortFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('push', $this->pushFilter(...)),
             new TwigFilter('reduce', $this->reduceFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('sort', $this->sortFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', $this->unshiftFilter(...)),
             new TwigFilter('values', 'array_values'),
-            new TwigFilter('where', Arr::where(...)),
+            new TwigFilter('where', $this->whereFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('without', $this->withoutFilter(...)),
             new TwigFilter('withoutKey', $this->withoutKeyFilter(...)),
         ];
@@ -121,9 +121,66 @@ class ArrayTwigExtension extends AbstractExtension
     }
 
     /** @param iterable<array-key, mixed> $array */
-    public function firstWhereFilter(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
+    public function firstWhereFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
     {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'firstWhere');
+
         return collect($array)->firstWhere($key, $strict ? '===' : '==', $value);
+    }
+
+    /**
+     * @param  iterable<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     */
+    public function columnFilter(bool $isSandboxed, iterable $array, mixed $value, mixed $key = null): array
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $value, 'column');
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'column');
+
+        return Arr::pluck($array, $value, $key);
+    }
+
+    /** @param iterable<array-key, mixed> $array */
+    public function containsFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'contains');
+
+        return Arr::contains($array, $key, $value, $strict);
+    }
+
+    /**
+     * Filters an array to only the values where a given key (the name of a sub-array key or sub-object property)
+     * is set to a given value. Array keys are preserved by default.
+     *
+     * @param  iterable<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     */
+    public function whereFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'where');
+
+        $filtered = collect($array)->where($key, $strict ? '===' : '==', $value);
+
+        return $keepKeys ? $filtered->all() : $filtered->values()->all();
+    }
+
+    /**
+     * Throws a RuntimeError if the given name/key is a string containing a "." character and the environment is
+     * sandboxed.
+     *
+     * @throws RuntimeError
+     */
+    private function preventDottedNameInSandbox(bool $isSandboxed, mixed $name, string $filterName): void
+    {
+        if (! $isSandboxed || ! is_string($name)) {
+            return;
+        }
+
+        foreach (['.', '[', ']'] as $char) {
+            if (str_contains($name, $char)) {
+                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
+            }
+        }
     }
 
     /**
@@ -132,17 +189,21 @@ class ArrayTwigExtension extends AbstractExtension
      *
      * @throws RuntimeError
      */
-    public function groupFilter(iterable $arr, callable|string $arrow): array
+    public function groupFilter(bool $isSandboxed, iterable $arr, callable|string $arrow): array
     {
         $groups = [];
 
         if (is_string($arrow)) {
+            // No need to call checkArrow() here since strings are always interpreted as nested fields,
+            // which get passed to renderObjectTemplate() as `{name}`
             $template = '{'.$arrow.'}';
             foreach ($arr as $item) {
                 $groupKey = renderObjectTemplate($template, $item);
                 $groups[$groupKey][] = $item;
             }
         } else {
+            CoreExtension::checkArrow($isSandboxed, $arrow, 'group', 'filter');
+
             foreach ($arr as $key => $item) {
                 $groupKey = (string) $arrow($item, $key);
                 $groups[$groupKey][] = $item;
@@ -203,8 +264,12 @@ class ArrayTwigExtension extends AbstractExtension
      * @param  int|array<array-key, int>  $sortFlag
      * @return array<array-key, mixed>
      */
-    public function multisortFilter(mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
+    public function multisortFilter(bool $isSandboxed, mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
+        foreach (is_array($key) ? $key : [$key] as $k) {
+            $this->preventDottedNameInSandbox($isSandboxed, $k, 'multisort');
+        }
+
         $array = array_merge($array);
 
         return collect($array)

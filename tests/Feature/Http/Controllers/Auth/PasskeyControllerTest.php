@@ -38,7 +38,7 @@ test('login fails with invalid credential', function () {
     postJson(action([PasskeyController::class, 'login']), [
         'requestOptions' => Json::encode(['challenge' => 'test']),
         'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('login counts an invalid passkey once', function () {
@@ -55,7 +55,6 @@ test('login counts an invalid passkey once', function () {
             CraftUser $user,
             string $requestOptions,
             string $response,
-            bool $checkOldUserHandle = false,
         ): false {
             return false;
         }
@@ -78,7 +77,7 @@ test('login is limited to five attempts per minute', function () {
         postJson(action([PasskeyController::class, 'login']), [
             'requestOptions' => Json::encode(['challenge' => 'test']),
             'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
-        ])->assertStatus(400);
+        ])->assertBadRequest();
     }
 
     postJson(action([PasskeyController::class, 'login']), [

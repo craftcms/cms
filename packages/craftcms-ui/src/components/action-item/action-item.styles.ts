@@ -29,7 +29,7 @@ export default css`
   }
 
   @media (hover: hover) {
-    :host(:hover) .action-item:not(:disabled) {
+    :host(:hover:not([active])) .action-item:not(:disabled) {
       background-color: var(
         --c-color-fill-quiet,
         var(--c-color-neutral-fill-quiet)
@@ -91,7 +91,7 @@ export default css`
   }
 
   @media (hover: hover) {
-    :host(:hover[variant='danger']) .action-item:not(:disabled) {
+    :host(:hover[variant='danger']:not([active])) .action-item:not(:disabled) {
       background-color: var(--c-color-fill-quiet);
       color: var(--c-color-on-quiet);
     }

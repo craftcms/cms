@@ -261,18 +261,14 @@ trait Structurable
 
     public function getPrevSibling(): ?ElementInterface
     {
-        if (! isset($this->_prevSibling)) {
-            $this->_prevSibling = $this->findSibling('prevSiblingOf') ?? false;
-        }
+        $this->_prevSibling ??= $this->findSibling('prevSiblingOf') ?? false;
 
         return $this->_prevSibling ?: null;
     }
 
     public function getNextSibling(): ?ElementInterface
     {
-        if (! isset($this->_nextSibling)) {
-            $this->_nextSibling = $this->findSibling('nextSiblingOf') ?? false;
-        }
+        $this->_nextSibling ??= $this->findSibling('nextSiblingOf') ?? false;
 
         return $this->_nextSibling ?: null;
     }

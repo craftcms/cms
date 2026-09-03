@@ -15,12 +15,6 @@ use function CraftCms\Cms\t;
  */
 class DiskFilesystem extends Filesystem
 {
-    #[Override]
-    protected static bool $showHasUrlSetting = false;
-
-    #[Override]
-    protected static bool $showUrlSetting = false;
-
     public ?string $disk = null;
 
     #[Override]

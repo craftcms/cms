@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Notifications\SendQueuedUserNotifications;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Auth\Events\Authenticated;
@@ -36,6 +37,7 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\SendQueuedNotifications;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
@@ -51,6 +53,8 @@ class AuthServiceProvider extends ServiceProvider
         if (! class_exists($this->app->make(Repository::class)->get('auth.providers.users.model'))) {
             $this->app->make(Repository::class)->set('auth.providers.users.model', User::class);
         }
+
+        $this->app->bind(SendQueuedNotifications::class, SendQueuedUserNotifications::class);
 
         $this->registerPermissions();
         $this->registerEvents();

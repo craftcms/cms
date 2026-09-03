@@ -34,9 +34,7 @@ trait QueriesStructures
      */
     public bool $withStructure {
         get {
-            if (! isset($this->withStructure)) {
-                $this->withStructure = $this->structureId && ! $this->trashed;
-            }
+            $this->withStructure ??= $this->structureId && ! $this->trashed;
 
             return $this->withStructure;
         }

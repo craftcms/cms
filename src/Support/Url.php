@@ -133,21 +133,51 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function removeParam(string $url, string $param): string
     {
+        return static::removeParams($url, [$param]);
+    }
+
+    /**
+     * Removes query string params from a URL.
+     *
+     * @param  string[]  $params
+     */
+    public static function removeParams(string $url, array $params): string
+    {
+        // Extract any params/fragment from the base URL
+        [$url, $urlParams, $fragment] = self::_extractParams($url);
+
+        // Remove the params
+        foreach ($params as $param) {
+            unset($urlParams[$param]);
+        }
+
+        // Rebuild
+        return self::_buildUrl($url, $urlParams, $fragment);
+    }
+
+    /**
+     * Removes all query string params from a URL.
+     *
+     * @param  string[]  $except  Any params that should be left alone
+     */
+    public static function removeAllParams(string $url, array $except = []): string
+    {
         // Extract any params/fragment from the base URL
         [$url, $params, $fragment] = self::_extractParams($url);
 
-        // Remove the param
-        unset($params[$param]);
+        // Remove the params
+        if (! empty($except)) {
+            foreach (array_keys($params) as $param) {
+                if (! in_array($param, $except)) {
+                    unset($params[$param]);
+                }
+            }
+        } else {
+            $params = [];
+        }
 
         // Rebuild
-        if (($query = static::buildQuery($params)) !== '') {
-            $url .= '?'.$query;
-        }
-        if ($fragment !== null) {
-            $url .= '#'.$fragment;
-        }
-
-        return $url;
+        return self::_buildUrl($url, $params, $fragment);
     }
 
     /**
@@ -243,14 +273,18 @@ class Url extends \Illuminate\Support\Facades\URL
 
     /**
      * Returns either a control panel or a site URL, depending on the request type.
+     *
+     * @param  array|string|false|null  $params  The query params to add to the URL. If `false`, any existing params will be removed.
      */
-    /** @param array<string, mixed>|string|null $params */
-    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
+    /** @param array<string, mixed>|string|false|null $params */
+    public static function url(string $path = '', array|string|false|null $params = null, ?string $scheme = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
                 $path = static::urlWithParams($path, $params);
+            } elseif ($params === false) {
+                $path = static::removeAllParams($path);
             }
 
             if ($scheme !== null) {
@@ -275,7 +309,7 @@ class Url extends \Illuminate\Support\Facades\URL
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl);
+        return self::_createUrl($path, $params ?: null, $scheme, $cpUrl);
     }
 
     /**

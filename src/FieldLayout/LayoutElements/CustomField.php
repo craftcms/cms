@@ -81,6 +81,11 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
      */
     public ?string $handle = null;
 
+    /**
+     * @var string|null The previously-selected field’s UUID, if there was one
+     */
+    public ?string $oldFieldUid = null;
+
     private ?FieldInterface $_field = null;
 
     private ?FieldInterface $_sourceField = null;
@@ -590,6 +595,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return [
             ...parent::fields(),
             'fieldUid' => 'fieldUid',
+            ...($this->oldFieldUid !== null ? ['oldFieldUid' => 'oldFieldUid'] : []),
             'editCondition' => fn () => $this->getEditCondition()?->getConfig(),
             'elementEditCondition' => fn () => $this->getElementEditCondition()?->getConfig(),
         ];

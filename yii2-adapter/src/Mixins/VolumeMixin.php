@@ -168,7 +168,7 @@ class VolumeMixin
              * @var Volume $this
              * @phpstan-ignore-next-line Macro closure is rebound to Volume.
              */
-            return $this->getTransformFs()->hasUrls;
+            return $this->getTransformFs()->getRootUrl() !== null;
         };
     }
 

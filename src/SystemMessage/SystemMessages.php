@@ -89,9 +89,7 @@ class SystemMessages
      */
     public function getAllMessages(?string $language = null): Collection
     {
-        if ($language === null) {
-            $language = Sites::getPrimarySite()->getLanguage();
-        }
+        $language ??= Sites::getPrimarySite()->getLanguage();
 
         // Start with the defaults
         $defaults = $this->getAllDefaultMessages();
@@ -132,9 +130,7 @@ class SystemMessages
 
         $message = clone $default;
 
-        if ($language === null) {
-            $language = Sites::getPrimarySite()->getLanguage();
-        }
+        $language ??= Sites::getPrimarySite()->getLanguage();
 
         if (($pos = strpos((string) $language, '-')) !== false) {
             $languageId = substr((string) $language, 0, $pos);

@@ -18,10 +18,12 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Arr;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 
 class Field implements Node
 {
+    use Conditionable;
     use HasVisibility;
 
     private ?string $label = null;

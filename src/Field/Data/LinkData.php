@@ -14,10 +14,12 @@ use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use Illuminate\Contracts\Support\Arrayable;
 use Stringable;
 use Twig\Markup;
 
-class LinkData implements Serializable, Stringable
+/** @implements Arrayable<string, mixed> */
+class LinkData implements Arrayable, Serializable, Stringable
 {
     /** @var string|null The link’s URL suffix value. */
     #[AllowedInSandbox]
@@ -247,5 +249,31 @@ class LinkData implements Serializable, Stringable
             'download' => $this->download,
             'filename' => $this->filename,
         ]);
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'type' => $this->getType(),
+            'value' => $this->getValue(),
+            'url' => $this->getUrl(),
+            'label' => $this->getLabel(),
+            'filename' => $this->getFilename(),
+            'link' => (string) $this->getLink(),
+            'attributes' => $this->getAttributes(),
+            'defaultLabel' => $this->getLabel(false),
+            'urlSuffix' => $this->urlSuffix,
+            'target' => $this->target,
+            'title' => $this->title,
+            'class' => $this->class,
+            'id' => $this->id,
+            'rel' => $this->rel,
+            'ariaLabel' => $this->ariaLabel,
+            'download' => $this->download,
+            'elementType' => $this->getElement() !== null ? $this->getElement()::class : null,
+            'elementId' => $this->getElement()?->id,
+            'elementSiteId' => $this->getElement()?->siteId,
+            'elementTitle' => $this->getElement() !== null ? (string) $this->getElement() : null,
+        ];
     }
 }

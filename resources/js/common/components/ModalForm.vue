@@ -1,45 +1,46 @@
 <script setup lang="ts">
-    import {t} from '@craftcms/ui';
-    import Modal, {type ModalProps} from '@/common/components/Modal.vue';
+  import {t} from '@craftcms/ui';
+  import Modal, {type ModalProps} from '@/common/components/Modal.vue';
 
-    const emit = defineEmits<{
-        (e: 'close'): void;
-        (e: 'submit'): void;
-    }>();
-    withDefaults(
-        defineProps<
-            ModalProps & {
-                loading?: boolean;
-                title?: string;
-                resetLabel?: string;
-                submitLabel?: string;
-            }
-        >(),
-        {
-            title: undefined,
-            overlay: true,
-            loading: false,
-            resetLabel: t('Cancel'),
-            submitLabel: t('Save'),
-        }
-    );
-
-    function submitHandler() {
-        emit('submit');
+  const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'submit'): void;
+  }>();
+  withDefaults(
+    defineProps<
+      ModalProps & {
+        loading?: boolean;
+        title?: string;
+        resetLabel?: string;
+        submitLabel?: string;
+      }
+    >(),
+    {
+      title: undefined,
+      overlay: true,
+      loading: false,
+      resetLabel: t('Cancel'),
+      submitLabel: t('Save'),
     }
+  );
+
+  function submitHandler() {
+    emit('submit');
+  }
 </script>
 
 <template>
-    <Modal
-        :is-active="isActive"
-        :overlay="overlay"
-        @close="emit('close')"
-        :width="width"
-        :height="height"
-        :max-height="maxHeight"
-    >
-        <form @submit.prevent="submitHandler">
-            <!--
+  <Modal
+    :is-active="isActive"
+    :overlay="overlay"
+    @close="emit('close')"
+    :width="width"
+    :height="height"
+    :max-height="maxHeight"
+    :resizable="resizable"
+  >
+    <form @submit.prevent="submitHandler">
+      <!--
         `craft-pane` uses native slots, which can't be filled by a `v-for` over
         `$slots` the way Vue slots could — a native `slot=` assignment has to
         sit on a real element that is a direct child of the pane. So each pane
@@ -49,79 +50,122 @@
         pane decides whether to render its header/footer from the presence of
         slotted children.
       -->
-            <craft-pane :label="title">
-                <div v-if="$slots.header" slot="header" class="contents">
-                    <slot name="header"></slot>
-                </div>
-                <div v-if="$slots.title" slot="title" class="contents">
-                    <slot name="title"></slot>
-                </div>
-                <div
-                    v-if="$slots['header-actions']"
-                    slot="header-actions"
-                    class="contents"
-                >
-                    <slot name="header-actions"></slot>
-                </div>
-                <div v-if="$slots.body" slot="body" class="contents">
-                    <slot name="body"></slot>
-                </div>
+      <craft-pane :label="title">
+        <div v-if="$slots.header" slot="header" class="contents">
+          <slot name="header"></slot>
+        </div>
+        <div v-if="$slots.title" slot="title" class="contents">
+          <slot name="title"></slot>
+        </div>
+        <div slot="header-actions" class="contents">
+          <slot name="header-actions">
+            <craft-button
+              type="button"
+              icon="x"
+              :aria-label="t('Close')"
+              variant="plain"
+              size="small"
+              @click="emit('close')"
+            ></craft-button>
+          </slot>
+        </div>
+        <div v-if="$slots.body" slot="body" class="contents">
+          <slot name="body"></slot>
+        </div>
 
-                <slot></slot>
+        <slot></slot>
 
-                <div v-if="$slots.footer" slot="footer" class="contents">
-                    <slot name="footer"></slot>
-                </div>
-                <div
-                    v-if="$slots['footer-content']"
-                    slot="footer-content"
-                    class="contents"
-                >
-                    <slot name="footer-content"></slot>
-                </div>
-                <div v-if="$slots.feedback" slot="feedback" class="contents">
-                    <slot name="feedback"></slot>
-                </div>
-                <div v-if="$slots.actions" slot="actions" class="contents">
-                    <slot name="actions"></slot>
-                </div>
+        <div v-if="$slots.footer" slot="footer" class="contents">
+          <slot name="footer"></slot>
+        </div>
+        <div
+          v-if="$slots['footer-content']"
+          slot="footer-content"
+          class="contents"
+        >
+          <slot name="footer-content"></slot>
+        </div>
+        <div v-if="$slots.feedback" slot="feedback" class="contents">
+          <slot name="feedback"></slot>
+        </div>
+        <div v-if="$slots.actions" slot="actions" class="contents">
+          <slot name="actions"></slot>
+        </div>
 
-                <div
-                    v-if="$slots['secondary-action']"
-                    slot="secondary-action"
-                    class="contents"
-                >
-                    <slot name="secondary-action"></slot>
-                </div>
-                <craft-button
-                    v-else
-                    slot="secondary-action"
-                    type="reset"
-                    @click="emit('close')"
-                    variant="plain"
-                >
-                    {{ resetLabel }}
-                </craft-button>
+        <div
+          v-if="$slots['secondary-action']"
+          slot="secondary-action"
+          class="contents"
+        >
+          <slot name="secondary-action"></slot>
+        </div>
+        <craft-button
+          v-else
+          slot="secondary-action"
+          type="reset"
+          @click="emit('close')"
+          variant="plain"
+        >
+          {{ resetLabel }}
+        </craft-button>
 
-                <div
-                    v-if="$slots['primary-action']"
-                    slot="primary-action"
-                    class="contents"
-                >
-                    <slot name="primary-action"></slot>
-                </div>
-                <craft-button
-                    v-else
-                    slot="primary-action"
-                    type="submit"
-                    variant="accent"
-                    :loading="loading"
-                >
-                    {{ submitLabel }}
-                </craft-button>
-            </craft-pane>
-        </form>
-    </Modal>
+        <div
+          v-if="$slots['primary-action']"
+          slot="primary-action"
+          class="contents"
+        >
+          <slot name="primary-action"></slot>
+        </div>
+        <craft-button
+          v-else
+          slot="primary-action"
+          type="submit"
+          variant="primary"
+          :loading="loading"
+        >
+          {{ submitLabel }}
+        </craft-button>
+      </craft-pane>
+    </form>
+  </Modal>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  /*
+    Grow, but never shrink. Growing fills a modal held open by its height
+    floor; refusing to shrink means a long form still overflows so `.content`
+    scrolls it — `craft-pane` clips rather than scrolls, so it must never be
+    constrained below its content.
+  */
+  form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+
+  /*
+    Also a flex column: the pane's inner surface sizes itself with
+    `block-size: 100%`, which can't resolve against a host whose own height
+    comes from flex-grow, so it has to grow rather than measure.
+  */
+  form > craft-pane {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+
+  /*
+    The pane stacks header/body/footer as blocks, and its footer is only
+    sticky while something scrolls — so a short body would strand the footer
+    mid-modal once the floor holds the box open.
+  */
+  craft-pane::part(base) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+
+  craft-pane::part(body) {
+    flex: 1 0 auto;
+  }
+</style>

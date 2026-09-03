@@ -193,7 +193,6 @@ class Passkeys
         CraftUser $user,
         string $requestOptions,
         string $response,
-        bool $checkOldUserHandle = false,
     ): CredentialRecord|false {
         $serializer = $this->webauthnServer()->getSerializer();
 
@@ -219,7 +218,6 @@ class Passkeys
 
         $credentialRecord = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
             $publicKeyCredential->rawId,
-            $checkOldUserHandle,
         );
 
         if ($credentialRecord === null) {
@@ -229,13 +227,17 @@ class Passkeys
         }
 
         try {
-            return $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+            $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $requestOptions,
                 request()->host(),
                 $userEntity->id,
             );
+
+            $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
+
+            return $updatedCredentialRecord;
         } catch (InvalidUserHandleException $exception) {
             throw $exception;
         } catch (Throwable $e) {

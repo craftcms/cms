@@ -25,6 +25,7 @@ use craft\markdown\PreEncodedMarkdown;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;
+use craft\services\Announcements;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
@@ -68,7 +69,6 @@ use craft\web\AssetManager;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Edition;
@@ -773,7 +773,7 @@ trait ApplicationTrait
      * @return Announcements The announcements service
      *
      * @since 3.7.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Announcement\Announcements} instead.
+     * @deprecated 6.0.0
      */
     public function getAnnouncements(): Announcements
     {

@@ -346,9 +346,7 @@ class DateTimeHelper
         $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
         $secondsOnly = ! $dateInterval->y && ! $dateInterval->m && ! $dateInterval->d && ! $dateInterval->h && ! $dateInterval->i;
 
-        if ($showSeconds === null) {
-            $showSeconds = $secondsOnly;
-        }
+        $showSeconds ??= $secondsOnly;
 
         $timeComponents = [];
 

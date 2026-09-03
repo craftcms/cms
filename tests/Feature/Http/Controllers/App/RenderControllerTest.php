@@ -39,7 +39,7 @@ test('render elements rejects invalid element ids', function () {
                 'instances' => [[]],
             ],
         ],
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('render elements returns chip html for entries', function () {

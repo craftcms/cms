@@ -58,7 +58,6 @@ import './modules/element-selector-modal/index';
 import './modules/element-select-input/index';
 import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
-import './modules/customize-sources-modal/index';
 import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
 import './modules/nested-element-manager/index';
@@ -76,6 +75,7 @@ window.Cp = Cp;
 // only: `start()` mounts the Inertia app, which legacy pages must not do.
 Cp.config(window.Craft ?? {});
 Cp.init();
+
 defineDashboardWidgetSettingsFormHost(Cp.$components);
 defineEntryFieldLayoutFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);
@@ -89,4 +89,5 @@ import('@craftcms/ui/components/nav-list/nav-list');
 import('@craftcms/ui/components/nav-item/nav-item');
 import('./modules/navigation/components/cp-global-sidebar.js');
 import('./modules/navigation/components/cp-queue-indicator.js');
+import('./modules/notifications/components/cp-notification-center.js');
 import('./modules/markdown-field/markdown-field.js');

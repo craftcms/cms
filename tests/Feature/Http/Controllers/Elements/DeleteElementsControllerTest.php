@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
@@ -141,14 +142,15 @@ describe('destroy', function () {
             ->all();
 
         app()->bind(ElementsService::class, function () use (&$deletedIds) {
-            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), $deletedIds) extends ElementsService
+            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $deletedIds) extends ElementsService
             {
                 public function __construct(
                     ElementPlaceholders $placeholders,
                     ElementTypes $elementTypes,
+                    ElementCaches $elementCaches,
                     private array &$deletedIds,
                 ) {
-                    parent::__construct($placeholders, $elementTypes);
+                    parent::__construct($placeholders, $elementTypes, $elementCaches);
                 }
 
                 public function deleteElement(ElementInterface $element, bool $hard = false): bool
@@ -293,7 +295,7 @@ describe('replaceRelations', function () {
             'elementIds' => [$entry->id],
             'sourceElementType' => Entry::class,
             'newTargetId' => 0,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', 'No new entry selected.');
     });
 
@@ -356,7 +358,7 @@ describe('replaceReferences', function () {
             'elementType' => Entry::class,
             'elementIds' => [$entry->id],
             'newTargetId' => 999999,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', 'The selected entry could not be found.');
     });
 });

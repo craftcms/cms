@@ -207,9 +207,7 @@ class Html
      */
     public static function beginForm(array|string $action = '', string $method = 'post', array $options = []): string
     {
-        if (! isset($options['accept-charset'])) {
-            $options['accept-charset'] = 'UTF-8';
-        }
+        $options['accept-charset'] ??= 'UTF-8';
 
         return YiiHtml::form($action, $method, $options)->open();
     }

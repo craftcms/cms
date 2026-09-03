@@ -101,8 +101,8 @@ export const baseFieldStyles = css`
 
   ::slotted(label) {
     line-height: 1;
-    font-weight: bold;
-    font-size: var(--text-sm);
+    font-weight: var(--c-field-label-font-weight, bold);
+    font-size: var(--c-field-label-font-size, var(--text-sm));
   }
 
   .form-field__help-text {

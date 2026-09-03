@@ -11,9 +11,12 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use Illuminate\Support\Traits\Conditionable;
 
 class HiddenField implements Node
 {
+    use Conditionable;
+
     private function __construct(private readonly Hidden $control) {}
 
     /** @param string|list<string> $path */
