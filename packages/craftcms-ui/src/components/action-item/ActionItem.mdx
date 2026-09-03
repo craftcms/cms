@@ -86,7 +86,7 @@ item.feedback = {success: {message: 'Deleted'}, error: {message: 'Failed'}};
 Confirmation belongs to the action descriptor, not the item.
 `feedback` supplies the messages shown in place of the label, and `feedback-duration` controls how long they stay.
 
-Each transition emits `action:change-state`, whose `detail` carries the new `state`, the action's `actionType`, and any feedback data — useful when a menu needs to react to an item's progress.
+Each transition emits `craft-state-change`, whose `detail` carries the new `state`, the action's `actionType`, and any feedback data — useful when a menu needs to react to an item's progress.
 
 ## Theming
 

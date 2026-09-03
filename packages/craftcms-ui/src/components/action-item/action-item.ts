@@ -49,7 +49,7 @@ const INTERACTIVE = [
  *   Defaults to a check icon while `checked` is set.
  * @slot suffix - Trailing content, shown before the shortcut.
  *
- * @fires {CustomEvent} action:change-state - Emitted whenever the item's
+ * @fires {CustomEvent} craft-state-change - Emitted whenever the item's
  *   action moves between idle, loading, success, and error. `detail` carries
  *   the new `state`, the action's `actionType`, and any feedback data.
  */
@@ -191,7 +191,7 @@ export default class CraftActionItem extends LitElement {
     this.feedbackMessage = detail.message ?? null;
 
     this.dispatchEvent(
-      new CustomEvent('action:change-state', {
+      new CustomEvent('craft-state-change', {
         bubbles: true,
         composed: true,
         detail: {

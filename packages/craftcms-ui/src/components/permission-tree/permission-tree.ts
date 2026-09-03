@@ -31,6 +31,10 @@ let nextTreeId = 0;
 /**
  * @summary A grouped tree of selectable permissions.
  * @fires model-value-changed - Fired when the selected permissions change.
+ *
+ * `model-value-changed` is Lion's own protocol name, not one this package
+ * chose. It is kept because Lion's form system dispatches and listens for it;
+ * a Craft-prefixed alias would only add a second name for the same thing.
  */
 export default class CraftPermissionTree extends LitElement {
   static override styles = css`

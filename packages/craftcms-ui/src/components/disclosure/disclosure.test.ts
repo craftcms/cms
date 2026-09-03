@@ -88,8 +88,8 @@ describe('craft-disclosure', () => {
   it('fires close and open as it toggles', async () => {
     const {element} = await createExternal();
     const seen: string[] = [];
-    element.addEventListener('open', () => seen.push('open'));
-    element.addEventListener('close', () => seen.push('close'));
+    element.addEventListener('craft-show', () => seen.push('open'));
+    element.addEventListener('craft-hide', () => seen.push('close'));
 
     trigger(element).click();
     await element.updateComplete;

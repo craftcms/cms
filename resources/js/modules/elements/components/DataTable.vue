@@ -349,7 +349,7 @@
             <td>
               <div>
                 <craft-reorder-button
-                  @reorder="
+                  @craft-reorder="
                     (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                       emit(
                         'reorder',

@@ -28,7 +28,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     this.listener = new AbortController();
     const {signal} = this.listener;
     this.addEventListener('click', this.onClick, {signal});
-    this.addEventListener('reorder', this.onReorder, {signal});
+    this.addEventListener('craft-reorder', this.onReorder, {signal});
     this.addEventListener('entrySortDragStop', this.changed, {signal});
   }
 

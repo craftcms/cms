@@ -18,8 +18,8 @@ class CpGlobalSidebar extends LitElement {
     super.connectedCallback();
 
     if (this.trigger) {
-      this.trigger.addEventListener('open', this.expand.bind(this));
-      this.trigger.addEventListener('close', this.collapse.bind(this));
+      this.trigger.addEventListener('craft-show', this.expand.bind(this));
+      this.trigger.addEventListener('craft-hide', this.collapse.bind(this));
     }
 
     if (this.state === 'expanded') {
@@ -33,8 +33,8 @@ class CpGlobalSidebar extends LitElement {
     super.disconnectedCallback();
 
     if (this.trigger) {
-      this.trigger.removeEventListener('open', this.expand.bind(this));
-      this.trigger.removeEventListener('close', this.collapse.bind(this));
+      this.trigger.removeEventListener('craft-show', this.expand.bind(this));
+      this.trigger.removeEventListener('craft-hide', this.collapse.bind(this));
     }
 
     this.state = 'expanded';

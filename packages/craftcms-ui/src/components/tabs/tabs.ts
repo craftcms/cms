@@ -113,7 +113,7 @@ const FIT_TOLERANCE = 1;
  * panel count, and it is fixed at first render — a strip is all-`controls` or
  * all-slotted, never a mix. Lion's own pairing is bypassed entirely here (it
  * indexes into a panel list that doesn't exist), so this component owns the
- * keyboard navigation in this mode; `selectedIndex` and `selected-changed`
+ * keyboard navigation in this mode; `selectedIndex` and `craft-tab-show`
  * behave identically either way.
  *
  * Replacing the external panels' markup (re-rendering the fragment they live
@@ -152,7 +152,7 @@ const FIT_TOLERANCE = 1;
  * @slot panel - The panels, one per tab, in the same order. Omitted entirely
  *   in external-panel mode.
  *
- * @event selected-changed - Fired when the selected tab changes, by click or
+ * @event craft-tab-show - Fired when the selected tab changes, by click or
  *   keyboard, including when a collapsible strip closes. Read `selectedIndex`
  *   off the target for the new index — `-1` when nothing is selected. Note it
  *   does not bubble, so listen on the element itself.
@@ -160,7 +160,7 @@ const FIT_TOLERANCE = 1;
  * @attr collapsed - Present while nothing is selected and the panel region is
  *   taking no space. Reflected and read-only — set `selectedIndex` (or let a
  *   `collapsible` strip be toggled) to change it. Exists so a surrounding
- *   layout can respond in CSS alone, without listening for `selected-changed`:
+ *   layout can respond in CSS alone, without listening for `craft-tab-show`:
  *
  *       .body:has(craft-tabs[collapsed]) { grid-template-columns: 1fr auto; }
  *
@@ -360,6 +360,14 @@ export default class CraftTabs extends LionTabs {
       } else {
         this.#syncSlotted();
       }
+
+      // Lion announces the selection as `selected-changed`. That is its
+      // protocol, not this component's API, so the public event is emitted
+      // here under our own name. The guard keeps the initial render quiet:
+      // there is no previous index to have changed from.
+      if (changedProperties.get('selectedIndex') !== undefined) {
+        this.dispatchEvent(new CustomEvent('craft-tab-show'));
+      }
     }
 
     if (
@@ -388,7 +396,7 @@ export default class CraftTabs extends LionTabs {
    *
    * The click it claims is stopped where it is, so a listener bound to the
    * host (or above it) won't see the one that closes the strip. Listen for
-   * `selected-changed` instead, which fires either way.
+   * `craft-tab-show` instead, which fires either way.
    */
   #handleClick = (event: Event) => {
     if (!this.collapsible || this.#collapsed) {

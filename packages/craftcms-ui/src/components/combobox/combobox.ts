@@ -61,6 +61,10 @@ interface VisibleEntry {
  *
  * @fires model-value-changed - The selection changed. Bubbles, so a form can
  *   listen for it once on an ancestor rather than per field.
+ *
+ * `model-value-changed` is Lion's own protocol name, not one this package
+ * chose. It is kept because Lion's form system dispatches and listens for it;
+ * a Craft-prefixed alias would only add a second name for the same thing.
  */
 export default class CraftCombobox extends LionCombobox {
   static override get styles() {

@@ -26,6 +26,10 @@ function titleCase(value: string): string {
  *
  * @fires model-value-changed - The selected colour changed. Re-dispatched from
  *   the host as a composed event so it crosses the shadow boundary.
+ *
+ * `model-value-changed` is Lion's own protocol name, not one this package
+ * chose. It is kept because Lion's form system dispatches and listens for it;
+ * a Craft-prefixed alias would only add a second name for the same thing.
  */
 export default class CraftSelectColor extends LitElement {
   static override styles = [styles];

@@ -21,7 +21,7 @@ export interface ActionableHost {
   actionState: AsyncState;
   /** Transient message surfaced during feedback (e.g. an error). */
   feedbackMessage: string | null;
-  /** Run {@link action} now, driving state + emitting `action:change-state`. */
+  /** Run {@link action} now, driving state + emitting `craft-state-change`. */
   triggerAction(): Promise<void>;
   setActionState(state: AsyncState, detail?: FeedbackData): void;
 }
@@ -29,7 +29,7 @@ export interface ActionableHost {
 /**
  * Adds a declarative `action` to any Lit element: clicking the host runs the
  * action through {@link runAction}, tracking idle/loading/success/error state,
- * surfacing feedback, and emitting a bubbling `action:change-state` event so an
+ * surfacing feedback, and emitting a bubbling `craft-state-change` event so an
  * ancestor (menu, toolbar) can react. This is the shared implementation behind
  * `craft-action-item` and `craft-button` — components read `actionState` /
  * `feedbackMessage` to render their own spinners/checks.
@@ -81,7 +81,7 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
       this.feedbackMessage = detail.message ?? null;
 
       this.dispatchEvent(
-        new CustomEvent('action:change-state', {
+        new CustomEvent('craft-state-change', {
           bubbles: true,
           composed: true,
           detail: {

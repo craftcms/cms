@@ -920,7 +920,7 @@ export class Row extends Base {
         this.addListener($input, 'mousedown', 'ignoreNextTextareaFocus');
         this.addListener(
           this.$tr.find('craft-reorder-button'),
-          'reorder',
+          'craft-reorder',
           'onReorder'
         );
 

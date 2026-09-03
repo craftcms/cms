@@ -403,10 +403,23 @@ describe('external-panel mode', () => {
     ]);
   });
 
-  it('switches panels on click and fires selected-changed', async () => {
+  it('stays quiet on the initial render', async () => {
+    let fired = 0;
+    const element = document.createElement('craft-tabs');
+    element.addEventListener('craft-tab-show', () => {
+      fired++;
+    });
+    document.body.append(element);
+    await element.updateComplete;
+
+    // Selecting the first tab on load is not a change anyone asked for.
+    expect(fired).toBe(0);
+  });
+
+  it('switches panels on click and fires craft-tab-show', async () => {
     const {element, tabs, sections} = await createExternalTabs();
     let fired = 0;
-    element.addEventListener('selected-changed', () => {
+    element.addEventListener('craft-tab-show', () => {
       fired++;
     });
 
@@ -628,7 +641,7 @@ describe('collapsible', () => {
     });
 
     let reported: number | undefined;
-    element.addEventListener('selected-changed', (event) => {
+    element.addEventListener('craft-tab-show', (event) => {
       reported = (event.target as CraftTabs).selectedIndex;
     });
 
@@ -737,7 +750,7 @@ describe('collapsible', () => {
   it('leaves a strip that isn’t collapsible alone', async () => {
     const {element, tabs, sections} = await createExternalTabs();
     let fired = 0;
-    element.addEventListener('selected-changed', () => {
+    element.addEventListener('craft-tab-show', () => {
       fired++;
     });
 

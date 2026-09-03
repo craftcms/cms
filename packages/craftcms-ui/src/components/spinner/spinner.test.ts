@@ -57,8 +57,8 @@ describe('craft-spinner', () => {
   it('fires show and hide', async () => {
     const element = await createSpinner();
     const seen: string[] = [];
-    element.addEventListener('show', () => seen.push('show'));
-    element.addEventListener('hide', () => seen.push('hide'));
+    element.addEventListener('craft-show', () => seen.push('show'));
+    element.addEventListener('craft-hide', () => seen.push('hide'));
 
     element.hide();
     element.show();

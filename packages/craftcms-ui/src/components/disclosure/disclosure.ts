@@ -21,8 +21,8 @@ import '../button/button.js';
  * legacy `CraftDisclosure` element and `_includes/disclosure-toggle.twig`.
  * The mode is chosen automatically when such a button is present.
  *
- * @fires open - The content was expanded.
- * @fires close - The content was collapsed.
+ * @fires craft-show - The content was expanded.
+ * @fires craft-hide - The content was collapsed.
  */
 export default class CraftDisclosure extends LionCollapsible {
   static override get styles() {
@@ -160,7 +160,7 @@ export default class CraftDisclosure extends LionCollapsible {
   private __handleExternalOpen() {
     this.__externalExpanded = true;
     this.__externalTrigger?.setAttribute('aria-expanded', 'true');
-    this.dispatchEvent(new CustomEvent('open'));
+    this.dispatchEvent(new CustomEvent('craft-show'));
 
     const target = this.__externalTarget;
     if (target) {
@@ -173,7 +173,7 @@ export default class CraftDisclosure extends LionCollapsible {
   private __handleExternalClose() {
     this.__externalExpanded = false;
     this.__externalTrigger?.setAttribute('aria-expanded', 'false');
-    this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(new CustomEvent('craft-hide'));
 
     const target = this.__externalTarget;
     if (target) {

@@ -15,7 +15,7 @@ import type {
 
 import '../action-item/action-item.js';
 
-export type ActionMenuChangeDetail =
+export type ActionMenuSelectDetail =
   | {item: ActionMenuItemButton | ActionMenuItemLink}
   | {item: CraftActionItem};
 
@@ -61,7 +61,7 @@ export type {
  * @slot invoker - Element that triggers the menu.
  * @slot content - Action items to be rendered in the menu.
  *
- * @fires {CustomEvent<ActionMenuChangeDetail>} change - Emitted when the user
+ * @fires {CustomEvent<ActionMenuSelectDetail>} craft-select - Emitted when the user
  *   clicks an item. In data-driven mode `event.detail.item` is the
  *   `ActionMenuItemButton` or `ActionMenuItemLink` descriptor; in slot-based
  *   mode it is the clicked `craft-action-item` element.
@@ -166,7 +166,7 @@ export default class CraftActionMenu extends CraftPopover {
       .forEach((item) => {
         item.addEventListener('click', () => {
           this.opened = false;
-          // In data-driven mode the 'change' event is dispatched from
+          // In data-driven mode the 'craft-select' event is dispatched from
           // _renderItem (which has access to the descriptor). For slot-based
           // mode this is the only click handler, so dispatch it here.
           if (this.actions === undefined) {
@@ -180,10 +180,10 @@ export default class CraftActionMenu extends CraftPopover {
     item: ActionMenuItemButton | ActionMenuItemLink | CraftActionItem
   ): void {
     this.dispatchEvent(
-      new CustomEvent<ActionMenuChangeDetail>('change', {
+      new CustomEvent<ActionMenuSelectDetail>('craft-select', {
         bubbles: true,
         composed: true,
-        detail: {item} as ActionMenuChangeDetail,
+        detail: {item} as ActionMenuSelectDetail,
       })
     );
   }

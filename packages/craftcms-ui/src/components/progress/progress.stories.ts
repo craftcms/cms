@@ -189,7 +189,7 @@ export const CompleteAnimation: Story = {
         <craft-progress
           id="complete-demo"
           progress="75"
-          @complete=${() => console.log('Complete event received!')}
+          @craft-complete=${() => console.log('Complete event received!')}
         ></craft-progress>
         <button @click=${handleClick}>Trigger Complete Animation</button>
       </div>
@@ -239,7 +239,7 @@ export const AutoComplete: Story = {
           id="auto-complete-demo"
           progress="0"
           auto-complete
-          @complete=${() => console.log('Auto-complete triggered!')}
+          @craft-complete=${() => console.log('Auto-complete triggered!')}
         ></craft-progress>
         <div>
           <button type="button" @click="${replay}">Replay</button>

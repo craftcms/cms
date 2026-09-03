@@ -7,7 +7,7 @@ import {property} from 'lit/decorators.js';
  *
  * @summary Displays progress in radial form
  *
- * @event complete - Fired when the completion animation finishes
+ * @event craft-complete - Fired when the completion animation finishes
  *
  * @csspart canvas - The canvas element
  *
@@ -310,7 +310,7 @@ export default class CraftProgress extends LitElement {
   async complete(): Promise<void> {
     await this.runCompleteAnimation();
     this.dispatchEvent(
-      new CustomEvent('complete', {bubbles: true, composed: true})
+      new CustomEvent('craft-complete', {bubbles: true, composed: true})
     );
   }
 

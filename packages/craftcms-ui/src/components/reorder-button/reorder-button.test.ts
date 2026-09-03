@@ -8,7 +8,7 @@ it('emits composed reorder events to list owners', async () => {
     'craft-reorder-button'
   ) as CraftReorderButton;
   const reordered = vi.fn();
-  list.addEventListener('reorder', reordered);
+  list.addEventListener('craft-reorder', reordered);
   list.append(button);
   document.body.append(list);
   await button.updateComplete;

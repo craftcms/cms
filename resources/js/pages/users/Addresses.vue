@@ -133,9 +133,9 @@
 
   // The cards' server-provided action items (e.g. Delete) run their HTTP
   // request themselves via the action system and announce progress through
-  // bubbling `action:change-state` events — refresh the cards once one
+  // bubbling `craft-state-change` events — refresh the cards once one
   // succeeds.
-  useEventListener(cardsContainer, 'action:change-state', (event: Event) => {
+  useEventListener(cardsContainer, 'craft-state-change', (event: Event) => {
     if (!(event instanceof CustomEvent)) {
       return;
     }

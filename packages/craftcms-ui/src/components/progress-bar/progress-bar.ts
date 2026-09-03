@@ -40,7 +40,7 @@ import styles from './progress-bar.styles';
  * <craft-progress-bar progress="75" smooth></craft-progress-bar>
  * ```
  *
- * @event complete - Fired when progress reaches 100% (only when using item count mode)
+ * @event craft-complete - Fired when progress reaches 100% (only when using item count mode)
  *
  * @csspart track - The background track of the progress bar
  * @csspart fill - The filled portion indicating progress
@@ -94,7 +94,7 @@ export default class CraftProgressBar extends LitElement {
         // Check if we just reached 100%
         if (newProgress >= 100 && this.#lastProgress < 100) {
           this.dispatchEvent(
-            new CustomEvent('complete', {bubbles: true, composed: true})
+            new CustomEvent('craft-complete', {bubbles: true, composed: true})
           );
         }
 

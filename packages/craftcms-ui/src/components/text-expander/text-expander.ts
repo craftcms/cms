@@ -94,8 +94,8 @@ let nextId = 0;
  * @csspart listbox - The suggestion listbox.
  * @csspart option - A generated suggestion option.
  * @csspart loading - The loading row.
- * @fires craft-text-expander-select - Fired after a suggestion is inserted.
- * @fires craft-text-expander-error - Fired when a suggestion source fails.
+ * @fires craft-select - Fired after a suggestion is inserted.
+ * @fires craft-error - Fired when a suggestion source fails.
  */
 export default class CraftTextExpander extends LitElement {
   static override styles = [visuallyHiddenStyles, styles];
@@ -508,7 +508,7 @@ export default class CraftTextExpander extends LitElement {
 
       this.#close();
       this.dispatchEvent(
-        new CustomEvent<TextExpanderErrorDetail>('craft-text-expander-error', {
+        new CustomEvent<TextExpanderErrorDetail>('craft-error', {
           bubbles: true,
           composed: true,
           detail: {character: match.character, query: match.query, error},
@@ -644,7 +644,7 @@ export default class CraftTextExpander extends LitElement {
     };
     this.#close();
     this.dispatchEvent(
-      new CustomEvent<TextExpanderSelectDetail>('craft-text-expander-select', {
+      new CustomEvent<TextExpanderSelectDetail>('craft-select', {
         bubbles: true,
         composed: true,
         detail,
@@ -863,7 +863,7 @@ declare global {
   }
 
   interface HTMLElementEventMap {
-    'craft-text-expander-select': CustomEvent<TextExpanderSelectDetail>;
-    'craft-text-expander-error': CustomEvent<TextExpanderErrorDetail>;
+    'craft-select': CustomEvent<TextExpanderSelectDetail>;
+    'craft-error': CustomEvent<TextExpanderErrorDetail>;
   }
 }

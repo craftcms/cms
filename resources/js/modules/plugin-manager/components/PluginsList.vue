@@ -89,7 +89,7 @@
 
 <template>
   <craft-pane appearance="raised" padding="0">
-    <AdminTable :table="table" @action:change-state="handleStateChange">
+    <AdminTable :table="table" @craft-state-change="handleStateChange">
       <template #empty-row>
         <Empty
           icon="plugin"

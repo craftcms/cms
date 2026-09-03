@@ -157,7 +157,7 @@
   );
 
   /**
-   * `craft-action-item` bubbles `action:change-state` through its lifecycle. A
+   * `craft-action-item` bubbles `craft-state-change` through its lifecycle. A
    * successful `http` action means the selection was acted on, so refresh the
    * table + clear selection. (Other states drive the item's own spinner/feedback.)
    */
@@ -199,7 +199,7 @@
   <div
     class="bulk-actions-bar"
     v-if="selectedCount > 0"
-    @action:change-state="onChangeState"
+    @craft-state-change="onChangeState"
   >
     <div class="bulk-actions-bar__selection">
       <Text

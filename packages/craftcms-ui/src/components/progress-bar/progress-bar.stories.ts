@@ -251,7 +251,7 @@ export const CompleteEvent: Story = {
           processed="0"
           show-status
           smooth
-          @complete=${() => {
+          @craft-complete=${() => {
             const output = document.querySelector('#complete-output');
             if (output) {
               output.textContent = 'Complete event fired!';
