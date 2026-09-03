@@ -20,6 +20,7 @@ use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
@@ -27,7 +28,6 @@ use League\CommonMark\Extension\Mention\Mention;
 use League\CommonMark\Node\Block\Document;
 use League\CommonMark\Node\Inline\Text;
 use League\CommonMark\Node\NodeIterator;
-use LogicException;
 use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
@@ -43,26 +43,24 @@ class ActivityComments
     public function create(
         ElementInterface $subject,
         User $author,
-        Site $site,
+        ?Site $site,
         string $markdown,
     ): ActivityEvent {
         $this->validate($markdown);
 
-        return DB::transaction(function () use ($subject, $author, $site, $markdown): ActivityEvent {
-            $event = $this->events->record(new CommentCreated(
-                subject: $subject,
-                actor: $author,
-                site: $site,
-                markdown: $markdown,
-                authorId: $author->id,
-                authorLabel: $author->name,
-                mentions: $this->resolveMentions($markdown, $subject),
-            ));
+        $event = $this->events->record(new CommentCreated(
+            subject: $subject,
+            actor: $author,
+            site: $site,
+            markdown: $markdown,
+            authorId: $author->id,
+            authorLabel: $author->name,
+            mentions: $this->resolveMentions($markdown, $subject),
+        ));
 
-            $this->scheduleMentionNotifications($event, $event->data['mentions']);
+        $this->scheduleMentionNotifications($event, $event->data['mentions']);
 
-            return $event;
-        });
+        return $event;
     }
 
     public function edit(
@@ -147,7 +145,7 @@ class ActivityComments
                 ->lockForUpdate()
                 ->findOrFail($comment->id);
             $current = ActivityEvent::query()
-                ->where('rootEventId', $root->id)
+                ->rootEvent($root)
                 ->newestFirst()
                 ->first() ?? $root;
 
@@ -163,10 +161,6 @@ class ActivityComments
                 $root->snapshots['subject']['label'],
             );
             $site = $root->siteId === null ? null : Site::get($root->siteId);
-
-            if ($site === null) {
-                throw new LogicException('Activity comments require a current site.');
-            }
 
             $mentions = $markdown === null
                 ? ($current->data['mentions'] ?? [])
@@ -198,11 +192,10 @@ class ActivityComments
     /** @param list<array{id: int, username: string}> $mentions */
     private function scheduleMentionNotifications(ActivityEvent $version, array $mentions): void
     {
-        foreach ($mentions as $mention) {
-            UserModel::query()
-                ->findOrFail($mention['id'])
-                ->notify(new ActivityMentionNotification($version->id));
-        }
+        Notification::send(
+            UserModel::query()->findMany(array_column($mentions, 'id')),
+            new ActivityMentionNotification($version),
+        );
     }
 
     /** @return list<array{id: int, username: string}> */
@@ -224,15 +217,8 @@ class ActivityComments
         }
 
         $ids = collect($references)
-            ->map(function (string $id): int {
-                if (! ctype_digit($id)) {
-                    throw ValidationException::withMessages([
-                        'markdown' => t('Comment contains an invalid user mention.'),
-                    ]);
-                }
-
-                return (int) $id;
-            })
+            ->filter(fn (string $id): bool => ctype_digit($id))
+            ->map(fn (string $id): int => (int) $id)
             ->unique()
             ->values();
         $users = User::find()
@@ -241,17 +227,19 @@ class ActivityComments
             ->collect()
             ->keyBy('id');
 
-        return $ids->map(function (int $id) use ($subject, $users): array {
-            $user = $users->get($id);
+        return $ids
+            ->map(function (int $id) use ($subject, $users): ?array {
+                $user = $users->get($id);
 
-            if ($subject === null || $user === null || ! $this->canMention($user, $subject)) {
-                throw ValidationException::withMessages([
-                    'markdown' => t('Comment contains an ineligible user mention.'),
-                ]);
-            }
+                if ($subject === null || $user === null || ! $this->canMention($user, $subject)) {
+                    return null;
+                }
 
-            return ['id' => $user->id, 'username' => $user->username];
-        })->all();
+                return ['id' => $user->id, 'username' => $user->username];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /** @return iterable<int, Mention> */

@@ -6,6 +6,7 @@ use CraftCms\Cms\Activity\ActivityComments;
 use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\EventTypes\CommentDeleted;
 use CraftCms\Cms\Activity\EventTypes\CommentEdited;
+use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -15,6 +16,8 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
+use Illuminate\Notifications\Channels\DatabaseChannel;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -44,12 +47,13 @@ beforeEach(function () {
 });
 
 it('records immutable comment lifecycle versions', function () {
-    $created = $this->comments->create($this->entry, $this->author, $this->site, 'First version');
+    $created = $this->comments->create($this->entry, $this->author, null, 'First version');
     $edited = $this->comments->edit($created, $this->author, 'Second version', $this->entry);
     $deleted = $this->comments->delete($created, $this->author);
 
     expect($created->eventType)->toBe(CommentCreated::class)
         ->and($created->rootEventId)->toBeNull()
+        ->and($created->siteId)->toBeNull()
         ->and($edited->eventType)->toBe(CommentEdited::class)
         ->and($edited->rootEventId)->toBe($created->id)
         ->and($deleted->eventType)->toBe(CommentDeleted::class)
@@ -60,7 +64,7 @@ it('records immutable comment lifecycle versions', function () {
         ->toThrow(ValidationException::class);
 });
 
-it('stores, validates, and renders structured mentions', function () {
+it('stores and renders eligible mentions and ignores invalid mentions', function () {
     $comment = $this->comments->create(
         $this->entry,
         $this->author,
@@ -91,12 +95,19 @@ it('stores, validates, and renders structured mentions', function () {
         ->withPermissions(['accessCp'])
         ->createElement(['admin' => false, 'username' => 'ineligible']);
 
-    expect(fn () => $this->comments->create(
+    $ignored = $this->comments->create(
         $this->entry,
         $this->author,
         $this->site,
-        "Hello [@ineligible](craft-user:{$ineligible->id}).",
-    ))->toThrow(ValidationException::class)
+        "Hello [@ineligible](craft-user:{$ineligible->id}) and [@invalid](craft-user:not-a-number).",
+    );
+    $document->loadHTML(
+        $this->comments->render($ignored, $this->author)->toHtml(),
+        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
+    );
+
+    expect($ignored->data['mentions'])->toBe([])
+        ->and($document->textContent)->toBe('Hello @ineligible and @invalid.')
         ->and(fn () => $this->comments->create(
             $this->entry,
             $this->author,
@@ -114,7 +125,7 @@ it('normalizes CommonMark mention links in notification comments', function (Clo
     );
     $notifiable = UserModel::query()->findOrFail($this->mentioned->id);
 
-    expect(new ActivityMentionNotification($comment->id)->toMail($notifiable)->variables['comment'])
+    expect(new ActivityMentionNotification($comment)->toMail($notifiable)->variables['comment'])
         ->toBe('Hello A & B, @grace.');
 })->with([
     'plain destination' => fn (int $id): string => "[@grace](craft-user:$id)",
@@ -129,10 +140,19 @@ it('rechecks complete mention eligibility before sending', function () {
         $this->site,
         "Hello [@grace](craft-user:{$this->mentioned->id}).",
     );
-    $notification = new ActivityMentionNotification($comment->id);
+    $notification = unserialize(serialize(new ActivityMentionNotification($comment)));
     $notifiable = UserModel::query()->findOrFail($this->mentioned->id);
 
-    expect($notification->shouldSend($notifiable, 'mail'))->toBeTrue();
+    expect($notification)->toBeInstanceOf(CpNotification::class)
+        ->and($notification->via($notifiable))->toBe([DatabaseChannel::class, MailChannel::class])
+        ->and($notification->toDatabase($notifiable))->toMatchArray([
+            'title' => 'comment_mention_subject',
+            'message' => 'Hello @grace.',
+            'byline' => $this->author->name,
+            'icon' => 'comment',
+            'url' => $this->entry->getCpEditUrl(),
+        ])
+        ->and($notification->shouldSend($notifiable, 'mail'))->toBeTrue();
 
     UserPermissions::saveUserPermissions(
         $this->mentioned->id,

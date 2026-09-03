@@ -139,6 +139,16 @@ class ActivityEvent extends BaseModel
      * @return Builder<static>
      */
     #[Scope]
+    protected function rootEvent(Builder $query, self|string $rootEvent): Builder
+    {
+        return $query->where('rootEventId', $rootEvent instanceof self ? $rootEvent->id : $rootEvent);
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    #[Scope]
     protected function source(Builder $query, string $source): Builder
     {
         if ($source === '') {
