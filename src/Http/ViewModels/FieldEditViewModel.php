@@ -23,6 +23,7 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\HiddenField;
+use CraftCms\Cms\Form\Nodes\Loader;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Http\Controllers\FieldsController;
@@ -111,6 +112,9 @@ class FieldEditViewModel extends ViewModel
         }
 
         $nodes[] = Separator::make('field-settings-separator');
+        // Everything past here comes from the field type's own settings form,
+        // so it's what gets replaced when the type changes.
+        $nodes[] = Loader::make('field-settings-loader');
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
         $refreshable = ! $this->readOnly;
         $formResolver = app(FormResolver::class);

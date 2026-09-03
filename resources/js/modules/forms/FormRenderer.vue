@@ -13,14 +13,13 @@
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
-  // Deep import: the package barrel would pull in every component.
-  import {t} from '@craftcms/ui/utilities/translate';
   import FormNodeList from './FormNodeList.vue';
   import {
     canonical,
     FormFailure,
     FormControlOverrides,
     FormModifiedGroups,
+    FormRebuilding,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -84,6 +83,7 @@
     FormModifiedGroups,
     computed(() => new Set(props.modified ?? []))
   );
+  provide(FormRebuilding, rebuilding);
 
   useEventListener(hostForm, 'submit', (event) => {
     if (renderError.value) {
@@ -485,11 +485,6 @@
     <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
-    <!-- A sibling rather than a wrapper: `craft-field-group` slots these nodes
-      directly, so an extra element around them would break its spacing. -->
-    <div v-if="rebuilding" class="flex justify-center py-4">
-      <craft-spinner :label="t('Loading')" />
-    </div>
     <FormNodeList
       :nodes="payload.nodes"
       :values="values"

@@ -1603,8 +1603,20 @@ describe('FormRenderer', () => {
         next.nodes[1],
         'Expected the placeholder field node.'
       ).control!.props.rebuildsForm = rebuilds;
+      // A loader standing where the variable part of the form begins: the
+      // nodes after it are the ones a rebuild replaces.
+      next.nodes.splice(2, 0, {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Loader',
+        component: 'craft:loader',
+        uid: 'settings-loader',
+        props: {},
+      } as unknown as FormPayload['nodes'][number]);
 
       return next;
+    }
+
+    function nodesAfterLoader(): number {
+      return container.querySelectorAll('craft-field-group').length;
     }
 
     app.unmount();
@@ -1634,10 +1646,13 @@ describe('FormRenderer', () => {
     await Promise.resolve();
     await nextTick();
 
-    // Marked: the wait is covered until the rebuilt form lands.
+    // Marked: the loader stands in, and the nodes it fronts are withheld.
+    const groupsBefore = nodesAfterLoader();
+    expect(groupsBefore).toBeGreaterThan(0);
     await edit('settings[placeholder]', 'Second');
     expect(refresh).toHaveBeenCalledTimes(2);
     expect(container.querySelector('craft-spinner')).not.toBeNull();
+    expect(nodesAfterLoader()).toBe(0);
 
     required(
       resolveRefresh,
@@ -1646,6 +1661,7 @@ describe('FormRenderer', () => {
     await Promise.resolve();
     await nextTick();
     expect(container.querySelector('craft-spinner')).toBeNull();
+    expect(nodesAfterLoader()).toBe(groupsBefore);
 
     vi.useRealTimers();
   });

@@ -18,6 +18,10 @@ export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormModifiedGroups');
 
+/** Whether a control that rebuilds the form is currently refreshing it. */
+export const FormRebuilding: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('FormRebuilding');
+
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
 
