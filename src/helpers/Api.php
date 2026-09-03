@@ -201,7 +201,7 @@ abstract class Api
 
         // did we just get any new plugin license keys?
         $pluginsService = Craft::$app->getPlugins();
-        if (isset($headers['x-craft-plugin-licenses'])) {
+        if (isset($headers['x-craft-plugin-licenses']) && !Craft::$app->getProjectConfig()->readOnly) {
             $pluginLicenseKeys = explode(',', reset($headers['x-craft-plugin-licenses']));
             foreach ($pluginLicenseKeys as $key) {
                 [$pluginHandle, $key] = explode(':', $key);
