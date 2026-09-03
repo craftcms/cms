@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Workbench\App\Console\Commands;
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Schema;
 use Override;
 
 final class ServeCommand extends Command
@@ -41,14 +43,18 @@ final class ServeCommand extends Command
         Env::writeVariable('APP_URL', $url, app()->environmentFilePath(), overwrite: true);
         Config::set('app.url', $url);
 
-        $databaseExists = is_file(database_path('database.sqlite'));
-
         if ($this->call('package:create-sqlite-db') !== self::SUCCESS) {
             return self::FAILURE;
         }
 
-        if (($this->option('fresh') || ! $databaseExists) &&
+        if (($this->option('fresh') || ! Schema::hasTable(Table::SESSIONS)) &&
             $this->call('workbench:build') !== self::SUCCESS) {
+            return self::FAILURE;
+        }
+
+        if (! Schema::hasTable(Table::SESSIONS)) {
+            $this->components->error('Failed to build the Workbench database.');
+
             return self::FAILURE;
         }
 
