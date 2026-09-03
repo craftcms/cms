@@ -29,7 +29,7 @@ class SystemMessageCatalog
     public function __construct(
         private readonly Container $container,
     ) {
-        foreach (['account_activation', 'verify_new_email', 'forgot_password', 'test_email'] as $key) {
+        foreach (['account_activation', 'comment_mention', 'verify_new_email', 'forgot_password', 'test_email'] as $key) {
             $this->register($key, fn () => new SystemMessage([
                 'key' => $key,
                 'heading' => t("{$key}_heading"),
