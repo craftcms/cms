@@ -1,6 +1,7 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
 import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
+import {keyed} from 'lit/directives/keyed.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
 import {t} from '@src/utilities/translate';
@@ -296,7 +297,17 @@ export default class CraftCombobox extends LionCombobox {
             </div>`
           : nothing;
       lastGroup = entry.groupLabel;
-      return html`${header}${this.#optionTemplate(entry.option)}`;
+
+      // Keyed by option value so a changed option set yields *new*
+      // `<craft-option>` elements. Lit would otherwise patch the existing ones
+      // in place, and because they never disconnect, Lion's form registry keeps
+      // the previous options: `addFormElement` never runs for the new values,
+      // so a `modelValue` naming one of them can never be adopted and the
+      // combobox keeps announcing the value it already had.
+      return keyed(
+        String(entry.option.value),
+        html`${header}${this.#optionTemplate(entry.option)}`
+      );
     });
 
     const footer =
