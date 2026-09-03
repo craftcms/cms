@@ -2,6 +2,7 @@ import {html, LitElement, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
 import {type AsyncState, AsyncStates} from '@src/types';
+import hostStyles from '@src/styles/host.styles';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
@@ -19,7 +20,7 @@ import {Variant, type VariantValue} from '@src/constants/variants';
  * @summary Either a link or button typically used in a menu.
  */
 export default class CraftActionItem extends LitElement {
-  static override styles = [variantsStyles, styles];
+  static override styles = [hostStyles, variantsStyles, styles];
 
   /**
    * Delegate focus into the shadow root, so `host.focus()` (used by
