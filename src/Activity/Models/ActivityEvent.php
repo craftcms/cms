@@ -76,8 +76,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function subject(Builder $query, ActivitySubject $subject): Builder
@@ -88,8 +88,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function site(Builder $query, Site|int $site): Builder
@@ -106,9 +106,9 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
+     * @param  Builder<static>  $query
      * @param  string|list<string>  $eventTypes
-     * @return Builder<ActivityEvent>
+     * @return Builder<static>
      */
     #[Scope]
     protected function eventTypes(Builder $query, string|array $eventTypes): Builder
@@ -123,8 +123,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function actor(Builder $query, ActivityActor $actor): Builder
@@ -135,8 +135,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function source(Builder $query, string $source): Builder
@@ -149,8 +149,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function occurredFrom(Builder $query, DateTimeInterface $date): Builder
@@ -159,8 +159,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function occurredUntil(Builder $query, DateTimeInterface $date): Builder
@@ -169,8 +169,8 @@ class ActivityEvent extends BaseModel
     }
 
     /**
-     * @param  Builder<ActivityEvent>  $query
-     * @return Builder<ActivityEvent>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function newestFirst(Builder $query): Builder
