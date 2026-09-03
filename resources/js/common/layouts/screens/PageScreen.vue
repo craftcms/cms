@@ -52,6 +52,7 @@
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from './types';
   import CpTopBar from '@/common/components/CpTopBar.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
+  import {withSubnavCrumbs} from '@/common/composables/subnavCrumbs';
 
   /** Resize bounds for the details column, in px — 12rem to 30rem. */
   const DETAILS_MIN_WIDTH = 192;
@@ -88,8 +89,16 @@
 
   // Page chrome from props and shared page data.
   const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
-  const crumbs = computed(() => page.props.crumbs ?? null);
   const subnav = computed(() => page.props.subnav ?? []);
+
+  // The secondary nav's trail joins the crumbs, so where you are reads the
+  // same whether or not the nav is on screen — and each level brings the
+  // switcher menu an element index's source crumb has.
+  const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
+    const merged = withSubnavCrumbs(page.props.crumbs ?? [], subnav.value);
+
+    return merged.length > 0 ? merged : null;
+  });
   const readOnly = computed(() => Boolean(page.props.readOnly));
 
   // Which optional layout regions are in play — filled either by an inline
@@ -115,6 +124,7 @@
     () =>
       Boolean(slots.sidebar) ||
       Boolean(slots['subnav-actions']) ||
+      (props.subnavActions?.length ?? 0) > 0 ||
       registry.has('sidebar') ||
       registry.has('subnav-actions') ||
       subnav.value.length > 0
@@ -219,7 +229,19 @@
 
 <template>
   <Head :title="pageTitle" />
-  <LiveRegion />
+  <div>
+    <LiveRegion />
+    <!-- Focus lands here on Inertia navigation; see
+    `handleAccessibleRouting` in bootstrap/cp.ts. -->
+    <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
+    <a
+      v-for="link in skipLinks"
+      :key="link.url"
+      :href="link.url"
+      class="skip-link skip-link--global"
+      >{{ link.label }}</a
+    >
+  </div>
   <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
   <div class="cp">
     <div class="cp__sidebar">
@@ -229,39 +251,6 @@
     </div>
     <div class="cp__main">
       <div class="cp__header">
-        <header>
-          <!-- Focus lands here on Inertia navigation; see
-            `handleAccessibleRouting` in bootstrap/cp.ts. -->
-          <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
-          <a
-            v-for="link in skipLinks"
-            :key="link.url"
-            :href="link.url"
-            class="skip-link skip-link--global"
-            >{{ link.label }}</a
-          >
-          <div class="container">
-            <div class="flex gap-4 py-1 items-center justify-between">
-              <craft-button
-                v-if="
-                  globalSidebar.mode === 'floating' &&
-                  globalSidebar.visibility === 'hidden'
-                "
-                icon
-                type="button"
-                size="small"
-                :variant="ButtonVariant.Outline"
-                :ref="registerToggle"
-                :aria-label="t('Show sidebar')"
-                @click="toggleSidebar"
-              >
-                <craft-icon name="bars" :label="t('Show sidebar')"></craft-icon>
-              </craft-button>
-
-              <div class="ml-auto"></div>
-            </div>
-          </div>
-        </header>
         <FlashMessages />
       </div>
       <div class="cp__content">
@@ -272,99 +261,100 @@
               @submit.prevent="form && save()"
               class="cp-main"
             >
-              <slot name="header">
-                <div id="cp-header">
-                  <div class="container">
-                    <div class="flex gap-2 items-center justify-between py-4">
-                      <LayoutSlotOutlet name="title">
-                        <slot name="title">
-                          <h1 class="text-xl">{{ pageTitle }}</h1>
-                        </slot>
-                      </LayoutSlotOutlet>
-                      <LayoutSlotOutlet name="title-badge">
-                        <slot name="title-badge"></slot>
-                      </LayoutSlotOutlet>
-                      <div
-                        v-show="hasToolbar"
-                        id="toolbar"
-                        class="flex items-center gap-2"
-                      >
-                        <LayoutSlotOutlet name="toolbar">
-                          <slot name="toolbar"></slot>
-                        </LayoutSlotOutlet>
-                      </div>
-
-                      <div class="flex gap-2 items-center">
-                        <LayoutSlotOutlet name="actions">
-                          <slot name="actions">
-                            <slot name="additional-buttons"></slot>
-
-                            <FormActions
-                              v-if="form"
-                              :form="form"
-                              :action-items="formActionItems"
-                              :additional-actions="formAdditionalActions"
-                              :additional-buttons="formAdditionalButtons"
-                              :submit-label="submitButtonLabel"
-                              :read-only="readOnly"
-                            >
-                              <template
-                                v-if="slots['submit-button']"
-                                #submit-button
-                              >
-                                <slot name="submit-button"></slot>
-                              </template>
-                            </FormActions>
-                          </slot>
-                        </LayoutSlotOutlet>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </slot>
-              <div class="container">
-                <LayoutSlotOutlet name="error-summary">
-                  <slot name="error-summary">
-                    <ErrorSummary
-                      v-if="form && form.hasErrors"
-                      :errors="form.errors"
-                    />
-                  </slot>
-                </LayoutSlotOutlet>
-                <template v-if="readOnly">
-                  <CalloutReadOnly />
-                </template>
+              <LayoutSlotOutlet name="error-summary">
+                <slot name="error-summary">
+                  <ErrorSummary
+                    v-if="form && form.hasErrors"
+                    :errors="form.errors"
+                  />
+                </slot>
+              </LayoutSlotOutlet>
+              <template v-if="readOnly">
+                <CalloutReadOnly />
+              </template>
+              <div
+                ref="contentLayout"
+                class="content-layout"
+                :class="{
+                  'content-layout--sidebar': hasSidebar,
+                  'content-layout--details': hasDetails,
+                }"
+                :style="detailsResizer.style.value"
+              >
                 <div
-                  ref="contentLayout"
-                  class="content-layout"
-                  :class="{
-                    'content-layout--sidebar': hasSidebar,
-                    'content-layout--details': hasDetails,
-                  }"
-                  :style="detailsResizer.style.value"
+                  v-show="hasSidebar"
+                  id="secondary-nav"
+                  tabindex="-1"
+                  class="content-layout__sidebar"
                 >
-                  <div
-                    v-show="hasSidebar"
-                    id="secondary-nav"
-                    tabindex="-1"
-                    class="content-layout__sidebar"
-                  >
-                    <LayoutSlotOutlet name="sidebar">
-                      <slot name="sidebar">
-                        <!-- The subnav-actions outlet lives inside this
+                  <LayoutSlotOutlet name="sidebar">
+                    <slot name="sidebar">
+                      <!-- The subnav-actions outlet lives inside this
                         fallback, so a page must not teleport `sidebar` and
                         `subnav-actions` at the same time. -->
-                        <SecondaryNav :items="subnav">
-                          <template #actions>
-                            <LayoutSlotOutlet name="subnav-actions">
-                              <slot name="subnav-actions"></slot>
+                      <SecondaryNav :items="subnav" :actions="subnavActions">
+                        <template #actions>
+                          <LayoutSlotOutlet name="subnav-actions">
+                            <slot name="subnav-actions"></slot>
+                          </LayoutSlotOutlet>
+                        </template>
+                      </SecondaryNav>
+                    </slot>
+                  </LayoutSlotOutlet>
+                </div>
+                <div class="content-layout__main">
+                  <div class="container">
+                    <slot name="header">
+                      <div id="cp-header">
+                        <div
+                          class="flex gap-2 items-center justify-between pt-3 pb-2"
+                        >
+                          <LayoutSlotOutlet name="title">
+                            <slot name="title">
+                              <h1 class="text-xl">{{ pageTitle }}</h1>
+                            </slot>
+                          </LayoutSlotOutlet>
+                          <LayoutSlotOutlet name="title-badge">
+                            <slot name="title-badge"></slot>
+                          </LayoutSlotOutlet>
+                          <div
+                            v-show="hasToolbar"
+                            id="toolbar"
+                            class="flex items-center gap-2"
+                          >
+                            <LayoutSlotOutlet name="toolbar">
+                              <slot name="toolbar"></slot>
                             </LayoutSlotOutlet>
-                          </template>
-                        </SecondaryNav>
-                      </slot>
-                    </LayoutSlotOutlet>
-                  </div>
-                  <div class="content-layout__main">
+                          </div>
+
+                          <div class="flex gap-2 items-center">
+                            <LayoutSlotOutlet name="actions">
+                              <slot name="actions">
+                                <slot name="additional-buttons"></slot>
+
+                                <FormActions
+                                  v-if="form"
+                                  :form="form"
+                                  :action-items="formActionItems"
+                                  :additional-actions="formAdditionalActions"
+                                  :additional-buttons="formAdditionalButtons"
+                                  :submit-label="submitButtonLabel"
+                                  :read-only="readOnly"
+                                >
+                                  <template
+                                    v-if="slots['submit-button']"
+                                    #submit-button
+                                  >
+                                    <slot name="submit-button"></slot>
+                                  </template>
+                                </FormActions>
+                              </slot>
+                            </LayoutSlotOutlet>
+                          </div>
+                        </div>
+                      </div>
+                    </slot>
+
                     <div
                       v-show="hasContentNotice"
                       id="content-notice"
@@ -384,28 +374,28 @@
                       </LayoutSlotOutlet>
                     </div>
                   </div>
-                  <!-- v-show, not v-if: the aside hosts a LayoutSlotOutlet
+                </div>
+                <!-- v-show, not v-if: the aside hosts a LayoutSlotOutlet
                   teleport target, which must stay in the DOM so page-side
                   <LayoutSlot> content can mount before registration flips
                   hasDetails. -->
-                  <aside
-                    v-show="hasDetails"
-                    ref="detailsColumn"
-                    class="content-layout__details-column"
-                  >
-                    <ResizeHandle
-                      class="content-layout__details-resize-handle"
-                      :resizer="detailsResizer"
-                      :label="t('Resize details')"
-                      :controls="detailsId"
-                    />
-                    <div :id="detailsId" class="cp-details">
-                      <LayoutSlotOutlet name="details">
-                        <slot name="details"></slot>
-                      </LayoutSlotOutlet>
-                    </div>
-                  </aside>
-                </div>
+                <aside
+                  v-show="hasDetails"
+                  ref="detailsColumn"
+                  class="content-layout__details-column"
+                >
+                  <ResizeHandle
+                    class="content-layout__details-resize-handle"
+                    :resizer="detailsResizer"
+                    :label="t('Resize details')"
+                    :controls="detailsId"
+                  />
+                  <div :id="detailsId" class="cp-details">
+                    <LayoutSlotOutlet name="details">
+                      <slot name="details"></slot>
+                    </LayoutSlotOutlet>
+                  </div>
+                </aside>
               </div>
             </form>
           </main>
@@ -461,6 +451,7 @@
    (a many-columned table, a code block) shrinks to the track and scrolls in
    its own overflow container rather than widening the page. */
   .cp__content {
+    position: relative;
     flex: 1 1 auto;
     min-width: 0;
   }
