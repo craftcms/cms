@@ -334,12 +334,6 @@ class ImportConfigController
                 // we're intentionally using validateMap() here as we basically want to check the same thing for map and clearableItems
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
             ],
-            //            'keepMissingNestedElements' => [
-            //                'nullable',
-            //                'array',
-            //                // we're intentionally using validateMap() here as we basically want to check the same thing for map and keepMissingNestedElements
-            //                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
-            //            ],
         ]);
 
         if (property_exists($import, 'fieldLayoutId')) {
