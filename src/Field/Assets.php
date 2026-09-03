@@ -332,7 +332,7 @@ class Assets extends BaseRelationField
                 ->control(Choice::make('previewMode')->options([
                     ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
                     ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
-                ])->value($this->previewMode)),
+                ])->value($this->previewMode)->withoutPlaceholder()),
             $this->advancedSettingsGroup(),
         ])));
     }
