@@ -40,6 +40,7 @@ test('requires authentication', function () {
     postJson(action([PluginsController::class, 'uninstall'], ['test-plugin']))->assertUnauthorized();
     postJson(action([PluginsController::class, 'enable'], ['test-plugin']))->assertUnauthorized();
     postJson(action([PluginsController::class, 'disable'], ['test-plugin']))->assertUnauthorized();
+    postJson(action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']))->assertUnauthorized();
 });
 
 test('index shows plugin list page', function () {
@@ -179,6 +180,26 @@ test('plugin settings form targets the plugin CP route', function () {
         );
 });
 
+test('plugin settings form is refreshable', function () {
+    get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.refreshable', true)
+            ->where('refreshUrl', action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']))
+        );
+
+    postJson(action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']), [
+        'values' => ['foo' => 'show-bar', 'bar' => 'unsaved value'],
+        'scope' => ['settings'],
+    ])
+        ->assertOk()
+        ->assertJsonPath('form.scope', ['settings'])
+        ->assertJsonPath('form.refreshable', true)
+        ->assertJsonPath('form.values.settings.foo', 'show-bar')
+        ->assertJsonPath('form.values.settings.bar', 'unsaved value')
+        ->assertJsonPath('form.nodes.1.control.path', ['settings', 'bar']);
+});
+
 test('editSettings returns read-only settings response when supported', function () {
     Cms::config()->allowAdminChanges = false;
 
@@ -186,7 +207,9 @@ test('editSettings returns read-only settings response when supported', function
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('readOnly', true)
+            ->where('form.refreshable', false)
             ->where('form.nodes.0.control.mode', 'readOnly')
+            ->missing('refreshUrl')
         );
 });
 
@@ -315,4 +338,13 @@ test('respects read-only mode for saveSettings', function () {
         'settings' => [],
     ])
         ->assertForbidden();
+});
+
+test('respects read-only mode for settings form refresh', function () {
+    Cms::config()->allowAdminChanges = false;
+
+    postJson(action([PluginsController::class, 'renderSettingsForm'], ['test-plugin']), [
+        'values' => [],
+        'scope' => ['settings'],
+    ])->assertForbidden();
 });

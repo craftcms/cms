@@ -8,6 +8,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Url;
@@ -96,6 +97,7 @@ trait HasSettings
             values: ['settings' => $settings?->validationData() ?? []],
             errors: $settings?->errors()->getMessages() ?? [],
             mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+            refreshable: ! $readOnly,
         );
         $form = $this->settingsForm($context);
 
@@ -114,6 +116,9 @@ trait HasSettings
                     'method' => 'post',
                     'url' => Url::cpUrl("settings/plugins/{$this->handle}"),
                 ],
+                ...($readOnly ? [] : [
+                    'refreshUrl' => action([PluginsController::class, 'renderSettingsForm'], [$this->handle]),
+                ]),
             ]);
     }
 

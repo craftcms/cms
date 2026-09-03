@@ -355,6 +355,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);
                 Route::post('{handle}/disable', [PluginsController::class, 'disable']);
                 Route::post('{handle}/switch-edition', [PluginsController::class, 'switchEdition']);
+                Route::post('{handle}/render-form', [PluginsController::class, 'renderSettingsForm']);
                 Route::post('{handle}', [PluginsController::class, 'saveSettings']);
             });
 
