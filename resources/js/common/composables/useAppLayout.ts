@@ -15,6 +15,8 @@ export interface UseAppLayoutOptions {
   formActions?: Array<ActionItem>;
   formAdditionalActions?: Array<ActionItem>;
   formAdditionalButtons?: Array<ActionItemButton>;
+  /** Controls below the secondary nav. See `ScreenProps.subnavActions`. */
+  subnavActions?: Array<ActionItem>;
   onSave?: (options?: FormSaveOptions) => void;
 }
 

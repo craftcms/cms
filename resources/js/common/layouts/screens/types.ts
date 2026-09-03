@@ -23,6 +23,14 @@ export interface ScreenProps {
   formActions?: Array<ActionItem>;
   formAdditionalActions?: Array<ActionItem>;
   formAdditionalButtons?: Array<ActionItemButton>;
+  /**
+   * Controls below the secondary nav, as descriptors rather than markup.
+   *
+   * The nav renders these twice over — as buttons where it has the room, and
+   * as items appended to its action menu once it collapses — so describing
+   * them beats filling the `subnav-actions` slot with one of the two.
+   */
+  subnavActions?: Array<ActionItem>;
   /** Overrides the submit button's text. Craft 5: `submitButtonLabel`. */
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
@@ -72,7 +80,11 @@ export interface ScreenSlots {
   tabs?: () => any;
   /** Left column beside the content. Defaults to a secondary nav built from the `subnav` page prop. Craft 5: `sidebar`. */
   sidebar?: () => any;
-  /** Extra controls below the default secondary nav. */
+  /**
+   * Extra controls below the default secondary nav, for anything the
+   * `subnavActions` prop can't describe. Markup placed here only appears in
+   * the expanded nav — the collapsed action menu is built from descriptors.
+   */
   'subnav-actions'?: () => any;
   /** Bottom of the content column (pagination, meta info, …). Craft 5: `footer` (content pane). */
   'content-footer'?: () => any;

@@ -108,12 +108,13 @@
           CpLink,
           {
             href: edit.url({site: row.original.id}),
+            block: true,
           },
           () =>
             h(
               'div',
               {
-                class: 'flex gap-2',
+                class: 'flex gap-2 items-center',
               },
               [
                 h('craft-indicator', {
@@ -132,11 +133,11 @@
       header: () => t('Status'),
       cell: (info) =>
         h(
-          Badge,
+          'craft-badge',
           {
-            variant: info.getValue() ? 'success' : 'default',
+            fill: info.getValue() ? 'success' : 'default',
           },
-          () => (info.getValue() ? t('Enabled') : t('Disabled'))
+          info.getValue() ? t('Enabled') : t('Disabled')
         ),
     }),
     columnHelper.accessor('language', {
@@ -204,7 +205,18 @@
     }
   }
 
-  useAppLayout(() => ({title: props.title}));
+  useAppLayout(() => ({
+    title: props.title,
+    // Described rather than slotted so the secondary nav can render it as a
+    // button when it's expanded and as a menu item once it collapses.
+    subnavActions: [
+      {
+        label: t('New Group'),
+        icon: 'plus',
+        onClick: () => openModal('create'),
+      },
+    ],
+  }));
 </script>
 
 <template>
@@ -247,15 +259,6 @@
     </CpLink>
   </LayoutSlot>
 
-  <LayoutSlot name="subnav-actions">
-    <div class="mt-4 flex gap-2" v-if="!readOnly">
-      <craft-button type="button" @click="openModal('create')" size="small">
-        <craft-icon name="plus" slot="prefix"></craft-icon>
-        {{ t('New Group') }}
-      </craft-button>
-    </div>
-  </LayoutSlot>
-
   <craft-pane appearance="raised" padding="0" class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
@@ -265,6 +268,7 @@
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
+      spacing="spacious"
       @reorder="handleReorder"
     >
       <template #empty-row>
