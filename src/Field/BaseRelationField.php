@@ -456,6 +456,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (array_key_exists('useTargetSite', $config)) {
             if (empty($config['useTargetSite'])) {
                 unset($config['targetSiteId']);
+            } elseif (empty($config['targetSiteId'])) {
+                // Nothing is stored for the switch itself — it's just "is there
+                // a target site" — so switching it on with nothing chosen has to
+                // land on one, or it reads as still being off.
+                $config['targetSiteId'] = Sites::getPrimarySite()->uid;
             }
             unset($config['useTargetSite']);
         }
