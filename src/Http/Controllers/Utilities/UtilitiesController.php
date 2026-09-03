@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
@@ -12,12 +13,11 @@ use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
-use InvalidArgumentException;
 
 use function CraftCms\Cms\cp_redirect;
+use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
 readonly class UtilitiesController
@@ -72,8 +72,8 @@ readonly class UtilitiesController
 
         return Inertia::render('utilities/Show', [
             'crumbs' => [
-                ['label' => 'Utilities', 'url' => Url::cpUrl('utilities')],
-                ['label' => $class::displayName(), 'url' => null],
+                new ActionItem()->label(t('Utilities'))->href(Url::cpUrl('utilities')),
+                new ActionItem()->label($class::displayName()),
             ],
             'id' => $id,
             'title' => $class::displayName(),
@@ -88,7 +88,7 @@ readonly class UtilitiesController
             // Inertia visits.
             'headHtml' => self::join($content->headHtml, $toolbar->headHtml, $footer->headHtml),
             'bodyHtml' => self::join($content->bodyHtml, $toolbar->bodyHtml, $footer->bodyHtml),
-            'utilities' => $this->utilityInfo(),
+            'subnav' => $this->subnav($id),
         ]);
     }
 
@@ -100,52 +100,26 @@ readonly class UtilitiesController
         return implode(PHP_EOL, array_filter($parts, fn (string $part) => $part !== ''));
     }
 
-    /** @return Collection<int, covariant array{id:string, url:string, iconSvg:string, displayName:string, iconPath:string|null, badgeCount:int}> */
-    private function utilityInfo(): Collection
+    /**
+     * The utilities nav.
+     *
+     * Described rather than drawn by the page: the secondary nav renders these
+     * as a list when it has the room and as menu items once it collapses, and
+     * the breadcrumbs pick the selected one up as well.
+     *
+     * @return list<NavItem>
+     */
+    private function subnav(string $selectedId): array
     {
         return $this->utilitiesService
             ->getAuthorizedUtilityTypes()
-            ->map(fn (string $class) => [
-                'id' => $class::id(),
-                'url' => Url::cpUrl('utilities/'.$class::id()),
-                'iconSvg' => $this->utilityIconSvg($class),
-                'displayName' => $class::displayName(),
-                'iconPath' => $class::icon(),
-                'badgeCount' => $class::badgeCount(),
-            ]);
-    }
-
-    /**
-     * @param  class-string<Utility>  $class
-     */
-    private function utilityIconSvg(string $class): string
-    {
-        $icon = $class::icon();
-
-        if ($icon === null) {
-            return $this->defaultUtilityIconSvg($class);
-        }
-
-        try {
-            $svg = Icons::svg($icon);
-            if ($svg !== '') {
-                return $svg;
-            }
-        } catch (InvalidArgumentException) {
-        }
-
-        return $this->defaultUtilityIconSvg($class);
-    }
-
-    /**
-     * Returns the default icon SVG for a given utility type.
-     *
-     * @param  class-string<Utility>  $class
-     */
-    private function defaultUtilityIconSvg(string $class): string
-    {
-        return template('_includes/fallback-icon-svg', [
-            'label' => $class::displayName(),
-        ]);
+            ->map(fn (string $class) => new NavItem()
+                ->label($class::displayName())
+                ->href(Url::cpUrl('utilities/'.$class::id()))
+                ->icon($class::icon())
+                ->badgeCount($class::badgeCount())
+                ->selected($class::id() === $selectedId))
+            ->values()
+            ->all();
     }
 }
