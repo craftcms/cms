@@ -157,23 +157,45 @@ export default class CraftActionMenu extends CraftPopover {
    */
   private _swallowNextEscUp = false;
 
+  /**
+   * Closes the menu when an item is clicked.
+   *
+   * Delegated to the content container rather than bound per item, because in
+   * slot-based mode the consumer owns the items and may add or remove them at
+   * any point — a framework rendering the list reactively, say. Binding per
+   * item would only ever cover the ones present when the overlay was set up,
+   * and later arrivals would stay open on click.
+   *
+   * `event.target` is retargeted to the `craft-action-item` host as the click
+   * leaves its shadow root, so `closest()` finds the item itself.
+   */
+  private readonly _onContentClick = (event: Event): void => {
+    const item = (event.target as Element | null)?.closest?.(
+      'craft-action-item'
+    ) as CraftActionItem | null;
+
+    if (!item) {
+      return;
+    }
+
+    this.opened = false;
+
+    // In data-driven mode the 'change' event is dispatched from _renderItem
+    // (which has access to the descriptor). For slot-based mode this is the
+    // only click handler, so dispatch it here.
+    if (this.actions === undefined) {
+      this._dispatchChange(item);
+    }
+  };
+
   private _addEventListeners() {
     const content = this.contentNodes[0];
     if (!content) return;
 
-    content
-      .querySelectorAll<CraftActionItem>('craft-action-item')
-      .forEach((item) => {
-        item.addEventListener('click', () => {
-          this.opened = false;
-          // In data-driven mode the 'change' event is dispatched from
-          // _renderItem (which has access to the descriptor). For slot-based
-          // mode this is the only click handler, so dispatch it here.
-          if (this.actions === undefined) {
-            this._dispatchChange(item);
-          }
-        });
-      });
+    // Re-registering the same listener is a no-op, so the several paths that
+    // call this (overlay setup, generated-menu rewiring, provider re-eval)
+    // don't stack handlers on a content node that hasn't changed.
+    content.addEventListener('click', this._onContentClick);
   }
 
   private _dispatchChange(

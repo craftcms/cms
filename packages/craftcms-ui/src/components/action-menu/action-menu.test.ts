@@ -56,6 +56,41 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+describe('slot-based content added after setup', () => {
+  const markup = `
+    <craft-action-menu>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content">
+        <craft-action-item>Plain Text</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `;
+
+  it('closes on a click and reports an item the consumer added later', async () => {
+    const element = await createFromMarkup(markup);
+    const content = element.querySelector<HTMLElement>('[slot="content"]')!;
+
+    // A consumer rendering the list reactively swaps items in long after the
+    // overlay was set up, so item handlers can't be bound once and for all.
+    const added = document.createElement('craft-action-item');
+    added.textContent = 'Dropdown';
+    content.append(added);
+
+    let changed: CraftActionItem | null = null;
+    element.addEventListener('change', (event) => {
+      changed = (event as CustomEvent).detail.item;
+    });
+
+    element.opened = true;
+    await element.updateComplete;
+
+    added.click();
+
+    expect(element.opened).toBe(false);
+    expect(changed).toBe(added);
+  });
+});
+
 describe('searchable (slot-based)', () => {
   it('inserts a search input at the top of the content when searchable', async () => {
     const element = await createFromMarkup(slotBasedMarkup());
