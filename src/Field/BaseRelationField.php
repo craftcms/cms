@@ -760,11 +760,16 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
             ])->values()->all();
+            // `useTargetSite` isn't stored: it's the presence of a target site.
+            // The site picker is hidden rather than omitted so its value survives
+            // the refresh and the switch can be turned back on.
+            $useTargetSite = ! empty($this->targetSiteId);
             $advanced->add(
                 FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
-                    ->control(Lightswitch::make('useTargetSite')->value(! empty($this->targetSiteId))),
+                    ->control(Lightswitch::make('useTargetSite')->value($useTargetSite)),
                 FormField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
-                    ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId)),
+                    ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId))
+                    ->visible($useTargetSite),
             );
 
             if (static::canShowSiteMenu()) {
