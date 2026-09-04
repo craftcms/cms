@@ -73,8 +73,8 @@ class FieldEditViewModel extends ViewModel
             FormField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
         $typeField = FormField::make(t('Field Type'), Combobox::make('type')
-            ->options($this->fieldTypeOptions()))
-            ->reactive()
+            ->options($this->fieldTypeOptions())
+            ->reactive())
             ->instructions(t('What type of field is this?'))
             ->required();
 
@@ -93,8 +93,8 @@ class FieldEditViewModel extends ViewModel
         if (Sites::isMultiSite() && count($translationOptions) > 1) {
             $nodes[] = FormField::make(
                 t('Translation Method'),
-                Choice::make('translationMethod')->options($translationOptions),
-            )->reactive()->instructions(t('How should this field’s values be translated?'));
+                Choice::make('translationMethod')->options($translationOptions)->reactive(),
+            )->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
                 $nodes[] = FormField::make(

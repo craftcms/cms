@@ -20,7 +20,7 @@
     warning?: string;
     warningHtml?: string;
     width?: number;
-    /** Relative path of the reactive field whose refresh loads this group. */
+    /** Relative path of the reactive control whose refresh loads this group. */
     dependsOn?: string[];
     /** Hidden from view; children still resolve and still hold their values. */
     hidden?: boolean;

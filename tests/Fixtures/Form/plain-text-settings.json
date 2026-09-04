@@ -117,8 +117,7 @@
           "props": {
             "label": "Allow line breaks",
             "instructions": null,
-            "required": false,
-            "reactive": true
+            "required": false
           },
           "control": {
             "type": "CraftCms\\Cms\\Form\\Controls\\Lightswitch",
@@ -126,7 +125,8 @@
             "props": [],
             "path": ["settings", "multiline"],
             "mode": "editable",
-            "deltaGroup": ["settings", "multiline"]
+            "deltaGroup": ["settings", "multiline"],
+            "reactive": true
           }
         }
       ]

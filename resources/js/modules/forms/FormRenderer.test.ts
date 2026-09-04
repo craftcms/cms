@@ -1459,7 +1459,7 @@ describe('FormRenderer', () => {
     });
   });
 
-  it('only refreshes when a reactive field changes', async () => {
+  it('only refreshes when a reactive control changes', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn(
       async (values: FormPayload['values']): Promise<FormPayload> => ({
@@ -1473,7 +1473,7 @@ describe('FormRenderer', () => {
     required(
       refreshable.nodes[1],
       'Expected the placeholder field node.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     await mount(refreshable, {refresh});
 
     const mode = required(
@@ -1525,7 +1525,7 @@ describe('FormRenderer', () => {
       refreshable.nodes[0],
       'Expected the UI mode field node.'
     );
-    mode.props.reactive = true;
+    mode.control!.reactive = true;
     Object.assign(mode.control!, {
       component: 'craft:combobox',
       props: {
@@ -1578,7 +1578,7 @@ describe('FormRenderer', () => {
     required(
       refreshable.nodes[1],
       'Expected the placeholder field node.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     required(
       refreshable.nodes[2],
       'Expected the field limit group.'
@@ -1639,7 +1639,7 @@ describe('FormRenderer', () => {
     required(
       refreshable.nodes[1],
       'Expected the placeholder field node.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     refreshable.nodes[1]!.control!.props.textExpanderTriggers = [
       {
         trigger: '@',
@@ -1714,7 +1714,7 @@ describe('FormRenderer', () => {
       required(refreshable.nodes[3], 'Expected the behavior field group.')
         .children?.[0],
       'Expected the code field node.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     await mount(refreshable, {refresh});
 
     const lightswitch = required(
@@ -1748,7 +1748,7 @@ describe('FormRenderer', () => {
     required(
       refreshable.nodes[1],
       'Expected the placeholder field node.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     app.unmount();
     await mount(refreshable, {refresh});
 
@@ -1787,7 +1787,7 @@ describe('FormRenderer', () => {
     required(
       newest.nodes[1],
       'Expected the placeholder field node.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     required(
       newest.nodes[1],
       'Expected the placeholder field node.'
@@ -3014,7 +3014,7 @@ describe('FormRenderer', () => {
     required(
       firstForm.nodes[0],
       'Expected the first nested field.'
-    ).props.reactive = true;
+    ).control!.reactive = true;
     const refresh = vi.fn(
       async (_values: FormPayload['values'], scope?: string[]) => {
         if (!scope) throw new Error('Expected the nested refresh scope.');

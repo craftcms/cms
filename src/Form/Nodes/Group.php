@@ -153,7 +153,7 @@ class Group extends Container
     }
 
     /**
-     * Shows a loading state while the reactive field at this relative path refreshes the Form.
+     * Shows a loading state while the reactive control at this relative path refreshes the Form.
      *
      * @param  string|list<string>  $path
      */

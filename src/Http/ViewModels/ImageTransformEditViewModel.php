@@ -65,8 +65,9 @@ class ImageTransformEditViewModel extends ViewModel
                 t('Mode'),
                 Choice::make('mode')
                     ->options(ImageTransformMode::asOptions())
-                    ->presentation(ChoicePresentation::Radios),
-            )->reactive()->required(),
+                    ->presentation(ChoicePresentation::Radios)
+                    ->reactive(),
+            )->required(),
         ]);
 
         $form->add(

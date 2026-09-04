@@ -63,8 +63,8 @@ class SectionEditViewModel extends ViewModel
 
         $typeField = Field::make(
             t('Section Type'),
-            Choice::make('type')->options(SectionType::asOptions()),
-        )->reactive()->instructions(t('What type of section is this?'));
+            Choice::make('type')->options(SectionType::asOptions())->reactive(),
+        )->instructions(t('What type of section is this?'));
 
         if ($this->section->id && $type !== SectionType::Single) {
             $typeField->warning(t('Changing this may result in data loss.'));

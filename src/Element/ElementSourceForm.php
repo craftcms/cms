@@ -210,7 +210,7 @@ readonly class ElementSourceForm
             Field::make(t('Default Sort'), Choice::make('defaultSort.attr')->options(array_map(
                 fn (array $option) => ['label' => $option['label'], 'value' => $option['attr']],
                 $options,
-            )))->reactive()->width(75),
+            ))->reactive())->width(75),
             Field::make(t('Sort direction'), $dir)->width(25),
         ];
     }

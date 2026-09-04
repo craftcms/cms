@@ -97,8 +97,8 @@ class VolumeEditViewModel extends ViewModel
                 Separator::make('translation-separator'),
                 Field::make(
                     t('{name} Translation Method', ['name' => t('Title')]),
-                    Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions()),
-                )->reactive()->instructions(t('How should {name} values be translated?', ['name' => t('Title')])),
+                    Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
+                )->instructions(t('How should {name} values be translated?', ['name' => t('Title')])),
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
@@ -116,8 +116,8 @@ class VolumeEditViewModel extends ViewModel
 
             $form->add(Field::make(
                 t('{name} Translation Method', ['name' => t('Alternative Text')]),
-                Choice::make('altTranslationMethod')->options(TranslationMethod::asOptions()),
-            )->reactive()->instructions(t('How should {name} values be translated?', ['name' => t('Alternative Text')])));
+                Choice::make('altTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
+            )->instructions(t('How should {name} values be translated?', ['name' => t('Alternative Text')])));
 
             if (($values['altTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
                 $form->add(Field::make(

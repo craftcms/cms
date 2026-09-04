@@ -202,12 +202,12 @@ trait ProvidesLinkField
             FormField::make(t('Allowed Link Types'))
                 ->instructions(t('The link types that should be available when inserting links.'))
                 ->required()
-                ->reactive()
                 ->control(Choice::make("{$prefix}types")
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)
                     ->options($this->linkTypeOptions($types))
-                    ->value($this->{$this->namespacedAttribute('types')})),
+                    ->value($this->{$this->namespacedAttribute('types')})
+                    ->reactive()),
         ];
 
         foreach ($types as $typeId => $typeClass) {

@@ -35,10 +35,11 @@ export interface FormProperties {
 
 export type FormControlPayload<Props extends object = FormProperties> = Omit<
   GeneratedFormControlPayload,
-  'props' | 'forms'
+  'props' | 'forms' | 'reactive'
 > & {
   props: Props;
   forms?: NestedFormPayload[];
+  reactive?: boolean;
 };
 
 export type FormNodePayload<

@@ -149,7 +149,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return Form::make([
             FormField::make(t('Columns'))
                 ->instructions(t('Define the columns your table should have. Dropdown options are entered as JSON arrays.'))
-                ->reactive()
                 ->control(TableControl::make('columns')
                     ->keyed()
                     ->columns([
@@ -163,7 +162,8 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowDelete()
                     ->allowReorder()
                     ->errors($this->columnErrors)
-                    ->value($columnRows)),
+                    ->value($columnRows)
+                    ->reactive()),
             FormField::make(t('Default Values'))
                 ->instructions(t('Define the default values for the field.'))
                 ->control(TableControl::make('defaults')

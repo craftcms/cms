@@ -340,7 +340,7 @@ class TestPlugin extends Plugin
         }
 
         return Form::make([
-            Field::make('Foo', Text::make('foo'))->reactive(),
+            Field::make('Foo', Text::make('foo')->reactive()),
         ])->when($this->getSettings()?->foo === 'show-bar', fn (Form $form) => $form->add(
             Field::make('Bar', Text::make('bar')),
         ));
