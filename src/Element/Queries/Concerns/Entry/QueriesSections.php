@@ -13,6 +13,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -50,7 +51,7 @@ trait QueriesSections
                 throw new QueryAbortedException;
             }
 
-            $this->applySectionIdParam($entryQuery);
+            static::applySectionId($entryQuery, $entryQuery->sectionId);
         });
     }
 
@@ -160,29 +161,27 @@ trait QueriesSections
         return $this;
     }
 
-    /**
-     * Applies the 'sectionId' param to the query being prepared.
-     */
-    /** @param EntryQuery<Entry> $entryQuery */
-    private function applySectionIdParam(EntryQuery $entryQuery): void
+    public static function applySectionId(Builder $query, mixed $value): void
     {
-        if (! $entryQuery->sectionId) {
+        assert($query instanceof EntryQuery);
+
+        if (! $value) {
             return;
         }
 
-        $entryQuery->whereIn('entries.sectionId', $entryQuery->sectionId);
+        $query->whereIn('entries.sectionId', $value);
 
         // Should we set the structureId param?
         if (
-            $entryQuery->withStructure &&
-            ! isset($entryQuery->structureId) &&
-            count($entryQuery->sectionId) === 1
+            $query->withStructure &&
+            ! isset($query->structureId) &&
+            count($value) === 1
         ) {
-            $section = Sections::getSectionById(reset($entryQuery->sectionId));
+            $section = Sections::getSectionById(reset($value));
             if ($section && $section->type === SectionType::Structure) {
-                $entryQuery->structureId = $section->structureId;
+                $query->structureId = $section->structureId;
             } else {
-                $entryQuery->withStructure = false;
+                $query->withStructure = false;
             }
         }
     }

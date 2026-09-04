@@ -42,10 +42,10 @@ trait QueriesStatuses
                 return;
             }
 
-            $this->applyStatusParam($elementQuery);
+            static::applyStatus($elementQuery, $elementQuery->status);
 
             // only set archived=false if 'archived' doesn't show up in the status param
-            // (_applyStatusParam() will normalize $this->status to an array if applicable)
+            // (applyStatus() will normalize $elementQuery->status to an array if applicable)
             if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
                 $elementQuery->whereBool('elements.archived', false);
             }
@@ -100,19 +100,22 @@ trait QueriesStatuses
      *
      * @throws QueryAbortedException
      */
-    /** @param ElementQuery<*> $elementQuery */
-    private function applyStatusParam(ElementQuery $elementQuery): void
+    public static function applyStatus(Builder $query, mixed $value): void
     {
-        if (! $elementQuery->status || ! $elementQuery->elementType::hasStatuses()) {
+        assert($query instanceof ElementQuery);
+
+        if (! $value || ! $query->elementType::hasStatuses()) {
             return;
         }
 
         // Normalize the status param
-        if (! is_array($elementQuery->status)) {
-            $elementQuery->status = str($elementQuery->status)->explode(',')->all();
+        if (! is_array($value)) {
+            $value = str($value)->explode(',')->all();
         }
 
-        $statuses = array_merge($elementQuery->status);
+        $query->status = $value;
+
+        $statuses = array_merge($value);
         $firstVal = strtolower((string) reset($statuses));
         $glue = 'or';
 
@@ -125,12 +128,12 @@ trait QueriesStatuses
             return;
         }
 
-        $elementQuery->where(function (Builder $query) use ($statuses, $glue) {
+        $query->where(function (Builder $q) use ($query, $statuses, $glue) {
             foreach ($statuses as $status) {
                 if ($glue === 'not') {
-                    $query->whereNot($this->placeholderCondition($this->statusCondition($status)));
+                    $q->whereNot($query->placeholderCondition($query->statusCondition($status)));
                 } else {
-                    $query->orWhere($this->placeholderCondition($this->statusCondition($status)));
+                    $q->orWhere($query->placeholderCondition($query->statusCondition($status)));
                 }
             }
         });

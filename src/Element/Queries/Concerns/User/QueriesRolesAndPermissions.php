@@ -69,14 +69,21 @@ trait QueriesRolesAndPermissions
     protected function initQueriesRolesAndPermissions(): void
     {
         $this->beforeQuery(function (UserQuery $userQuery) {
-            if (is_bool($userQuery->admin)) {
-                $userQuery->whereBool('users.admin', $userQuery->admin);
-            }
+            static::applyAdmin($userQuery, $userQuery->admin);
 
-            if ($this->admin !== true) {
-                $this->applyCanParam($userQuery);
+            if ($userQuery->admin !== true) {
+                static::applyCan($userQuery, $userQuery->can);
             }
         });
+    }
+
+    public static function applyAdmin(Builder $query, ?bool $value): void
+    {
+        if (! is_bool($value)) {
+            return;
+        }
+
+        $query->whereBool('users.admin', $value);
     }
 
     /**
@@ -139,19 +146,16 @@ trait QueriesRolesAndPermissions
         return $this;
     }
 
-    /**
-     * Applies the 'can' param to the query being prepared.
-     */
-    private function applyCanParam(UserQuery $userQuery): void
+    public static function applyCan(Builder $query, mixed $value): void
     {
-        if ($this->can !== false && empty($this->can)) {
+        if ($value !== false && empty($value)) {
             return;
         }
 
-        if (is_string($this->can) && ! is_numeric($this->can)) {
+        if (is_string($value) && ! is_numeric($value)) {
             // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
-            $this->can = DB::table(Table::USERPERMISSIONS)
-                ->where('name', strtolower($this->can))
+            $value = DB::table(Table::USERPERMISSIONS)
+                ->where('name', strtolower($value))
                 ->select('id')
                 ->value('id') ?? false;
         }
@@ -159,29 +163,29 @@ trait QueriesRolesAndPermissions
         // False means that the permission doesn't have an ID yet.
         $permittedUserIds = collect();
 
-        if ($this->can !== false) {
+        if ($value !== false) {
             // Get the users that have that permission directly
             $permittedUserIds = DB::table(Table::USERPERMISSIONS_USERS)
-                ->whereIn('permissionId', Arr::wrap($this->can))
+                ->whereIn('permissionId', Arr::wrap($value))
                 ->pluck('userId');
 
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = DB::table(Table::USERGROUPS_USERS, 'g_u')
                 ->select('g_u.userId')
                 ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.groupId', '=', 'g_u.groupId')
-                ->whereIn('p_g.permissionId', Arr::wrap($this->can))
+                ->whereIn('p_g.permissionId', Arr::wrap($value))
                 ->pluck('userId');
 
             $permittedUserIds = $permittedUserIds->merge($permittedUserIdsViaGroups)->unique();
         }
 
-        $userQuery->when(
-            $permittedUserIds->isEmpty(),
-            fn (UserQuery $userQuery) => $userQuery->whereBool('users.admin', true),
-            fn (UserQuery $userQuery) => $userQuery->where(function (Builder $query) use ($permittedUserIds) {
-                $query->whereBool('users.admin', true)
+        if ($permittedUserIds->isEmpty()) {
+            $query->whereBool('users.admin', true);
+        } else {
+            $query->where(function (Builder $q) use ($permittedUserIds) {
+                $q->whereBool('users.admin', true)
                     ->orWhereIn('users.id', $permittedUserIds);
-            }),
-        );
+            });
+        }
     }
 }

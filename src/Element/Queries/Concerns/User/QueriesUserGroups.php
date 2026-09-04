@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -68,42 +69,7 @@ trait QueriesUserGroups
                 throw new QueryAbortedException;
             }
 
-            if (! $userQuery->groupId) {
-                return;
-            }
-
-            // Checking multiple groups?
-            if (
-                is_array($userQuery->groupId) &&
-                is_string(reset($userQuery->groupId)) &&
-                strtolower(reset($userQuery->groupId)) === 'and'
-            ) {
-                $groupIdChecks = array_slice($userQuery->groupId, 1);
-            } else {
-                $groupIdChecks = [$userQuery->groupId];
-            }
-
-            foreach ($groupIdChecks as $i => $groupIdCheck) {
-                if (
-                    is_array($groupIdCheck) &&
-                    is_string(reset($groupIdCheck)) &&
-                    strtolower(reset($groupIdCheck)) === 'not'
-                ) {
-                    $groupIdOperator = 'whereNotExists';
-                    array_shift($groupIdCheck);
-                    if (empty($groupIdCheck)) {
-                        continue;
-                    }
-                } else {
-                    $groupIdOperator = 'whereExists';
-                }
-
-                $userQuery->$groupIdOperator(
-                    DB::table(Table::USERGROUPS_USERS, "ugu$i")
-                        ->whereColumn('elements.id', "ugu$i.userId")
-                        ->whereNumericParam('groupId', $groupIdCheck),
-                );
-            }
+            static::applyGroupId($userQuery, $userQuery->groupId);
         });
 
         $this->afterQuery(function (mixed $result) {
@@ -128,6 +94,46 @@ trait QueriesUserGroups
 
             return $result;
         });
+    }
+
+    public static function applyGroupId(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        // Checking multiple groups?
+        if (
+            is_array($value) &&
+            is_string(reset($value)) &&
+            strtolower(reset($value)) === 'and'
+        ) {
+            $groupIdChecks = array_slice($value, 1);
+        } else {
+            $groupIdChecks = [$value];
+        }
+
+        foreach ($groupIdChecks as $i => $groupIdCheck) {
+            if (
+                is_array($groupIdCheck) &&
+                is_string(reset($groupIdCheck)) &&
+                strtolower(reset($groupIdCheck)) === 'not'
+            ) {
+                $groupIdOperator = 'whereNotExists';
+                array_shift($groupIdCheck);
+                if (empty($groupIdCheck)) {
+                    continue;
+                }
+            } else {
+                $groupIdOperator = 'whereExists';
+            }
+
+            $query->$groupIdOperator(
+                DB::table(Table::USERGROUPS_USERS, "ugu$i")
+                    ->whereColumn('elements.id', "ugu$i.userId")
+                    ->whereNumericParam('groupId', $groupIdCheck),
+            );
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @internal
@@ -82,20 +83,50 @@ trait QueriesEntryDates
     {
         $this->beforeQuery(function (EntryQuery $query) {
             if ($query->postDate) {
-                $query->whereDateParam('entries.postDate', $query->postDate);
+                static::applyPostDate($query, $query->postDate);
             } else {
-                if ($query->before) {
-                    $query->whereDateParam('entries.postDate', $query->before, '<');
-                }
-                if ($query->after) {
-                    $query->whereDateParam('entries.postDate', $query->after, '>=');
-                }
+                static::applyBefore($query, $query->before);
+                static::applyAfter($query, $query->after);
             }
 
-            if ($query->expiryDate) {
-                $query->whereDateParam('entries.expiryDate', $query->expiryDate);
-            }
+            static::applyExpiryDate($query, $query->expiryDate);
         });
+    }
+
+    public static function applyPostDate(Builder $query, mixed $value): void
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        $query->whereDateParam('entries.postDate', $value);
+    }
+
+    public static function applyBefore(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereDateParam('entries.postDate', $value, '<');
+    }
+
+    public static function applyAfter(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereDateParam('entries.postDate', $value, '>=');
+    }
+
+    public static function applyExpiryDate(Builder $query, mixed $value): void
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        $query->whereDateParam('entries.expiryDate', $value);
     }
 
     /**

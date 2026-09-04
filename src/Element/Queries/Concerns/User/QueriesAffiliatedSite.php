@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Database\Query\Builder;
 use InvalidArgumentException;
 
 /**
@@ -29,12 +30,17 @@ trait QueriesAffiliatedSite
         }
 
         $this->beforeQuery(function (UserQuery $userQuery) {
-            if (! $userQuery->affiliatedSiteId) {
-                return;
-            }
-
-            $userQuery->whereIn('users.affiliatedSiteId', Arr::wrap($this->affiliatedSiteId));
+            static::applyAffiliatedSiteId($userQuery, $userQuery->affiliatedSiteId);
         });
+    }
+
+    public static function applyAffiliatedSiteId(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereIn('users.affiliatedSiteId', Arr::wrap($value));
     }
 
     /**
