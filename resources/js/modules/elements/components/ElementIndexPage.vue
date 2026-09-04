@@ -66,7 +66,7 @@
     <slot name="actions" :element-index="elementIndex" />
   </LayoutSlot>
 
-  <LayoutSlot name="sidebar">
+  <LayoutSlot name="content-sidebar">
     <SecondaryNav
       :items="sourceActions"
       :actions="[

@@ -7,7 +7,7 @@
    * this and `SlideoutScreen`. Both implement `ScreenSlots`/`ScreenProps`.
    *
    * The outer chrome (header, sidebar, footer) is fixed; everything inside the
-   * main region is the `main` slot's, and a page that wants to own the whole
+   * main region is the `page-main` slot's, and a page that wants to own the whole
    * thing — the element editor does — fills that slot instead of `default`.
    * Its fallback is the standard inner chrome: breadcrumb bar, page header,
    * error summary and the content/details columns.
@@ -118,14 +118,14 @@
     () => Boolean(slots['content-footer']) || registry.has('content-footer')
   );
   const hasDetails = computed(
-    () => Boolean(slots.details) || registry.has('details')
+    () => Boolean(slots['content-details']) || registry.has('content-details')
   );
   const hasSidebar = computed(
     () =>
-      Boolean(slots.contentSidebar) ||
+      Boolean(slots['content-sidebar']) ||
       Boolean(slots['subnav-actions']) ||
       (props.subnavActions?.length ?? 0) > 0 ||
-      registry.has('sidebar') ||
+      registry.has('content-sidebar') ||
       registry.has('subnav-actions') ||
       subnav.value.length > 0
   );
@@ -255,7 +255,7 @@
           <FlashMessages />
         </div>
         <div class="cp-page__main">
-          <slot name="main">
+          <slot name="page-main">
             <main id="main" tabindex="-1">
               <form
                 method="post"
@@ -288,10 +288,10 @@
                     tabindex="-1"
                     class="cp-content__sidebar"
                   >
-                    <LayoutSlotOutlet name="sidebar">
-                      <slot name="sidebar">
+                    <LayoutSlotOutlet name="content-sidebar">
+                      <slot name="content-sidebar">
                         <!-- The subnav-actions outlet lives inside this
-                        fallback, so a page must not teleport `sidebar` and
+                        fallback, so a page must not teleport `content-sidebar` and
                         `subnav-actions` at the same time. -->
                         <SecondaryNav
                           :items="navItemActions(subnav)"
@@ -307,7 +307,7 @@
                     </LayoutSlotOutlet>
                   </div>
                   <div class="cp-content__main">
-                    <slot name="header">
+                    <slot name="content-header">
                       <div id="cp-content-header">
                         <div
                           class="flex gap-2 items-center justify-between pt-3 p-2"
@@ -367,8 +367,8 @@
                         <slot name="content-notice"></slot>
                       </LayoutSlotOutlet>
                     </div>
-                    <LayoutSlotOutlet name="tabs">
-                      <slot name="tabs"></slot>
+                    <LayoutSlotOutlet name="content-tabs">
+                      <slot name="content-tabs"></slot>
                     </LayoutSlotOutlet>
                     <slot></slot>
                     <div v-show="hasContentFooter" class="content-footer">
@@ -393,8 +393,8 @@
                       :controls="detailsId"
                     />
                     <div :id="detailsId" class="cp-details">
-                      <LayoutSlotOutlet name="details">
-                        <slot name="details"></slot>
+                      <LayoutSlotOutlet name="content-details">
+                        <slot name="content-details"></slot>
                       </LayoutSlotOutlet>
                     </div>
                   </aside>
@@ -405,9 +405,9 @@
         </div>
 
         <footer class="cp-page__footer">
-          <LayoutSlotOutlet name="footer">
+          <LayoutSlotOutlet name="page-footer">
             <div class="cp-container">
-              <slot name="footer"></slot>
+              <slot name="page-footer"></slot>
             </div>
           </LayoutSlotOutlet>
         </footer>
