@@ -11,7 +11,10 @@ import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
  *
  * @example <craft-tooltip for="my-button" placement="right-start">Help text</craft-tooltip>
  *
- * Emits `craft-show`/`craft-after-show`/`craft-hide`/`craft-after-hide`.
+ * @fires craft-show - The overlay is opening. Fires as the state flips.
+ * @fires craft-after-show - The overlay has opened and its update has settled.
+ * @fires craft-hide - The overlay is closing. Fires as the state flips.
+ * @fires craft-after-hide - The overlay has closed and its update has settled.
  */
 export default class CraftTooltip extends LionTooltip {
   /** Id of the trigger element within the same document/shadow root. */

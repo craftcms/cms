@@ -82,6 +82,11 @@ contentStyles?.replaceSync(`
  * dialog.setAttribute('open', '');
  * dialog.append(message);
  * document.body.appendChild(dialog);
+ *
+ * @fires craft-show - The overlay is opening. Fires as the state flips.
+ * @fires craft-after-show - The overlay has opened and its update has settled.
+ * @fires craft-hide - The overlay is closing. Fires as the state flips.
+ * @fires craft-after-hide - The overlay has closed and its update has settled.
  */
 export default class CraftDialog extends LionDialog {
   /**

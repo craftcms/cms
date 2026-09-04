@@ -69,6 +69,8 @@ const preview: Preview = {
           'Components',
           'Form Controls',
           ['Choice Controls', 'Select Controls', 'Text Controls'],
+          'JavaScript API',
+          ['Factory', 'Utilities', 'Services', 'Reactive Controllers'],
           'Tokens',
         ],
       },
