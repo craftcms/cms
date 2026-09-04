@@ -1,20 +1,15 @@
 <script setup lang="ts">
   /**
-   * The full-page CP shell: global header, sidebar, breadcrumbs, page header,
-   * content/details columns, footer.
-   *
-   * The only full-page shell — reached through `AppLayout`, which picks between
+   * The full-page CP shell, reached through `AppLayout`, which picks between
    * this and `SlideoutScreen`. Both implement `ScreenSlots`/`ScreenProps`.
    *
-   * The outer chrome (header, sidebar, footer) is fixed; everything inside the
-   * main region is the `page-main` slot's, and a page that wants to own the whole
-   * thing — the element editor does — fills that slot instead of `default`.
-   * Its fallback is the standard inner chrome: breadcrumb bar, page header,
-   * error summary and the content/details columns.
+   * The outer chrome is fixed; the main region belongs to `page-main`, whose
+   * fallback is the inner chrome (page header, error summary, content/details
+   * columns). A page owning the whole thing — the element editor — fills that
+   * slot instead of `default`.
    *
-   * The document scrolls, not the main column: the header travels up and off,
-   * while `CpSidebar` is a sticky, viewport-tall flex child of `.cp__main` and
-   * stays put.
+   * The document scrolls, not the main column, so `CpSidebar` is a sticky,
+   * viewport-tall flex child of `.cp__main`.
    */
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, provide, useId, useTemplateRef, watch} from 'vue';
@@ -76,8 +71,8 @@
   // Deep links like `#form-maintenanceMode` point at a field on a long form.
   useFieldHighlight();
 
-  // A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
-  // second one — it renders transparently instead.
+  // An inline `<AppLayout>` inside this shell renders transparently rather
+  // than stacking a second one.
   provide(ScreenShellKey, PassthroughScreen);
 
   const page = usePage<{
@@ -91,9 +86,8 @@
   const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
   const subnav = computed(() => page.props.subnav ?? []);
 
-  // The secondary nav's trail joins the crumbs, so where you are reads the
-  // same whether or not the nav is on screen — and each level brings the
-  // switcher menu an element index's source crumb has.
+  // The secondary nav's trail joins the crumbs, so location reads the same
+  // with or without the nav on screen, and each level brings its switcher.
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(page.props.crumbs ?? [], subnav.value);
 
@@ -101,10 +95,9 @@
   });
   const readOnly = computed(() => Boolean(page.props.readOnly));
 
-  // Which optional layout regions are in play — filled either by an inline
-  // slot or by a page-side <LayoutSlot> teleport. These computeds may only
-  // toggle visibility (v-show) and classes, never remove an outlet's
-  // wrapper from the DOM: teleport targets must persist.
+  // Which optional regions are in play, filled by an inline slot or a
+  // page-side <LayoutSlot> teleport. These may only toggle visibility (v-show)
+  // and classes: removing an outlet's wrapper would break the teleport.
   const hasContextMenu = computed(
     () => Boolean(slots['context-menu']) || registry.has('context-menu')
   );
@@ -138,9 +131,8 @@
     ...(props.additionalSkipLinks ?? []),
   ]);
 
-  // A floating sidebar takes its own toggle off-canvas with it, leaving no way
-  // back in — so the shell renders one. A docked sidebar collapses to a rail
-  // and keeps its toggle, so it doesn't need this.
+  // A floating sidebar carries its toggle off-canvas, so the shell renders
+  // one. A docked sidebar collapses to a rail and keeps its own.
   const {
     sidebar: globalSidebar,
     toggle: toggleSidebar,
@@ -154,19 +146,16 @@
     toggleButton.value = el as HTMLElement | null;
   }
 
-  // The details column is user-resizable. The width lands on
-  // `--cp-content-details-width`, which `.cp-content` uses for its
-  // trailing grid track, so leaving it unset keeps the stylesheet's
-  // responsive default. The name is deliberately not `--details-width`:
-  // legacy `_cp.scss` already publishes one of those globally.
+  // The resized width lands on `--cp-content-details-width`, the trailing
+  // grid track, so leaving it unset keeps the stylesheet's responsive default.
+  // Not `--details-width`: legacy `_cp.scss` already publishes one globally.
   const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
   const detailsColumn = useTemplateRef<HTMLElement>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
 
-  // Ceiling on the details column so a wide drag — or a width restored from
-  // storage at a narrower viewport — can never squeeze the main column off the
-  // page. Mirrors the `min()` cap on the grid track, and stays put during a
-  // drag because it keys off the layout rather than the columns inside it.
+  // Ceiling so a wide drag, or a width restored at a narrower viewport, can't
+  // squeeze the main column off the page. Mirrors the track's `min()` cap, and
+  // keys off the layout rather than its columns so it holds still mid-drag.
   const detailsMaxWidth = computed(() => {
     if (!contentLayoutWidth.value) {
       return DETAILS_MAX_WIDTH;
@@ -189,9 +178,8 @@
     storageKey: 'AppLayout.detailsWidth',
   });
 
-  // `aria-controls` needs a real id, and `details` is taken: legacy CSS pins
-  // `#details` to 350px, which would override the grid track and push the
-  // column off the page.
+  // `aria-controls` needs a real id, and `#details` is taken — legacy CSS
+  // pins it to 350px, overriding the grid track.
   const detailsId = `cp-content-details-${useId()}`;
 
   const formActionItems = computed(() => [
@@ -231,8 +219,7 @@
   <Head :title="pageTitle" />
   <div>
     <LiveRegion />
-    <!-- Focus lands here on Inertia navigation; see
-    `handleAccessibleRouting` in bootstrap/cp.ts. -->
+    <!-- Focus lands here on Inertia navigation. See `handleAccessibleRouting`. -->
     <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
     <a
       v-for="link in skipLinks"
@@ -291,8 +278,8 @@
                     <LayoutSlotOutlet name="content-sidebar">
                       <slot name="content-sidebar">
                         <!-- The subnav-actions outlet lives inside this
-                        fallback, so a page must not teleport `content-sidebar` and
-                        `subnav-actions` at the same time. -->
+                        fallback, so a page can teleport `content-sidebar` or
+                        `subnav-actions`, never both. -->
                         <SecondaryNav
                           :items="navItemActions(subnav)"
                           :actions="subnavActions"
@@ -377,9 +364,8 @@
                       </LayoutSlotOutlet>
                     </div>
                   </div>
-                  <!-- v-show, not v-if: the aside hosts a LayoutSlotOutlet
-                  teleport target, which must stay in the DOM so page-side
-                  <LayoutSlot> content can mount before registration flips
+                  <!-- v-show, not v-if: the teleport target must stay in the
+                  DOM so page-side content can mount before it flips
                   hasDetails. -->
                   <aside
                     v-show="hasDetails"
@@ -417,9 +403,8 @@
 
   <DebugPanel v-if="debug" :data="debug" />
   <ElevatedSessionHost />
-  <!-- Hosted here rather than in `AppLayout`: exactly one full-page shell
-    exists per page, so panels can't be double-rendered by a page that also
-    renders `<AppLayout>` inline. -->
+  <!-- Hosted here, not in `AppLayout`: one full-page shell per page, so an
+    inline `<AppLayout>` can't double-render the panels. -->
   <SlideoutHost />
 </template>
 
@@ -435,15 +420,11 @@ CP STYLES (global shell)
     }
   }
 
-  /* The document scrolls, so this row lays out but never clips: the sidebar is
-   a sticky, viewport-tall flex child that catches at the top while the header
-   scrolls away above it. `align-items: start` keeps the sidebar at its own
-   100dvh instead of stretching it to the content's height.
+  /* The document scrolls, so this row lays out but never clips.
 
    `inline-size`, not `size`: size containment resolves the height from the
-   container rather than its contents, which collapsed to nothing the moment
-   the grid row stopped supplying one. The container queries below only ask
-   about width. */
+   container rather than its contents, which collapses to nothing once the grid
+   row stops supplying one. The queries below only ask about width. */
   .cp__main {
     container-type: inline-size;
     container-name: cp-main;
@@ -472,9 +453,9 @@ PAGE STYLES
       calc(220rem / 16)
     );
 
-    /* Hard ceiling on the details track, so a width restored from storage at a
-       wider viewport can't run the layout off the page. `useResizable` clamps
-       to the same share, so the drag stops where the column does. */
+    /* Ceiling on the details track, so a width restored at a wider viewport
+       can't run the layout off the page. `useResizable` clamps to the same
+       share, so the drag stops where the column does. */
     --cp-content-details-max: 50%;
     --cp-content-details-track: min(
       var(--cp-content-details-width),
@@ -516,17 +497,14 @@ PAGE STYLES
     container-type: inline-size;
   }
 
-  /* Sits in the gutter between the content and the details column. Only the
-     wide layout has a details track to resize, so the handle stays hidden
-     until the columns actually split. */
+  /* Sits in the gutter between the content and details columns, hidden until
+     the wide layout actually splits them. */
   .cp-content__details-resize-handle {
     --resize-handle-display: none;
 
-    /* Named, unlike the query on `.cp-content` above: the handle sits
-       inside `.cp-content__details-column`, which is itself an inline-size
-       container, so an anonymous query here would ask the details column
-       whether it's 768px wide — which it never is — instead of asking the
-       layout whether it has split into columns. */
+    /* Named, unlike the query on `.cp-content`: the enclosing
+       `.cp-content__details-column` is itself an inline-size container, so an
+       anonymous query would measure that column instead of the layout. */
     @container cp-main (width >= 768px) {
       --resize-handle-display: flex;
 
@@ -545,13 +523,11 @@ PAGE STYLES
   .cp-content__sidebar {
   }
 
-  /* Wide content — a many-columned table, a long code block — sets a min-content
-   floor that otherwise pushes this column past its track and out of the
-   layout. The track is already minmax(0, 1fr); items need min-width: 0 too,
-   since `auto` refuses to shrink below min-content. Letting them shrink is
-   what lets their own overflow containers (.element-index__body) scroll.
-   `:deep()` because these are slotted from the page component, so they carry
-   its scope id rather than this one's. */
+  /* Wide content — a big table, a long code block — sets a min-content floor
+   that would push this column out of the layout. The track is already
+   minmax(0, 1fr), but items need `min-width: 0` too, since `auto` won't shrink
+   below min-content; shrinking is what lets their own overflow containers
+   scroll. `:deep()` because they're slotted, so they carry the page's scope. */
   .cp-content__main > :deep(*) {
     min-width: 0;
   }
