@@ -11,10 +11,12 @@
       icon?: string;
       label?: string | null;
       actions: ActionItems;
+      buttonVariant?: ButtonVariant;
     }>(),
     {
       icon: 'ellipsis',
       label: t('Actions'),
+      buttonVariant: ButtonVariant.Plain,
     }
   );
 
@@ -66,7 +68,7 @@
           size="small"
           :icon="icon"
           :aria-label="label"
-          :variant="ButtonVariant.Plain"
+          :variant="buttonVariant"
         >
         </craft-button>
       </slot>
