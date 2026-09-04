@@ -41,7 +41,11 @@ jobs:
           cache: true
 
       - name: Install frontend dependencies
-        run: vp install --frozen-lockfile
+        # pnpm won't expand env vars in credentials coming from the project
+        # .npmrc, so the Font Awesome token goes in the user-level one.
+        run: |
+          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+          vp install --frozen-lockfile
         env:
           CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 

@@ -111,5 +111,5 @@ and resolves to a handle rather than a modal object.
   menu therefore puts its reactive `disabled` on the *items* (a prop the web
   component consumes as data), never on the invoker.
 - **`@craftcms/ui` is consumed two ways.** Vite dev reads its `src`; `vue-tsc`
-  resolves to `dist`. Run `npm run build:ui` after touching the package or the
+  resolves to `dist`. Run `pnpm run build:ui` after touching the package or the
   root typecheck won't see it.

@@ -27,8 +27,9 @@
 /lerna.json export-ignore
 /lib/craft/behaviors/CustomFieldBehavior.php export-ignore
 /opencode.json export-ignore
-/package-lock.json export-ignore
+/pnpm-lock.yaml export-ignore
 /package.json export-ignore
+/pnpm-workspace.yaml export-ignore
 /packages/ export-ignore
 /phpstan.neon export-ignore
 /resources/css/ export-ignore

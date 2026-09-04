@@ -3,6 +3,9 @@ import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {FormControlMixin} from '@lion/ui/form-core.js';
+// Named explicitly so the emitted .d.ts can reference Lion's mixin
+// constructor by package specifier instead of a pnpm store path (TS2883).
+import type {} from '@open-wc/dedupe-mixin';
 // Registers <craft-callout> globally for the tip/warning notices.
 import '../callout/callout.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
