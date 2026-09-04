@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'מיין לפי',
     'Sort descending' => 'מיון בסדר יורד',
     'Sort direction' => 'כיוון המיון',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'קוד מיון',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'הגדרות המקור נשמרו',

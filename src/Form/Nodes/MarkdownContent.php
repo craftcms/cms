@@ -12,9 +12,12 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Traits\Conditionable;
 
 class MarkdownContent implements Node
 {
+    use Conditionable;
+
     private bool $displayInPane = true;
 
     private int $width = 100;

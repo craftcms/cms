@@ -92,6 +92,22 @@ function swapUrlRequest(string $uri, string $method = 'GET', array $parameters =
     app()->forgetScopedInstances();
 }
 
+/**
+ * @param  list<array<string, mixed>>  $nodes
+ * @return list<array<string, mixed>>
+ */
+function flattenFormNodes(array $nodes): array
+{
+    $flattened = [];
+
+    foreach ($nodes as $node) {
+        $flattened[] = $node;
+        array_push($flattened, ...flattenFormNodes($node['children'] ?? []));
+    }
+
+    return $flattened;
+}
+
 function buildExpectedUrl(string $url, string $scheme): string
 {
     $siteUrl = "$scheme://localhost/";

@@ -28,6 +28,7 @@ use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\NotificationsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
@@ -102,6 +103,7 @@ Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(func
 Route::allowDuringMaintenance()->middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
     Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
+    Route::match(['get', 'post'], CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
@@ -116,7 +118,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::allowDuringMaintenance()->any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
+    Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -352,6 +354,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);
                 Route::post('{handle}/disable', [PluginsController::class, 'disable']);
                 Route::post('{handle}/switch-edition', [PluginsController::class, 'switchEdition']);
+                Route::post('{handle}/render-form', [PluginsController::class, 'renderSettingsForm']);
                 Route::post('{handle}', [PluginsController::class, 'saveSettings']);
             });
 

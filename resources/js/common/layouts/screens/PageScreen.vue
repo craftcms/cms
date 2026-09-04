@@ -40,6 +40,7 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {useFlash} from '@/common/composables/useFlash';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+  import useCraftData from '@/common/composables/useCraftData';
   import {useFieldHighlight} from '@/common/composables/useFieldHighlight';
   import {useResizable} from '@/common/composables/useResizable';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
@@ -73,6 +74,7 @@
 
   const registry = provideLayoutSlotRegistry();
   provideScreenContext('page');
+  const craftData = useCraftData();
 
   // Deep links like `#form-maintenanceMode` point at a field on a long form.
   useFieldHighlight();

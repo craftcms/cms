@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Cp\Notifications\NotificationCenter;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class AnnouncementsController
+readonly class NotificationsController
 {
     use RespondsWithFlash;
 
-    public function markRead(Request $request, Announcements $announcements): Response
+    public function markRead(Request $request, NotificationCenter $notifications): Response
     {
-        $request->validate([
+        $validated = $request->validate([
             'ids' => ['required', 'array'],
-            'ids.*' => ['int'],
+            'ids.*' => ['uuid'],
         ]);
 
-        $announcements->markAsRead($request->array('ids'));
+        $notifications->markAsRead($validated['ids']);
 
         return $this->asSuccess();
     }

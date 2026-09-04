@@ -11,10 +11,13 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
+use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 
 class TemplateContent implements Node
 {
+    use Conditionable;
+
     private int $width = 100;
 
     private function __construct(

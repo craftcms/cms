@@ -296,9 +296,12 @@ describe('craft-combobox', () => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    const fired: unknown[] = [];
-    combobox.addEventListener('model-value-changed', () => {
-      fired.push(combobox.modelValue);
+    const fired: Array<{value: unknown; changeSource?: string}> = [];
+    combobox.addEventListener('model-value-changed', (event) => {
+      fired.push({
+        value: combobox.modelValue,
+        changeSource: (event as CustomEvent).detail?.changeSource,
+      });
     });
 
     const input = combobox._inputNode as HTMLInputElement;
@@ -309,7 +312,10 @@ describe('craft-combobox', () => {
     await new Promise((resolve) => setTimeout(resolve));
 
     expect(combobox.modelValue).toBe('$MY_ENV');
-    expect(fired).toContain('$MY_ENV');
+    expect(fired).toContainEqual({
+      value: '$MY_ENV',
+      changeSource: 'input',
+    });
   });
 
   it('keeps updating the model past the first keystroke, even with a v-model write-back', async () => {
