@@ -185,4 +185,45 @@ describe('craft-nav-item flyout', () => {
       item.querySelector('[slot="subnav"]'),
     ]);
   });
+
+  it('renders a labelled item\'s subnav in a flyout on request', async () => {
+    const item = await createFixture({iconOnly: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+
+    // The subnav moves out of the indent and into the popover, and there's
+    // nothing left inline to collapse, so the toggle goes with it.
+    expect(flyout(item)).not.toBeNull();
+    expect(item.shadowRoot!.querySelector('.subnav')).toBeNull();
+    expect(item.shadowRoot!.querySelector('craft-button')).toBeNull();
+  });
+
+  it('reopens the subnav when the selection moves onto it', async () => {
+    const item = await createFixture({iconOnly: false});
+
+    expect(item.subnavState).toBe('closed');
+
+    // An Inertia visit patches these elements rather than recreating them, so
+    // `connectedCallback` never runs again — without the update hook the
+    // branch you navigated into would stay shut.
+    item.active = true;
+    await item.updateComplete;
+    expect(item.subnavState).toBe('open');
+
+    item.active = false;
+    await item.updateComplete;
+    expect(item.subnavState).toBe('closed');
+  });
+
+  it('leaves a manual toggle alone across unrelated renders', async () => {
+    const item = await createFixture({iconOnly: false});
+
+    item.toggleSubnav(new Event('click'));
+    await item.updateComplete;
+    expect(item.subnavState).toBe('open');
+
+    item.icon = 'wrench';
+    await item.updateComplete;
+    expect(item.subnavState).toBe('open');
+  });
 });

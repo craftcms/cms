@@ -1,4 +1,4 @@
-import {html, LitElement, nothing} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
@@ -127,6 +127,17 @@ export default class CraftNavItem extends LitElement {
     this.addEventListener('mouseleave', this.#scheduleFlyoutClose, {signal});
     this.addEventListener('focusin', this.#openFlyout, {signal});
     this.addEventListener('focusout', this.#scheduleFlyoutClose, {signal});
+  }
+
+  override willUpdate(changed: PropertyValues<this>) {
+    // `connectedCallback` sets this once. An Inertia visit patches these
+    // elements rather than recreating them, so a nav whose selection moved
+    // under it would keep whichever branch it first rendered open. Re-sync on
+    // change only, so a manual toggle survives unrelated re-renders.
+    if (changed.has('active') || changed.has('initialState')) {
+      this.subnavState =
+        this.active || this.initialState === 'open' ? 'open' : 'closed';
+    }
   }
 
   override disconnectedCallback() {
