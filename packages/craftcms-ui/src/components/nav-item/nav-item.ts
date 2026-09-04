@@ -63,6 +63,17 @@ export default class CraftNavItem extends LitElement {
   @property({attribute: 'toggle-position'})
   togglePosition: 'prefix' | 'suffix' = 'suffix';
 
+  /**
+   * Where a subnav renders: indented beneath the item, or in a flyout beside
+   * it. Depth runs out of horizontal room long before the nav runs out of
+   * levels, so anything past the first is better off in a popover.
+   *
+   * `iconOnly` forces `flyout` regardless — collapsed to a rail there's
+   * nowhere to indent to.
+   */
+  @property({attribute: 'subnav-display', reflect: true})
+  subnavDisplay: 'inline' | 'flyout' = 'inline';
+
   @state()
   subnavState: string = 'closed';
 
@@ -169,23 +180,37 @@ export default class CraftNavItem extends LitElement {
       </${tag}>
       ${
         hasSubnav
-          ? html`
-              <craft-popover
-                for="${itemId}"
-                placement="right-start"
-                .opened="${this.flyoutOpen}"
-                @opened-changed="${this.#onFlyoutOpenedChanged}"
-              >
-                <div class="flyout">
-                  <div class="flyout__label"><slot></slot></div>
-                  <slot name="subnav"></slot>
-                </div>
-              </craft-popover>
-            `
+          ? this.renderFlyout(itemId, true)
           : html`<craft-tooltip for="${itemId}" placement="right-start"
               ><slot></slot
             ></craft-tooltip>`
       }
+    `;
+  }
+
+  /**
+   * The subnav in a popover beside the item.
+   *
+   * `withLabel` heads the flyout with the item's own label, standing in for
+   * the tooltip a childless item would get. Only the rail can do that: a
+   * labelled item has already projected the default slot into itself, and a
+   * slot can only render its content in one place.
+   */
+  renderFlyout(itemId: string, withLabel: boolean) {
+    return html`
+      <craft-popover
+        for="${itemId}"
+        placement="right-start"
+        .opened="${this.flyoutOpen}"
+        @opened-changed="${this.#onFlyoutOpenedChanged}"
+      >
+        <div class="flyout">
+          ${withLabel
+            ? html`<div class="flyout__label"><slot></slot></div>`
+            : nothing}
+          <slot name="subnav"></slot>
+        </div>
+      </craft-popover>
     `;
   }
 
@@ -264,6 +289,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item--flush': this.flush,
           'nav-item--static': !this.href,
         })}"
+        id="item-${this.id}"
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
@@ -279,10 +305,15 @@ export default class CraftNavItem extends LitElement {
 
   override render() {
     const hasSubnav = !!this.querySelector('[slot="subnav"]');
+    // A `slot` can only project its content in one place, so the subnav is
+    // either indented below or in the flyout, never both.
+    const useFlyout =
+      hasSubnav && (this.iconOnly || this.subnavDisplay === 'flyout');
     // No label means no toggle, and no way to collapse. A `group` item is a
     // permanent semantic grouping: it never shows a toggle and its subnav
     // stays open (subnavOpen falls back to true when there's no toggle).
-    const showToggle = hasSubnav && this.hasLabel && !this.group;
+    // There's nothing to collapse either when the subnav lives in a flyout.
+    const showToggle = hasSubnav && this.hasLabel && !this.group && !useFlyout;
     const toggleInPrefix = showToggle && this.togglePosition === 'prefix';
     const hasPrefix =
       toggleInPrefix ||
@@ -290,17 +321,16 @@ export default class CraftNavItem extends LitElement {
       !!this.querySelector('[slot="prefix"]') ||
       !!this.querySelector('[slot="icon"]');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
-    // A `slot` can only project its content in one place. Collapsed to a rail
-    // there's no room to indent a subnav, so it renders inside the flyout
-    // instead of here.
-    const inlineSubnav = hasSubnav && !this.iconOnly;
 
     return html`
       <li>
         ${this.iconOnly
           ? this.renderIconItem(hasSubnav)
           : this.renderItem(showToggle, hasPrefix)}
-        ${inlineSubnav
+        ${!this.iconOnly && useFlyout
+          ? this.renderFlyout(`item-${this.id}`, false)
+          : nothing}
+        ${hasSubnav && !useFlyout
           ? html`
               <div
                 class="subnav"
