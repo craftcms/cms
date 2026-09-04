@@ -1,11 +1,14 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
   import CpLink from '@/common/components/CpLink.vue';
   import ActionList from '@/common/components/ActionList.vue';
   import NavEntry from '@/common/components/NavEntry.vue';
   import type {ActionItems} from '@/common/types';
+  import VarDump from '@/common/components/VarDump.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
 
   const {items = [], actions = []} = defineProps<{
     /**
@@ -26,7 +29,7 @@
     actions?: ActionItems;
   }>();
 
-  const isLarge = useMediaQuery('(min-width: 768px)');
+  const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
   /**
    * The nav flattened for the collapsed menu, which is one flat list.
@@ -87,34 +90,36 @@ Nav states:
 </script>
 
 <template>
-  <div
-    v-if="!isLarge"
-    class="p-1 bg-(--c-color-neutral-fill-normal) flex justify-between"
-  >
-    <!-- The `slot="content"` wrapper below is ours on purpose. `craft-popover`
-      auto-wraps unslotted children into a container it creates once and
-      appends itself; Vue keeps rendering against its own anchor in the host,
-      so anything added to these lists afterwards lands outside that wrapper
-      and never reaches the slot. Owning the wrapper means the auto-wrap never
-      runs and Vue has a stable parent to patch.
-
-      The comment sits out here for the same reason: that auto-wrap counts any
-      non-empty child node, comments included. -->
-    <craft-action-menu>
+  <div v-if="!isLarge" class="flex gap-1 p-1">
+    <craft-popover
+      class="flex-1 relative"
+      placement="bottom-start"
+      match-invoker-width
+    >
       <craft-button
         slot="invoker"
         type="button"
         icon="chevron-down"
-        variant="plain"
         size="small"
+        align="start"
+        class="w-full"
         >{{ t('Sidebar') }}</craft-button
       >
+
       <div slot="content">
-        <ActionList :actions="menuItems" as="craft-action-item" />
+        <ActionList :actions="items" as="craft-action-item" />
+      </div>
+    </craft-popover>
+
+    <craft-action-menu>
+      <craft-button type="button" size="small" slot="invoker">
+        <craft-icon name="ellipsis" :label="t('Customize')"></craft-icon>
+      </craft-button>
+      <div slot="content">
+        <ActionList :actions="actions" as="craft-action-item" size="small" />
+        <slot name="actions"></slot>
       </div>
     </craft-action-menu>
-
-    <slot name="actions"></slot>
   </div>
   <nav
     v-else
@@ -167,12 +172,18 @@ Nav states:
       this element stays in the DOM translated off-screen. -->
     <div
       v-if="isLarge && actions.length"
-      class="secondary-nav__actions flex flex-wrap gap-2 mt-2"
+      class="secondary-nav__actions flex flex-wrap gap-2 mt-4"
     >
-      <ActionList :actions="actions" as="craft-button" size="small" />
+      <ActionMenu :actions="actions" :button-variant="ButtonVariant.Outline" />
+      <slot name="actions"></slot>
     </div>
-    <slot name="actions"></slot>
   </nav>
 </template>
 
-<style scoped lang="css"></style>
+<style scoped lang="css">
+  .secondary-nav {
+    position: sticky;
+    inset-block-start: 0;
+    padding: var(--c-spacing-md) var(--c-spacing-lg);
+  }
+</style>

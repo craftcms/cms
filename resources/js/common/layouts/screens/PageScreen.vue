@@ -31,8 +31,6 @@
   import PassthroughScreen from './PassthroughScreen.vue';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
   import SlideoutHost from '@/common/slideouts/SlideoutHost.vue';
-  import SystemInfo from '@/common/components/SystemInfo.vue';
-  import UserMenu from '@/common/components/UserMenu.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import ElevatedSessionHost from '@/modules/auth/elevated-session/ElevatedSessionHost.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
@@ -49,7 +47,6 @@
     ScreenShellKey,
   } from '@/common/composables/screen';
   import type {ActionItem, FormSaveOptions} from '@/common/types';
-  import {ButtonVariant} from '@craftcms/ui';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from './types';
   import CpTopBar from '@/common/components/CpTopBar.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -125,7 +122,7 @@
   );
   const hasSidebar = computed(
     () =>
-      Boolean(slots.sidebar) ||
+      Boolean(slots.contentSidebar) ||
       Boolean(slots['subnav-actions']) ||
       (props.subnavActions?.length ?? 0) > 0 ||
       registry.has('sidebar') ||
@@ -158,7 +155,7 @@
   }
 
   // The details column is user-resizable. The width lands on
-  // `--content-layout-details-width`, which `.content-layout` uses for its
+  // `--cp-content-details-width`, which `.cp-content` uses for its
   // trailing grid track, so leaving it unset keeps the stylesheet's
   // responsive default. The name is deliberately not `--details-width`:
   // legacy `_cp.scss` already publishes one of those globally.
@@ -188,14 +185,14 @@
     edge: 'inline-start',
     minWidth: DETAILS_MIN_WIDTH,
     maxWidth: detailsMaxWidth,
-    cssVariable: '--content-layout-details-width',
+    cssVariable: '--cp-content-details-width',
     storageKey: 'AppLayout.detailsWidth',
   });
 
   // `aria-controls` needs a real id, and `details` is taken: legacy CSS pins
   // `#details` to 350px, which would override the grid track and push the
   // column off the page.
-  const detailsId = `content-layout-details-${useId()}`;
+  const detailsId = `cp-content-details-${useId()}`;
 
   const formActionItems = computed(() => [
     ...props.defaultFormActions.map(defaultFormActionItem),
@@ -253,67 +250,67 @@
       <CpSidebar />
     </div>
     <div class="cp__main">
-      <div class="cp__header">
-        <FlashMessages />
-      </div>
-      <div class="cp__content">
-        <slot name="main">
-          <main id="main" tabindex="-1">
-            <form
-              method="post"
-              @submit.prevent="form && save()"
-              class="cp-main"
-            >
-              <LayoutSlotOutlet name="error-summary">
-                <slot name="error-summary">
-                  <ErrorSummary
-                    v-if="form && form.hasErrors"
-                    :errors="form.errors"
-                  />
-                </slot>
-              </LayoutSlotOutlet>
-              <template v-if="readOnly">
-                <CalloutReadOnly />
-              </template>
-              <div
-                ref="contentLayout"
-                class="content-layout"
-                :class="{
-                  'content-layout--sidebar': hasSidebar,
-                  'content-layout--details': hasDetails,
-                }"
-                :style="detailsResizer.style.value"
+      <div class="cp-page">
+        <div class="cp-page__header">
+          <FlashMessages />
+        </div>
+        <div class="cp-page__main">
+          <slot name="main">
+            <main id="main" tabindex="-1">
+              <form
+                method="post"
+                @submit.prevent="form && save()"
+                class="cp-main"
               >
+                <LayoutSlotOutlet name="error-summary">
+                  <slot name="error-summary">
+                    <ErrorSummary
+                      v-if="form && form.hasErrors"
+                      :errors="form.errors"
+                    />
+                  </slot>
+                </LayoutSlotOutlet>
+                <template v-if="readOnly">
+                  <CalloutReadOnly />
+                </template>
                 <div
-                  v-show="hasSidebar"
-                  id="secondary-nav"
-                  tabindex="-1"
-                  class="content-layout__sidebar"
+                  ref="contentLayout"
+                  class="cp-content"
+                  :class="{
+                    'cp-content--sidebar': hasSidebar,
+                    'cp-content--details': hasDetails,
+                  }"
+                  :style="detailsResizer.style.value"
                 >
-                  <LayoutSlotOutlet name="sidebar">
-                    <slot name="sidebar">
-                      <!-- The subnav-actions outlet lives inside this
+                  <div
+                    v-show="hasSidebar"
+                    id="content-sidebar"
+                    tabindex="-1"
+                    class="cp-content__sidebar"
+                  >
+                    <LayoutSlotOutlet name="sidebar">
+                      <slot name="sidebar">
+                        <!-- The subnav-actions outlet lives inside this
                         fallback, so a page must not teleport `sidebar` and
                         `subnav-actions` at the same time. -->
-                      <SecondaryNav
-                        :items="navItemActions(subnav)"
-                        :actions="subnavActions"
-                      >
-                        <template #actions>
-                          <LayoutSlotOutlet name="subnav-actions">
-                            <slot name="subnav-actions"></slot>
-                          </LayoutSlotOutlet>
-                        </template>
-                      </SecondaryNav>
-                    </slot>
-                  </LayoutSlotOutlet>
-                </div>
-                <div class="content-layout__main">
-                  <div class="container">
+                        <SecondaryNav
+                          :items="navItemActions(subnav)"
+                          :actions="subnavActions"
+                        >
+                          <template #actions>
+                            <LayoutSlotOutlet name="subnav-actions">
+                              <slot name="subnav-actions"></slot>
+                            </LayoutSlotOutlet>
+                          </template>
+                        </SecondaryNav>
+                      </slot>
+                    </LayoutSlotOutlet>
+                  </div>
+                  <div class="cp-content__main">
                     <slot name="header">
-                      <div id="cp-header">
+                      <div id="cp-content-header">
                         <div
-                          class="flex gap-2 items-center justify-between pt-3 pb-2"
+                          class="flex gap-2 items-center justify-between pt-3 p-2"
                         >
                           <LayoutSlotOutlet name="title">
                             <slot name="title">
@@ -380,40 +377,39 @@
                       </LayoutSlotOutlet>
                     </div>
                   </div>
-                </div>
-                <!-- v-show, not v-if: the aside hosts a LayoutSlotOutlet
+                  <!-- v-show, not v-if: the aside hosts a LayoutSlotOutlet
                   teleport target, which must stay in the DOM so page-side
                   <LayoutSlot> content can mount before registration flips
                   hasDetails. -->
-                <aside
-                  v-show="hasDetails"
-                  ref="detailsColumn"
-                  class="content-layout__details-column"
-                >
-                  <ResizeHandle
-                    class="content-layout__details-resize-handle"
-                    :resizer="detailsResizer"
-                    :label="t('Resize details')"
-                    :controls="detailsId"
-                  />
-                  <div :id="detailsId" class="cp-details">
-                    <LayoutSlotOutlet name="details">
-                      <slot name="details"></slot>
-                    </LayoutSlotOutlet>
-                  </div>
-                </aside>
-              </div>
-            </form>
-          </main>
-        </slot>
-      </div>
-      <div class="cp__footer">
-        <footer>
-          <div class="container">
-            <LayoutSlotOutlet name="footer">
+                  <aside
+                    v-show="hasDetails"
+                    ref="detailsColumn"
+                    class="cp-content__details"
+                  >
+                    <ResizeHandle
+                      class="cp-details-resize-handle"
+                      :resizer="detailsResizer"
+                      :label="t('Resize details')"
+                      :controls="detailsId"
+                    />
+                    <div :id="detailsId" class="cp-details">
+                      <LayoutSlotOutlet name="details">
+                        <slot name="details"></slot>
+                      </LayoutSlotOutlet>
+                    </div>
+                  </aside>
+                </div>
+              </form>
+            </main>
+          </slot>
+        </div>
+
+        <footer class="cp-page__footer">
+          <LayoutSlotOutlet name="footer">
+            <div class="cp-container">
               <slot name="footer"></slot>
-            </LayoutSlotOutlet>
-          </div>
+            </div>
+          </LayoutSlotOutlet>
         </footer>
       </div>
     </div>
@@ -428,13 +424,15 @@
 </template>
 
 <style scoped lang="css">
+  /**
+CP STYLES (global shell)
+ */
   .cp {
-    background-color: var(--c-color-neutral-fill-quiet);
     display: grid;
-    grid-template-columns: v-bind(sidebarWidth) minmax(0, 1fr);
-  }
 
-  .cp__sidebar {
+    @media screen and (min-width: 768px) {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
   }
 
   /* The document scrolls, so this row lays out but never clips: the sidebar is
@@ -449,41 +447,26 @@
   .cp__main {
     container-type: inline-size;
     container-name: cp-main;
-    background-color: white;
-    border-radius: var(--c-radius-lg);
   }
 
-  /* Fills whatever the sidebar leaves. `min-width: 0` so wide content inside
-   (a many-columned table, a code block) shrinks to the track and scrolls in
-   its own overflow container rather than widening the page. */
-  .cp__content {
-    position: relative;
-    flex: 1 1 auto;
-    min-width: 0;
+  /**
+PAGE STYLES
+ */
+
+  .cp-page {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
   }
 
-  .cp__header {
-    --c-color-focus-outline: var(--color-blue-300);
+  .cp-page__footer {
+    position: sticky;
+    inset-block-end: 0;
   }
 
-  /* Every page runs the full width of the viewport. `max-width: none` is doing
-     real work: `container` is also a Tailwind utility, and cp.css pulls in
-     tailwindcss/utilities.css — dropping the declaration entirely lets
-     Tailwind's breakpoint caps (1536px at xl) take over instead of removing
-     the limit. */
-  .container {
-    max-width: none;
-    margin: 0 auto;
-    padding-inline: var(--c-spacing-lg);
-  }
-
-  .content-layout {
-    /* Defaults for the side columns. `useResizable` overrides
-       --content-layout-details-width inline once the user drags the handle;
-       clearing it restores this. Not named --details-width: legacy _cp.scss
-       publishes a global custom property under that name. */
-    --content-layout-details-width: clamp(12rem, 20%, 16rem);
-    --content-layout-sidebar-width: clamp(
+  .cp-content {
+    --cp-content-details-width: clamp(12rem, 20%, 16rem);
+    --cp-content-sidebar-width: clamp(
       calc(120rem / 16),
       20%,
       calc(220rem / 16)
@@ -492,43 +475,43 @@
     /* Hard ceiling on the details track, so a width restored from storage at a
        wider viewport can't run the layout off the page. `useResizable` clamps
        to the same share, so the drag stops where the column does. */
-    --content-layout-details-max: 50%;
-    --content-layout-details-track: min(
-      var(--content-layout-details-width),
-      var(--content-layout-details-max)
+    --cp-content-details-max: 50%;
+    --cp-content-details-track: min(
+      var(--cp-content-details-width),
+      var(--cp-content-details-max)
     );
 
     display: grid;
-    gap: var(--c-spacing-md);
+    height: 100%;
 
     @container (width >= 768px) {
-      align-items: start;
+      //align-items: start;
 
-      &.content-layout--details {
+      .cp-content--details {
         grid-template-columns:
           minmax(0, 1fr)
-          var(--content-layout-details-track);
+          var(--cp-content-details-track);
       }
 
-      &.content-layout--sidebar {
+      &.cp-content--sidebar {
         grid-template-columns:
-          var(--content-layout-sidebar-width)
+          var(--cp-content-sidebar-width)
           minmax(0, 1fr);
       }
 
-      &.content-layout--sidebar.content-layout--details {
+      &.cp-content--sidebar.cp-content--details {
         /* Three columns share the width, so the details column gets less. */
-        --content-layout-details-max: 40%;
+        --cp-content-details-max: 40%;
 
         grid-template-columns:
-          var(--content-layout-sidebar-width)
+          var(--cp-content-sidebar-width)
           minmax(0, 1fr)
-          var(--content-layout-details-track);
+          var(--cp-content-details-track);
       }
     }
   }
 
-  .content-layout__details-column {
+  .cp-content__details-column {
     position: relative;
     container-type: inline-size;
   }
@@ -536,11 +519,11 @@
   /* Sits in the gutter between the content and the details column. Only the
      wide layout has a details track to resize, so the handle stays hidden
      until the columns actually split. */
-  .content-layout__details-resize-handle {
+  .cp-content__details-resize-handle {
     --resize-handle-display: none;
 
-    /* Named, unlike the query on `.content-layout` above: the handle sits
-       inside `.content-layout__details-column`, which is itself an inline-size
+    /* Named, unlike the query on `.cp-content` above: the handle sits
+       inside `.cp-content__details-column`, which is itself an inline-size
        container, so an anonymous query here would ask the details column
        whether it's 768px wide — which it never is — instead of asking the
        layout whether it has split into columns. */
@@ -552,15 +535,14 @@
     }
   }
 
-  main {
-    padding-block-end: var(--c-spacing-xl);
-  }
-
-  .content-layout__main {
+  .cp-content__main {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--c-spacing-md);
     align-content: start;
+    height: 100%;
+  }
+
+  .cp-content__sidebar {
   }
 
   /* Wide content — a many-columned table, a long code block — sets a min-content
@@ -570,7 +552,7 @@
    what lets their own overflow containers (.element-index__body) scroll.
    `:deep()` because these are slotted from the page component, so they carry
    its scope id rather than this one's. */
-  .content-layout__main > :deep(*) {
+  .cp-content__main > :deep(*) {
     min-width: 0;
   }
 
@@ -580,6 +562,10 @@
     align-items: center;
     gap: var(--c-spacing-md);
     margin-block-start: var(--c-spacing-md);
+  }
+
+  .cp-main {
+    height: 100%;
   }
 
   .cp-details {

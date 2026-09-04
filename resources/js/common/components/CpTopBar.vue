@@ -16,6 +16,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -24,14 +25,9 @@
     hasContextMenu?: boolean;
   }>();
 
-  const isLarge = useMediaQuery('(min-width: 768px)');
+  const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
-  const {
-    sidebar,
-    toggle: toggleSidebar,
-    width,
-    icon: toggleIcon,
-  } = useGlobalSidebar();
+  const {toggle: toggleSidebar, icon: toggleIcon} = useGlobalSidebar();
 
   const page = usePage<{craft: CraftData}>();
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
@@ -50,7 +46,7 @@
 
 <template>
   <div class="cp-top-bar">
-    <div class="flex gap-1 items-center justify-between">
+    <div class="cp-top-bar__start">
       <craft-button
         id="sidebar-toggle"
         type="button"
@@ -61,25 +57,28 @@
         :aria-label="t('Toggle menu')"
       >
       </craft-button>
+    </div>
 
-      <div class="flex gap-3 items-center">
-        <div class="flex gap-1 items-center">
-          <template v-if="devMode">
-            <craft-badge fill="warning">
-              <craft-icon name="code" slot="prefix"></craft-icon>
-              {{ t('Dev Mode') }}
-            </craft-badge>
-          </template>
+    <div class="cp-top-bar__indicators">
+      <template v-if="devMode">
+        <craft-badge fill="warning">
+          <craft-icon name="code" slot="prefix"></craft-icon>
+          {{ t('Dev Mode') }}
+        </craft-badge>
+      </template>
 
-          <template v-if="maintenanceMode">
-            <CpLink :href="maintenanceModeUrl">
-              <craft-badge fill="warning">
-                <craft-icon name="person-digging" slot="prefix"></craft-icon>
-                {{ t('Maintenance mode') }}
-              </craft-badge>
-            </CpLink>
-          </template>
-        </div>
+      <template v-if="maintenanceMode">
+        <CpLink :href="maintenanceModeUrl">
+          <craft-badge fill="warning">
+            <craft-icon name="person-digging" slot="prefix"></craft-icon>
+            {{ t('Maintenance mode') }}
+          </craft-badge>
+        </CpLink>
+      </template>
+    </div>
+
+    <div class="cp-top-bar__end">
+      <div class="flex gap-2 items-center">
         <craft-button
           icon
           :variant="ButtonVariant.Plain"
@@ -91,18 +90,21 @@
         <UserMenu />
       </div>
     </div>
-    <div class="flex gap-2 items-center">
-      <SystemInfo v-if="isLarge" />
-      <div
-        class="py-1 flex flex-nowrap items-center gap-2"
-        v-show="crumbs || hasContextMenu"
-      >
-        <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
-        <Breadcrumbs v-if="crumbs" :items="crumbs" />
-        <div v-show="hasContextMenu" class="context-menu-container">
-          <LayoutSlotOutlet name="context-menu">
-            <slot name="context-menu"></slot>
-          </LayoutSlotOutlet>
+
+    <div class="cp-top-bar__breadcrumbs">
+      <div class="flex gap-2 items-center">
+        <SystemInfo v-if="isLarge" />
+        <div
+          class="py-1 flex flex-nowrap items-center gap-2"
+          v-show="crumbs || hasContextMenu"
+        >
+          <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
+          <Breadcrumbs v-if="crumbs" :items="crumbs" />
+          <div v-show="hasContextMenu" class="context-menu-container">
+            <LayoutSlotOutlet name="context-menu">
+              <slot name="context-menu"></slot>
+            </LayoutSlotOutlet>
+          </div>
         </div>
       </div>
     </div>
@@ -111,13 +113,47 @@
 
 <style scoped lang="scss">
   .cp-top-bar {
-    padding-block: calc(var(--spacing) * 2);
-    padding-inline: calc(var(--spacing) * 2);
-    background-color: var(--c-color-fill-quiet);
+    padding-block: calc(var(--spacing) * 1);
+    padding-inline: calc(var(--spacing) * 1);
     color: var(--c-color-on-quiet);
     display: grid;
     gap: var(--spacing);
-    // border-block-end: 1px solid
-    //   color-mix(transparent 75%, var(--c-color-border-quiet));
+    grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
+    grid-template-columns:
+      calc(var(--global-sidebar-collapsed-width) - (var(--spacing) * 1))
+      1fr auto auto;
+    grid-template-rows: repeat(2, auto);
+    align-items: center;
+
+    background-color: color-mix(
+      var(--c-color-fill-quiet),
+      var(--c-color-fill-loud) 20%
+    );
+
+    // TODO: consolidate breakpoints
+    @media screen and (min-width: 768px) {
+      gap: calc(var(--spacing) * 3);
+      grid-template-areas: 'start breadcrumbs indicators end';
+      grid-template-rows: auto;
+    }
+  }
+
+  .cp-top-bar__start {
+    display: flex;
+    justify-content: center;
+    grid-area: start;
+    margin-inline-start: calc(var(--spacing) * -2);
+  }
+
+  .cp-top-bar__end {
+    grid-area: end;
+  }
+
+  .cp-top-bar__indicators {
+    grid-area: indicators;
+  }
+
+  .cp-top-bar__breadcrumbs {
+    grid-area: breadcrumbs;
   }
 </style>
