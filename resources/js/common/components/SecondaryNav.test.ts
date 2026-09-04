@@ -87,6 +87,30 @@ afterEach(() => {
 });
 
 describe('SecondaryNav', () => {
+  it('links its items while the nav is expanded', async () => {
+    stubViewport(true);
+
+    const container = mountWith([
+      navItem({label: 'Volumes', href: '/admin/settings/assets'}),
+      navItem({
+        label: 'Account Security',
+        group: true,
+        subnav: [navItem({label: 'Password', href: '/admin/password'})],
+      }),
+    ]);
+    await nextTick();
+
+    // The expanded list is a separate rendering from the collapsed menu, so
+    // it needs its own guard — a rename that missed it left every item in the
+    // docked sidebar linking nowhere while every test still passed.
+    // `href` is a non-reflecting Lit property, so read the property.
+    expect(
+      [...container.querySelectorAll('craft-nav-item')]
+        .map((item) => (item as HTMLElement & {href?: string}).href)
+        .filter(Boolean)
+    ).toEqual(['/admin/settings/assets', '/admin/password']);
+  });
+
   it('lists the nav items in the menu it collapses into', async () => {
     stubViewport(false);
 

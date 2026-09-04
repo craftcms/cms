@@ -135,7 +135,7 @@ Nav states:
                   :key="subindex"
                   as="craft-nav-item"
                   :active.prop="subitem.selected"
-                  :href="subitem.url"
+                  :href="subitem.href ?? ''"
                   :inertia="!subitem.external"
                   :icon="subitem.icon ?? undefined"
                   :indicator.prop="subitem.badgeCount > 0"
@@ -152,7 +152,7 @@ Nav states:
             <CpLink
               as="craft-nav-item"
               :active.prop="item.selected"
-              :href="item.url"
+              :href="item.href ?? ''"
               :inertia="!item.external"
               :icon="item.icon ?? undefined"
               :indicator.prop="item.badgeCount > 0"
