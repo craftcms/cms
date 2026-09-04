@@ -25,11 +25,11 @@
   <craft-nav-list>
     <CpLink
       v-for="item in nav"
-      :key="item.url"
+      :key="item.href ?? item.label"
       as="craft-nav-item"
       :icon="item.icon || undefined"
       :icon-only="iconOnly || undefined"
-      :href="item.url"
+      :href="item.href ?? ''"
       :active.prop="item.selected"
       :indicator.prop="!!item.badgeCount"
       :external.prop="item.external"
@@ -41,10 +41,10 @@
         <craft-nav-list slot="subnav">
           <CpLink
             v-for="subnavItem in item.subnav"
-            :key="subnavItem.url"
+            :key="subnavItem.href ?? subnavItem.label"
             as="craft-nav-item"
             :active.prop="subnavItem.selected"
-            :href="subnavItem.url"
+            :href="subnavItem.href ?? ''"
             :indicator.prop="!!subnavItem.badgeCount"
             :external.prop="subnavItem.external"
             :inertia="!subnavItem.external"

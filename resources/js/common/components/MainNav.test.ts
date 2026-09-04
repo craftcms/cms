@@ -21,7 +21,7 @@ it('updates the active item when the shared navigation changes', async () => {
     nav: [
       {
         label: 'Entries',
-        url: '/entries',
+        href: '/entries',
         icon: null,
         selected: true,
         badgeCount: null,
@@ -30,7 +30,7 @@ it('updates the active item when the shared navigation changes', async () => {
       },
       {
         label: 'Assets',
-        url: '/assets',
+        href: '/assets',
         icon: null,
         selected: false,
         badgeCount: null,
@@ -57,7 +57,7 @@ it('updates the active item when the shared navigation changes', async () => {
 
   state.craftData.nav = state.craftData.nav.map((item: any) => ({
     ...item,
-    selected: item.url === '/assets',
+    selected: item.href === '/assets',
   }));
   await nextTick();
 
@@ -67,6 +67,14 @@ it('updates the active item when the shared navigation changes', async () => {
 
   expect((entries as any).active).toBe(false);
   expect((assets as any).active).toBe(true);
+
+  // Each item links where it says it does. Without this, a rename that missed
+  // the template left every item pointing at the current page: clicking one
+  // reloaded rather than navigating, and nothing failed.
+  // Property when the element has upgraded, attribute when it hasn't.
+  expect(
+    items.map((item) => (item as any).href ?? item.getAttribute('href'))
+  ).toEqual(['/entries', '/assets']);
 
   app.unmount();
   container.remove();
