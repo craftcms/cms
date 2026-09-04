@@ -28,10 +28,13 @@ it('rejects an invalid workbench URL', function () {
 it('does not serve an existing uninitialized workbench database', function () {
     $databasePath = storage_path('framework/testing/'.Str::uuid());
     $originalDatabasePath = app()->databasePath();
+    $originalEnvironmentPath = app()->environmentPath();
 
     File::ensureDirectoryExists($databasePath);
     File::put($databasePath.'/database.sqlite', '');
+    File::put($databasePath.'/.env', '');
     app()->useDatabasePath($databasePath);
+    app()->useEnvironmentPath($databasePath);
 
     try {
         $command = Mockery::mock(ServeCommand::class)->makePartial();
@@ -51,6 +54,7 @@ it('does not serve an existing uninitialized workbench database', function () {
             ->and($tester->getDisplay())->toContain('Failed to build the Workbench database.');
     } finally {
         app()->useDatabasePath($originalDatabasePath);
+        app()->useEnvironmentPath($originalEnvironmentPath);
         File::deleteDirectory($databasePath);
     }
 });

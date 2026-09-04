@@ -1686,6 +1686,7 @@ return [
     'Sort by' => '정렬 기준',
     'Sort descending' => '내림차순 정렬',
     'Sort direction' => '정렬 방향',
+    'Sorting' => 'Sorting',
     'Sorting Code' => '정렬 코드',
     'Source actions' => 'Source actions',
     'Source settings saved' => '소스 설정이 저장됨',

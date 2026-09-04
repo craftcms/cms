@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'مرتب سازی بر اساس',
     'Sort descending' => 'مرتب‌سازی به‌صورت نزولی',
     'Sort direction' => 'جهت مرتب‌سازی',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'کد مرتب سازی',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'تنظیمات منبع ذخیره گردید',

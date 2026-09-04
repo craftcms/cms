@@ -1686,6 +1686,7 @@ return [
     'Sort by' => '排序方式',
     'Sort descending' => '降序',
     'Sort direction' => '排序方向',
+    'Sorting' => 'Sorting',
     'Sorting Code' => '排序代码',
     'Source actions' => 'Source actions',
     'Source settings saved' => '来源设置已保存',

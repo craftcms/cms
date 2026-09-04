@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Сортировка',
     'Sort descending' => 'Сортировать по убыванию',
     'Sort direction' => 'Направление сортировки',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Код отделения',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Настройки источника сохранены',
