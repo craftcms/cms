@@ -13,7 +13,7 @@
       },
     },
     setup(props, {attrs, slots}) {
-      return () => h(props.tag, attrs, slots.default?.());
+      return () => h(props.tag, {...attrs}, slots.default?.());
     },
   });
 
