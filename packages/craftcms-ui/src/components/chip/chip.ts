@@ -31,9 +31,10 @@ import {
  * `status` slots are ignored when it is present.
  *
  * On connect the chip stamps `data-color="white"` on itself so it reads as a
- * raised surface by default. Set `data-color` yourself to override it. Because
- * the attribute lands on the chip, an ancestor's `data-color` no longer
- * reaches it — colour the chip directly instead.
+ * raised surface by default, filled with `--c-surface-raised` so it follows
+ * the theme. Set `data-color` yourself to override it. Because the attribute
+ * lands on the chip, an ancestor's `data-color` no longer reaches it — colour
+ * the chip directly instead.
  *
  * @slot - The chip's label.
  * @slot prefix - Leading content. Replaces the built-in prefix region, so the
@@ -56,6 +57,11 @@ import {
  * @cssproperty --c-chip-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-chip-spacing-inline - Inline (horizontal) padding. Defaults to `0`.
  * @cssproperty --c-chip-spacing-block - Block (vertical) padding. Defaults to `--c-spacing-sm`.
+ * @cssproperty --c-chip-fill - Background colour. Defaults to
+ *   `--c-surface-raised`. A `variant` fills with its own colour instead.
+ * @cssproperty --c-chip-text - Label colour. Defaults to `--c-text-default`.
+ * @cssproperty --c-chip-border-color - Border colour. Defaults to
+ *   `--c-color-neutral-border-quiet`.
  * @cssproperty --c-chip-shadow - Box shadow. Defaults to `--c-shadow-sm`.
  * @cssproperty --c-chip-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-chip-border-style - Border style. Defaults to `solid`.
