@@ -197,11 +197,11 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         $valueSql = self::valueSql($instances);
 
-        return $query->whereMoneyParam($valueSql, $instances[0]->currency, $value);
+        $query->whereMoneyParam($valueSql, $instances[0]->currency, $value);
     }
 
     public function getDefaultValue(): float|int|null

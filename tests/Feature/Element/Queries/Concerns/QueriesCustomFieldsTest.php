@@ -21,7 +21,7 @@ class TestActiveQueryField extends PlainText
     public static bool $throw = false;
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         self::$activeQueryDuringModify = ElementQuery::$activeQuery;
 
@@ -29,7 +29,7 @@ class TestActiveQueryField extends PlainText
             throw new RuntimeException('Active query failure.');
         }
 
-        return parent::modifyQuery($query, $instances, $value);
+        parent::modifyQuery($query, $instances, $value);
     }
 
     public static function reset(): void
