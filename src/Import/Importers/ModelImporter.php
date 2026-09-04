@@ -7,8 +7,11 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Validator;
 use Override;
@@ -100,9 +103,9 @@ class ModelImporter extends BaseImporter
     #[Override]
     public function transformer(string|null|BaseTransformer $transformer): self
     {
-        if ($transformer === null) {
-            return $this;
-        }
+        //        if ($transformer === null) {
+        //            return $this;
+        //        }
 
         return parent::transformer($transformer);
     }
@@ -110,16 +113,20 @@ class ModelImporter extends BaseImporter
     #[Override]
     public function getDestinationCols(): array
     {
-        $columns = Schema::getColumnListing((new $this->className)->getTable());
+        $columns = Schema::getColumns((new $this->className)->getTable());
 
         return array_map(fn ($col) => [
-            'label' => $col,
-            'handle' => $col,
-            'prefixedHandleForMap' => $col,
-            'prefixedHandleForMatchCriteria' => $col,
-            'prefixedHandle' => $col,
-            'prefixedHandleAsArray' => [$col],
+            'handle' => $col['name'],
+            'label' => $col['name'],
+            'prefixedHandleForMap' => Html::namespaceInputName($col['name'], 'map'),
+            'prefixedHandleForMatchCriteria' => Html::namespaceInputName($col['name'], 'matchCriteria'),
+            'prefixedHandleForClear' => Html::namespaceInputName($col['name'], 'clearableItems'),
+            'prefixedHandle' => $col['name'],
+            'prefixedHandleAsArray' => Arr::bracketsToArray($col['name']),
             'isContainer' => false,
+            //            'canBeMatchCriteria' => $this->isTypeMatchable($col['type']),
+            //            'canBeCleared' => !$col['nullable'],
+            // 'isProperty' => true,
         ], $columns);
     }
 
@@ -157,7 +164,7 @@ class ModelImporter extends BaseImporter
         $model = new $this->className;
 
         // if null then return a brand new model
-        if ($data['matchCriteria'] === null) {
+        if (! isset($data['matchCriteria'])) {
             return $model;
         }
 

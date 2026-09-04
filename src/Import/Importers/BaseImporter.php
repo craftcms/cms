@@ -187,12 +187,12 @@ abstract class BaseImporter
                 'required',
                 'string',
             ],
-            //            'settings.transformer' => [
-            //                'nullable',
-            //                'string',
-            //                'max:255',
-            //                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateTransformer($value, $attribute, $validator),
-            //            ],
+            'settings.transformer' => [
+                'nullable',
+                'string',
+                'max:255',
+                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateTransformer($value, $attribute, $fail, $validator),
+            ],
             'settings.map' => ['array'],
         ];
     }

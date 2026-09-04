@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -113,9 +114,7 @@ class ImportConfigController
         abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
-        if ($importer === null) {
-            $importer = $found;
-        }
+        $importer ??= $found;
 
         return $this->cpScreenResponse($importer);
     }
@@ -166,7 +165,7 @@ class ImportConfigController
         );
     }
 
-    public function editFieldLayoutProvider(?ElementImporter $importer = null, ?string $handle = null): CpScreenResponse
+    public function editFieldLayoutProvider(?ElementImporter $importer = null, ?string $handle = null): CpScreenResponse|RedirectResponse
     {
         $handle ??= $importer->handle ?? $this->request->input('handle');
 
@@ -174,10 +173,12 @@ class ImportConfigController
         abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
-        if ($importer === null) {
-            /** @var ElementImporter $importer */
-            $importer = $found;
+        // if it's not an element import, redirect to the config edit page
+        if (! $found->isElementImport()) {
+            return redirect()->action([self::class, 'edit'], ['handle' => $handle]);
         }
+
+        $importer ??= $found;
 
         $currentUser = $this->request->craftUser();
 
@@ -258,9 +259,7 @@ class ImportConfigController
         abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
-        if ($importer === null) {
-            $importer = $found;
-        }
+        $importer ??= $found;
 
         $currentUser = $this->request->craftUser();
 
@@ -642,6 +641,13 @@ class ImportConfigController
                     if ($importer?->isElementImport()) {
                         $response->addAltAction(t('Save and configure field layout provider'), [
                             'redirect' => 'import/configs/{handle}/field-layout-provider',
+                            'shortcut' => true,
+                            'retainScroll' => false,
+                        ]);
+                    }
+                    if ($importer?->isElementImport() === false) {
+                        $response->addAltAction(t('Save and configure mapping'), [
+                            'redirect' => 'import/configs/{handle}/map',
                             'shortcut' => true,
                             'retainScroll' => false,
                         ]);
