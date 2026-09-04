@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
-  import ElementSources from '@/modules/elements/ElementSources.vue';
+  import SecondaryNav from '@/common/components/SecondaryNav.vue';
+  import {useElementSourceActions} from '@/modules/elements/composables/useElementSourceActions';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
@@ -47,6 +47,16 @@
     onActionPerformed,
   } = page;
 
+  // The sources describe themselves, so `SecondaryNav` can draw them as a list
+  // and as the menu it collapses into without either rendering going its own
+  // way. The selector modal builds the same descriptors.
+  const {actions: sourceActions} = useElementSourceActions({
+    sources: () => elementIndex.value.sources,
+    route: () => props.route,
+    activeSource: () => elementIndex.value.source?.key,
+    viewMode: () => (viewState.mode !== 'table' ? viewState.mode : null),
+  });
+
   const customizeSourcesActive = ref(false);
 </script>
 
@@ -57,27 +67,17 @@
   </LayoutSlot>
 
   <LayoutSlot name="sidebar">
-    <nav :aria-label="t('Secondary')">
-      <ElementSources
-        :sources="elementIndex.sources"
-        :route="route"
-        :active-source="elementIndex.source?.key"
-        :view-mode="viewState.mode !== 'table' ? viewState.mode : null"
-      />
-    </nav>
+    <SecondaryNav
+      :items="sourceActions"
+      :actions="[
+        {
+          label: t('Customize sources'),
+          onClick: () => (customizeSourcesActive = true),
+        },
+      ]"
+    />
 
     <slot name="sidebar-after" :element-index="elementIndex" />
-
-    <div class="mt-4">
-      <ActionMenu
-        :actions="[
-          {
-            label: t('Customize sources'),
-            onClick: () => (customizeSourcesActive = true),
-          },
-        ]"
-      />
-    </div>
   </LayoutSlot>
 
   <craft-pane padding="none">

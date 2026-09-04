@@ -98,6 +98,14 @@ export interface ActionItemDisplay {
 export interface ActionItemButton {
   type?: 'button';
   label: string;
+  /** A dot beside the label, for a nav entry with a badge count. */
+  indicator?: boolean;
+  /**
+   * Extra attributes for the rendered element — drag-and-drop drop-target
+   * hooks, say. Undefined values are dropped rather than rendered empty.
+   */
+  attrs?: Record<string, string | undefined>;
+  onMousedown?: (event: Event) => void;
   /**
    * Marks this as the one currently in effect, for a list that's a choice
    * rather than a set of commands — a source switcher, say. When any item in a
@@ -121,6 +129,14 @@ export interface ActionItemLink {
   href: string;
   label: string;
   icon?: string;
+  /** A dot beside the label, for a nav entry with a badge count. */
+  indicator?: boolean;
+  /**
+   * Extra attributes for the rendered element — drag-and-drop drop-target
+   * hooks, say. Undefined values are dropped rather than rendered empty.
+   */
+  attrs?: Record<string, string | undefined>;
+  onMousedown?: (event: Event) => void;
   /**
    * Leaves the page rather than making an Inertia visit. For links out of the
    * CP, and for the handful of places still handing off to the legacy stack.

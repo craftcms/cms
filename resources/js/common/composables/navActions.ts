@@ -38,6 +38,7 @@ export function navItemAction(
     label: item.label ?? '',
     selected: item.selected,
     ...(item.icon ? {icon: item.icon} : {}),
+    ...(item.badgeCount > 0 ? {indicator: true} : {}),
   };
 
   // Not everything in a nav is a destination — a heading isn't, and neither is

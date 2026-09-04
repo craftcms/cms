@@ -52,6 +52,7 @@
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from './types';
   import CpTopBar from '@/common/components/CpTopBar.vue';
   import type {BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
+  import {navItemActions} from '@/common/composables/navActions';
   import {withSubnavCrumbs} from '@/common/composables/subnavCrumbs';
 
   /** Resize bounds for the details column, in px — 12rem to 30rem. */
@@ -292,7 +293,10 @@
                       <!-- The subnav-actions outlet lives inside this
                         fallback, so a page must not teleport `sidebar` and
                         `subnav-actions` at the same time. -->
-                      <SecondaryNav :items="subnav" :actions="subnavActions">
+                      <SecondaryNav
+                        :items="navItemActions(subnav)"
+                        :actions="subnavActions"
+                      >
                         <template #actions>
                           <LayoutSlotOutlet name="subnav-actions">
                             <slot name="subnav-actions"></slot>

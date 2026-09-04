@@ -1,6 +1,7 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import type {ActionItems} from '@/common/types';
+import {navItemActions} from '@/common/composables/navActions';
 import SecondaryNav from './SecondaryNav.vue';
 
 const realMatchMedia = window.matchMedia;
@@ -48,11 +49,14 @@ function navItem(config: Partial<NavItem> & {label: string}): NavItem {
   } as NavItem;
 }
 
+/** Mapped the way `PageScreen` maps the `subnav` page prop. */
 function mountWith(items: Array<NavItem>): HTMLElement {
   const container = document.createElement('div');
   document.body.append(container);
 
-  const app = createApp({render: () => h(SecondaryNav, {items})});
+  const app = createApp({
+    render: () => h(SecondaryNav, {items: navItemActions(items)}),
+  });
   app.mount(container);
 
   teardown = () => {
@@ -162,7 +166,9 @@ describe('SecondaryNav', () => {
     const app = createApp({
       render: () =>
         h(SecondaryNav, {
-          items: [navItem({label: 'Deprecation Warnings', selected: true})],
+          items: navItemActions([
+            navItem({label: 'Deprecation Warnings', selected: true}),
+          ]),
           actions: ACTIONS,
         }),
     });

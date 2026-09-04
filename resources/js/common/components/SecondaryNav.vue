@@ -4,11 +4,20 @@
   import {useMediaQuery} from '@vueuse/core';
   import CpLink from '@/common/components/CpLink.vue';
   import ActionList from '@/common/components/ActionList.vue';
-  import {navItemActions} from '@/common/composables/navActions';
+  import NavEntry from '@/common/components/NavEntry.vue';
   import type {ActionItems} from '@/common/types';
 
   const {items = [], actions = []} = defineProps<{
-    items?: Array<CraftCms.Cms.Cp.Data.NavItem>;
+    /**
+     * The nav itself, described rather than drawn.
+     *
+     * The same array renders twice — as a list while there's room for one,
+     * and as the menu this collapses into below the large breakpoint — so
+     * the two can't say different things. Callers with a `NavItem[]` map it
+     * with `navItemActions()`; the element indexes describe their sources
+     * directly, since selecting one is a partial visit rather than a link.
+     */
+    items?: ActionItems;
     /**
      * Controls belonging to the nav, described rather than slotted. They render
      * as buttons under the expanded nav and as items at the end of the action
@@ -39,7 +48,7 @@
    * reads the same as the list it stands in for.
    */
   const menuItems = computed<ActionItems>(() => [
-    ...navItemActions(items),
+    ...items,
     ...(actions.length > 0 ? [{type: 'hr'} as const, ...actions] : []),
   ]);
   const navState = ref<'hidden' | 'floating' | 'visible'>('hidden');
@@ -120,48 +129,36 @@ Nav states:
     <slot>
       <craft-nav-list v-if="items.length">
         <template v-for="(item, index) in items" :key="index">
-          <template v-if="item.subnav">
+          <!-- A group heads its children rather than being somewhere to go. -->
+          <template v-if="item.type === 'group'">
             <craft-nav-item
+              v-if="item.heading"
               initial-state="open"
               block
               flush
-              :group="item.group"
+              group
             >
-              <span class="text-xs font-bold">{{ item.label }}</span>
-
+              <span class="text-xs font-bold">{{ item.heading }}</span>
               <craft-nav-list slot="subnav">
-                <CpLink
-                  v-for="(subitem, subindex) in item.subnav"
-                  :key="subindex"
-                  as="craft-nav-item"
-                  :active.prop="subitem.selected"
-                  :href="subitem.href ?? ''"
-                  :inertia="!subitem.external"
-                  :icon="subitem.icon ?? undefined"
-                  :indicator.prop="subitem.badgeCount > 0"
-                  flush
-                  block
-                >
-                  {{ subitem.label }}
-                </CpLink>
+                <NavEntry
+                  v-for="(child, childIndex) in item.items"
+                  :key="childIndex"
+                  :item="child"
+                />
               </craft-nav-list>
             </craft-nav-item>
+            <NavEntry
+              v-else
+              v-for="(child, childIndex) in item.items"
+              :key="`${index}-${childIndex}`"
+              :item="child"
+            />
           </template>
 
-          <template v-else>
-            <CpLink
-              as="craft-nav-item"
-              :active.prop="item.selected"
-              :href="item.href ?? ''"
-              :inertia="!item.external"
-              :icon="item.icon ?? undefined"
-              :indicator.prop="item.badgeCount > 0"
-              flush
-              block
-            >
-              {{ item.label }}
-            </CpLink>
-          </template>
+          <NavEntry
+            v-else-if="item.type !== 'hr' && item.type !== 'display'"
+            :item="item"
+          />
         </template>
       </craft-nav-list>
     </slot>
