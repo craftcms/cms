@@ -65,26 +65,23 @@ export const navFixture: Array<NavNode> = [
     'Content',
     '/admin/content',
     [
-      branch(
-        'Entries',
-        '/admin/content/entries',
-        [
-          leaf('All Entries', '/admin/content/entries'),
-          group('Channels', [
-            leaf('Blog', '/admin/content/entries/blog'),
-            leaf('CMS-15980', '/admin/content/entries/cms-15980'),
-            leaf('Github Issues', '/admin/content/entries/github-issues'),
-          ]),
-          group('Structures', [
-            leaf('Structure', '/admin/content/entries/structure'),
-          ]),
-          group('Heading', [leaf('Alerts', '/admin/content/entries/alerts')]),
-          leaf('Singles', '/admin/content/entries/singles'),
-          leaf('CKEditor', '/admin/content/entries/ckeditor'),
-          leaf('Issues', '/admin/content/entries/issues'),
-        ],
-        {selected: true}
-      ),
+      branch('Entries', '/admin/content/entries', [
+        leaf('All Entries', '/admin/content/entries'),
+        group('Channels', [
+          // The deepest selection the tree can hold, so the trail it
+          // produces is `Content › Entries › Channels › Blog`.
+          node('Blog', {href: '/admin/content/entries/blog', selected: true}),
+          leaf('CMS-15980', '/admin/content/entries/cms-15980'),
+          leaf('Github Issues', '/admin/content/entries/github-issues'),
+        ]),
+        group('Structures', [
+          leaf('Structure', '/admin/content/entries/structure'),
+        ]),
+        group('Heading', [leaf('Alerts', '/admin/content/entries/alerts')]),
+        leaf('Singles', '/admin/content/entries/singles'),
+        leaf('CKEditor', '/admin/content/entries/ckeditor'),
+        leaf('Issues', '/admin/content/entries/issues'),
+      ]),
       leaf('Globals', '/admin/content/globals'),
       leaf('Categories', '/admin/content/categories'),
       branch('Assets', '/admin/assets', [
@@ -176,3 +173,17 @@ export const navFixture: Array<NavNode> = [
 
   node('Plugin Store', {href: '/admin/plugin-store', icon: 'plug'}),
 ];
+
+/**
+ * The fixture with the selection moved, for comparing one trail against
+ * another. Deep-copies rather than mutating, so stories stay independent.
+ */
+export function selectFixtureItem(label: string): Array<NavNode> {
+  const select = (item: NavNode): NavNode => ({
+    ...item,
+    selected: item.label === label,
+    subnav: Array.isArray(item.subnav) ? item.subnav.map(select) : item.subnav,
+  });
+
+  return navFixture.map(select);
+}

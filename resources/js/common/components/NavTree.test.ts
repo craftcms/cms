@@ -2,7 +2,7 @@ import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {createApp, nextTick} from 'vue';
 
 import NavTree from './NavTree.vue';
-import {navFixture} from './NavTree.fixture';
+import {navFixture, selectFixtureItem} from './NavTree.fixture';
 
 let container: HTMLElement;
 let app: ReturnType<typeof createApp> | null = null;
@@ -38,37 +38,65 @@ function item(label: string): Element | undefined {
   );
 }
 
+const display = (label: string) => item(label)?.getAttribute('subnav-display');
+
 it('renders every level of the tree, not just the two the nav had', async () => {
   await mount();
 
-  // Content (0) > Entries (1) > Channels (2, a group) > Blog.
+  // Content > Entries > Channels (a group) > Blog.
   expect(item('Content')).toBeTruthy();
   expect(item('Entries')).toBeTruthy();
   expect(item('Channels')).toBeTruthy();
   expect(item('Blog')).toBeTruthy();
 });
 
-it('flyouts from the configured depth and no earlier', async () => {
-  await mount({flyoutFromDepth: 1});
+it('expands the trail to the selection and flyouts everything else', async () => {
+  // The fixture selects `Blog`, so the trail is Content > Entries > Channels.
+  await mount();
 
-  // The root indents in place; the level below it opens beside the item.
-  expect(item('Content')?.getAttribute('subnav-display')).toBe('inline');
-  expect(item('Entries')?.getAttribute('subnav-display')).toBe('flyout');
+  expect(display('Content')).toBe('inline');
+  expect(display('Entries')).toBe('inline');
+  expect(item('Content')?.getAttribute('initial-state')).toBe('open');
+  expect(item('Entries')?.getAttribute('initial-state')).toBe('open');
+
+  // Off the trail, at the root and one level down.
+  expect(display('Administration')).toBe('flyout');
+  expect(display('Settings')).toBe('flyout');
+  expect(display('Assets')).toBe('flyout');
 });
 
-it('never flyouts a group, and never counts one as a level', async () => {
-  // Depths here: Content 0, Entries 1, Channels 2, Blog 2 — Blog shares its
-  // group's depth rather than sitting a level below it. Threshold 3 is what
-  // makes that visible: if a group advanced the depth, Blog would be at 3 and
-  // would flyout.
-  await mount({flyoutFromDepth: 3});
+it('moves the expansion when the selection moves', async () => {
+  await mount({items: selectFixtureItem('Utilities')});
+
+  // `Utilities` sits under `Administration`, so that branch opens up...
+  expect(display('Administration')).toBe('inline');
+  // ...and the one that was expanded closes back into a flyout.
+  expect(display('Content')).toBe('flyout');
+  expect(display('Entries')).toBe('flyout');
+});
+
+it('never flyouts a group, wherever the group itself landed', async () => {
+  // Off the trail entirely, so `Channels` is inside a flyout here — and a
+  // flyout within a flyout is not a thing. It renders inline inside it.
+  await mount({items: selectFixtureItem('Utilities')});
 
   const channels = item('Channels');
 
-  // A group is a heading inside its parent's flyout, not a flyout of its own.
-  expect(channels?.getAttribute('subnav-display')).toBe('inline');
   expect(channels?.hasAttribute('group')).toBe(true);
-  expect(item('Blog')?.getAttribute('subnav-display')).toBe('inline');
+  expect(channels?.getAttribute('subnav-display')).toBe('inline');
+});
+
+it('forces one mode or the other when asked', async () => {
+  await mount({mode: 'flyout'});
+  // On the trail, but `flyout` overrides that.
+  expect(display('Entries')).toBe('flyout');
+
+  app?.unmount();
+  container.replaceChildren();
+
+  await mount({mode: 'inline'});
+  // Off the trail, but `inline` overrides that.
+  expect(display('Settings')).toBe('inline');
 });
 
 it('renders a destination-less branch as a static item', async () => {

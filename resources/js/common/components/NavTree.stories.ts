@@ -1,7 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 
 import NavTree from './NavTree.vue';
-import {navFixture} from './NavTree.fixture';
+import {navFixture, selectFixtureItem} from './NavTree.fixture';
 
 /**
  * PROTOTYPE. The deep, flyout-capable CP navigation, driven by a fixture.
@@ -11,18 +11,16 @@ import {navFixture} from './NavTree.fixture';
  * never enter the nav at all — so these stories exist to settle the
  * interaction before the navigation map's shape is committed to.
  *
- * The question they're here to answer: at what depth does an indented nav stop
- * working, and does a hover flyout actually carry four levels?
+ * `Trail` is the proposed behaviour. `AllFlyouts` and `AllInline` are the two
+ * halves it's built from, kept so they can be compared against it.
  */
 const meta: Meta<typeof NavTree> = {
   title: 'CP/NavTree',
   component: NavTree,
   argTypes: {
-    flyoutFromDepth: {
-      control: {type: 'range', min: 0, max: 3, step: 1},
-      description:
-        'The first depth whose children move into a flyout. 0 flyouts from ' +
-        'the top level; 3 never flyouts within this fixture.',
+    mode: {
+      control: 'inline-radio',
+      options: ['trail', 'flyout', 'inline'],
     },
     iconOnly: {
       control: 'boolean',
@@ -31,7 +29,7 @@ const meta: Meta<typeof NavTree> = {
   },
   args: {
     items: navFixture,
-    flyoutFromDepth: 1,
+    mode: 'trail',
     iconOnly: false,
   },
 };
@@ -59,37 +57,45 @@ const render = (args: Record<string, unknown>) => ({
 });
 
 /**
- * The proposed default: the top level indents in place behind a disclosure
- * toggle, and everything below it opens in a flyout.
- *
- * Hover `Content` → `Entries` to reach the source list, where `Channels`,
- * `Structures` and `Heading` render as `group` headings inside the flyout
- * rather than opening flyouts of their own.
+ * The proposed behaviour: you're on `Blog`, so `Content › Entries › Channels`
+ * is expanded down the sidebar and your place in it is visible without
+ * hovering anything. Every other branch — `Administration`, `Commerce`,
+ * `Settings` — flyouts on hover, so getting anywhere else is one gesture and
+ * doesn't disturb the column.
  */
-export const FlyoutBelowTheFirstLevel: Story = {render};
+export const Trail: Story = {render};
 
 /**
- * Every level flyouts, including the root. The sidebar stays one list tall,
- * but reaching a source is three hovers deep.
+ * The same tree with nothing selected, which is what a flyout-only nav looks
+ * like. Nothing is expanded, so the sidebar stays one list tall and reaching a
+ * source is three hovers deep.
  */
-export const FlyoutFromTheRoot: Story = {
+export const AllFlyouts: Story = {
   render,
-  args: {flyoutFromDepth: 0},
+  args: {mode: 'flyout'},
 };
 
 /**
- * Nothing flyouts: four levels of indentation in a 220px column, which is the
- * thing worth looking at before committing to it. Expand `Content` → `Entries`
- * and watch the labels run out of room.
+ * Nothing flyouts: every branch indents, which is four levels in a 220px
+ * column. The reason `trail` expands one branch rather than all of them.
  */
-export const FullyIndented: Story = {
+export const AllInline: Story = {
   render,
-  args: {flyoutFromDepth: 4},
+  args: {mode: 'inline'},
 };
 
 /**
- * Collapsed to a rail. `icon-only` forces a flyout regardless of
- * `flyoutFromDepth`, since there's no room to indent to.
+ * The selection somewhere shallower — `Utilities`, under `Administration`.
+ * Only that branch expands; `Content` closes back up into a flyout.
+ */
+export const TrailToAnotherBranch: Story = {
+  render,
+  args: {items: selectFixtureItem('Utilities')},
+};
+
+/**
+ * Collapsed to a rail. `icon-only` forces a flyout regardless of `mode`, since
+ * there's no room to indent to.
  */
 export const CollapsedRail: Story = {
   render,
