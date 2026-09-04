@@ -6,6 +6,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
@@ -106,4 +107,14 @@ it('builds visibility condition controls at the expected paths', function () {
         ['settings', 'userCondition'],
         ['settings', 'elementCondition'],
     ]);
+});
+
+it('marks the hide-label action as reactive independently of the label', function () {
+    $context = settingsContext();
+    $component = attachedTo(new EntryTitleField(['uid' => 'title-field']));
+    $payload = app(FormResolver::class)->resolve($component->settingsForm($context), $context);
+    $label = $payload->nodes[0];
+
+    expect($label->control->reactive)->toBeTrue()
+        ->and($label->children[0]->control->reactive)->toBeTrue();
 });

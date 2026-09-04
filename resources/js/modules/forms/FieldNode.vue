@@ -83,6 +83,9 @@
     )
   );
   const value = computed(() => valueAt(props.values, control.value.path));
+  const refreshable = computed(
+    () => props.refreshable && Boolean(control.value.reactive)
+  );
 
   // Matched on the delta group, so a field split across several controls badges
   // as one unit.
@@ -98,7 +101,7 @@
       kind,
       path: control.value.path,
       scope: props.scope,
-      refreshable: props.refreshable,
+      refreshable: refreshable.value,
     });
   }
 
@@ -151,7 +154,7 @@
         :errors="errors"
         :touched-paths="touchedPaths"
         :scope="scope"
-        :refreshable="refreshable"
+        :refreshable="props.refreshable"
         @change="onChange"
       />
     </div>

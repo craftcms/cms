@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
   import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
-  import type {FormControlPayload} from './types';
+  import type {FormChangeKind, FormControlPayload} from './types';
   import {inputName, serverErrorValidators} from './runtime';
 
   type ComboboxControlProps = {
@@ -24,11 +24,21 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind: 'typing'): void;
+    (event: 'update:value', value: string, kind: FormChangeKind): void;
   }>();
 
-  function onValueChanged(value: string | number | boolean | undefined): void {
-    emit('update:value', String(value ?? ''), 'typing');
+  function onModelValueChanged(event: CustomEvent): void {
+    if (event.detail?.initialize) {
+      return;
+    }
+
+    const value = (event.target as HTMLElement & {modelValue?: unknown})
+      .modelValue;
+    emit(
+      'update:value',
+      String(value ?? ''),
+      event.detail?.changeSource === 'input' ? 'typing' : 'discrete'
+    );
   }
 </script>
 
@@ -48,6 +58,6 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :validators="serverErrorValidators(invalid)"
-    @update:model-value="onValueChanged"
+    @model-value-changed="onModelValueChanged"
   />
 </template>
