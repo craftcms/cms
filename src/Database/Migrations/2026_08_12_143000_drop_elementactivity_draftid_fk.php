@@ -21,7 +21,12 @@ return new class extends Migration
             return;
         }
 
-        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->dropForeign($foreignKey['name']));
+        Schema::table(Table::ELEMENTACTIVITY, function (Blueprint $table) use ($foreignKey) {
+            // SQLite rebuilds the table to drop a foreign key, and matches it by column rather than by name
+            $table->dropForeign(
+                Schema::getConnection()->isSqlite() ? $foreignKey['columns'] : $foreignKey['name'],
+            );
+        });
     }
 
     /**

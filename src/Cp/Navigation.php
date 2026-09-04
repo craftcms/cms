@@ -10,7 +10,10 @@ use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
@@ -33,6 +36,7 @@ readonly class Navigation
         private Utilities $utilities,
         private GeneralConfig $generalConfig,
         private ElementSources $elementSources,
+        private Entries $entries,
     ) {}
 
     /** @return NavItem[] */
@@ -53,6 +57,7 @@ readonly class Navigation
 
             if ($entryPages->isNotEmpty()) {
                 $entryPageSettings = $this->elementSources->getPageSettings(Entry::class);
+                $singleUrls = $this->singleEntryPageUrls($entryPages);
 
                 $navItems = $navItems->merge(
                     $entryPages->map(fn (string $page) => new NavItem()
@@ -61,7 +66,7 @@ readonly class Navigation
                             fn (NavItem $item) => $item->label(t('Entries')),
                             fn (NavItem $item) => $item->label(t($page, category: 'site')),
                         )
-                        ->url(sprintf('content/%s', Str::slug($page)))
+                        ->url($singleUrls[$page] ?? sprintf('content/%s', Str::slug($page)))
                         ->icon($entryPageSettings[$page]['icon'] ?? 'newspaper')
                     )
                 );
@@ -203,6 +208,69 @@ readonly class Navigation
 
             return $item;
         })->all();
+    }
+
+    /**
+     * The entry pages that hold nothing but a single Single, mapped to that
+     * entry's edit URL.
+     *
+     * Such a page's index would list the one entry the person was going to open
+     * anyway, so its nav item skips it. A Single that hasn't been created yet is
+     * left out, and its page keeps its index.
+     *
+     * @param  Collection<int,string>  $pages
+     * @return array<string,string>
+     */
+    private function singleEntryPageUrls(Collection $pages): array
+    {
+        $handles = [];
+
+        foreach ($pages as $page) {
+            $section = $this->pageSingleSection($page);
+
+            if ($section !== null) {
+                $handles[$page] = $section->handle;
+            }
+        }
+
+        if ($handles === []) {
+            return [];
+        }
+
+        // One query for the lot, rather than one per page.
+        $entries = $this->entries->getSingleEntriesByHandle(array_values($handles));
+
+        return collect($handles)
+            ->map(fn (string $handle) => ($entries[$handle] ?? null)?->getCpEditUrl())
+            ->filter()
+            ->all();
+    }
+
+    /**
+     * The Single section a page consists of, if that's all it holds.
+     */
+    private function pageSingleSection(string $page): ?Section
+    {
+        $sources = $this->elementSources
+            ->getSources(Entry::class, page: $page)
+            ->reject(fn (array $source) => $source['type'] === ElementSources::TYPE_HEADING);
+
+        if ($sources->count() !== 1) {
+            return null;
+        }
+
+        $source = $sources->first();
+
+        if (
+            ($source['type'] ?? null) !== ElementSources::TYPE_NATIVE ||
+            ! preg_match('/^section:(.+)$/', (string) ($source['key'] ?? ''), $matches)
+        ) {
+            return null;
+        }
+
+        $section = Sections::getSectionByUid($matches[1]);
+
+        return $section?->type === SectionType::Single ? $section : null;
     }
 
     private function navItemPath(string $url): string

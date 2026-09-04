@@ -2,6 +2,7 @@
   import {ref} from 'vue';
   import {t} from '@craftcms/ui';
   import type {ActionItem} from '@/common/types';
+  import type {DragData} from '@/common/composables/useReorderableItems';
   import CustomSourceList from './CustomSourceList.vue';
   import PageSettingsModal from './PageSettingsModal.vue';
   import {pageNameId, type PageRow} from './types';
@@ -17,6 +18,7 @@
     (e: 'add', name: string, icon: string | null): void;
     (e: 'update', page: PageRow, name: string, icon: string | null): void;
     (e: 'remove', page: PageRow): void;
+    (e: 'promote', key: string, index: number): void;
   }>();
 
   const editing = ref<PageRow | null>(null);
@@ -59,6 +61,21 @@
     return clash ? t('Another page already has that name.') : null;
   }
 
+  /**
+   * A source dragged in here becomes a page of its own, beside the pages it's
+   * dropped between — not a source *on* one of them, which is what the source's
+   * own “Move to …” actions do.
+   */
+  function canDropForeign(data: DragData): boolean {
+    return typeof data.sourceKey === 'string';
+  }
+
+  function onForeignDrop(data: DragData, index: number): void {
+    if (typeof data.sourceKey !== 'string') return;
+
+    emit('promote', data.sourceKey, index);
+  }
+
   function actions(page: PageRow): ActionItem[] {
     return [
       {label: t('Settings'), onClick: () => open(page)},
@@ -85,8 +102,10 @@
       :icon="icon"
       :selected="selected"
       :actions="actions"
+      :can-drop-foreign="canDropForeign"
       @select="(name) => emit('select', name)"
       @reorder="(from, to) => emit('reorder', from, to)"
+      @foreign-drop="onForeignDrop"
     />
 
     <div>

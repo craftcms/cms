@@ -244,11 +244,39 @@
 
   function moveToPage(key: string, page: string): void {
     const source = sources.value.find((row) => row.key === key);
-    if (!source) return;
+    if (!source || source.page === page) return;
 
     source.page = page;
     // The source is no longer on the page being viewed.
     if (selectedKey.value === key) void select(initialSource());
+  }
+
+  /**
+   * Gives a source a page of its own, at `index` among the pages — what
+   * dragging it into the pages sidebar means.
+   *
+   * The page takes the source's name. If one by that name is already there the
+   * source just moves onto it, since two pages can't share a name.
+   */
+  function promoteToPage(key: string, index: number): void {
+    const source = sources.value.find((row) => row.key === key);
+    if (!source) return;
+
+    const name = source.label.trim();
+    // A source with no name yet has nothing to name a page after.
+    if (!name) return;
+
+    const existing = pages.value.find(
+      (page) => pageNameId(page.name) === pageNameId(name)
+    );
+
+    if (!existing) {
+      pages.value.splice(index, 0, {name, icon: null});
+    }
+
+    source.page = existing?.name ?? name;
+    selectedPage.value = source.page;
+    void select(key);
   }
 
   function reorderPages(from: number, to: number): void {
@@ -409,6 +437,7 @@
           @add="addPage"
           @update="updatePage"
           @remove="removePage"
+          @promote="promoteToPage"
         />
       </div>
 

@@ -105,14 +105,14 @@ it('scopes the list to the selected section source', function () {
         );
 });
 
-it('scopes the Singles source to single sections only', function () {
+it('scopes the legacy singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);
     $channel = Section::factory()->create(['type' => SectionType::Channel]);
 
     EntryModel::factory()->forSection($single)->create();
     EntryModel::factory()->forSection($channel)->count(3)->create();
 
-    // The Singles source must not spill the channel's entries into the list.
+    // The legacy singles alias must not spill the channel's entries into the list.
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
         'source' => 'singles',
         'viewMode' => 'cards',
@@ -268,13 +268,35 @@ it('selects the source for a section-handle URL', function () {
         );
 });
 
-it('selects the singles source for the singles handle', function () {
-    Section::factory()->create(['type' => SectionType::Single]);
+it('selects the source for a single’s own section-handle URL', function () {
+    $section = Section::factory()->create([
+        'type' => SectionType::Single,
+        'handle' => 'homePage',
+    ]);
 
-    get("/{$this->cpTrigger}/content/entries/singles")
+    get("/{$this->cpTrigger}/content/entries/homePage")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.key', "section:{$section->uid}")
+        );
+});
+
+it('still resolves the legacy singles URL, listing every single', function () {
+    $home = Section::factory()->create(['type' => SectionType::Single]);
+    $about = Section::factory()->create(['type' => SectionType::Single]);
+    $channel = Section::factory()->create(['type' => SectionType::Channel]);
+
+    EntryModel::factory()->forSection($home)->create();
+    EntryModel::factory()->forSection($about)->create();
+    EntryModel::factory()->forSection($channel)->count(3)->create();
+
+    // `singles` is no longer a real source, but the URL stays bookmarkable as
+    // an index over every Single section.
+    get("/{$this->cpTrigger}/content/entries/singles?".http_build_query(['viewMode' => 'cards']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('source.key', 'singles')
+            ->where('pagination.total', 2)
         );
 });
 

@@ -153,9 +153,10 @@ it('returns fully normalized source customization data', function () {
             ->where('pageSettings.entries.label', 'Entries')
             ->where('sources.0.type', ElementSources::TYPE_HEADING)
             ->where('sources.0.page', 'Test Elements')
-            // ElementSources synthesizes a keyless blank heading as a
-            // separator; it's regenerated on every read and isn't saveable.
-            ->where('sources.0.form', null)
+            // The stored heading has no key of its own, so it's given one —
+            // without it the modal couldn't rename it or post it back.
+            ->where('sources.0.key', fn (string $key) => str_starts_with($key, 'heading:'))
+            ->where('sources.0.form.scope.0', 'sources')
             ->where('sources.1.page', 'Test Elements')
             ->where('sources.1.form.scope', ['sources', 'structured'])
             // Everything the modal used to build its fields client-side now
@@ -466,6 +467,49 @@ it('preserves blank heading values when storing and returning source settings', 
         ->assertOk()
         ->assertJsonPath('sources.0.type', ElementSources::TYPE_HEADING)
         ->assertJsonPath('sources.0.heading', '');
+});
+
+it('keeps a keyless heading through a save', function () {
+    $projectConfig = app(ProjectConfig::class);
+
+    // An element type's own group headings are defined without keys, as are
+    // headings stored before the modal started keying them.
+    $sources = postJson(action([ElementSourcesController::class, 'show']), [
+        'elementType' => TestElementSourcesElement::class,
+    ])
+        ->assertOk()
+        ->json('sources');
+
+    $headingKey = $sources[0]['key'];
+
+    expect($headingKey)->toStartWith('heading:');
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceOrder' => array_column($sources, 'key'),
+        'sourcePages' => array_column($sources, 'page', 'key'),
+        'pageSettings' => ['Test Elements' => ['label' => 'Test Elements']],
+        'sources' => [
+            $headingKey => ['heading' => 'Primary Sources'],
+        ],
+    ])->assertOk();
+
+    expect($projectConfig->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class))[0])
+        ->toMatchArray([
+            'type' => ElementSources::TYPE_HEADING,
+            'key' => $headingKey,
+            'heading' => 'Primary Sources',
+        ]);
+
+    // Now that it's stored, the key is stable across reads. (A real request
+    // would resolve ElementSources fresh; the test shares one scope.)
+    app()->forgetScopedInstances();
+
+    postJson(action([ElementSourcesController::class, 'show']), [
+        'elementType' => TestElementSourcesElement::class,
+    ])
+        ->assertOk()
+        ->assertJsonPath('sources.0.key', $headingKey);
 });
 
 it('stores single-page source settings without page reordering', function () {
