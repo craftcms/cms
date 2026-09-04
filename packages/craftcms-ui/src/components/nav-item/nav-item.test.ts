@@ -3,6 +3,7 @@ import type CraftPopover from '../popover/popover.js';
 import CraftNavItem from './nav-item.js';
 import './nav-item.js';
 import '../nav-list/nav-list.js';
+import {flyoutHoverIntent} from '@src/utilities/hover-intent.js';
 
 /**
  * Builds a nav item, optionally with a subnav, and waits for the first render
@@ -54,9 +55,25 @@ async function hover(item: CraftNavItem, type: string) {
   await new Promise((resolve) => setTimeout(resolve));
 }
 
+/**
+ * The group is shared across every item, so each test starts from cold. The
+ * warm-up is off by default here — the tests that care about it turn it back
+ * on — so the rest can assert on hover without waiting one out.
+ */
 beforeEach(() => {
   document.body.innerHTML = '';
+  flyoutHoverIntent.reset();
+  flyoutHoverIntent.options = {
+    warmUpDelay: 0,
+    closeDelay: 30,
+    coolDownDelay: 1000,
+  };
 });
+
+const afterCloseDelay = () =>
+  new Promise((resolve) =>
+    setTimeout(resolve, flyoutHoverIntent.options.closeDelay + 30)
+  );
 
 describe('craft-nav-item flyout', () => {
   it('moves the subnav into a flyout when collapsed to an icon', async () => {
@@ -118,9 +135,7 @@ describe('craft-nav-item flyout', () => {
     // Still open: the pointer needs time to travel into the flyout.
     expect(item.flyoutOpen).toBe(true);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, CraftNavItem.flyoutCloseDelay + 50)
-    );
+    await afterCloseDelay();
     await item.updateComplete;
 
     expect(item.flyoutOpen).toBe(false);
@@ -133,9 +148,7 @@ describe('craft-nav-item flyout', () => {
     item.dispatchEvent(new MouseEvent('mouseleave'));
     await hover(item, 'mouseenter');
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, CraftNavItem.flyoutCloseDelay + 50)
-    );
+    await afterCloseDelay();
 
     expect(item.flyoutOpen).toBe(true);
   });
@@ -186,7 +199,7 @@ describe('craft-nav-item flyout', () => {
     ]);
   });
 
-  it('renders a labelled item\'s subnav in a flyout on request', async () => {
+  it("renders a labelled item's subnav in a flyout on request", async () => {
     const item = await createFixture({iconOnly: false});
     item.subnavDisplay = 'flyout';
     await item.updateComplete;
@@ -213,6 +226,89 @@ describe('craft-nav-item flyout', () => {
     item.active = false;
     await item.updateComplete;
     expect(item.subnavState).toBe('closed');
+  });
+
+  it('closes a sibling flyout the moment another one opens', async () => {
+    const first = await createFixture();
+    const second = await createFixture();
+
+    await hover(first, 'mouseenter');
+    expect(first.flyoutOpen).toBe(true);
+
+    // Sweeping down a list: the pointer leaves one item and lands on the next.
+    first.dispatchEvent(new MouseEvent('mouseleave'));
+    await hover(second, 'mouseenter');
+
+    // Without the handover the first would linger for its whole close delay
+    // and the two would overlap.
+    expect(first.flyoutOpen).toBe(false);
+    expect(second.flyoutOpen).toBe(true);
+  });
+
+  it('keeps a parent open when the pointer moves into its flyout', async () => {
+    const parent = await createFixture();
+    const child = parent.querySelector('craft-nav-item') as CraftNavItem;
+
+    await hover(parent, 'mouseenter');
+    // The child's trigger is a descendant of the parent's, so reaching it
+    // means travelling through the parent's flyout. Closing "everything else"
+    // here would take the flyout out from under the pointer.
+    await hover(child, 'mouseenter');
+
+    expect(parent.flyoutOpen).toBe(true);
+  });
+
+  it('makes the first flyout wait, then opens the rest immediately', async () => {
+    flyoutHoverIntent.options.warmUpDelay = 40;
+
+    const first = await createFixture();
+    const second = await createFixture();
+
+    await hover(first, 'mouseenter');
+    // Cold: brushing past something shouldn't flash it open.
+    expect(first.flyoutOpen).toBe(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    await first.updateComplete;
+    expect(first.flyoutOpen).toBe(true);
+    expect(flyoutHoverIntent.warm).toBe(true);
+
+    // Warm: having decided you're reading the nav, waiting again at every
+    // item would be worse than useless.
+    first.dispatchEvent(new MouseEvent('mouseleave'));
+    await hover(second, 'mouseenter');
+    expect(second.flyoutOpen).toBe(true);
+  });
+
+  it('abandons the warm-up if the pointer leaves before it elapses', async () => {
+    flyoutHoverIntent.options.warmUpDelay = 40;
+
+    const item = await createFixture();
+
+    await hover(item, 'mouseenter');
+    item.dispatchEvent(new MouseEvent('mouseleave'));
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    await item.updateComplete;
+
+    expect(item.flyoutOpen).toBe(false);
+    expect(flyoutHoverIntent.warm).toBe(false);
+  });
+
+  it('goes cold again once the last flyout has closed', async () => {
+    flyoutHoverIntent.options.coolDownDelay = 30;
+
+    const item = await createFixture();
+
+    await hover(item, 'mouseenter');
+    expect(flyoutHoverIntent.warm).toBe(true);
+
+    await hover(item, 'mouseleave');
+    await afterCloseDelay();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Warmth shouldn't outlive the interaction that earned it.
+    expect(flyoutHoverIntent.warm).toBe(false);
   });
 
   it('leaves a manual toggle alone across unrelated renders', async () => {

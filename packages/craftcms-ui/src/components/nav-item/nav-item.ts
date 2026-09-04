@@ -9,6 +9,10 @@ import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
+import {
+  flyoutHoverIntent,
+  type HoverIntentMember,
+} from '@src/utilities/hover-intent.js';
 
 /**
  *
@@ -85,12 +89,17 @@ export default class CraftNavItem extends LitElement {
   flyoutOpen: boolean = false;
 
   /**
-   * Long enough to cross the gap between the icon and the flyout without the
-   * flyout closing underneath the pointer.
+   * Timing is shared, not per-item: the first flyout waits out a warm-up, the
+   * rest of the group opens instantly, and opening one closes its siblings
+   * immediately rather than leaving them to overlap through their own close
+   * delay.
    */
-  static flyoutCloseDelay = 150;
-
-  #flyoutCloseTimer?: ReturnType<typeof setTimeout>;
+  #hoverIntent: HoverIntentMember = {
+    element: this,
+    setOpen: (open) => {
+      this.flyoutOpen = open;
+    },
+  };
 
   #hoverListeners?: AbortController;
 
@@ -125,7 +134,7 @@ export default class CraftNavItem extends LitElement {
     const {signal} = (this.#hoverListeners = new AbortController());
     this.addEventListener('mouseenter', this.#openFlyout, {signal});
     this.addEventListener('mouseleave', this.#scheduleFlyoutClose, {signal});
-    this.addEventListener('focusin', this.#openFlyout, {signal});
+    this.addEventListener('focusin', this.#focusFlyout, {signal});
     this.addEventListener('focusout', this.#scheduleFlyoutClose, {signal});
   }
 
@@ -142,26 +151,34 @@ export default class CraftNavItem extends LitElement {
 
   override disconnectedCallback() {
     this.#hoverListeners?.abort();
-    clearTimeout(this.#flyoutCloseTimer);
+    flyoutHoverIntent.remove(this.#hoverIntent);
     super.disconnectedCallback();
   }
 
   #openFlyout = () => {
-    clearTimeout(this.#flyoutCloseTimer);
-    this.flyoutOpen = true;
+    flyoutHoverIntent.requestOpen(this.#hoverIntent);
+  };
+
+  // Tabbing to an item is deliberate in a way that sweeping a pointer past it
+  // isn't, so focus skips the warm-up.
+  #focusFlyout = () => {
+    flyoutHoverIntent.requestOpen(this.#hoverIntent, {immediate: true});
   };
 
   #scheduleFlyoutClose = () => {
-    clearTimeout(this.#flyoutCloseTimer);
-    this.#flyoutCloseTimer = setTimeout(() => {
-      this.flyoutOpen = false;
-    }, CraftNavItem.flyoutCloseDelay);
+    flyoutHoverIntent.requestClose(this.#hoverIntent);
   };
 
   // The overlay closes itself on Escape and outside clicks; follow it, or the
   // state would say open and the next hover wouldn't reopen it.
   #onFlyoutOpenedChanged = (event: Event) => {
-    this.flyoutOpen = (event.target as {opened?: boolean}).opened === true;
+    const opened = (event.target as {opened?: boolean}).opened === true;
+
+    this.flyoutOpen = opened;
+
+    if (!opened) {
+      flyoutHoverIntent.notifyClosed(this.#hoverIntent);
+    }
   };
 
   toggleSubnav(event: Event) {
