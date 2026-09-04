@@ -42,7 +42,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Override;
@@ -179,15 +178,7 @@ class AppServiceProvider extends ServiceProvider
                 ? action_url('users/redirect')
                 : $this->defaultReturnUrl();
 
-            $intendedUrl = Redirect::getIntendedUrl();
-
-            // Never send people back to a logout URL, or they'd be logged straight back out
-            if ($intendedUrl !== null && Url::isLogoutUrl($intendedUrl)) {
-                Session::forget('url.intended');
-                $intendedUrl = null;
-            }
-
-            $url = $intendedUrl ?? $defaultUrl;
+            $url = Redirect::getIntendedUrl() ?? $defaultUrl;
 
             // Strip out any tags that may have gotten in there by accident
             // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
-use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -559,33 +557,6 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         return request()->schemeAndHttpHost();
-    }
-
-    /**
-     * Returns whether a given URL points at one of the logout paths.
-     *
-     * Logout URLs should never be used as a post-login redirect, otherwise logging in
-     * would immediately log the user back out.
-     */
-    public static function isLogoutUrl(string $url): bool
-    {
-        $path = trim((string) parse_url(self::stripQueryString($url), PHP_URL_PATH), '/');
-
-        if ($path === '') {
-            return false;
-        }
-
-        // Strip off the subfolder the install is running from, if any
-        $baseUrl = app()->runningInConsole() ? '' : trim(request()->getBaseUrl(), '/');
-
-        if ($baseUrl !== '' && str_starts_with($path, "$baseUrl/")) {
-            $path = substr($path, strlen($baseUrl) + 1);
-        }
-
-        return app(Routes::class)
-            ->localizedConfigPaths('getLogoutPath')
-            ->push(self::prependCpTrigger(CpAuthPath::Logout->value))
-            ->contains(fn (string $logoutPath): bool => trim($logoutPath, '/') === $path);
     }
 
     /**
