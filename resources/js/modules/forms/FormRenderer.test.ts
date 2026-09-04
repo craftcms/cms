@@ -1619,6 +1619,26 @@ describe('FormRenderer', () => {
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(refresh).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(199);
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+
+    completeRefresh(structuredClone(refreshable));
+    await Promise.resolve();
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+
+    placeholder.value = 'Changed again';
+    placeholder.dispatchEvent(new Event('input', {bubbles: true}));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+
+    await vi.advanceTimersByTimeAsync(200);
     expect(linkedGroup.getAttribute('aria-busy')).toBe('true');
     expect(linkedGroup.querySelector('craft-spinner')).not.toBeNull();
 

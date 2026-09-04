@@ -4,7 +4,7 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject} from 'vue';
+  import {computed, inject, shallowRef, watch} from 'vue';
   import FormNodeList from './FormNodeList.vue';
   import {FormRefreshingFields} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
@@ -49,6 +49,20 @@
       )
     );
   });
+  const showLoading = shallowRef(false);
+
+  watch(loading, (loading, _, onCleanup) => {
+    if (!loading) {
+      showLoading.value = false;
+
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      showLoading.value = true;
+    }, 200);
+    onCleanup(() => clearTimeout(timeout));
+  });
 </script>
 
 <template>
@@ -64,7 +78,7 @@
     }"
     :hidden="node.props.hidden || undefined"
     :data-form-node="node.uid"
-    :aria-busy="loading || undefined"
+    :aria-busy="showLoading || undefined"
   >
     <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
     <span
@@ -72,7 +86,10 @@
       slot="warning"
       v-html="node.props.warningHtml"
     />
-    <craft-field-group slot="input" :class="{'group-fields-loading': loading}">
+    <craft-field-group
+      slot="input"
+      :class="{'group-fields-loading': showLoading}"
+    >
       <FormNodeList
         :nodes="node.children ?? []"
         :values="values"
@@ -84,7 +101,7 @@
       />
     </craft-field-group>
     <craft-spinner
-      v-if="loading"
+      v-if="showLoading"
       slot="input"
       class="group-spinner"
       role="status"
@@ -102,14 +119,14 @@
     }"
     :hidden="node.props.hidden || undefined"
     :data-form-node="node.uid"
-    :aria-busy="loading || undefined"
+    :aria-busy="showLoading || undefined"
   >
     <legend v-if="!node.props.collapsible && node.props.label">
       {{ node.props.label }}
     </legend>
     <craft-field-group
       :slot="node.props.collapsible ? 'content' : undefined"
-      :class="{'group-fields-loading': loading}"
+      :class="{'group-fields-loading': showLoading}"
     >
       <FormNodeList
         :nodes="node.children ?? []"
@@ -122,7 +139,7 @@
       />
     </craft-field-group>
     <craft-spinner
-      v-if="loading"
+      v-if="showLoading"
       :slot="node.props.collapsible ? 'content' : undefined"
       class="group-spinner"
       role="status"
