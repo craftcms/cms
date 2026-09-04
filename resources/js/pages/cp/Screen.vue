@@ -80,7 +80,7 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="tabs" name="tabs">
+  <LayoutSlot v-if="tabs" name="content-tabs">
     <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="fragmentReady" />
   </LayoutSlot>
 
@@ -105,7 +105,7 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="details" name="details">
+  <LayoutSlot v-if="details" name="content-details">
     <HtmlFragmentRenderer
       :fragment="fragment(details)"
       @ready="fragmentReady"

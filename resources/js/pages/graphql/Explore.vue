@@ -41,7 +41,7 @@
 
 <template>
   <AppLayout>
-    <template #main>
+    <template #page-main>
       <main id="main" tabindex="-1" class="cp-graphiql">
         <div class="cp-graphiql__header">
           <h1>{{ t('Explore the GraphQL API') }}</h1>

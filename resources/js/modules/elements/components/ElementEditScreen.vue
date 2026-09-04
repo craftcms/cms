@@ -1,6 +1,6 @@
 <script setup lang="ts">
   /**
-   * Full-page element editor. Takes the shell's `main` slot, so it renders the
+   * Full-page element editor. Takes the shell's `page-main` slot, so it renders the
    * `#main` landmark and owns its own `<form>`, and is free to arrange the
    * breadcrumbs, header and columns itself. `ElementEditor` is the counterpart
    * for hosts that supply their own chrome, e.g. a slideout panel.
@@ -121,12 +121,12 @@
 </script>
 
 <template>
-  <!-- The form-related props aren't the shell's business here — the `main`
+  <!-- The form-related props aren't the shell's business here — the `page-main`
     slot replaces the region that would have used them. They're left off so the
     same markup keeps working if this ever renders under a shell that owns the
     save UI. -->
   <AppLayout :title="payload.title">
-    <template #main>
+    <template #page-main>
       <main id="main" tabindex="-1" class="element-editor">
         <!-- No drafts-and-revisions switcher beside the crumbs: the Revisions
         tab in the details column is that list now. -->

@@ -35,7 +35,7 @@
 <template>
   <slot></slot>
 
-  <LayoutSlot v-if="hasDetails" name="details">
+  <LayoutSlot v-if="hasDetails" name="content-details">
     <HtmlFragmentRenderer v-if="detailsFragment" :fragment="detailsFragment" />
     <div v-else v-html="details"></div>
   </LayoutSlot>

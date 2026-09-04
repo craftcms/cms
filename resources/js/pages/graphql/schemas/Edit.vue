@@ -96,7 +96,7 @@
     </div>
   </craft-pane>
 
-  <LayoutSlot v-if="schema.isPublic" name="details">
+  <LayoutSlot v-if="schema.isPublic" name="content-details">
     <CraftSwitch
       :label="t('Enabled')"
       id="enabled"

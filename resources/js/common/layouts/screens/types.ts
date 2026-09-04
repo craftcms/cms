@@ -44,22 +44,26 @@ export interface ScreenEmits {
  * The shells' extension points, mirroring Craft 5's `_layouts/cp.twig` blocks
  * and variables (noted per slot).
  *
- * A slideout has no room for some of these (`breadcrumbs`, `sidebar`,
- * `subnav-actions`, `footer`). `SlideoutScreen` still renders their outlets,
- * hidden, so a page written for full-page use doesn't drop teleported content
- * on the floor when it opens in a slideout.
+ * Names carry the level they belong to: `page-` for regions the current page
+ * owns end to end, `content-` for regions inside the primary content area.
+ * Unprefixed names sit inside `content-header` or apply to every level.
+ *
+ * A slideout has no room for some of these (`breadcrumbs`, `content-sidebar`,
+ * `subnav-actions`, `page-footer`). `SlideoutScreen` still renders their
+ * outlets, hidden, so a page written for full-page use doesn't drop teleported
+ * content on the floor when it opens in a slideout.
  */
 export interface ScreenSlots {
   /** Page content inside the content column. Craft 5: `block content`. */
   default?: () => any;
   /** Replaces the entire main column: breadcrumb bar, page header, and content. Craft 5: `block main`. */
-  main?: () => any;
+  'page-main'?: () => any;
   /** Replaces the breadcrumb bar. Default renders the `crumbs` page prop and the `context-menu` slot. */
   breadcrumbs?: () => any;
   /** Extra controls next to the breadcrumbs, e.g. a site picker. Craft 5: `contextMenu`. */
   'context-menu'?: () => any;
   /** Replaces the page header (title through action buttons). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
-  header?: () => any;
+  'content-header'?: () => any;
   /** Replaces the default `<h1>` page title. Craft 5: `block pageTitle`. */
   title?: () => any;
   /** Status badges next to the title. Craft 5: `#revision-indicators`. */
@@ -77,9 +81,9 @@ export interface ScreenSlots {
   /** Status notice at the top of the content column. Craft 5: `contentNotice`. */
   'content-notice'?: () => any;
   /** Tabs above the content. Craft 5: `tabs`. */
-  tabs?: () => any;
+  'content-tabs'?: () => any;
   /** Left column beside the content. Defaults to a secondary nav built from the `subnav` page prop. Craft 5: `sidebar`. */
-  sidebar?: () => any;
+  'content-sidebar'?: () => any;
   /**
    * Extra controls below the default secondary nav, for anything the
    * `subnavActions` prop can't describe. Markup placed here only appears in
@@ -89,7 +93,7 @@ export interface ScreenSlots {
   /** Bottom of the content column (pagination, meta info, …). Craft 5: `footer` (content pane). */
   'content-footer'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
-  details?: () => any;
+  'content-details'?: () => any;
   /** Global page footer. */
-  footer?: () => any;
+  'page-footer'?: () => any;
 }

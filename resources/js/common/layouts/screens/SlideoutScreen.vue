@@ -101,12 +101,14 @@
   const hasToolbar = computed(
     () => Boolean(slots.toolbar) || registry.has('toolbar')
   );
-  const hasTabs = computed(() => Boolean(slots.tabs) || registry.has('tabs'));
+  const hasTabs = computed(
+    () => Boolean(slots['content-tabs']) || registry.has('content-tabs')
+  );
   const hasContentNotice = computed(
     () => Boolean(slots['content-notice']) || registry.has('content-notice')
   );
   const hasDetails = computed(
-    () => Boolean(slots.details) || registry.has('details')
+    () => Boolean(slots['content-details']) || registry.has('content-details')
   );
 
   const submitLabel = computed(
@@ -395,8 +397,8 @@
     </header>
 
     <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
-      <LayoutSlotOutlet name="tabs">
-        <slot name="tabs"></slot>
+      <LayoutSlotOutlet name="content-tabs">
+        <slot name="content-tabs"></slot>
       </LayoutSlotOutlet>
     </div>
 
@@ -434,8 +436,8 @@
         ref="detailsEl"
         class="slideout-screen__details"
       >
-        <LayoutSlotOutlet name="details">
-          <slot name="details"></slot>
+        <LayoutSlotOutlet name="content-details">
+          <slot name="content-details"></slot>
         </LayoutSlotOutlet>
       </aside>
     </div>
@@ -477,9 +479,9 @@
       <LayoutSlotOutlet name="context-menu" />
       <LayoutSlotOutlet name="title" />
       <LayoutSlotOutlet name="title-badge" />
-      <LayoutSlotOutlet name="sidebar" />
+      <LayoutSlotOutlet name="content-sidebar" />
       <LayoutSlotOutlet name="subnav-actions" />
-      <LayoutSlotOutlet name="footer" />
+      <LayoutSlotOutlet name="page-footer" />
     </div>
   </form>
 </template>

@@ -174,7 +174,7 @@
     </div>
   </craft-pane>
 
-  <LayoutSlot name="details">
+  <LayoutSlot name="content-details">
     <CraftSwitch
       :label="t('Enabled')"
       id="enabled"

@@ -666,7 +666,7 @@ describe('SlideoutPanel', () => {
     // global registry this content would teleport into the base page.
     const Page = defineComponent({
       render: () =>
-        h(LayoutSlot, {name: 'details'}, () =>
+        h(LayoutSlot, {name: 'content-details'}, () =>
           h('span', {class: 'detail'}, 'side info')
         ),
     });

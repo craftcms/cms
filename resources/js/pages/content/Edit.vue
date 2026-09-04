@@ -3,7 +3,7 @@
   import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
   import {useIsSlideout} from '@/common/composables/screen';
 
-  // Full pages render `ElementEditScreen`, which fills the shell's `main` slot
+  // Full pages render `ElementEditScreen`, which fills the shell's `page-main` slot
   // and so owns the whole main region. A slideout panel brings its own header,
   // form and footer, so this stays on the layout-slot editor there.
   //

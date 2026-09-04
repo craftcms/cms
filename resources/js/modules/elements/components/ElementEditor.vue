@@ -263,7 +263,7 @@
 
   <LayoutSlot
     v-if="sidebarPayload || payload.metadataHtml || $slots['details-header']"
-    name="details"
+    name="content-details"
   >
     <!-- Anything the element type shows above its meta fields, e.g. an
       asset's file preview. -->

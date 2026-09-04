@@ -46,10 +46,10 @@
 </script>
 
 <template>
-  <slot name="main">
+  <slot name="page-main">
     <slot name="error-summary"></slot>
     <slot name="content-notice"></slot>
-    <slot name="tabs"></slot>
+    <slot name="content-tabs"></slot>
     <slot></slot>
     <slot name="content-footer"></slot>
   </slot>
