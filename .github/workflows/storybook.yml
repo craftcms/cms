@@ -59,7 +59,7 @@ jobs:
         # Keep this in sync with .github/workflows/js-ci.yml so the built assets
         # and generated files are shared between the two workflows.
         run: |
-          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v4-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -71,6 +71,7 @@ jobs:
             packages/craftcms-ui/dist
             packages/craftcms-garnish/dist
             vendor
+            cms-assets/resources/icons
             resources/js/actions
             resources/js/routes
             resources/js/wayfinder
@@ -87,6 +88,10 @@ jobs:
             run: vp install --frozen-lockfile
             env:
               CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
+      - name: Copy icons
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: composer copy-icons
 
       # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
       # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
@@ -141,6 +146,7 @@ jobs:
             packages/craftcms-ui/dist
             packages/craftcms-garnish/dist
             vendor
+            cms-assets/resources/icons
             resources/js/actions
             resources/js/routes
             resources/js/wayfinder
@@ -184,6 +190,7 @@ jobs:
             packages/craftcms-ui/dist
             packages/craftcms-garnish/dist
             vendor
+            cms-assets/resources/icons
             resources/js/actions
             resources/js/routes
             resources/js/wayfinder
