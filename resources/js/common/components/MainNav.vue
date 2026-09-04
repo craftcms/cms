@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import useCraftData from '@/common/composables/useCraftData';
+  import type {CraftData} from '@/common/composables/useCraftData';
   import CpLink from '@/common/components/CpLink.vue';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
 
   const page = usePage<{
+    craft: CraftData;
     queue: {
       enabled: boolean;
       displayedJob: any;
@@ -12,8 +13,13 @@
       hasWaitingJobs: boolean;
     };
   }>();
-  const craftData = useCraftData();
-  const nav = computed(() => craftData.nav);
+
+  // Read the nav off the page rather than through `useCraftData()`, which
+  // hands back `page.props.craft` as it stood at setup — a plain object, so a
+  // computed over it has no reactive dependency at all and can never update.
+  // This component lives in the sidebar and never remounts, so it would keep
+  // highlighting whichever section you first landed on.
+  const nav = computed(() => page.props.craft.nav);
 
   // Renders the nav as a rail: labels drop to tooltips, and subnavs move into
   // a flyout on hover or focus, since there's no room to indent them.
@@ -25,7 +31,7 @@
   <craft-nav-list>
     <CpLink
       v-for="item in nav"
-      :key="item.href ?? item.label"
+      :key="item.href ?? item.label ?? ''"
       as="craft-nav-item"
       :icon="item.icon || undefined"
       :icon-only="iconOnly || undefined"
@@ -41,7 +47,7 @@
         <craft-nav-list slot="subnav">
           <CpLink
             v-for="subnavItem in item.subnav"
-            :key="subnavItem.href ?? subnavItem.label"
+            :key="subnavItem.href ?? subnavItem.label ?? ''"
             as="craft-nav-item"
             :active.prop="subnavItem.selected"
             :href="subnavItem.href ?? ''"

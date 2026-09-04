@@ -2,12 +2,7 @@ import {expect, it, vi} from 'vite-plus/test';
 import {createApp, nextTick, reactive} from 'vue';
 
 const state = vi.hoisted(() => ({
-  craftData: null as any,
   page: null as any,
-}));
-
-vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => state.craftData,
 }));
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -17,30 +12,33 @@ vi.mock('@inertiajs/vue3', async () => ({
 
 it('updates the active item when the shared navigation changes', async () => {
   const {default: MainNav} = await import('./MainNav.vue');
-  state.craftData = reactive({
-    nav: [
-      {
-        label: 'Entries',
-        href: '/entries',
-        icon: null,
-        selected: true,
-        badgeCount: null,
-        external: false,
-        subnav: false,
-      },
-      {
-        label: 'Assets',
-        href: '/assets',
-        icon: null,
-        selected: false,
-        badgeCount: null,
-        external: false,
-        subnav: false,
-      },
-    ],
-  });
+  // The nav arrives on the page prop, and Inertia replaces that object on
+  // every visit — so that has to be the dependency, or the sidebar keeps
+  // whichever nav it first rendered.
+  const nav = [
+    {
+      label: 'Entries',
+      href: '/entries',
+      icon: null,
+      selected: true,
+      badgeCount: null,
+      external: false,
+      subnav: false,
+    },
+    {
+      label: 'Assets',
+      href: '/assets',
+      icon: null,
+      selected: false,
+      badgeCount: null,
+      external: false,
+      subnav: false,
+    },
+  ];
+
   state.page = reactive({
     props: {
+      craft: {nav},
       queue: {
         displayedJob: null,
         hasReservedJobs: false,
@@ -55,10 +53,16 @@ it('updates the active item when the shared navigation changes', async () => {
   app.mount(container);
   await nextTick();
 
-  state.craftData.nav = state.craftData.nav.map((item: any) => ({
-    ...item,
-    selected: item.href === '/assets',
-  }));
+  // Inertia hands over a whole new props object on each visit.
+  state.page.props = {
+    ...state.page.props,
+    craft: {
+      nav: nav.map((item) => ({
+        ...item,
+        selected: item.href === '/assets',
+      })),
+    },
+  };
   await nextTick();
 
   const items = Array.from(container.querySelectorAll('craft-nav-item'));
