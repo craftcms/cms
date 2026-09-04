@@ -16,6 +16,7 @@ use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
 use RuntimeException;
+use Throwable;
 use Transliterator;
 use voku\helper\ASCII;
 
@@ -649,14 +650,15 @@ class Str extends \Illuminate\Support\Str
     private static function modifyCase(string $value, ?string $language, string $case): ?string
     {
         // Only attempt a language-aware transliteration if a language was given, or the app can supply
-        // its current locale (the container running this code might not be a full application instance,
-        // e.g. within the Yii2 adapter's test suite).
+        // its current locale. The container running this code might not be a full application instance,
+        // or might not have its `config` binding registered yet (e.g. within the Yii2 adapter's test suite),
+        // so fall back to a non-localized conversion rather than blowing up.
         if ($language === null) {
-            if (! method_exists(app(), 'getLocale')) {
+            try {
+                $language = app()->getLocale();
+            } catch (Throwable) {
                 return null;
             }
-
-            $language = app()->getLocale();
         }
 
         $transliterator = Transliterator::create(sprintf('%s-%s', Locale::languageId($language), $case));
