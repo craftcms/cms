@@ -115,12 +115,12 @@
 
     const scope = change.scope ?? payload.value.scope;
     const key = JSON.stringify(scope);
-    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
 
     if (!props.refresh || !change.refreshable) {
       return;
     }
 
+    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
     clearTimeout(refreshTimers.get(key));
 
     if (change.kind === 'discrete') {

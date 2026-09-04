@@ -26,15 +26,19 @@
   const emit = defineEmits<{
     (event: 'update:value', value: string, kind: FormChangeKind): void;
   }>();
-  let typing = false;
 
-  function onInput(): void {
-    typing = true;
-    queueMicrotask(() => (typing = false));
-  }
+  function onModelValueChanged(event: CustomEvent): void {
+    if (event.detail?.initialize) {
+      return;
+    }
 
-  function onValueChanged(value: string | number | boolean | undefined): void {
-    emit('update:value', String(value ?? ''), typing ? 'typing' : 'discrete');
+    const value = (event.target as HTMLElement & {modelValue?: unknown})
+      .modelValue;
+    emit(
+      'update:value',
+      String(value ?? ''),
+      event.detail?.changeSource === 'input' ? 'typing' : 'discrete'
+    );
   }
 </script>
 
@@ -54,7 +58,6 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :validators="serverErrorValidators(invalid)"
-    @input.capture="onInput"
-    @update:model-value="onValueChanged"
+    @model-value-changed="onModelValueChanged"
   />
 </template>

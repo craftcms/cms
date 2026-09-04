@@ -20,7 +20,7 @@
     warning?: string;
     warningHtml?: string;
     width?: number;
-    /** Relative path of the reactive control whose refresh loads this group. */
+    /** Absolute path of the reactive control whose refresh loads this group. */
     dependsOn?: string[];
     /** Hidden from view; children still resolve and still hold their values. */
     hidden?: boolean;
@@ -44,9 +44,7 @@
     }
 
     return Boolean(
-      refreshingFields?.value.has(
-        JSON.stringify([...props.scope, ...props.node.props.dependsOn])
-      )
+      refreshingFields?.value.has(JSON.stringify(props.node.props.dependsOn))
     );
   });
   const showLoading = shallowRef(false);
@@ -114,6 +112,7 @@
     :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
     :label="node.props.collapsible ? node.props.label : undefined"
     :class="{
+      [`width-${node.props.width}`]: Boolean(node.props.width),
       hidden: Boolean(node.props.hidden),
       'group-container': true,
     }"

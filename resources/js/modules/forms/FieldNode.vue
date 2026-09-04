@@ -154,7 +154,7 @@
         :errors="errors"
         :touched-paths="touchedPaths"
         :scope="scope"
-        :refreshable="refreshable"
+        :refreshable="props.refreshable"
         @change="onChange"
       />
     </div>

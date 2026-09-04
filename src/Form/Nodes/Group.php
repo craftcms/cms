@@ -31,8 +31,8 @@ use InvalidArgumentException;
  *   settings under a heading (“Advanced”, “Field Limit”).
  * - **Field** ({@see self::asField()}) — a `<craft-field>` in fieldset mode,
  *   for several inputs that make up *one* logical field (“Asset Location” over
- *   a source select and a subpath input). Unlocks instructions, tip, warning
- *   and a width, and the label reads as a field label rather than a heading.
+ *   a source select and a subpath input). Unlocks instructions, tip and
+ *   warning, and the label reads as a field label rather than a heading.
  *
  * Field appearance renders `role="group"` + `aria-labelledby` rather than a
  * `label[for]`, since one label can't address several inputs — the ARIA17
@@ -73,19 +73,23 @@ class Group extends Container
         $children = FieldGroup::make()
             ->children([new HtmlString($renderer->renderNodes($node->children ?? [], $payload))])
             ->attributes(['slot' => ($node->props['collapsible'] ?? false) ? 'content' : null]);
+        $attributes = [
+            'data-form-node' => $node->uid,
+            ...self::visibilityAttributes($node->props),
+        ];
+
+        if (isset($node->props['width'])) {
+            $attributes['class'] = trim(($attributes['class'] ?? '')." width-{$node->props['width']}");
+        }
 
         if ($node->props['collapsible'] ?? false) {
             return Html::tag('craft-disclosure', $children->toHtml(), [
                 'label' => $label,
-                'data-form-node' => $node->uid,
-                ...self::visibilityAttributes($node->props),
+                ...$attributes,
             ]);
         }
 
-        return Html::tag('fieldset', ($label ? Html::tag('legend', Html::encode($label)) : '').$children->toHtml(), [
-            'data-form-node' => $node->uid,
-            ...self::visibilityAttributes($node->props),
-        ]);
+        return Html::tag('fieldset', ($label ? Html::tag('legend', Html::encode($label)) : '').$children->toHtml(), $attributes);
     }
 
     /** @param list<Node> $children */
@@ -153,7 +157,7 @@ class Group extends Container
     }
 
     /**
-     * Shows a loading state while the reactive control at this relative path refreshes the Form.
+     * Shows a loading state while the reactive control at this absolute path refreshes the Form.
      *
      * @param  string|list<string>  $path
      */

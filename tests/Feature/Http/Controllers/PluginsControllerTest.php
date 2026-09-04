@@ -197,6 +197,7 @@ test('plugin settings form is refreshable', function () {
         ->assertJsonPath('form.refreshable', true)
         ->assertJsonPath('form.values.settings.foo', 'show-bar')
         ->assertJsonPath('form.values.settings.bar', 'unsaved value')
+        ->assertJsonPath('form.nodes.1.props.dependsOn', ['settings', 'foo'])
         ->assertJsonPath('form.nodes.1.children.0.control.path', ['settings', 'bar']);
 });
 

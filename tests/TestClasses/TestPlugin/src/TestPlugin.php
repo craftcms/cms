@@ -345,7 +345,7 @@ class TestPlugin extends Plugin
         ])->when($this->getSettings()?->foo === 'show-bar', fn (Form $form) => $form->add(
             Group::make('test-plugin-bar', [
                 Field::make('Bar', Text::make('bar')),
-            ])->dependsOn('foo'),
+            ])->dependsOn('settings.foo'),
         ));
     }
 
