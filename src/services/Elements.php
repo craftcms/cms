@@ -3012,7 +3012,7 @@ class Elements extends Component
 
                     $criteria = array_merge(
                         $map['criteria'] ?? [],
-                        $plan->criteria
+                        ElementHelper::cleanseQueryCriteria($plan->criteria)
                     );
 
                     // Save the offset & limit params for later
