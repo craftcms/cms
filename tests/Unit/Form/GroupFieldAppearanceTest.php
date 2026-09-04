@@ -36,9 +36,10 @@ function renderGroup(Group $group): Crawler
 }
 
 it('renders a section as a fieldset with a legend by default', function () {
-    $crawler = renderGroup(locationGroup());
+    $crawler = renderGroup(locationGroup()->width(FieldWidth::Quarter));
 
     expect($crawler->filter('fieldset > legend')->text())->toBe('Asset Location')
+        ->and($crawler->filter('fieldset')->attr('class'))->toContain('width-25')
         ->and($crawler->filter('craft-field[fieldset]'))->toHaveCount(0);
 });
 

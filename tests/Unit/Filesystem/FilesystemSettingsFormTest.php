@@ -20,17 +20,20 @@ it('exposes the complete local filesystem settings as a typed form', function ()
     $payload = app(FormResolver::class)->resolve($filesystem->settingsForm(), new FormContext(
         namespace: 'settings',
     ));
-
-    expect(array_map(
-        fn ($node): string => implode('.', array_slice($node->control->path, 1)),
+    $controls = collect(flattenFormNodes(array_map(
+        fn ($node): array => $node->jsonSerialize(),
         $payload->nodes,
-    ))->toBe(['hasUrls', 'url', 'path'])
-        ->and(array_map(fn ($node): string => $node->control->type, $payload->nodes))->toBe([
+    )))->pluck('control')->filter()->values();
+
+    expect($controls->map(
+        fn (array $control): string => implode('.', array_slice($control['path'], 1)),
+    )->all())->toBe(['hasUrls', 'url', 'path'])
+        ->and($controls->pluck('type')->all())->toBe([
             Lightswitch::class,
             Text::class,
             Text::class,
         ])
-        ->and($payload->nodes[2]->control->props['textExpanderTriggers'])->not->toBeEmpty()
+        ->and($controls[2]['props']['textExpanderTriggers'])->not->toBeEmpty()
         ->and($payload->values)->toBe([
             'settings' => [
                 'hasUrls' => true,
@@ -51,15 +54,15 @@ it('omits inactive URL settings and resolves read only mode', function () {
         namespace: 'settings',
         mode: ControlMode::ReadOnly,
     ));
-
-    expect(array_map(
-        fn ($node): string => implode('.', array_slice($node->control->path, 1)),
+    $controls = collect(flattenFormNodes(array_map(
+        fn ($node): array => $node->jsonSerialize(),
         $payload->nodes,
-    ))->toBe(['hasUrls', 'path'])
-        ->and(array_map(
-            fn ($node): ControlMode => $node->control->mode,
-            $payload->nodes,
-        ))->each->toBe(ControlMode::ReadOnly);
+    )))->pluck('control')->filter()->values();
+
+    expect($controls->map(
+        fn (array $control): string => implode('.', array_slice($control['path'], 1)),
+    )->all())->toBe(['hasUrls', 'path'])
+        ->and($controls->pluck('mode')->all())->each->toBe(ControlMode::ReadOnly->value);
 });
 
 it('does not expose settings for the temporary filesystem', function () {

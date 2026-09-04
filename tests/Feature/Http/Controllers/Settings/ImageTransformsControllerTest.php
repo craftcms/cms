@@ -180,8 +180,8 @@ it('refreshes mode-dependent controls without saving', function () {
         'scope' => [],
     ])->assertOk()->json('form.nodes');
 
-    $fitFields = collect($fitNodes)->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
-    $letterboxFields = collect($letterboxNodes)->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+    $fitFields = collect(flattenFormNodes($fitNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+    $letterboxFields = collect(flattenFormNodes($letterboxNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
 
     expect($fitFields['fill']['component'])->toBe('craft:hidden-field')
         ->and($fitFields['position']['component'])->toBe('craft:hidden-field')

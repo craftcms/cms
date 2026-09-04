@@ -14,6 +14,8 @@ abstract class Control implements ControlContract
 
     protected ControlMode $mode = ControlMode::Editable;
 
+    protected bool $reactive = false;
+
     /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
 
@@ -126,6 +128,18 @@ abstract class Control implements ControlContract
     final public function getMode(): ControlMode
     {
         return $this->mode;
+    }
+
+    final public function reactive(bool $reactive = true): static
+    {
+        $this->reactive = $reactive;
+
+        return $this;
+    }
+
+    final public function isReactive(): bool
+    {
+        return $this->reactive;
     }
 
     /**

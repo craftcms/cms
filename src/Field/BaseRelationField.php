@@ -532,7 +532,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      *
      * Mirrors the `sourcesField` block of Craft 5’s `elementfieldsettings.twig`.
      */
-    protected function sourcesField(): FormField
+    protected function sourcesField(bool $reactive = false): FormField
     {
         $elementType = static::elementType();
         $sourceOptions = array_map(fn (array $option): array => [
@@ -546,7 +546,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (! $this->allowMultipleSources) {
             return FormField::make(t('Source'))
                 ->instructions($instructions)
-                ->control(Choice::make('source')->options($sourceOptions)->value($this->source));
+                ->control(Choice::make('source')
+                    ->options($sourceOptions)
+                    ->value($this->source)
+                    ->reactive($reactive));
         }
 
         // Some element types expose an “All …” source of their own (entries,
@@ -575,7 +578,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 // Storing “all” as a token rather than today's source list is
                 // what lets the field pick up sources added later.
                 ->allOption($allLabel, self::ALL_SOURCES)
-                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources));
+                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources)
+                ->reactive($reactive));
     }
 
     /**

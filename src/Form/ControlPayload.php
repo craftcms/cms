@@ -27,6 +27,7 @@ readonly class ControlPayload implements JsonSerializable
         public ControlMode $mode,
         public array $deltaGroup,
         public array $forms = [],
+        public bool $reactive = false,
     ) {}
 
     /** @return array<string, mixed> */
@@ -39,7 +40,7 @@ readonly class ControlPayload implements JsonSerializable
             'path' => $this->path,
             'mode' => $this->mode->value,
             'deltaGroup' => $this->deltaGroup,
-        ] + ($this->forms === [] ? [] : ['forms' => array_map(
+        ] + ($this->reactive ? ['reactive' => true] : []) + ($this->forms === [] ? [] : ['forms' => array_map(
             fn (NestedFormPayload $form): array => $form->jsonSerialize(),
             $this->forms,
         )]);
