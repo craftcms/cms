@@ -3563,7 +3563,7 @@ class Elements extends Component
 
                         $criteria = array_merge(
                             $siteCriteria,
-                            $plan->criteria,
+                            ElementHelper::cleanseQueryCriteria($plan->criteria),
                             $otherCriteria,
                         );
 
