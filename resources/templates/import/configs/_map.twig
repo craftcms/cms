@@ -24,14 +24,18 @@
             label: 'Keep existing nested elements missing from the imported data.'|t('app'),
             checked: keepMissingNestedElementsChecked ?? false,
             value: 1,
+            errors: errors.get(prefixedHandleForKeepFlag),
+            data: {'error-key': prefixedHandleForKeepFlag},
+            disabled: readOnly,
+            static: static,
         }) }}
     {% endif %}
     {% for item in destinationCols %}
         <h3>{{ item.provider.name ?? field.name ?? 'Nested Field Mapping' }}</h3>
-        {{ _self.fieldLayoutTable(item.destinationCols, sourceDataCols, import, field) }}
+        {{ _self.fieldLayoutTable(item.destinationCols, sourceDataCols, import, field, readOnly, static) }}
     {% endfor %}
 {% else %}
-    {{ _self.fieldLayoutTable(destinationCols, sourceDataCols, import) }}
+    {{ _self.fieldLayoutTable(destinationCols, sourceDataCols, import, readOnly, static) }}
 {% endif %}
 
 
@@ -39,7 +43,7 @@
 
 {# ---------------------- MACROS ---------------------- #}
 
-{% macro fieldLayoutTable(destinationCols, sourceDataCols, import, field = null) %}
+{% macro fieldLayoutTable(destinationCols, sourceDataCols, import, field = null, readOnly, static) %}
     <table>
         {% for col in destinationCols %}
             {% if col.multiple is defined and col.multiple == true %}
@@ -49,17 +53,17 @@
                     </td>
                 </th>
                 {% for subcol in col.subfields %}
-                    {{ _self.row(subcol, import, sourceDataCols) }}
+                    {{ _self.row(subcol, import, sourceDataCols, readOnly, static) }}
                 {% endfor %}
             {% elseif col is not empty %}
-                {{ _self.row(col, import, sourceDataCols) }}
+                {{ _self.row(col, import, sourceDataCols, readOnly, static) }}
             {% endif %}
         {% endfor %}
     </table>
 {% endmacro %}
 
 
-{% macro row(col, import, sourceDataCols) %}
+{% macro row(col, import, sourceDataCols, readOnly, static) %}
     <tr>
         <td>
             {{ col.label }} <pre>({{ col.handle }})</pre>
@@ -127,24 +131,36 @@
                 {{ forms.selectField({
                     name: col.prefixedHandleForMap,
                     options: sourceDataCols,
-                    value: nestedFieldValueForMap
+                    value: nestedFieldValueForMap,
+                    errors: errors.get(col.prefixedHandleForMap),
+                    data: {'error-key': col.prefixedHandleForMap},
+                    disabled: readOnly,
+                    static: static,
                 }) }}
 
                 {% if col.canBeMatchCriteria ?? false %}
                     {{ forms.checkboxField({
-                      name: col.prefixedHandleForMatchCriteria,
-                      label: 'Use this field’s value to match against an existing element.'|t('app'),
-                      checked: nestedFieldValueForMatchCriteria ?? false,
-                      value: 1,
+                        name: col.prefixedHandleForMatchCriteria,
+                        label: 'Use this field’s value to match against an existing element.'|t('app'),
+                        checked: nestedFieldValueForMatchCriteria ?? false,
+                        value: 1,
+                        errors: errors.get(col.prefixedHandleForMatchCriteria),
+                        data: {'error-key': col.prefixedHandleForMatchCriteria},
+                        disabled: readOnly,
+                        static: static,
                     }) }}
                 {% endif %}
 
                 {% if col.canBeCleared ?? false %}
                     {{ forms.checkboxField({
-                      name: col.prefixedHandleForClear,
-                      label: 'Clear existing value if no data provided or provided value is empty.'|t('app'),
-                      checked: nestedFieldValueForClear ?? false,
-                      value: 1,
+                        name: col.prefixedHandleForClear,
+                        label: 'Clear existing value if no data provided or provided value is empty.'|t('app'),
+                        checked: nestedFieldValueForClear ?? false,
+                        value: 1,
+                        errors: errors.get(col.prefixedHandleForClear),
+                        data: {'error-key': col.prefixedHandleForClear},
+                        disabled: readOnly,
+                        static: static,
                     }) }}
                 {% endif %}
                 {#{{ dump(col) }}#}

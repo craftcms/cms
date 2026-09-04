@@ -218,14 +218,14 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::view('import', 'craftcms::import/index');
     Route::middleware('can:viewImportConfigs')->group(function () {
         Route::get('import/configs', [ImportConfigController::class, 'index']);
-        Route::middleware('can:editImportConfigs')->get('import/configs/new', [ImportConfigController::class, 'create']);
+        Route::middleware('can:saveImportConfigs')->get('import/configs/new', [ImportConfigController::class, 'create']);
         Route::get('import/configs/{handle}', [ImportConfigController::class, 'edit']);
         Route::get('import/configs/{handle}/field-layout-provider', [ImportConfigController::class, 'editFieldLayoutProvider']);
         Route::get('import/configs/{handle}/map', [ImportConfigController::class, 'editMap']);
     });
     Route::middleware('can:viewImportRuns')->group(function () {
         Route::get('import/runs', [ImportRunController::class, 'index']);
-        Route::middleware('can:editImportRuns')->get('import/runs/new', [ImportRunController::class, 'create']);
+        Route::middleware('can:saveImportRuns')->get('import/runs/new', [ImportRunController::class, 'create']);
         Route::get('import/runs/{handle}', [ImportRunController::class, 'edit']);
     });
     /**

@@ -303,7 +303,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
 
         // Import
-        Route::middleware('can:editImportConfigs')->group(function () {
+        Route::middleware('can:saveImportConfigs')->group(function () {
             Route::post('import/configs/render-settings', [ImportConfigController::class, 'renderSettings']);
             Route::post('import/configs/save', [ImportConfigController::class, 'store']);
             Route::post('import/configs/saveFieldLayoutProvider', [ImportConfigController::class, 'storeFieldLayoutProvider']);
@@ -314,7 +314,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
         Route::middleware('can:deleteImportConfigs')->post('import/configs/delete', [ImportConfigController::class, 'destroy']);
 
-        Route::middleware('can:editImportRuns')->post('import/runs/save', [ImportRunController::class, 'store']);
+        Route::middleware('can:saveImportRuns')->post('import/runs/save', [ImportRunController::class, 'store']);
         Route::middleware('can:deleteImportRuns')->post('import/runs/delete', [ImportRunController::class, 'destroy']);
         Route::middleware('can:triggerImportRuns')->group(function () {
             Route::post('import/run', [ImportRunController::class, 'run']);

@@ -6,7 +6,7 @@
 ] %}
 
 {% block actionButton %}
-    {% if not readOnly and currentUser.can('editImportRuns') %}
+    {% if not readOnly and currentUser.can('saveImportRuns') %}
         {% set newImportUrl = url('import/runs/new') %}
         <a href="{{ newImportUrl }}" class="submit btn add icon">{{ "New import run"|t('app') }}</a>
     {% endif %}

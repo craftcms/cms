@@ -1,5 +1,8 @@
 {% import '_includes/forms.twig' as forms %}
 
+{% set readOnly = readOnly ?? false %}
+{% set static = static ?? false %}
+
 {{ forms.hidden({
     name: 'uid',
     value: import.uid
@@ -10,4 +13,8 @@
     name: 'fieldLayout',
     options: availableFieldLayoutProviders,
     value: old('fieldLayout', import.fieldLayout ?? null),
+    errors: errors.get('fieldLayout'),
+    data: {'error-key': 'fieldLayout'},
+    disabled: readOnly,
+    static: static,
 }) }}

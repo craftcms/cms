@@ -73,9 +73,7 @@ class ImportRunController
             $run = new ImportRunData($old);
         }
 
-        if ($run === null) {
-            $run = $found;
-        }
+        $run ??= $found;
 
         return $this->cpScreenResponse($run);
     }
@@ -166,10 +164,10 @@ class ImportRunController
                     ->prepend(['label' => t('Please select'), 'value' => null])
                     ->all(),
                 'readOnly' => $this->readOnly,
-                'static' => ! $currentUser?->can('editImportRuns'),
+                'static' => ! $currentUser?->can('saveImportRuns'),
             ])
             ->unless(
-                $this->readOnly || ! $currentUser?->can('editImportRuns'),
+                $this->readOnly || ! $currentUser?->can('saveImportRuns'),
                 callback: function (CpScreenResponse $response) use ($run) {
                     $response
                         ->action('import/runs/save')

@@ -184,7 +184,7 @@ class ImportConfigController
 
         $templateVars = [
             'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('editImportConfigs'),
+            'static' => ! $currentUser?->can('saveImportConfigs'),
             'import' => $importer,
             'availableFieldLayoutProviders' => $importer->getAvailableFieldLayoutProviders(),
         ];
@@ -196,7 +196,7 @@ class ImportConfigController
             ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
             ->contentTemplate('import/configs/_field-layout-provider.twig', $templateVars)
             ->unless(
-                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
                 callback: function (CpScreenResponse $response) {
                     $response
                         ->action('import/configs/saveFieldLayoutProvider')
@@ -265,7 +265,7 @@ class ImportConfigController
 
         $templateVars = [
             'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('editImportConfigs'),
+            'static' => ! $currentUser?->can('saveImportConfigs'),
             'import' => $importer,
             'destinationCols' => $importer->getDestinationCols(),
             'sourceDataCols' => $importer->getSourceDataCols(),
@@ -278,7 +278,7 @@ class ImportConfigController
             ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
             ->contentTemplate('import/configs/_map.twig', $templateVars)
             ->unless(
-                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
                 callback: function (CpScreenResponse $response) {
                     $response
                         ->action('import/configs/saveMap')
@@ -410,7 +410,7 @@ class ImportConfigController
 
         $templateVars = [
             'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('editImportConfigs'),
+            'static' => ! $currentUser?->can('saveImportConfigs'),
             'import' => $import,
             'field' => $field,
             'destinationCols' => $cols,
@@ -430,7 +430,7 @@ class ImportConfigController
             ->contentTemplate('import/configs/_map.twig', $templateVars)
             ->submitButtonLabel(t('Apply'))
             ->unless(
-                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
                 callback: function (CpScreenResponse $response) {
                     $response
                         ->action('import/configs/saveNestedFieldMapping')
@@ -601,7 +601,7 @@ class ImportConfigController
 
         $templateVars = [
             'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('editImportConfigs'),
+            'static' => ! $currentUser?->can('saveImportConfigs'),
             'import' => $importer,
         ];
 
@@ -619,7 +619,7 @@ class ImportConfigController
             ->addCrumb(t('Configs'), 'import/configs')
             ->contentTemplate('import/configs/_edit.twig', $templateVars)
             ->unless(
-                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
                 callback: function (CpScreenResponse $response) use ($importer) {
                     $response
                         ->action('import/configs/save')
