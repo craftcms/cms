@@ -61,6 +61,36 @@ export const Default: Story = {
   },
 };
 
+/**
+ * Picking a colour is a commit, so the control emits native `input` and
+ * `change` together — the events a consumer should bind, rather than Lion's
+ * internal `model-value-changed`.
+ *
+ * Asserted here rather than in a unit test for the same reason as the rest of
+ * this file: the inner `craft-select-rich` needs layout that happy-dom does
+ * not provide.
+ */
+export const NativeEvents: Story = {
+  play: async ({canvasElement}) => {
+    const host = canvasElement.querySelector('craft-select-color')!;
+    const order: string[] = [];
+    host.addEventListener('input', (event) => {
+      // Dispatched from the host, so `event.target` is the component.
+      if (event.target === host) order.push('input');
+    });
+    host.addEventListener('change', (event) => {
+      if (event.target === host) order.push('change');
+    });
+
+    const inner = host.shadowRoot!.querySelector('craft-select-rich')!;
+    inner.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+
+    await expect(order).toEqual(['input', 'change']);
+  },
+};
+
 /** Nothing selected — the invoker shows the placeholder with no swatch. */
 export const Empty: Story = {
   args: {'model-value': null},

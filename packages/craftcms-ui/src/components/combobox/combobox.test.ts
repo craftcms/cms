@@ -262,6 +262,43 @@ describe('craft-combobox', () => {
     expect(fired).toContain('$MY_ENV');
   });
 
+  it('emits native input while typing and change when the field is left', async () => {
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [{label: 'Online', value: '1'}];
+    });
+    const order: string[] = [];
+    combobox.addEventListener('input', (event) => {
+      // The textbox lives in the light DOM, so its own event would otherwise
+      // reach consumers with the textbox as target rather than the component.
+      expect(event.target).toBe(combobox);
+      order.push('input');
+    });
+    combobox.addEventListener('change', () => order.push('change'));
+
+    // Cast rather than reaching through `_inputNode` directly, which is
+    // protected — the older tests in this file predate that being checked.
+    const input = (combobox as unknown as {_inputNode: HTMLInputElement})
+      ._inputNode;
+    for (const value of ['h', 'ht']) {
+      input.focus();
+      input.value = value;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await combobox.updateComplete;
+      await new Promise((resolve) => setTimeout(resolve));
+    }
+
+    // Typing alters but does not commit.
+    expect(order).toEqual(['input', 'input']);
+
+    combobox.dispatchEvent(new Event('blur'));
+    expect(order).toEqual(['input', 'input', 'change']);
+
+    // Leaving again without an edit commits nothing.
+    combobox.dispatchEvent(new Event('blur'));
+    expect(order).toEqual(['input', 'input', 'change']);
+  });
+
   it('keeps updating the model past the first keystroke, even with a v-model write-back', async () => {
     // Regression: list-mode autocomplete stopped syncing typed text into the
     // model after the first character, and a bound v-model writing .modelValue

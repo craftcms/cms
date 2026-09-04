@@ -1,6 +1,7 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 import {colors} from '@src/constants/colors';
+import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import styles from './select-color.styles.js';
 import '../select-rich/select-rich.js';
@@ -24,12 +25,16 @@ function titleCase(value: string): string {
  *
  * @since 1.0
  *
+ * @fires input - Emitted when a colour is picked.
+ * @fires change - Emitted when a colour is picked. Picking is a commit, so it
+ *   follows each `input`.
  * @fires model-value-changed - The selected colour changed. Re-dispatched from
  *   the host as a composed event so it crosses the shadow boundary.
  *
  * `model-value-changed` is Lion's own protocol name, not one this package
- * chose. It is kept because Lion's form system dispatches and listens for it;
- * a Craft-prefixed alias would only add a second name for the same thing.
+ * chose, and it is kept because Lion's form system dispatches and listens for
+ * it. Prefer the native events above: they are the contract this package
+ * supports, and they carry the component as `event.target`.
  */
 export default class CraftSelectColor extends LitElement {
   static override styles = [styles];
@@ -141,6 +146,11 @@ export default class CraftSelectColor extends LitElement {
     this.dispatchEvent(
       new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
+
+    // The public contract. Picking a colour is a commit, so the pair fires
+    // together, the way a radio group's does.
+    emitInput(this);
+    emitChange(this);
   }
 
   protected override render() {

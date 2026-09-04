@@ -32,11 +32,19 @@ The nesting is structural, so the relationship between a permission and the ones
 
 A tree this size is hard to navigate by ear regardless. Where a screen offers one, it is worth also providing a way to search or filter it.
 
+## Events
+
+Each toggle is a commit, so the tree emits `input` and `change` together:
+
+```js
+tree.addEventListener('change', () => save(tree.modelValue));
+```
+
+It also emits `model-value-changed`, Lion's internal protocol name. Prefer the native events.
+
 ## Properties
 
 Five attributes cover the data and the field wiring: `groups`, `model-value`,
 `locked-permissions`, `name`, and `disabled`.
-
-## Properties
 
 <ArgTypes of="craft-permission-tree" />

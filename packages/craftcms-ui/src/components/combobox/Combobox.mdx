@@ -41,6 +41,19 @@ Offer it whenever no selection is a valid answer. Without it, a person who picks
 
 `show-selected-hint` keeps the selected option's hint visible in the closed field, for when the hint is what distinguishes two similarly named entries.
 
+## Events
+
+Bind the native events, the same two a text input gives you:
+
+```js
+combobox.addEventListener('input', () => preview(combobox.modelValue));
+combobox.addEventListener('change', () => save(combobox.modelValue));
+```
+
+`input` fires on every alteration, typed or selected. `change` fires when the value is committed — an option is chosen, or the field is left after typing. Both are dispatched from the component, so `event.target` is the combobox rather than the textbox inside it.
+
+The control also emits `model-value-changed`. That is Lion's internal protocol name, carried because Lion's form system depends on it; prefer the native events.
+
 ## Accessibility
 
 Lion supplies the combobox pattern — the ARIA roles, the active-descendant handling, and the keyboard model.

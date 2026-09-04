@@ -1,6 +1,7 @@
 import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
+import {emitChange, emitInput} from '@src/utilities/form-events.js';
 import {t} from '@src/utilities/translate.js';
 import type CraftCheckbox from '../checkbox/checkbox.js';
 import '../button/button.js';
@@ -30,11 +31,15 @@ let nextTreeId = 0;
 
 /**
  * @summary A grouped tree of selectable permissions.
+ * @fires input - Emitted when a permission is toggled.
+ * @fires change - Emitted when a permission is toggled. Each toggle is a
+ *   commit, so it follows each `input`.
  * @fires model-value-changed - Fired when the selected permissions change.
  *
  * `model-value-changed` is Lion's own protocol name, not one this package
- * chose. It is kept because Lion's form system dispatches and listens for it;
- * a Craft-prefixed alias would only add a second name for the same thing.
+ * chose, and it is kept because Lion's form system dispatches and listens for
+ * it. Prefer the native events above: they are the contract this package
+ * supports, and they carry the component as `event.target`.
  */
 export default class CraftPermissionTree extends LitElement {
   static override styles = css`
@@ -309,6 +314,11 @@ export default class CraftPermissionTree extends LitElement {
         detail: {isTriggeredByUser: true},
       })
     );
+
+    // The public contract. Toggling a permission is a commit, so the pair
+    // fires together, the way a checkbox group's does.
+    emitInput(this);
+    emitChange(this);
   }
 
   #syncHiddenInputs() {

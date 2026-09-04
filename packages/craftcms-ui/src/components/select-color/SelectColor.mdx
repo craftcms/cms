@@ -21,6 +21,16 @@ For an arbitrary colour, use [Input Color](?path=/docs/form-controls-text-contro
 
 An optional "transparent" entry sits alongside the colours, for a value meaning _no colour_ rather than a colour that happens to be pale.
 
+## Events
+
+Picking a colour is a commit, so the control emits `input` and `change` together:
+
+```js
+select.addEventListener('change', () => save(select.modelValue));
+```
+
+It also emits `model-value-changed`, Lion's internal protocol name. Prefer the native events — they carry the component as `event.target`.
+
 ## Accessibility
 
 Each option is named by its colour, so the list is usable without seeing the swatches.

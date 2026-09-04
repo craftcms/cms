@@ -3,6 +3,7 @@ import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
+import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import '../option/option.js';
 import '../icon/icon.js';
@@ -59,12 +60,16 @@ interface VisibleEntry {
  * @slot after - Supplementary content rendered below the field.
  * @slot feedback - Validation feedback.
  *
+ * @fires input - Emitted on every alteration to the value, typed or selected.
+ * @fires change - Emitted when the value is committed: an option is selected,
+ *   or the field is left after typing.
  * @fires model-value-changed - The selection changed. Bubbles, so a form can
  *   listen for it once on an ancestor rather than per field.
  *
  * `model-value-changed` is Lion's own protocol name, not one this package
- * chose. It is kept because Lion's form system dispatches and listens for it;
- * a Craft-prefixed alias would only add a second name for the same thing.
+ * chose, and it is kept because Lion's form system dispatches and listens for
+ * it. Prefer the native events above: they are the contract this package
+ * supports, and they carry the component as `event.target`.
  */
 export default class CraftCombobox extends LionCombobox {
   static override get styles() {
@@ -110,19 +115,50 @@ export default class CraftCombobox extends LionCombobox {
   /** Last model value we've announced via `model-value-changed`. */
   #lastNotifiedValue: unknown = undefined;
 
+  /** Last model value announced as committed, via native `change`. */
+  #committedValue: unknown = undefined;
+
   #filtering = false;
 
   override firstUpdated(changed: Map<PropertyKey, unknown>) {
     super.firstUpdated(changed);
     this._inputNode?.addEventListener('input', this.#onInput);
+    // Same reason as `#onInput`: the textbox lives in the light DOM, so its own
+    // `change` on blur would reach consumers with the textbox as `target`.
+    // `#commit()` is what announces a commit from the host.
+    this._inputNode?.addEventListener('change', (event) =>
+      event.stopPropagation()
+    );
     // Keep our notion of the last-announced value in sync with every
     // model-value-changed the component emits — Lion's (on selection) and ours
     // (on free-text, below) — so we never double-announce the same value.
     this.addEventListener('model-value-changed', () => {
       this.#lastNotifiedValue = this.modelValue;
+
+      // Typing announces its own `input` from `#onInput` and commits on blur;
+      // anything else reaching here is a selection, which is both at once.
+      if (!this.#typing) {
+        emitInput(this);
+        this.#commit();
+      }
     });
+
+    // A typed value commits when the field is left, as a text input's does.
+    this.addEventListener('blur', () => this.#commit());
+
     this.#lastNotifiedValue = this.modelValue;
+    this.#committedValue = this.modelValue;
     this.#renderOptions();
+  }
+
+  /** Emits native `change` when the value has moved since the last commit. */
+  #commit(): void {
+    if (this.modelValue === this.#committedValue) {
+      return;
+    }
+
+    this.#committedValue = this.modelValue;
+    emitChange(this);
   }
 
   override updated(changed: Map<PropertyKey, unknown>) {
@@ -159,10 +195,25 @@ export default class CraftCombobox extends LionCombobox {
     });
   }
 
-  #onInput = () => {
-    this.#filtering = true;
-    this.#renderOptions();
-    this.#syncModelFromInput();
+  #typing = false;
+
+  #onInput = (event: Event) => {
+    // Lion keeps its textbox in the light DOM, so the input's own event would
+    // reach consumers with the textbox as `target` rather than this component.
+    // Claim it here and re-emit from the host; listeners bound to the textbox
+    // itself (Lion's own) still run.
+    event.stopPropagation();
+
+    this.#typing = true;
+    try {
+      this.#filtering = true;
+      this.#renderOptions();
+      this.#syncModelFromInput();
+    } finally {
+      this.#typing = false;
+    }
+
+    emitInput(this);
   };
 
   /**
