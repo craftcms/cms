@@ -63,10 +63,11 @@ describe('useElementSourceActions', () => {
       useElementSourceActions({sources: SOURCES, route, activeSource: '*'})
     );
 
-    const blog = (actions.value[1] as {items: Array<{onClick?: () => void}>})
-      .items[0]!;
+    const blog = (
+      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
+    ).items[0]!;
 
-    blog.onClick!();
+    blog.onClick!(new MouseEvent('click', {cancelable: true}));
 
     // The source list and the publishable sections don't change when the
     // source does, so they're left out rather than the whole page re-fetched.
@@ -86,10 +87,11 @@ describe('useElementSourceActions', () => {
       useElementSourceActions({sources: SOURCES, route, activeSource: active})
     );
 
-    const blog = (actions.value[1] as {items: Array<{onClick?: () => void}>})
-      .items[0]!;
+    const blog = (
+      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
+    ).items[0]!;
 
-    blog.onClick!();
+    blog.onClick!(new MouseEvent('click', {cancelable: true}));
     await nextTick();
 
     // Activated straight away, so the selection doesn't lag the pointer.
@@ -99,6 +101,29 @@ describe('useElementSourceActions', () => {
 
     expect(grouped.items[0]!.selected).toBe(true);
     expect((actions.value[0] as {selected?: boolean}).selected).toBe(false);
+  });
+
+  it('gives a source a real href and takes the click itself', () => {
+    const {actions} = run(() =>
+      useElementSourceActions({sources: SOURCES, route, activeSource: '*'})
+    );
+
+    const blog = (
+      actions.value[1] as {
+        items: Array<{href?: string; onClick?: (event: Event) => void}>;
+      }
+    ).items[0]!;
+
+    // `craft-nav-item` only renders an interactive anchor when it has an href
+    // — without one the sources are unfocusable text.
+    expect(blog.href).toBe('/admin/entries?source=section:blog');
+
+    const click = new MouseEvent('click', {cancelable: true});
+
+    blog.onClick!(click);
+
+    // …but following it would be a navigation, and this is a partial visit.
+    expect(click.defaultPrevented).toBe(true);
   });
 
   it('prefetches on the way down', () => {
@@ -128,10 +153,11 @@ describe('useElementSourceActions', () => {
       })
     );
 
-    const blog = (actions.value[1] as {items: Array<{onClick?: () => void}>})
-      .items[0]!;
+    const blog = (
+      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
+    ).items[0]!;
 
-    blog.onClick!();
+    blog.onClick!(new MouseEvent('click', {cancelable: true}));
 
     // An Inertia visit inside the selector modal would navigate the page
     // behind it.

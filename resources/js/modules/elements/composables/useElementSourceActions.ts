@@ -11,8 +11,8 @@ import type {
   SourceItem,
 } from '@/modules/elements/types/sources';
 import type {
-  ActionItemButton,
   ActionItemGroup,
+  ActionItemLink,
   ActionItems,
 } from '@/common/types';
 
@@ -143,12 +143,23 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
     };
   }
 
-  function toAction(source: SourceItem): ActionItemButton {
+  /**
+   * A source is a link, even though selecting one is a partial visit rather
+   * than a navigation: `craft-nav-item` only renders an interactive anchor
+   * when it has a real href, so without one the sources are unfocusable text.
+   * The click is intercepted and the visit made by hand.
+   */
+  function toAction(source: SourceItem): ActionItemLink {
     return {
+      type: 'link',
+      href: sourceUrl(source.key),
       label: source.label,
       selected: source.key === activeKey.value,
       attrs: moveAttrs(source),
-      onClick: () => visitSource(source.key),
+      onClick: (event: Event) => {
+        event.preventDefault();
+        visitSource(source.key);
+      },
       onMousedown: () => prefetchSource(source.key),
     };
   }
