@@ -51,9 +51,9 @@
   // and as the menu it collapses into without either rendering going its own
   // way. The selector modal builds the same descriptors.
   const {actions: sourceActions} = useElementSourceActions({
-    sources: () => elementIndex.value.sources,
+    sources: () => elementIndex.sources,
     route: () => props.route,
-    activeSource: () => elementIndex.value.source?.key,
+    activeSource: () => elementIndex.source?.key,
     viewMode: () => (viewState.mode !== 'table' ? viewState.mode : null),
   });
 
