@@ -147,14 +147,21 @@ class Locale implements Stringable
         return $this->id;
     }
 
+    /**
+     * Returns a locale's language ID.
+     */
+    public static function languageId(string $locale): string
+    {
+        $pos = strpos($locale, '-');
+        $lang = $pos !== false ? substr($locale, 0, $pos) : $locale;
+
+        return strtolower($lang);
+    }
+
     #[AllowedInSandbox]
     public function getLanguageID(): string
     {
-        if (($pos = strpos($this->id, '-')) !== false) {
-            return substr($this->id, 0, $pos);
-        }
-
-        return $this->id;
+        return static::languageId($this->id);
     }
 
     /**

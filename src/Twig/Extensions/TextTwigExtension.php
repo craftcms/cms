@@ -22,14 +22,18 @@ class TextTwigExtension extends AbstractExtension
         return [
             new TwigFilter('ascii', Str::ascii(...)),
             new TwigFilter('camel', $this->camelFilter(...)),
+            new TwigFilter('capitalize', $this->capitalizeFilter(...), ['needs_charset' => true]),
             new TwigFilter('encenc', $this->encencFilter(...)),
             new TwigFilter('hash', $this->hashFilter(...)),
             new TwigFilter('kebab', $this->kebabFilter(...)),
             new TwigFilter('lcfirst', $this->lcfirstFilter(...)),
+            new TwigFilter('lower', $this->lowerFilter(...)),
             new TwigFilter('pascal', $this->pascalFilter(...)),
             new TwigFilter('replace', $this->replaceFilter(...)),
             new TwigFilter('snake', $this->snakeFilter(...)),
+            new TwigFilter('title', $this->titleFilter(...)),
             new TwigFilter('truncate', $this->truncateFilter(...)),
+            new TwigFilter('upper', $this->upperFilter(...)),
             new TwigFilter('widont', $this->widontFilter(...), ['is_safe' => ['html']]),
         ];
     }
@@ -74,6 +78,14 @@ class TextTwigExtension extends AbstractExtension
         return Str::camel((string) $string);
     }
 
+    /**
+     * Capitalizes a string, respecting language-specific casing rules.
+     */
+    public function capitalizeFilter(string $charset, ?string $string, ?string $language = null): string
+    {
+        return Str::upper(mb_substr($string ?? '', 0, 1, $charset), $language).Str::lower(mb_substr($string ?? '', 1, null, $charset), $language);
+    }
+
     public function pascalFilter(mixed $string): string
     {
         return Str::pascal((string) $string);
@@ -82,6 +94,30 @@ class TextTwigExtension extends AbstractExtension
     public function snakeFilter(mixed $string): string
     {
         return Str::snake((string) $string);
+    }
+
+    /**
+     * Lower-cases a string, respecting language-specific casing rules.
+     */
+    public function lowerFilter(?string $string, ?string $language = null): string
+    {
+        return Str::lower($string ?? '', $language);
+    }
+
+    /**
+     * Title-cases a string, respecting language-specific casing rules.
+     */
+    public function titleFilter(?string $string, ?string $language = null): string
+    {
+        return Str::title($string ?? '', $language);
+    }
+
+    /**
+     * Upper-cases a string, respecting language-specific casing rules.
+     */
+    public function upperFilter(?string $string, ?string $language = null): string
+    {
+        return Str::upper($string ?? '', $language);
     }
 
     public function encencFilter(mixed $str): string

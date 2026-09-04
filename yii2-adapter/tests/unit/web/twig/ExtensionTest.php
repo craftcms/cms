@@ -321,6 +321,75 @@ class ExtensionTest extends TestCase
         );
     }
 
+    /**
+     * `title`, `capitalize`, `upper`, and `lower` all accept an optional `language` argument
+     * that should be respected for language-specific casing rules
+     * (https://github.com/craftcms/cms/discussions/19555).
+     */
+    public function testTitleFilter(): void
+    {
+        $this->testRenderResult(
+            'Ijsselmeer',
+            '{{ "ijsselmeer"|title }}'
+        );
+
+        // Dutch title-cases the "ij" digraph as a single letter, capitalizing both characters
+        $this->testRenderResult(
+            'IJsselmeer',
+            '{{ "ijsselmeer"|title("nl") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testCapitalizeFilter(): void
+    {
+        $this->testRenderResult(
+            'Istanbul',
+            '{{ "istanbul"|capitalize }}'
+        );
+
+        // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+        $this->testRenderResult(
+            'İstanbul',
+            '{{ "istanbul"|capitalize("tr") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testUpperFilter(): void
+    {
+        $this->testRenderResult(
+            'ISTANBUL',
+            '{{ "istanbul"|upper }}'
+        );
+
+        $this->testRenderResult(
+            'İSTANBUL',
+            '{{ "istanbul"|upper("tr") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testLowerFilter(): void
+    {
+        $this->testRenderResult(
+            'istanbul',
+            '{{ "Istanbul"|lower }}'
+        );
+
+        // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+        $this->testRenderResult(
+            'ıstanbul',
+            '{{ "Istanbul"|lower("tr") }}'
+        );
+    }
+
     public function test_kebab_filter(): void
     {
         $this->testRenderResult(

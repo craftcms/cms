@@ -2193,11 +2193,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts all characters in the string to lowercase. An alias for PHP's mb_strtolower().
      *
      * @param string $str The string to convert to lowercase.
+     * @param string|null $language The string’s langauge
      * @return string The lowercase string.
      */
-    public static function toLowerCase(string $str): string
+    public static function toLowerCase(string $str, ?string $language = null): string
     {
-        return Str::lower($str);
+        return Str::lower($str, $language);
     }
 
     /**
@@ -2274,11 +2275,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts the first character of each word in the string to uppercase.
      *
      * @param string $str The string to convert case.
+     * @param string|null $language The string’s langauge
      * @return string The title-cased string.
      */
-    public static function toTitleCase(string $str): string
+    public static function toTitleCase(string $str, ?string $language = null): string
     {
-        return Str::title($str);
+        return Str::title($str, $language);
     }
 
     /**
@@ -2300,11 +2302,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts all characters in the string to uppercase. An alias for PHP's mb_strtoupper().
      *
      * @param string $str The string to convert to uppercase.
+     * @param string|null $language The string’s langauge
      * @return string The uppercase string.
      */
-    public static function toUpperCase(string $str): string
+    public static function toUpperCase(string $str, ?string $language = null): string
     {
-        return Str::upper($str);
+        return Str::upper($str, $language);
     }
 
     /**

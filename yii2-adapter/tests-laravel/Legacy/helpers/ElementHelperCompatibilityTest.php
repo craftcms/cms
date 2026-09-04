@@ -36,6 +36,7 @@ class ElementHelperCompatibilityTest extends TestCase
     public function testSlugHelpersDelegateToLaravelImplementation(): void
     {
         self::assertSame(LaravelElementHelper::normalizeSlug('Audi S8 4E (2006-2010)'), ElementHelper::normalizeSlug('Audi S8 4E (2006-2010)'));
+        self::assertSame(LaravelElementHelper::normalizeSlug('Istanbul', 'tr'), ElementHelper::normalizeSlug('Istanbul', 'tr'));
         self::assertSame(LaravelElementHelper::generateSlug('A-B-C'), ElementHelper::generateSlug('A-B-C'));
         self::assertTrue(ElementHelper::isTempSlug(ElementHelper::tempSlug()));
     }
