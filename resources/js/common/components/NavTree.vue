@@ -2,10 +2,10 @@
   /**
    * One level of the CP navigation, rendered recursively.
    *
-   * PROTOTYPE. Nothing on the server produces a tree this deep yet — the nav
-   * prop is one level plus whatever a plugin hands over — so this is driven by
-   * fixtures (see `NavTree.stories.ts`) while the shape of the navigation map
-   * is still being settled.
+   * Renders `craft.nav` in `MainNav`. The server only supplies two levels so
+   * far — one level plus whatever a plugin hands over — but the deeper tree
+   * the navigation map will produce is exercised by fixtures in
+   * `NavTree.stories.ts`.
    *
    * Flyouts and indentation do different jobs. A flyout is for *getting*
    * somewhere: it reaches any branch from wherever you are without disturbing
@@ -29,6 +29,7 @@
     items,
     mode = 'trail',
     iconOnly = false,
+    depth = 0,
   } = defineProps<{
     items: Array<NavNode>;
     /**
@@ -39,6 +40,12 @@
     mode?: 'trail' | 'flyout' | 'inline';
     /** Collapsed to a rail: labels become tooltips and every subnav flyouts. */
     iconOnly?: boolean;
+    /**
+     * How deep this level sits. Nothing about the behaviour depends on it —
+     * only the bullet that stands in for a missing icon below the root, which
+     * is what keeps a subnav's labels aligned with its parent's.
+     */
+    depth?: number;
   }>();
 
   /** `subnav` is `false` when the server hasn't resolved this branch yet. */
@@ -71,6 +78,15 @@
   function initialState(item: NavNode): 'open' | 'closed' {
     return expanded(item) ? 'open' : 'closed';
   }
+
+  /**
+   * Below the root, an item with no icon takes a bullet in the icon slot so
+   * its label lines up with the icon-bearing items around it. A group is a
+   * heading rather than a destination, so it doesn't take one.
+   */
+  function bulleted(item: NavNode): boolean {
+    return depth > 0 && !item.icon && !item.group;
+  }
 </script>
 
 <template>
@@ -87,10 +103,12 @@
       :active.prop="item.selected"
       :indicator.prop="!!item.badgeCount"
     >
+      <span v-if="bulleted(item)" class="nav-bullet" slot="icon"></span>
+
       {{ item.label }}
 
       <craft-nav-list v-if="childrenOf(item).length" slot="subnav">
-        <NavTree :items="childrenOf(item)" :mode="mode" />
+        <NavTree :items="childrenOf(item)" :mode="mode" :depth="depth + 1" />
       </craft-nav-list>
     </craft-nav-item>
 
@@ -107,11 +125,28 @@
       :external.prop="item.external"
       :inertia="!item.external"
     >
+      <span v-if="bulleted(item)" class="nav-bullet" slot="icon"></span>
+
       {{ item.label }}
 
       <craft-nav-list v-if="childrenOf(item).length" slot="subnav">
-        <NavTree :items="childrenOf(item)" :mode="mode" />
+        <NavTree :items="childrenOf(item)" :mode="mode" :depth="depth + 1" />
       </craft-nav-list>
     </CpLink>
   </template>
 </template>
+
+<style scoped lang="scss">
+  .nav-bullet {
+    --nav-item-indicator-size: calc(4rem / 16);
+    display: inline-flex;
+    width: var(--nav-item-indicator-size);
+    border-radius: var(--c-radius-full);
+    aspect-ratio: 1;
+    background-color: currentcolor;
+  }
+
+  .nav-bullet[active] {
+    --nav-item-indicator-size: calc(6rem / 16);
+  }
+</style>

@@ -14,7 +14,7 @@
 type NavNode = CraftCms.Cms.Cp.Data.ActionItem;
 
 /** Fills in the fields the DTO always carries so the tree below stays legible. */
-function node(label: string, extra: Partial<NavNode> = {}): NavNode {
+export function node(label: string, extra: Partial<NavNode> = {}): NavNode {
   return {
     label,
     html: null,

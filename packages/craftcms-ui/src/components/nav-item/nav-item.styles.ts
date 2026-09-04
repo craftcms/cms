@@ -104,6 +104,13 @@ export default css`
     display: grid;
     gap: var(--c-spacing-xs);
     padding: var(--c-spacing-sm);
+
+    /* A subnav can be far longer than the viewport — a workbench section with
+       forty entries, say — and the overlay is positioned, not laid out, so
+       nothing else will stop it running off the bottom of the screen. */
+    max-block-size: calc(100dvh - var(--c-spacing-xl) * 2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .flyout__label {

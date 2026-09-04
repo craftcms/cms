@@ -2,7 +2,7 @@ import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {createApp, nextTick} from 'vue';
 
 import NavTree from './NavTree.vue';
-import {navFixture, selectFixtureItem} from './NavTree.fixture';
+import {navFixture, node, selectFixtureItem} from './NavTree.fixture';
 
 let container: HTMLElement;
 let app: ReturnType<typeof createApp> | null = null;
@@ -97,6 +97,36 @@ it('forces one mode or the other when asked', async () => {
   await mount({mode: 'inline'});
   // Off the trail, but `inline` overrides that.
   expect(display('Settings')).toBe('inline');
+});
+
+it('bullets an icon-less item below the root so labels line up', async () => {
+  await mount({
+    items: [
+      node('Branch', {
+        href: '/branch',
+        icon: 'gear',
+        subnav: [
+          node('Iconned child', {href: '/branch/1', icon: 'wrench'}),
+          node('Bare child', {href: '/branch/2'}),
+          node('Heading', {group: true, subnav: [node('Leaf', {href: '/x'})]}),
+        ],
+      }),
+      node('Bare root', {href: '/bare'}),
+    ],
+  });
+
+  // `:scope >` because a branch's subnav is nested inside it — a descendant's
+  // bullet would otherwise answer for its parent.
+  const bullet = (label: string) =>
+    item(label)?.querySelector(':scope > .nav-bullet');
+
+  // The bullet stands in for the icon its siblings have, so the labels of a
+  // subnav don't wander left of the ones above them.
+  expect(bullet('Bare child')).not.toBeNull();
+  expect(bullet('Iconned child')).toBeNull();
+  // A heading isn't a destination, and the root has nothing to line up with.
+  expect(bullet('Heading')).toBeNull();
+  expect(bullet('Bare root')).toBeNull();
 });
 
 it('renders a destination-less branch as a static item', async () => {
