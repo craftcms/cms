@@ -120,25 +120,25 @@ it('shows author and relational changes in the activity timeline', function () {
     ])->assertOk()->json('events.0.changes'))
         ->keyBy('label');
 
-    expect($changes['Authors']['old'])->toBe([[
+    expect($changes['Authors']['old'])->toEqual([[
         'elementType' => User::class,
         'id' => $oldAuthor->id,
         'label' => $oldAuthor->getUiLabel(),
         'siteId' => $oldAuthor->siteId,
     ]])
-        ->and($changes['Authors']['new'])->toBe([[
+        ->and($changes['Authors']['new'])->toEqual([[
             'elementType' => User::class,
             'id' => $author->id,
             'label' => 'Ada Lovelace',
             'siteId' => $author->siteId,
         ]])
-        ->and($changes[$field->name]['old'])->toBe([[
+        ->and($changes[$field->name]['old'])->toEqual([[
             'elementType' => Entry::class,
             'id' => $oldTarget->id,
             'label' => 'Old target',
             'siteId' => $oldTarget->siteId,
         ]])
-        ->and($changes[$field->name]['new'])->toBe([[
+        ->and($changes[$field->name]['new'])->toEqual([[
             'elementType' => Entry::class,
             'id' => $newTarget->id,
             'label' => 'New target',
@@ -301,20 +301,20 @@ it('shows author and relational changes applied from provisional drafts', functi
     ])->assertOk()->json('events.0.changes'))
         ->keyBy('label');
 
-    expect($changes['Authors']['old'])->toBe([[
+    expect($changes['Authors']['old'])->toEqual([[
         'elementType' => User::class,
         'id' => $oldAuthor->id,
         'label' => $oldAuthor->getUiLabel(),
         'siteId' => $oldAuthor->siteId,
     ]])
-        ->and($changes['Authors']['new'])->toBe([[
+        ->and($changes['Authors']['new'])->toEqual([[
             'elementType' => User::class,
             'id' => $newAuthor->id,
             'label' => 'Ada Lovelace',
             'siteId' => $newAuthor->siteId,
         ]])
         ->and($changes[$field->name]['old'])->toBe([])
-        ->and($changes[$field->name]['new'])->toBe([
+        ->and($changes[$field->name]['new'])->toEqual([
             [
                 'elementType' => Entry::class,
                 'id' => $firstTarget->id,
