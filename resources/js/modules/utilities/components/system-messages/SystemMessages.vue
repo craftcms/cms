@@ -45,7 +45,7 @@
 </script>
 
 <template>
-  <div id="messages" class="p-4">
+  <div id="messages">
     <div v-for="message in localMessages" :key="message.key" class="mb-6">
       <h2 class="text-lg mb-2">{{ message.heading }}</h2>
       <craft-pane appearance="outline">

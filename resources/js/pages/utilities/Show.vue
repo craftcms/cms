@@ -26,10 +26,8 @@
       :html="toolbarHtml"
     ></DynamicHtmlRenderer>
   </LayoutSlot>
-  <craft-pane appearance="raised" padding="0" class="@container">
-    <div class="content-pane">
-      <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
-      <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
-    </div>
-  </craft-pane>
+  <div class="py-4">
+    <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
+  </div>
+  <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
 </template>
