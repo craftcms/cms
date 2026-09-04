@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
-use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Shared\Contracts\ImportableModelInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
@@ -19,8 +19,40 @@ use Override;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * The ModelImporter should be used for importing data into an eloquent model.
+ * For a model to support this, it has to implement the ImportableModelInterface.
+ * Element types must use ElementImporter.
+ * Unlike with Elements (where all elements start as importable and can opt out via `isImportable()` method,
+ * ImportableModelInterface is strictly an opt-in mechanism.
+ */
 class ModelImporter extends BaseImporter
 {
+    /**
+     * Maps driver-specific `type_name` values, as reported by `Schema::getColumns()` for
+     * MySQL and PostgreSQL connections, to their equivalent {@see Query::TYPE_*} constant.
+     */
+    private const array TYPE_ALIASES = [
+        // MySQL
+        'int' => Query::TYPE_INTEGER,
+        'mediumint' => Query::TYPE_INTEGER,
+
+        // PostgreSQL
+        'int2' => Query::TYPE_SMALLINT,
+        'int4' => Query::TYPE_INTEGER,
+        'int8' => Query::TYPE_BIGINT,
+        'bpchar' => Query::TYPE_CHAR,
+        'numeric' => Query::TYPE_DECIMAL,
+        'float4' => Query::TYPE_FLOAT,
+        'float8' => Query::TYPE_DOUBLE,
+        'bool' => Query::TYPE_BOOLEAN,
+        'timestamptz' => Query::TYPE_TIMESTAMP,
+        'timetz' => Query::TYPE_TIME,
+
+        // MySQL and PostgreSQL
+        'varchar' => Query::TYPE_STRING,
+    ];
+
     /**
      * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
      *
@@ -82,9 +114,9 @@ class ModelImporter extends BaseImporter
             return false;
         }
 
-        // has to extend Craft's BaseModel
-        if (! (new $value) instanceof BaseModel) {
-            $fail($attribute, t('Class name must extend Craft\'s BaseModel.'));
+        // has to implement ImportableModel interface
+        if (! (new $value) instanceof ImportableModelInterface) {
+            $fail($attribute, t('Class name must implement Craft\'s ImportableModelInterface.'));
 
             return false;
         }
@@ -101,16 +133,6 @@ class ModelImporter extends BaseImporter
     }
 
     #[Override]
-    public function transformer(string|null|BaseTransformer $transformer): self
-    {
-        //        if ($transformer === null) {
-        //            return $this;
-        //        }
-
-        return parent::transformer($transformer);
-    }
-
-    #[Override]
     public function getDestinationCols(): array
     {
         $columns = Schema::getColumns((new $this->className)->getTable());
@@ -124,10 +146,22 @@ class ModelImporter extends BaseImporter
             'prefixedHandle' => $col['name'],
             'prefixedHandleAsArray' => Arr::bracketsToArray($col['name']),
             'isContainer' => false,
-            //            'canBeMatchCriteria' => $this->isTypeMatchable($col['type']),
-            //            'canBeCleared' => !$col['nullable'],
+            'canBeMatchCriteria' => $this->isTypeMatchable($col['type_name']),
+            'canBeCleared' => $col['nullable'],
             // 'isProperty' => true,
         ], $columns);
+    }
+
+    /**
+     * Returns whether a given DB column type can be used to value being imported against the value in the database.
+     * You can match on text, numeric, boolean, and date/time values.
+     */
+    private function isTypeMatchable(string $type): bool
+    {
+        $type = self::TYPE_ALIASES[$type] ?? $type;
+
+        return in_array(Query::getSimplifiedColumnType($type), [Query::SIMPLE_TYPE_NUMERIC, Query::SIMPLE_TYPE_TEXTUAL]) ||
+            in_array($type, [Query::TYPE_BOOLEAN, Query::TYPE_DATETIME, Query::TYPE_DATE, Query::TYPE_TIME, Query::TYPE_TIMESTAMP], true);
     }
 
     #[Override]
