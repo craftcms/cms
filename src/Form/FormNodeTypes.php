@@ -15,7 +15,6 @@ use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\LineBreak;
-use CraftCms\Cms\Form\Nodes\Loader;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Form\Nodes\Missing;
 use CraftCms\Cms\Form\Nodes\Separator;
@@ -43,7 +42,6 @@ class FormNodeTypes extends TypeRegistry
         Heading::class,
         HiddenField::class,
         LineBreak::class,
-        Loader::class,
         MarkdownContent::class,
         Missing::class,
         Separator::class,

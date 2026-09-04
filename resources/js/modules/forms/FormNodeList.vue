@@ -3,9 +3,9 @@
   import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/icon/icon';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, ref, watch} from 'vue';
+  import {computed, ref, watch} from 'vue';
   import FormNode from './FormNode.vue';
-  import {FormRebuilding, formTabPanelId, pathsMatch} from './runtime';
+  import {formTabPanelId, pathsMatch} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   const props = defineProps<{
@@ -26,25 +26,6 @@
     )
   );
   const activeTab = ref<string | null>(null);
-
-  const rebuilding = inject(FormRebuilding, undefined);
-
-  /**
-   * While a rebuild is in flight, stop at the `craft:loader` node: it stands in
-   * for the nodes after it, which are the ones about to be replaced. Without a
-   * loader in the list, nothing is withheld.
-   */
-  const renderedNodes = computed<FormNodePayload[]>(() => {
-    if (!rebuilding?.value) {
-      return props.nodes;
-    }
-
-    const loader = props.nodes.findIndex(
-      (node) => node.component === 'craft:loader'
-    );
-
-    return loader === -1 ? props.nodes : props.nodes.slice(0, loader + 1);
-  });
 
   watch(
     tabs,
@@ -114,7 +95,7 @@
     </craft-tab>
   </craft-tabs>
   <FormNode
-    v-for="node in renderedNodes"
+    v-for="node in nodes"
     :key="node.uid ?? node.control?.path.join('.')"
     :node="node"
     slot="panel"

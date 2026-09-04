@@ -22,8 +22,8 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Loader;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Http\Controllers\FieldsController;
@@ -74,7 +74,7 @@ class FieldEditViewModel extends ViewModel
         ];
         $typeField = FormField::make(t('Field Type'), Combobox::make('type')
             ->options($this->fieldTypeOptions())
-            ->rebuildsForm())
+            ->reactive())
             ->instructions(t('What type of field is this?'))
             ->required();
 
@@ -93,18 +93,20 @@ class FieldEditViewModel extends ViewModel
         if (Sites::isMultiSite() && count($translationOptions) > 1) {
             $nodes[] = FormField::make(
                 t('Translation Method'),
-                Choice::make('translationMethod')->options($translationOptions),
+                Choice::make('translationMethod')->options($translationOptions)->reactive(),
             )->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
-                $nodes[] = FormField::make(
-                    t('Translation Key Format'),
-                    Text::make('translationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
-                )
-                    ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
-                    ->tip(SelectOptions::getObjectTemplateTip());
+                $nodes[] = Group::make('field-translation-settings', [
+                    FormField::make(
+                        t('Translation Key Format'),
+                        Text::make('translationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
+                    )
+                        ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
+                        ->tip(SelectOptions::getObjectTemplateTip()),
+                ])->dependsOn('translationMethod');
             }
         } else {
             $nodes[] = HiddenField::make('translationMethod');
@@ -112,9 +114,6 @@ class FieldEditViewModel extends ViewModel
         }
 
         $nodes[] = Separator::make('field-settings-separator');
-        // Everything past here comes from the field type's own settings form,
-        // so it's what gets replaced when the type changes.
-        $nodes[] = Loader::make('field-settings-loader');
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
         $refreshable = ! $this->readOnly;
         $formResolver = app(FormResolver::class);
@@ -134,10 +133,12 @@ class FieldEditViewModel extends ViewModel
             refreshable: $refreshable,
         ));
         $settingsContext = $this->settingsFormContext();
-        $settings = $formResolver->resolve(
-            $this->settingsFormDefinition($settingsContext) ?? Form::make(),
-            $settingsContext,
-        );
+        $settingsForm = $this->settingsFormDefinition($settingsContext);
+        $settings = $formResolver->resolve($settingsForm === null
+            ? Form::make()
+            : Form::make([
+                Group::make('field-settings', $settingsForm->nodes())->dependsOn('type'),
+            ]), $settingsContext);
 
         return new FormPayload(
             scope: [],

@@ -15,7 +15,7 @@
     dir?: string;
   };
 
-  const props = defineProps<{
+  defineProps<{
     control: FormControlPayload<ComboboxControlProps>;
     value: unknown;
     label?: string;
@@ -27,22 +27,18 @@
     (event: 'update:value', value: string, kind: FormChangeKind): void;
   }>();
 
-  function namesAnOption(value: string): boolean {
-    return props.control.props.options.some((item) =>
-      'options' in item
-        ? item.options.some((option) => String(option.value) === value)
-        : String(item.value) === value
+  function onModelValueChanged(event: CustomEvent): void {
+    if (event.detail?.initialize) {
+      return;
+    }
+
+    const value = (event.target as HTMLElement & {modelValue?: unknown})
+      .modelValue;
+    emit(
+      'update:value',
+      String(value ?? ''),
+      event.detail?.changeSource === 'input' ? 'typing' : 'discrete'
     );
-  }
-
-  function onValueChanged(value: string | number | boolean | undefined): void {
-    const next = String(value ?? '');
-
-    // The combobox reports each keystroke as well as the eventual selection.
-    // A value naming an option is a committed choice, so it shouldn't sit out
-    // the long typing debounce before the form refreshes; free text on its way
-    // to a match still should.
-    emit('update:value', next, namesAnOption(next) ? 'discrete' : 'typing');
   }
 </script>
 
@@ -62,6 +58,6 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :validators="serverErrorValidators(invalid)"
-    @update:model-value="onValueChanged"
+    @model-value-changed="onModelValueChanged"
   />
 </template>

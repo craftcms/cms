@@ -19,6 +19,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -354,18 +355,20 @@ readonly class SitesController
             $nodes[] = HiddenField::make('primary');
         }
 
-        $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls'));
+        $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls')->reactive());
 
         if ($values['hasUrls'] ?? false) {
-            $nodes[] = Field::make(t('Base URL'), Text::make('baseUrl')
-                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, Str::isUrl(...))))
-                ->instructions(t('The base URL for the site.'))
-                ->tip(sprintf(
-                    '%s [%s](%s)',
-                    t('Type `$` to choose an environment variable, or `@` to choose an alias.'),
-                    t('Learn more'),
-                    'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
-                ));
+            $nodes[] = Group::make('site-url-settings', [
+                Field::make(t('Base URL'), Text::make('baseUrl')
+                    ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, Str::isUrl(...))))
+                    ->instructions(t('The base URL for the site.'))
+                    ->tip(sprintf(
+                        '%s [%s](%s)',
+                        t('Type `$` to choose an environment variable, or `@` to choose an alias.'),
+                        t('Learn more'),
+                        'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
+                    )),
+            ])->dependsOn('hasUrls');
         }
 
         return $this->formResolver->resolve(Form::make($nodes), new FormContext(

@@ -14,10 +14,10 @@ abstract class Control implements ControlContract
 
     protected ControlMode $mode = ControlMode::Editable;
 
+    protected bool $reactive = false;
+
     /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
-
-    protected bool $rebuildsForm = false;
 
     /**
      * Creates a Control bound to a path relative to its Form context.
@@ -125,27 +125,21 @@ abstract class Control implements ControlContract
     /**
      * Returns the locally declared mode before FormContext policy is applied.
      */
-    /**
-     * Marks a control whose value decides what the rest of the form even is —
-     * a field's type, say — so the renderer can cover the form while it's being
-     * rebuilt. Editing an ordinary control also refreshes, but the form that
-     * comes back is the same one, so it shouldn't flash.
-     */
-    final public function rebuildsForm(bool $rebuilds = true): static
+    final public function getMode(): ControlMode
     {
-        $this->rebuildsForm = $rebuilds;
+        return $this->mode;
+    }
+
+    final public function reactive(bool $reactive = true): static
+    {
+        $this->reactive = $reactive;
 
         return $this;
     }
 
-    final public function getRebuildsForm(): bool
+    final public function isReactive(): bool
     {
-        return $this->rebuildsForm;
-    }
-
-    final public function getMode(): ControlMode
-    {
-        return $this->mode;
+        return $this->reactive;
     }
 
     /**

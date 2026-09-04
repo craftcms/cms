@@ -215,7 +215,11 @@ export default class CraftCombobox extends LionCombobox {
       this.dispatchEvent(
         new CustomEvent('model-value-changed', {
           bubbles: true,
-          detail: {formPath: [this], isTriggeredByUser: true},
+          detail: {
+            formPath: [this],
+            isTriggeredByUser: true,
+            changeSource: 'input',
+          },
         })
       );
     }

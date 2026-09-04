@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
@@ -134,17 +135,21 @@ class Local extends Filesystem
         $form = Form::make();
 
         $form->add(Field::make(t('Files in this filesystem have public URLs'))
-            ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
+            ->control(Lightswitch::make('hasUrls')
+                ->value($this->hasUrls)
+                ->reactive()));
 
         if ($this->hasUrls) {
-            $form->add(Field::make(t('Base URL'))
-                ->instructions(t('The base URL to the files in this filesystem.'))
-                ->required()
-                ->control(Text::make('url')
-                    ->value($this->url)
-                    ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, fn ($value): bool => Str::isUrl($value)))
-                    ->placeholder('//example.com/path/to/folder'))
-                ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')));
+            $form->add(Group::make('local-filesystem-url-settings', [
+                Field::make(t('Base URL'))
+                    ->instructions(t('The base URL to the files in this filesystem.'))
+                    ->required()
+                    ->control(Text::make('url')
+                        ->value($this->url)
+                        ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, fn ($value): bool => Str::isUrl($value)))
+                        ->placeholder('//example.com/path/to/folder'))
+                    ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')),
+            ])->dependsOn('settings.hasUrls'));
         }
 
         return $form->add(Field::make(t('Base Path'))

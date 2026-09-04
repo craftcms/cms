@@ -37,7 +37,6 @@ import HandleControl from './HandleControl.vue';
 import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import PermissionTreeControl from './PermissionTreeControl.vue';
-import LoaderNode from './LoaderNode.vue';
 import SeparatorNode from './SeparatorNode.vue';
 import './content-block-input';
 
@@ -58,7 +57,6 @@ export function registerFormComponents(
   components.register('craft:callout', CalloutNode);
   components.register('craft:heading', HeadingNode);
   components.register('craft:line-break', LineBreakNode);
-  components.register('craft:loader', LoaderNode);
   components.register('craft:separator', SeparatorNode);
   components.register('craft:handle', HandleControl);
   components.register('craft:hidden-field', HiddenFieldNode);

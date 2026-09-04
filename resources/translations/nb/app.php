@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Sorter etter',
     'Sort descending' => 'Sorter synkende',
     'Sort direction' => 'Sorter etter retning',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sorteringskode',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Kildeinnstillinger lagret',
@@ -2316,9 +2317,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

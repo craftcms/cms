@@ -537,7 +537,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      *
      * Mirrors the `sourcesField` block of Craft 5’s `elementfieldsettings.twig`.
      */
-    protected function sourcesField(): FormField
+    protected function sourcesField(bool $reactive = false): FormField
     {
         $elementType = static::elementType();
         $sourceOptions = array_map(fn (array $option): array => [
@@ -551,7 +551,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (! $this->allowMultipleSources) {
             return FormField::make(t('Source'))
                 ->instructions($instructions)
-                ->control(Choice::make('source')->options($sourceOptions)->value($this->source));
+                ->control(Choice::make('source')
+                    ->options($sourceOptions)
+                    ->value($this->source)
+                    ->reactive($reactive));
         }
 
         // Some element types expose an “All …” source of their own (entries,
@@ -580,7 +583,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 // Storing “all” as a token rather than today's source list is
                 // what lets the field pick up sources added later.
                 ->allOption($allLabel, self::ALL_SOURCES)
-                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources));
+                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources)
+                ->reactive($reactive));
     }
 
     /**
@@ -769,21 +773,28 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             // The site picker is hidden rather than omitted so its value survives
             // the refresh and the switch can be turned back on.
             $useTargetSite = ! empty($this->targetSiteId);
-            $advanced->add(
-                FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
-                    ->control(Lightswitch::make('useTargetSite')->value($useTargetSite)),
+            $targetSiteNodes = [
                 FormField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
                     ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId))
                     ->visible($useTargetSite),
-            );
+            ];
 
             // The inverse of the picker above: relating from one fixed site
             // leaves nothing for a site menu to switch between.
             if (static::canShowSiteMenu()) {
-                $advanced->add(FormField::make(t('Show the site menu'))
+                $targetSiteNodes[] = FormField::make(t('Show the site menu'))
                     ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu))
-                    ->visible(! $useTargetSite));
+                    ->visible(! $useTargetSite);
             }
+
+            $advanced->add(
+                FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
+                    ->control(Lightswitch::make('useTargetSite')
+                        ->value($useTargetSite)
+                        ->reactive()),
+                Group::make('relation-target-site-settings', $targetSiteNodes)
+                    ->dependsOn('settings.useTargetSite'),
+            );
         }
 
         return $advanced;

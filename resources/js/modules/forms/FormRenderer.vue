@@ -19,7 +19,7 @@
     FormFailure,
     FormControlOverrides,
     FormModifiedGroups,
-    FormRebuilding,
+    FormRefreshingFields,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -62,11 +62,9 @@
   const values = reactive(cloneRaw(props.payload.values));
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
-  // Scopes whose pending refresh was triggered by a control that decides what
-  // the form contains, so the wait can be covered rather than left looking idle.
-  const rebuildingScopes = new Set<string>();
-  const rebuilding = ref(false);
   const refreshVersions = new Map<string, number>();
+  const activeRefreshes = new Map<string, {field: string; request: number}>();
+  const refreshingFields = reactive(new Set<string>());
   const lastRefreshValues = new Map([
     [
       JSON.stringify(props.payload.scope),
@@ -83,7 +81,10 @@
     FormModifiedGroups,
     computed(() => new Set(props.modified ?? []))
   );
-  provide(FormRebuilding, rebuilding);
+  provide(
+    FormRefreshingFields,
+    computed(() => refreshingFields)
+  );
 
   useEventListener(hostForm, 'submit', (event) => {
     if (renderError.value) {
@@ -108,46 +109,36 @@
     emit('change', change, currentValues());
   }
 
-  function rebuildsForm(path: string[]): boolean {
-    let found = false;
-
-    visitControls(payload.value.nodes, (control) => {
-      if (pathsMatch(control.path, path) && control.props.rebuildsForm) {
-        found = true;
-      }
-    });
-
-    return found;
-  }
-
   function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
     emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
-    const refreshable = change.refreshable ?? payload.value.refreshable;
     const key = JSON.stringify(scope);
-    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
 
-    if (!props.refresh || !refreshable) {
+    if (!props.refresh || !change.refreshable) {
       return;
     }
 
-    if (rebuildsForm(change.path)) {
-      rebuildingScopes.add(key);
+    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
+    clearTimeout(refreshTimers.get(key));
+
+    if (change.kind === 'discrete') {
+      void requestRefresh(scope, change.path);
+
+      return;
     }
 
-    clearTimeout(refreshTimers.get(key));
     refreshTimers.set(
       key,
-      setTimeout(
-        () => requestRefresh(scope),
-        change.kind === 'typing' ? 1000 : 100
-      )
+      setTimeout(() => requestRefresh(scope, change.path), 1000)
     );
   }
 
-  async function requestRefresh(scope: string[]): Promise<void> {
+  async function requestRefresh(
+    scope: string[],
+    fieldPath: string[]
+  ): Promise<void> {
     const snapshot = cloneRaw(valueAt(values, scope));
 
     if (!isRecord(snapshot)) {
@@ -160,19 +151,21 @@
     const serialized = canonical(snapshot);
 
     if (serialized === lastRefreshValues.get(key)) {
-      rebuildingScopes.delete(key);
-
       return;
     }
 
     lastRefreshValues.set(key, serialized);
     const request = (refreshVersions.get(key) ?? 0) + 1;
     refreshVersions.set(key, request);
-    const isRebuild = rebuildingScopes.delete(key);
+    const field = JSON.stringify(fieldPath);
+    const activeRefresh = activeRefreshes.get(key);
 
-    if (isRebuild) {
-      rebuilding.value = true;
+    if (activeRefresh) {
+      refreshingFields.delete(activeRefresh.field);
     }
+
+    activeRefreshes.set(key, {field, request});
+    refreshingFields.add(field);
 
     try {
       const refreshed = await props.refresh!(snapshot, scope);
@@ -184,9 +177,9 @@
       lastRefreshValues.delete(key);
       // The current presentation and values are already the last valid state.
     } finally {
-      // Superseded requests leave the cover to whichever one replaced them.
-      if (isRebuild && request === refreshVersions.get(key)) {
-        rebuilding.value = false;
+      if (activeRefreshes.get(key)?.request === request) {
+        activeRefreshes.delete(key);
+        refreshingFields.delete(field);
       }
     }
   }
@@ -274,11 +267,11 @@
     renderError.value = undefined;
     refreshTimers.forEach(clearTimeout);
     refreshTimers.clear();
-    rebuildingScopes.clear();
-    rebuilding.value = false;
     // Dropping the versions abandons any refresh still in flight: it was asked
     // for with the values being discarded, so its answer describes them too.
     refreshVersions.clear();
+    activeRefreshes.clear();
+    refreshingFields.clear();
     lastRefreshValues.clear();
     lastRefreshValues.set(
       JSON.stringify(source.scope),
