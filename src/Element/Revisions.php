@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Activity\EventTypes\RevisionRestored;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -14,6 +15,8 @@ use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Activities;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -184,30 +187,38 @@ readonly class Revisions
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        $canonical = $revision->getCanonical();
+        return DB::transaction(function () use ($revision, $creatorId) {
+            $canonical = $revision->getCanonical();
 
-        event(new ElementRevertingToRevision(
-            canonical: $canonical,
-            revisionNum: $revision->revisionNum,
-            creatorId: $creatorId,
-            revisionNotes: $revision->revisionNotes,
-            revision: $revision,
-        ));
+            event(new ElementRevertingToRevision(
+                canonical: $canonical,
+                revisionNum: $revision->revisionNum,
+                creatorId: $creatorId,
+                revisionNotes: $revision->revisionNotes,
+                revision: $revision,
+            ));
 
-        // "Duplicate" the revision with the source element’s ID and UID
-        $newSource = $this->elements->updateCanonicalElement($revision, [
-            'revisionCreatorId' => $creatorId,
-            'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
-        ]);
+            // "Duplicate" the revision with the source element’s ID and UID
+            $newSource = $this->elements->updateCanonicalElement($revision, [
+                'revisionCreatorId' => $creatorId,
+                'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
+            ]);
 
-        event(new RevertedToRevision(
-            canonical: $canonical,
-            revisionNum: $revision->revisionNum,
-            creatorId: $creatorId,
-            revisionNotes: $revision->revisionNotes,
-            revision: $revision,
-        ));
+            Activities::record(new RevisionRestored(
+                subject: $newSource,
+                site: Sites::getSiteById($newSource->siteId),
+                revisionNum: $revision->revisionNum,
+            ));
 
-        return $newSource;
+            event(new RevertedToRevision(
+                canonical: $canonical,
+                revisionNum: $revision->revisionNum,
+                creatorId: $creatorId,
+                revisionNotes: $revision->revisionNotes,
+                revision: $revision,
+            ));
+
+            return $newSource;
+        });
     }
 }

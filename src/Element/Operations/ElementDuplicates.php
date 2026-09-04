@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
@@ -172,6 +173,8 @@ readonly class ElementDuplicates
                     $this->copyModifiedFields($element, $mainClone);
                 }
 
+                StructuralElementActivity::recordDuplicated($element, $mainClone);
+
                 if (
                     $placeInStructure &&
                     $mainClone->getIsCanonical() &&
@@ -261,6 +264,8 @@ readonly class ElementDuplicates
                             $this->copyModifiedFields($siteElement, $siteClone);
                         }
 
+                        StructuralElementActivity::recordDuplicated($siteElement, $siteClone);
+
                         $propagatedTo[$siteClone->siteId] = true;
                         if ($siteClone->isNewForSite) {
                             $mainClone->newSiteIds[] = $siteClone->siteId;
@@ -280,6 +285,10 @@ readonly class ElementDuplicates
                             }
                             $propagatedTo[$siteId] = true;
                             $mainClone->newSiteIds[] = $siteId;
+
+                            if ($siteClone instanceof ElementInterface) {
+                                StructuralElementActivity::recordDuplicated($element, $siteClone);
+                            }
                         }
                     }
                 }

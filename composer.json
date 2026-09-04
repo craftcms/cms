@@ -184,6 +184,7 @@
         "CraftCms\\Cms\\Providers\\CraftServiceProvider"
       ],
       "aliases": {
+        "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",

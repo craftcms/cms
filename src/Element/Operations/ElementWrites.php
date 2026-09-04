@@ -86,7 +86,7 @@ readonly class ElementWrites
         $element->isNewForSite = false;
 
         try {
-            return $this->save(
+            return $this->saveInternal(
                 $element,
                 $runValidation,
                 $propagate,
@@ -321,7 +321,6 @@ readonly class ElementWrites
         try {
             $isNewElement = ! $element->id;
             $trackChanges = ElementHelper::shouldTrackChanges($element);
-
             $propagate = $propagate && $element::isLocalized() && $this->sites->isMultiSite();
             $originalPropagateAll = $element->propagateAll;
             $originalFirstSave = $element->firstSave;
