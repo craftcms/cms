@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 
 /**
  * A labelled container whose children lay out on a `<craft-field-group>` grid.
@@ -57,6 +58,9 @@ class Group extends Container
     private ?string $warning = null;
 
     private ?int $width = null;
+
+    /** @var list<string>|null */
+    private ?array $dependsOn = null;
 
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
@@ -148,6 +152,24 @@ class Group extends Container
         return $this;
     }
 
+    /**
+     * Shows a loading state while the reactive field at this relative path refreshes the Form.
+     *
+     * @param  string|list<string>  $path
+     */
+    public function dependsOn(string|array $path): static
+    {
+        $segments = is_string($path) ? explode('.', $path) : array_values($path);
+
+        if ($segments === [] || ! array_all($segments, fn (mixed $segment): bool => is_string($segment) && $segment !== '')) {
+            throw new InvalidArgumentException('Group loading paths must contain non-empty string segments.');
+        }
+
+        $this->dependsOn = $segments;
+
+        return $this;
+    }
+
     public function component(): string
     {
         return 'craft:group';
@@ -166,6 +188,7 @@ class Group extends Container
                 'warning' => $this->warning,
                 'warningHtml' => $this->noticeHtml($this->warning),
                 'width' => $this->width,
+                'dependsOn' => $this->dependsOn,
             ]),
             ...$this->visibilityProps(),
         ];

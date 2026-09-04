@@ -19,6 +19,7 @@
     FormFailure,
     FormControlOverrides,
     FormModifiedGroups,
+    FormRefreshingFields,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -62,6 +63,8 @@
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const refreshVersions = new Map<string, number>();
+  const activeRefreshes = new Map<string, {field: string; request: number}>();
+  const refreshingFields = reactive(new Set<string>());
   const lastRefreshValues = new Map([
     [
       JSON.stringify(props.payload.scope),
@@ -77,6 +80,10 @@
   provide(
     FormModifiedGroups,
     computed(() => new Set(props.modified ?? []))
+  );
+  provide(
+    FormRefreshingFields,
+    computed(() => refreshingFields)
   );
 
   useEventListener(hostForm, 'submit', (event) => {
@@ -115,16 +122,23 @@
     }
 
     clearTimeout(refreshTimers.get(key));
+
+    if (change.kind === 'discrete') {
+      void requestRefresh(scope, change.path);
+
+      return;
+    }
+
     refreshTimers.set(
       key,
-      setTimeout(
-        () => requestRefresh(scope),
-        change.kind === 'typing' ? 1000 : 100
-      )
+      setTimeout(() => requestRefresh(scope, change.path), 1000)
     );
   }
 
-  async function requestRefresh(scope: string[]): Promise<void> {
+  async function requestRefresh(
+    scope: string[],
+    fieldPath: string[]
+  ): Promise<void> {
     const snapshot = cloneRaw(valueAt(values, scope));
 
     if (!isRecord(snapshot)) {
@@ -143,6 +157,15 @@
     lastRefreshValues.set(key, serialized);
     const request = (refreshVersions.get(key) ?? 0) + 1;
     refreshVersions.set(key, request);
+    const field = JSON.stringify(fieldPath);
+    const activeRefresh = activeRefreshes.get(key);
+
+    if (activeRefresh) {
+      refreshingFields.delete(activeRefresh.field);
+    }
+
+    activeRefreshes.set(key, {field, request});
+    refreshingFields.add(field);
 
     try {
       const refreshed = await props.refresh!(snapshot, scope);
@@ -153,6 +176,11 @@
     } catch {
       lastRefreshValues.delete(key);
       // The current presentation and values are already the last valid state.
+    } finally {
+      if (activeRefreshes.get(key)?.request === request) {
+        activeRefreshes.delete(key);
+        refreshingFields.delete(field);
+      }
     }
   }
 
@@ -242,6 +270,8 @@
     // Dropping the versions abandons any refresh still in flight: it was asked
     // for with the values being discarded, so its answer describes them too.
     refreshVersions.clear();
+    activeRefreshes.clear();
+    refreshingFields.clear();
     lastRefreshValues.clear();
     lastRefreshValues.set(
       JSON.stringify(source.scope),

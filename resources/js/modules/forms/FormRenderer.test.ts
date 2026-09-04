@@ -658,13 +658,22 @@ describe('FormRenderer', () => {
       onMutation: (current) => (mutation = current),
     });
 
-    const [name] = container.querySelectorAll<
-      HTMLElement & {modelValue: string}
-    >('craft-combobox');
-    name!.modelValue = 'My Site';
-    name!.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
+    const name = required(
+      container.querySelector<HTMLElement & {updateComplete: Promise<void>}>(
+        'craft-combobox'
+      ),
+      'Expected the name combobox.'
     );
+    await name.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+    const input = required(
+      name.querySelector<HTMLInputElement>('input'),
+      'Expected the combobox input.'
+    );
+    input.value = 'My Site';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await name.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
     await nextTick();
 
     expect(onChange).toHaveBeenCalledOnce();
@@ -1507,6 +1516,121 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('refreshes immediately when a reactive combobox option is selected', async () => {
+    const refresh = vi.fn(() => new Promise<FormPayload>(() => {}));
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    const mode = required(
+      refreshable.nodes[0],
+      'Expected the UI mode field node.'
+    );
+    mode.props.reactive = true;
+    Object.assign(mode.control!, {
+      component: 'craft:combobox',
+      props: {
+        options: [
+          {label: 'Normal', value: 'normal'},
+          {label: 'Enlarged', value: 'enlarged'},
+        ],
+      },
+    });
+    await mount(refreshable, {refresh});
+
+    const combobox = required(
+      container.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-combobox'
+      ),
+      'Expected the UI mode combobox.'
+    );
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('enlarged');
+      expect(container.querySelectorAll('craft-option')).toHaveLength(2);
+    });
+    await new Promise((resolve) => setTimeout(resolve));
+    const normal = required(
+      [...container.querySelectorAll<HTMLElement>('craft-option')].find(
+        (option) => option.textContent?.trim() === 'Normal'
+      ),
+      'Expected the Normal option.'
+    );
+    normal.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+
+    expect(refresh.mock.calls).toEqual([
+      [expect.objectContaining({uiMode: 'normal'}), ['settings']],
+    ]);
+  });
+
+  it('shows a loading state on the group linked to the refreshing field', async () => {
+    vi.useFakeTimers();
+    let completeRefresh: (payload: FormPayload) => void = () => {};
+    const refresh = vi.fn(
+      () =>
+        new Promise<FormPayload>((resolve) => {
+          completeRefresh = resolve;
+        })
+    );
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).props.reactive = true;
+    required(
+      refreshable.nodes[2],
+      'Expected the field limit group.'
+    ).props.dependsOn = ['placeholder'];
+    required(
+      refreshable.nodes[3],
+      'Expected the behavior group.'
+    ).props.dependsOn = ['uiMode'];
+    await mount(refreshable, {refresh});
+
+    const placeholder = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      ),
+      'Expected the placeholder input.'
+    );
+    placeholder.value = 'Changed in Vue';
+    placeholder.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    const linkedGroup = required(
+      container.querySelector<HTMLElement>(
+        '[data-form-node="plain-text-field-limit"]'
+      ),
+      'Expected the linked group.'
+    );
+    const otherGroup = required(
+      container.querySelector<HTMLElement>(
+        '[data-form-node="plain-text-behavior"]'
+      ),
+      'Expected the other group.'
+    );
+
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+    expect(otherGroup.querySelector('craft-spinner')).toBeNull();
+    expect(refresh).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(linkedGroup.getAttribute('aria-busy')).toBe('true');
+    expect(linkedGroup.querySelector('craft-spinner')).not.toBeNull();
+
+    completeRefresh(structuredClone(refreshable));
+    await Promise.resolve();
+    await nextTick();
+
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+    vi.useRealTimers();
+  });
+
   it('keeps the active text expander suggestion across a form refresh', async () => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(1);
     vi.useFakeTimers();
@@ -1575,7 +1699,7 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
-  it('waits 100 milliseconds for discrete refreshes', async () => {
+  it('refreshes discrete changes immediately', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn(
       async (values: FormPayload['values']): Promise<FormPayload> => ({
@@ -1603,9 +1727,6 @@ describe('FormRenderer', () => {
     );
     await nextTick();
 
-    await vi.advanceTimersByTimeAsync(99);
-    expect(refresh).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1);
     expect(refresh).toHaveBeenCalledOnce();
     vi.useRealTimers();
   });

@@ -22,6 +22,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
@@ -130,10 +131,12 @@ class FieldEditViewModel extends ViewModel
             refreshable: $refreshable,
         ));
         $settingsContext = $this->settingsFormContext();
-        $settings = $formResolver->resolve(
-            $this->settingsFormDefinition($settingsContext) ?? Form::make(),
-            $settingsContext,
-        );
+        $settingsForm = $this->settingsFormDefinition($settingsContext);
+        $settings = $formResolver->resolve($settingsForm === null
+            ? Form::make()
+            : Form::make([
+                Group::make('field-settings', $settingsForm->nodes())->dependsOn('type'),
+            ]), $settingsContext);
 
         return new FormPayload(
             scope: [],
