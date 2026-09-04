@@ -22,6 +22,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
@@ -107,11 +108,12 @@ class SectionEditViewModel extends ViewModel
                 $propagation->warning(t('Changing this may result in data loss.'));
             }
 
-            $form->add($propagation);
+            $form->add(Group::make('section-propagation-settings', [$propagation])
+                ->dependsOn('type'));
         }
 
         if ($type === SectionType::Structure) {
-            $form->add(
+            $form->add(Group::make('section-structure-settings', [
                 Separator::make('structure-settings-separator'),
                 Field::make(t('Max Levels'), Number::make('maxLevels')->min(1)->max(32767)->size(5))
                     ->instructions(t('The maximum number of levels this section can have.')),
@@ -121,7 +123,7 @@ class SectionEditViewModel extends ViewModel
                 )->instructions(t('Where new {type} should be placed by default in the structure.', [
                     'type' => t('entries'),
                 ])),
-            );
+            ])->dependsOn('type'));
         }
 
         $form->add(
@@ -147,13 +149,13 @@ class SectionEditViewModel extends ViewModel
         );
 
         if (in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
-            $form->add(
+            $form->add(Group::make('section-author-settings', [
                 Separator::make('author-settings-separator'),
                 Field::make(t('Min Authors'), Number::make('minAuthors')->min(0)->max(32767)->size(5))
                     ->instructions(t('The minimum number of authors that entries in this section can have.')),
                 Field::make(t('Max Authors'), Number::make('maxAuthors')->min(0)->max(32767)->size(5))
                     ->instructions(t('The maximum number of authors that entries in this section can have.')),
-            );
+            ])->dependsOn('type'));
         }
 
         return $this->formResolver->resolve($form, new FormContext(

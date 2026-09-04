@@ -246,6 +246,7 @@ class Assets extends BaseRelationField
             'label' => (string) $option['label'],
             'value' => $option['value'],
         ], $this->getSourceOptions());
+        $sourcesPath = $this->allowMultipleSources ? 'sources' : 'source';
 
         $subpath = fn (string $name, ?string $value): Text => Text::make($name)
             ->placeholder(t('path/to/subfolder'))
@@ -262,47 +263,50 @@ class Assets extends BaseRelationField
                 ->control(Lightswitch::make('restrictLocation')
                     ->value($this->restrictLocation)
                     ->reactive()),
-            Group::make('restricted-location', [
-                FormField::make()
-                    ->label(t('Source'))
-                    ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
-                    ->width(FieldWidth::Third),
-                FormField::make()
-                    ->label(t('Subpath'))
-                    ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
-                    ->width(FieldWidth::TwoThirds),
-            ])
-                ->asField()
-                ->label(t('Asset Location'))
-                ->instructions(t('The location where assets can be selected from.'))
-                ->tip($objectTemplateTip)
-                ->visible($this->restrictLocation),
-            FormField::make(t('Allow subfolders'))
-                ->control(Lightswitch::make('allowSubfolders')
-                    ->value($this->allowSubfolders)
-                    ->reactive())
-                ->visible($this->restrictLocation),
-            FormField::make(t('Default Upload Subpath'))
-                ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
-                ->tip($objectTemplateTip)
-                ->visible($this->restrictLocation && $this->allowSubfolders),
-            $this->sourcesField(reactive: true)->visible(! $this->restrictLocation),
-
-            Group::make('default-upload-location', [
-                FormField::make()
-                    ->label(t('Source'))
-                    ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
-                    ->width(FieldWidth::Third),
-                FormField::make()
-                    ->label(t('Subpath'))
-                    ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+            Group::make('asset-location-settings', [
+                Group::make('restricted-location', [
+                    FormField::make()
+                        ->label(t('Source'))
+                        ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
+                        ->width(FieldWidth::Third),
+                    FormField::make()
+                        ->label(t('Subpath'))
+                        ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
+                        ->width(FieldWidth::TwoThirds),
+                ])
+                    ->asField()
+                    ->label(t('Asset Location'))
+                    ->instructions(t('The location where assets can be selected from.'))
                     ->tip($objectTemplateTip)
-                    ->width(FieldWidth::TwoThirds),
-            ])
-                ->asField()
-                ->label(t('Default Upload Location'))
-                ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
-                ->visible(! $this->restrictLocation),
+                    ->visible($this->restrictLocation),
+                FormField::make(t('Allow subfolders'))
+                    ->control(Lightswitch::make('allowSubfolders')
+                        ->value($this->allowSubfolders)
+                        ->reactive())
+                    ->visible($this->restrictLocation),
+                Group::make('asset-subfolder-settings', [
+                    FormField::make(t('Default Upload Subpath'))
+                        ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
+                        ->tip($objectTemplateTip)
+                        ->visible($this->restrictLocation && $this->allowSubfolders),
+                ])->dependsOn('settings.allowSubfolders'),
+                $this->sourcesField(reactive: true)->visible(! $this->restrictLocation),
+                Group::make('default-upload-location', [
+                    FormField::make()
+                        ->label(t('Source'))
+                        ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
+                        ->width(FieldWidth::Third),
+                    FormField::make()
+                        ->label(t('Subpath'))
+                        ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                        ->tip($objectTemplateTip)
+                        ->width(FieldWidth::TwoThirds),
+                ])
+                    ->asField()
+                    ->label(t('Default Upload Location'))
+                    ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
+                    ->visible(! $this->restrictLocation),
+            ])->dependsOn('settings.restrictLocation'),
             Separator::make('asset-location-separator'),
             $this->selectionConditionField(),
             FormField::make(t('Show unpermitted volumes'))
@@ -315,12 +319,14 @@ class Assets extends BaseRelationField
                 ->control(Lightswitch::make('restrictFiles')
                     ->value($this->restrictFiles)
                     ->reactive()),
-            FormField::make(t('Allowed Kinds'))
-                ->control(Choice::make('allowedKinds')
-                    ->multiple()
-                    ->options($this->getFileKindOptions())
-                    ->value($this->allowedKinds ?? []))
-                ->visible($this->restrictFiles),
+            Group::make('asset-file-kind-settings', [
+                FormField::make(t('Allowed Kinds'))
+                    ->control(Choice::make('allowedKinds')
+                        ->multiple()
+                        ->options($this->getFileKindOptions())
+                        ->value($this->allowedKinds ?? []))
+                    ->visible($this->restrictFiles),
+            ])->dependsOn('settings.restrictFiles'),
             FormField::make(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
                 ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
@@ -328,7 +334,9 @@ class Assets extends BaseRelationField
             $this->defaultPlacementField(),
             $this->viewModeField(),
             $this->selectionLabelField(),
-            $this->showSearchInputField()->visible($this->canSearchWithinSources()),
+            Group::make('asset-search-settings', [
+                $this->showSearchInputField()->visible($this->canSearchWithinSources()),
+            ])->dependsOn("settings.{$sourcesPath}"),
             $this->validateRelatedElementsField(),
             Separator::make('preview-mode-separator'),
             FormField::make(t('Preview Mode'))

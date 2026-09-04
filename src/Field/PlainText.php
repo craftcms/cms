@@ -169,10 +169,12 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                         ->reactive()),
             ]),
         ])->when($this->multiline, fn (Form $form) => $form->add(
-            FormField::make(t('Initial Rows'))
-                ->control(Number::make('initialRows')
-                    ->value($this->initialRows)
-                    ->min(1)),
+            Group::make('plain-text-multiline-settings', [
+                FormField::make(t('Initial Rows'))
+                    ->control(Number::make('initialRows')
+                        ->value($this->initialRows)
+                        ->min(1)),
+            ])->dependsOn('settings.multiline'),
         ));
     }
 

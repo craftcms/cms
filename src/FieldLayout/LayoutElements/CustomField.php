@@ -631,15 +631,17 @@ class CustomField extends BaseField
                     ->value($originalField->id)
                     ->reactive())
                     ->warning(t('Changing this may result in data loss.')),
-                $this->labelSettingsNode($context),
-                Field::make(t('Handle'), Text::make('handle')
-                    ->monospace()
-                    ->maxLength(64)
-                    ->value($this->handle)
-                    ->placeholder($this->_originalHandle))
-                    ->required(),
-                ...$this->instructionsSettingsNodes($context),
-                ...$this->noticeSettingsNodes($context),
+                Group::make('custom-field-configuration', [
+                    $this->labelSettingsNode($context),
+                    Field::make(t('Handle'), Text::make('handle')
+                        ->monospace()
+                        ->maxLength(64)
+                        ->value($this->handle)
+                        ->placeholder($this->_originalHandle))
+                        ->required(),
+                    ...$this->instructionsSettingsNodes($context),
+                    ...$this->noticeSettingsNodes($context),
+                ])->dependsOn('fieldId'),
             ]))),
         ];
     }

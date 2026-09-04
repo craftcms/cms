@@ -18,6 +18,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Mutations\Mutation;
@@ -342,7 +343,9 @@ class TestPlugin extends Plugin
         return Form::make([
             Field::make('Foo', Text::make('foo')->reactive()),
         ])->when($this->getSettings()?->foo === 'show-bar', fn (Form $form) => $form->add(
-            Field::make('Bar', Text::make('bar')),
+            Group::make('test-plugin-bar', [
+                Field::make('Bar', Text::make('bar')),
+            ])->dependsOn('foo'),
         ));
     }
 

@@ -97,14 +97,16 @@ class FieldEditViewModel extends ViewModel
             )->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
-                $nodes[] = FormField::make(
-                    t('Translation Key Format'),
-                    Text::make('translationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
-                )
-                    ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
-                    ->tip(SelectOptions::getObjectTemplateTip());
+                $nodes[] = Group::make('field-translation-settings', [
+                    FormField::make(
+                        t('Translation Key Format'),
+                        Text::make('translationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
+                    )
+                        ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
+                        ->tip(SelectOptions::getObjectTemplateTip()),
+                ])->dependsOn('translationMethod');
             }
         } else {
             $nodes[] = HiddenField::make('translationMethod');

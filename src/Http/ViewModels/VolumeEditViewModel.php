@@ -22,6 +22,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
@@ -102,16 +103,18 @@ class VolumeEditViewModel extends ViewModel
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Field::make(
-                    t('{name} Translation Key Format', ['name' => t('Title')]),
-                    Text::make('titleTranslationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers($objectTemplateTriggers),
-                )
-                    ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
-                        'name' => t('Title'),
-                    ]))
-                    ->tip($objectTemplateTip));
+                $form->add(Group::make('volume-title-translation-settings', [
+                    Field::make(
+                        t('{name} Translation Key Format', ['name' => t('Title')]),
+                        Text::make('titleTranslationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers($objectTemplateTriggers),
+                    )
+                        ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
+                            'name' => t('Title'),
+                        ]))
+                        ->tip($objectTemplateTip),
+                ])->dependsOn('titleTranslationMethod'));
             }
 
             $form->add(Field::make(
@@ -120,16 +123,18 @@ class VolumeEditViewModel extends ViewModel
             )->instructions(t('How should {name} values be translated?', ['name' => t('Alternative Text')])));
 
             if (($values['altTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Field::make(
-                    t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
-                    Text::make('altTranslationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers($objectTemplateTriggers),
-                )
-                    ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
-                        'name' => t('Alternative Text'),
-                    ]))
-                    ->tip($objectTemplateTip));
+                $form->add(Group::make('volume-alt-translation-settings', [
+                    Field::make(
+                        t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
+                        Text::make('altTranslationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers($objectTemplateTriggers),
+                    )
+                        ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
+                            'name' => t('Alternative Text'),
+                        ]))
+                        ->tip($objectTemplateTip),
+                ])->dependsOn('altTranslationMethod'));
             }
         }
 

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
@@ -114,7 +116,7 @@ readonly class ElementSourceForm
      * @param  class-string<ElementInterface>  $elementType
      * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $values
-     * @return list<Field|null>
+     * @return list<Node|null>
      */
     private function nativeNodes(string $elementType, array $source, array $values): array
     {
@@ -130,7 +132,7 @@ readonly class ElementSourceForm
      * @param  class-string<ElementInterface>  $elementType
      * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $values
-     * @return list<Field|null>
+     * @return list<Node|null>
      */
     private function customNodes(string $elementType, array $source, array $values, bool $isNew): array
     {
@@ -189,7 +191,7 @@ readonly class ElementSourceForm
      * @param  class-string<ElementInterface>  $elementType
      * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $values
-     * @return list<Field>
+     * @return list<Node>
      */
     private function sortFields(string $elementType, array $source, array $values): array
     {
@@ -211,7 +213,11 @@ readonly class ElementSourceForm
                 fn (array $option) => ['label' => $option['label'], 'value' => $option['attr']],
                 $options,
             ))->reactive())->width(75),
-            Field::make(t('Sort direction'), $dir)->width(25),
+            Group::make('source-sort-direction', [
+                Field::make(t('Sort direction'), $dir),
+            ])
+                ->width(25)
+                ->dependsOn('defaultSort.attr'),
         ];
     }
 

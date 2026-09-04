@@ -47,7 +47,8 @@ it('requires admin changes', function () {
     $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+            ->where('form.nodes', fn ($nodes): bool => collect(flattenFormNodes(collect($nodes)->all()))
+                ->whereNotNull('control')
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly')));
 
     // Not allowed
@@ -158,8 +159,8 @@ it('refreshes base URL visibility from current form values', function () {
         'scope' => [],
     ])->json('form.nodes');
 
-    expect(collect($withoutBaseUrl)->pluck('control.path'))->not->toContain(['baseUrl'])
-        ->and(collect($withBaseUrl)->pluck('control.path'))->toContain(['baseUrl']);
+    expect(collect(flattenFormNodes($withoutBaseUrl))->pluck('control.path'))->not->toContain(['baseUrl'])
+        ->and(collect(flattenFormNodes($withBaseUrl))->pluck('control.path'))->toContain(['baseUrl']);
 });
 
 it('404s when a site does not exist', function () {

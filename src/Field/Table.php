@@ -17,6 +17,7 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
@@ -164,14 +165,16 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->errors($this->columnErrors)
                     ->value($columnRows)
                     ->reactive()),
-            FormField::make(t('Default Values'))
-                ->instructions(t('Define the default values for the field.'))
-                ->control(TableControl::make('defaults')
-                    ->columns($defaultColumns)
-                    ->allowAdd()
-                    ->allowDelete()
-                    ->allowReorder()
-                    ->value($this->defaults ?? [])),
+            Group::make('table-default-values', [
+                FormField::make(t('Default Values'))
+                    ->instructions(t('Define the default values for the field.'))
+                    ->control(TableControl::make('defaults')
+                        ->columns($defaultColumns)
+                        ->allowAdd()
+                        ->allowDelete()
+                        ->allowReorder()
+                        ->value($this->defaults ?? [])),
+            ])->dependsOn('settings.columns'),
             FormField::make(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
                 ->control(Lightswitch::make('staticRows')->value($this->staticRows)),
