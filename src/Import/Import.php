@@ -20,6 +20,7 @@ use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
+use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
@@ -149,10 +150,20 @@ class Import
             $data = ImportHelper::remapData($importer->map, $data);
         }
 
-        // todo: if we decide to include the transformer matchCriteria later on
-        // (e.g. because we want it to be able to match directly to a value and not necessarily just the data key),
-        // then we might want to do this once per config and not for each root item that is being imported
+        // normalizing the UI/config-based matchCriteria only depends on the importer config, so it
+        // could be done once per config rather than for each root item that is being imported
         $matchCriteria = $this->normalizeMatchCriteria($importer);
+
+        if ($importer->transformer instanceof BaseTransformer) {
+            $additionalMatchCriteria = $importer->transformer->additionalMatchCriteria($importer, $data);
+
+            if (! empty($additionalMatchCriteria)) {
+                $matchCriteria = Arr::undot(array_replace(
+                    Arr::dot($matchCriteria),
+                    Arr::dot($additionalMatchCriteria)
+                ));
+            }
+        }
 
         // this should continue to be executed on per-item basis
         $this->resolveMatchCriteria($data, $matchCriteria);
