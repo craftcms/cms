@@ -43,6 +43,9 @@ class Choice extends Control
 
     private ChoicePresentation $presentation = ChoicePresentation::Select;
 
+    /** Label for the leading blank option, or `false` when there shouldn't be one. */
+    private string|false|null $placeholder = null;
+
     private ?string $allLabel = null;
 
     private string $allValue = self::ALL_VALUE;
@@ -131,6 +134,34 @@ class Choice extends Control
      * see {@see AllOptionMode}. Pass {@see AllOptionMode::EachValue} for a
      * plain select-all instead.
      */
+    /**
+     * Labels the leading blank option a single select shows while nothing is
+     * chosen. Defaults to “Select…”; pass a string to say something better.
+     *
+     * The blank option is what makes the empty state visible, and re-selectable
+     * once something has been chosen. Without this call it still renders, just
+     * unlabelled.
+     */
+    public function placeholder(?string $label = null): static
+    {
+        $this->placeholder = $label ?? t('Select…');
+
+        return $this;
+    }
+
+    /**
+     * Drops the leading blank option, for a setting with no valid empty state.
+     *
+     * A required control already omits it — this is for one that always holds a
+     * value without being marked required, so nothing can clear it.
+     */
+    public function withoutPlaceholder(): static
+    {
+        $this->placeholder = false;
+
+        return $this;
+    }
+
     public function allOption(
         ?string $label = null,
         string $value = self::ALL_VALUE,
@@ -167,6 +198,10 @@ class Choice extends Control
             $props['sortable'] = true;
         }
 
+        if ($this->placeholder !== null) {
+            $props['placeholder'] = $this->placeholder;
+        }
+
         return $props;
     }
 
@@ -194,9 +229,9 @@ class Choice extends Control
      * @param  list<array<string, mixed>>  $options
      * @return list<array<string, mixed>>
      */
-    private static function selectOptions(array $options, bool $required): array
+    private static function selectOptions(array $options, bool $required, string|false|null $placeholder): array
     {
-        if ($required) {
+        if ($required || $placeholder === false) {
             return $options;
         }
 
@@ -206,14 +241,18 @@ class Choice extends Control
             }
         }
 
-        return [['label' => '', 'value' => ''], ...$options];
+        return [['label' => $placeholder ?? '', 'value' => ''], ...$options];
     }
 
     /** @param array<string, mixed> $attributes */
     private static function selectHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         return self::select($control, $attributes)
-            ->options(self::selectOptions($control->props['options'], (bool) $attributes['required']))
+            ->options(self::selectOptions(
+                $control->props['options'],
+                (bool) $attributes['required'],
+                $control->props['placeholder'] ?? null,
+            ))
             ->name($attributes['name'])
             ->value(self::values($value)[0] ?? null)
             ->toHtml();

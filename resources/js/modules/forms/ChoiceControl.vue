@@ -44,6 +44,11 @@
     allValue?: string;
     allMode?: 'singleValue' | 'eachValue';
     sortable?: boolean;
+    /**
+     * Label for the leading blank option. Absent leaves it unlabelled; `false`
+     * means the control has no valid empty state and shouldn't offer one.
+     */
+    placeholder?: string | false;
   };
 
   const props = defineProps<{
@@ -70,20 +75,25 @@
    * required control has no valid empty state to offer. Options that already
    * carry an empty value supply their own.
    *
+   * `Choice::placeholder()` labels it and `Choice::withoutPlaceholder()` drops
+   * it for a setting that has no valid empty state.
+   *
    * `Form\Controls\Choice::selectOptions()` mirrors this for the HTML fallback.
    */
   const selectOptions = computed<ChoiceOption[]>(() => {
     const options = props.control.props.options;
+    const placeholder = props.control.props.placeholder;
 
     if (
       props.control.props.multiple ||
       props.required ||
+      placeholder === false ||
       options.some((option) => inputValue(option.value) === '')
     ) {
       return options;
     }
 
-    return [{label: '', value: ''}, ...options];
+    return [{label: placeholder ?? '', value: ''}, ...options];
   });
 
   function inputValue(value: FormValue): string {
