@@ -70,6 +70,21 @@ class ElementHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider normalizeSlugRespectsLanguageDataProvider
+     * @param string $expected
+     * @param string $slug
+     * @param string|null $language
+     */
+    public function testNormalizeSlugRespectsLanguage(string $expected, string $slug, ?string $language): void
+    {
+        // The slug can only get lowercased if uppercase characters aren't allowed
+        $general = Craft::$app->getConfig()->getGeneral();
+        $general->allowUppercaseInSlug = false;
+
+        self::assertSame($expected, ElementHelper::normalizeSlug($slug, $language));
+    }
+
+    /**
      * @dataProvider isTempSlugDataProvider
      * @param bool $expected
      * @param string|null $slug
@@ -216,6 +231,19 @@ class ElementHelperTest extends TestCase
             ['Audi[separator-here]S8[separator-here]4E[separator-here]2006-2010', 'Audi S8 4E (2006-2010)'], // https://github.com/craftcms/cms/issues/4607
             ['こんにちは', 'こんにちは'], // https://github.com/craftcms/cms/issues/4628
             ['Сертификация', 'Сертификация'], // https://github.com/craftcms/cms/issues/1535
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function normalizeSlugRespectsLanguageDataProvider(): array
+    {
+        return [
+            // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ıstanbul', 'Istanbul', 'tr'],
+            ['istanbul', 'Istanbul', null],
         ];
     }
 

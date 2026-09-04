@@ -230,6 +230,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('base64_encode', 'base64_encode'),
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('camel', [$this, 'camelFilter']),
+            new TwigFilter('capitalize', [$this, 'capitalizeFilter'], ['needs_charset' => true]),
             new TwigFilter('column', [$this, 'columnFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('contains', [$this, 'containsFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('currency', [$this, 'currencyFilter']),
@@ -261,6 +262,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('length', [$this, 'lengthFilter'], ['needs_environment' => true]),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
+            new TwigFilter('lower', [$this, 'lowerFilter']),
             new TwigFilter('map', [$this, 'mapFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
@@ -289,6 +291,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('string', 'strval'),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$this, 'timestampFilter']),
+            new TwigFilter('title', [$this, 'titleFilter']),
             new TwigFilter('translate', [$this, 'translateFilter']),
             new TwigFilter('truncate', [$this, 'truncateFilter']),
             new TwigFilter('t', [$this, 'translateFilter']),
@@ -296,6 +299,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
+            new TwigFilter('upper', [$this, 'upperFilter']),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('where', [$this, 'whereFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('widont', [$this, 'widontFilter'], ['is_safe' => ['html']]),
@@ -499,6 +503,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return StringHelper::toCamelCase((string)$string);
     }
 
+    /**
+     * Capitalizes a string.
+     *
+     * @param string $charset
+     * @param string|null $string
+     * @param string|null $language
+     * @since 5.12.0
+     */
+    public function capitalizeFilter(string $charset, ?string $string, ?string $language = null): string
+    {
+        return StringHelper::toUpperCase(mb_substr($string ?? '', 0, 1, $charset), $language) . StringHelper::toLowerCase(mb_substr($string ?? '', 1, null, $charset), $language);
+    }
 
     /**
      * Throws a RuntimeError if the given name/key is a string containing a "." character and the environment is
@@ -765,6 +781,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Title-cases a string
+     *
+     * @param string|null $string
+     * @param string|null $language
+     * @return string
+     * @since 5.12.0
+     */
+    public function titleFilter(?string $string, ?string $language = null): string
+    {
+        return StringHelper::toTitleCase($string ?? '', $language);
+    }
+
+    /**
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
      * encoding options on text/html/xml requests.
      *
@@ -980,6 +1009,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
         array_shift($args);
         array_unshift($array, ...$args);
         return $array;
+    }
+
+    /**
+     * Upper-cases a string
+     *
+     * @param string|null $string
+     * @param string|null $language
+     * @return string
+     * @since 5.12.0
+     */
+    public function upperFilter(?string $string, ?string $language = null): string
+    {
+        return StringHelper::toUpperCase($string ?? '', $language);
     }
 
     /**
@@ -1465,6 +1507,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function literalFilter(mixed $value): string
     {
         return Db::escapeParam((string)$value);
+    }
+
+    /**
+     * Lower-cases a string
+     *
+     * @param string|null $string
+     * @param string|null $language
+     * @return string
+     * @since 5.12.0
+     */
+    public function lowerFilter(?string $string, ?string $language = null): string
+    {
+        return StringHelper::toLowerCase($string ?? '', $language);
     }
 
     /**
