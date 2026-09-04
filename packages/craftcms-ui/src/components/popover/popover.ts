@@ -4,6 +4,7 @@ import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 import type {VirtualElement} from '@popperjs/core';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
+import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
 
 /**
@@ -29,7 +30,10 @@ import styles from './popover.styles.js';
  * ```
  */
 export default class CraftPopover extends OverlayMixin(LitElement) {
-  static override styles = [styles];
+  // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
+  // from the page: without it the pane's 1px border sits outside its width and
+  // it overshoots whatever it was sized to.
+  static override styles = [hostStyles, styles];
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -56,7 +60,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   @property({type: Number}) distance = 4;
 
   /** Whether the overlay should match the invoker's width. */
-  @property({attribute: 'match-invoker-width', type: Boolean})
+  @property({attribute: 'match-invoker-width', type: Boolean, reflect: true})
   matchInvokerWidth = false;
 
   /** Accepted for API compatibility; craft-popover never renders an arrow. */
@@ -184,11 +188,27 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    if ((changed.has('for') || changed.has('anchor')) && this._overlayCtrl) {
+    if (!this._overlayCtrl) {
+      return;
+    }
+
+    if (changed.has('for') || changed.has('anchor')) {
       this._overlayCtrl.updateConfig({
         invokerNode: this._overlayInvokerNode,
         referenceNode: this._overlayReferenceNode,
       });
+    }
+
+    // `_defineOverlayConfig()` is read once, when the controller is built, so
+    // without this a `placement`, `distance` or `match-invoker-width` set or
+    // changed after that point is simply never applied — the overlay keeps
+    // whatever it was given first.
+    if (
+      changed.has('placement') ||
+      changed.has('distance') ||
+      changed.has('matchInvokerWidth')
+    ) {
+      this._overlayCtrl.updateConfig(this._defineOverlayConfig());
     }
   }
 
