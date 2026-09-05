@@ -26,6 +26,7 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
+use Inertia\Inertia;
 use Inertia\Middleware;
 use Inertia\Support\Header;
 use Override;
@@ -176,7 +177,13 @@ class HandleInertiaRequests extends Middleware
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
-                'nav' => $nav->getItems(),
+                // Sent on the first response and not again: the tree is the
+                // same on every page, so re-serialising it into each one is
+                // pure weight. It carries no selection for that reason — the
+                // front end marks the trail from the URL it's on — and no
+                // badge counts, which are volatile and ride along below.
+                'nav' => Inertia::once(fn () => $nav->getTree())->as('craft.nav'),
+                'navBadges' => $nav->getBadgeCounts(...),
             ],
         ];
     }

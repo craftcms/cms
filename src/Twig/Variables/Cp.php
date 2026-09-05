@@ -88,7 +88,7 @@ class Cp extends Component
     /** @return array<array-key, mixed> */
     public function nav(): array
     {
-        return app(Navigation::class)->getItems();
+        return app(Navigation::class)->getShallowItems();
     }
 
     /**

@@ -45,6 +45,12 @@ export interface CraftData {
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
+  /**
+   * Badge counts by nav item id, kept apart from `nav` because they change
+   * without the tree's shape changing — `nav` is sent once and held, these
+   * come with every response.
+   */
+  navBadges?: Record<string, number>;
   actionUrl: string;
   cpUrl: string;
   baseApiUrl: string;

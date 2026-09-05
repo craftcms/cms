@@ -1,6 +1,10 @@
 <script setup lang="ts">
   import type {CraftData} from '@/common/composables/useCraftData';
   import NavTree from '@/common/components/NavTree.vue';
+  import {
+    withNavBadges,
+    withNavSelection,
+  } from '@/common/composables/navSelection';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
 
@@ -19,7 +23,15 @@
   // computed over it has no reactive dependency at all and can never update.
   // This component lives in the sidebar and never remounts, so it would keep
   // highlighting whichever section you first landed on.
-  const nav = computed(() => page.props.craft.nav);
+  //
+  // The tree itself arrives once and then stays put, so neither the trail nor
+  // the badge counts are in it — both are decided per page, here.
+  const nav = computed(() =>
+    withNavBadges(
+      withNavSelection(page.props.craft.nav, page.url),
+      page.props.craft.navBadges ?? {}
+    )
+  );
 
   // `NavTree` draws the levels: the branch you're in expands in place, and
   // everything else opens in a flyout on hover. Collapsed to a rail there's no
