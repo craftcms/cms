@@ -18,13 +18,17 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
+    $this->originalBasePath = app()->basePath();
+    $this->fixturePath = sys_get_temp_dir().'/craft-custom-widgets-'.bin2hex(random_bytes(8));
+    app()->setBasePath($this->fixturePath);
+
     $this->widgetsPath = resource_path('widgets');
     File::ensureDirectoryExists($this->widgetsPath);
-    File::cleanDirectory($this->widgetsPath);
 });
 
 afterEach(function () {
-    File::deleteDirectory($this->widgetsPath);
+    app()->setBasePath($this->originalBasePath);
+    File::deleteDirectory($this->fixturePath);
 });
 
 it('discovers top-level Markdown files', function () {
