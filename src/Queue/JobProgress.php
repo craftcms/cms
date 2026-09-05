@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -29,7 +30,11 @@ readonly class JobProgress
             'progress' => 0,
             'description' => $description,
             'delay' => $delay,
-        ]);
+            'error' => null,
+            'dateFailed' => null,
+            'dateCompleted' => null,
+            'progressLabel' => null,
+        ], reactivate: true);
     }
 
     public function processing(string $uid): void
@@ -70,12 +75,13 @@ readonly class JobProgress
     {
         return JobProgressModel::query()
             ->where('uid', $uid)
+            ->where('status', '!=', JobStatus::Cancelled->value)
             ->first();
     }
 
     public function getTotalJobs(): int
     {
-        return JobProgressModel::count();
+        return JobProgressModel::query()->where('status', '!=', JobStatus::Cancelled->value)->count();
     }
 
     /**
@@ -102,7 +108,7 @@ readonly class JobProgress
 
         return JobProgressModel::query()
             // Ignore finished jobs
-            ->where('status', '!=', JobStatus::Done->value)
+            ->whereNotIn('status', [JobStatus::Done->value, JobStatus::Cancelled->value])
             // Failed jobs go last
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END DESC', [JobStatus::Failed->value])
             // Reserved jobs go first
@@ -123,6 +129,7 @@ readonly class JobProgress
     public function getAll(): Collection
     {
         return JobProgressModel::query()
+            ->where('status', '!=', JobStatus::Cancelled->value)
             ->orderBy('dateCreated')
             ->get();
     }
@@ -209,7 +216,7 @@ readonly class JobProgress
                 JobStatus::Reserved->value,
                 JobStatus::Delayed->value,
             ])
-            ->delete();
+            ->update(['status' => JobStatus::Cancelled->value]);
 
         $queue = Queue::connection();
 
@@ -242,6 +249,7 @@ readonly class JobProgress
     {
         JobProgressModel::query()
             ->where('uid', $uid)
+            ->where('status', '!=', JobStatus::Cancelled->value)
             ->update([
                 'status' => $status->value,
                 'dateUpdated' => now(),
@@ -249,20 +257,18 @@ readonly class JobProgress
     }
 
     /**
-     * Cancels a job by deleting its progress entry.
-     *
-     * The job will detect the absence of its progress entry and exit gracefully.
+     * Retains a cancellation marker so later worker events cannot reactivate the job.
      */
     public function cancel(string $uid): void
     {
-        $this->delete($uid);
+        $this->upsertJob($uid, JobStatus::Cancelled);
     }
 
     /**
-     * Checks if a job's progress entry exists.
+     * Checks if a job has a non-cancelled progress entry.
      *
      * This is used by jobs to determine if they should continue running.
-     * If the entry doesn't exist, the job was cancelled.
+     * Missing and cancelled entries both stop the job.
      */
     public function exists(string $uid): bool
     {
@@ -278,15 +284,36 @@ readonly class JobProgress
         string $uid,
         JobStatus $status,
         array $attributes = [],
+        bool $reactivate = false,
     ): void {
-        JobProgressModel::query()->upsert(
+        $query = JobProgressModel::query();
+        $connection = DB::connection($query->getModel()->getConnectionName());
+        $grammar = $connection->getQueryGrammar();
+        $table = $grammar->wrapTable($query->getModel()->getTable());
+        $updates = [...array_keys($attributes), 'dateUpdated', 'status'];
+
+        if (! $reactivate) {
+            $updates = array_combine($updates, array_map(function (string $column) use ($connection, $grammar, $table): Expression {
+                $column = $grammar->wrap($column);
+                $incoming = match ($connection->getDriverName()) {
+                    'mysql', 'mariadb' => $connection->getConfig('use_upsert_alias') ? "laravel_upsert_alias.$column" : "VALUES($column)",
+                    'pgsql', 'sqlite' => "excluded.$column",
+                    default => throw new RuntimeException('Unsupported database driver: '.$connection->getDriverName()),
+                };
+                $cancelled = JobStatus::Cancelled->value;
+
+                return DB::raw("CASE WHEN $table.status = $cancelled THEN $table.$column ELSE $incoming END");
+            }, $updates));
+        }
+
+        $query->upsert(
             [
                 ...$attributes,
                 'uid' => $uid,
                 'status' => $status->value,
             ],
             uniqueBy: 'uid',
-            update: [...array_keys($attributes), 'status'],
+            update: $updates,
         );
     }
 }
