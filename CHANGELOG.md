@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where failed plugin installation or uninstallation could leave project config writable.
+- Fixed a bug where failed plugin installation or uninstallation could leave project config writable. ([#19566](https://github.com/craftcms/cms/pull/19566))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
