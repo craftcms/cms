@@ -3,6 +3,8 @@ import type {InjectionKey, Ref, Slots} from 'vue';
 import type {
   CanonicalFormValue,
   FormChange,
+  FormControlPayload,
+  FormNodePayload,
   FormValue,
   FormValues,
 } from './types';
@@ -131,6 +133,22 @@ export function unsetValue(source: FormValue, path: string[]): void {
 
   if (isRecord(parent)) {
     delete parent[path.at(-1)!];
+  }
+}
+
+export function visitControls(
+  nodes: FormNodePayload[],
+  visit: (control: FormControlPayload) => void
+): void {
+  for (const node of nodes) {
+    if (node.control) {
+      visit(node.control);
+      node.control.forms?.forEach((form) => visitControls(form.nodes, visit));
+    }
+
+    if (node.children) {
+      visitControls(node.children, visit);
+    }
   }
 }
 
