@@ -46,13 +46,15 @@
             }}</craft-button></template
           ></ActionMenu
         >
-        <craft-button
-          type="button"
-          icon="gear"
-          :aria-label="t('Settings')"
-          :aria-expanded="managing"
-          @click="managing = true"
-        ></craft-button>
+        <WidgetManager
+          v-model:opened="managing"
+          :widgets="savedWidgets"
+          :columns="columns"
+          :busy="busy"
+          @remove="remove"
+          @reorder="reorder"
+          @resize="resize"
+        />
       </div>
     </LayoutSlot>
     <craft-callout v-if="deleted" class="mb-4" role="status">
@@ -91,16 +93,6 @@
         @resize="refreshGrid"
       />
     </div>
-    <WidgetManager
-      v-if="managing"
-      :widgets="savedWidgets"
-      :columns="columns"
-      :busy="busy"
-      @close="managing = false"
-      @remove="remove"
-      @reorder="reorder"
-      @resize="resize"
-    />
   </div>
 </template>
 
