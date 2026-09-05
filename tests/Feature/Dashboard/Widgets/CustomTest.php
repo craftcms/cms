@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\File;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
@@ -18,16 +19,16 @@ use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     $this->originalBasePath = app()->basePath();
-    app()->setBasePath(storage_path('framework/testing/custom-widgets'));
+    $this->fixturePath = sys_get_temp_dir().'/craft-custom-widgets-'.bin2hex(random_bytes(8));
+    app()->setBasePath($this->fixturePath);
 
     $this->widgetsPath = resource_path('widgets');
     File::ensureDirectoryExists($this->widgetsPath);
-    File::cleanDirectory($this->widgetsPath);
 });
 
 afterEach(function () {
-    File::deleteDirectory($this->widgetsPath);
     app()->setBasePath($this->originalBasePath);
+    File::deleteDirectory($this->fixturePath);
 });
 
 it('discovers top-level Markdown files', function () {
@@ -173,7 +174,7 @@ it('stores only server-resolved custom widget identities', function () {
         'type' => $type,
     ])->assertOk();
 
-    $record = WidgetModel::query()->sole();
+    $record = WidgetModel::query()->where('type', Custom::class)->sole();
 
     expect($record)
         ->type->toBe(Custom::class)
@@ -202,7 +203,9 @@ it('shows custom widgets in the add menu based on selection', function (bool $se
 
     get(route('craft.cp.dashboard'))
         ->assertOk()
-        ->assertViewHas('widgetTypes', fn ($widgetTypes) => $widgetTypes->get($type)['selectable'] === $selectable);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Dashboard')
+            ->where("widgetTypes.$type.selectable", $selectable));
 })->with([
     'unselected' => [false, true],
     'selected' => [true, false],

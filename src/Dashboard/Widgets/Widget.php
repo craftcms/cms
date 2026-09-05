@@ -27,6 +27,19 @@ abstract class Widget extends Component implements WidgetInterface
 
     public ?int $colspan = null;
 
+    public function component(): ?string
+    {
+        return 'craft:html-widget';
+    }
+
+    /** @return array<string, mixed>|null */
+    public function props(): ?array
+    {
+        $html = $this->getBodyHtml();
+
+        return $html === null ? null : ['html' => $html];
+    }
+
     #[Override]
     public static function isSelectable(): bool
     {

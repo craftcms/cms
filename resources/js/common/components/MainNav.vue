@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import useCraftData from '@/common/composables/useCraftData';
+  import type {CraftData} from '@/common/composables/useCraftData';
   import CpLink from '@/common/components/CpLink.vue';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
 
   const page = usePage<{
+    craft: CraftData;
     queue: {
       enabled: boolean;
       displayedJob: any;
@@ -12,8 +13,7 @@
       hasWaitingJobs: boolean;
     };
   }>();
-  const craftData = useCraftData();
-  const nav = computed(() => craftData.nav);
+  const nav = computed(() => page.props.craft.nav);
 
   // Renders the nav as a rail: labels drop to tooltips, and subnavs move into
   // a flyout on hover or focus, since there's no room to indent them.

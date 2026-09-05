@@ -339,15 +339,29 @@
   }
 
   function currentValues(): FormPayload['values'] {
-    const result: FormPayload['values'] = {};
+    const groups = new Map<string, string[]>();
+    const controlPaths = new Set<string>();
 
     visitControls(payload.value.nodes, (control) => {
-      const value = valueAt(values, control.path);
+      groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+      controlPaths.add(JSON.stringify(control.path));
+    });
+
+    const result: FormPayload['values'] = {};
+
+    for (const path of groups.values()) {
+      const value = groupValue(values, path, controlPaths);
+
+      if (path.length === 0 && isRecord(value)) {
+        Object.assign(result, value);
+
+        continue;
+      }
 
       if (value !== undefined) {
-        setPathValue(result, control.path, cloneRaw(value));
+        setPathValue(result, path, value);
       }
-    });
+    }
 
     return result;
   }

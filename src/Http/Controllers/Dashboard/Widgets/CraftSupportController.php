@@ -16,10 +16,11 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -27,7 +28,6 @@ use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 readonly class CraftSupportController
 {
@@ -38,20 +38,12 @@ readonly class CraftSupportController
         private Backups $backups,
     ) {}
 
-    public function __invoke(Request $request): string
+    public function __invoke(Request $request): RedirectResponse
     {
-        $request->validate([
-            'widgetId' => ['required', 'integer'],
-            'namespace' => ['nullable', 'string'],
-        ]);
-
         maxPowerCaptain();
 
-        $widgetId = $request->input('widgetId');
-        $namespace = $request->has('namespace') ? $request->input('namespace').'.' : '';
-        $data = $namespace ? $request->input($namespace) : $request->all();
-
-        $validator = Validator::make($data, [
+        $data = $request->validate([
+            'widgetId' => ['required', 'integer'],
             'fromEmail' => ['required', 'email', 'min:5', 'max:255'],
             'message' => ['required', 'string'],
             'attachAdditionalFile' => ['nullable', 'file', 'max:3072'],
@@ -59,14 +51,6 @@ readonly class CraftSupportController
             'attachDbBackup' => ['nullable', 'boolean'],
             'attachTemplates' => ['nullable', 'boolean'],
         ]);
-
-        if ($validator->fails()) {
-            return template('_components/widgets/CraftSupport/response', [
-                'widgetId' => $widgetId,
-                'success' => false,
-                'errors' => $validator->errors()->toArray(),
-            ]);
-        }
 
         $parts = [
             [
@@ -90,9 +74,9 @@ readonly class CraftSupportController
         // Create the SupportAttachment zip
         try {
             $zipData = $this->createZip(
-                $data['attachLogs'],
-                $data['attachDbBackup'],
-                $data['attachTemplates'],
+                (bool) ($data['attachLogs'] ?? false),
+                (bool) ($data['attachDbBackup'] ?? false),
+                (bool) ($data['attachTemplates'] ?? false),
                 $attachment,
             );
             $data['message'] .= $zipData['message'];
@@ -121,24 +105,12 @@ readonly class CraftSupportController
                 RequestOptions::MULTIPART => $parts,
             ]);
 
-            return template('_components/widgets/CraftSupport/response', [
-                'widgetId' => $widgetId,
-                'success' => true,
-                'errors' => [],
-            ]);
+            return to_route('craft.cp.dashboard')->with('success', t('Message sent successfully.'));
         } catch (Throwable $requestException) {
             Log::error("Unable to send support request: {$requestException->getMessage()}", [__METHOD__]);
             report($requestException);
 
-            return template('_components/widgets/CraftSupport/response', [
-                'widgetId' => $widgetId,
-                'success' => false,
-                'errors' => [
-                    'Support' => [
-                        t('A server error occurred.'),
-                    ],
-                ],
-            ]);
+            throw ValidationException::withMessages(['support' => t('A server error occurred.')]);
         } finally {
             // Delete the zip file
             if (isset($zipData)) {

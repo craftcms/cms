@@ -15,16 +15,13 @@ use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class QuickPost extends Widget
 {
@@ -180,87 +177,29 @@ class QuickPost extends Widget
         ]);
     }
 
-    #[Override]
-    public function getBodyHtml(): string
+    public function component(): ?string
     {
-        $section = $this->section();
-        if (! $section) {
-            return Html::tag('p', t('No section has been selected yet.'));
-        }
-
-        $entryType = $this->entryType();
-        if (! $entryType) {
-            return Html::tag('p', t('No entry types exist for this section.'));
-        }
-
-        $siteId = $this->siteId();
-        if (! $siteId) {
-            return Html::tag('p', t('You’re not permitted to edit any of this section’s sites.'));
-        }
-
-        $buttonId = sprintf('quickpost%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($buttonId, $params, $elementType) => <<<JS
-(() => {
-  const button = $('#' + $buttonId);
-  button.on('activate', async () => {
-    button.addClass('loading');
-    let entry;
-    try {
-      const response = await Craft.sendActionRequest('POST', 'entries/create', {
-        data: $params,
-      })
-      entry = response.data.entry;
-    } finally {
-      button.removeClass('loading');
+        return 'craft:widget-quick-post';
     }
-    const slideout = Craft.createElementEditor($elementType, {
-      siteId: entry.siteId,
-      elementId: entry.id,
-      draftId: entry.draftId,
-      params: {
-        fresh: 1,
-      },
-    })
 
-    slideout.on('submit', ({data}) => {
-      // Are there any Recent Entries widgets to notify?
-      if (typeof Craft.RecentEntriesWidget !== 'undefined') {
-        for (const widget of Craft.RecentEntriesWidget.instances) {
-          if (
-            !widget.params.sectionId ||
-            widget.params.sectionId == entry.sectionId
-          ) {
-            widget.addEntry({
-              url: data.cpEditUrl,
-              title: data.title,
-              dateCreated: data.dateCreated,
-            });
-          }
+    /** @return array{message?: string, params?: array{siteId: int, section: string, type: string, authorId: mixed}} */
+    public function props(): array
+    {
+        if (! $section = $this->section()) {
+            return ['message' => t('No section has been selected yet.')];
         }
-      }
-    });
-  });
-})();
-JS, [
-            $buttonId,
-            [
-                'siteId' => $this->siteId(),
-                'section' => $section->handle,
-                'type' => $entryType->handle,
-                'authorId' => Auth::id(),
-            ],
-            Entry::class,
-        ]);
 
-        return template('_includes/forms/button', [
-            'id' => $buttonId,
-            'class' => ['huge', 'icon', 'add', 'dashed', 'fullwidth'],
-            'label' => mb_ucfirst(t('Create {type}', [
-                'type' => Entry::lowerDisplayName(),
-            ])),
-            'spinner' => true,
-        ]);
+        if (! $entryType = $this->entryType()) {
+            return ['message' => t('No entry types exist for this section.')];
+        }
+
+        if (! $siteId = $this->siteId()) {
+            return ['message' => t('You’re not permitted to edit any of this section’s sites.')];
+        }
+
+        return [
+            'params' => ['siteId' => $siteId, 'section' => $section->handle, 'type' => $entryType->handle, 'authorId' => Auth::id()],
+        ];
     }
 
     private function siteId(): ?int
