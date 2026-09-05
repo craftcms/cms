@@ -12,6 +12,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -51,12 +52,17 @@ trait QueriesEntryTypes
                 throw new QueryAbortedException;
             }
 
-            if (! $entryQuery->typeId) {
-                return;
-            }
-
-            $entryQuery->whereIn('entries.typeId', $entryQuery->typeId);
+            static::applyTypeId($entryQuery, $entryQuery->typeId);
         });
+    }
+
+    public static function applyTypeId(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereIn('entries.typeId', $value);
     }
 
     /**

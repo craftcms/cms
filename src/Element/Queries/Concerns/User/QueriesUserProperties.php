@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @internal
@@ -64,17 +65,8 @@ trait QueriesUserProperties
     protected function initQueriesUserProperties(): void
     {
         $this->beforeQuery(function (UserQuery $userQuery) {
-            if ($userQuery->lastLoginDate) {
-                $userQuery->whereDateParam('users.lastLoginDate', $this->lastLoginDate);
-            }
-
-            if (is_bool($userQuery->hasPhoto)) {
-                $userQuery->when(
-                    $userQuery->hasPhoto,
-                    fn (UserQuery $q) => $q->whereNotNull('users.photoId'),
-                    fn (UserQuery $q) => $q->whereNull('users.photoId'),
-                );
-            }
+            static::applyLastLoginDate($userQuery, $userQuery->lastLoginDate);
+            static::applyHasPhoto($userQuery, $userQuery->hasPhoto);
 
             foreach (['username', 'email', 'fullName', 'firstName', 'lastName'] as $property) {
                 if (! $userQuery->$property) {
@@ -92,6 +84,28 @@ trait QueriesUserProperties
                 );
             }
         });
+    }
+
+    public static function applyLastLoginDate(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereDateParam('users.lastLoginDate', $value);
+    }
+
+    public static function applyHasPhoto(Builder $query, ?bool $value): void
+    {
+        if (! is_bool($value)) {
+            return;
+        }
+
+        if ($value) {
+            $query->whereNotNull('users.photoId');
+        } else {
+            $query->whereNull('users.photoId');
+        }
     }
 
     /**

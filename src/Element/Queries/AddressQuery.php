@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Override;
 
@@ -366,29 +367,147 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
                 $addressQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
             }
 
-            foreach ([
-                'countryCode',
-                'administrativeArea',
-                'locality',
-                'dependentLocality',
-                'postalCode',
-                'sortingCode',
-                'organization',
-                'organizationTaxId',
-                'addressLine1',
-                'addressLine2',
-                'addressLine3',
-                'lastName',
-                'firstName',
-                'fullName',
-            ] as $property) {
-                if (! $addressQuery->$property) {
-                    continue;
-                }
-
-                $addressQuery->whereParam("addresses.$property", $addressQuery->$property);
-            }
+            static::applyCountryCode($addressQuery, $addressQuery->countryCode);
+            static::applyAdministrativeArea($addressQuery, $addressQuery->administrativeArea);
+            static::applyLocality($addressQuery, $addressQuery->locality);
+            static::applyDependentLocality($addressQuery, $addressQuery->dependentLocality);
+            static::applyPostalCode($addressQuery, $addressQuery->postalCode);
+            static::applySortingCode($addressQuery, $addressQuery->sortingCode);
+            static::applyOrganization($addressQuery, $addressQuery->organization);
+            static::applyOrganizationTaxId($addressQuery, $addressQuery->organizationTaxId);
+            static::applyAddressLine1($addressQuery, $addressQuery->addressLine1);
+            static::applyAddressLine2($addressQuery, $addressQuery->addressLine2);
+            static::applyAddressLine3($addressQuery, $addressQuery->addressLine3);
+            static::applyLastName($addressQuery, $addressQuery->lastName);
+            static::applyFirstName($addressQuery, $addressQuery->firstName);
+            static::applyFullName($addressQuery, $addressQuery->fullName);
         });
+    }
+
+    public static function applyCountryCode(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.countryCode', $value);
+    }
+
+    public static function applyAdministrativeArea(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.administrativeArea', $value);
+    }
+
+    public static function applyLocality(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.locality', $value);
+    }
+
+    public static function applyDependentLocality(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.dependentLocality', $value);
+    }
+
+    public static function applyPostalCode(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.postalCode', $value);
+    }
+
+    public static function applySortingCode(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.sortingCode', $value);
+    }
+
+    public static function applyOrganization(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.organization', $value);
+    }
+
+    public static function applyOrganizationTaxId(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.organizationTaxId', $value);
+    }
+
+    public static function applyAddressLine1(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.addressLine1', $value);
+    }
+
+    public static function applyAddressLine2(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.addressLine2', $value);
+    }
+
+    public static function applyAddressLine3(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.addressLine3', $value);
+    }
+
+    public static function applyLastName(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.lastName', $value);
+    }
+
+    public static function applyFirstName(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.firstName', $value);
+    }
+
+    public static function applyFullName(Builder $query, array|string|null $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('addresses.fullName', $value);
     }
 
     /**

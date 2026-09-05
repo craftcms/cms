@@ -9,10 +9,10 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -52,7 +52,7 @@ trait QueriesAuthors
     protected function initQueriesAuthors(): void
     {
         $this->beforeQuery(function (EntryQuery $query) {
-            if ($this->authorGroupId === []) {
+            if ($query->authorGroupId === []) {
                 throw new QueryAbortedException;
             }
 
@@ -60,27 +60,26 @@ trait QueriesAuthors
                 return;
             }
 
-            $this->applyAuthorId($query);
-            $this->applyAuthorGroupId($query);
+            static::applyAuthorId($query, $query->authorId);
+            static::applyAuthorGroupId($query, $query->authorGroupId);
         });
     }
 
-    /** @param EntryQuery<Entry> $query */
-    private function applyAuthorId(EntryQuery $query): void
+    public static function applyAuthorId(Builder $query, mixed $value): void
     {
-        if (is_null($query->authorId)) {
+        if (is_null($value)) {
             return;
         }
 
         // Checking multiple authors?
         if (
-            is_array($query->authorId) &&
-            is_string(reset($query->authorId)) &&
-            strtolower(reset($query->authorId)) === 'and'
+            is_array($value) &&
+            is_string(reset($value)) &&
+            strtolower(reset($value)) === 'and'
         ) {
-            $authorIdChecks = array_slice($query->authorId, 1);
+            $authorIdChecks = array_slice($value, 1);
         } else {
-            $authorIdChecks = [$query->authorId];
+            $authorIdChecks = [$value];
         }
 
         foreach ($authorIdChecks as $authorIdCheck) {
@@ -106,22 +105,21 @@ trait QueriesAuthors
         }
     }
 
-    /** @param EntryQuery<Entry> $query */
-    private function applyAuthorGroupId(EntryQuery $query): void
+    public static function applyAuthorGroupId(Builder $query, mixed $value): void
     {
-        if (is_null($query->authorGroupId)) {
+        if (is_null($value)) {
             return;
         }
 
         // Checking multiple groups?
         if (
-            is_array($this->authorGroupId) &&
-            is_string(reset($this->authorGroupId)) &&
-            strtolower(reset($this->authorGroupId)) === 'and'
+            is_array($value) &&
+            is_string(reset($value)) &&
+            strtolower(reset($value)) === 'and'
         ) {
-            $groupIdChecks = array_slice($this->authorGroupId, 1);
+            $groupIdChecks = array_slice($value, 1);
         } else {
-            $groupIdChecks = [$this->authorGroupId];
+            $groupIdChecks = [$value];
         }
 
         foreach ($groupIdChecks as $i => $groupIdCheck) {

@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Query\Builder;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
@@ -92,55 +93,122 @@ trait QueriesFields
             if (! is_null($elementQuery->id)) {
                 throw_if(empty($elementQuery->id), QueryAbortedException::class);
 
-                $elementQuery->whereNumericParam('elements.id', $elementQuery->id);
+                static::applyId($elementQuery, $elementQuery->id);
             }
 
             if (! is_null($elementQuery->uid)) {
                 throw_if(empty($elementQuery->uid), QueryAbortedException::class);
 
-                $elementQuery->whereParam('elements.uid', $elementQuery->uid);
+                static::applyUid($elementQuery, $elementQuery->uid);
             }
 
-            if ($elementQuery->siteSettingsId) {
-                $elementQuery->whereNumericParam('elements_sites.id', $elementQuery->siteSettingsId);
-            }
-
-            match ($elementQuery->trashed) {
-                true => $elementQuery->whereNotNull('elements.dateDeleted'),
-                false => $elementQuery->whereNull('elements.dateDeleted'),
-                default => null,
-            };
-
-            if ($elementQuery->dateCreated) {
-                $elementQuery->whereDateParam('elements.dateCreated', $elementQuery->dateCreated);
-            }
-
-            if ($elementQuery->dateUpdated) {
-                $elementQuery->whereDateParam('elements.dateUpdated', $elementQuery->dateUpdated);
-            }
-
-            if (isset($elementQuery->title) && $elementQuery->title !== '' && $elementQuery->elementType::hasTitles()) {
-                if (is_string($elementQuery->title)) {
-                    $elementQuery->title = Query::escapeCommas($elementQuery->title);
-                }
-
-                $elementQuery->whereParam('elements_sites.title', $elementQuery->title, caseInsensitive: true);
-            }
-
-            if ($elementQuery->slug) {
-                $elementQuery->whereParam('elements_sites.slug', $elementQuery->slug);
-            }
-
-            if ($elementQuery->uri) {
-                $elementQuery->whereParam('elements_sites.uri', $elementQuery->uri, caseInsensitive: true);
-            }
-
-            if ($elementQuery->inBulkOp) {
-                $elementQuery
-                    ->join(new Alias(Table::ELEMENTS_BULKOPS, 'elements_bulkops'), 'elements_bulkops.elementId', 'elements.id')
-                    ->where('elements_bulkops.key', $elementQuery->inBulkOp);
-            }
+            static::applySiteSettingsId($elementQuery, $elementQuery->siteSettingsId);
+            static::applyTrashed($elementQuery, $elementQuery->trashed);
+            static::applyDateCreated($elementQuery, $elementQuery->dateCreated);
+            static::applyDateUpdated($elementQuery, $elementQuery->dateUpdated);
+            static::applyTitle($elementQuery, $elementQuery->title);
+            static::applySlug($elementQuery, $elementQuery->slug);
+            static::applyUri($elementQuery, $elementQuery->uri);
+            static::applyInBulkOp($elementQuery, $elementQuery->inBulkOp);
         });
+    }
+
+    public static function applyId(Builder $query, mixed $value): void
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        $query->whereNumericParam('elements.id', $value);
+    }
+
+    public static function applyUid(Builder $query, mixed $value): void
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        $query->whereParam('elements.uid', $value);
+    }
+
+    public static function applySiteSettingsId(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereNumericParam('elements_sites.id', $value);
+    }
+
+    public static function applyTrashed(Builder $query, ?bool $value): void
+    {
+        match ($value) {
+            true => $query->whereNotNull('elements.dateDeleted'),
+            false => $query->whereNull('elements.dateDeleted'),
+            default => null,
+        };
+    }
+
+    public static function applyDateCreated(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereDateParam('elements.dateCreated', $value);
+    }
+
+    public static function applyDateUpdated(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereDateParam('elements.dateUpdated', $value);
+    }
+
+    public static function applyTitle(Builder $query, mixed $value): void
+    {
+        assert($query instanceof ElementQuery);
+
+        if (! isset($value) || $value === '' || ! $query->elementType::hasTitles()) {
+            return;
+        }
+
+        if (is_string($value)) {
+            $value = Query::escapeCommas($value);
+        }
+
+        $query->whereParam('elements_sites.title', $value, caseInsensitive: true);
+    }
+
+    public static function applySlug(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('elements_sites.slug', $value);
+    }
+
+    public static function applyUri(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereParam('elements_sites.uri', $value, caseInsensitive: true);
+    }
+
+    public static function applyInBulkOp(Builder $query, ?string $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query
+            ->join(new Alias(Table::ELEMENTS_BULKOPS, 'elements_bulkops'), 'elements_bulkops.elementId', 'elements.id')
+            ->where('elements_bulkops.key', $value);
     }
 
     /**

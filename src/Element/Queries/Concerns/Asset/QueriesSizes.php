@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @internal
@@ -66,18 +67,37 @@ trait QueriesSizes
     protected function initQueriesSizes(): void
     {
         $this->beforeQuery(function (AssetQuery $assetQuery) {
-            if ($assetQuery->width) {
-                $assetQuery->whereNumericParam('assets.width', $assetQuery->width);
-            }
-
-            if ($assetQuery->height) {
-                $assetQuery->whereNumericParam('assets.height', $assetQuery->height);
-            }
-
-            if ($assetQuery->size) {
-                $assetQuery->whereNumericParam('assets.size', $assetQuery->size, '=', Query::TYPE_BIGINT);
-            }
+            static::applyWidth($assetQuery, $assetQuery->width);
+            static::applyHeight($assetQuery, $assetQuery->height);
+            static::applySize($assetQuery, $assetQuery->size);
         });
+    }
+
+    public static function applyWidth(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereNumericParam('assets.width', $value);
+    }
+
+    public static function applyHeight(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereNumericParam('assets.height', $value);
+    }
+
+    public static function applySize(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereNumericParam('assets.size', $value, '=', Query::TYPE_BIGINT);
     }
 
     /**
