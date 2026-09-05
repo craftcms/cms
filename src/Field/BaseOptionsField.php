@@ -91,16 +91,18 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         if (! static::$multi) {
-            return parent::modifyQuery($query, $instances, $value);
+            parent::modifyQuery($query, $instances, $value);
+
+            return;
         }
 
         $param = QueryParam::parse($value);
 
         if (empty($param->values)) {
-            return $query;
+            return;
         }
 
         if ($param->operator === QueryParam::NOT) {
@@ -113,7 +115,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $valueSql = self::valueColumn($instances);
 
         if ($valueSql === null) {
-            return $query;
+            return;
         }
 
         $isEmptyValueParam = fn (mixed $value): bool => is_string($value) &&
@@ -134,13 +136,15 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         };
 
         if ($negate && Collection::make($param->values)->doesntContain($isEmptyValueParam)) {
-            return $query->where(function (Builder $query) use ($valueSql, $applyConditions) {
+            $query->where(function (Builder $query) use ($valueSql, $applyConditions) {
                 $query->whereNull($valueSql)
                     ->orWhereNot($applyConditions);
             });
+
+            return;
         }
 
-        return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
+        $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
     }
 
     /** @param list<static> $instances */

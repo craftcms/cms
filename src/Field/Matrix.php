@@ -143,7 +143,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -162,7 +162,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         if ($value === ':empty:') {
-            return $query->whereNotExists($exists);
+            $query->whereNotExists($exists);
+
+            return;
         }
 
         if ($value !== ':notempty:') {
@@ -176,7 +178,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $exists->whereIn("entries_$ns.id", $ids);
         }
 
-        return $query->whereExists($exists);
+        $query->whereExists($exists);
     }
 
     /**

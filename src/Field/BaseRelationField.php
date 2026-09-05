@@ -65,6 +65,7 @@ use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder as BuilderInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -146,7 +147,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
+    public static function modifyQuery(BuilderInterface $query, array $instances, mixed $value): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -204,19 +205,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             if ($query instanceof ElementQuery) {
                 $filter->apply($query->getQuery(), $relationCriteria, $siteId !== '*' ? $siteId : null);
 
-                return $query;
+                return;
             }
 
             if ($query instanceof Builder) {
                 $filter->apply($query, $relationCriteria);
 
-                return $query;
+                return;
             }
 
             $query->where(fn (Builder $query) => $filter->apply($query, $relationCriteria));
         }
-
-        return $query;
     }
 
     /**
