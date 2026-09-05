@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\File;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
@@ -169,7 +170,7 @@ it('stores only server-resolved custom widget identities', function () {
         'type' => $type,
     ])->assertOk();
 
-    $record = WidgetModel::query()->sole();
+    $record = WidgetModel::query()->where('type', Custom::class)->sole();
 
     expect($record)
         ->type->toBe(Custom::class)
@@ -198,7 +199,9 @@ it('shows custom widgets in the add menu based on selection', function (bool $se
 
     get(route('craft.cp.dashboard'))
         ->assertOk()
-        ->assertViewHas('widgetTypes', fn ($widgetTypes) => $widgetTypes->get($type)['selectable'] === $selectable);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Dashboard')
+            ->where("widgetTypes.$type.selectable", $selectable));
 })->with([
     'unselected' => [false, true],
     'selected' => [true, false],

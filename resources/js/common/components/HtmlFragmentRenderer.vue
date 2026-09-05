@@ -10,6 +10,12 @@
   const props = withDefaults(
     defineProps<{
       fragment?: CraftCms.Cms.View.HtmlFragment | null;
+      /** Override loading while retaining stale-run cleanup and ready handling. */
+      render?: (
+        fragment: CraftCms.Cms.View.HtmlFragment,
+        container: HTMLElement,
+        active: () => boolean
+      ) => Promise<AppendHtmlDisposer | undefined>;
       /** Tag name for the container element. */
       as?: string;
     }>(),
@@ -37,13 +43,13 @@
   };
 
   const remember = async (
-    promise: Promise<AppendHtmlDisposer>,
+    promise: Promise<AppendHtmlDisposer | undefined>,
     currentRunId: number
   ): Promise<boolean> => {
     const dispose = await promise;
 
-    if (currentRunId !== runId) {
-      dispose();
+    if (!dispose || currentRunId !== runId) {
+      dispose?.();
 
       return false;
     }
@@ -84,25 +90,40 @@
       lastElement = element;
       disposeAll();
 
-      if (
-        headHtml &&
-        !(await remember(appendHeadHtml(headHtml), currentRunId))
-      ) {
-        return;
-      }
+      if (props.render) {
+        if (
+          !(await remember(
+            props.render(
+              {html, headHtml, bodyHtml},
+              element,
+              () => currentRunId === runId
+            ),
+            currentRunId
+          ))
+        ) {
+          return;
+        }
+      } else {
+        if (
+          headHtml &&
+          !(await remember(appendHeadHtml(headHtml), currentRunId))
+        ) {
+          return;
+        }
 
-      if (
-        html &&
-        !(await remember(appendElementHtml(html, element), currentRunId))
-      ) {
-        return;
-      }
+        if (
+          html &&
+          !(await remember(appendElementHtml(html, element), currentRunId))
+        ) {
+          return;
+        }
 
-      if (
-        bodyHtml &&
-        !(await remember(appendBodyHtml(bodyHtml), currentRunId))
-      ) {
-        return;
+        if (
+          bodyHtml &&
+          !(await remember(appendBodyHtml(bodyHtml), currentRunId))
+        ) {
+          return;
+        }
       }
 
       // Upgrade legacy UI elements (lightswitches, field toggles, menus, …)

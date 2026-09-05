@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Support\Html;
 use Override;
 
 use function CraftCms\Cms\currentUser;
@@ -59,10 +59,24 @@ class MyDrafts extends Widget
         ]);
     }
 
-    #[Override]
-    public function getBodyHtml(): string
+    public function component(): ?string
     {
-        $drafts = Entry::find()
+        return 'craft:widget-my-drafts';
+    }
+
+    /** @return array{drafts: list<array{id: int, html: string}>} */
+    public function props(): array
+    {
+        return ['drafts' => $this->getDrafts()->map(fn (Entry $draft): array => [
+            'id' => $draft->id,
+            'html' => app(ElementHtml::class)->elementChipHtml($draft, ['hyperlink' => true]),
+        ])->values()->all()];
+    }
+
+    /** @return ElementCollection<int, Entry> */
+    private function getDrafts(): ElementCollection
+    {
+        return Entry::find()
             ->drafts()
             ->status(null)
             ->draftCreator(currentUser()?->getCraftUserId())
@@ -72,27 +86,5 @@ class MyDrafts extends Widget
             ->orderByDesc('dateUpdated')
             ->limit($this->limit)
             ->get();
-
-        if ($drafts->isEmpty()) {
-            return Html::tag('div', t('You don’t have any active drafts.'), [
-                'class' => ['zilch', 'small'],
-            ]);
-        }
-
-        $html = Html::beginTag('ul', [
-            'class' => 'widget__list chips',
-            'role' => 'list',
-        ]);
-
-        foreach ($drafts as $draft) {
-            $chip = app(ElementHtml::class)->elementChipHtml($draft, [
-                'hyperlink' => true,
-            ]);
-            $html .= Html::tag('li', $chip, [
-                'class' => 'widget__list-item',
-            ]);
-        }
-
-        return $html.Html::endTag('ul');
     }
 }

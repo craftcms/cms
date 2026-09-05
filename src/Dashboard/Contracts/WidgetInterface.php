@@ -34,6 +34,12 @@ interface WidgetInterface extends ConfigurableComponentInterface, SavableCompone
      */
     public static function maxColspan(): ?int;
 
+    /** Returns a registered CP component name; the default is craft:html-widget. */
+    public function component(): ?string;
+
+    /** @return array<string, mixed>|null Component data, or null to hide the widget. */
+    public function props(): ?array;
+
     public function getType(): string;
 
     public function getIcon(): ?string;

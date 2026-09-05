@@ -1,13 +1,10 @@
+import '@craftcms/ui/components/nav-item/nav-item';
 import {expect, it, vi} from 'vite-plus/test';
 import {createApp, nextTick, reactive} from 'vue';
 
 const state = vi.hoisted(() => ({
   craftData: null as any,
   page: null as any,
-}));
-
-vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => state.craftData,
 }));
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -41,6 +38,7 @@ it('updates the active item when the shared navigation changes', async () => {
   });
   state.page = reactive({
     props: {
+      craft: state.craftData,
       queue: {
         displayedJob: null,
         hasReservedJobs: false,
@@ -55,18 +53,26 @@ it('updates the active item when the shared navigation changes', async () => {
   app.mount(container);
   await nextTick();
 
-  state.craftData.nav = state.craftData.nav.map((item: any) => ({
-    ...item,
-    selected: item.url === '/assets',
-  }));
+  state.page.props.craft = {
+    nav: state.craftData.nav.map((item: any) => ({
+      ...item,
+      selected: item.url === '/assets',
+    })),
+  };
   await nextTick();
 
   const items = Array.from(container.querySelectorAll('craft-nav-item'));
   const entries = items.find((item) => item.textContent?.includes('Entries'));
   const assets = items.find((item) => item.textContent?.includes('Assets'));
 
-  expect((entries as any).active).toBe(false);
-  expect((assets as any).active).toBe(true);
+  await vi.waitFor(() => {
+    expect(
+      entries?.shadowRoot?.querySelector('a')?.getAttribute('aria-current')
+    ).toBe('false');
+    expect(
+      assets?.shadowRoot?.querySelector('a')?.getAttribute('aria-current')
+    ).toBe('page');
+  });
 
   app.unmount();
   container.remove();

@@ -9,13 +9,8 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\UserGroups;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\NewUsersAsset;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -71,20 +66,19 @@ class NewUsers extends Widget
         return parent::getTitle();
     }
 
-    #[Override]
-    public function getBodyHtml(): ?string
+    public function component(): ?string
+    {
+        return 'craft:widget-new-users';
+    }
+
+    /** @return array{userGroupId: ?int, dateRange: string}|null */
+    public function props(): ?array
     {
         if (Edition::get()->value < Edition::Pro->value) {
             return null;
         }
 
-        $options = $this->getSettings();
-        $options['orientation'] = I18N::getLocale()->getOrientation();
-
-        app(InternalAssetRegistry::class)->register(NewUsersAsset::class);
-        HtmlStack::js('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
-
-        return '';
+        return ['userGroupId' => $this->userGroupId, 'dateRange' => $this->dateRange ?? 'd7'];
     }
 
     #[Override]

@@ -2,36 +2,35 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\Models\Widget;
 use CraftCms\Cms\Dashboard\Widgets\NewUsers;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Inertia\Testing\AssertableInertia;
 
-it('can render', function () {
-    $dashboard = app(Dashboard::class);
-    $widget = $dashboard->createWidget(NewUsers::class);
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 
-    Edition::set(Edition::Pro);
-    expect($widget->getBodyHtml())->not()->toBeNull();
-});
+it('only shows New Users on editions that support it', function (Edition $edition, bool $available) {
+    Edition::set($edition);
+    actingAs($user = User::find()->one());
+    UserModel::query()->whereKey($user->id)->update(['hasDashboard' => true]);
+    Widget::query()->create([
+        'userId' => $user->id,
+        'type' => NewUsers::class,
+        'settings' => [],
+        'sortOrder' => 1,
+    ]);
 
-it('is only selectable when craft is pro or higher', function () {
-    $dashboard = app(Dashboard::class);
-    $widget = $dashboard->createWidget(NewUsers::class);
-
-    Edition::set(Edition::Solo);
-    expect(NewUsers::isSelectable())->toBeFalse();
-    expect($widget->getBodyHtml())->toBeNull();
-
-    Edition::set(Edition::Team);
-    expect(NewUsers::isSelectable())->toBeFalse();
-    expect($widget->getBodyHtml())->toBeNull();
-
-    Edition::set(Edition::Pro);
-    expect(NewUsers::isSelectable())->toBeTrue();
-    expect($widget->getBodyHtml())->not()->toBeNull();
-
-    Edition::set(Edition::Enterprise);
-    expect(NewUsers::isSelectable())->toBeTrue();
-    expect($widget->getBodyHtml())->not()->toBeNull();
-
-});
+    get(route('craft.cp.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('widgets', $available ? 1 : 0)
+            ->where('widgetTypes', fn ($types) => $types[NewUsers::class]['selectable'] === $available));
+})->with([
+    'Solo' => [Edition::Solo, false],
+    'Team' => [Edition::Team, false],
+    'Pro' => [Edition::Pro, true],
+    'Enterprise' => [Edition::Enterprise, true],
+]);
