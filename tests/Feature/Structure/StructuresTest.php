@@ -22,8 +22,6 @@ it('releases the structure lock on failure and reacquires it on retry', function
 
     $structures = app(Structures::class);
     $transactionLevel = DB::transactionLevel();
-    $fail = true;
-
     Event::listen($eventClass, function () {
         throw new RuntimeException('Move failed.');
     });
@@ -38,7 +36,7 @@ it('releases the structure lock on failure and reacquires it on retry', function
     expect($contender->get())->toBeTrue();
     $contender->release();
 
-    $fail = false;
+    Event::forget($eventClass);
 
     Event::listen(ElementMovingInStructure::class, function () use ($structure) {
         $contender = Cache::lock("structure:{$structure->id}", 30);

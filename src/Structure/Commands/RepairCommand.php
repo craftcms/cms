@@ -15,6 +15,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
@@ -103,21 +104,23 @@ abstract class RepairCommand extends Command
 
             foreach ($elements as $element) {
                 /** @var ElementInterface $element */
-                if (! $element->level) {
+                $originalLevel = $element->level;
+
+                if (! $originalLevel) {
                     $issue = 'was missing from structure';
                     $newLevel = 1;
-                } elseif ($element->level < 1) {
-                    $issue = "had unexpected level ($element->level)";
+                } elseif ($originalLevel < 1) {
+                    $issue = "had unexpected level ($originalLevel)";
                     $newLevel = 1;
-                } elseif ($element->level > $level + 1 && (! $structure->maxLevels || $level < $structure->maxLevels)) {
-                    $issue = "had unexpected level ($element->level)";
+                } elseif ($originalLevel > $level + 1 && (! $structure->maxLevels || $level < $structure->maxLevels)) {
+                    $issue = "had unexpected level ($originalLevel)";
                     $newLevel = ! empty($ancestors) ? $level + 1 : 1;
-                } elseif ($structure->maxLevels && $element->level > $structure->maxLevels) {
+                } elseif ($structure->maxLevels && $originalLevel > $structure->maxLevels) {
                     $issue = "exceeded the max level ($structure->maxLevels)";
                     $newLevel = isset($ancestors[$level - 2]) ? $level : 1;
                 } else {
                     $issue = null;
-                    $newLevel = $element->level;
+                    $newLevel = $originalLevel;
                 }
 
                 // Skip provisional drafts if they exist directly after their canonical element
@@ -128,11 +131,9 @@ abstract class RepairCommand extends Command
                 ) {
                     $removed = true;
                 } else {
-                    if ($newLevel == 1) {
-                        if (! $this->option('dry-run')) {
-                            Structures::appendToRoot($structure->id, $element, Mode::Insert);
-                        }
-                    } else {
+                    $parentElement = null;
+
+                    if ($newLevel > 1) {
                         // Make sure that the element has at least one site in common with the parent
                         $parentElement = $ancestors[$newLevel - 2];
                         $elementSites = array_map(
@@ -146,20 +147,27 @@ abstract class RepairCommand extends Command
 
                         if (! array_intersect($elementSites, $parentSites)) {
                             $issue = 'no supported sites in common with parent';
-                            if (! $this->option('dry-run')) {
-                                Structures::appendToRoot($structure->id, $element, Mode::Insert);
-                            }
-                        } elseif (! $this->option('dry-run')) {
-                            Structures::append($structure->id, $element, $parentElement, Mode::Insert);
+                            $newLevel = 1;
+                            $parentElement = null;
+                        }
+                    }
+
+                    if (! $this->option('dry-run')) {
+                        $success = $parentElement
+                            ? Structures::append($structure->id, $element, $parentElement, Mode::Insert)
+                            : Structures::appendToRoot($structure->id, $element, Mode::Insert);
+
+                        if (! $success) {
+                            throw new RuntimeException("Could not place element $element->id in structure $structure->id.");
                         }
                     }
 
                     $removed = false;
                 }
 
-                $line = $element->level > 1 ? str_repeat(' ', ($element->level - 1) * 4 - 2) : '';
+                $line = $newLevel > 1 ? str_repeat(' ', ($newLevel - 1) * 4 - 2) : '';
 
-                $line .= $element->level > 1 ? '∟ ' : '';
+                $line .= $newLevel > 1 ? '∟ ' : '';
 
                 if ($removed) {
                     $line .= '<fg=yellow>*</>';
@@ -196,9 +204,11 @@ abstract class RepairCommand extends Command
                 $this->line($line);
 
                 // Prepare for the next element
-                $ancestors = array_slice($ancestors, 0, $element->level - 1);
-                $ancestors[$element->level - 1] = $element;
-                $level = $element->level;
+                if (! $removed) {
+                    $ancestors = array_slice($ancestors, 0, $newLevel - 1);
+                    $ancestors[$newLevel - 1] = $element;
+                    $level = $newLevel;
+                }
             }
 
             if (! $this->option('dry-run')) {
