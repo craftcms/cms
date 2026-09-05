@@ -75,6 +75,22 @@ trait QueriesNestedElements
         return true;
     }
 
+    /**
+     * Returns whether the resulting {elements} will always have a field assigned to them.
+     */
+    protected function mustHaveField(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns whether the resulting {elements} will always have an owner assigned to them.
+     */
+    protected function mustHaveOwner(): bool
+    {
+        return true;
+    }
+
     protected function initQueriesNestedElements(): void
     {
         $this->beforeQuery(function (AddressQuery|ContentBlockQuery|EntryQuery $elementQuery) {
@@ -84,11 +100,20 @@ trait QueriesNestedElements
 
             $this->normalizeNestedElementParams($elementQuery);
 
-            if ($elementQuery->fieldId === false || $elementQuery->primaryOwnerId === false || $elementQuery->ownerId === false) {
+            $mustHaveField = $this->mustHaveField();
+            $mustHaveOwner = $this->mustHaveOwner();
+
+            if (
+                ($mustHaveField && $elementQuery->fieldId === false) ||
+                ($mustHaveOwner && ($elementQuery->primaryOwnerId === false || $elementQuery->ownerId === false)) ||
+                $elementQuery->fieldId === [] ||
+                $elementQuery->primaryOwnerId === [] ||
+                $elementQuery->ownerId === []
+            ) {
                 throw new QueryAbortedException;
             }
 
-            if (empty($elementQuery->fieldId) && empty($elementQuery->ownerId) && empty($elementQuery->primaryOwnerId)) {
+            if (! isset($elementQuery->fieldId) && ! isset($elementQuery->ownerId) && ! isset($elementQuery->primaryOwnerId)) {
                 return;
             }
 
@@ -96,6 +121,11 @@ trait QueriesNestedElements
                 'elements_owners.ownerId as ownerId',
                 'elements_owners.sortOrder as sortOrder',
             ]);
+
+            // Only require the elements_owners row to exist if something guarantees one will match
+            $joinType = $mustHaveField || $elementQuery->fieldId || $elementQuery->ownerId || $elementQuery->primaryOwnerId
+                ? 'inner'
+                : 'left';
 
             $joinClause = function (JoinClause $join) use ($elementQuery) {
                 $join->on('elements_owners.elementId', '=', 'elements.id')
@@ -111,14 +141,22 @@ trait QueriesNestedElements
             };
 
             // Join in the elements_owners table
-            $elementQuery->query->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), $joinClause);
+            $elementQuery->query->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), $joinClause, type: $joinType);
 
-            if ($elementQuery->fieldId) {
-                $elementQuery->whereIn($this->getFieldIdColumn(), $elementQuery->fieldId);
+            if (isset($elementQuery->fieldId)) {
+                if ($elementQuery->fieldId) {
+                    $elementQuery->whereIn($this->getFieldIdColumn(), $elementQuery->fieldId);
+                } else {
+                    $elementQuery->whereNull($this->getFieldIdColumn());
+                }
             }
 
-            if ($elementQuery->primaryOwnerId) {
-                $elementQuery->whereIn($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
+            if (isset($elementQuery->primaryOwnerId)) {
+                if ($elementQuery->primaryOwnerId) {
+                    $elementQuery->whereIn($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
+                } else {
+                    $elementQuery->whereNull($this->getPrimaryOwnerIdColumn());
+                }
             }
 
             // Ignore revision/draft blocks by default
@@ -132,7 +170,8 @@ trait QueriesNestedElements
                         $elementQuery->ownerId,
                         fn (JoinClause $join) => $join->on('owners.id', '=', 'elements_owners.ownerId'),
                         fn (JoinClause $join) => $join->on('owners.id', '=', $elementQuery->getPrimaryOwnerIdColumn()),
-                    )
+                    ),
+                    type: $joinType,
                 );
 
                 if (! $allowOwnerDrafts) {
@@ -141,6 +180,10 @@ trait QueriesNestedElements
 
                 if (! $allowOwnerRevisions) {
                     $elementQuery->whereNull('owners.revisionId');
+                }
+
+                if ($elementQuery->ownerId === false) {
+                    $elementQuery->whereNull('owners.id');
                 }
             }
 
@@ -447,7 +490,7 @@ trait QueriesNestedElements
     }
 
     /**
-     * Normalizes the fieldId param to an array of IDs or null
+     * Normalizes the fieldId param to an array of IDs, false, or null
      */
     /** @param AddressQuery|ContentBlockQuery|EntryQuery<Entry> $query */
     private function normalizeFieldId(AddressQuery|ContentBlockQuery|EntryQuery $query): void
@@ -477,14 +520,18 @@ trait QueriesNestedElements
     }
 
     /**
-     * Normalizes the primaryOwnerId param to an array of IDs or null
+     * Normalizes the primaryOwnerId param to an array of IDs, false, or null
      *
      * @return int[]|null|false
      */
     private function normalizeOwnerId(mixed $value): array|null|false
     {
+        if ($value === false) {
+            return false;
+        }
+
         if (empty($value)) {
-            return null;
+            return is_array($value) ? [] : null;
         }
 
         if (is_numeric($value)) {
