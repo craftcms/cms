@@ -9,6 +9,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Path;
+use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
@@ -28,6 +29,7 @@ use Override;
  */
 class UnitTestCase extends Orchestra
 {
+    use IsolatesParallelFiles;
     use RegistersPackageAliases;
     use WithWorkbench;
 

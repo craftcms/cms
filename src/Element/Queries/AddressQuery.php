@@ -322,7 +322,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
         return 'addresses.primaryOwnerId';
     }
 
-    public function shouldJoinElementsOwners(): bool
+    public function shouldApplyNestedElementParams(): bool
     {
         return ! empty($this->fieldId);
     }

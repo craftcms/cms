@@ -146,10 +146,12 @@ it('can get mismatched license issues for craft', function () {
     $property = $reflection->getProperty('isRunningInConsole');
     $property->setValue(app(), false);
 
+    $keyPath = str_replace('\\', '/', substr(config_path('craft/license.key'), strlen(base_path()) + 1));
+
     expect($this->license->issues())->toBe([
         [
             'Craft',
-            'The Craft CMS license located at config/craft/license.key belongs to <a rel="noopener" target="_blank" href="http://craftcms.com">craftcms.com</a>. <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">Learn more</a>',
+            'The Craft CMS license located at '.$keyPath.' belongs to <a rel="noopener" target="_blank" href="http://craftcms.com">craftcms.com</a>. <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">Learn more</a>',
             null,
         ],
     ]);
