@@ -25,6 +25,7 @@
     setValue as setPathValue,
     unsetValue,
     valueAt,
+    visitControls,
   } from './runtime';
   import type {
     FormChange,
@@ -361,22 +362,6 @@
   }
 
   defineExpose({advanceBaseline, currentValues, resetValues, setValue});
-
-  function visitControls(
-    nodes: FormNodePayload[],
-    visit: (control: FormControlPayload) => void
-  ): void {
-    for (const node of nodes) {
-      if (node.control) {
-        visit(node.control);
-        node.control.forms?.forEach((form) => visitControls(form.nodes, visit));
-      }
-
-      if (node.children) {
-        visitControls(node.children, visit);
-      }
-    }
-  }
 
   function rememberControlPaths(nodes: FormNodePayload[]): void {
     visitControls(nodes, (control) =>
