@@ -15,7 +15,6 @@ use CraftCms\Cms\Markdown\Markdown;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +27,7 @@ use League\CommonMark\Extension\Mention\Mention;
 use League\CommonMark\Node\Block\Document;
 use League\CommonMark\Node\Inline\Text;
 use League\CommonMark\Node\NodeIterator;
+use Throwable;
 use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
@@ -219,10 +219,20 @@ class ActivityComments
     /** @param list<array{id: int, username: string}> $mentions */
     private function scheduleMentionNotifications(ActivityEvent $version, array $mentions): void
     {
-        Notification::send(
-            UserModel::query()->findMany(array_column($mentions, 'id')),
-            new ActivityMentionNotification($version),
-        );
+        if ($mentions === []) {
+            return;
+        }
+
+        DB::afterCommit(function () use ($version, $mentions): void {
+            try {
+                Notification::send(
+                    User::find()->id(array_column($mentions, 'id'))->status(null)->collect(),
+                    new ActivityMentionNotification($version),
+                );
+            } catch (Throwable $exception) {
+                report($exception);
+            }
+        });
     }
 
     /** @return list<array{id: int, username: string}> */

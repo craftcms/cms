@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
@@ -48,7 +49,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 use Throwable;
 
 use function CraftCms\Cms\currentUser;
@@ -563,7 +563,11 @@ readonly class ElementWrites
                                     siteSettingsRecord: $siteElementRecord,
                                     inheritedUpdateSearchIndex: $resolvedUpdateSearchIndex,
                                 )) {
-                                    throw new InvalidArgumentException;
+                                    DB::rollBack();
+                                    $this->resetElement($element, $originalFirstSave, $originalIsNewForSite, $originalPropagateAll);
+                                    $element->dateUpdated = $originalDateUpdated;
+
+                                    return false;
                                 }
 
                                 $siteElements[$siteId] = $siteElement;
@@ -625,16 +629,14 @@ readonly class ElementWrites
                         BulkOps::trackElement($element);
                     }
 
+                    event(new ElementPersisted($element, $isNewElement));
+
                     DB::commit();
                 } catch (Throwable $throwable) {
                     DB::rollBack();
 
                     $this->resetElement($element, $originalFirstSave, $originalIsNewForSite, $originalPropagateAll);
                     $element->dateUpdated = $originalDateUpdated;
-
-                    if ($throwable instanceof InvalidArgumentException) {
-                        return false;
-                    }
 
                     throw $throwable;
                 } finally {

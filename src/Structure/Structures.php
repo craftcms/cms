@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
+use CraftCms\Cms\Activity\ElementActivity;
 use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -419,15 +420,9 @@ class Structures
             $mode = Mode::Insert;
         }
 
-        $recordMove = $mode === Mode::Update && StructuralElementActivity::shouldRecordMovement($element);
+        $recordMove = $mode === Mode::Update && ElementActivity::shouldRecordWrite($element);
         $structureUid = null;
         $origin = null;
-
-        if ($recordMove) {
-            $structureUid = $this->getStructureById($structureId)->uid
-                ?? throw new Exception("Structure $structureId does not have a UID.");
-            $origin = StructuralElementActivity::position($structureUid, $element);
-        }
 
         /** @var Mode::Insert|Mode::Update $mode */
         [$beforeEvent, $afterEvent] = match ($mode) {
@@ -466,6 +461,18 @@ class Structures
 
         DB::beginTransaction();
         try {
+            if ($recordMove) {
+                $structureUid = $this->getStructureById($structureId)->uid
+                    ?? throw new Exception("Structure $structureId does not have a UID.");
+                $originalElement = $element::find()
+                    ->id($element->id)
+                    ->siteId($element->siteId)
+                    ->structureId($structureId)
+                    ->status(null)
+                    ->one() ?? throw new Exception('Unable to capture the original element position.');
+                $origin = StructuralElementActivity::position($structureUid, $originalElement);
+            }
+
             if (! $structureElementModel->$method($targetElementModel)) {
                 DB::rollBack();
                 $this->releaseLock($structureId, $ownsLock);

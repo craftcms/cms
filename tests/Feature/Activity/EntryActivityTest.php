@@ -146,6 +146,61 @@ it('shows author and relational changes in the activity timeline', function () {
         ]]);
 });
 
+it('shows changes between disabled relation targets in the activity timeline', function (bool $provisional) {
+    $oldTarget = EntryModel::factory()->createElement(['title' => 'Old disabled']);
+    $newTarget = EntryModel::factory()->createElement(['title' => 'New disabled']);
+
+    foreach ([$oldTarget, $newTarget] as $target) {
+        $target->enabled = false;
+        expect(Elements::saveElement($target, updateSearchIndex: false))->toBeTrue();
+    }
+
+    $result = EntryModel::factory()
+        ->withField('relatedEntries', EntriesField::class, value: [$oldTarget->id])
+        ->createElementWithFields();
+    $entry = $result->element;
+    $field = $result->fields->get('relatedEntries');
+    $edited = $provisional
+        ? app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true)
+        : $entry;
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $edited->setFieldValue($field->handle, [$newTarget->id]);
+
+    expect(Elements::saveElement($edited, updateSearchIndex: false))->toBeTrue();
+
+    if ($provisional) {
+        app(Drafts::class)->applyDraft($edited);
+    }
+
+    $stored = Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one();
+
+    expect($stored->getFieldValue($field->handle)->status(null)->ids())->toBe([$newTarget->id]);
+
+    postJson(action(ActivityTimelineController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+    ])->assertOk()->assertJsonCount(1, 'events')->assertJsonPath('events.0.changes', [[
+        'label' => $field->name,
+        'old' => [[
+            'elementType' => Entry::class,
+            'id' => $oldTarget->id,
+            'label' => 'Old disabled',
+            'siteId' => $oldTarget->siteId,
+        ]],
+        'new' => [[
+            'elementType' => Entry::class,
+            'id' => $newTarget->id,
+            'label' => 'New disabled',
+            'siteId' => $newTarget->siteId,
+        ]],
+    ]]);
+})->with([
+    'direct save' => false,
+    'provisional draft' => true,
+]);
+
 it('records a status change instead of a generic update', function () {
     $result = EntryModel::factory()
         ->withField('bodyField', PlainText::class, value: 'Old body')
