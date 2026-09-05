@@ -797,9 +797,7 @@ class CpScreenResponse implements Responsable
         if ($this->prepareScreen) {
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            InputNamespace::set($namespace);
-            call_user_func($this->prepareScreen, $this, $containerId);
-            InputNamespace::set(null);
+            InputNamespace::with($namespace, fn () => call_user_func($this->prepareScreen, $this, $containerId));
         }
 
         $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
