@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import '@craftcms/ui/components/disclosure/disclosure';
   import {computed, shallowRef} from 'vue';
   import Modal from '@/common/components/Modal.vue';
   import ActivityTimelineChangeList from './ActivityTimelineChangeList.vue';
@@ -22,13 +23,17 @@
 
 <template>
   <craft-card class="activity-timeline__changes">
-    <details v-if="showInline" open>
-      <summary>{{ changeCountLabel(changes.length) }}</summary>
+    <craft-disclosure
+      v-if="showInline"
+      :label="changeCountLabel(changes.length)"
+      opened
+    >
       <ActivityTimelineChangeList
+        slot="content"
         class="activity-timeline__change-list"
         :changes="changes"
       />
-    </details>
+    </craft-disclosure>
 
     <div v-else class="activity-timeline__changes-summary">
       <span>{{ changeCountLabel(changes.length) }}</span>
@@ -64,10 +69,6 @@
 <style scoped>
   .activity-timeline__changes {
     margin-block-start: var(--c-spacing-sm);
-  }
-
-  .activity-timeline__changes details > summary {
-    cursor: pointer;
   }
 
   .activity-timeline__change-list {

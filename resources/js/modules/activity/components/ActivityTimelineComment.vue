@@ -204,23 +204,23 @@
               : t('Couldn’t update comment.')
           }}
         </p>
-        <button
+        <craft-button
           v-if="!creating"
           type="button"
-          class="btn small"
+          size="small"
           @click="cancelEditing"
         >
           {{ t('Cancel') }}
-        </button>
-        <button
+        </craft-button>
+        <craft-button
           type="button"
-          class="btn submit"
-          :class="{small: !creating}"
+          variant="primary"
+          :size="creating ? 'medium' : 'small'"
           :disabled="draft.trim() === '' || mutating"
           @click="saveComment"
         >
           {{ creating ? t('Comment') : t('Save') }}
-        </button>
+        </craft-button>
       </div>
     </div>
   </div>

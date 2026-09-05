@@ -12,8 +12,15 @@
 
   const props = defineProps<ActivityTimelineProps>();
   const timeline = ref<HTMLElement | null>(null);
-  const {addOrUpdateEvent, dayGroups, events, load, scrollToEnd, status} =
-    useActivityTimeline(props, timeline);
+  const {
+    addOrUpdateEvent,
+    dayGroups,
+    events,
+    hasLoaded,
+    load,
+    scrollToEnd,
+    status,
+  } = useActivityTimeline(props, timeline);
 
   async function commentCreated(event: ActivityEvent): Promise<void> {
     addOrUpdateEvent(event);
@@ -25,7 +32,7 @@
   <div class="activity-timeline">
     <div ref="timeline" class="activity-timeline__scroll" scroll-region>
       <div
-        v-if="status === 'loading'"
+        v-if="!hasLoaded && status === 'loading'"
         class="activity-timeline__status"
         role="status"
       >
@@ -34,7 +41,7 @@
       </div>
 
       <div
-        v-else-if="status === 'error'"
+        v-else-if="!hasLoaded && status === 'error'"
         class="activity-timeline__status"
         role="alert"
       >
@@ -51,13 +58,13 @@
       </div>
 
       <p
-        v-else-if="status === 'loaded' && events.length === 0"
+        v-else-if="hasLoaded && events.length === 0"
         class="activity-timeline__status"
       >
         {{ t('No activity has been recorded yet.') }}
       </p>
 
-      <div v-else-if="status === 'loaded'" class="activity-timeline__rail">
+      <div v-else-if="hasLoaded" class="activity-timeline__rail">
         <div v-if="pageUrl" class="activity-timeline__full-link">
           <CpLink :href="pageUrl">
             {{ t('View all activity') }}
@@ -86,7 +93,7 @@
     </div>
 
     <div
-      v-if="status === 'loaded'"
+      v-if="hasLoaded"
       class="activity-timeline__composer"
       data-activity-comment-composer
     >
