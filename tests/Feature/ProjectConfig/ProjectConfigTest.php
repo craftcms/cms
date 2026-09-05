@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -176,10 +179,36 @@ it('fires events', function () {
     $pc->set('some.path', 'value');
     $pc->saveModifiedConfigData();
 
+    $history = $pc->getAppliedChanges();
+    $delta = file_get_contents(Path::configDelta(ProjectConfig::CONFIG_DELTA_FILENAME));
+    DB::enableQueryLog();
+    $pc->flush();
+    expect(DB::getQueryLog())->toBe([])
+        ->and($pc->getAppliedChanges())->toBe($history)
+        ->and(file_get_contents(Path::configDelta(ProjectConfig::CONFIG_DELTA_FILENAME)))->toBe($delta);
+    DB::disableQueryLog();
+
+    $pc->set('some.path', 'updated');
     $pc->remove('some.path');
     $pc->saveModifiedConfigData();
+
+    expect(DB::table(Table::PROJECTCONFIG)->where('path', 'some.path')->exists())->toBeFalse()
+        ->and($pc->getAppliedChanges())->toHaveCount(count($history) + 2)
+        ->and(file_get_contents(Path::configDelta(ProjectConfig::CONFIG_DELTA_FILENAME)))->not->toContain('dateModified');
 
     Event::assertDispatched(ItemAdded::class);
     Event::assertDispatched(ItemUpdated::class);
     Event::assertDispatched(ItemRemoved::class);
+});
+
+it('persists changes again after an outer transaction rolls back', function () {
+    $pc = getFakeProjectConfig();
+    $pc->set('rollback-test', 'value');
+    DB::beginTransaction();
+    $pc->saveModifiedConfigData();
+    DB::rollBack();
+
+    expect(DB::table(Table::PROJECTCONFIG)->where('path', 'rollback-test')->exists())->toBeFalse();
+    $pc->saveModifiedConfigData();
+    expect(DB::table(Table::PROJECTCONFIG)->where('path', 'rollback-test')->value('value'))->toBe('"value"');
 });
