@@ -1,5 +1,6 @@
 import {actionClient} from '@craftcms/ui';
-import {computed, nextTick, ref, watch, type Ref} from 'vue';
+import {computed, nextTick, onScopeDispose, watch, type Ref} from 'vue';
+import {useFetch} from '@/common/composables/useFetch';
 
 export interface ActivityTarget {
   label: string;
@@ -58,54 +59,49 @@ export function useActivityTimeline(
   props: ActivityTimelineProps,
   timeline: Ref<HTMLElement | null>
 ) {
-  const events = ref<ActivityEvent[]>([]);
-  const status = ref<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+  const {
+    data,
+    state: status,
+    execute,
+    abort,
+  } = useFetch<ActivityTimelineResponse>(
+    computed(() => props.url),
+    {
+      method: 'post',
+      axiosInstance: actionClient,
+      immediate: false,
+      refetch: false,
+      onSuccess: () => void scrollToEnd(),
+    }
+  );
+  const events = computed(() => data.value?.events ?? []);
+  const hasLoaded = computed(() => data.value !== null);
 
-  function requestData() {
-    return {
-      elementType: props.elementType,
-      elementId: props.elementId,
-      siteId: props.siteId,
-    };
-  }
+  onScopeDispose(abort);
 
   async function load(): Promise<void> {
     if (props.elementId === null) {
       return;
     }
 
-    const refreshing = status.value === 'loaded';
-
-    if (!refreshing) {
-      status.value = 'loading';
-    }
-
-    try {
-      const {data} = await actionClient.post<ActivityTimelineResponse>(
-        props.url,
-        requestData()
-      );
-
-      events.value = data.events;
-      status.value = 'loaded';
-      await scrollToEnd();
-    } catch {
-      if (!refreshing) {
-        status.value = 'error';
-      }
-    }
+    await execute({
+      elementType: props.elementType,
+      elementId: props.elementId,
+      siteId: props.siteId,
+    });
   }
 
   function addOrUpdateEvent(event: ActivityEvent): void {
     const index = events.value.findIndex(({id}) => id === event.id);
+    const updatedEvents = [...events.value];
 
     if (index === -1) {
-      events.value.push(event);
-
-      return;
+      updatedEvents.push(event);
+    } else {
+      updatedEvents[index] = event;
     }
 
-    events.value[index] = event;
+    data.value = {events: updatedEvents};
   }
 
   async function scrollToEnd(): Promise<void> {
@@ -129,7 +125,7 @@ export function useActivityTimeline(
   watch(
     () => props.refreshToken,
     () => {
-      if (status.value === 'loaded') {
+      if (hasLoaded.value) {
         void load();
       }
     }
@@ -156,6 +152,7 @@ export function useActivityTimeline(
     addOrUpdateEvent,
     dayGroups,
     events,
+    hasLoaded,
     load,
     scrollToEnd,
     status,
