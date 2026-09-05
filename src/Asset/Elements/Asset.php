@@ -497,6 +497,25 @@ class Asset extends Element
     }
 
     /** @return list<SourceInfo> */
+    /**
+     * `assets/{volume handle}`, matching the folder URIs
+     * {@see VolumeFolder::getSourcePathInfo()} hands the index.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        // Only a volume's root folder carries a handle — a nested folder sets
+        // this to `false`, and is reached through the index rather than by a
+        // URL of its own.
+        $handle = $source['data']['volume-handle'] ?? null;
+
+        if (! is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        return 'assets/'.$handle;
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {

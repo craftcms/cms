@@ -31,6 +31,26 @@ trait HasSources
         return false;
     }
 
+    /**
+     * The control panel index URI a source has of its own, if it has one.
+     *
+     * A section or a volume is reachable at a URL that names it —
+     * `content/entries/blog`, `assets/uploads` — rather than only through a
+     * `?source=` query on the type's index. The nav and the breadcrumbs both
+     * need that URL, so it's answered here rather than being rebuilt by each
+     * caller from the source array's innards.
+     *
+     * Returns `null` for a source with no page of its own (a custom source,
+     * say), leaving the caller to fall back to the query form.
+     *
+     * @param  array<string, mixed>  $source  A row from {@see sources()}
+     * @param  string|null  $page  The index page the source belongs to
+     */
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        return null;
+    }
+
     public static function sources(string $context): array
     {
         if (! isset(self::$sources[static::class][$context])) {

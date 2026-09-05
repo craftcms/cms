@@ -385,6 +385,29 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
+    /**
+     * `content/{page}/{handle}`, the shape {@see Section::getCpIndexUri()}
+     * produces and the rest of the CP links sections by. Singles share one
+     * source, and so one `singles` URL.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        $handle = ($source['key'] ?? null) === 'singles'
+            ? 'singles'
+            : ($source['data']['handle'] ?? null);
+
+        if (! is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        return sprintf(
+            'content/%s/%s',
+            is_string($page) && $page !== '' ? Str::slug($page) : 'entries',
+            $handle,
+        );
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
@@ -200,13 +202,15 @@ readonly class Navigation
                         )
                         ->href(sprintf('content/%s', Str::slug($page)))
                         ->icon($entryPageSettings[$page]['icon'] ?? 'newspaper')
+                        ->subnav($this->sourceSubnav(Entry::class, $page))
                     )
                 );
             } else {
                 $navItems->add(new NavItem()
                     ->label(t('Entries'))
                     ->href('content/entries')
-                    ->icon('newspaper'));
+                    ->icon('newspaper')
+                    ->subnav($this->sourceSubnav(Entry::class)));
             }
         }
 
@@ -214,7 +218,8 @@ readonly class Navigation
             $navItems->add(new NavItem()
                 ->label(t('Assets'))
                 ->href('assets')
-                ->icon('image'));
+                ->icon('image')
+                ->subnav($this->sourceSubnav(Asset::class)));
         }
 
         if (
@@ -296,6 +301,69 @@ readonly class Navigation
         return collect($event->navItems)
             ->map(fn (NavItem $item): NavItem => $this->normalize($item))
             ->all();
+    }
+
+    /**
+     * An element type's index sources, as nav children.
+     *
+     * The same list the index's own sidebar draws, so the two can't disagree
+     * about what exists or where it lives. A heading row becomes a `group`:
+     * a label over its members rather than somewhere to go, which is how the
+     * sources sidebar renders one too.
+     *
+     * Sources with no URL of their own — a custom source, reachable only as a
+     * `?source=` query on the index — are left out. The nav is a list of
+     * places, and those aren't places yet.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return NavItem[]
+     */
+    private function sourceSubnav(string $elementType, ?string $page = null): array
+    {
+        $items = [];
+        $group = null;
+
+        foreach ($this->elementSources->getSources($elementType, page: $page) as $source) {
+            if (($source['type'] ?? null) === ElementSources::TYPE_HEADING) {
+                $heading = (string) ($source['heading'] ?? '');
+
+                // A blank heading separates a trailing run of un-configured
+                // sources rather than naming one, so it closes the open group
+                // instead of starting an empty one.
+                $group = $heading === '' ? null : new NavItem()->label($heading)->group(true)->subnav([]);
+
+                if ($group !== null) {
+                    $items[] = $group;
+                }
+
+                continue;
+            }
+
+            $uri = $elementType::sourceCpUri($source, $page);
+
+            if ($uri === null) {
+                continue;
+            }
+
+            $item = new NavItem()
+                ->label((string) ($source['label'] ?? ''))
+                ->href($uri);
+
+            if ($group !== null) {
+                $group->subnav = [...$group->subnav, $item];
+
+                continue;
+            }
+
+            $items[] = $item;
+        }
+
+        // A heading whose members all turned out to be unreachable would
+        // otherwise be left standing over nothing.
+        return array_values(array_filter(
+            $items,
+            fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
+        ));
     }
 
     /**

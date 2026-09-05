@@ -24,7 +24,11 @@ beforeEach(function () {
         ->enableGql(true)
         ->allowAdminChanges(true);
 
-    Sections::shouldReceive('getTotalEditableSections')->andReturn(0);
+    // Answered through the test's own state: a facade mock can't be swapped
+    // out again once Mockery has defined the class for it.
+    $this->totalEditableSections = 0;
+    Sections::shouldReceive('getTotalEditableSections')
+        ->andReturnUsing(fn () => $this->totalEditableSections);
     Volumes::shouldReceive('getTotalViewableVolumes')->andReturn(0);
 
     $user = Mockery::mock(CraftUser::class);
@@ -35,6 +39,10 @@ beforeEach(function () {
 
     Auth::shouldReceive('user')->andReturn($user);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
+
+    // The tree is cached, and the key can't see a mocked service — so without
+    // this each test would be handed whichever tree ran before it.
+    Navigation::flushCache();
 });
 
 it('selects nav items from paths with the cp trigger', function () {
@@ -235,4 +243,80 @@ it('hands a group\'s children up for the legacy sidebar, which has no groups', f
     expect($children->pluck('label'))->toContain('General')
         ->and($children->every(fn ($item) => ! $item->group))->toBeTrue()
         ->and($children->every(fn ($item) => $item->href !== null))->toBeTrue();
+});
+
+it('hangs an element type\'s sources off its nav item, grouped by heading', function () {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect(['Entries']));
+    $sources->shouldReceive('getPageSettings')->andReturn([]);
+    $sources->shouldReceive('getSources')->andReturn(collect([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'label' => 'Singles'],
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Channels'],
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'section:abc',
+            'label' => 'Posts',
+            'data' => ['handle' => 'posts'],
+        ],
+        // No URL of its own: reachable only as a `?source=` query, so the nav
+        // has nowhere to send you and leaves it out.
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent'],
+    ]));
+
+    $navigation = new Navigation(
+        Request::create('/admin/content/entries'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        $sources,
+        app(Settings::class),
+    );
+
+    $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
+    $children = collect($entries->subnav);
+
+    expect($children->pluck('label')->all())->toBe(['Singles', 'Channels'])
+        ->and($children->firstWhere('label', 'Singles')->href)
+        ->toEndWith('/content/entries/singles');
+
+    $channels = $children->firstWhere('label', 'Channels');
+
+    expect($channels->group)->toBeTrue()
+        ->and(collect($channels->subnav)->pluck('label')->all())->toBe(['Posts'])
+        ->and(collect($channels->subnav)->first()->href)
+        ->toEndWith('/content/entries/posts');
+});
+
+it('drops a heading whose members all turned out to be unreachable', function () {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect(['Entries']));
+    $sources->shouldReceive('getPageSettings')->andReturn([]);
+    $sources->shouldReceive('getSources')->andReturn(collect([
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Saved'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent'],
+    ]));
+
+    $navigation = new Navigation(
+        Request::create('/admin/content/entries'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        $sources,
+        app(Settings::class),
+    );
+
+    $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
+
+    // A heading standing over nothing is worse than no heading.
+    expect($entries->subnav)->toBe([]);
 });
