@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Activity;
 use CraftCms\Cms\Activity\EventTypes\ElementSiteAdded;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Sites;
@@ -22,7 +22,7 @@ readonly class ElementWriteActivity
     /** @var WeakMap<ElementInterface, bool> */
     private WeakMap $writes;
 
-    /** @var WeakMap<ElementInterface, Entry> */
+    /** @var WeakMap<ElementInterface, array{entry: Entry, authorChanged: bool}> */
     private WeakMap $originalEntries;
 
     /** @var WeakMap<ElementInterface, Asset> */
@@ -45,8 +45,8 @@ readonly class ElementWriteActivity
             return;
         }
 
-        $recordEntry = $element instanceof Entry && EntryActivity::shouldRecord($element, true);
-        $recordAsset = $element instanceof Asset && AssetActivity::shouldRecord($element, true);
+        $recordEntry = $element instanceof Entry && ElementActivity::shouldRecordWrite($element);
+        $recordAsset = $element instanceof Asset && AssetActivity::shouldRecord($element);
         $recordElement = ElementActivity::shouldRecordWrite($element);
 
         if (! $recordEntry && ! $recordAsset && ! $recordElement) {
@@ -59,7 +59,10 @@ readonly class ElementWriteActivity
             $original = EntryActivity::original($element);
 
             if ($original !== null) {
-                $this->originalEntries[$element] = $original;
+                $this->originalEntries[$element] = [
+                    'entry' => $original,
+                    'authorChanged' => $element->getAuthorIds() !== $original->getAuthorIds(),
+                ];
             }
         }
 
@@ -68,7 +71,7 @@ readonly class ElementWriteActivity
         }
     }
 
-    public function handleElementSaved(ElementSaved $event): void
+    public function handleElementPersisted(ElementPersisted $event): void
     {
         $element = $event->element;
 
@@ -99,9 +102,10 @@ readonly class ElementWriteActivity
             } elseif ($originalEntry !== null) {
                 EntryActivity::recordUpdated(
                     $element,
-                    $originalEntry,
+                    $originalEntry['entry'],
                     $element->getDirtyAttributes(),
                     $element->getDirtyFields(),
+                    $originalEntry['authorChanged'],
                 );
             }
         }
@@ -137,7 +141,7 @@ readonly class ElementWriteActivity
     {
         return [
             ElementSaving::class => 'handleElementSaving',
-            ElementSaved::class => 'handleElementSaved',
+            ElementPersisted::class => 'handleElementPersisted',
         ];
     }
 }

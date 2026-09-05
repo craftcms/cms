@@ -38,6 +38,14 @@ class AssetEditViewModel extends ElementEditViewModel
         return Url::actionUrl('elements/save');
     }
 
+    #[Override]
+    public function activityTimelineUrl(): ?string
+    {
+        return $this->asset->id
+            ? Url::actionUrl('elements/activity')
+            : null;
+    }
+
     public function volumeId(): ?int
     {
         return $this->asset->getVolumeId();

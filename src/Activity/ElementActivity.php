@@ -19,10 +19,9 @@ class ElementActivity
             (! $element instanceof NestedElementInterface || $element->getPrimaryOwnerId() === null);
     }
 
-    public static function shouldRecordWrite(ElementInterface $element, bool $recordActivity = true): bool
+    public static function shouldRecordWrite(ElementInterface $element): bool
     {
-        return $recordActivity &&
-            self::shouldRecord($element) &&
+        return self::shouldRecord($element) &&
             ! $element->propagating &&
             ! $element->resaving &&
             ! $element->mergingCanonicalChanges;

@@ -10,20 +10,28 @@ use CraftCms\Cms\Activity\EventTypes\ElementMerged;
 use CraftCms\Cms\Activity\EventTypes\ElementMoved;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Operations\ElementDuplicates;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Structures;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
@@ -136,6 +144,49 @@ it('records captured structure movement positions', function () {
         "Moved from the position after {$parent->getUiLabel()} in {$root->getUiLabel()} to the first position in {$parent->getUiLabel()}.",
     );
 });
+
+it('shows parent changes in the activity timeline', function (bool $provisional) {
+    $structure = Structure::factory()->create();
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+    Sections::refreshSections();
+    $parent = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Parent']);
+    $moved = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Moved']);
+    app(Structures::class)->appendToRoot($structure->id, $parent, Mode::Insert);
+    app(Structures::class)->appendToRoot($structure->id, $moved, Mode::Insert);
+    $parent = structuredEntry($parent->id, $structure->id);
+    $moved = structuredEntry($moved->id, $structure->id);
+    $edited = $provisional
+        ? app(Drafts::class)->createDraft($moved, User::findOne()->id, provisional: true)
+        : $moved;
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $edited->setParentId($parent->id);
+    expect(Elements::saveElement($edited, updateSearchIndex: false))->toBeTrue();
+
+    if ($provisional) {
+        app(Drafts::class)->applyDraft($edited);
+    }
+
+    expect(structuredEntry($moved->id, $structure->id)->getParentId())->toBe($parent->id);
+
+    postJson(action(ActivityTimelineController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $moved->id,
+        'siteId' => $moved->siteId,
+    ])
+        ->assertOk()
+        ->assertJsonPath(
+            'events.0.description.text',
+            'Moved from the position after Parent at the top level to the first position in Parent.',
+        );
+})->with([
+    'canonical entry save' => false,
+    'provisional draft application' => true,
+]);
 
 it('records both merge subjects without nested updates or deletion', function () {
     $merged = EntryModel::factory()->createElement(['title' => 'Merged entry']);

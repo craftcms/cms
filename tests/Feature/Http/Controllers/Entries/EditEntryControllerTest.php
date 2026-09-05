@@ -74,6 +74,10 @@ it('renders the entry edit screen as an Inertia page', function () {
             ->where('sectionHandle', 'news')
             ->where('saveId', $this->entry->id)
             ->where('readOnly', false)
+            ->where('activityTimelineUrl', fn (?string $url) => is_string($url)
+                && str_contains($url, 'elements/activity'))
+            ->where('activityPageUrl', fn (?string $url) => is_string($url)
+                && str_ends_with((string) parse_url($url, PHP_URL_PATH), '/activity'))
         );
 });
 
@@ -206,6 +210,8 @@ it('renders a revision read-only in the Inertia editor', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Edit')
             ->where('readOnly', true)
+            ->where('activityTimelineUrl', fn (?string $url) => is_string($url)
+                && str_contains($url, 'elements/activity'))
             ->where('canAutosave', false)
             ->where('notice', fn (?string $notice) => is_string($notice)
                 && str_contains($notice, 'viewing a revision'))
