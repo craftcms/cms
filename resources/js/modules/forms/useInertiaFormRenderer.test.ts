@@ -204,6 +204,45 @@ describe('useInertiaFormRenderer', () => {
     ]);
   });
 
+  it('resolves an error key through structural children and Control-owned Forms', async () => {
+    const ownerPath = ['settings', 'matrix', 'entries', 'block-a', 'heading'];
+    const nestedPayload: FormPayload = {
+      ...payload,
+      nodes: [
+        {
+          children: [
+            {
+              control: {
+                path: ['settings', 'matrix'],
+                forms: [
+                  {
+                    nodes: [{children: [{control: {path: ownerPath}}]}],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ] as unknown as FormPayload['nodes'],
+    };
+    let form!: InertiaForm<{settings: TestSettings}>;
+    let integration!: TestIntegration;
+
+    mount(() => {
+      form = useForm({settings: {}});
+      integration = useInertiaFormRenderer(form, nestedPayload, {
+        mutationKey: 'settings',
+      });
+    });
+
+    form.setError({heading: 'A heading is required.'} as never);
+    await nextTick();
+
+    expect(integration.errors.value).toEqual([
+      {path: ownerPath, messages: ['A heading is required.']},
+    ]);
+  });
+
   it('leaves an unowned error key alone, so it stays global', async () => {
     const layoutPayload: FormPayload = {
       ...rootPayload,
