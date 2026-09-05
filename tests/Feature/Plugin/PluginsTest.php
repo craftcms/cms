@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
+use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
@@ -184,6 +189,35 @@ it('can uninstall and install a plugin', function () {
     expect($this->plugins->isPluginInstalled('test-plugin'))->toBeTrue();
     expect($this->plugins->isPluginEnabled('test-plugin'))->toBeTrue();
 });
+
+it('restores project config permissions after plugin lifecycle failures', function (string $operation, string $event, bool $installed, bool $readOnly) {
+    $this->plugins->enablePlugin('test-plugin');
+
+    if ($operation === 'installPlugin') {
+        $this->plugins->uninstallPlugin('test-plugin');
+    }
+
+    $failure = new RuntimeException('Plugin lifecycle failed.');
+    Event::listen($event, fn () => throw $failure);
+
+    $projectConfig = app(ProjectConfig::class);
+    $originalReadOnly = $projectConfig->readOnly;
+    $projectConfig->readOnly = $readOnly;
+
+    try {
+        expect(fn () => $this->plugins->{$operation}('test-plugin'))->toThrow($failure);
+
+        expect($projectConfig->readOnly)->toBe($readOnly)
+            ->and($this->plugins->isPluginInstalled('test-plugin'))->toBe($installed);
+    } finally {
+        $projectConfig->readOnly = $originalReadOnly;
+    }
+})->with([
+    'before installation' => ['installPlugin', PluginInstalling::class, false],
+    'after installation' => ['installPlugin', PluginInstalled::class, true],
+    'before uninstallation' => ['uninstallPlugin', PluginUninstalling::class, true],
+    'after uninstallation' => ['uninstallPlugin', PluginUninstalled::class, false],
+])->with([true, false]);
 
 it('publishes configured files when enabling a plugin', function () {
     $paths = configureTestPluginAssets();

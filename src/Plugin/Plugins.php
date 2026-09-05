@@ -475,93 +475,95 @@ class Plugins
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        $configKey = ProjectConfig::PATH_PLUGINS.'.'.$handle;
-
-        $plugin = $this->createPlugin($handle);
-
-        if ($plugin === null) {
-            throw new InvalidPluginException($handle);
-        }
-
-        // Set the edition
-        $edition ??= $projectConfig->get($configKey.'.edition');
-
-        $editions = $plugin::editions();
-
-        if ($edition === null || ! in_array($edition, $editions, true)) {
-            $edition = reset($editions);
-        }
-
-        $plugin->edition = $edition;
-
-        event(new PluginInstalling($plugin));
-
-        DB::beginTransaction();
-
         try {
-            // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
-            DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
+            $configKey = ProjectConfig::PATH_PLUGINS.'.'.$handle;
 
-            DB::table(Table::MIGRATIONS)
-                ->where('track', "plugin:$handle")
-                ->delete();
+            $plugin = $this->createPlugin($handle);
 
-            $info['id'] = DB::table(Table::PLUGINS)->insertGetId([
-                'handle' => $handle,
-                'version' => $plugin->version,
-                'schemaVersion' => $plugin->schemaVersion,
-                'installDate' => $now = now(),
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
-            ]);
-
-            $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
-
-            $plugin->install();
-
-            try {
-                DB::commit();
-            } catch (PDOException $e) {
-                // The transaction could be implicitly committed by Mysql
-                if ($e->getMessage() !== 'There is no active transaction') {
-                    throw $e;
-                }
-            }
-        } catch (Throwable $e) {
-            try {
-                DB::rollBack();
-            } catch (PDOException $e) {
-                // Implicitly committed.
+            if ($plugin === null) {
+                throw new InvalidPluginException($handle);
             }
 
-            if (DB::isMysql()) {
-                // Explicitly remove the plugins row just in case the transaction was implicitly committed
+            // Set the edition
+            $edition ??= $projectConfig->get($configKey.'.edition');
+
+            $editions = $plugin::editions();
+
+            if ($edition === null || ! in_array($edition, $editions, true)) {
+                $edition = reset($editions);
+            }
+
+            $plugin->edition = $edition;
+
+            event(new PluginInstalling($plugin));
+
+            DB::beginTransaction();
+
+            try {
+                // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
                 DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
+
+                DB::table(Table::MIGRATIONS)
+                    ->where('track', "plugin:$handle")
+                    ->delete();
+
+                $info['id'] = DB::table(Table::PLUGINS)->insertGetId([
+                    'handle' => $handle,
+                    'version' => $plugin->version,
+                    'schemaVersion' => $plugin->schemaVersion,
+                    'installDate' => $now = now(),
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ]);
+
+                $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
+
+                $plugin->install();
+
+                try {
+                    DB::commit();
+                } catch (PDOException $e) {
+                    // The transaction could be implicitly committed by Mysql
+                    if ($e->getMessage() !== 'There is no active transaction') {
+                        throw $e;
+                    }
+                }
+            } catch (Throwable $e) {
+                try {
+                    DB::rollBack();
+                } catch (PDOException $e) {
+                    // Implicitly committed.
+                }
+
+                if (DB::isMysql()) {
+                    // Explicitly remove the plugins row just in case the transaction was implicitly committed
+                    DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
+                }
+
+                throw $e;
             }
 
-            throw $e;
+            // Add the plugin to the project config
+            $projectConfig->set(
+                path: $configKey,
+                value: [
+                    'edition' => $edition,
+                    'enabled' => true,
+                    'schemaVersion' => $plugin->schemaVersion,
+                ],
+                message: "Install plugin “{$handle}”",
+            );
+
+            $this->storedPluginInfo[$handle] = $info;
+            $plugin->publishAssets();
+
+            event(new PluginInstalled($plugin));
+
+            return true;
+        } finally {
+            $projectConfig->readOnly = $readOnly;
         }
-
-        // Add the plugin to the project config
-        $projectConfig->set(
-            path: $configKey,
-            value: [
-                'edition' => $edition,
-                'enabled' => true,
-                'schemaVersion' => $plugin->schemaVersion,
-            ],
-            message: "Install plugin “{$handle}”",
-        );
-
-        $this->storedPluginInfo[$handle] = $info;
-        $plugin->publishAssets();
-
-        event(new PluginInstalled($plugin));
-
-        $projectConfig->readOnly = $readOnly;
-
-        return true;
     }
 
     /**
@@ -597,64 +599,66 @@ class Plugins
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        if (($plugin = $this->getPlugin($handle)) === null && ! $force) {
-            throw new InvalidPluginException($handle);
-        }
-
-        event(new PluginUninstalling($plugin));
-
-        DB::beginTransaction();
         try {
-            // Let the plugin uninstall itself first
-            if ($plugin && $enabled) {
+            if (($plugin = $this->getPlugin($handle)) === null && ! $force) {
+                throw new InvalidPluginException($handle);
+            }
+
+            event(new PluginUninstalling($plugin));
+
+            DB::beginTransaction();
+            try {
+                // Let the plugin uninstall itself first
+                if ($plugin && $enabled) {
+                    try {
+                        $plugin->uninstall();
+                    } catch (Throwable $e) {
+                        if (! $force) {
+                            throw $e;
+                        }
+                    }
+                }
+
+                // Clean up the plugins and migrations tables
+                $info = $this->getStoredPluginInfo($handle);
+                if ($info !== null) {
+                    DB::table(Table::PLUGINS)->delete($info['id']);
+                }
+
+                DB::table(Table::MIGRATIONS)
+                    ->where('track', "plugin:$handle")
+                    ->delete();
+
                 try {
-                    $plugin->uninstall();
-                } catch (Throwable $e) {
-                    if (! $force) {
+                    DB::commit();
+                } catch (PDOException $e) {
+                    // The transaction could be implicitly committed by Mysql
+                    if ($e->getMessage() !== 'There is no active transaction') {
                         throw $e;
                     }
                 }
+            } catch (Throwable $e) {
+                DB::rollBack();
+                throw $e;
             }
 
-            // Clean up the plugins and migrations tables
-            $info = $this->getStoredPluginInfo($handle);
-            if ($info !== null) {
-                DB::table(Table::PLUGINS)->delete($info['id']);
+            // Remove the plugin from the project config
+            if ($projectConfig->get(ProjectConfig::PATH_PLUGINS.'.'.$handle, true)) {
+                $projectConfig->remove(ProjectConfig::PATH_PLUGINS.'.'.$handle, "Uninstall the “{$handle}” plugin");
             }
 
-            DB::table(Table::MIGRATIONS)
-                ->where('track', "plugin:$handle")
-                ->delete();
+            unset($this->storedPluginInfo[$handle]);
 
-            try {
-                DB::commit();
-            } catch (PDOException $e) {
-                // The transaction could be implicitly committed by Mysql
-                if ($e->getMessage() !== 'There is no active transaction') {
-                    throw $e;
-                }
+            if ($plugin) {
+                $plugin->removeAssets();
             }
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
+
+            event(new PluginUninstalled($plugin));
+
+            return true;
+        } finally {
+            $projectConfig->readOnly = $readOnly;
         }
-
-        // Remove the plugin from the project config
-        if ($projectConfig->get(ProjectConfig::PATH_PLUGINS.'.'.$handle, true)) {
-            $projectConfig->remove(ProjectConfig::PATH_PLUGINS.'.'.$handle, "Uninstall the “{$handle}” plugin");
-        }
-
-        unset($this->storedPluginInfo[$handle]);
-
-        if ($plugin) {
-            $plugin->removeAssets();
-        }
-
-        event(new PluginUninstalled($plugin));
-
-        $projectConfig->readOnly = $readOnly;
-
-        return true;
     }
 
     /**
