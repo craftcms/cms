@@ -265,9 +265,9 @@ class Users
      *
      * @throws InvalidElementException if the user doesn't validate
      */
-    public function sendActivationEmail(User $user): bool
+    public function sendActivationEmail(User $user, ?string $recipient = null): bool
     {
-        $user->notify(new ActivationNotification($this->setVerificationCodeOnUser($user)));
+        $user->notify(new ActivationNotification($this->setVerificationCodeOnUser($user), $recipient));
 
         return true;
     }
