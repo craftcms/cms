@@ -145,7 +145,7 @@ it('records captured structure movement positions', function () {
     );
 });
 
-it('shows parent changes applied from provisional drafts in the activity timeline', function () {
+it('shows parent changes in the activity timeline', function (bool $provisional) {
     $structure = Structure::factory()->create();
     $entryType = EntryType::factory()->create();
     $section = Section::factory()->withEntryTypes($entryType)->create([
@@ -159,12 +159,19 @@ it('shows parent changes applied from provisional drafts in the activity timelin
     app(Structures::class)->appendToRoot($structure->id, $moved, Mode::Insert);
     $parent = structuredEntry($parent->id, $structure->id);
     $moved = structuredEntry($moved->id, $structure->id);
-    $draft = app(Drafts::class)->createDraft($moved, User::findOne()->id, provisional: true);
-    $draft->setParentId($parent->id);
-    Elements::saveElement($draft, updateSearchIndex: false);
+    $edited = $provisional
+        ? app(Drafts::class)->createDraft($moved, User::findOne()->id, provisional: true)
+        : $moved;
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
-    app(Drafts::class)->applyDraft($draft);
+    $edited->setParentId($parent->id);
+    expect(Elements::saveElement($edited, updateSearchIndex: false))->toBeTrue();
+
+    if ($provisional) {
+        app(Drafts::class)->applyDraft($edited);
+    }
+
+    expect(structuredEntry($moved->id, $structure->id)->getParentId())->toBe($parent->id);
 
     postJson(action(ActivityTimelineController::class), [
         'elementType' => Entry::class,
@@ -176,7 +183,10 @@ it('shows parent changes applied from provisional drafts in the activity timelin
             'events.0.description.text',
             'Moved from the position after Parent at the top level to the first position in Parent.',
         );
-});
+})->with([
+    'canonical entry save' => false,
+    'provisional draft application' => true,
+]);
 
 it('records both merge subjects without nested updates or deletion', function () {
     $merged = EntryModel::factory()->createElement(['title' => 'Merged entry']);

@@ -532,12 +532,10 @@ it('notifies mentioned users with the comment text', function () {
         'markdown' => "Hello [@grace](craft-user:$mentioned->id).",
     ])->assertOk();
 
-    $notifiable = UserModel::query()->findOrFail($mentioned->id);
-
     Notification::assertSentTo(
-        $notifiable,
+        $mentioned,
         ActivityMentionNotification::class,
-        fn (ActivityMentionNotification $notification): bool => $notification->toDatabase($notifiable)['message']
+        fn (ActivityMentionNotification $notification): bool => $notification->toDatabase($mentioned)['message']
             === 'Hello @grace.',
     );
 });
@@ -583,12 +581,12 @@ it('notifies users newly mentioned in each comment edit', function () {
 
     Notification::assertSentTimes(ActivityMentionNotification::class, 3);
     Notification::assertSentToTimes(
-        UserModel::query()->findOrFail($grace->id),
+        $grace,
         ActivityMentionNotification::class,
         2,
     );
     Notification::assertSentTo(
-        UserModel::query()->findOrFail($ada->id),
+        $ada,
         ActivityMentionNotification::class,
     );
 });

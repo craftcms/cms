@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
+use Closure;
 use CraftCms\Cms\Activity\EventTypes\DraftApplied as DraftAppliedActivityEvent;
 use CraftCms\Cms\Activity\EventTypes\DraftCreated as DraftCreatedActivityEvent;
 use CraftCms\Cms\Activity\EventTypes\DraftSaved;
@@ -11,11 +12,14 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
-use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
+use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -70,7 +74,7 @@ readonly class DraftActivity
         ];
     }
 
-    public function handleElementSaved(ElementSaved $event): void
+    public function handleElementPersisted(ElementPersisted $event): void
     {
         $write = $this->writes[$event->element] ?? null;
         unset($this->writes[$event->element]);
@@ -121,32 +125,59 @@ readonly class DraftActivity
     {
         return [
             ElementSaving::class => 'handleElementSaving',
-            ElementSaved::class => 'handleElementSaved',
+            ElementPersisted::class => 'handleElementPersisted',
             DraftCreated::class => 'handleDraftCreated',
             DraftApplied::class => 'handleDraftApplied',
         ];
     }
 
-    /**
-     * @param  string[]  $dirtyAttributes
-     * @param  string[]  $dirtyFields
-     * @param  array<string, mixed>|null  $moveOrigin
-     */
-    public function recordProvisionalApplied(
-        Entry $entry,
-        Entry $original,
-        array $dirtyAttributes,
-        array $dirtyFields,
-        ?array $moveOrigin,
-    ): void {
-        if ($moveOrigin !== null) {
-            StructuralElementActivity::recordMoved(
-                $entry,
-                $moveOrigin,
-                StructuralElementActivity::position($moveOrigin['structure'], $entry),
-            );
+    /** @return Closure(Entry): void|null */
+    public function captureProvisionalApply(ElementInterface $canonical, ElementInterface $draft): ?Closure
+    {
+        if (
+            ! $draft instanceof Entry ||
+            ! $draft->isProvisionalDraft ||
+            $draft->getPrimaryOwnerId() !== null ||
+            ! $canonical instanceof Entry
+        ) {
+            return null;
         }
 
-        EntryActivity::recordUpdated($entry, $original, $dirtyAttributes, $dirtyFields);
+        $original = clone $canonical;
+        $dirtyAttributes = $draft->getModifiedAttributes();
+        $dirtyFields = $draft->getModifiedFields();
+
+        if (in_array('authorIds', $dirtyAttributes, true)) {
+            $original->getAuthorIds();
+        }
+
+        foreach ($original->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if ($field instanceof BaseRelationField && in_array($field->handle, $dirtyFields, true)) {
+                $value = $original->getFieldValue($field->handle);
+
+                if ($value instanceof ElementQueryInterface) {
+                    $original->setFieldValue($field->handle, (clone $value)->status(null)->collect());
+                }
+            }
+        }
+
+        $moveOrigin = $original->structureId !== null && $original->getParentId() !== $draft->getParentId()
+            ? StructuralElementActivity::position(
+                Structures::getStructureById($original->structureId)->uid,
+                $original,
+            )
+            : null;
+
+        return function (Entry $entry) use ($original, $dirtyAttributes, $dirtyFields, $moveOrigin): void {
+            if ($moveOrigin !== null) {
+                StructuralElementActivity::recordMoved(
+                    $entry,
+                    $moveOrigin,
+                    StructuralElementActivity::position($moveOrigin['structure'], $entry),
+                );
+            }
+
+            EntryActivity::recordUpdated($entry, $original, $dirtyAttributes, $dirtyFields);
+        };
     }
 }

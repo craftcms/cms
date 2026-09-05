@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Activity\EventTypes\DraftDiscarded as DraftDiscardedActivityEvent;
-use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,8 +17,6 @@ use CraftCms\Cms\Element\Events\DraftCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -152,20 +149,20 @@ readonly class Drafts
                     }),
             );
 
+            event(new DraftCreated(
+                canonical: $canonical,
+                creatorId: $creatorId,
+                provisional: $provisional,
+                draftName: $name,
+                draftNotes: $notes,
+                draft: $draft,
+            ));
+
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
         }
-
-        event(new DraftCreated(
-            canonical: $canonical,
-            creatorId: $creatorId,
-            provisional: $provisional,
-            draftName: $name,
-            draftNotes: $notes,
-            draft: $draft,
-        ));
 
         return $draft;
     }
@@ -201,17 +198,31 @@ readonly class Drafts
     {
         $name ??= t('First draft');
 
-        // Create the draft row
-        $draftId = $this->insertDraftRow($name, $notes, $creatorId);
+        DB::beginTransaction();
 
-        $element->draftId = $draftId;
-        $element->draftCreatorId = $creatorId;
-        $element->draftName = $name;
-        $element->draftNotes = $notes;
-        $element->markDraftAsSaved = $markAsSaved;
+        try {
+            $draftId = $this->insertDraftRow($name, $notes, $creatorId);
 
-        // Try to save and return the result
-        return $this->elements->saveElement($element);
+            $element->draftId = $draftId;
+            $element->draftCreatorId = $creatorId;
+            $element->draftName = $name;
+            $element->draftNotes = $notes;
+            $element->markDraftAsSaved = $markAsSaved;
+
+            if (! $this->elements->saveElement($element)) {
+                DB::rollBack();
+
+                return false;
+            }
+
+            DB::commit();
+        } catch (Throwable $exception) {
+            DB::rollBack();
+
+            throw $exception;
+        }
+
+        return true;
     }
 
     /**
@@ -260,7 +271,7 @@ readonly class Drafts
 
         DB::beginTransaction();
         try {
-            $entryActivity = null;
+            $recordActivity = null;
 
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
@@ -268,42 +279,7 @@ readonly class Drafts
                     $this->elements->mergeCanonicalChanges($draft);
                 }
 
-                if (
-                    $draft instanceof Entry &&
-                    $draft->isProvisionalDraft &&
-                    $draft->getPrimaryOwnerId() === null &&
-                    $canonical instanceof Entry
-                ) {
-                    $modifiedAttributes = $draft->getModifiedAttributes();
-                    $modifiedFields = $draft->getModifiedFields();
-                    if (in_array('authorIds', $modifiedAttributes, true)) {
-                        $canonical->getAuthorIds();
-                    }
-
-                    foreach ($canonical->getFieldLayout()?->getCustomFields() ?? [] as $field) {
-                        if ($field instanceof BaseRelationField && in_array($field->handle, $modifiedFields, true)) {
-                            $value = $canonical->getFieldValue($field->handle);
-
-                            if ($value instanceof ElementQueryInterface) {
-                                $canonical->setFieldValue($field->handle, $value->collect());
-                            }
-                        }
-                    }
-
-                    $moveOrigin = $canonical->structureId !== null && $canonical->getParentId() !== $draft->getParentId()
-                        ? StructuralElementActivity::position(
-                            Structures::getStructureById($canonical->structureId)->uid,
-                            $canonical,
-                        )
-                        : null;
-
-                    $entryActivity = [
-                        $canonical,
-                        $modifiedAttributes,
-                        $modifiedFields,
-                        $moveOrigin,
-                    ];
-                }
+                $recordActivity = $this->activity->captureProvisionalApply($canonical, $draft);
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $this->elements->updateCanonicalElement($draft, array_merge($newAttributes, [
@@ -324,9 +300,16 @@ readonly class Drafts
                 $newCanonical = $draft;
             }
 
-            if ($entryActivity !== null && $newCanonical instanceof Entry) {
-                $this->activity->recordProvisionalApplied($newCanonical, ...$entryActivity);
-            }
+            $recordActivity?->__invoke($newCanonical);
+
+            event(new DraftApplied(
+                canonical: $newCanonical,
+                creatorId: $draft->draftCreatorId,
+                provisional: $draft->isProvisionalDraft,
+                draftName: $draft->draftName,
+                draftNotes: $draft->draftNotes,
+                draft: $draft,
+            ));
 
             DB::commit();
         } catch (Throwable $e) {
@@ -339,15 +322,6 @@ readonly class Drafts
 
             throw $e;
         }
-
-        event(new DraftApplied(
-            canonical: $newCanonical,
-            creatorId: $draft->draftCreatorId,
-            provisional: $draft->isProvisionalDraft,
-            draftName: $draft->draftName,
-            draftNotes: $draft->draftNotes,
-            draft: $draft,
-        ));
 
         // if we were on another site when the applyDraft was triggered,
         // ensure we return the canonical element for the site we were on

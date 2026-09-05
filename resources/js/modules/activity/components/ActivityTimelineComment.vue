@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, shallowRef} from 'vue';
+  import {computed, shallowRef, useId} from 'vue';
   import {
     destroy,
     store,
@@ -51,11 +51,7 @@
         ]
       : []),
   ]);
-  const editorId = computed(() =>
-    creating.value
-      ? 'activity-comment-draft'
-      : `activity-comment-${props.event!.id}`
-  );
+  const editorId = `activity-comment-${useId()}`;
   const toolbarButtons = [
     'bold',
     'italic',

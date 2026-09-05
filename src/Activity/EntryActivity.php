@@ -10,6 +10,8 @@ use CraftCms\Cms\Activity\EventTypes\ElementCreated;
 use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Facades\Activities;
@@ -32,11 +34,6 @@ class EntryActivity
         'expiryDate' => 'Expiry Date',
         'authorIds' => 'Authors',
     ];
-
-    public static function shouldRecord(Entry $entry, bool $recordActivity): bool
-    {
-        return ElementActivity::shouldRecordWrite($entry, $recordActivity);
-    }
 
     public static function original(Entry $entry): ?Entry
     {
@@ -123,8 +120,8 @@ class EntryActivity
             }
 
             if ($field instanceof BaseRelationField) {
-                $old = self::elementValues($original->getFieldValue($field->handle)->all());
-                $new = self::elementValues($entry->getFieldValue($field->handle)->all());
+                $old = self::relationValues($original->getFieldValue($field->handle));
+                $new = self::relationValues($entry->getFieldValue($field->handle));
             } else {
                 $old = $field->serializeValue($original->getFieldValue($field->handle), $original);
                 $new = $field->serializeValue($entry->getFieldValue($field->handle), $entry);
@@ -192,6 +189,17 @@ class EntryActivity
             self::elementValues(collect($oldIds)->map($authors->get(...))->filter()->all()),
             self::elementValues(collect($newIds)->map($authors->get(...))->filter()->all()),
         ];
+    }
+
+    /**
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $value
+     * @return list<array<string, mixed>>
+     */
+    private static function relationValues(ElementQueryInterface|ElementCollection $value): array
+    {
+        return self::elementValues($value instanceof ElementQueryInterface
+            ? (clone $value)->status(null)->all()
+            : $value->all());
     }
 
     /**
