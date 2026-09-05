@@ -19,6 +19,7 @@ CP Styles
   );
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
+  --global-sidebar-z-index: 10;
 
   /* Workspace */
   --workspace-bg-color: var(--c-color-neutral-fill-quiet);

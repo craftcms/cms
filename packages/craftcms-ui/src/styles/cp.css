@@ -48,8 +48,9 @@
 }
 
 .skip-link--global {
-  --x-position: calc(10rem / 16);
+  --x-position: calc(5rem / 16);
   --y-position: calc(5rem / 16);
+  z-index: calc(var(--global-sidebar-z-index) + 1);
 }
 
 .error-list {
