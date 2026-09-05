@@ -137,7 +137,16 @@ class TemplateResolver
         // Normalize the template name
         $name = trim((string) preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name))), '/');
 
-        $key = TemplateMode::get()->templatesPath().':'.$name;
+        $templateMode = TemplateMode::get();
+        $templatesPath = $templateMode->templatesPath();
+        $siteHandle = $templateMode === TemplateMode::Site && Cms::isInstalled() ? Sites::getCurrentSite()->handle : null;
+        $roots = $templateMode->templateRoots();
+        $options = [
+            'extensions' => $templateMode->defaultTemplateExtensions(),
+            'indexFilenames' => $templateMode->indexTemplateFilenames(),
+            'privateTrigger' => $templateMode->privateTemplateTrigger(),
+        ];
+        $key = hash('xxh128', serialize([$templateMode, $templatesPath, $siteHandle, $name, $publicOnly, $roots, $options]));
 
         // Is this template path already cached?
         if (isset($this->templatePaths[$key])) {
@@ -151,18 +160,17 @@ class TemplateResolver
         $basePaths = [];
 
         // Should we be looking for a localized version of the template?
-        if (TemplateMode::is(TemplateMode::Site) && Cms::isInstalled()) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = join_paths(TemplateMode::get()->templatesPath(), Sites::getCurrentSite()->handle);
+        if ($siteHandle !== null) {
+            $sitePath = join_paths($templatesPath, $siteHandle);
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
         }
 
-        $basePaths[] = TemplateMode::get()->templatesPath();
+        $basePaths[] = $templatesPath;
 
         foreach ($basePaths as $basePath) {
-            if (($path = $this->resolveFromPath($basePath, $name, $publicOnly)) !== null) {
+            if (($path = $this->resolveFromPath($basePath, $name, $publicOnly, $options)) !== null) {
                 return $this->templatePaths[$key] = $path;
             }
         }
@@ -170,15 +178,13 @@ class TemplateResolver
         unset($basePaths);
 
         // Check any registered template roots
-        $roots = TemplateMode::get()->templateRoots();
-
         foreach ($roots as $templateRoot => $basePaths) {
             /** @var string[] $basePaths */
             $templateRootLen = strlen((string) $templateRoot);
             if ($templateRoot === '' || strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
                 $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
                 foreach ($basePaths as $basePath) {
-                    if (($path = $this->resolveFromPath($basePath, $subName, $publicOnly)) !== null) {
+                    if (($path = $this->resolveFromPath($basePath, $subName, $publicOnly, $options)) !== null) {
                         return $this->templatePaths[$key] = $path;
                     }
                 }
@@ -194,12 +200,11 @@ class TemplateResolver
      * @param  string  $basePath  The base path to be looking in.
      * @param  string  $name  The name of the template to be looking for.
      * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  array{extensions: string[], indexFilenames: string[], privateTrigger: string}  $options
      * @return string|null The matching file path, or `null`.
      */
-    private function resolveFromPath(string $basePath, string $name, bool $publicOnly): ?string
+    private function resolveFromPath(string $basePath, string $name, bool $publicOnly, array $options): ?string
     {
-        $templateMode = TemplateMode::get();
-
         // Normalize the path and name
         $basePath = File::normalizePath($basePath);
         $name = trim(File::normalizePath($name), '/');
@@ -207,7 +212,7 @@ class TemplateResolver
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {
             if ($publicOnly
-                && preg_quote($templateMode->privateTemplateTrigger(), '/')
+                && preg_quote($options['privateTrigger'], '/')
                     |> (fn ($x) => sprintf('/(^|\/)%s/', $x))
                     |> (fn ($x) => preg_match($x, $name))
             ) {
@@ -221,7 +226,7 @@ class TemplateResolver
                 return $testPath;
             }
 
-            foreach ($templateMode->defaultTemplateExtensions() as $extension) {
+            foreach ($options['extensions'] as $extension) {
                 $testPath = join_paths($basePath, $name.'.'.$extension);
 
                 if (is_file($testPath)) {
@@ -230,8 +235,8 @@ class TemplateResolver
             }
         }
 
-        foreach ($templateMode->indexTemplateFilenames() as $filename) {
-            foreach ($templateMode->defaultTemplateExtensions() as $extension) {
+        foreach ($options['indexFilenames'] as $filename) {
+            foreach ($options['extensions'] as $extension) {
                 $testPath = $name !== ''
                     ? join_paths($basePath, $name, $filename.'.'.$extension)
                     : join_paths($basePath, $filename.'.'.$extension);
