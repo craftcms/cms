@@ -14,6 +14,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
@@ -27,6 +28,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+
+use function Pest\Laravel\getJson;
 
 beforeEach(function () {
     config()->set('filesystems.disks.test-disk', [
@@ -92,15 +95,50 @@ it('runs the configured Craft driver without changing transform identity', funct
         ->and($result->height)->toBe(100);
 });
 
-it('preserves lazy generation and queued recovery', function () {
+it('preserves lazy generation and queued recovery', function (?string $format, string $generation) {
     Queue::fake();
     $asset = ($this->createImageAsset)();
+    $disk = $asset->getVolume()->sourceDisk();
+    $disk->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+    $transform = new ImageTransform(['width' => 100, 'format' => $format]);
 
-    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100, 'format' => $format]);
+    $index = $this->transformer->getTransformIndex($asset, $transform);
+    $expectedExtension = $format ?? 'jpg';
+    $expectedMime = $format === 'webp' ? 'image/webp' : 'image/jpeg';
+    $path = $this->volume->uid.'/'.$index->transformString.'/'.($format === 'webp' ? $asset->id.'/' : '').'transform-test.'.$expectedExtension;
 
     expect($result->url)->not->toBeEmpty();
-    Queue::assertPushed(GenerateImageTransform::class);
-});
+    Queue::assertPushed(GenerateImageTransform::class, fn (GenerateImageTransform $job) => $job->transformId === $index->id);
+
+    foreach ([false, true] as $regenerate) {
+        if ($regenerate) {
+            $disk->delete($path);
+            $index->fileExists = false;
+            $this->transformer->storeTransformIndexData($index);
+        }
+
+        if ($generation === 'job') {
+            app()->call(new GenerateImageTransform($index->id)->handle(...));
+        } elseif ($generation === 'http') {
+            getJson(action([TransformController::class, 'generate'], ['transformId' => $index->id]))
+                ->assertOk()
+                ->assertJsonPath('url', fn (string $url) => str_contains($url, 'transform-test.'.$expectedExtension));
+        } else {
+            $this->transformer->eagerLoadTransforms([$transform], [$asset]);
+            $eagerIndex = $this->transformer->getTransformIndex($asset, $transform);
+            $this->transformer->getTransformUrlForIndex($asset, $eagerIndex, true);
+        }
+
+        expect($disk->exists($path))->toBeTrue();
+        expect(getimagesize($disk->path($path))['mime'])->toBe($expectedMime);
+        $reloaded = $this->transformer->getTransformIndexModelById($index->id);
+        expect($reloaded->fileExists)->toBeTrue();
+        expect($reloaded->transform->format)->toBe($format);
+        expect($reloaded->filename)->toBe('transform-test.'.$expectedExtension);
+        expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->count())->toBe(1);
+    }
+})->with([null, 'webp'])->with(['job', 'http', 'eager']);
 
 it('honors disabled source-format transformations', function (string $filename, string $setting) {
     Cms::config()->{$setting} = false;
