@@ -369,7 +369,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
         $query->whereParam(
             column: $valueSql,
-            param: $value,
+            value: $value,
             caseInsensitive: $caseInsensitive,
             columnType: Query::TYPE_JSON,
         );

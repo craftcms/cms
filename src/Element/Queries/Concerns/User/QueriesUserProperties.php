@@ -87,7 +87,7 @@ trait QueriesUserProperties
 
                 $userQuery->whereParam(
                     column: "users.$property",
-                    param: $userQuery->$property,
+                    value: $userQuery->$property,
                     caseInsensitive: true,
                 );
             }
