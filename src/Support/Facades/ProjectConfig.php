@@ -24,6 +24,7 @@ use Override;
  * @method static void updateParsedConfigTimesAfterRequest()
  * @method static bool updateParsedConfigTimes()
  * @method static void saveModifiedConfigData()
+ * @method static array getPendingChanges(?array $configData = null)
  * @method static array getAppliedChanges()
  * @method static bool getAreConfigSchemaVersionsCompatible(array $issues = [])
  * @method static \CraftCms\Cms\ProjectConfig\ProjectConfig onAdd(string $path, callable $handler, mixed $data = null)

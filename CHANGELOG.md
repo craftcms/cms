@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Replaced the project config implementation with separate change handling, storage, and rebuild components.
+- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
+
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed database errors and incorrect ordering when repairing structures. ([#19568](https://github.com/craftcms/cms/pull/19568))
