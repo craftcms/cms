@@ -1,14 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\UserActivated;
+use CraftCms\Cms\User\Events\UserActivating;
+use CraftCms\Cms\User\Events\UserDeactivated;
 use CraftCms\Cms\User\Events\UserLocked;
+use CraftCms\Cms\User\Events\UserSuspended;
+use CraftCms\Cms\User\Events\UserUnlocked;
+use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
@@ -160,26 +169,80 @@ test('user activation', function () {
 
     $this->users->activateUser($user);
 
+    expect($user->active)->toBeTrue()->and($user->pending)->toBeFalse();
+
     $user = $this->users->getUserById($user->id);
 
     expect($user->getStatus())->toBe(User::STATUS_ACTIVE);
 });
 
-test('user activation email as username with an unverified email', function () {
-    $user = UserModel::factory()->pending()->createElement();
+test('unverify updates the supplied user and is repeatable', function () {
+    $user = UserModel::factory()->active()->createElement(['unverifiedEmail' => null]);
+
+    $this->users->unverifyEmailForUser($user);
+    $this->users->unverifyEmailForUser($user);
+
+    expect($user->unverifiedEmail)->toBe($user->email)
+        ->and(UserModel::findOrFail($user->id)->unverifiedEmail)->toBe($user->email);
+});
+
+test('account transitions do not publish failed writes', function (string $method, bool $throws) {
+    $user = UserModel::factory()->locked()->pending()->createElement([
+        'active' => false,
+        'suspended' => $method === 'unsuspendUser',
+        'unverifiedEmail' => in_array($method, ['activateUser', 'verifyEmailForUser']) ? 'verified@example.test' : null,
+    ]);
+    $attributes = ['active', 'pending', 'locked', 'suspended', 'unverifiedEmail', 'email', 'username', 'invalidLoginCount', 'lastLoginDate', 'lastInvalidLoginDate'];
+    $original = UserModel::findOrFail($user->id)->only($attributes);
+    Event::fake([UserActivated::class, UserDeactivated::class, UserSuspended::class, UserUnsuspended::class, UserUnlocked::class, UserLocked::class]);
+    Event::listen('eloquent.saving: '.UserModel::class, fn () => $throws ? throw new RuntimeException('Write failed') : false);
+
+    expect(fn () => $this->users->$method($user))->toThrow($throws ? RuntimeException::class : InvalidElementException::class);
+
+    foreach ($attributes as $attribute) {
+        expect($user->$attribute)->toBe($original[$attribute]);
+    }
+    expect(UserModel::findOrFail($user->id)->only($attributes))->toBe($original);
+    if (! $throws) {
+        expect($user->errors()->isNotEmpty())->toBeTrue();
+    }
+    Event::assertNothingDispatched();
+})->with(['activateUser', 'deactivateUser', 'unlockUser', 'suspendUser', 'unsuspendUser', 'verifyEmailForUser', 'unverifyEmailForUser', 'handleValidLogin', 'handleInvalidLogin', 'setVerificationCodeOnUser'])
+    ->with(['save false' => false, 'exception' => true]);
+
+test('invalid account transitions preserve flags and validation feedback', function (string $method) {
+    $user = UserModel::factory()->createElement(['active' => false, 'pending' => false]);
+    $user->email = ' invalid ';
+    Password::shouldReceive('broker')->never();
+    Event::fake([UserActivated::class]);
+
+    expect(fn () => $this->users->$method($user))->toThrow(InvalidElementException::class);
+
+    expect($user->active)->toBeFalse()->and($user->pending)->toBeFalse()
+        ->and($user->email)->toBe('invalid')->and($user->errors()->has('email'))->toBeTrue()
+        ->and(UserModel::findOrFail($user->id)->pending)->toBeFalse();
+    Event::assertNothingDispatched();
+})->with(['activateUser', 'setVerificationCodeOnUser']);
+
+test('user activation email as username with an unverified email', function (string $method) {
+    $user = UserModel::factory()->pending()->createElement(['unverifiedEmail' => 'verified@example.test']);
 
     // Set useEmailAsUsername to true and add an unverified email.
     Cms::config()->useEmailAsUsername = true;
 
     Elements::saveElement($user);
 
-    $this->users->activateUser($user);
-
-    $user = $this->users->getUserById($user->id);
+    Event::listen(UserActivated::class, function ($event) use ($user) {
+        expect($event->user)->toBe($user)->and($user->active)->toBeTrue()
+            ->and($user->email)->toBe('verified@example.test');
+    });
+    $this->users->$method($user);
 
     expect($user->getStatus())->toBe(User::STATUS_ACTIVE);
     expect($user->username)->toBe($user->email);
-});
+    expect(UserModel::findOrFail($user->id)->email)->toBe($user->email)
+        ->and($user->unverifiedEmail)->toBeNull();
+})->with(['activateUser', 'verifyEmailForUser']);
 
 test('user activation email as username with no unverified email', function () {
     $user = UserModel::factory()->pending()->createElement();
@@ -196,6 +259,19 @@ test('user activation email as username with no unverified email', function () {
 
     expect($user->getStatus())->toBe(User::STATUS_ACTIVE);
     expect($user->username)->not()->toBe($user->email);
+});
+
+test('standalone verification remains saved when activation is cancelled', function () {
+    $user = UserModel::factory()->pending()->createElement(['active' => false, 'unverifiedEmail' => 'verified@example.test']);
+    Event::fake([UserActivated::class]);
+    Event::listen(UserActivating::class, fn ($event) => $event->isValid = false);
+
+    expect(fn () => $this->users->verifyEmailForUser($user))->toThrow(InvalidElementException::class);
+
+    expect($user->email)->toBe('verified@example.test')->and($user->unverifiedEmail)->toBeNull()
+        ->and($user->active)->toBeFalse()->and($user->pending)->toBeTrue()
+        ->and(UserModel::findOrFail($user->id)->email)->toBe($user->email);
+    Event::assertNothingDispatched();
 });
 
 test('unlock', function () {
@@ -262,13 +338,22 @@ test('shunned messages', function () {
     expect($this->users->hasUserShunnedMessage($user->id, 'Some message'))->toBeFalse();
 });
 
-test('set verification code', function () {
-    $user = UserModel::factory()->pending()->createElement();
+test('set verification code', function (bool $tokenFailure) {
+    $user = UserModel::factory()->createElement(['active' => false, 'pending' => false]);
+
+    if ($tokenFailure) {
+        Password::shouldReceive('broker->createToken')->once()->andThrow(new RuntimeException('Token failed'));
+        expect(fn () => $this->users->setVerificationCodeOnUser($user))->toThrow(RuntimeException::class, 'Token failed');
+        expect($user->pending)->toBeFalse()->and(UserModel::findOrFail($user->id)->pending)->toBeFalse();
+
+        return;
+    }
 
     $verificationCode = $this->users->setVerificationCodeOnUser($user);
 
     expect(strlen((string) $verificationCode))->toBe(64);
-});
+    expect($user->pending)->toBeTrue()->and(UserModel::findOrFail($user->id)->pending)->toBeTrue();
+})->with(['success' => false, 'token failure' => true]);
 
 test('assignUserToGroups', function () {
     Edition::set(Edition::Pro);

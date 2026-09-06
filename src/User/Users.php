@@ -513,24 +513,18 @@ class Users
      */
     public function handleValidLogin(User $user): void
     {
-        $now = now('UTC');
-
-        // Update the User record
-        $userModel = UserModel::findOrFail($user->id);
-        $userModel->lastLoginDate = $now;
-        $userModel->invalidLoginWindowStart = null;
-        $userModel->invalidLoginCount = null;
+        $changes = [
+            'lastLoginDate' => now('UTC')->toDateTime(),
+            'invalidLoginWindowStart' => null,
+            'invalidLoginCount' => null,
+        ];
 
         if (Cms::config()->storeUserIps) {
-            $userModel->lastLoginAttemptIp = request()->ip();
+            $changes['lastLoginAttemptIp'] = request()->ip();
         }
 
-        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-        $userModel->save();
-
-        // Update the User model too
-        $user->lastLoginDate = $now->toDateTime();
-        $user->invalidLoginCount = null;
+        $indexAttributesChanged = $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes);
+        $this->applyUserChanges($user, $changes);
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -546,46 +540,35 @@ class Users
     {
         $userModel = UserModel::findOrFail($user->id);
         $now = now('UTC');
-
-        $userModel->lastInvalidLoginDate = $now;
+        $changes = ['lastInvalidLoginDate' => $now];
 
         if (Cms::config()->storeUserIps) {
-            $userModel->lastLoginAttemptIp = request()->ip();
+            $changes['lastLoginAttemptIp'] = request()->ip();
         }
 
-        // Was that one too many?
         $maxInvalidLogins = Cms::config()->maxInvalidLogins;
         $alreadyLocked = $user->locked;
 
         if ($maxInvalidLogins) {
             if ($this->isUserInsideInvalidLoginWindow($userModel)) {
-                $userModel->invalidLoginCount++;
+                $changes['invalidLoginCount'] = $userModel->invalidLoginCount + 1;
 
-                // Was that one bad password too many?
-                if ($userModel->invalidLoginCount >= $maxInvalidLogins) {
-                    $userModel->locked = true;
-                    $userModel->invalidLoginCount = null;
-                    $userModel->invalidLoginWindowStart = null;
-                    $userModel->lockoutDate = $now;
-
-                    $user->locked = true;
-                    $user->lockoutDate = $now;
+                if ($changes['invalidLoginCount'] >= $maxInvalidLogins) {
+                    $changes += [
+                        'locked' => true,
+                        'invalidLoginWindowStart' => null,
+                        'lockoutDate' => $now,
+                    ];
+                    $changes['invalidLoginCount'] = null;
                 }
             } else {
-                // Start the invalid login window and counter
-                $userModel->invalidLoginWindowStart = $now;
-                $userModel->invalidLoginCount = 1;
+                $changes['invalidLoginWindowStart'] = $now;
+                $changes['invalidLoginCount'] = 1;
             }
-
-            // Update the counter on the user element
-            $user->invalidLoginCount = $userModel->invalidLoginCount;
         }
 
-        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-        $userModel->save();
-
-        // Update the User element too
-        $user->lastInvalidLoginDate = $now;
+        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+        $this->applyUserChanges($user, $changes);
 
         if (! $alreadyLocked && $user->locked) {
             event(new UserLocked($user));
@@ -611,52 +594,21 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $originalUser = clone $user;
-        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
-        $user->active = true;
-        $user->pending = false;
-        $user->locked = false;
-        $user->suspended = false;
-        $user->invalidLoginCount = null;
-        $user->lastInvalidLoginDate = null;
-        $user->lockoutDate = null;
+        $changes = [
+            'active' => true,
+            'pending' => false,
+            'locked' => false,
+            'suspended' => false,
+            'invalidLoginWindowStart' => null,
+            'invalidLoginCount' => null,
+            'lastInvalidLoginDate' => null,
+            'lockoutDate' => null,
+        ];
+        $this->validateUserChanges($user, $changes);
+        $changes += $this->emailVerificationChanges($user);
 
-        if (! $user->validate()) {
-            $user->active = $originalUser->active;
-            $user->pending = $originalUser->pending;
-            $user->locked = $originalUser->locked;
-            $user->suspended = $originalUser->suspended;
-            $user->invalidLoginCount = $originalUser->invalidLoginCount;
-            $user->lastInvalidLoginDate = $originalUser->lastInvalidLoginDate;
-            $user->lockoutDate = $originalUser->lockoutDate;
-            throw new InvalidElementException($user);
-        }
-
-        DB::beginTransaction();
-        try {
-            $userModel = UserModel::findOrFail($user->id);
-            $userModel->active = true;
-            $userModel->pending = false;
-            $userModel->locked = false;
-            $userModel->suspended = false;
-            $userModel->invalidLoginWindowStart = null;
-            $userModel->invalidLoginCount = null;
-            $userModel->lastInvalidLoginDate = null;
-            $userModel->lockoutDate = null;
-
-            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-            $userModel->save();
-
-            // If they have an unverified email address, now is the time to set it to their primary email address
-            if ($user->unverifiedEmail) {
-                $this->verifyEmailForUser($user);
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
+        $this->applyUserChanges($user, $changes);
 
         event(new UserActivated($user));
 
@@ -681,34 +633,18 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        DB::beginTransaction();
-        try {
-            $userModel = UserModel::findOrFail($user->id);
-            $userModel->active = false;
-            $userModel->pending = false;
-            $userModel->locked = false;
-            $userModel->suspended = false;
-            $userModel->invalidLoginWindowStart = null;
-            $userModel->invalidLoginCount = null;
-            $userModel->lastInvalidLoginDate = null;
-            $userModel->lockoutDate = null;
-
-            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-            $userModel->save();
-
-            $user->active = false;
-            $user->pending = false;
-            $user->locked = false;
-            $user->suspended = false;
-            $user->invalidLoginCount = null;
-            $user->lastInvalidLoginDate = null;
-            $user->lockoutDate = null;
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $changes = [
+            'active' => false,
+            'pending' => false,
+            'locked' => false,
+            'suspended' => false,
+            'invalidLoginWindowStart' => null,
+            'invalidLoginCount' => null,
+            'lastInvalidLoginDate' => null,
+            'lockoutDate' => null,
+        ];
+        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
+        $this->applyUserChanges($user, $changes);
 
         event(new UserDeactivated($user));
 
@@ -727,31 +663,9 @@ class Users
     public function verifyEmailForUser(User $user): void
     {
         $userModel = UserModel::findOrFail($user->id);
-        $useEmailAsUsername = Cms::config()->useEmailAsUsername;
-
-        if ($user->unverifiedEmail) {
-            $userModel->email = $user->unverifiedEmail;
-            $userModel->unverifiedEmail = null;
-
-            if ($useEmailAsUsername) {
-                $userModel->username = $user->unverifiedEmail;
-            }
-        }
-
-        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-
-        if (! $userModel->save()) {
-            throw new InvalidElementException($user);
-        }
-
-        if ($user->unverifiedEmail) {
-            $user->email = $user->unverifiedEmail;
-            $user->unverifiedEmail = null;
-
-            if ($useEmailAsUsername) {
-                $user->username = $user->email;
-            }
-        }
+        $changes = $this->emailVerificationChanges($user);
+        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+        $this->applyUserChanges($user, $changes);
 
         // If the user status is pending, let's activate them.
         if ($userModel->pending) {
@@ -763,17 +677,13 @@ class Users
 
     public function unverifyEmailForUser(User $user): void
     {
-        // Bail if they already have an unverified email to begin with
         if ($user->unverifiedEmail) {
             return;
         }
 
-        $userModel = UserModel::findOrFail($user->id);
-        $userModel->unverifiedEmail = $user->email;
-
-        if (! $userModel->save()) {
-            throw new InvalidElementException($user);
-        }
+        $changes = ['unverifiedEmail' => $user->email];
+        $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes);
+        $this->applyUserChanges($user, $changes);
     }
 
     /**
@@ -791,27 +701,14 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        DB::beginTransaction();
-        try {
-            $userModel = UserModel::findOrFail($user->id);
-            $userModel->locked = false;
-            $userModel->invalidLoginCount = null;
-            $userModel->invalidLoginWindowStart = null;
-            $userModel->lockoutDate = null;
-
-            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-            $userModel->save();
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        // Update the User model too
-        $user->locked = false;
-        $user->invalidLoginCount = null;
-        $user->lockoutDate = null;
+        $changes = [
+            'locked' => false,
+            'invalidLoginCount' => null,
+            'invalidLoginWindowStart' => null,
+            'lockoutDate' => null,
+        ];
+        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
+        $this->applyUserChanges($user, $changes);
 
         event(new UserUnlocked($user));
 
@@ -835,12 +732,9 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $userModel = UserModel::findOrFail($user->id);
-        $userModel->suspended = true;
-        $user->suspended = true;
-
-        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-        $userModel->save();
+        $changes = ['suspended' => true];
+        $indexAttributesChanged = $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes);
+        $this->applyUserChanges($user, $changes);
 
         // Destroy all sessions for this user
         DB::table(Table::SESSIONS)
@@ -852,6 +746,63 @@ class Users
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
         }
+    }
+
+    /** @param array<string, mixed> $changes */
+    private function validateUserChanges(User $user, array $changes): void
+    {
+        $original = [];
+        foreach (array_keys(Arr::except($changes, ['invalidLoginWindowStart'])) as $attribute) {
+            $original[$attribute] = $user->$attribute;
+        }
+
+        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
+        $this->applyUserChanges($user, $changes);
+
+        try {
+            if (! $user->validate()) {
+                throw new InvalidElementException($user);
+            }
+        } finally {
+            $this->applyUserChanges($user, $original);
+        }
+    }
+
+    /** @param array<string, mixed> $changes */
+    private function saveUserChanges(User $user, UserModel $model, array $changes): bool
+    {
+        $model->forceFill($changes);
+        $indexAttributesChanged = $model->haveIndexAttributesChanged();
+
+        if (! $model->save()) {
+            $user->errors()->add('user', t('Couldn’t save user.'));
+            throw new InvalidElementException($user);
+        }
+
+        return $indexAttributesChanged;
+    }
+
+    /** @param array<string, mixed> $changes */
+    private function applyUserChanges(User $user, array $changes): void
+    {
+        foreach (Arr::except($changes, ['invalidLoginWindowStart']) as $attribute => $value) {
+            $user->$attribute = $value;
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function emailVerificationChanges(User $user): array
+    {
+        if (! $user->unverifiedEmail) {
+            return [];
+        }
+
+        $changes = ['email' => $user->unverifiedEmail, 'unverifiedEmail' => null];
+        if (Cms::config()->useEmailAsUsername) {
+            $changes['username'] = $user->unverifiedEmail;
+        }
+
+        return $changes;
     }
 
     public function invalidateUserSessions(User $user): void
@@ -882,24 +833,9 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        DB::beginTransaction();
-
-        try {
-            $userModel = UserModel::findOrFail($user->id);
-            $userModel->suspended = false;
-
-            $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-            $userModel->save();
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            throw $e;
-        }
-
-        // Update the User model too
-        $user->suspended = false;
+        $changes = ['suspended' => false];
+        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
+        $this->applyUserChanges($user, $changes);
 
         event(new UserUnsuspended($user));
 
@@ -972,27 +908,15 @@ class Users
     public function setVerificationCodeOnUser(User $user): string
     {
         $userModel = UserModel::findOrFail($user->id);
+        $changes = ['pending' => $userModel->active ? $userModel->pending : true];
+        $this->validateUserChanges($user, $changes);
 
         /** @var PasswordBroker $broker */
         $broker = Password::broker();
         $token = $broker->createToken($user);
 
-        // Make sure they are set to pending, if not already active
-        if (! $userModel->active) {
-            $userModel->pending = true;
-        }
-
-        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-        $userModel->save();
-
-        $originalUser = clone $user;
-        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
-        $user->pending = $userModel->pending;
-
-        if (! $user->validate()) {
-            $user->pending = $originalUser->pending;
-            throw new InvalidElementException($user);
-        }
+        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+        $this->applyUserChanges($user, $changes);
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
