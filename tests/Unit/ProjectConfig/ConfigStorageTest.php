@@ -64,7 +64,7 @@ it('preserves exported files when a yaml written listener fails', function () {
     expect(Cache::has(ProjectConfig::FILE_ISSUES_CACHE_KEY))->toBeFalse();
 });
 
-it('uses configured permissions for export and delta directories', function () {
+it('uses configured Unix permissions for export and delta directories', function () {
     $mode = Cms::config()->defaultDirMode;
     $mask = umask(0);
     Cms::config()->defaultDirMode = 0700;
@@ -83,4 +83,4 @@ it('uses configured permissions for export and delta directories', function () {
         Cms::config()->defaultDirMode = $mode;
         umask($mask);
     }
-});
+})->skipOnWindows();
