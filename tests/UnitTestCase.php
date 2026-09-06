@@ -13,6 +13,8 @@ use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Foundation\Testing\CachedState;
+use Illuminate\Foundation\Testing\WithCachedRoutes;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -30,7 +32,18 @@ class UnitTestCase extends Orchestra
 {
     use IsolatesParallelFiles;
     use RegistersPackageAliases;
+    use WithCachedRoutes;
     use WithWorkbench;
+
+    #[Override]
+    protected function resolveApplicationResolvingCallback($app): void
+    {
+        parent::resolveApplicationResolvingCallback($app);
+
+        if (CachedState::$cachedRoutes !== null) {
+            $app->booting(fn () => $this->markRoutesCached($app));
+        }
+    }
 
     #[Override]
     protected function setUp(): void
