@@ -340,13 +340,30 @@ it('removes tabs and rehomes mandatory fields', function () {
         ->and($mandatoryField)->toBeInstanceOf(TextField::class);
 });
 
-it('round trips config without changing generated uids', function () {
+it('round trips config after correcting generated handles', function (string $handle) {
     $layout = new FieldLayout;
     $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(
         CustomField::make(fluentField())->required()->instructionsPosition('after'),
         Heading::make('Metadata'),
     ));
+    $layout->reservedFieldHandles = ['title'];
+    $layout->setGeneratedFields([
+        ['uid' => 'first', 'handle' => 'same'],
+        ['uid' => 'second', 'handle' => " $handle "],
+    ]);
+
+    for ($attempt = 0; $attempt < 2; $attempt++) {
+        expect($layout->validate())->toBeFalse()
+            ->and($layout->errors()->has('customFields'))->toBeTrue()
+            ->and($layout->errors()->has('generatedFields.second.handle'))->toBeTrue()
+            ->and($layout->getConfig()['generatedFields'][1]['handle'])->toBe($handle);
+    }
+
+    $fields = $layout->getGeneratedFields();
+    $fields[1]['handle'] = ' corrected ';
+    $layout->setGeneratedFields($fields);
+    expect($layout->validate())->toBeTrue()->and($layout->errors()->isEmpty())->toBeTrue();
     $config = $layout->getConfig();
 
     expect(FieldLayout::createFromConfig($config)->getConfig())->toBe($config);
-});
+})->with(['duplicate' => 'same', 'native' => 'title', 'custom' => 'body', 'invalid' => 'bad-handle']);
