@@ -529,7 +529,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     {
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
-                app(Elements::class)->eagerLoadElements($this->elementType, $result, $this->with);
+                Elements::eagerLoadElements($this->elementType, $result, $this->with);
             }
 
             return $result;
@@ -803,6 +803,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         return $this->query->cursor()->map(function ($record) {
             $model = $this->createElement((array) $record);
+
+            if ($this->with) {
+                Elements::eagerLoadElements($this->elementType, [$model], $this->with);
+            }
 
             return $this->applyAfterQueryCallbacks(new ElementCollection([$model]))->first();
         })->reject(fn ($model) => is_null($model));
