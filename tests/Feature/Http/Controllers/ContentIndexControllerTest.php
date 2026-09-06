@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -88,22 +90,35 @@ it('clamps per_page to minimum of 1', function () {
         );
 });
 
-it('scopes the list to the selected section source', function () {
+it('scopes the list to the current page or explicitly selected source', function (string $indexPage, ?string $source, int $total) {
     $a = Section::factory()->create(['type' => SectionType::Channel]);
     $b = Section::factory()->create(['type' => SectionType::Channel]);
 
     EntryModel::factory()->forSection($a)->create();
     EntryModel::factory()->forSection($b)->count(3)->create();
 
-    get("/{$this->cpTrigger}/content/entries?".http_build_query([
-        'source' => "section:{$a->uid}",
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'First'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$a->uid", 'page' => 'First'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$b->uid", 'page' => 'Second'],
+    ]);
+
+    get("/{$this->cpTrigger}/content/$indexPage?".http_build_query([
+        'source' => $source === 'first' ? "section:$a->uid" : $source,
         'viewMode' => 'cards',
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('pagination.total', 1)
+            ->where('pagination.total', $total)
+            ->has('data', $total)
+            ->where('source.key', $source === 'first' ? "section:$a->uid" : "section:$b->uid")
         );
-});
+})->with([
+    'explicit' => ['first', 'first', 1],
+    'second page default' => ['second', null, 3],
+    'second page fallback' => ['second', 'missing', 3],
+    'explicit outside page' => ['second', 'first', 1],
+]);
 
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);

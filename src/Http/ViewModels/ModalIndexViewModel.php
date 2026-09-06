@@ -103,7 +103,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
     #[\Override]
     public function sources(): array
     {
-        return $this->indexState()->sources(
+        return $this->resolvedSources ??= $this->indexState()->sources(
             $this->elementType,
             static::RENDER_CONTEXT,
             withDisabled: true,
