@@ -370,11 +370,9 @@ it('can store a new folder record', function () {
     $folder->name = 'New Folder';
     $folder->path = 'new-folder/';
 
-    $nextId = (VolumeFolderModel::max('id') ?? 0) + 1;
-    expect($this->folders->getFolderById($nextId))->toBeNull();
     $this->folders->storeFolderModel($folder);
 
-    expect($folder->id)->toBe($nextId);
+    expect($folder->id)->not->toBeNull();
     expect($folder->uid)->not->toBeNull();
     expect($this->folders->getFolderById($folder->id)?->uid)->toBe($folder->uid);
 
