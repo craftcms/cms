@@ -206,33 +206,41 @@ class AssetIndexer
      */
     public function storeIndexList(Generator $indexList, int $sessionId, Volume $volume): int
     {
-        $values = [];
-        $now = now();
+        return DB::transaction(function () use ($indexList, $sessionId, $volume): int {
+            $values = [];
+            $inserted = 0;
+            $now = now();
 
-        /** @var FsListing $volumeListing */
-        foreach ($indexList as $volumeListing) {
-            if ($volumeListing->getIsDir()) {
-                $timestamp = null;
-            } else {
-                $dateModified = $volumeListing->getDateModified();
-                $timestamp = $dateModified !== null ? Date::createFromTimestampUTC($dateModified) : $now;
+            /** @var FsListing $volumeListing */
+            foreach ($indexList as $volumeListing) {
+                if ($volumeListing->getIsDir()) {
+                    $timestamp = null;
+                } else {
+                    $dateModified = $volumeListing->getDateModified();
+                    $timestamp = $dateModified !== null ? Date::createFromTimestampUTC($dateModified) : $now;
+                }
+
+                $values[] = [
+                    'volumeId' => $volume->id,
+                    'sessionId' => $sessionId,
+                    'uri' => $volumeListing->getUri(),
+                    'size' => $volumeListing->getFileSize(),
+                    'timestamp' => $timestamp,
+                    'isDir' => $volumeListing->getIsDir(),
+                    'status' => AssetIndexStatus::Pending,
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ];
+
+                if (count($values) === 500) {
+                    $inserted += DB::table(Table::ASSETINDEXDATA)->insertOrIgnore($values);
+                    $values = [];
+                }
             }
 
-            $values[] = [
-                'volumeId' => $volume->id,
-                'sessionId' => $sessionId,
-                'uri' => $volumeListing->getUri(),
-                'size' => $volumeListing->getFileSize(),
-                'timestamp' => $timestamp,
-                'isDir' => $volumeListing->getIsDir(),
-                'status' => AssetIndexStatus::Pending,
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
-            ];
-        }
-
-        return DB::table(Table::ASSETINDEXDATA)->insertOrIgnore($values);
+            return $inserted + DB::table(Table::ASSETINDEXDATA)->insertOrIgnore($values);
+        });
     }
 
     /**

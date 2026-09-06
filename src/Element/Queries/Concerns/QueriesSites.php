@@ -34,14 +34,14 @@ trait QueriesSites
 
     protected function initQueriesSites(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             // Make sure the siteId param is set
             try {
                 if (! $elementQuery->elementType::isLocalized()) {
                     // The criteria *must* be set to the primary site ID
                     $elementQuery->siteId = Sites::getPrimarySite()->id;
                 } else {
-                    $elementQuery->siteId = $this->normalizeSiteId($elementQuery);
+                    $elementQuery->siteId = $elementQuery->normalizeSiteId($elementQuery);
                 }
             } catch (SiteNotFoundException $e) {
                 // Fail silently if Craft isn't installed yet or is in the middle of updating

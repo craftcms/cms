@@ -35,8 +35,8 @@ trait SearchesElements
 
     protected function initSearchesElements(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            $this->applySearchParam($elementQuery);
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
+            $elementQuery->applySearchParam($elementQuery);
         });
     }
 

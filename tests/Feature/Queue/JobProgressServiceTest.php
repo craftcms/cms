@@ -61,6 +61,18 @@ it('atomically creates and updates existing job progress', function () {
     expect($creationQueries)->toHaveCount(1)
         ->and($updateQueries)->toHaveCount(1)
         ->and($count)->toBe(1);
+
+    $cancel = true;
+    DB::beforeExecuting(function (string $sql) use ($uid, &$cancel) {
+        if ($cancel && str_starts_with($sql, 'insert')) {
+            $cancel = false;
+            $this->service->cancel($uid);
+        }
+    });
+    $this->service->setProgress($uid, 'Racing update', 99);
+
+    expect($this->service->exists($uid))->toBeFalse()
+        ->and(JobProgressModel::find($uid)?->status)->toBe(JobStatus::Cancelled);
 });
 
 it('does not leak a transaction when persistence fails', function () {
@@ -329,15 +341,32 @@ it('clearCompleted only removes done status jobs', function () {
     expect(DB::table(Table::JOBPROGRESS)->where('uid', 'done-1')->exists())->toBeFalse();
 });
 
-it('can cancel a job by deleting its progress entry', function () {
+it('keeps cancellation hidden and immune to later writes', function () {
     $uid = 'job-to-cancel';
-
     $this->service->queued($uid, 'Job to Cancel');
-    expect($this->service->getProgress($uid))->not->toBeNull();
-
     $this->service->cancel($uid);
 
-    expect($this->service->getProgress($uid))->toBeNull();
+    $this->service->processing($uid);
+    $this->service->setProgress($uid, 'Late progress', 75);
+    $this->service->completed($uid);
+    $this->service->failed($uid, error: 'Late failure');
+    $this->service->updateStatus($uid, JobStatus::Pending);
+
+    expect($this->service->getProgress($uid))->toBeNull()
+        ->and($this->service->exists($uid))->toBeFalse()
+        ->and($this->service->getTotalJobs())->toBe(0)
+        ->and($this->service->getAll())->toBeEmpty()
+        ->and($this->service->getJobInfo())->toBeEmpty()
+        ->and(JobProgressModel::find($uid))
+        ->status->toBe(JobStatus::Cancelled)
+        ->description->toBe('Job to Cancel')
+        ->progress->toBe(0);
+
+    $this->travel(30)->days();
+    expect(new JobProgressModel()->prunable()->where('uid', $uid)->exists())->toBeFalse();
+
+    $this->service->queued($uid, 'Explicit retry');
+    expect($this->service->getProgress($uid)?->status)->toBe(JobStatus::Pending);
 });
 
 it('can check if a job exists', function () {

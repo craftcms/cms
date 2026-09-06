@@ -153,8 +153,7 @@ JS, [
                     ->siteId($element->siteId)
                     ->descendantOf($element->id)
                     ->descendantDist(1)
-                    ->status(null)
-                    ->all();
+                    ->status(null);
 
                 $this->_duplicateElements($childQuery, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }

@@ -25,7 +25,7 @@ trait QueriesRef
 
     protected function initQueriesRef(): void
     {
-        $this->beforeQuery(function (EntryQuery $query) {
+        $this->beforeQuery(static function (EntryQuery $query) {
             if (is_null($query->ref)) {
                 return;
             }
@@ -60,7 +60,7 @@ trait QueriesRef
             });
 
             if ($joinSections) {
-                $this->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', '=', 'entries.sectionId');
+                $query->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', '=', 'entries.sectionId');
             }
         });
     }

@@ -28,12 +28,12 @@ trait QueriesAffiliatedSite
             return;
         }
 
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if (! $userQuery->affiliatedSiteId) {
                 return;
             }
 
-            $userQuery->whereIn('users.affiliatedSiteId', Arr::wrap($this->affiliatedSiteId));
+            $userQuery->whereIn('users.affiliatedSiteId', Arr::wrap($userQuery->affiliatedSiteId));
         });
     }
 

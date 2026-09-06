@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -444,9 +446,34 @@ it('can get and set the license key', function () {
         ->toBe($this->plugins->normalizePluginLicenseKey($key));
 });
 
-it('can get the plugin license key status', function () {
-    expect($this->plugins->getPluginLicenseKeyStatus('test-plugin'))->toBe(LicenseKeyStatus::Trial);
-});
+it('reads refreshed plugin license metadata after production hydration', function (bool $canTest, bool $enabled) {
+    $this->plugins->enablePlugin('test-plugin');
+    $this->plugins->uninstallPlugin('test-plugin');
+    $this->plugins->installPlugin('test-plugin');
+    if (! $enabled) {
+        $this->plugins->disablePlugin('test-plugin');
+    }
+    new ReflectionProperty(Plugins::class, 'pluginsLoaded')->setValue($this->plugins, false);
+    $this->plugins->loadPlugins();
+    Cache::put('editionTestableDomain@'.request()->host(), $canTest);
+
+    foreach ([['valid', 'standard', []], ['invalid', null, ['invalid']], ['trial', 'standard', ['required']], ['mismatched', 'pro', ['wrong_edition', 'mismatched']], ['astray', 'standard', ['astray']], ['valid', 'pro', ['wrong_edition']], ['unknown', null, []]] as [$status, $edition, $issues]) {
+        Cache::put(License::CACHE_KEY_LICENSE_INFO, [
+            'plugin-test-plugin' => ['id' => 123, 'edition' => $edition, 'status' => $status],
+        ]);
+        $issues = $canTest ? array_values(array_diff($issues, ['wrong_edition', 'required'])) : $issues;
+        $info = $this->plugins->getPluginInfo('test-plugin');
+
+        expect($info)->toMatchArray([
+            'licenseId' => 123, 'licensedEdition' => $edition, 'licenseKeyStatus' => $status,
+            'licenseIssues' => $issues, 'isTrial' => $status === 'trial' || ($status === 'valid' && $edition === 'pro'),
+            'isEnabled' => $enabled,
+        ]);
+        expect($this->plugins->getPluginLicenseKeyStatus('test-plugin'))->toBe(LicenseKeyStatus::from($status));
+        expect($this->plugins->getLicenseIssues('test-plugin'))->toBe($issues);
+        expect($this->plugins->hasIssues('test-plugin'))->toBe($issues !== []);
+    }
+})->with([true, false])->with([true, false]);
 
 it('can get the plugin icon', function () {
     expect($this->plugins->getPluginIconSvg('test-plugin'))

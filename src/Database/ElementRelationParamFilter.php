@@ -198,7 +198,12 @@ class ElementRelationParamFilter
      */
     public function apply(Builder $query, mixed $relatedToParam, array|int|string|null $siteId = null, bool $matchNoneWhenInvalid = true): bool
     {
-        $relatedToParam = self::normalizeRelatedToParam($relatedToParam, $siteId);
+        return $this->applyNormalized($query, self::normalizeRelatedToParam($relatedToParam, $siteId), $matchNoneWhenInvalid);
+    }
+
+    /** @param array<int, string|array<string, mixed>> $relatedToParam */
+    private function applyNormalized(Builder $query, array $relatedToParam, bool $matchNoneWhenInvalid = true): bool
+    {
         $glue = array_shift($relatedToParam);
 
         if (empty($relatedToParam)) {
@@ -286,7 +291,7 @@ class ElementRelationParamFilter
         if ($elementParam === 'element') {
             array_unshift($relElementIds, $glue);
 
-            return $this->apply($query, [
+            return $this->applyNormalized($query, [
                 'or',
                 [
                     'sourceElement' => $relElementIds,
@@ -294,7 +299,7 @@ class ElementRelationParamFilter
                     'sourceSite' => $relCriteria['sourceSite'],
                 ],
                 [
-                    'targetElement' => $relSourceElementIds,
+                    'targetElement' => ['or', ...$relSourceElementIds],
                     'field' => $relCriteria['field'],
                     'sourceSite' => $relCriteria['sourceSite'],
                 ],
@@ -314,10 +319,10 @@ class ElementRelationParamFilter
             $newRelatedToParam = ['and'];
 
             foreach ($relElementIds as $elementId) {
-                $newRelatedToParam[] = [$elementParam => [$elementId]];
+                $newRelatedToParam[] = [...$relCriteria, $elementParam => ['or', $elementId]];
             }
 
-            return $this->apply($query, $newRelatedToParam);
+            return $this->applyNormalized($query, $newRelatedToParam);
         }
         $relationFieldIds = [];
         $applied = false;

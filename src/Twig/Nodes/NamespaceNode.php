@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
+use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 #[YieldReady]
@@ -17,6 +17,9 @@ class NamespaceNode extends Node
     #[Override]
     public function compile(Compiler $compiler): void
     {
+        $capture = new CaptureNode($this->getNode('body'), $this->getTemplateLine());
+        $capture->setAttribute('raw', true);
+
         $compiler
             ->addDebugInfo($this)
             ->write('$_namespace = ')
@@ -24,29 +27,21 @@ class NamespaceNode extends Node
             ->raw(";\n")
             ->write("if (\$_namespace !== null && \$_namespace !== '') {\n")
             ->indent()
-            ->write('$_originalNamespace = '.InputNamespace::class."::get();\n")
-            ->write(InputNamespace::class.'::set('.InputNamespace::class."::namespaceInputName(\$_namespace));\n")
-            ->write("ob_start();\n")
-            ->write("try {\n")
+            ->write('yield '.InputNamespace::class."::namespaceInputs(function () use (&\$context, \$macros, \$blocks) {\n")
             ->indent()
-            ->subcompile($this->getNode('body'))
+            ->write('return ')
+            ->subcompile($capture)
+            ->raw("\n")
             ->outdent()
-            ->write("} catch (Exception \$e) {\n")
-            ->indent()
-            ->write("ob_end_clean();\n\n")
-            ->write("throw \$e;\n")
-            ->outdent()
-            ->write("}\n")
-            ->write('yield '.Html::class.'::namespaceHtml(ob_get_clean(), $_namespace, ')
+            ->write('}, $_namespace, withClasses: ')
             ->raw($this->hasAttribute('withClasses') ? 'true' : 'false')
             ->raw(");\n")
-            ->write(InputNamespace::class."::set(\$_originalNamespace);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
             ->subcompile($this->getNode('body'))
             ->outdent()
             ->write("}\n")
-            ->write("unset(\$_originalNamespace, \$_namespace);\n");
+            ->write("unset(\$_namespace);\n");
     }
 }

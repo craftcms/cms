@@ -12,6 +12,7 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
+use Illuminate\Queue\Events\JobRetryRequested;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -42,6 +43,7 @@ class QueueServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(JobQueued::class, StoreJob::class);
+        Event::listen(JobRetryRequested::class, StoreJob::class);
         Event::listen(JobProcessing::class, StoreReserved::class);
         Event::listen(JobProcessed::class, StoreCompleted::class);
         Event::listen(JobFailed::class, StoreFailed::class);

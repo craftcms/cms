@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -184,7 +185,11 @@ it('fills the cache when querying through the new service', function () {
 
     $result = $gql->executeQuery($schema, '{ping}');
 
+    $gql->setActiveSchema(new GqlSchema);
     expect($gql->getCachedResult($cacheKey))->toBe($result);
+
+    $gql->flushCaches();
+    expect($gql->getCachedResult($cacheKey))->toBeNull();
 });
 
 it('does not create cache keys for mutations', function (string $query, ?string $operationName) {
@@ -215,24 +220,34 @@ it('flushes graphql registries and loaders', function () {
         ->and(fn () => TypeLoader::loadType($typeName))->toThrow(GqlException::class);
 });
 
-it('changes schema definitions when token scope changes', function () {
+it('changes schema definitions when token scope changes', function (bool $newScope) {
     $gql = app(Gql::class);
+    $schema = new GqlSchema;
+    app(GqlQueries::class)->register(MockQuery::class);
 
-    $schemaA = $gql->getSchemaDef(new GqlSchema([
-        'id' => random_int(1, 1000),
-        'name' => 'Something',
-        'scope' => ['usergroups.everyone:read'],
-    ]));
+    foreach ([true, false, true] as $allowUsers) {
+        if ($newScope) {
+            app()->forgetInstance(Gql::class);
+            $gql = app(Gql::class);
+        }
+        $schema->scope = $allowUsers ? ['usergroups.everyone:read'] : [];
+        $query = $gql->getSchemaDef($schema)->getQueryType();
 
-    $gql->flushCaches();
+        expect($query->hasField('users'))->toBe($allowUsers)
+            ->and($query->hasField('mockQuery'))->toBeTrue();
+    }
+})->with(['same service' => false, 'new scoped service' => true]);
 
-    $schemaB = $gql->getSchemaDef(new GqlSchema([
-        'id' => random_int(1, 1000),
-        'name' => 'Something',
-        'scope' => ['volumes.someVolume:read'],
-    ]));
+it('resets cached field arguments when the active schema changes', function () {
+    $gql = app(Gql::class);
+    $layout = new FieldLayout(['type' => User::class]);
+    $layout->setGeneratedFields([['handle' => 'oldField']]);
+    expect($gql->getFieldLayoutArguments($layout))->toHaveKey('oldField');
 
-    expect($schemaB)->not->toBe($schemaA);
+    $layout->setGeneratedFields([['handle' => 'newField']]);
+    $gql->setActiveSchema(new GqlSchema);
+
+    expect($gql->getFieldLayoutArguments($layout))->toHaveKey('newField')->not->toHaveKey('oldField');
 });
 
 it('generates the expected permission list through the new service', function () {

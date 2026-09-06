@@ -57,6 +57,7 @@ use UnexpectedValueException;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/** @phpstan-import-type LicenseInfo from License */
 #[Singleton]
 class Plugins
 {
@@ -999,12 +1000,11 @@ class Plugins
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
         $info['iconSvg'] = $this->getPluginIconSvg($handle);
 
-        $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
-        $pluginCacheKey = Str::start($handle, 'plugin-');
-        $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
-        $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
-        $info['licenseKeyStatus'] = $licenseInfo[$pluginCacheKey]['status'] ?? LicenseKeyStatus::Unknown->value;
-        $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
+        $licenseInfo = $this->getPluginLicenseInfo($handle);
+        $info['licenseId'] = $licenseInfo['id'] ?? null;
+        $info['licensedEdition'] = $licenseInfo['edition'] ?? null;
+        $info['licenseKeyStatus'] = $licenseInfo['status'] ?? LicenseKeyStatus::Unknown->value;
+        $info['licenseIssues'] = $this->calculateLicenseIssues($pluginInfo, $licenseInfo);
 
         // Plugin store
         $info['pluginStoreUrl'] = $info['private'] ? null : cp_url('plugin-store/'.$handle);
@@ -1016,8 +1016,8 @@ class Plugins
                 $info['licenseKeyStatus'] === LicenseKeyStatus::Trial->value ||
                 (
                     $info['licenseKeyStatus'] === LicenseKeyStatus::Valid->value &&
-                    ! empty($pluginInfo['licensedEdition'])
-                    && $pluginInfo['licensedEdition'] !== $edition
+                    ! empty($info['licensedEdition'])
+                    && $info['licensedEdition'] !== $edition
                 )
             )
         );
@@ -1028,7 +1028,7 @@ class Plugins
             (
                 $info['hasMultipleEditions'] &&
                 (
-                    (! empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions)) ||
+                    (! empty($info['licensedEdition']) && $info['licensedEdition'] !== end($editions)) ||
                     ($pluginInfo['edition'] ?? 'standard') !== end($editions)
                 )
             )
@@ -1063,13 +1063,21 @@ class Plugins
      */
     public function getLicenseIssues(string $handle): array
     {
-        $pluginInfo = $this->getStoredPluginInfo($handle);
+        return $this->calculateLicenseIssues($this->getStoredPluginInfo($handle), $this->getPluginLicenseInfo($handle));
+    }
 
+    /**
+     * @param  array<string, mixed>|null  $pluginInfo
+     * @param  (LicenseInfo&array{status: string})|null  $licenseInfo
+     * @return string[]
+     */
+    private function calculateLicenseIssues(?array $pluginInfo, ?array $licenseInfo): array
+    {
         if ($pluginInfo === null) {
             return [];
         }
 
-        $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown->value;
+        $status = $licenseInfo['status'] ?? LicenseKeyStatus::Unknown->value;
 
         if ($status === LicenseKeyStatus::Unknown->value) {
             // Either we don't know yet, or the plugin is free
@@ -1082,14 +1090,14 @@ class Plugins
         $canTestEditions = Edition::canTest();
         if (
             ! $canTestEditions &&
-            isset($pluginInfo['edition'], $pluginInfo['licensedEdition']) &&
-            $pluginInfo['edition'] !== $pluginInfo['licensedEdition']
+            isset($pluginInfo['edition'], $licenseInfo['edition']) &&
+            $pluginInfo['edition'] !== $licenseInfo['edition']
         ) {
             $issues[] = 'wrong_edition';
         }
 
         // General license issues
-        switch ($pluginInfo['licenseKeyStatus']) {
+        switch ($status) {
             case LicenseKeyStatus::Trial->value:
                 if (! $canTestEditions) {
                     $issues[] = empty($pluginInfo['licenseKey']) ? 'required' : 'no_trials';
@@ -1098,7 +1106,7 @@ class Plugins
             case LicenseKeyStatus::Invalid->value:
             case LicenseKeyStatus::Mismatched->value:
             case LicenseKeyStatus::Astray->value:
-                $issues[] = $pluginInfo['licenseKeyStatus'];
+                $issues[] = $status;
                 break;
         }
 
@@ -1249,9 +1257,25 @@ class Plugins
      */
     public function getPluginLicenseKeyStatus(string $handle): LicenseKeyStatus
     {
-        $info = $this->getStoredPluginInfo($handle);
+        if ($this->getStoredPluginInfo($handle) === null) {
+            return LicenseKeyStatus::Unknown;
+        }
 
-        return LicenseKeyStatus::tryFrom($info['licenseKeyStatus'] ?? '') ?? LicenseKeyStatus::Unknown;
+        return LicenseKeyStatus::tryFrom($this->getPluginLicenseInfo($handle)['status'] ?? '') ?? LicenseKeyStatus::Unknown;
+    }
+
+    /** @return (LicenseInfo&array{status: string})|null */
+    private function getPluginLicenseInfo(string $handle): ?array
+    {
+        /** @var array<string, LicenseInfo> $licenseInfo */
+        $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
+        $info = $licenseInfo[Str::start($handle, 'plugin-')] ?? null;
+
+        if ($info !== null && $info['status'] instanceof LicenseKeyStatus) {
+            $info['status'] = $info['status']->value;
+        }
+
+        return $info;
     }
 
     /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */

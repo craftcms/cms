@@ -63,7 +63,7 @@ trait QueriesUserGroups
 
     protected function initQueriesUserGroups(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if ($userQuery->groupId === []) {
                 throw new QueryAbortedException;
             }
@@ -106,17 +106,17 @@ trait QueriesUserGroups
             }
         });
 
-        $this->afterQuery(function (mixed $result) {
+        $this->afterQuery(static function (mixed $result, UserQuery $userQuery) {
             if (! $result instanceof Collection) {
                 return $result;
             }
 
             // Eager-load transforms?
-            if (! $this->withGroups) {
+            if (! $userQuery->withGroups) {
                 return $result;
             }
 
-            if ($this->asArray) {
+            if ($userQuery->asArray) {
                 return $result;
             }
 

@@ -359,8 +359,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
             'addresses.longitude as longitude',
         ]);
 
-        $this->beforeQuery(function (self $addressQuery) {
-            $this->normalizeNestedElementParams($addressQuery);
+        $this->beforeQuery(static function (self $addressQuery) {
+            $addressQuery->normalizeNestedElementParams($addressQuery);
 
             if (! isset($addressQuery->fieldId) && (isset($addressQuery->primaryOwnerId) || isset($addressQuery->ownerId))) {
                 // User addresses don't get rows in the elements_owners table

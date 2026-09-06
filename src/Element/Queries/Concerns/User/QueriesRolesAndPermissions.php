@@ -68,13 +68,13 @@ trait QueriesRolesAndPermissions
 
     protected function initQueriesRolesAndPermissions(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if (is_bool($userQuery->admin)) {
                 $userQuery->whereBool('users.admin', $userQuery->admin);
             }
 
-            if ($this->admin !== true) {
-                $this->applyCanParam($userQuery);
+            if ($userQuery->admin !== true) {
+                $userQuery->applyCanParam($userQuery);
             }
         });
     }

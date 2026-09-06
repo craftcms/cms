@@ -119,15 +119,15 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             return parent::paramValue();
         }
 
-        if (empty($this->value) && empty($this->maxValue)) {
+        if ($this->value === '' && $this->maxValue === '') {
             return null;
         }
 
-        if (empty($this->maxValue)) {
+        if ($this->maxValue === '') {
             return '>= '.Query::escapeParam($this->value);
         }
 
-        if (empty($this->value)) {
+        if ($this->value === '') {
             return '<= '.Query::escapeParam($this->maxValue);
         }
 
@@ -141,15 +141,15 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             return parent::matchValue($value);
         }
 
-        if (empty($this->value) && empty($this->maxValue)) {
+        if ($this->value === '' && $this->maxValue === '') {
             return true;
         }
 
-        if (! empty($this->value) && $value < $this->value) {
+        if ($this->value !== '' && $value < $this->value) {
             return false;
         }
 
-        if (! empty($this->maxValue) && $value > $this->maxValue) {
+        if ($this->maxValue !== '' && $value > $this->maxValue) {
             return false;
         }
 

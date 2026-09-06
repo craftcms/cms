@@ -217,6 +217,8 @@ class ElementRules extends Ruleset
 
     private function prepareUri(): void
     {
+        $this->uriPreparationError = null;
+
         if ($this->subject->getIsRevision()) {
             return;
         }

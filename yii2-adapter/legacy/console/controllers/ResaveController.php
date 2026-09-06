@@ -20,12 +20,12 @@ use craft\models\TagGroup;
 use craft\services\Elements;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Operations\ResaveMutation;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -62,7 +62,7 @@ class ResaveController extends Controller
      */
     final public static function normalizeTo(?string $to): callable
     {
-        return ResaveCommand::normalizeTo($to);
+        return ResaveMutation::normalizeTo($to);
     }
 
     /**
