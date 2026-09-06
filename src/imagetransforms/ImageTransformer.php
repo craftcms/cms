@@ -302,6 +302,32 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function eagerLoadAllTransforms(array $assets): void
+    {
+        // Index the assets by ID
+        $assetsById = ArrayHelper::index($assets, 'id');
+
+        // Query for the indexes
+        $results = $this->_createTransformIndexQuery()
+            ->where(['assetId' => array_keys($assetsById)])
+            ->all();
+
+        foreach ($results as $result) {
+            // Get the transform's fingerprint
+            $transformFingerprint = $result['transformString'];
+
+            if ($result['format']) {
+                $transformFingerprint .= ':' . $result['format'];
+            }
+
+            $indexFingerprint = $result['assetId'] . ':' . $transformFingerprint;
+            $this->eagerLoadedTransformIndexes[$indexFingerprint] = $result;
+        }
+    }
+
     // Protected methods
     // =============================================================
 
