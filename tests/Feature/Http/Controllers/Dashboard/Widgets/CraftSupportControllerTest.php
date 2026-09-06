@@ -72,11 +72,6 @@ it('sends the completed message and cleans up its archive', function (?string $f
         'attachAdditionalFile' => UploadedFile::fake()->createWithContent('additional.txt', 'Extra details'),
     ]);
 
-    // CONFLICT-REVIEW: 6.x asserted `assertOk()` + `assertSee('success: 0|1')` here, but this branch's
-    // controller now redirects to the dashboard with a `success` flash and throws a `support`
-    // ValidationException when the API call fails. Kept 6.x's payload/cleanup assertions below and
-    // re-expressed only the response assertion in terms of the Inertia behavior, matching the
-    // expectations already used by the other tests in this file.
     if ($apiFails) {
         $response->assertUnprocessable()->assertJsonValidationErrors('support');
     } else {
