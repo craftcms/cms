@@ -64,7 +64,7 @@ abstract class RepairCommand extends Command
                         });
                 })
                 ->orderBy(new CaseGroup(when: [
-                    new CaseRule(result: '0', condition: new NotIsNull('structureelements.lft')),
+                    new CaseRule(result: new Value(0), condition: new NotIsNull('structureelements.lft')),
                 ], else: new Value(1)))
                 ->orderBy('structureelements.lft')
                 ->orderBy('elements.dateCreated')

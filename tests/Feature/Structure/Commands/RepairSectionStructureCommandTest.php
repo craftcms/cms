@@ -38,6 +38,10 @@ beforeEach(function () {
 });
 
 it('previews the same repaired hierarchy that it persists', function (array $levels, ?int $maxLevels, array $expectedLevels, array $expectedOutput, ?string $scenario = null) {
+    if (DB::getDriverName() === 'mysql' && in_array(-1, $levels, true)) {
+        $this->markTestSkipped('MySQL stores structure levels as unsigned integers.');
+    }
+
     $this->structure->update(['maxLevels' => $maxLevels]);
 
     if ($scenario === 'sites') {
@@ -86,9 +90,9 @@ it('previews the same repaired hierarchy that it persists', function (array $lev
         '      ∟ ✖ Repair entry 3 - had unexpected level (5)',
     ]],
     'missing node' => [[1, 2, null], null, [1, 2, 1], [
-        '✖ Repair entry 3 - was missing from structure',
         '✔ Repair entry 1',
         '  ∟ ✔ Repair entry 2',
+        '✖ Repair entry 3 - was missing from structure',
     ]],
     'zero level' => [[1, 0, 3], null, [1, 1, 2], [
         '✔ Repair entry 1',
