@@ -16,6 +16,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\FieldLayout\NativeFields;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -176,8 +177,41 @@ it('keeps custom field overrides synchronized', function () {
 
     expect($field->attribute())->toBe('body')
         ->and($field->label())->toBe('Body')
-        ->and($field->getField()->instructions)->toBeNull();
+        ->and($field->getField()->instructions)->toBeNull()
+        ->and($layout->getFieldByHandle('teaser'))->toBeNull()
+        ->and($layout->getFieldByHandle('body'))->toBe($field->getField());
+
+    $field->handle('summary');
+    expect($layout->getFieldByHandle('body'))->toBeNull()
+        ->and($layout->getFieldByHandle('summary'))->toBe($field->getField());
 });
+
+it('invalidates lookup caches when replacing a custom field', function (string $setter) {
+    $original = fluentField();
+    $replacement = fluentField('replacement');
+    $replacement->id = 42;
+    Fields::shouldReceive('getFieldByUid')->with($original->uid)->once()->andReturn($original);
+    Fields::shouldReceive('getFieldByUid')->with($replacement->uid)->atMost()->once()->andReturn($replacement);
+    Fields::shouldReceive('getFieldById')->with(42)->atMost()->once()->andReturn($replacement);
+    $field = new CustomField(config: ['fieldUid' => $original->uid]);
+    $layout = new FieldLayout;
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add($field));
+
+    expect($layout->getCustomFields())->toBe([$field->getField()])
+        ->and($layout->getFieldByHandle('body'))->toBe($field->getField());
+    $field->$setter(match ($setter) {
+        'setField' => $replacement,
+        'setFieldUid' => $replacement->uid,
+        'setFieldId' => $replacement->id,
+    });
+
+    expect($layout->getFieldByHandle('body'))->toBeNull()
+        ->and($layout->getCustomFields())->toBe([$field->getField()])
+        ->and($layout->getFieldByUid($original->uid))->toBeNull()
+        ->and($layout->getFieldByHandle('replacement'))->toBe($field->getField())
+        ->and($field->getField())->not->toBe($replacement)
+        ->and($field->getField()->uid)->toBe($replacement->uid);
+})->with(['setField', 'setFieldUid', 'setFieldId']);
 
 it('builds UI elements fluently', function () {
     $tip = Tip::make('Careful')->dismissible()->warning();

@@ -451,6 +451,9 @@ it('can merge fields', function () {
         'fieldLayoutId' => $layoutModel->id,
     ]);
 
+    $warmLayout = $this->fields->getLayoutById($layoutModel->id);
+    expect($warmLayout->getFieldByHandle('outgoingText')->uid)->toBe($outgoingField->uid);
+
     $migrationPath = null;
 
     try {
@@ -459,6 +462,9 @@ it('can merge fields', function () {
 
         $layout = $this->fields->getLayoutById($layoutModel->id);
         $layoutElement = $layout->getCustomFieldElements()[0];
+
+        expect($warmLayout->getFieldByHandle('outgoingText')->uid)->toBe($persistingField->uid)
+            ->and($warmLayout->getFieldByUid($outgoingField->uid))->toBeNull();
 
         expect($result->updatedLayouts)->toBe(1)
             ->and($this->fields->getFieldByHandle('outgoingText'))->toBeNull()

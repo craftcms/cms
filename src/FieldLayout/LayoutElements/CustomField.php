@@ -175,6 +175,8 @@ class CustomField extends BaseField
             $this->_field->handle = $handle ?? $this->_originalHandle;
         }
 
+        $this->getLayout()?->reset();
+
         return $this;
     }
 
@@ -471,6 +473,8 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+
+        $this->getLayout()?->reset();
     }
 
     /**
@@ -489,6 +493,8 @@ class CustomField extends BaseField
         $this->_fieldUid = $uid;
         $this->_field = null;
         $this->_sourceField = null;
+
+        $this->getLayout()?->reset();
     }
 
     /**
