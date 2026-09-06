@@ -59,7 +59,7 @@ class CreateCommand extends Command
             callback: fn () => $projectConfig->readOnly,
         );
 
-        $rules = new Section()->getRules();
+        $rules = new Section()->ruleset->getValidator()->getRules();
 
         $entryTypes = collect($this->option('entryTypes'))
             ->flatMap(fn (string $entryType) => explode(',', $entryType))
@@ -70,13 +70,11 @@ class CreateCommand extends Command
                     throw new RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
                 }
 
-                return $entryType->handle;
+                return $entryType;
             })
-            ->filter()
             ->all();
 
         $allEntryTypes = $entryTypesService->getAllEntryTypes()->keyBy('handle');
-        $saveEntryType = false;
 
         $responses = form()
             ->text(
@@ -119,21 +117,17 @@ class CreateCommand extends Command
                 name: 'chosenEntryTypeHandle'
             )
             ->addIf(
-                condition: fn ($responses) => ! isset($responses['chosenEntryTypeHandle']),
-                step: function ($responses) use (&$saveEntryType) {
-                    $saveEntryType = true;
-
-                    return text(
-                        label: 'Entry type name',
-                        default: Str::singular($responses['name']),
-                        required: true,
-                        validate: ['name' => ['string', 'max:255']],
-                    );
-                },
+                condition: fn ($responses) => empty($entryTypes) && ! isset($responses['chosenEntryTypeHandle']),
+                step: fn ($responses) => text(
+                    label: 'Entry type name',
+                    default: Str::singular($responses['name']),
+                    required: true,
+                    validate: ['name' => ['string', 'max:255']],
+                ),
                 name: 'entryTypeName'
             )
             ->addIf(
-                condition: fn ($responses) => ! isset($responses['chosenEntryTypeHandle']),
+                condition: fn ($responses) => empty($entryTypes) && ! isset($responses['chosenEntryTypeHandle']),
                 step: fn ($responses) => text(
                     label: 'Entry type handle',
                     default: Str::toHandle($responses['entryTypeName']),
@@ -180,23 +174,28 @@ class CreateCommand extends Command
             ];
         }
 
-        $entryType = null;
-        if ($saveEntryType) {
-            $this->components->task(
-                description: 'Saving the entry type',
-                task: function () use ($entryTypesService, $responses, &$entryType) {
-                    $entryType = new EntryType;
-                    $entryType->name = $responses['entryTypeName'];
-                    $entryType->handle = $responses['entryTypeHandle'];
+        if (empty($entryTypes)) {
+            if (isset($responses['chosenEntryTypeHandle'])) {
+                $entryTypes[] = $allEntryTypes[$responses['chosenEntryTypeHandle']];
+            } else {
+                $entryType = new EntryType;
+                $entryType->name = $responses['entryTypeName'];
+                $entryType->handle = $responses['entryTypeHandle'];
 
-                    $entryTypesService->saveEntryType($entryType);
-                }
-            );
-        } else {
-            $entryType = $entryTypesService->getEntryTypeByHandle($responses['chosenEntryTypeHandle']);
+                $this->components->task(
+                    description: 'Saving the entry type',
+                    task: function () use ($entryTypesService, $entryType) {
+                        if (! $entryTypesService->saveEntryType($entryType)) {
+                            throw new RuntimeException("Unable to save entry type: {$entryType->handle}");
+                        }
+                    }
+                );
+
+                $entryTypes[] = $entryType;
+            }
         }
 
-        $section->setEntryTypes([$entryType]);
+        $section->setEntryTypes($entryTypes);
 
         $this->components->task(
             description: 'Saving the section',
