@@ -984,15 +984,16 @@ class CpScreenResponse implements Responsable
             'crumbs' => $crumbs,
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
-            'actionMenuItems' => $this->actionMenuItemProps(),
-            'actionMenu' => $this->actionMenu(config: [
+            'actionMenuItems' => $actionMenuItems = $this->actionMenuItemProps(),
+            'actionMenu' => $actionMenuItems ? app(MenuHtml::class)->disclosureMenu($actionMenuItems, [
+                'id' => 'action-menu',
                 'hiddenLabel' => t('Actions'),
                 'buttonAttributes' => [
                     'id' => 'action-btn',
                     'class' => ['action-btn', 'hairline-dark', 'm'],
                     'title' => t('Actions'),
                 ],
-            ]),
+            ]) : null,
             'submitButtonLabel' => $this->submitButtonLabel,
             'additionalButtons' => $addlButtons,
             'tabs' => $this->tabs,
