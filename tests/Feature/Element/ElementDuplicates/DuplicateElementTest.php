@@ -462,6 +462,7 @@ function duplicateAction(
 function successfulElementWrites(array &$calls, array $idsToAssign = [], int $expectedSaveCalls = 1): ElementWrites
 {
     $writes = Mockery::mock(ElementWrites::class);
+    $writes->shouldReceive('afterPropagate')->andReturnUsing(app(ElementWrites::class)->afterPropagate(...));
     $writes->shouldReceive('save')
         ->times($expectedSaveCalls)
         ->andReturnUsing(function (
