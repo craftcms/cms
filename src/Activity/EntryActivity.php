@@ -242,6 +242,6 @@ class EntryActivity
             return false;
         }
 
-        return array_all($value, fn ($item) => self::normalizeSafeValue($item));
+        return array_all(array_keys($value), fn ($key) => self::normalizeSafeValue($value[$key]));
     }
 }
