@@ -168,17 +168,11 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Applies a condition to the query builder for the given field instances, for a user-provided param value.
      *
-     * If `false` is returned, an always-false condition will be used.
-     *
      * @param  Builder  $query  The query instance to modify
      * @param  static[]  $instances  The field instances to search
      * @param  mixed  $value  The user-supplied param value
      */
-    public static function modifyQuery(
-        Builder $query,
-        array $instances,
-        mixed $value,
-    ): Builder;
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).

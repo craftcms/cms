@@ -77,6 +77,16 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         return 'entries.primaryOwnerId';
     }
 
+    protected function mustHaveField(): bool
+    {
+        return false;
+    }
+
+    protected function mustHaveOwner(): bool
+    {
+        return false;
+    }
+
     /**
      * @var bool|null Whether to only return entries that the user has permission to view.
      *
