@@ -220,6 +220,7 @@ class Volumes
 
         // Clear caches
         $this->volumes = null;
+        $this->folders->reset();
 
         if ($wasTrashed) {
             /** @var Asset[] $assets */
@@ -322,6 +323,7 @@ class Volumes
         }
 
         $this->volumes = null;
+        $this->folders->reset();
 
         event(new VolumeDeleted(volume: $volume));
 

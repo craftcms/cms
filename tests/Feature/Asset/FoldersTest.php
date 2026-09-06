@@ -54,6 +54,15 @@ it('caches folder by id lookups', function () {
     $second = $this->folders->getFolderById($model->id);
 
     expect($first)->toBe($second);
+    expect($this->folders->getFolderByUid($model->uid))->toBe($first);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    expect($this->folders->getFolderById($model->id))->toBe($root);
+
+    $fresh = $this->folders->findFolder(['id' => $model->id]);
+    expect($fresh)->not->toBe($first)
+        ->and($this->folders->getFolderById($model->id))->toBe($fresh)
+        ->and($this->folders->getFolderByUid($model->uid))->toBe($fresh)
+        ->and($this->folders->getRootFolderByVolumeId($volume->id))->toBe($fresh);
 });
 
 it('can get a folder by uid', function () {
@@ -308,6 +317,12 @@ it('can get descendant folders as tree', function () {
     expect($childNode->name)->toBe('Child');
     expect($childNode->getChildren())->toHaveCount(1);
     expect($childNode->getChildren()[0]->name)->toBe('Grandchild');
+    expect($this->folders->getFolderById($child->id))->toBe($childNode);
+
+    $fresh = $this->folders->findFolder(['id' => $child->id]);
+    $fresh->setChildren([]);
+    expect($fresh)->not->toBe($childNode)
+        ->and($childNode->getChildren())->toHaveCount(1);
 });
 
 it('can exclude parent from descendant folders', function () {
@@ -355,23 +370,30 @@ it('can store a new folder record', function () {
     $folder->name = 'New Folder';
     $folder->path = 'new-folder/';
 
+    $nextId = (VolumeFolderModel::max('id') ?? 0) + 1;
+    expect($this->folders->getFolderById($nextId))->toBeNull();
     $this->folders->storeFolderModel($folder);
 
-    expect($folder->id)->not->toBeNull();
+    expect($folder->id)->toBe($nextId);
     expect($folder->uid)->not->toBeNull();
+    expect($this->folders->getFolderById($folder->id)?->uid)->toBe($folder->uid);
 
     $model = VolumeFolderModel::find($folder->id);
     expect($model->name)->toBe('New Folder');
     expect($model->path)->toBe('new-folder/');
 });
 
-it('can update an existing folder record', function () {
+it('refreshes lookups after updating and deleting an existing folder record', function () {
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Original',
         'path' => 'original/',
     ]);
+
+    $this->folders->getFolderById($model->id);
+    $this->folders->getFolderByUid($model->uid);
+    $this->folders->getRootFolderByVolumeId($volume->id);
 
     $folder = new VolumeFolder([
         'id' => $model->id,
@@ -385,6 +407,14 @@ it('can update an existing folder record', function () {
     $model->refresh();
     expect($model->name)->toBe('Updated');
     expect($model->path)->toBe('updated/');
+    expect($this->folders->getFolderById($model->id)->name)->toBe('Updated')
+        ->and($this->folders->getFolderByUid($model->uid)->name)->toBe('Updated')
+        ->and($this->folders->getRootFolderByVolumeId($volume->id)->name)->toBe('Updated');
+
+    $this->folders->deleteFoldersByIds($model->id, deleteDir: false);
+    expect($this->folders->getFolderById($model->id))->toBeNull()
+        ->and($this->folders->getFolderByUid($model->uid))->toBeNull()
+        ->and($this->folders->getRootFolderByVolumeId($volume->id)->id)->not->toBe($model->id);
 });
 
 it('can ensure folder by full path and volume', function () {
