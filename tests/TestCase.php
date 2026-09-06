@@ -35,6 +35,7 @@ use Illuminate\Foundation\Testing\CachedState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Foundation\Testing\WithCachedRoutes;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
@@ -65,8 +66,15 @@ class TestCase extends Orchestra
 
         if (CachedState::$cachedRoutes !== null) {
             $app->booting(fn () => $this->markRoutesCached($app));
-            $app->booted(fn () => CraftMaintenanceMiddleware::registerRouteExceptions());
+            $app->booted(fn () => $this->restoreCachedMaintenanceRouteExceptions());
         }
+    }
+
+    protected function restoreCachedMaintenanceRouteExceptions(): void
+    {
+        CraftMaintenanceMiddleware::registerRouteExceptions(
+            CachedState::$cachedRoutes['craftMaintenanceExceptions'] ??= CraftMaintenanceMiddleware::routeExceptionTemplates(app(Router::class)->getRoutes()->getRoutes()),
+        );
     }
 
     #[Override]
