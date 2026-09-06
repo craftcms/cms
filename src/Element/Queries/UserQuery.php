@@ -72,7 +72,7 @@ class UserQuery extends ElementQuery
             'users.rememberToken',
         ]);
 
-        $this->beforeQuery(function (self $userQuery) {
+        $this->beforeQuery(static function (self $userQuery) {
             $orders = $userQuery->query->orders;
 
             if (is_null($orders)) {

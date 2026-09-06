@@ -21,12 +21,12 @@ trait QueriesAlt
 
     protected function initQueriesAlt(): void
     {
-        $this->beforeQuery(function (AssetQuery $assetQuery) {
+        $this->beforeQuery(static function (AssetQuery $assetQuery) {
             if ($assetQuery->hasAlt === null) {
                 return;
             }
 
-            if ($this->hasAlt) {
+            if ($assetQuery->hasAlt) {
                 $assetQuery->where(function (Builder $query) {
                     $query->where('assets_sites.alt', '!=', '')
                         ->whereNotNull('assets_sites.alt');

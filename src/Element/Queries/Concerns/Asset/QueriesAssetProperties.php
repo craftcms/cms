@@ -82,7 +82,7 @@ trait QueriesAssetProperties
 
     protected function initQueriesAssetProperties(): void
     {
-        $this->beforeQuery(function (AssetQuery $assetQuery) {
+        $this->beforeQuery(static function (AssetQuery $assetQuery) {
             if ($assetQuery->uploaderId) {
                 $assetQuery->whereIn('uploaderId', Arr::wrap($assetQuery->uploaderId));
             }

@@ -51,8 +51,8 @@ trait QueriesAuthors
 
     protected function initQueriesAuthors(): void
     {
-        $this->beforeQuery(function (EntryQuery $query) {
-            if ($this->authorGroupId === []) {
+        $this->beforeQuery(static function (EntryQuery $query) {
+            if ($query->authorGroupId === []) {
                 throw new QueryAbortedException;
             }
 
@@ -60,8 +60,8 @@ trait QueriesAuthors
                 return;
             }
 
-            $this->applyAuthorId($query);
-            $this->applyAuthorGroupId($query);
+            $query->applyAuthorId($query);
+            $query->applyAuthorGroupId($query);
         });
     }
 

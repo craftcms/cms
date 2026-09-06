@@ -43,7 +43,7 @@ trait QueriesRelatedElements
 
     private function applyRelatedToParam(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             if (! $elementQuery->relatedTo) {
                 return;
             }
@@ -69,7 +69,7 @@ trait QueriesRelatedElements
 
     private function applyNotRelatedToParam(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             if (! $elementQuery->notRelatedTo) {
                 return;
             }

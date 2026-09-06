@@ -54,7 +54,7 @@ trait QueriesCustomFields
 
     protected function initQueriesCustomFields(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             // Gather custom fields and generated field handles
             $elementQuery->customFields = [];
             $elementQuery->generatedFields = [];
@@ -71,11 +71,11 @@ trait QueriesCustomFields
             }
 
             // Map custom field handles to their content values
-            $this->addCustomFieldsToColumnMap();
-            $this->addGeneratedFieldsToColumnMap();
+            $elementQuery->addCustomFieldsToColumnMap();
+            $elementQuery->addGeneratedFieldsToColumnMap();
 
-            $this->applyCustomFieldParams($elementQuery);
-            $this->applyGeneratedFieldParams($elementQuery);
+            $elementQuery->applyCustomFieldParams($elementQuery);
+            $elementQuery->applyGeneratedFieldParams($elementQuery);
         });
     }
 

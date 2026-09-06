@@ -65,11 +65,11 @@ trait QueriesAssetLocation
 
     protected function initQueriesAssetLocation(): void
     {
-        $this->beforeQuery(function (AssetQuery $assetQuery) {
-            $this->normalizeVolumeId();
+        $this->beforeQuery(static function (AssetQuery $assetQuery) {
+            $assetQuery->normalizeVolumeId();
 
             // See if 'volume' was set to an invalid handle
-            if ($this->volumeId === []) {
+            if ($assetQuery->volumeId === []) {
                 throw new QueryAbortedException;
             }
 
@@ -79,7 +79,7 @@ trait QueriesAssetLocation
                 if ($assetQuery->volumeId === ':empty:') {
                     $assetQuery->whereNull('assets.volumeId');
                 } else {
-                    $assetQuery->whereIn('assets.volumeId', Arr::wrap($this->volumeId));
+                    $assetQuery->whereIn('assets.volumeId', Arr::wrap($assetQuery->volumeId));
                 }
             }
 

@@ -180,7 +180,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * The callbacks that should be invoked after retrieving data from the database.
      */
-    /** @var array<int, callable(mixed): mixed> */
+    /** @var array<int, callable(mixed, self<TElement>): mixed> */
     protected array $afterQueryCallbacks = [];
 
     /**
@@ -766,7 +766,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Register a closure to be invoked after the query is executed.
+     * Register a closure to be invoked with the result and executing query after execution.
      */
     /** @return self<TElement> */
     public function afterQuery(Closure $callback): self
@@ -782,7 +782,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     public function applyAfterQueryCallbacks(mixed $result): mixed
     {
         foreach ($this->afterQueryCallbacks as $afterQueryCallback) {
-            $result = $afterQueryCallback($result) ?: $result;
+            $result = $afterQueryCallback($result, $this) ?: $result;
         }
 
         return $result;

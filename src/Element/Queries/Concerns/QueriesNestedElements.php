@@ -77,12 +77,12 @@ trait QueriesNestedElements
 
     protected function initQueriesNestedElements(): void
     {
-        $this->beforeQuery(function (AddressQuery|ContentBlockQuery|EntryQuery $elementQuery) {
+        $this->beforeQuery(static function (self $elementQuery) {
             if (! $elementQuery->shouldApplyNestedElementParams()) {
                 return;
             }
 
-            $this->normalizeNestedElementParams($elementQuery);
+            $elementQuery->normalizeNestedElementParams($elementQuery);
 
             if ($elementQuery->fieldId === false || $elementQuery->primaryOwnerId === false || $elementQuery->ownerId === false) {
                 throw new QueryAbortedException;
@@ -102,10 +102,10 @@ trait QueriesNestedElements
                     ->when(
                         $elementQuery->ownerId,
                         function (JoinClause $join) use ($elementQuery) {
-                            $join->whereIn('elements_owners.ownerId', $this->normalizeOwnerId($elementQuery->ownerId));
+                            $join->whereIn('elements_owners.ownerId', $elementQuery->normalizeOwnerId($elementQuery->ownerId));
                         },
-                        function (JoinClause $join) {
-                            $join->whereColumn('elements_owners.ownerId', $this->getPrimaryOwnerIdColumn());
+                        function (JoinClause $join) use ($elementQuery) {
+                            $join->whereColumn('elements_owners.ownerId', $elementQuery->getPrimaryOwnerIdColumn());
                         },
                     );
             };
@@ -114,11 +114,11 @@ trait QueriesNestedElements
             $elementQuery->query->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), $joinClause);
 
             if ($elementQuery->fieldId) {
-                $elementQuery->whereIn($this->getFieldIdColumn(), $elementQuery->fieldId);
+                $elementQuery->whereIn($elementQuery->getFieldIdColumn(), $elementQuery->fieldId);
             }
 
             if ($elementQuery->primaryOwnerId) {
-                $elementQuery->whereIn($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
+                $elementQuery->whereIn($elementQuery->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
             }
 
             // Ignore revision/draft blocks by default

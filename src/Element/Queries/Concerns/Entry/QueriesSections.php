@@ -43,14 +43,14 @@ trait QueriesSections
 
     protected function initQueriesSections(): void
     {
-        $this->beforeQuery(function (EntryQuery $entryQuery) {
-            $this->normalizeSectionId($entryQuery);
+        $this->beforeQuery(static function (EntryQuery $entryQuery) {
+            $entryQuery->normalizeSectionId($entryQuery);
 
             if ($entryQuery->sectionId === []) {
                 throw new QueryAbortedException;
             }
 
-            $this->applySectionIdParam($entryQuery);
+            $entryQuery->applySectionIdParam($entryQuery);
         });
     }
 
