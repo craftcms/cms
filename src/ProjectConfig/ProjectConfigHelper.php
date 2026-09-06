@@ -30,66 +30,16 @@ class ProjectConfigHelper
     }
 
     /**
-     * @var bool Whether we've already processed all filesystem configs.
-     *
-     * @see ensureAllFilesystemsProcessed()
-     */
-    private static bool $_processedFilesystems = false;
-
-    /**
-     * @var bool Whether we've already processed all field configs.
-     *
-     * @see ensureAllFieldsProcessed()
-     */
-    private static bool $_processedFields = false;
-
-    /**
-     * @var bool Whether we've already processed all site configs.
-     *
-     * @see ensureAllSitesProcessed()
-     */
-    private static bool $_processedSites = false;
-
-    /**
-     * @var bool Whether we've already processed all user group configs.
-     *
-     * @see ensureAllUserGroupsProcessed()
-     */
-    private static bool $_processedUserGroups = false;
-
-    /**
-     * @var bool Whether we've already processed all entry type configs.
-     *
-     * @see ensureAllEntryTypesProcessed()
-     */
-    private static bool $_processedEntryTypes = false;
-
-    /**
-     * @var bool Whether we've already processed all section configs.
-     *
-     * @see ensureAllSectionsProcessed()
-     */
-    private static bool $_processedSections = false;
-
-    /**
-     * @var bool Whether we've already processed all GraphQL schemas.
-     *
-     * @see ensureAllGqlSchemasProcessed()
-     */
-    private static bool $_processedGqlSchemas = false;
-
-    /**
      * Ensures all filesystem config changes are processed immediately in a safe manner.
      */
     public static function ensureAllFilesystemsProcessed(): void
     {
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedFilesystems || ! $projectConfig->isApplyingExternalChanges) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_FS)) {
             return;
         }
 
-        self::$_processedFilesystems = true;
         $projectConfig->processConfigChanges(ProjectConfig::PATH_FS);
     }
 
@@ -102,11 +52,9 @@ class ProjectConfigHelper
 
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedFields || ! $projectConfig->isApplyingExternalChanges) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_FIELDS)) {
             return;
         }
-
-        self::$_processedFields = true;
 
         $allFields = $projectConfig->get(ProjectConfig::PATH_FIELDS, true) ?? [];
 
@@ -129,11 +77,9 @@ class ProjectConfigHelper
     {
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedSites || (! $force && ! $projectConfig->isApplyingExternalChanges)) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_SITES, $force)) {
             return;
         }
-
-        self::$_processedSites = true;
 
         $allGroups = $projectConfig->get(ProjectConfig::PATH_SITE_GROUPS, true) ?? [];
         $allSites = $projectConfig->get(ProjectConfig::PATH_SITES, true) ?? [];
@@ -156,11 +102,9 @@ class ProjectConfigHelper
     {
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedUserGroups || ! $projectConfig->isApplyingExternalChanges) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_USER_GROUPS)) {
             return;
         }
-
-        self::$_processedUserGroups = true;
 
         $allGroups = $projectConfig->get(ProjectConfig::PATH_USER_GROUPS, true);
 
@@ -180,11 +124,9 @@ class ProjectConfigHelper
     {
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedEntryTypes || ! $projectConfig->isApplyingExternalChanges) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_ENTRY_TYPES)) {
             return;
         }
-
-        self::$_processedEntryTypes = true;
 
         $configs = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES, true) ?? [];
         foreach ($configs as $uid => $config) {
@@ -200,11 +142,9 @@ class ProjectConfigHelper
     {
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedSections || ! $projectConfig->isApplyingExternalChanges) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_SECTIONS)) {
             return;
         }
-
-        self::$_processedSections = true;
 
         $allSections = $projectConfig->get(ProjectConfig::PATH_SECTIONS, true);
 
@@ -224,11 +164,9 @@ class ProjectConfigHelper
     {
         $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedGqlSchemas || ! $projectConfig->isApplyingExternalChanges) {
+        if (! $projectConfig->claimPath(ProjectConfig::PATH_GRAPHQL_SCHEMAS)) {
             return;
         }
-
-        self::$_processedGqlSchemas = true;
 
         $allSchemas = $projectConfig->get(ProjectConfig::PATH_GRAPHQL_SCHEMAS, true);
 
@@ -242,14 +180,11 @@ class ProjectConfigHelper
     }
 
     /**
-     * Resets the static memoization variables.
+     * Resets claimed paths for the current project config instance.
      */
     public static function reset(): void
     {
-        self::$_processedFields = false;
-        self::$_processedSites = false;
-        self::$_processedUserGroups = false;
-        self::$_processedGqlSchemas = false;
+        app(ProjectConfig::class)->resetClaimedPaths();
     }
 
     /**
