@@ -242,6 +242,8 @@ class EntryActivity
             return false;
         }
 
-        return array_all(array_keys($value), fn ($key) => self::normalizeSafeValue($value[$key]));
+        return array_all(array_keys($value), function ($key) use (&$value): bool {
+            return self::normalizeSafeValue($value[$key]);
+        });
     }
 }

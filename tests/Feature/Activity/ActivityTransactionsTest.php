@@ -22,9 +22,11 @@ it('preserves content after a failed save and shows a successful retry once in t
     $entry = EntryModel::factory()->createElement(['title' => 'Original title']);
     DB::table(Table::ACTIVITYEVENTS)->delete();
     Exceptions::fake();
-    $recordingFails = true;
+    $this->recordingFails = true;
     ActivityEvent::creating(function (): void {
-        throw new RuntimeException('Activity insert failed.');
+        if ($this->recordingFails) {
+            throw new RuntimeException('Activity insert failed.');
+        }
     });
     $data = [
         'elementType' => Entry::class,
@@ -39,7 +41,7 @@ it('preserves content after a failed save and shows a successful retry once in t
     $this->postJson(action(ActivityTimelineController::class), $data)
         ->assertOk()->assertJsonCount(0, 'events');
 
-    $recordingFails = false;
+    $this->recordingFails = false;
     $this->postJson(action([SaveElementController::class, 'store']), $data)->assertSuccessful();
 
     expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Changed title');
