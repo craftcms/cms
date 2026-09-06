@@ -33,29 +33,29 @@ class ConfigRebuilder
      */
     public function build(array $config): array
     {
-        unset($config['meta']);
-        $config['dateModified'] = now()->getTimestamp();
-        $config['system']['schemaVersion'] = Info::fetch()->schemaVersion;
-        $config['addresses'] = $this->fieldLayout(Address::class);
-        $config['assetTransformers'] = $this->components(app(AssetTransformers::class)->getAllAssetTransformers());
-        $config['entryTypes'] = $this->components(EntryTypes::getAllEntryTypes());
-        $config['fields'] = collect(Fields::getAllFields('global'))
+        unset($config[ProjectConfig::PATH_META]);
+        $config[ProjectConfig::PATH_DATE_MODIFIED] = now()->getTimestamp();
+        $config[ProjectConfig::PATH_SYSTEM]['schemaVersion'] = Info::fetch()->schemaVersion;
+        $config[ProjectConfig::PATH_ADDRESSES] = $this->fieldLayout(Address::class);
+        $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] = $this->components(app(AssetTransformers::class)->getAllAssetTransformers());
+        $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components(EntryTypes::getAllEntryTypes());
+        $config[ProjectConfig::PATH_FIELDS] = collect(Fields::getAllFields('global'))
             ->mapWithKeys(fn ($field): array => [$field->uid => Fields::createFieldConfig($field)])
             ->all();
-        $config['fs'] = collect(Filesystems::getAllFilesystems())
+        $config[ProjectConfig::PATH_FS] = collect(Filesystems::getAllFilesystems())
             ->mapWithKeys(fn ($filesystem): array => [$filesystem->handle => Filesystems::createFilesystemConfig($filesystem)])
             ->all();
-        $config['imageTransforms'] = $this->components(app(ImageTransforms::class)->getAllTransforms());
-        $config['sections'] = $this->components(Sections::getAllSections());
-        $config['sites'] = $this->components(Sites::getAllSites(true));
-        $config['siteGroups'] = $this->components(SiteGroups::getAllGroups());
-        $config['volumes'] = $this->components(Volumes::getAllVolumes());
-        $config['users']['groups'] = $this->components(UserGroups::getAllGroups());
-        unset($config['users']['fieldLayouts']);
-        $config['users'] = array_replace($config['users'], $this->fieldLayout(User::class));
+        $config[ProjectConfig::PATH_IMAGE_TRANSFORMS] = $this->components(app(ImageTransforms::class)->getAllTransforms());
+        $config[ProjectConfig::PATH_SECTIONS] = $this->components(Sections::getAllSections());
+        $config[ProjectConfig::PATH_SITES] = $this->components(Sites::getAllSites(true));
+        $config[ProjectConfig::PATH_SITE_GROUPS] = $this->components(SiteGroups::getAllGroups());
+        $config[ProjectConfig::PATH_VOLUMES] = $this->components(Volumes::getAllVolumes());
+        $config[ProjectConfig::PATH_USERS]['groups'] = $this->components(UserGroups::getAllGroups());
+        unset($config[ProjectConfig::PATH_USERS]['fieldLayouts']);
+        $config[ProjectConfig::PATH_USERS] = array_replace($config[ProjectConfig::PATH_USERS], $this->fieldLayout(User::class));
 
         $token = Gql::getPublicToken();
-        $config['graphql'] = [
+        $config[ProjectConfig::PATH_GRAPHQL] = [
             'schemas' => $this->components(Gql::getSchemas()),
             'publicToken' => [
                 'enabled' => $token->enabled ?? false,
@@ -63,16 +63,16 @@ class ConfigRebuilder
             ],
         ];
 
-        $plugins = $config['plugins'] ?? [];
-        $config['plugins'] = [];
+        $plugins = $config[ProjectConfig::PATH_PLUGINS] ?? [];
+        $config[ProjectConfig::PATH_PLUGINS] = [];
 
         foreach (DB::table(Table::PLUGINS)->get(['handle', 'schemaVersion']) as $plugin) {
-            $config['plugins'][$plugin->handle] = array_replace($plugins[$plugin->handle] ?? [], ['schemaVersion' => $plugin->schemaVersion]);
+            $config[ProjectConfig::PATH_PLUGINS][$plugin->handle] = array_replace($plugins[$plugin->handle] ?? [], ['schemaVersion' => $plugin->schemaVersion]);
         }
 
-        $config['elementSources'] ??= [];
+        $config[ProjectConfig::PATH_ELEMENT_SOURCES] ??= [];
 
-        foreach ($config['elementSources'] as &$sources) {
+        foreach ($config[ProjectConfig::PATH_ELEMENT_SOURCES] as &$sources) {
             foreach ($sources as &$source) {
                 if (($source['type'] ?? null) !== ElementSourceTypes::TYPE_CUSTOM || empty($source['condition'])) {
                     continue;
