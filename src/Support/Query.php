@@ -125,6 +125,10 @@ readonly class Query
         ?string $columnType = null,
         string $boolean = 'and',
     ): Builder {
+        if (is_null($value)) {
+            return $query;
+        }
+
         $parsed = QueryParam::parse($value);
 
         if (empty($parsed->values)) {
@@ -339,6 +343,10 @@ readonly class Query
         string $defaultOperator = '=',
         string $boolean = 'and',
     ): Builder {
+        if (is_null($value)) {
+            return $query;
+        }
+
         $param = QueryParam::parse($value);
 
         if (empty($param->values)) {
@@ -388,6 +396,10 @@ readonly class Query
         string $defaultOperator = '=',
         string $boolean = 'and',
     ): Builder {
+        if (is_null($value)) {
+            return $query;
+        }
+
         $param = QueryParam::parse($value);
 
         if (empty($param->values)) {
