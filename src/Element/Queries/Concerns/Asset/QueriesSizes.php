@@ -65,7 +65,7 @@ trait QueriesSizes
 
     protected function initQueriesSizes(): void
     {
-        $this->beforeQuery(function (AssetQuery $assetQuery) {
+        $this->beforeQuery(static function (AssetQuery $assetQuery) {
             if ($assetQuery->width) {
                 $assetQuery->whereNumericParam('assets.width', $assetQuery->width);
             }

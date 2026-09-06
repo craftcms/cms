@@ -88,7 +88,7 @@ trait QueriesFields
 
     protected function initQueriesFields(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             if (! is_null($elementQuery->id)) {
                 throw_if(empty($elementQuery->id), QueryAbortedException::class);
 

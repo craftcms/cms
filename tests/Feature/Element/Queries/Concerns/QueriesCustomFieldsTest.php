@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -21,7 +23,7 @@ class TestActiveQueryField extends PlainText
     public static bool $throw = false;
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         self::$activeQueryDuringModify = ElementQuery::$activeQuery;
 
@@ -29,7 +31,7 @@ class TestActiveQueryField extends PlainText
             throw new RuntimeException('Active query failure.');
         }
 
-        return parent::modifyQuery($query, $instances, $value);
+        parent::modifyQuery($query, $instances, $value);
     }
 
     public static function reset(): void
@@ -85,6 +87,12 @@ it('can query custom fields', function () {
     }
 
     expect(entryQuery()->textField('bar')->count())->toBe(0);
+
+    $query = entryQuery()->textField('Foo');
+    expect($query->getCountForPagination())->toBe(1)
+        ->and($query->all())->toHaveCount(1)
+        ->and($query->clone()->textField('bar')->all())->toBeEmpty()
+        ->and($query->clone()->withCustomFields(false)->toRawSql())->toBe(entryQuery()->withCustomFields(false)->textField('Foo')->toRawSql());
 });
 
 it('only stores explicitly supplied custom field criteria', function () {

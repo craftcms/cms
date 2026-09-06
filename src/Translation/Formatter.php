@@ -17,6 +17,7 @@ use IntlDateFormatter;
 use IntlTimeZone;
 use InvalidArgumentException;
 use NumberFormatter;
+use RoundingMode;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -181,89 +182,30 @@ class Formatter
             $value = 0;
         }
 
-        $value = $this->normalizeNumericStringValue($value);
+        $value = $this->normalizeDecimalStringValue((string) $value);
 
-        if (str_contains((string) $value, '.')) {
-            [$integerPart, $fractionalPart] = explode('.', (string) $value, 2);
-        } else {
-            $integerPart = $value;
-            $fractionalPart = null;
-        }
-
-        $decimalOutput = '';
+        $negative = str_starts_with($value, '-');
         $decimals ??= 2;
-        $carry = 0;
 
-        if ($decimals > 0) {
-            $decimalSeparator = new Locale($this->locale)->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-
-            if ($fractionalPart === null) {
-                $fractionalPart = str_repeat('0', $decimals);
-            } elseif (strlen($fractionalPart) > $decimals) {
-                $cursor = $decimals;
-
-                // checking if fractional part must be rounded
-                if ((int) substr($fractionalPart, $cursor, 1) >= 5) {
-                    while (--$cursor >= 0) {
-                        $carry = 0;
-
-                        $oneUp = (int) substr($fractionalPart, $cursor, 1) + 1;
-                        if ($oneUp === 10) {
-                            $oneUp = 0;
-                            $carry = 1;
-                        }
-
-                        $fractionalPart = substr($fractionalPart, 0, $cursor).$oneUp.substr($fractionalPart, $cursor + 1);
-
-                        if ($carry === 0) {
-                            break;
-                        }
-                    }
-                }
-
-                $fractionalPart = substr($fractionalPart, 0, $decimals);
-            } elseif (strlen($fractionalPart) < $decimals) {
-                $fractionalPart = str_pad($fractionalPart, $decimals, '0');
-            }
-
-            $decimalOutput .= $decimalSeparator.$fractionalPart;
-        }
-
+        // checking if fractional part must be rounded
         // checking if integer part must be rounded
-        if ($carry || ($decimals === 0 && $fractionalPart !== null && (int) substr($fractionalPart, 0, 1) >= 5)) {
-            $integerPartLength = strlen((string) $integerPart);
-            $cursor = 0;
+        $rounded = bcround(ltrim($value, '+-'), max(0, $decimals), $decimals < 0 ? RoundingMode::TowardsZero : RoundingMode::HalfAwayFromZero);
 
-            while (++$cursor <= $integerPartLength) {
-                $carry = 0;
+        [$integerPart, $fractionalPart] = array_pad(explode('.', $rounded, 2), 2, '');
+        $decimalOutput = $decimals > 0
+            ? new Locale($this->locale)->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR).$fractionalPart
+            : '';
 
-                $oneUp = (int) substr((string) $integerPart, -$cursor, 1) + 1;
-                if ($oneUp === 10) {
-                    $oneUp = 0;
-                    $carry = 1;
-                }
-
-                $integerPart = substr((string) $integerPart, 0, -$cursor).$oneUp.substr((string) $integerPart, $integerPartLength - $cursor + 1);
-
-                if ($carry === 0) {
-                    break;
-                }
-            }
-            if ($carry === 1) {
-                $integerPart = '1'.$integerPart;
-            }
-        }
-
-        if (strlen((string) $integerPart) > 3) {
+        if (strlen($integerPart) > 3) {
             $thousandSeparator = new Locale($this->locale)->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 
-            $integerPart = strrev(implode(',', str_split(strrev((string) $integerPart), 3)));
+            $integerPart = strrev(implode(',', str_split(strrev($integerPart), 3)));
             if ($thousandSeparator !== ',') {
                 $integerPart = str_replace(',', $thousandSeparator, $integerPart);
             }
         }
 
-        return $integerPart.$decimalOutput;
+        return ($negative ? '-' : '').$integerPart.$decimalOutput;
     }
 
     public function asDuration(DateInterval|string|int|float|null $value, string $implodeString = ', ', string $negativeSign = '-'): string
@@ -361,24 +303,9 @@ class Formatter
         }
 
         $decimals ??= 0;
-        $value = $this->normalizeNumericStringValue((string) $value);
-        $separatorPosition = strrpos((string) $value, '.');
-
-        if ($separatorPosition !== false) {
-            $integerPart = substr((string) $value, 0, $separatorPosition);
-            $fractionalPart = str_pad(substr((string) $value, $separatorPosition + 1), 2, '0');
-
-            $integerPart .= substr($fractionalPart, 0, 2);
-            $fractionalPart = substr($fractionalPart, 2);
-
-            if ($fractionalPart === '') {
-                $multipliedValue = $integerPart;
-            } else {
-                $multipliedValue = $integerPart.'.'.$fractionalPart;
-            }
-        } else {
-            $multipliedValue = $value.'00';
-        }
+        $value = $this->normalizeDecimalStringValue((string) $value);
+        $scale = strlen(explode('.', $value, 2)[1] ?? '');
+        $multipliedValue = bcmul($value, '100', $scale);
 
         return $this->asDecimalFallback($multipliedValue, $decimals).'%';
     }
@@ -556,6 +483,20 @@ class Formatter
         }
 
         return (string) $this->normalizeNumericValue($value) !== $this->normalizeNumericStringValue((string) $value);
+    }
+
+    private function normalizeDecimalStringValue(string $value): string
+    {
+        $value = $this->normalizeNumericStringValue(str_replace('e', 'E', $value));
+
+        if (preg_match('/^(.+)[eE]([+-]?\d+)$/', $value, $matches)) {
+            [, $coefficient, $exponent] = $matches;
+            $exponent = (int) $exponent;
+            $fractionalDigits = strlen(explode('.', $coefficient, 2)[1] ?? '');
+            $value = bcmul($coefficient, bcpow('10', (string) $exponent, max(0, -$exponent)), max(0, $fractionalDigits - $exponent));
+        }
+
+        return $value;
     }
 
     private function normalizeNumericStringValue(string|int|float $value): ?string

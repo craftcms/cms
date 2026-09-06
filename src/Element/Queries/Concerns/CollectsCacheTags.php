@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Events\ElementQueryCacheTagsResolving;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -22,12 +23,12 @@ trait CollectsCacheTags
 
     protected function initCollectsCacheTags(): void
     {
-        $this->beforeQuery(function () {
-            $this->cacheTags = null;
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
+            $elementQuery->cacheTags = null;
         });
 
-        $this->afterQuery(function () {
-            if (empty($cacheTags = $this->getCacheTags())) {
+        $this->afterQuery(static function (mixed $result, ElementQuery $elementQuery) {
+            if (empty($cacheTags = $elementQuery->getCacheTags())) {
                 return;
             }
 

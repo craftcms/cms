@@ -11,8 +11,11 @@ use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Twig\Extension\AbstractExtension;
 use Twig\Extension\EscaperExtension;
+use Twig\Extension\GlobalsInterface;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
+use Yiisoft\Arrays\ArrayableInterface;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-template-renderer-test-'.uniqid();
@@ -117,6 +120,38 @@ describe('renderObjectTemplate', function () {
         'multiple property shorthand tags' => ['{first} {last}', (object) ['first' => 'John', 'last' => 'Doe'], [], 'John Doe'],
         'additional variables take priority' => ['{name}', (object) ['name' => 'from object'], ['name' => 'from variables'], 'from variables'],
     ]);
+
+    it('uses the current environment after warming an object template', function (bool $extension) {
+        $twig = app(Twig::class);
+        foreach (['first', 'replacement'] as $value) {
+            if ($extension) {
+                $twig->registerExtension(new class($value) extends AbstractExtension implements GlobalsInterface
+                {
+                    public function __construct(private readonly string $value) {}
+
+                    public function getGlobals(): array
+                    {
+                        return ['generation' => $this->value];
+                    }
+                }, TemplateMode::Site);
+            } else {
+                $environment = $twig->create();
+                $environment->addGlobal('generation', $value);
+                $twig->set($environment, TemplateMode::Site);
+            }
+            expect($this->manager->renderObjectTemplate('{{ generation }}', new stdClass))->toBe($value);
+        }
+    })->with([false, true]);
+
+    it('selects the same original fields on cold and warm renders', function () {
+        $object = Mockery::mock(ArrayableInterface::class);
+        $object->shouldReceive('fields')->andReturn(['name', 'object', '_variables']);
+        $object->shouldReceive('extraFields')->andReturn([]);
+        $object->shouldReceive('toArray')->with(['name'], [], false)->twice()->andReturn(['name' => 'Craft']);
+
+        expect($this->manager->renderObjectTemplate('{name}', $object))->toBe('Craft')
+            ->and($this->manager->renderObjectTemplate('{name}', $object))->toBe('Craft');
+    });
 
     it('trims the output', function () {
         $result = $this->manager->renderObjectTemplate('{name}', (object) ['name' => '  spaced  ']);

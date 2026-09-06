@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
 
@@ -123,6 +128,16 @@ test('store can remove all groups', function () {
     patchJson(cp_url('myaccount/permissions'), [
         'groups' => [$group->id],
     ])->assertOk();
+
+    session()->forget('auth.password_confirmed_at');
+    patchJson(cp_url('myaccount/permissions'), [
+        'admin' => false,
+        'groups' => [],
+        'permissions' => ['accessCp'],
+    ])->assertStatus(423);
+
+    expect(UserModel::query()->find($user->id)->admin)->toBeTrue();
+    expect(UserGroups::getGroupsByUserId($user->id)->pluck('id')->all())->toBe([$group->id]);
 
     patchJson(cp_url('myaccount/permissions'), [
         'groups' => [],
@@ -268,4 +283,41 @@ test('update does not persist inherited group permissions as direct user permiss
         ->where('userId', $user->id)
         ->whereIn('permissionId', $permissionIds)
         ->exists())->toBeFalse();
+});
+
+test('denied permission does not change groups', function (bool $removeGroup) {
+    Edition::set(Edition::Pro);
+    session()->passwordConfirmed();
+    $group = UserGroup::factory()->create();
+    $editor = UserModel::factory()->withPermissions(['accessCp', 'viewUsers', 'editUsers', 'assignUserPermissions', "assignUserGroup:$group->uid"])->create();
+    $user = UserModel::factory()->create();
+    if ($removeGroup) {
+        UserPermissions::saveGroupPermissions($group->id, ['accessSiteWhenSystemIsOff']);
+        Users::assignUserToGroups($user->id, [$group->id]);
+    }
+    actingAs($editor->asElement());
+    Event::fake([GroupsAndPermissionsAssigned::class]);
+
+    patchJson(cp_url("users/{$user->id}/permissions"), [
+        'groups' => $removeGroup ? [] : [$group->id], 'permissions' => ['accessSiteWhenSystemIsOff'],
+    ])->assertForbidden();
+
+    expect($user->userGroups()->count())->toBe($removeGroup ? 1 : 0);
+    expect($user->permissions()->count())->toBe(0);
+    Event::assertNotDispatched(GroupsAndPermissionsAssigned::class);
+})->with([false, true]);
+
+test('group veto reports failure without completing the edit', function () {
+    Edition::set(Edition::Pro);
+    session()->passwordConfirmed();
+    $group = UserGroup::factory()->create();
+    Event::fake([GroupsAndPermissionsAssigned::class]);
+    Event::listen(UserGroupsAssigning::class, function (UserGroupsAssigning $event) {
+        $event->isValid = false;
+    });
+
+    patchJson(cp_url('myaccount/permissions'), ['groups' => [$group->id]])->assertBadRequest();
+
+    expect(UserGroups::getGroupsByUserId(currentUser()->id))->toHaveCount(0);
+    Event::assertNotDispatched(GroupsAndPermissionsAssigned::class);
 });

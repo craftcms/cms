@@ -41,7 +41,7 @@ use function CraftCms\Cms\t;
 /**
  * @phpstan-consistent-constructor
  *
- * @phpstan-type GeneratedField array{uid: string, name?: string, handle?: string|array{value: string, hasErrors: bool}, template?: string}
+ * @phpstan-type GeneratedField array{uid: string, name?: string, handle?: string, template?: string}
  * @phpstan-type GeneratedFieldConfig array{uid?: string, name?: string, handle?: string, template?: string}
  */
 class FieldLayout extends Component
@@ -335,10 +335,7 @@ class FieldLayout extends Component
 
             if ($error !== null) {
                 $fail($error);
-                $field['handle'] = [
-                    'value' => $field['handle'],
-                    'hasErrors' => true,
-                ];
+                $this->errors()->add("generatedFields.{$field['uid']}.handle", $error);
             } else {
                 $handles[$field['handle']] = true;
             }

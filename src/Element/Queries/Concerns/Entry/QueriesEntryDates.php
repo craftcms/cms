@@ -80,7 +80,7 @@ trait QueriesEntryDates
 
     protected function initQueriesEntryDates(): void
     {
-        $this->beforeQuery(function (EntryQuery $query) {
+        $this->beforeQuery(static function (EntryQuery $query) {
             if ($query->postDate) {
                 $query->whereDateParam('entries.postDate', $query->postDate);
             } else {

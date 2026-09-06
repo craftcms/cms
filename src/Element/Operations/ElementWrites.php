@@ -10,7 +10,6 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
@@ -46,10 +45,10 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
+use WeakMap;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\normalizeValue;
@@ -60,13 +59,79 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class ElementWrites
 {
+    /** @var WeakMap<ElementInterface, array<int, ElementInterface>> */
+    private WeakMap $propagationSites;
+
     public function __construct(
         private Elements $elements,
         private ElementUris $elementUris,
         private ElementCaches $elementCaches,
         private Search $search,
         private Sites $sites,
-    ) {}
+    ) {
+        $this->propagationSites = new WeakMap;
+    }
+
+    /** @param array<int, ElementInterface> $siteElements */
+    public function afterPropagate(ElementInterface $element, bool $isNew, array $siteElements): void
+    {
+        $previous = $this->propagationSites[$element] ?? null;
+        $this->propagationSites[$element] = $siteElements;
+
+        try {
+            $element->afterPropagate($isNew);
+        } finally {
+            if ($previous !== null) {
+                $this->propagationSites[$element] = $previous;
+            } else {
+                unset($this->propagationSites[$element]);
+            }
+        }
+    }
+
+    public function completeGeneratedFields(ElementInterface $element): void
+    {
+        $siteElements = $this->propagationSites[$element] ?? [$element];
+        unset($this->propagationSites[$element]);
+
+        foreach ($siteElements as $siteElement) {
+            $generatedFields = $siteElement->getFieldLayout()?->getGeneratedFields() ?? [];
+            if (empty($generatedFields)) {
+                continue;
+            }
+
+            $record = ElementSiteSettings::findOrFail($siteElement->siteSettingsId);
+            $content = $record->content ?? [];
+            if (is_string($content)) {
+                $content = $content !== '' ? Json::decode($content) : [];
+            }
+            $generatedFieldValues = [];
+            $updated = false;
+
+            foreach ($generatedFields as $field) {
+                $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
+                $value = normalizeValue($value) ?? '';
+
+                if ($value !== ($content[$field['uid']] ?? '')) {
+                    $updated = true;
+                }
+                if ($value !== '') {
+                    $content[$field['uid']] = $value;
+                    if (($field['handle'] ?? '') !== '') {
+                        $generatedFieldValues[$field['handle']] = $value;
+                    }
+                } else {
+                    unset($content[$field['uid']]);
+                }
+            }
+
+            if ($updated) {
+                $record->content = $content;
+                $record->save();
+            }
+            $siteElement->setGeneratedFieldValues($generatedFieldValues);
+        }
+    }
 
     public function saveElement(
         ElementInterface $element,
@@ -221,6 +286,7 @@ readonly class ElementWrites
                     $throwable = null;
                     try {
                         $element->newSiteIds = [];
+                        $siteElements = [];
 
                         foreach ($elementSiteIds as $siteId) {
                             if ($siteId === $element->siteId) {
@@ -231,11 +297,12 @@ readonly class ElementWrites
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
                                 $siteElement ??= false;
                                 $this->propagate($element, $supportedSites, $siteId, $siteElement);
+                                $siteElements[$siteId] = $siteElement;
                             }
                         }
 
                         $element->markAsDirty();
-                        $element->afterPropagate(false);
+                        $this->afterPropagate($element, false, $siteElements);
                     } catch (Throwable $throwable) {
                         if (! $continueOnError) {
                             throw $throwable;
@@ -534,7 +601,6 @@ readonly class ElementWrites
                     $dirtyAttributes = $element->getDirtyAttributes();
 
                     $siteElements = [];
-                    $siteSettingsRecords = [];
 
                     if ($propagate) {
                         $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
@@ -554,67 +620,20 @@ readonly class ElementWrites
                                 }
 
                                 $siteElement = $siteElements[$siteId] ?? false;
-                                $siteElementRecord = null;
                                 if (! $this->propagateInternal(
                                     $element,
                                     $supportedSites,
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    siteSettingsRecord: $siteElementRecord,
                                     inheritedUpdateSearchIndex: $resolvedUpdateSearchIndex,
                                 )) {
                                     throw new InvalidArgumentException;
                                 }
 
                                 $siteElements[$siteId] = $siteElement;
-                                $siteSettingsRecords[$siteId] = $siteElementRecord;
                             }
                         }
-                    }
-
-                    if (! $element->propagating && ! empty($generatedFields)) {
-                        $siteElements[$element->siteId] = $element;
-                        $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
-
-                        Event::listen(function (ElementLifecyclePropagated $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
-                            if ($event->element->id !== $element->id) {
-                                return;
-                            }
-
-                            foreach ($siteElements as $siteId => $siteElement) {
-                                $siteSettingsRecord = $siteSettingsRecords[$siteId];
-                                $content = $siteSettingsRecord->content ?? [];
-                                if (is_string($content)) {
-                                    $content = $content !== '' ? Json::decode($content) : [];
-                                }
-                                $generatedFieldValues = [];
-                                $updated = false;
-
-                                foreach ($generatedFields as $field) {
-                                    $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
-                                    $value = normalizeValue($value) ?? '';
-
-                                    if ($value !== ($content[$field['uid']] ?? '')) {
-                                        $updated = true;
-                                    }
-                                    if ($value !== '') {
-                                        $content[$field['uid']] = $value;
-                                        if (($field['handle'] ?? '') !== '') {
-                                            $generatedFieldValues[$field['handle']] = $value;
-                                        }
-                                    } else {
-                                        unset($content[$field['uid']]);
-                                    }
-                                }
-
-                                if ($updated) {
-                                    $siteSettingsRecord->content = $content;
-                                    $siteSettingsRecord->save();
-                                    $siteElement->setGeneratedFieldValues($generatedFieldValues);
-                                }
-                            }
-                        });
                     }
 
                     if (
@@ -622,7 +641,8 @@ readonly class ElementWrites
                         ! $element->duplicateOf &&
                         ! $element->mergingCanonicalChanges
                     ) {
-                        $element->afterPropagate($isNewElement);
+                        $siteElements[$element->siteId] = $element;
+                        $this->afterPropagate($element, $isNewElement, $siteElements);
                         BulkOps::trackElement($element);
                     }
 

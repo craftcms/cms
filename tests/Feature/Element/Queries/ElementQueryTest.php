@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -126,3 +128,46 @@ function normalizeJoinAlias(JoinClause $join): string
 
     return preg_replace('/[`"\[\]]/', '', $table->getValue($join->getGrammar()));
 }
+
+it('uses clone criteria without changing the original query', function (Closure $factory, array $initial, array $changed, bool $executed, bool $cloneFirst) {
+    $original = $factory($initial);
+    if ($executed) {
+        $original->get();
+    }
+    $clone = clone $original;
+    foreach ($changed as $attribute => $value) {
+        $clone->$attribute = $value;
+    }
+
+    foreach ($cloneFirst ? [$clone, $original] : [$original, $clone] as $query) {
+        $criteria = $original->getCriteria();
+        $query->get();
+        if ($query === $clone) {
+            expect($original->getCriteria())->toBe($criteria);
+        }
+    }
+
+    expect($clone->toRawSql())->toBe($factory($changed)->toRawSql())
+        ->and($original->toRawSql())->toBe($factory($initial)->toRawSql());
+})->with([
+    'asset alt' => [assetQuery(...), ['hasAlt' => true], ['hasAlt' => false]],
+    'asset volume' => [assetQuery(...), ['volumeId' => 1], ['volumeId' => 2]],
+    'user site' => [userQuery(...), ['affiliatedSiteId' => 1], ['affiliatedSiteId' => 2]],
+    'user login' => [userQuery(...), ['lastLoginDate' => '2025-01-01'], ['lastLoginDate' => '2025-02-01']],
+    'entry ref' => [entryQuery(...), ['ref' => 'news/first'], ['ref' => 'news/second']],
+])->with([false, true])->with([false, true]);
+
+it('preserves extension callback binding and passes the executing query', function () {
+    $context = $this;
+    $original = entryQuery();
+    $clone = null;
+    $original->afterQuery(fn ($results) => $results->push('legacy'));
+    $original->afterQuery(function ($results, ElementQuery $query) use ($context, &$clone) {
+        expect($this)->toBe($context)->and($query)->toBe($clone);
+
+        return $results->push('extension');
+    });
+    $clone = clone $original;
+
+    expect($clone->applyAfterQueryCallbacks(collect())->all())->toBe(['legacy', 'extension']);
+});

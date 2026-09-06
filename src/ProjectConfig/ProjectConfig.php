@@ -273,6 +273,11 @@ class ProjectConfig
     /** @var array<int, array<string, mixed>> */
     private array $_appliedChanges = [];
 
+    /** @var array<string, true> */
+    private array $claimedPaths = [];
+
+    private int $persistedChanges = 0;
+
     /**
      * @var ReadOnlyProjectConfigData|null Config as defined in the external config.
      */
@@ -351,14 +356,42 @@ class ProjectConfig
      */
     public function reset(): void
     {
+        $this->resetClaimedPaths();
         $this->_internalConfig = null;
         $this->_externalConfig = null;
         $this->_currentWorkingConfig = null;
         $this->_configFileList = [];
         $this->_updateYaml = false;
         $this->_appliedChanges = [];
+        $this->persistedChanges = 0;
         $this->isApplyingExternalChanges = false;
         $this->_timestampUpdated = false;
+    }
+
+    /**
+     * Claims a config path before processing to prevent recursive processing.
+     *
+     * @internal
+     */
+    public function claimPath(string $path, bool $force = false): bool
+    {
+        if (isset($this->claimedPaths[$path]) || (! $force && ! $this->isApplyingExternalChanges)) {
+            return false;
+        }
+
+        $this->claimedPaths[$path] = true;
+
+        return true;
+    }
+
+    /**
+     * Clears claimed paths for a new application or an explicit retry after failure.
+     *
+     * @internal
+     */
+    public function resetClaimedPaths(): void
+    {
+        $this->claimedPaths = [];
     }
 
     /**
@@ -581,6 +614,7 @@ class ProjectConfig
     /** @param array<string|int, mixed> $configData */
     public function applyConfigChanges(array $configData): void
     {
+        $this->resetClaimedPaths();
         $this->isApplyingExternalChanges = true;
 
         $changes = $this->_getPendingChanges($configData);
@@ -701,7 +735,10 @@ class ProjectConfig
      */
     public function saveModifiedConfigData(): void
     {
-        if (empty($this->_appliedChanges)) {
+        $persistedPosition = $this->persistedChanges;
+        $changes = array_slice($this->_appliedChanges, $persistedPosition);
+
+        if ($changes === []) {
             $this->_releaseLock();
 
             return;
@@ -709,8 +746,8 @@ class ProjectConfig
 
         $deltaChanges = [];
 
-        DB::transaction(function () use (&$deltaChanges) {
-            foreach ($this->_appliedChanges as $changeSet) {
+        DB::transaction(function () use ($changes, &$deltaChanges) {
+            foreach ($changes as $changeSet) {
                 // Allow modification of the array being looped over.
                 $currentSet = $changeSet;
 
@@ -789,6 +826,12 @@ class ProjectConfig
                 'changes' => $deltaChanges,
             ]);
         }
+
+        DB::afterRollBack(function () use ($persistedPosition): void {
+            $this->persistedChanges = min($this->persistedChanges, $persistedPosition);
+        });
+
+        $this->persistedChanges = $persistedPosition + count($changes);
     }
 
     /**
@@ -1473,7 +1516,7 @@ class ProjectConfig
             }
         }
 
-        file_put_contents($basePath, Yaml::dump($configData, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING));
+        File::writeToFile($basePath, Yaml::dump($configData, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING));
     }
 
     /**

@@ -145,28 +145,25 @@ it('respects ifEmpty when setting attribute', function () {
 });
 
 it('spawns next batch when there are more items', function () {
-    // Create more entries than default batch size
-    Entry::factory()->count(5)->create();
-
-    // Verify entries were created
-    $count = EntryElement::find()->count();
-    expect($count)->toBeGreaterThanOrEqual(5);
+    Entry::factory()->count(3)->create();
+    Queue::fake();
 
     $job = new ResaveElements(
         elementType: EntryElement::class,
+        set: 'title',
+        to: '=Updated {{ object.id }}',
+        batchSize: 2,
     );
-    $job->batchSize = 2;
-
     $job->handle();
 
-    // Check what the job state is after running - itemOffset should be 2 (processed 2 items)
     expect($job->itemOffset)->toBe(2);
+    $next = unserialize(serialize(Queue::pushed(ResaveElements::class)->sole()));
+    expect($next->batchIndex)->toBe(1);
+    $next->handle();
 
-    // Should have dispatched a follow-up job with incremented batchIndex
-    // Since we can't easily mock the dispatch in this context, verify the state indicates a new batch should spawn
-    expect($job->batchIndex)->toBe(0); // Original job stays at index 0
-    // The dispatched job would have batchIndex = 1, but we can't easily capture it
-    // The test verifies the logic is correct - more items remain to process
+    foreach (EntryElement::find()->all() as $entry) {
+        expect($entry->title)->toBe("Updated $entry->id");
+    }
 });
 
 it('includes batch info in description for multi-batch jobs', function () {

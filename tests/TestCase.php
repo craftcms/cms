@@ -17,7 +17,6 @@ use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
@@ -169,21 +168,6 @@ class TestCase extends Orchestra
             [FieldLayoutComponent::class, 'defaultElementConditions', []],
             [CustomField::class, 'defaultElementEditConditions', []],
         ];
-
-        // Reset ProjectConfig "processed" flags
-        $projectConfigFlags = [
-            '_processedFilesystems',
-            '_processedFields',
-            '_processedSites',
-            '_processedUserGroups',
-            '_processedEntryTypes',
-            '_processedSections',
-            '_processedGqlSchemas',
-        ];
-
-        foreach ($projectConfigFlags as $flag) {
-            $resets[] = [ProjectConfigHelper::class, $flag, false];
-        }
 
         foreach ($resets as [$class, $property, $default]) {
             new ReflectionProperty($class, $property)->setValue(null, $default);

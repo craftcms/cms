@@ -104,3 +104,27 @@ test('nested element query supports array filters', function () {
     expect(entryQuery()->primaryOwnerId([$owner1->id, $owner2->id])->ids())->toEqualCanonicalizing($nestedIds);
     expect(entryQuery()->ownerId([$owner1->id, $owner2->id])->ids())->toEqualCanonicalizing($nestedIds);
 });
+
+test('field(false) only returns entries with no field', function () {
+    $field = Field::factory()->create([
+        'type' => ContentBlock::class,
+    ]);
+
+    Fields::refreshFields();
+
+    $topLevelEntry = Entry::factory()->create();
+    $owner = Entry::factory()->create();
+    $nested = Entry::factory()->create([
+        'primaryOwnerId' => $owner->id,
+        'fieldId' => $field->id,
+    ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)
+        ->insert([
+            'elementId' => $nested->id,
+            'ownerId' => $owner->id,
+            'sortOrder' => 1,
+        ]);
+
+    expect(entryQuery()->field(false)->ids())->toEqualCanonicalizing([$topLevelEntry->id, $owner->id]);
+});

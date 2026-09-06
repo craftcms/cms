@@ -245,9 +245,7 @@ readonly class SitesController
 
         $this->sites->deleteSiteById(
             siteId: (int) $data['id'],
-            // PHPStan doesn't seem to understand the `Rule::when()` rule above
-            // @phpstan-ignore nullCoalesce.expr
-            transferContentTo: (int) $data['transferContentTo'] ?? null,
+            transferContentTo: $data['contentDestination'] === 'transfer' ? (int) $data['transferContentTo'] : null,
         );
 
         return to_route('craft.cp.settings.sites.index')
