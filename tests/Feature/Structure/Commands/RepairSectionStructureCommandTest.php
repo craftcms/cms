@@ -72,13 +72,13 @@ it('previews the same repaired hierarchy that it persists', function (array $lev
     $arguments = ['handle' => $this->section->handle, '--no-interaction' => true];
 
     expect(Artisan::call('craft:utils:repair:section-structure', [...$arguments, '--dry-run' => true]))->toBe(0);
-    $preview = collect(explode("\n", Artisan::output()))->filter(fn (string $line) => str_contains($line, 'Repair entry'))->values()->all();
+    $preview = collect(preg_split('/\R/', Artisan::output()))->filter(fn (string $line) => str_contains($line, 'Repair entry'))->values()->all();
 
     expect($this->structure->structureElements()->get()->toArray())->toBe($original);
     expect($preview)->toBe($expectedOutput);
 
     expect(Artisan::call('craft:utils:repair:section-structure', $arguments))->toBe(0);
-    $live = collect(explode("\n", Artisan::output()))->filter(fn (string $line) => str_contains($line, 'Repair entry'))->values()->all();
+    $live = collect(preg_split('/\R/', Artisan::output()))->filter(fn (string $line) => str_contains($line, 'Repair entry'))->values()->all();
 
     expect($live)->toBe($preview);
     expect($this->entries->map(fn (Entry $entry) => entryQuery()->id($entry->id)->site('*')->drafts(null)->provisionalDrafts(null)->structureId($this->structure->id)->one()?->level)->all())
