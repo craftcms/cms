@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
@@ -212,6 +213,34 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         }
 
         return $conventionalPath;
+    }
+
+    /**
+     * Creates fresh configuration input, not the retained runtime settings model.
+     * Use getInstance()->getSettings() to access effective runtime settings.
+     */
+    public static function settings(): PluginSettings
+    {
+        $settings = static::createSettings();
+
+        if ($settings === null) {
+            throw new LogicException('Plugin ['.static::class.'] must implement createSettings() to use static settings().');
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Override to create fresh settings without resolving a plugin or accessing the database.
+     */
+    protected static function createSettings(): ?PluginSettings
+    {
+        return null;
+    }
+
+    protected function createSettingsModel(): ?Validatable
+    {
+        return static::createSettings();
     }
 
     #[Override]

@@ -22,6 +22,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\FluentTestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettings;
@@ -400,6 +401,36 @@ it('applies array and object configuration over stored settings without changing
     'full object' => ['object', null],
     'explicit null' => ['explicit null', null],
 ]);
+
+it('hydrates plugin-static configuration before register and boot while keeping static calls fresh', function () {
+    $composerInfo = $this->plugins->getComposerPluginInfo('test-plugin');
+    $composerInfo['class'] = FluentTestPlugin::class;
+    new ReflectionProperty(Plugins::class, 'composerPluginInfo')->setValue($this->plugins, ['test-plugin' => $composerInfo]);
+    $input = FluentTestPlugin::settings()->foo('File');
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => ['foo' => 'Stored', 'bar' => 'Stored bar']]);
+    $runtime = $plugin->getSettings();
+    app()->register($plugin);
+
+    expect($plugin)->toBeInstanceOf(FluentTestPlugin::class)
+        ->and($plugin->registeredSettings)->toBe(['foo' => 'File', 'bar' => null])
+        ->and($plugin->bootedSettings)->toBe(['foo' => 'File', 'bar' => null])
+        ->and(FluentTestPlugin::getInstance()->getSettings())->toBe($runtime)
+        ->and($runtime)->not->toBe($input);
+
+    $runtime->foo = 'Runtime';
+    $fresh = FluentTestPlugin::settings()->foo('Fresh');
+    $another = FluentTestPlugin::settings();
+
+    expect($fresh)->not->toBe($input)->not->toBe($runtime)->not->toBe($another)
+        ->and($another->configData())->toBe(['foo' => null, 'bar' => null])
+        ->and($plugin->getSettings())->toBe($runtime)
+        ->and($runtime->foo)->toBe('Runtime')
+        ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File', 'bar' => null])
+        ->and($input->foo)->toBe('File');
+});
 
 it('uses full defaults and shallow nested replacement without replaying fluent setters', function (bool $object) {
     app()->offsetUnset(TestPlugin::class);
