@@ -5,11 +5,14 @@ namespace craft\elements\conditions\categories;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\elements\Category;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 use function CraftCms\Cms\t;
 
 /**
@@ -19,22 +22,28 @@ use function CraftCms\Cms\t;
  * @since 4.0.0
  * @deprecated in 6.0.0
  */
-class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (!$condition instanceof CategoryCondition) {
+            return false;
+        }
+
+        // Exclude from category group sources
+        if (isset($condition->sourceKey) && str_starts_with($condition->sourceKey, 'group:')) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
         return t('Category Group', category: 'yii2-adapter');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['group', 'groupId'];
     }
 
     /**
@@ -49,11 +58,10 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     /**
      * @inheritdoc
      */
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
         $categories = Craft::$app->getCategories();
-        /** @var CategoryQuery $query */
-        $query->groupId($this->paramValue(fn(string $uid) => $categories->getGroupByUid($uid)->id ?? null));
+        CategoryQuery::applyGroupId($query, $this->paramValue(fn(string $uid) => $categories->getGroupByUid($uid)->id ?? null));
     }
 
     /**

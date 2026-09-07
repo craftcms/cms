@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -23,16 +26,20 @@ use function CraftCms\Cms\t;
  *
  * @since 4.0.0
  */
-class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof EntryCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('Entry Type');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['type', 'typeId'];
     }
 
     #[Override]
@@ -53,10 +60,10 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
             ->all();
     }
 
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        $query->typeId($this->paramValue(fn ($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
+        EntryQuery::applyTypeId($query, $this->paramValue(fn ($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
+        ;
     }
 
     public function matchElement(ElementInterface $element): bool

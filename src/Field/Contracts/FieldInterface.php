@@ -10,9 +10,12 @@ use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\FieldContext;
@@ -394,7 +397,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the element condition rule class that should be used for this field.
      *
-     * The rule class must be an instance of [[\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface]].
+     * The rule class must be an instance of {@see FieldConditionRuleInterface} and {@see ElementConditionRuleInterface} and/or {@see ElementQueryConditionRuleInterface}.
      *
      * @phpstan-return string|array{class:string}|null
      */

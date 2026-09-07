@@ -13,7 +13,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 /**
  * ElementConditionInterface defines the common interface to be implemented by element conditions.
  *
- * A base implementation is provided by [[ElementCondition]].
+ * A base implementation is provided by {@see ElementCondition}.
  *
  * @mixin ElementCondition
  *

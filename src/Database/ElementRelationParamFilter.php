@@ -13,6 +13,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -196,13 +197,13 @@ class ElementRelationParamFilter
      *
      * @param  int|string|int[]|null  $siteId
      */
-    public function apply(Builder $query, mixed $relatedToParam, array|int|string|null $siteId = null, bool $matchNoneWhenInvalid = true): bool
+    public function apply(BuilderContract $query, mixed $relatedToParam, array|int|string|null $siteId = null, bool $matchNoneWhenInvalid = true): bool
     {
         return $this->applyNormalized($query, self::normalizeRelatedToParam($relatedToParam, $siteId), $matchNoneWhenInvalid);
     }
 
     /** @param array<int, string|array<string, mixed>> $relatedToParam */
-    private function applyNormalized(Builder $query, array $relatedToParam, bool $matchNoneWhenInvalid = true): bool
+    private function applyNormalized(BuilderContract $query, array $relatedToParam, bool $matchNoneWhenInvalid = true): bool
     {
         $glue = array_shift($relatedToParam);
 

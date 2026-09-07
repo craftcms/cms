@@ -51,7 +51,7 @@ trait QueriesPlaceholderElements
      * @param  Closure(Builder): Builder  $condition
      * @return Closure(Builder): Builder
      */
-    protected function placeholderCondition(Closure $condition): Closure
+    public function placeholderCondition(Closure $condition): Closure
     {
         if ($this->ignorePlaceholders) {
             return $condition;
