@@ -83,7 +83,7 @@ class Choice extends Control
      */
     public function options(array $options): static
     {
-        $this->options = $options;
+        $this->options = array_values($options);
 
         return $this;
     }
