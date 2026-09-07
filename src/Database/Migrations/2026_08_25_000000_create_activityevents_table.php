@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('subjectType')->nullable();
             $table->string('subjectId')->nullable();
             $table->unsignedBigInteger('siteId')->nullable();
+            $table->unsignedBigInteger('rootEventId')->nullable();
             $table->jsonb('payload');
             $table->dateTime('occurredAt');
         });
@@ -31,6 +32,12 @@ return new class extends Migration
         Schema::createIndex(Table::ACTIVITYEVENTS, ['actorType', 'actorId']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
+
+        Schema::table(Table::ACTIVITYEVENTS, fn (Blueprint $table) => $table->foreign('rootEventId')
+            ->references('id')
+            ->on(Table::ACTIVITYEVENTS)
+            ->cascadeOnDelete());
     }
 
     public function down(): void
