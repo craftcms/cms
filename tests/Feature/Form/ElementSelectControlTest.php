@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -13,7 +14,29 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
+
+it('selects thumbnail modes for each relationship presentation', function (string $viewMode, string $key, string $mode, int $size) {
+    $asset = AssetModel::factory()->createElement();
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
+        $event->url = '/thumbnail.jpg';
+    });
+
+    $element = ElementSelect::make('related')->elementType($asset::class)->viewMode($viewMode)
+        ->props([$asset->id])['elements'][0];
+
+    expect($element[$key])->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
+    if ($key === 'cardThumbHtml') {
+        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail');
+    }
+})->with([
+    'list' => ['list', 'thumbHtml', 'fit', 30],
+    'inline list' => ['list-inline', 'thumbHtml', 'fit', 30],
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
+    'cards' => ['cards', 'cardThumbHtml', 'crop', 120],
+    'card grid' => ['cards-grid', 'cardThumbHtml', 'crop', 120],
+]);
 
 it('resolves and renders ordered element relationships', function () {
     $first = Entry::factory()->title('First entry')->create();

@@ -13,9 +13,11 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Structure\Models\Structure;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
 
@@ -26,6 +28,28 @@ beforeEach(function () {
     actingAs(User::find()->one());
     $this->cpTrigger = Cms::config()->cpTrigger;
 });
+
+it('selects fit for index tiles and crop for inline cards', function (string $viewMode, string $key, string $mode, int $size) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $mode)
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get("/{$this->cpTrigger}/content/entries?viewMode={$viewMode}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where("data.0.{$key}", function (string $html) use ($mode, $size) {
+                expect($html)->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
+
+                return true;
+            })
+        );
+})->with([
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
+    'inline cards' => ['cards', 'cardContentHtml', 'crop', 120],
+]);
 
 it('returns an Inertia response with elements and pagination', function () {
     EntryModel::factory()->count(3)->create();

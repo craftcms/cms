@@ -6,6 +6,8 @@ import {expect} from 'storybook/test';
 const {events, args, argTypes, template} =
   getStorybookHelpers('craft-thumbnail');
 import './thumbnail.js';
+import '../chip/chip.js';
+import '../card/card.js';
 
 // An opaque sample image.
 const opaqueImage = imageFixture(300, 300);
@@ -285,6 +287,97 @@ export const InlineSvgModes: Story = {
       ).toBe(60);
       thumbnail.mode = mode;
       await thumbnail.updateComplete;
+    }
+  },
+};
+
+export const Presentations: Story = {
+  render: () => html`
+    ${fixtures.map((fixture, index) => {
+      const thumbnail = (mode: 'fit' | 'crop', size: number) => html`
+        <craft-thumbnail
+          mode=${mode}
+          src=${imageFixture(
+            fixture.width,
+            fixture.height,
+            fixture.transparent
+          )}
+          alt=${fixture.name}
+          loading="eager"
+          data-fixture=${index}
+          data-size=${size}
+          style=${`--c-thumbnail-size: ${size}px;`}
+        ></craft-thumbnail>
+      `;
+
+      return html`
+        <section aria-label=${fixture.name}>
+          <h2>${fixture.name}</h2>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: var(--c-spacing-md); align-items: start;"
+          >
+            <craft-chip show-thumb size="small">
+              <div slot="thumbnail">${thumbnail('fit', 30)}</div>
+              Small chip
+            </craft-chip>
+            <craft-chip size="small">
+              <div slot="prefix">${thumbnail('fit', 30)}</div>
+              Selector chip
+            </craft-chip>
+            <craft-chip show-thumb size="large">
+              <div slot="thumbnail">${thumbnail('fit', 120)}</div>
+              Large chip
+            </craft-chip>
+            <craft-card style="width: 280px;" thumb-alignment="end">
+              <span slot="label">Separate card thumbnail</span>
+              <div slot="thumbnail">${thumbnail('crop', 120)}</div>
+              Card content
+            </craft-card>
+            <craft-card style="width: 280px;">
+              <span slot="label">Inline card thumbnail</span>
+              <div class="card-main">
+                <div class="card-content">Card content</div>
+                ${thumbnail('crop', 120)}
+              </div>
+            </craft-card>
+            <div style="width: 180px; text-align: center;">
+              <div style="display: grid; place-items: center; height: 128px;">
+                ${thumbnail('fit', 120)}
+              </div>
+              Selector / index tile
+            </div>
+          </div>
+        </section>
+      `;
+    })}
+  `,
+  play: async ({canvasElement}) => {
+    for (const card of canvasElement.querySelectorAll('craft-card')) {
+      await card.updateComplete;
+    }
+    for (const chip of canvasElement.querySelectorAll('craft-chip')) {
+      await chip.updateComplete;
+    }
+    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
+      await thumbnail.updateComplete;
+      const image = thumbnail.shadowRoot!.querySelector('img')!;
+      await image.decode();
+      const size = Number(thumbnail.dataset.size);
+      const fixture = fixtures[Number(thumbnail.dataset.fixture)]!;
+      const wrapper = thumbnail
+        .shadowRoot!.querySelector('[part="thumbnail"]')!
+        .getBoundingClientRect();
+      const box = image.getBoundingClientRect();
+      const crop = thumbnail.mode === 'crop';
+      const scale = fixture.name === 'Small source' ? 1 : size / 120;
+
+      await expect(wrapper.width).toBe(size);
+      await expect(wrapper.height).toBe(size);
+      await expect(box.width).toBe(crop ? size : fixture.fittedWidth * scale);
+      await expect(box.height).toBe(crop ? size : fixture.fittedHeight * scale);
+      await expect(getComputedStyle(image).objectFit).toBe(
+        crop ? 'cover' : 'contain'
+      );
     }
   },
 };
