@@ -18,7 +18,7 @@ class ChangeHandlers
 
     public function register(string $event, string $path, callable $handler, mixed $data): void
     {
-        $pattern = str_replace(preg_quote('{uid}', '~'), '('.ProjectConfig::UID_PATTERN.')', preg_quote($path, '~'));
+        $pattern = str_replace('\{uid\}', '('.ProjectConfig::UID_PATTERN.')', preg_quote($path, '~'));
         $this->handlers[] = [
             'event' => $event,
             'pattern' => '~^('.$pattern.')(?:\.|$)~',
