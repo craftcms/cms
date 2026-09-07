@@ -80,9 +80,9 @@ class ModelImporter extends BaseImporter
     }
 
     #[Override]
-    public static function getRules(): array
+    public static function getSettingsRules(): array
     {
-        return array_merge(parent::getRules(), [
+        return array_merge(parent::getSettingsRules(), [
             'settings.className' => fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateModel($value, $attribute, $fail, $validator),
         ]);
     }
@@ -115,7 +115,7 @@ class ModelImporter extends BaseImporter
         }
 
         // has to implement ImportableModel interface
-        if (! (new $value) instanceof ImportableModelInterface) {
+        if (! is_subclass_of($value, ImportableModelInterface::class)) {
             $fail($attribute, t('Class name must implement Craft\'s ImportableModelInterface.'));
 
             return false;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -74,12 +75,7 @@ class ElementImporter extends BaseImporter
     protected function settingsHtml(bool $readOnly): string
     {
         $allElementTypes = Elements::getAllElementTypes();
-        $availableElementTypes = collect($allElementTypes)
-            ->filter(fn ($type) => $type::isImportable())
-            ->map(fn ($type) => [
-                'label' => $type::displayName(),
-                'value' => $type,
-            ]);
+        $availableElementTypes = ImportHelper::getImportableElementTypes($allElementTypes);
 
         $defaultElementType = null;
         if (in_array(Entry::class, $allElementTypes, true)) {
@@ -104,9 +100,9 @@ class ElementImporter extends BaseImporter
     //    }
 
     #[Override]
-    public static function getRules(): array
+    public static function getSettingsRules(): array
     {
-        return array_merge(parent::getRules(), [
+        return array_merge(parent::getSettingsRules(), [
             'settings.className' => fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateElementType($value, $attribute, $fail, $validator),
             'settings.site' => [
                 'required',
@@ -115,6 +111,15 @@ class ElementImporter extends BaseImporter
                 fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateSite($value, $attribute, $fail, $validator),
             ],
         ]);
+    }
+
+    #[Override]
+    protected function toValidationData(): array
+    {
+        $data = parent::toValidationData();
+        $data['settings']['site'] = $this->site?->handle;
+
+        return $data;
     }
 
     /**
@@ -141,6 +146,17 @@ class ElementImporter extends BaseImporter
 
             return false;
         }
+
+        if (! $value::isImportable()) {
+            $fail($attribute, t('Element type “{elementType}” is not importable.', [
+                'elementType' => $value,
+            ]));
+        }
+
+        //        // checks if component class exists, is an instance of a given interface, and doesn't belong to a disabled plugin
+        //        if (! ComponentHelper::validateComponentClass($value, ElementInterface::class)) {
+        //            throw new InvalidArgumentException("Class '{$value}' is not a valid element type.");
+        //        }
 
         return true;
     }
@@ -200,11 +216,6 @@ class ElementImporter extends BaseImporter
     #[Override]
     public function className(string $className): self
     {
-        //        $allElements = Elements::getAllElementTypes();
-        //        if (! in_array($className, $allElements)) {
-        //            throw new InvalidArgumentException("Class '{$className}' is not a valid element type.");
-        //        }
-
         $this->className = $className;
 
         return $this;
@@ -253,7 +264,7 @@ class ElementImporter extends BaseImporter
         } elseif ($value === null) {
             $this->fieldLayout = null;
         } elseif (is_numeric($value)) {
-            $fieldLayout = $fieldsService->getLayoutById($value);
+            $fieldLayout = $fieldsService->getLayoutById((int) $value);
             if ($fieldLayout === null) {
                 throw new InvalidArgumentException("No field layout found with ID: $value");
             }
@@ -272,11 +283,7 @@ class ElementImporter extends BaseImporter
     #[Override]
     public function transformer(string|null|BaseTransformer $transformer): self
     {
-        if ($transformer === null) {
-            // use the default transformer for a given element;
-            // e.g. Entry has an EntryTransformer that always has to be used, unless you're bringing your own transformer
-            $transformer = $this->className::getDefaultTransformer();
-        }
+        $transformer ??= $this->className::getDefaultTransformer();
 
         return parent::transformer($transformer);
     }
@@ -300,49 +307,6 @@ class ElementImporter extends BaseImporter
         }
 
         return false;
-    }
-
-    /**
-     * Builds a select-option list of field layout providers for the element class (singular or multiple layouts).
-     * The list of field layout providers as label/value pairs.
-     */
-    public function getAvailableFieldLayoutProviders(): array
-    {
-        $element = (new $this->className);
-
-        // first try to get all field layouts
-        $fieldLayouts = $element::fieldLayouts(null);
-
-        // if we got zero results - try with a singular method
-        if (count($fieldLayouts) === 0) {
-            $fieldLayout = $element->getFieldLayout();
-
-            // if we were able to get the field layout this way, then there can only be one for the element;
-            // like there's only one for Address or User element
-            if ($fieldLayout) {
-                return [
-                    [
-                        'label' => $element::displayName(),
-                        'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
-                    ],
-                ];
-            }
-        }
-
-        $providers = [
-            [
-                'label' => 'Please select',
-                'value' => '',
-            ],
-        ];
-        foreach ($fieldLayouts as $fieldLayout) {
-            $providers[] = [
-                'label' => $fieldLayout->provider?->name ?? $fieldLayout->type,
-                'value' => $fieldLayout->uid,
-            ];
-        }
-
-        return $providers;
     }
 
     #[Override]
@@ -617,6 +581,9 @@ class ElementImporter extends BaseImporter
     {
         // figure out if we're adding or editing
         $element = new $this->className;
+        //        if (!$element->isImportable()) {
+        //            throw new InvalidArgumentException("Element class $this->className is not importable.");
+        //        }
 
         $element = $element->prepareNewElementForImport($this, $data);
 

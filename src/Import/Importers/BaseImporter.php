@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\t;
@@ -152,11 +153,11 @@ abstract class BaseImporter
     }
 
     /**
-     * Defines the validation rules for the importer.
+     * Defines the validation rules for the importer, including its persistable metadata.
      */
     public static function getRules(): array
     {
-        return [
+        return array_merge([
             'name' => [
                 'required',
                 'string',
@@ -177,6 +178,16 @@ abstract class BaseImporter
                     }
                 },
             ],
+        ], static::getSettingsRules());
+    }
+
+    /**
+     * Defines the validation rules for the importer's execution settings, independent of
+     * whether the importer is ever persisted/named (e.g. an ad-hoc CLI-built importer).
+     */
+    public static function getSettingsRules(): array
+    {
+        return [
             'settings.file' => [
                 'required',
                 'string',
@@ -195,6 +206,44 @@ abstract class BaseImporter
             ],
             'settings.map' => ['array'],
         ];
+    }
+
+    /**
+     * Builds the data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
+     */
+    protected function toValidationData(): array
+    {
+        return [
+            'uid' => $this->uid,
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'settings' => [
+                'file' => $this->file,
+                'className' => $this->className,
+                'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
+                'map' => $this->map,
+            ],
+        ];
+    }
+
+    /**
+     * Validates the importer's full state (persistable metadata and execution settings).
+     *
+     * @throws ValidationException
+     */
+    public function validate(): void
+    {
+        ValidatorFacade::make($this->toValidationData(), static::getRules())->validate();
+    }
+
+    /**
+     * Validates only the importer's execution settings, regardless of whether it's persisted/named.
+     *
+     * @throws ValidationException
+     */
+    public function validateSettings(): void
+    {
+        ValidatorFacade::make($this->toValidationData(), static::getSettingsRules())->validate();
     }
 
     /**

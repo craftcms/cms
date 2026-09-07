@@ -11,10 +11,109 @@ use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Attributes\Importable;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use Illuminate\Support\Collection;
 
 class ImportHelper
 {
+    public static function getImportableElementTypes(?array $allElementTypes = null): Collection
+    {
+        $allElementTypes ??= Elements::getAllElementTypes();
+
+        return collect($allElementTypes)
+            ->filter(fn ($type) => $type::isImportable())
+            ->map(fn ($type) => [
+                'label' => $type::displayName(),
+                'value' => $type,
+            ]);
+    }
+
+    /**
+     * Builds a select-option list of field layout providers for the element class (singular or multiple layouts).
+     * The list of field layout providers as label/value pairs.
+     */
+    public static function getAvailableFieldLayoutProviders(string $className): array
+    {
+        $element = (new $className);
+
+        // first try to get all field layouts
+        $fieldLayouts = $element::fieldLayouts(null);
+
+        // if we got zero results - try with a singular method
+        if (count($fieldLayouts) === 0) {
+            $fieldLayout = $element->getFieldLayout();
+
+            // if we were able to get the field layout this way, then there can only be one for the element;
+            // like there's only one for Address or User element
+            if ($fieldLayout) {
+                return [
+                    [
+                        'label' => $element::displayName(),
+                        'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
+                    ],
+                ];
+            }
+        }
+
+        $providers = [
+            [
+                'label' => 'Please select',
+                'value' => '',
+            ],
+        ];
+        foreach ($fieldLayouts as $fieldLayout) {
+            $providers[] = [
+                'label' => $fieldLayout->provider?->name ?? $fieldLayout->type,
+                'value' => $fieldLayout->uid,
+            ];
+        }
+
+        return $providers;
+    }
+
+    public static function flattenLabelValueArray(array $array): array
+    {
+        return collect($array)
+            ->filter(fn ($item) => $item['value'] !== '')
+            ->mapWithKeys(fn ($item) => [$item['value'] => $item['label']])
+            ->all();
+    }
+
+    /**
+     * Normalizes match criteria coming from an importer config (UI or file-based)
+     * into an array where keys are the fields/attributes/properties to update,
+     * and values containing the incoming data keys.
+     */
+    public static function normalizeMatchCriteriaFromImporterConfig(BaseImporter $importer): array
+    {
+        // the order of importance is:
+        // matchCriteria coming from the UI or file-based config (those two never exist together), are merged with and overwritten by
+        // matchCriteria coming from the incoming data, are merged with and overwritten by
+        // the BaseTransformer::additionalMatchCriteria() values (if custom transformer is specified)
+
+        // get the map
+        $map = $importer->map;
+
+        // get the matchCriteria that are coming from the UI or from a file-based config
+        $matchCriteria = $importer->matchCriteria;
+
+        // ones coming from the UI will have a value of 1
+        // ones coming from the file-based config should be strings that point to the original data keys
+
+        // for the ones coming from the UI - we need to resolve those to the mapped column names
+        $dottedMap = Arr::dot($map);
+        $dottedMatchCriteria = Arr::dot($matchCriteria);
+
+        foreach ($dottedMatchCriteria as $key => $value) {
+            if (is_numeric($value) && $value == 1) {
+                $dottedMatchCriteria[$key] = $dottedMap[$key];
+            }
+        }
+
+        return Arr::undot($dottedMatchCriteria);
+    }
+
     public static function getImportableProperties(BaseImporter $importer): array
     {
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);

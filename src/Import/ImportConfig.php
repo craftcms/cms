@@ -9,6 +9,7 @@ use CraftCms\Cms\Import\Events\ImportConfigSaved;
 use CraftCms\Cms\Import\Events\ImportConfigSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
@@ -16,6 +17,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 #[Singleton]
@@ -64,16 +66,24 @@ class ImportConfig
                 $dbConfigs
             );
 
-            $fileConfigs = Config::get('craft.import') ?? [];
-
-            foreach ($fileConfigs as &$fileConfig) {
+            $fileConfigs = array_filter(array_map(function ($fileConfig) {
                 $fileConfig = $fileConfig();
 
                 // if there's no transformer set, use the default one
                 if ($fileConfig->transformer === null) {
                     $fileConfig->transformer(null);
                 }
-            }
+
+                try {
+                    $fileConfig->validate();
+                } catch (ValidationException $e) {
+                    ImportLog::warning("Skipping invalid file-based import config \"{$fileConfig->handle}\": ".implode(' ', $e->validator->errors()->all()));
+
+                    return null;
+                }
+
+                return $fileConfig;
+            }, Config::get('craft.import') ?? []));
 
             $this->configs = new LaravelCollection($dbConfigs + $fileConfigs)
                 ->keyBy(fn (BaseImporter $item, $key) => $item->handle ?? $key)

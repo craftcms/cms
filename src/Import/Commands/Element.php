@@ -7,27 +7,30 @@ namespace CraftCms\Cms\Import\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Validation\ValidationException;
 use Override;
 
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-class Element extends Command
+class Element extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
     #[Override]
     protected $signature = 'craft:import:element
-        {--elementType= : The fully qualified class name of the element type you want to import into.}
+        {elementType : The fully qualified class name of the element type you want to import into.}
+        {fieldLayoutProvider : The UID of the field layout provider you want to use.}
         {--file= : `@root`-relative path to the file containing data you want to import.}
+        {--site= : The handle of the site you want to import into.}
         {--transformer= : The fully qualified class name of the transformer you want to use to manipulate the data on import.}
         {--matchCriteria= : An array of key-value pairs that will be used to match existing elements when importing.}
-        {--site= : The handle of the site you want to import into.}
     ';
 
     #[Override]
@@ -38,17 +41,10 @@ class Element extends Command
 
     /**
      * Builds an interactive prompt form for missing CLI options, normalizes match criteria, constructs an ElementImporter config from options/prompt answers, and dispatches the import.
-     *
-     * @return int
      */
     public function handle(): int
     {
         $responses = form()
-            ->addIf(! $this->option('elementType'), fn ($form) => select(
-                label: 'Which element type you want to import into?',
-                options: collect(Elements::getAllElementTypes())
-                    ->all()
-            ), 'elementType')
             // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
             ->addIf(! $this->option('file'), fn () => text(
                 label: 'The `@root`-relative path to the file containing the data you want to import',
@@ -82,16 +78,17 @@ class Element extends Command
         $matchCriteria = null;
         if ($this->option('matchCriteria')) {
             $matchCriteria = self::normalizeMatchCriteria($this->option('matchCriteria'));
-        } elseif ($responses['matchCriteria']) {
+        } /*elseif ($responses['matchCriteria']) {
             if (! str_starts_with((string) $responses['matchCriteria'], '=')) {
                 $responses['matchCriteria'] = '='.$responses['matchCriteria'];
             }
             $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
-        }
+        }*/
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $importConfig = (new ElementImporter)
-            ->className($this->option('elementType') ?: $responses['elementType'])
+            ->className($this->argument('elementType'))
+            ->fieldLayout($this->argument('fieldLayoutProvider'))
             ->file($this->option('file') ?: $responses['file'])
             ->site($this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle)
             ->transformer($this->option('transformer') ?: $responses['transformer'] ?: null);
@@ -104,7 +101,14 @@ class Element extends Command
         $this->components->info("file: `{$importConfig->file}`");
         $this->components->info("site: `{$importConfig->site->name}`");
 
-        Import::import($importConfig);
+        try {
+            Import::import($importConfig);
+        } catch (ValidationException $e) {
+            foreach ($e->errors() as $attribute => $messages) {
+                $this->components->error("$attribute: ".implode(' ', $messages));
+            }
+            $this->fail('Import configuration is invalid.');
+        }
 
         return self::SUCCESS;
     }
@@ -121,5 +125,28 @@ class Element extends Command
         }
 
         return null;
+    }
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     *
+     * @return array<string, string>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'elementType' => fn () => select(
+                label: 'Provide class name of the element type you want to import into, e.g. CraftCms\Cms\Entry\Elements\Entry',
+                options: ImportHelper::flattenLabelValueArray(
+                    ImportHelper::getImportableElementTypes()->all()
+                ),
+            ),
+            'fieldLayoutProvider' => fn () => select(
+                label: 'Provide UID, ID, or type of the field layout provider you want to use.',
+                options: ImportHelper::flattenLabelValueArray(
+                    ImportHelper::getAvailableFieldLayoutProviders($this->argument('elementType'))
+                ),
+            ),
+        ];
     }
 }

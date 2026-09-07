@@ -320,14 +320,20 @@ class Import
     // todo (iwona): might be able to delete this; currently only used by ImportConfigController::run()
     /**
      * Reads and formats the importer's source file, then imports each item one by one.
+     * It's used by ImportConfigController::run() (which we might delete)
+     * and by the import:element command.
      *
      * @param  BaseImporter  $importer  The importer config to use.
      */
     public function import(BaseImporter $importer): void
     {
+        $importer->validateSettings();
+
         $filePath = BaseImporter::resolvedFilePath($importer->file);
+        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
+
         foreach ($this->getFormattedData($filePath) as $item) {
-            $this->importItem($importer, $item);
+            $this->importItem($importer, $item, $matchCriteria);
         }
     }
 
