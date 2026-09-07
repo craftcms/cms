@@ -12,10 +12,10 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
-use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Volumes;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -90,8 +90,8 @@ class AssetQuery extends ElementQuery
                     ->whereColumn('assets_sites.siteId', '=', 'elements_sites.siteId');
             });
 
-            $elementQuery->applyAuthParam($elementQuery->editable, 'viewAssets', 'viewPeerAssets');
-            $elementQuery->applyAuthParam($elementQuery->savable, 'saveAssets', 'savePeerAssets');
+            static::applyEditable($elementQuery, $elementQuery->editable);
+            static::applySavable($elementQuery, $elementQuery->savable);
         });
     }
 
@@ -119,8 +119,22 @@ class AssetQuery extends ElementQuery
         return $this;
     }
 
-    private function applyAuthParam(?bool $value, string $permissionPrefix, string $peerPermissionPrefix): void
+    public static function applyEditable(BuilderContract $query, ?bool $value): void
     {
+        self::applyAuthParam($query, $value, 'viewAssets', 'viewPeerAssets');
+    }
+
+    public static function applySavable(BuilderContract $query, ?bool $value): void
+    {
+        self::applyAuthParam($query, $value, 'saveAssets', 'savePeerAssets');
+    }
+
+    private static function applyAuthParam(
+        BuilderContract $query,
+        ?bool $value,
+        string $permissionPrefix,
+        string $peerPermissionPrefix
+    ): void {
         if ($value === null) {
             return;
         }
@@ -128,7 +142,9 @@ class AssetQuery extends ElementQuery
         $user = currentUser();
 
         if (! $user) {
-            throw new QueryAbortedException;
+            $query->whereRaw('0 = 1');
+
+            return;
         }
 
         $fullyAuthorizedVolumeIds = [];
@@ -147,12 +163,14 @@ class AssetQuery extends ElementQuery
 
         if ($value) {
             if (! $fullyAuthorizedVolumeIds && ! $partiallyAuthorizedVolumeIds) {
-                throw new QueryAbortedException;
+                $query->whereRaw('0 = 1');
+
+                return;
             }
 
             $userId = $user->getCraftUserId();
 
-            $this->where(function (Builder $query) use ($userId, $fullyAuthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
+            $query->where(function (Builder $query) use ($userId, $fullyAuthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
                 if ($fullyAuthorizedVolumeIds) {
                     $query->orWhereIn('assets.volumeId', $fullyAuthorizedVolumeIds);
                 }
@@ -169,12 +187,14 @@ class AssetQuery extends ElementQuery
         }
 
         if (! $unauthorizedVolumeIds && ! $partiallyAuthorizedVolumeIds) {
-            throw new QueryAbortedException;
+            $query->whereRaw('0 = 1');
+
+            return;
         }
 
         $userId = $user->getCraftUserId();
 
-        $this->where(function (Builder $query) use ($userId, $unauthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
+        $query->where(function (Builder $query) use ($userId, $unauthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
             if ($unauthorizedVolumeIds) {
                 $query->orWhereIn('assets.volumeId', $unauthorizedVolumeIds);
             }

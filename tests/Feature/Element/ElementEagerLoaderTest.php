@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -366,7 +367,10 @@ it('lets non-site mapping criteria take precedence', function () {
 });
 
 it('uses custom element factories and provisional drafts when requested', function () {
-    $loader = app(ElementEagerLoader::class, ['drafts' => new TestElementEagerLoaderDrafts(app(Elements::class))]);
+    $loader = app(ElementEagerLoader::class, ['drafts' => new TestElementEagerLoaderDrafts(
+        app(Elements::class),
+        app(DraftActivity::class),
+    )]);
     $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
 
     TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('drafty', [

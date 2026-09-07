@@ -6,30 +6,23 @@ namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Has URL');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['uri'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        if ($this->value) {
-            $query->uri('not :empty:');
-        } else {
-            $query->uri(':empty:');
-        }
+        ElementQuery::applyUri($query, $this->value ? 'not :empty:' : ':empty:');
     }
 
     public function matchElement(ElementInterface $element): bool
