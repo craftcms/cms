@@ -68,10 +68,6 @@ trait QueriesSites
 
     public static function applySiteId(Builder $query, mixed $value): void
     {
-        if (! Sites::isMultiSite(false, true)) {
-            return;
-        }
-
         try {
             $siteId = self::normalizeSiteId($value);
         } catch (InvalidArgumentException) {
@@ -84,7 +80,13 @@ trait QueriesSites
             return;
         }
 
-        $query->whereIn('elements_sites.siteId', $siteId);
+        // Skip the (potentially costly) filter if there's only one site, unless the given value
+        // didn't actually match any sites, in which case the query must still return no results.
+        if ($siteId !== [] && ! Sites::isMultiSite(false, true)) {
+            return;
+        }
+
+        $query->whereIn('elements_sites.siteId', Arr::wrap($siteId));
     }
 
     /**
@@ -294,6 +296,10 @@ trait QueriesSites
                 ->all();
         }
 
+        if (is_array($siteId) && empty($siteId)) {
+            return [];
+        }
+
         if (is_array($siteId) && strtolower((string) reset($siteId)) === 'not') {
             array_shift($siteId);
 
@@ -318,7 +324,8 @@ trait QueriesSites
             ->all();
 
         if (empty($filteredSiteIds)) {
-            throw new InvalidArgumentException('Invalid siteId value');
+            // None of the given site IDs are valid, so the query should return no results
+            return [];
         }
 
         return is_array($siteId) ? $filteredSiteIds : reset($filteredSiteIds);

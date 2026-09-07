@@ -9,9 +9,10 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use function CraftCms\Cms\t;
 
 /**
@@ -57,11 +58,10 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     /**
      * @inheritdoc
      */
-    public function modifyQuery(Builder $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
         $categories = Craft::$app->getCategories();
-        /** @var CategoryQuery $query */
-        $query->groupId($this->paramValue(fn(string $uid) => $categories->getGroupByUid($uid)->id ?? null));
+        CategoryQuery::applyGroupId($query, $this->paramValue(fn(string $uid) => $categories->getGroupByUid($uid)->id ?? null));
     }
 
     /**

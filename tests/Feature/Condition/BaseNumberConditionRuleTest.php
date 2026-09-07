@@ -170,7 +170,7 @@ describe('matchElement', function () {
 
         $rule = createRule($this->condition, 'between', '', '0');
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         expect($rule->matchElement($element))->toBeFalse()
             ->and($query->count())->toBe(0);

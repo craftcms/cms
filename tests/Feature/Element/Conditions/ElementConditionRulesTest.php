@@ -254,15 +254,13 @@ describe('StatusConditionRule', function () {
     it('modifyQuery filters entries by status', function () {
         EntryModel::factory()->count(2)->create();
 
-        [$condition, $rule] = createElementRule(StatusConditionRule::class, [
+        [, $rule] = createElementRule(StatusConditionRule::class, [
             'operator' => 'in',
             'values' => ['live'],
         ]);
-        $condition->forQuery = true;
-        $condition->addConditionRule($rule);
 
         $query = Entry::find()->status(null);
-        $condition->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         foreach ($query->all() as $result) {
             expect($result->getStatus())->toBe('live');
