@@ -253,26 +253,35 @@ export default class CraftNavItem extends LitElement {
   }
 
   renderItem(showToggle: boolean, hasPrefix: boolean = false) {
-    // Without an href there's nothing to link to, so render a plain span.
-    const tag = this.href ? literal`a` : literal`span`;
-
     return staticHtml`
-      <${tag}
+      <div
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
           'nav-item--static': !this.href,
         })}"
+      >
+        ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
+        ${this.renderInteractiveItem()}
+        ${this.renderSuffix(showToggle)}
+      </div>
+    `;
+  }
+
+  renderInteractiveItem() {
+    // Without an href there's nothing to link to, so render a plain span.
+    const tag = this.href ? literal`a` : literal`span`;
+    return staticHtml`
+      <${tag}
+        class="nav-item__action-item"
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
-        ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
         <slot
           id="${this.id}-label"
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
-        ${this.renderSuffix(showToggle)}
       </${tag}>
     `;
   }

@@ -11,12 +11,16 @@ export default css`
     gap: var(--c-spacing-md);
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    text-decoration: none;
     color: inherit;
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
     border-radius: var(--c-radius-md);
     position: relative;
+  }
+  
+  .nav-item__action-item {
+    text-decoration: none;
+    color: inherit;
   }
 
   craft-badge-indicator {
