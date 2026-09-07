@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
@@ -32,6 +33,20 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 
     #[Override]
     protected bool $reloadOnOperatorChange = true;
+
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof EntryCondition) {
+            return false;
+        }
+
+        // Exclude from section sources
+        if (isset($condition->sourceKey) && str_starts_with($condition->sourceKey, 'section:')) {
+            return false;
+        }
+
+        return true;
+    }
 
     public function getLabel(): string
     {

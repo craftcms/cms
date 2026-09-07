@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Address\Conditions;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
@@ -23,6 +24,15 @@ use function CraftCms\Cms\t;
 class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     use HintableConditionRuleTrait;
+
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AddressCondition) {
+            return false;
+        }
+
+        return true;
+    }
 
     #[\Override]
     protected bool $includeEmptyOperators = true;

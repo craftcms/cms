@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Address\Conditions;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
@@ -22,6 +23,15 @@ use function CraftCms\Cms\t;
 
 class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AddressCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public string $countryCode = 'US';
 
     /** @return array<string, mixed> */

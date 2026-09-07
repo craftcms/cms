@@ -175,12 +175,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
-        if (! $rule->isSelectable()) {
+        if (! $rule::isSelectable() || ! $rule::isSelectableForCondition($this)) {
             return false;
         }
-
-        // todo: call an instance-level method as well, so rules can take the condition into account
-        // e.g. SectionConditionRule should be able to opt out for conditions with a `section:x` source key
 
         if ($this->forProjectConfig && ! $rule::supportsProjectConfig()) {
             return false;

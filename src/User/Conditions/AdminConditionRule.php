@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Conditions;
 
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
@@ -19,6 +20,20 @@ use function CraftCms\Cms\t;
 
 class AdminConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof UserCondition) {
+            return false;
+        }
+
+        // Exclude from the Admins source
+        if ($condition->sourceKey === 'admins') {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('Admin');

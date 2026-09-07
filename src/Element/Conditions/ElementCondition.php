@@ -243,6 +243,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return [
             'elementType' => $this->elementType,
             'fieldContext' => $this->fieldContext,
+            'forQuery' => $this->forQuery,
         ];
     }
 

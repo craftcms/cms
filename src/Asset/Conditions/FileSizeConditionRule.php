@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset\Conditions;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
@@ -22,6 +23,15 @@ use function CraftCms\Cms\t;
 
 class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AssetCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public const string UNIT_B = 'B';
 
     public const string UNIT_KB = 'KB';

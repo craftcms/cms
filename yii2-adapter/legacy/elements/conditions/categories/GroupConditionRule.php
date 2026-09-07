@@ -5,6 +5,7 @@ namespace craft\elements\conditions\categories;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\elements\Category;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -22,6 +23,20 @@ use function CraftCms\Cms\t;
  */
 class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (!$condition instanceof CategoryCondition) {
+            return false;
+        }
+
+        // Exclude from category group sources
+        if (isset($condition->sourceKey) && str_starts_with($condition->sourceKey, 'group:')) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * @inheritdoc
      */

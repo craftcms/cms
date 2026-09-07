@@ -51,6 +51,7 @@ describe('modifyQuery with multiple rules', function () {
         $entry2 = createEntryForTest(title: 'Beta');
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $titleRule = $condition->createConditionRule(TitleConditionRule::class);
         $titleRule->operator = '=';
@@ -75,6 +76,7 @@ describe('modifyQuery with multiple rules', function () {
         $entry2 = createEntryForTest(title: 'Beta');
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $titleRule = $condition->createConditionRule(TitleConditionRule::class);
         $titleRule->operator = '=';
@@ -156,6 +158,7 @@ describe('empty condition (no rules)', function () {
         createEntryForTest(title: 'Beta');
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $queryWithout = Entry::find();
         $totalCount = $queryWithout->count();
@@ -211,6 +214,7 @@ describe('modifyQuery with status + title rules', function () {
         EntryModel::factory()->count(3)->create();
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $statusRule = $condition->createConditionRule(StatusConditionRule::class);
         $statusRule->operator = 'in';

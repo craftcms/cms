@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
@@ -30,6 +31,15 @@ use function CraftCms\Cms\t;
 class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     use HintableConditionRuleTrait;
+
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof EntryCondition) {
+            return false;
+        }
+
+        return true;
+    }
 
     #[Override]
     protected bool $includeEmptyOperators = true;

@@ -119,6 +119,7 @@ describe('TitleConditionRule', function () {
             'operator' => '=',
             'value' => 'Alpha',
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -160,6 +161,7 @@ describe('SlugConditionRule', function () {
             'operator' => '=',
             'value' => 'alpha',
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -211,6 +213,7 @@ describe('IdConditionRule', function () {
             'operator' => '=',
             'value' => (string) $entry1->id,
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -255,6 +258,7 @@ describe('StatusConditionRule', function () {
             'operator' => 'in',
             'values' => ['live'],
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find()->status(null);
@@ -293,6 +297,7 @@ describe('DateCreatedConditionRule', function () {
         [$condition, $rule] = createElementRule(DateCreatedConditionRule::class, [
             'rangeType' => 'notempty',
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -332,6 +337,7 @@ describe('HasUrlConditionRule', function () {
         [$condition, $rule] = createElementRule(HasUrlConditionRule::class, [
             'value' => true,
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -350,6 +356,7 @@ describe('HasUrlConditionRule', function () {
         [$condition, $rule] = createElementRule(HasUrlConditionRule::class, [
             'value' => false,
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -388,6 +395,7 @@ describe('DateUpdatedConditionRule', function () {
         [$condition, $rule] = createElementRule(DateUpdatedConditionRule::class, [
             'rangeType' => 'notempty',
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -428,6 +436,7 @@ describe('UriConditionRule', function () {
             'operator' => '=',
             'value' => 'alpha-uri',
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find();
@@ -686,6 +695,7 @@ describe('RelatedToConditionRule', function () {
         [$condition, $rule] = createElementRule(RelatedToConditionRule::class, [
             'elementIds' => [$entries[1]->id],
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find()->status(null);
@@ -723,6 +733,7 @@ describe('NotRelatedToConditionRule', function () {
         [$condition, $rule] = createElementRule(NotRelatedToConditionRule::class, [
             'elementIds' => [$entries[1]->id],
         ]);
+        $condition->forQuery = true;
         $condition->addConditionRule($rule);
 
         $query = Entry::find()->status(null);

@@ -125,6 +125,7 @@ class ElementIndexes
         if ($source['type'] === ElementSources::TYPE_CUSTOM) {
             /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Conditions::createCondition($source['condition']);
+            $sourceCondition->forQuery = true;
             $sourceCondition->modifyQuery($query);
         } else {
             $applyCriteria($source['criteria'] ?? []);
@@ -148,6 +149,7 @@ class ElementIndexes
         if ($filterConditionConfig) {
             /** @var ElementConditionInterface $filterCondition */
             $filterCondition = Conditions::createCondition($filterConditionConfig);
+            $filterCondition->forQuery = true;
             $filterCondition->modifyQuery($query);
 
             $hasFilters = true;

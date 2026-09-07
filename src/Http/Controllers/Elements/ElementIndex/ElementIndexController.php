@@ -88,6 +88,8 @@ class ElementIndexController
             ? $this->conditions->createCondition($conditionConfig)
             : $elementType::createCondition();
 
+        $condition->forQuery = true;
+
         if (! empty($fieldLayouts)) {
             $condition->setFieldLayouts($fieldLayouts);
         }

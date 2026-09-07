@@ -252,6 +252,7 @@ describe('AuthorConditionRule', function () {
         Elements::saveElement($element2);
 
         $condition = new EntryCondition(Entry::class);
+        $condition->forQuery = true;
         $rule = $condition->createConditionRule(AuthorConditionRule::class);
         $rule->setElementIds([$author1->id]);
 
@@ -297,6 +298,7 @@ describe('PostDateConditionRule', function () {
         ]);
 
         $condition = new EntryCondition(Entry::class);
+        $condition->forQuery = true;
         $rule = $condition->createConditionRule(PostDateConditionRule::class);
         $rule->rangeType = DateRangeType::Range->value;
         $rule->startDate = '2025-06-01';
@@ -426,6 +428,7 @@ describe('AuthorGroupConditionRule', function () {
         Elements::saveElement($element2);
 
         $condition = new EntryCondition(Entry::class);
+        $condition->forQuery = true;
         $rule = $condition->createConditionRule(AuthorGroupConditionRule::class);
         $rule->operator = 'in';
         $rule->values = [$group->uid];
