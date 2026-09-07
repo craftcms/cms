@@ -340,8 +340,8 @@ it('applies array and object configuration over stored settings without changing
     $input = match ($kind) {
         'missing' => null,
         'array' => ['foo' => 'File'],
-        'object' => TestPluginSettings::create()->foo('File'),
-        'explicit null' => TestPluginSettings::create()->foo(null)->bar(null),
+        'object' => new TestPluginSettings()->foo('File'),
+        'explicit null' => new TestPluginSettings()->foo(null)->bar(null),
     };
     if ($kind !== 'missing') {
         Config::set('craft.test-plugin', $input);
@@ -410,7 +410,7 @@ it('uses full defaults and shallow nested replacement without replaying fluent s
             return new SnapshotPluginSettings;
         }
     });
-    $input = SnapshotPluginSettings::create();
+    $input = new SnapshotPluginSettings;
     $input->title = '  File  ';
     $input->enabled = false;
     $input->nested = ['file' => true];
@@ -448,7 +448,7 @@ it('hydrates the factory model with typecasting rather than adopting the input c
 
 it('retains later pluginConfigs precedence for object input', function () {
     app()->offsetUnset(TestPlugin::class);
-    $input = TestPluginSettings::create()->foo('File');
+    $input = new TestPluginSettings()->foo('File');
     Config::set('craft.test-plugin', $input);
     new ConfigServiceProvider(app())->register();
     $this->plugins->pluginConfigs = ['test-plugin' => ['settings' => ['foo' => 'Custom']]];
@@ -475,7 +475,7 @@ it('rejects unsupported configuration with its key and actual type', function (C
     'base config' => [fn () => new class extends BaseConfig {}],
     'arrayable' => [fn () => new Fluent(['foo' => 'File'])],
     'validatable' => [fn () => new class extends Component {}],
-    'late settings object' => [TestPluginSettings::create(...)],
+    'late settings object' => [fn () => new TestPluginSettings],
 ]);
 
 it('keeps configuration compatible with plugins without settings', function (Closure $makeInput) {
@@ -487,7 +487,7 @@ it('keeps configuration compatible with plugins without settings', function (Clo
     expect($this->plugins->createPlugin('test-plugin', [])->getSettings())->toBeNull();
 })->with([
     'empty snapshot' => [fn () => new class extends PluginSettings {}],
-    'populated snapshot' => [fn () => TestPluginSettings::create()->foo('File')],
+    'populated snapshot' => [fn () => new TestPluginSettings()->foo('File')],
     'sparse array' => [fn () => ['foo' => 'File']],
 ]);
 
@@ -508,7 +508,7 @@ it('does not read file overrides without installed information', function () {
 
 it('saves submitted overrides and omitted file values without mutating configuration input', function () {
     app()->offsetUnset(TestPlugin::class);
-    $input = TestPluginSettings::create()->foo('File foo')->bar('File bar');
+    $input = new TestPluginSettings()->foo('File foo')->bar('File bar');
     Config::set('craft.test-plugin', $input);
     new ConfigServiceProvider(app())->register();
     $plugin = $this->plugins->createPlugin('test-plugin', []);
@@ -558,7 +558,7 @@ it('saves full validation data even when configuration data is customized', func
 
 it('retains live mutations but does not stage failed or canceled settings saves', function (string $failure) {
     app()->offsetUnset(TestPlugin::class);
-    $input = TestPluginSettings::create()->foo('File')->bar('File bar');
+    $input = new TestPluginSettings()->foo('File')->bar('File bar');
     Config::set('craft.test-plugin', $input);
     new ConfigServiceProvider(app())->register();
     $plugin = $this->plugins->createPlugin('test-plugin', []);

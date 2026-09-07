@@ -16,11 +16,8 @@ class SnapshotPluginSettings extends PluginSettings
 
     public mixed $callback = null;
 
-    private readonly string $constructorValue;
-
     public function __construct(array|object $config = [])
     {
-        $this->constructorValue = 'constructed';
         parent::__construct($config);
     }
 
@@ -29,10 +26,5 @@ class SnapshotPluginSettings extends PluginSettings
         $this->title = $value === null ? null : trim($value);
 
         return $this;
-    }
-
-    public function getConstructorValue(): string
-    {
-        return $this->constructorValue;
     }
 }

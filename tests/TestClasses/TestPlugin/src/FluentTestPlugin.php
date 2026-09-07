@@ -22,7 +22,7 @@ class FluentTestPlugin extends Plugin
     #[Override]
     protected static function createSettings(): TestPluginSettings
     {
-        return TestPluginSettings::create();
+        return new TestPluginSettings;
     }
 
     #[Override]

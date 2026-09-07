@@ -121,7 +121,7 @@ class AdapterSettingsTestPlugin extends Plugin
 {
     protected function createSettingsModel(): PluginSettings
     {
-        return TestPluginSettings::create();
+        return new TestPluginSettings();
     }
 }
 

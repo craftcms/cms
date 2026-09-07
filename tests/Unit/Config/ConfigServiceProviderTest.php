@@ -25,7 +25,7 @@ afterEach(function () {
 });
 
 it('normalizes only direct settings before boot without resolving runtime services', function () {
-    $input = SnapshotPluginSettings::create()->title(' File ');
+    $input = new SnapshotPluginSettings()->title(' File ');
     $state = (array) $input;
     $general = GeneralConfig::create();
     $closure = fn () => throw new RuntimeException('Not invoked');
@@ -41,7 +41,7 @@ it('normalizes only direct settings before boot without resolving runtime servic
     $repository = new Repository(['craft' => [
         ...$untouched,
         'unknown.plugin' => $input,
-        'disabled' => SnapshotPluginSettings::create(),
+        'disabled' => new SnapshotPluginSettings,
         'empty' => new class extends PluginSettings {},
     ], 'other' => $input]);
     $app = new Application(sys_get_temp_dir().'/unused-plugin-config');

@@ -84,7 +84,7 @@ it('loads installed settings with normalized snapshot or sparse array precedence
         expect($input->configData())->toBe(['foo' => 'File foo', 'bar' => null]);
     }
 })->with([
-    'settings-class snapshot' => [fn () => TestPluginSettings::create()->foo('File foo'), null],
+    'settings-class snapshot' => [fn () => new TestPluginSettings()->foo('File foo'), null],
     'plugin-static snapshot' => [fn () => FluentTestPlugin::config()->foo('File foo'), null],
     'sparse array' => [fn () => ['foo' => 'File foo'], 'Stored bar'],
 ]);
@@ -97,7 +97,7 @@ it('normalizes disabled and uninstalled handles without constructing them during
     app()->beforeResolving(FluentTestPlugin::class, fn () => throw new RuntimeException('Unexpected plugin construction'));
 
     Config::set('craft.fluent-test-plugin', FluentTestPlugin::config()->foo('Disabled'));
-    Config::set('craft.uninstalled-plugin', TestPluginSettings::create()->foo('Uninstalled'));
+    Config::set('craft.uninstalled-plugin', new TestPluginSettings()->foo('Uninstalled'));
     new ConfigServiceProvider(app())->register();
     $plugins->loadPlugins();
 

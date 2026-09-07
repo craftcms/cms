@@ -32,7 +32,7 @@ it('dispatches static config factories independently for distinct plugin types',
     {
         protected static function createSettings(): SnapshotPluginSettings
         {
-            return SnapshotPluginSettings::create();
+            return new SnapshotPluginSettings;
         }
     };
 
@@ -86,22 +86,12 @@ it('retains an absent runtime model without calling the factory again', function
         ->and($plugin::$settingsCreated)->toBe(1);
 });
 
-it('creates independent concrete settings with explicit fluent setters', function () {
-    $settings = TestPluginSettings::create();
-
-    expect($settings->foo('File')->bar(null))->toBe($settings)
-        ->and($settings->validationData())->toBe(['foo' => 'File', 'bar' => null])
-        ->and(TestPluginSettings::create())->not->toBe($settings)
-        ->and(TestPluginSettings::create()->foo)->toBeNull();
-});
-
 it('includes defaults and explicit nulls without exporting builder state', function () {
-    $settings = SnapshotPluginSettings::create();
+    $settings = new SnapshotPluginSettings;
 
-    expect($settings->getConstructorValue())->toBe('constructed')
-        ->and($settings->validationData())->toBe([
-            'enabled' => false, 'title' => 'Default', 'nested' => ['default' => true], 'callback' => null,
-        ])
+    expect($settings->validationData())->toBe([
+        'enabled' => false, 'title' => 'Default', 'nested' => ['default' => true], 'callback' => null,
+    ])
         ->and($settings->configData())->toBe($settings->validationData())
         ->and($settings->title(null))->toBe($settings)
         ->and($settings->validationData()['title'])->toBeNull()
