@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
@@ -847,5 +848,30 @@ readonly class Query
         $date->setTimezone('UTC');
 
         return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Returns whether a query has a join for the given table name.
+     */
+    public static function joinsTable(Builder $query, Expression|string $table): bool
+    {
+        if (! $query->joins) {
+            return false;
+        }
+
+        if ($table instanceof Expression) {
+            $table = $table->getValue($query->getGrammar());
+        }
+
+        foreach ($query->joins as $join) {
+            /** @var JoinClause $join */
+            $joinTable = $join->table instanceof Expression ? $join->table->getValue($query->getGrammar()) : $join->table;
+
+            if ($joinTable === $table) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

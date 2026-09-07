@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -46,11 +46,7 @@ trait QueriesSections
         $this->beforeQuery(static function (EntryQuery $entryQuery) {
             $entryQuery->normalizeSectionId($entryQuery);
 
-            if ($entryQuery->sectionId === []) {
-                throw new QueryAbortedException;
-            }
-
-            $entryQuery->applySectionIdParam($entryQuery);
+            static::applySectionId($entryQuery, $entryQuery->sectionId, $entryQuery);
         });
     }
 
@@ -160,25 +156,28 @@ trait QueriesSections
         return $this;
     }
 
-    /**
-     * Applies the 'sectionId' param to the query being prepared.
-     */
     /** @param EntryQuery<Entry> $entryQuery */
-    private function applySectionIdParam(EntryQuery $entryQuery): void
+    public static function applySectionId(Builder $query, mixed $value, EntryQuery $entryQuery): void
     {
-        if (! $entryQuery->sectionId) {
+        if ($value === []) {
+            $query->whereRaw('0 = 1');
+
             return;
         }
 
-        $entryQuery->whereIn('entries.sectionId', $entryQuery->sectionId);
+        if (! $value) {
+            return;
+        }
+
+        $query->whereIn('entries.sectionId', $value);
 
         // Should we set the structureId param?
         if (
             $entryQuery->withStructure &&
             ! isset($entryQuery->structureId) &&
-            count($entryQuery->sectionId) === 1
+            count($value) === 1
         ) {
-            $section = Sections::getSectionById(reset($entryQuery->sectionId));
+            $section = Sections::getSectionById(reset($value));
             if ($section && $section->type === SectionType::Structure) {
                 $entryQuery->structureId = $section->structureId;
             } else {
