@@ -15,19 +15,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 /** @internal */
 class StructuralElementActivity
 {
-    public static function shouldRecord(ElementInterface $element): bool
-    {
-        return ElementActivity::shouldRecord($element);
-    }
-
-    public static function shouldRecordMovement(ElementInterface $element): bool
-    {
-        return ElementActivity::shouldRecordWrite($element);
-    }
-
     public static function recordDuplicated(ElementInterface $source, ElementInterface $duplicate): void
     {
-        if (! self::shouldRecord($duplicate)) {
+        if (! ElementActivity::shouldRecord($duplicate)) {
             return;
         }
 
@@ -44,7 +34,7 @@ class StructuralElementActivity
      */
     public static function recordMoved(ElementInterface $element, array $origin, array $destination): void
     {
-        if (! self::shouldRecordMovement($element) || $origin === $destination) {
+        if ($origin === $destination) {
             return;
         }
 
@@ -76,26 +66,20 @@ class StructuralElementActivity
     {
         return [
             'structure' => $structureUid,
-            'parent' => self::nullableReference($element->getParent()),
-            'previousSibling' => self::nullableReference($element->getPrevSibling()),
+            'parent' => self::reference($element->getParent()),
+            'previousSibling' => self::reference($element->getPrevSibling()),
         ];
     }
 
-    /** @return array{type: string, id: string, label: string} */
-    private static function reference(ElementInterface $element): array
-    {
-        return self::subjectReference(ActivitySubject::fromElement($element));
-    }
-
     /** @return array{type: string, id: string, label: string}|null */
-    private static function nullableReference(?ElementInterface $element): ?array
+    private static function reference(?ElementInterface $element): ?array
     {
-        return $element ? self::reference($element) : null;
-    }
+        if ($element === null) {
+            return null;
+        }
 
-    /** @return array{type: string, id: string, label: string} */
-    private static function subjectReference(ActivitySubject $subject): array
-    {
+        $subject = ActivitySubject::fromElement($element);
+
         return [
             'type' => $subject->type,
             'id' => $subject->id,

@@ -14,10 +14,9 @@ use LogicException;
 /** @internal */
 class AssetActivity
 {
-    public static function shouldRecord(Asset $asset, bool $recordActivity): bool
+    public static function shouldRecord(Asset $asset): bool
     {
-        return $recordActivity &&
-            ! $asset->propagating &&
+        return ! $asset->propagating &&
             $asset->tempFilePath !== null &&
             $asset->ruleset->getScenario() === AssetRules::SCENARIO_REPLACE;
     }

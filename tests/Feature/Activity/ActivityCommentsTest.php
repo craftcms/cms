@@ -6,20 +6,28 @@ use CraftCms\Cms\Activity\ActivityComments;
 use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\EventTypes\CommentDeleted;
 use CraftCms\Cms\Activity\EventTypes\CommentEdited;
+use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cp\Notifications\CpNotification;
+use CraftCms\Cms\Cp\Notifications\NotificationCenter;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
+use CraftCms\Cms\User\Notifications\SendQueuedUserNotifications;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\Channels\DatabaseChannel;
 use Illuminate\Notifications\Channels\MailChannel;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
@@ -175,6 +183,79 @@ it('notifies users added by comment edits', function () {
     $this->comments->edit($comment, $this->author, $editedMarkdown, $this->entry);
 
     Notification::assertSentTimes(ActivityMentionNotification::class, 2);
-    Notification::assertSentTo(UserModel::query()->findOrFail($this->mentioned->id), ActivityMentionNotification::class);
-    Notification::assertSentTo(UserModel::query()->findOrFail($added->id), ActivityMentionNotification::class);
+    Notification::assertSentTo($this->mentioned, ActivityMentionNotification::class);
+    Notification::assertSentTo($added, ActivityMentionNotification::class);
 });
+
+it('delivers queued mention notifications through the configured auth model', function () {
+    config()->set('auth.providers.users.model', ActivityCommentNotificationUser::class);
+    Auth::forgetGuards();
+    Notification::swap(new ChannelManager(app()));
+    Queue::fake();
+
+    $this->comments->create(
+        $this->entry,
+        $this->author,
+        $this->site,
+        "Hello [@grace](craft-user:{$this->mentioned->id}).",
+    );
+
+    $job = Queue::pushed(
+        SendQueuedUserNotifications::class,
+        fn (SendQueuedUserNotifications $job): bool => $job->channels === [DatabaseChannel::class],
+    )->sole();
+    unserialize(serialize($job))->handle(app(ChannelManager::class));
+
+    $recipient = ActivityCommentNotificationUser::query()->findOrFail($this->mentioned->id);
+    $this->actingAs($recipient);
+
+    expect($recipient->notifications()->sole()->data['message'])->toBe('Hello @grace.')
+        ->and(app(NotificationCenter::class)->get())->toHaveCount(1);
+});
+
+it('returns accepted comments when notification dispatch fails after commit', function (bool $editing) {
+    $comment = $editing
+        ? $this->comments->create($this->entry, $this->author, $this->site, 'First version')
+        : null;
+    $baselineDepth = DB::transactionLevel();
+    $dispatchDepth = null;
+    $failure = new RuntimeException('Notification queue unavailable.');
+    Exceptions::fake();
+    Notification::swap(new ChannelManager(app()));
+    config()->set('queue.default', 'sync');
+    Queue::before(function () use (&$dispatchDepth, $failure): void {
+        $dispatchDepth = DB::transactionLevel();
+
+        throw $failure;
+    });
+
+    $markdown = "Accepted comment [@grace](craft-user:{$this->mentioned->id}).";
+    $data = [
+        'elementType' => $this->entry::class,
+        'elementId' => $this->entry->id,
+        'siteId' => $this->site->id,
+        'markdown' => $markdown,
+    ];
+    $response = $editing
+        ? $this->patchJson(action([ActivityCommentsController::class, 'update']), [
+            ...$data,
+            'commentId' => $comment->id,
+        ])
+        : $this->postJson(action([ActivityCommentsController::class, 'store']), $data);
+
+    $response->assertSuccessful()->assertJsonPath('event.comment.markdown', $markdown);
+    $event = ActivityEvent::query()->eventTypes($editing ? CommentEdited::class : CommentCreated::class)->sole();
+
+    expect($event->data['markdown'])->toBe($markdown)
+        ->and($dispatchDepth)->toBe($baselineDepth);
+    Exceptions::assertReported(fn (RuntimeException $exception): bool => $exception === $failure);
+})->with([
+    'creating' => false,
+    'editing' => true,
+]);
+
+class ActivityCommentNotificationUser extends UserModel
+{
+    #[Override]
+    protected $table = Table::USERS;
+}
