@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -27,6 +26,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
+use Throwable;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -56,7 +56,7 @@ class ElementImporter extends BaseImporter
     public function __construct(?array $config = null)
     {
         parent::__construct($config);
-        $this->matchCriteria = ['id' => 'id'];
+        // $this->matchCriteria = ['id' => 'id'];
 
         Event::listen(function (ElementDeleted $event) {
             if ($this->trackingNestedElementDeletions) {
@@ -104,6 +104,7 @@ class ElementImporter extends BaseImporter
     {
         return array_merge(parent::getSettingsRules(), [
             'settings.className' => fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateElementType($value, $attribute, $fail, $validator),
+            'settings.fieldLayout' => fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateFieldLayout($value, $attribute, $fail, $validator),
             'settings.site' => [
                 'required',
                 'string',
@@ -118,6 +119,7 @@ class ElementImporter extends BaseImporter
     {
         $data = parent::toValidationData();
         $data['settings']['site'] = $this->site?->handle;
+        $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
 
         return $data;
     }
@@ -138,8 +140,7 @@ class ElementImporter extends BaseImporter
             return false;
         }
 
-        $allElementTypes = Elements::getAllElementTypes();
-        if (! in_array($value, $allElementTypes)) {
+        if (self::normalizeElementType($value) === null) {
             $fail($attribute, t('Element type “{elementType}” is not a valid element type.', [
                 'elementType' => $value,
             ]));
@@ -153,12 +154,74 @@ class ElementImporter extends BaseImporter
             ]));
         }
 
-        //        // checks if component class exists, is an instance of a given interface, and doesn't belong to a disabled plugin
-        //        if (! ComponentHelper::validateComponentClass($value, ElementInterface::class)) {
-        //            throw new InvalidArgumentException("Class '{$value}' is not a valid element type.");
-        //        }
+        return true;
+    }
+
+    /**
+     * Returns the given class name if it's a known element type, otherwise null.
+     */
+    private static function normalizeElementType(mixed $value): ?string
+    {
+        if (! is_string($value) || ! in_array($value, Elements::getAllElementTypes(), true)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    public static function validateFieldLayout(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    {
+        // can't be empty
+        if (empty($value)) {
+            $fail($attribute, t('Field layout must be provided.'));
+
+            return false;
+        }
+
+        // has to exist (never create a layout as a side effect of validation)
+        $fieldLayout = self::normalizeFieldLayout($value);
+        if ($fieldLayout === null) {
+            $fail($attribute, t('No field layout found for “{fieldLayout}”.', [
+                'fieldLayout' => $value,
+            ]));
+
+            return false;
+        }
+
+        // has to belong to the element type if we know it
+        $className = Arr::get($validator->getData(), 'settings.className');
+        if (is_string($className) && $className !== '' && $fieldLayout->type !== $className) {
+            $fail($attribute, t('Field layout does not belong to element type “{elementType}”.', [
+                'elementType' => $className,
+            ]));
+
+            return false;
+        }
 
         return true;
+    }
+
+    /**
+     * Resolves a FieldLayout instance, numeric ID, UID, or element-type string to a FieldLayout, or null if not found.
+     * A null value resolves to null.
+     */
+    private static function normalizeFieldLayout(string|int|FieldLayout|null $value, bool $create = false): ?FieldLayout
+    {
+        if ($value instanceof FieldLayout) {
+            return $value;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        $fieldsService = app(Fields::class);
+
+        if (is_numeric($value)) {
+            return $fieldsService->getLayoutById((int) $value);
+        }
+
+        return $fieldsService->getLayoutByUid($value) ?? $fieldsService->getLayoutByType($value, create: $create);
     }
 
     /**
@@ -177,8 +240,7 @@ class ElementImporter extends BaseImporter
             return false;
         }
 
-        $allSites = Sites::getAllSites()->pluck('handle')->all();
-        if (! in_array($value, $allSites)) {
+        if (self::normalizeSite($value) === null) {
             $fail($attribute, t('“{site}” is not a valid site handle.', [
                 'site' => $value,
             ]));
@@ -187,6 +249,33 @@ class ElementImporter extends BaseImporter
         }
 
         return true;
+    }
+
+    /**
+     * Resolves a Site instance, numeric ID, handle, or UID to a Site, or null if not found.
+     * A null value resolves to the primary site.
+     */
+    private static function normalizeSite(string|int|Site|null $value): ?Site
+    {
+        return match (true) {
+            $value instanceof Site => $value,
+            $value === null => Sites::getPrimarySite(),
+            is_numeric($value) => Sites::getSiteById((int) $value),
+            default => Sites::getSiteByHandle($value) ?? self::siteByUidOrNull($value),
+        };
+    }
+
+    /**
+     * Wraps `Sites::getSiteByUid()`, which throws when the UID isn't found, to fit the
+     * null-on-failure contract the other site lookups use.
+     */
+    private static function siteByUidOrNull(string $uid): ?Site
+    {
+        try {
+            return Sites::getSiteByUid($uid);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     #[Override]
@@ -222,28 +311,22 @@ class ElementImporter extends BaseImporter
     }
 
     /**
-     * Resolves and sets the target site from a Site instance, id, handle, or uid (defaults to primary site if null).
+     * Resolves and sets the target site from a Site instance, id, handle, or uid.
+     * Defaults to primary site if null.
      *
      * @param  string|int|Site|null  $site  The site instance, ID, handle, uid, or null.
      */
     public function site(string|int|Site|null $site): self
     {
-        if ($site instanceof Site) {
-            $this->site = $site;
-        } elseif ($site === null) {
-            $this->site = Sites::getPrimarySite();
-        } elseif (is_numeric($site)) {
-            $this->site = Sites::getAllSites()->firstWhere('id', $site);
-            if ($this->site === null) {
-                throw new InvalidArgumentException("No site found with ID: $site");
-            }
-        } elseif (is_string($site)) {
-            $this->site = Sites::getAllSites()->firstWhere('handle', $site)
-                ?? Sites::getAllSites()->firstWhere('uid', $site);
-            if ($this->site === null) {
-                throw new InvalidArgumentException("No site found with handle or UID: \"$site\".");
-            }
+        $resolved = self::normalizeSite($site);
+
+        if ($resolved === null) {
+            throw new InvalidArgumentException(is_numeric($site)
+                ? "No site found with ID: $site"
+                : "No site found with handle or UID: \"$site\".");
         }
+
+        $this->site = $resolved;
 
         return $this;
     }
@@ -255,27 +338,23 @@ class ElementImporter extends BaseImporter
      */
     public function fieldLayout(string|int|FieldLayout|null $value): self
     {
-        $fieldsService = app(Fields::class);
-
-        if ($value instanceof FieldLayout) {
-            // if the field layout is saved in the database, then it has an ID and therefore persistent UID;
-            // otherwise, it's the default layout and we need to use the type
-            $this->fieldLayout = $value->id ? $value->uid : $value->type;
-        } elseif ($value === null) {
+        if ($value === null) {
             $this->fieldLayout = null;
-        } elseif (is_numeric($value)) {
-            $fieldLayout = $fieldsService->getLayoutById((int) $value);
-            if ($fieldLayout === null) {
-                throw new InvalidArgumentException("No field layout found with ID: $value");
-            }
-            $this->fieldLayout = $fieldLayout->uid;
-        } elseif (is_string($value)) {
-            $fieldLayout = $fieldsService->getLayoutByUid($value) ?? $fieldsService->getLayoutByType($value);
-            if ($fieldLayout === null) {
-                throw new InvalidArgumentException("No field layout found with UID or Type of: \"$value\".");
-            }
-            $this->fieldLayout = $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type;
+
+            return $this;
         }
+
+        $fieldLayout = self::normalizeFieldLayout($value, create: true);
+
+        if ($fieldLayout === null) {
+            throw new InvalidArgumentException(is_numeric($value)
+                ? "No field layout found with ID: $value"
+                : "No field layout found with UID or Type of: \"$value\".");
+        }
+
+        // if the field layout is saved in the database, then it has an ID and therefore persistent UID;
+        // otherwise, it's the default layout and we need to use the type
+        $this->fieldLayout = $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type;
 
         return $this;
     }

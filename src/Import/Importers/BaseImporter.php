@@ -227,7 +227,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates the importer's full state (persistable metadata and execution settings).
+     * Validates the importer's full state.
      *
      * @throws ValidationException
      */
@@ -237,7 +237,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates only the importer's execution settings, regardless of whether it's persisted/named.
+     * Validates only the importer's execution settings.
      *
      * @throws ValidationException
      */
@@ -313,7 +313,7 @@ abstract class BaseImporter
      */
     public function transformer(string|null|BaseTransformer $transformer): self
     {
-        $this->transformer = $this->normalizeTransformer($transformer);
+        $this->transformer = self::normalizeTransformer($transformer);
 
         return $this;
     }
@@ -334,10 +334,16 @@ abstract class BaseImporter
      * Sets the criteria to be used for matching the element we're importing into
      * and returns the current instance.
      *
-     * @param  array  $matchCriteria  The criteria to match against.
+     * @param  array|null  $matchCriteria  The criteria to match against.
      */
-    public function matchCriteria(array $matchCriteria): self
+    public function matchCriteria(?array $matchCriteria): self
     {
+        if ($matchCriteria === null) {
+            $this->matchCriteria = null;
+
+            return $this;
+        }
+
         $this->matchCriteria = $this->unpackJson($matchCriteria);
 
         return $this;
@@ -500,7 +506,7 @@ abstract class BaseImporter
      *
      * @param  string|BaseTransformer|null  $transformer  Input transformer to normalize.
      */
-    public function normalizeTransformer(string|null|BaseTransformer $transformer): BaseTransformer|Closure|null
+    private static function normalizeTransformer(string|null|BaseTransformer $transformer): BaseTransformer|Closure|null
     {
         if ($transformer instanceof BaseTransformer) {
             return $transformer;
@@ -545,21 +551,13 @@ abstract class BaseImporter
             return true;
         }
 
-        // if it's an arrow function - ok
-        if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', (string) $value)) {
-            return true;
+        if (self::normalizeTransformer($value) === null) {
+            $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
+
+            return false;
         }
 
-        // if it's a string - the assumption is that it's a class name with namespace (just like with elementType)
-        // and we need to check if it exists and is compatible
-        if (class_exists($value) && (new $value) instanceof BaseTransformer) {
-            return true;
-        }
-
-        // no other options are valid
-        $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
-
-        return false;
+        return true;
     }
 
     /**

@@ -232,7 +232,7 @@ class ImportConfigController
         abort_if(is_null($importer = $this->importConfigService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
         $this->request->validate([
-            'fieldLayout' => ['nullable', 'string', 'max:255'],
+            'fieldLayout' => ['required', 'string', 'max:255'],
         ]);
 
         /** @var ElementImporter $importer */
