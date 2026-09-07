@@ -1613,6 +1613,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ],
             ])
             ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
             ->all();
     }
 
