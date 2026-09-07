@@ -577,23 +577,7 @@ it('accepts the sortOrder/entries keyed input format', function () {
 });
 
 describe('raw grouped/flat data through the full pipeline', function () {
-    it('imports grouped-by-type raw data end-to-end, matching and clearing correctly', function () {
-        $map = [
-            'title' => 'title',
-            'sectionId' => 'sectionId',
-            'typeId' => 'typeId',
-            'myMatrix' => [
-                'secondEt' => [
-                    'title' => 'myMatrix.secondEt.title',
-                    'fields' => ['plainText' => 'myMatrix.secondEt.plainText'],
-                ],
-                'firstEt' => [
-                    'title' => 'myMatrix.firstEt.title',
-                    'fields' => ['plainText' => 'myMatrix.firstEt.plainText'],
-                ],
-            ],
-        ];
-
+    it('imports raw data end-to-end, matching and clearing correctly', function (array $map, callable $makeRawData) {
         $importer = (clone $this->importer)
             ->matchCriteria([
                 'title' => 'title',
@@ -609,19 +593,7 @@ describe('raw grouped/flat data through the full pipeline', function () {
                 ],
             ]);
 
-        $rawData = [
-            'title' => 'imported entry',
-            'sectionId' => $this->section->handle,
-            'typeId' => $this->entryType->handle,
-            'myMatrix' => [
-                'secondEt' => [
-                    ['title' => 'block 1', 'plainText' => 'foo'],
-                ],
-                'firstEt' => [
-                    ['title' => 'block 2', 'plainText' => 'bar'],
-                ],
-            ],
-        ];
+        $rawData = $makeRawData($this->section->handle, $this->entryType->handle, 'foo');
 
         $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
 
@@ -635,7 +607,7 @@ describe('raw grouped/flat data through the full pipeline', function () {
         // Re-import block 1 with plainText omitted from the source entirely - since it's marked
         // clearable, it should be cleared to null on the SAME block (matched by title), not left
         // untouched on a freshly created duplicate.
-        $rawData['myMatrix']['secondEt'][0] = ['title' => 'block 1'];
+        $rawData = $makeRawData($this->section->handle, $this->entryType->handle, null);
 
         $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
 
@@ -644,70 +616,66 @@ describe('raw grouped/flat data through the full pipeline', function () {
         $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
         expect($block1->id)->toBe($block1Id);
         expect($block1->getFieldValue('plainText'))->toBeNull();
-    });
-
-    it('imports flat own-type-per-row raw data end-to-end, matching and clearing correctly', function () {
-        $map = [
-            'title' => 'title',
-            'sectionId' => 'sectionId',
-            'typeId' => 'typeId',
-            'myMatrix' => [
-                'secondEt' => [
-                    'title' => 'myMatrix.title',
-                    'fields' => ['plainText' => 'myMatrix.plainText'],
-                ],
-                'firstEt' => [
-                    'title' => 'myMatrix.title',
-                    'fields' => ['plainText' => 'myMatrix.plainText'],
-                ],
-            ],
-        ];
-
-        $importer = (clone $this->importer)
-            ->matchCriteria([
+    })->with([
+        'grouped-by-type' => [
+            [
                 'title' => 'title',
+                'sectionId' => 'sectionId',
+                'typeId' => 'typeId',
                 'myMatrix' => [
-                    'secondEt' => ['title' => 'title'],
-                    'firstEt' => ['title' => 'title'],
+                    'secondEt' => [
+                        'title' => 'myMatrix.secondEt.title',
+                        'fields' => ['plainText' => 'myMatrix.secondEt.plainText'],
+                    ],
+                    'firstEt' => [
+                        'title' => 'myMatrix.firstEt.title',
+                        'fields' => ['plainText' => 'myMatrix.firstEt.plainText'],
+                    ],
                 ],
-            ])
-            ->clearableItems([
-                'myMatrix' => [
-                    'secondEt' => ['fields' => ['plainText' => true]],
-                    'firstEt' => ['fields' => ['plainText' => true]],
-                ],
-            ]);
-
-        $rawData = [
-            'title' => 'imported entry',
-            'sectionId' => $this->section->handle,
-            'typeId' => $this->entryType->handle,
-            'myMatrix' => [
-                ['type' => 'secondEt', 'title' => 'block 1', 'plainText' => 'foo'],
-                ['type' => 'firstEt', 'title' => 'block 2', 'plainText' => 'bar'],
             ],
-        ];
-
-        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
-
-        $entry = EntryElement::find()->title('imported entry')->one();
-        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
-
-        $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
-        $block1Id = $block1->id;
-        expect($block1->getFieldValue('plainText'))->toBe('foo');
-
-        // Re-import block 1 with plainText omitted from the source entirely - since it's marked
-        // clearable, it should be cleared to null on the SAME block (matched by title), not left
-        // untouched on a freshly created duplicate.
-        $rawData['myMatrix'][0] = ['type' => 'secondEt', 'title' => 'block 1'];
-
-        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
-
-        $entry = EntryElement::find()->title('imported entry')->one();
-        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
-        $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
-        expect($block1->id)->toBe($block1Id);
-        expect($block1->getFieldValue('plainText'))->toBeNull();
-    });
+            fn (string $sectionHandle, string $entryTypeHandle, ?string $block1PlainText) => [
+                'title' => 'imported entry',
+                'sectionId' => $sectionHandle,
+                'typeId' => $entryTypeHandle,
+                'myMatrix' => [
+                    'secondEt' => [
+                        $block1PlainText === null
+                            ? ['title' => 'block 1']
+                            : ['title' => 'block 1', 'plainText' => $block1PlainText],
+                    ],
+                    'firstEt' => [
+                        ['title' => 'block 2', 'plainText' => 'bar'],
+                    ],
+                ],
+            ],
+        ],
+        'flat own-type-per-row' => [
+            [
+                'title' => 'title',
+                'sectionId' => 'sectionId',
+                'typeId' => 'typeId',
+                'myMatrix' => [
+                    'secondEt' => [
+                        'title' => 'myMatrix.title',
+                        'fields' => ['plainText' => 'myMatrix.plainText'],
+                    ],
+                    'firstEt' => [
+                        'title' => 'myMatrix.title',
+                        'fields' => ['plainText' => 'myMatrix.plainText'],
+                    ],
+                ],
+            ],
+            fn (string $sectionHandle, string $entryTypeHandle, ?string $block1PlainText) => [
+                'title' => 'imported entry',
+                'sectionId' => $sectionHandle,
+                'typeId' => $entryTypeHandle,
+                'myMatrix' => [
+                    $block1PlainText === null
+                        ? ['type' => 'secondEt', 'title' => 'block 1']
+                        : ['type' => 'secondEt', 'title' => 'block 1', 'plainText' => $block1PlainText],
+                    ['type' => 'firstEt', 'title' => 'block 2', 'plainText' => 'bar'],
+                ],
+            ],
+        ],
+    ]);
 });

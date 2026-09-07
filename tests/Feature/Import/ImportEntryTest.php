@@ -81,85 +81,68 @@ it('uses the entry type selected via the field layout provider, ignoring a typeI
         ->and($entry->getTypeId())->toBe($this->typeA->id);
 });
 
-it('fails and skips an entry imported enabled into a section requiring an author when no author is mapped', function () {
-    $this->import->importItem($this->importer, [
-        'title' => 'imported entry',
-        'sectionId' => $this->sectionWithAuthors->handle,
-    ]);
+dataset('requiredValueScenarios', [
+    'section requires an author' => [[
+        'section' => fn ($test) => $test->sectionWithAuthors,
+        'importer' => fn ($test) => $test->importer,
+        'mappedData' => function ($test) {
+            $test->requiredValueAuthor = User::factory()->create();
 
-    $entry = EntryElement::find()->title('imported entry')->one();
+            return ['authorIds' => [$test->requiredValueAuthor->id]];
+        },
+        'assertMapped' => fn ($test, EntryElement $entry) => expect($entry->getAuthorIds())->toBe([$test->requiredValueAuthor->id]),
+    ]],
+    'entry type has a required Plain Text field' => [[
+        'section' => fn ($test) => Section::factory()->withEntryTypes($test->typeC)->create(['minAuthors' => 0]),
+        'importer' => fn ($test) => $test->importer->fieldLayout(EntryTypes::getEntryTypeById($test->typeC->id)->getFieldLayout()),
+        'mappedData' => fn ($test) => ['myRequiredText' => 'some value'],
+        'assertMapped' => fn ($test, EntryElement $entry) => expect($entry->getFieldValue('myRequiredText'))->toBe('some value'),
+    ]],
+]);
 
-    expect($entry)->toBeNull();
-});
+describe('required-value validation, skipping enabled entries and allowing disabled ones', function () {
+    it('fails and skips an entry imported enabled without the required value mapped', function (array $scenario) {
+        $section = ($scenario['section'])($this);
+        $importer = ($scenario['importer'])($this);
 
-it('succeeds importing a disabled entry into an author-requiring section without an author mapped', function () {
-    $this->import->importItem($this->importer, [
-        'title' => 'imported entry',
-        'sectionId' => $this->sectionWithAuthors->handle,
-        'enabled' => false,
-    ]);
+        $this->import->importItem($importer, [
+            'title' => 'imported entry',
+            'sectionId' => $section->handle,
+        ]);
 
-    $entry = EntryElement::find()->title('imported entry')->status(null)->one();
+        $entry = EntryElement::find()->title('imported entry')->one();
 
-    expect($entry)->not->toBeNull();
-});
+        expect($entry)->toBeNull();
+    })->with('requiredValueScenarios');
 
-it('succeeds importing an enabled entry into a section requiring an author when an author is mapped', function () {
-    $author = User::factory()->create();
+    it('succeeds importing a disabled entry without the required value mapped', function (array $scenario) {
+        $section = ($scenario['section'])($this);
+        $importer = ($scenario['importer'])($this);
 
-    $this->import->importItem($this->importer, [
-        'title' => 'imported entry',
-        'sectionId' => $this->sectionWithAuthors->handle,
-        'authorIds' => [$author->id],
-    ]);
+        $this->import->importItem($importer, [
+            'title' => 'imported entry',
+            'sectionId' => $section->handle,
+            'enabled' => false,
+        ]);
 
-    $entry = EntryElement::find()->title('imported entry')->one();
+        $entry = EntryElement::find()->title('imported entry')->status(null)->one();
 
-    expect($entry)->not->toBeNull()
-        ->and($entry->getAuthorIds())->toBe([$author->id]);
-});
+        expect($entry)->not->toBeNull();
+    })->with('requiredValueScenarios');
 
-it('fails and skips an entry imported enabled with an unmapped required Plain Text field', function () {
-    $section = Section::factory()->withEntryTypes($this->typeC)->create(['minAuthors' => 0]);
-    $importer = $this->importer->fieldLayout(EntryTypes::getEntryTypeById($this->typeC->id)->getFieldLayout());
+    it('succeeds importing an enabled entry with the required value mapped', function (array $scenario) {
+        $section = ($scenario['section'])($this);
+        $importer = ($scenario['importer'])($this);
 
-    $this->import->importItem($importer, [
-        'title' => 'imported entry',
-        'sectionId' => $section->handle,
-    ]);
+        $this->import->importItem($importer, [
+            'title' => 'imported entry',
+            'sectionId' => $section->handle,
+            ...($scenario['mappedData'])($this),
+        ]);
 
-    $entry = EntryElement::find()->title('imported entry')->one();
+        $entry = EntryElement::find()->title('imported entry')->status(null)->one();
 
-    expect($entry)->toBeNull();
-});
-
-it('succeeds importing a disabled entry with an unmapped required Plain Text field', function () {
-    $section = Section::factory()->withEntryTypes($this->typeC)->create(['minAuthors' => 0]);
-    $importer = $this->importer->fieldLayout(EntryTypes::getEntryTypeById($this->typeC->id)->getFieldLayout());
-
-    $this->import->importItem($importer, [
-        'title' => 'imported entry',
-        'sectionId' => $section->handle,
-        'enabled' => false,
-    ]);
-
-    $entry = EntryElement::find()->title('imported entry')->status(null)->one();
-
-    expect($entry)->not->toBeNull();
-});
-
-it('succeeds importing an enabled entry with a mapped required Plain Text field', function () {
-    $section = Section::factory()->withEntryTypes($this->typeC)->create(['minAuthors' => 0]);
-    $importer = $this->importer->fieldLayout(EntryTypes::getEntryTypeById($this->typeC->id)->getFieldLayout());
-
-    $this->import->importItem($importer, [
-        'title' => 'imported entry',
-        'sectionId' => $section->handle,
-        'myRequiredText' => 'some value',
-    ]);
-
-    $entry = EntryElement::find()->title('imported entry')->status(null)->one();
-
-    expect($entry)->not->toBeNull()
-        ->and($entry->getFieldValue('myRequiredText'))->toBe('some value');
+        expect($entry)->not->toBeNull();
+        ($scenario['assertMapped'])($this, $entry);
+    })->with('requiredValueScenarios');
 });
