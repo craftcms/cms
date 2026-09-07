@@ -186,7 +186,7 @@ class ImportConfigController
             'readOnly' => $this->readOnly,
             'static' => ! $currentUser?->can('saveImportConfigs'),
             'import' => $importer,
-            'availableFieldLayoutProviders' => $importer->getAvailableFieldLayoutProviders(),
+            'availableFieldLayoutProviders' => ImportHelper::getAvailableFieldLayoutProviders($importer->className),
         ];
 
         return new CpScreenResponse()
