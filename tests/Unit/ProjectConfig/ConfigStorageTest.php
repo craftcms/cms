@@ -6,12 +6,10 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ConfigStorage;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -24,32 +22,33 @@ afterEach(function () {
     File::deleteDirectory($this->directory);
 });
 
-it('decodes legacy config before parsing it', function (string $format, bool $base64) {
-    $config = ['plugin' => ['name' => 'Example']];
-    $value = match ($format) {
-        'json' => '{"plugin":{"name":"Example"}}',
-        'serialized' => serialize($config),
-        'encrypted' => 'crypt:'.Crypt::encryptString('{"plugin":{"name":"Example"}}'),
-    };
-    $info = new Info;
-    $info->setRawAttributes([
-        'schemaVersion' => '3.3.0',
-        'config' => $base64 ? 'base64:'.base64_encode($value) : $value,
-    ]);
-    Context::addHidden('craft.info', $info);
-    Context::addHidden('craft.isInstalled', true);
-
-    expect(new ConfigStorage()->readDatabase(null))->toBe($config);
-})->with(['json', 'serialized', 'encrypted'])->with([false, true]);
-
-it('loads empty legacy config', function (?string $value) {
-    $info = new Info;
-    $info->setRawAttributes(['schemaVersion' => '3.3.0', 'config' => $value]);
-    Context::addHidden('craft.info', $info);
-    Context::addHidden('craft.isInstalled', true);
+it('returns empty config before installation', function () {
+    Context::addHidden('craft.isInstalled', false);
 
     expect(new ConfigStorage()->readDatabase(null))->toBe([]);
-})->with([null, '']);
+});
+
+it('strips filename handles only when followed by a UUID', function (string $filename, string $key) {
+    File::writeToFile($this->directory.'/project/project.yaml', '{}');
+    File::writeToFile($this->directory.'/project/fields/'.$filename.'.yaml', 'name: Example');
+
+    expect(new ConfigStorage()->readYaml('project'))->toBe(['fields' => [$key => ['name' => 'Example']]]);
+})->with([
+    'lowercase UUID' => ['example--d62a289c-4a1a-4e4b-955e-3cf9973454e4', 'd62a289c-4a1a-4e4b-955e-3cf9973454e4'],
+    'uppercase UUID' => ['example--D62A289C-4A1A-4E4B-955E-3CF9973454E4', 'D62A289C-4A1A-4E4B-955E-3CF9973454E4'],
+    'invalid UUID' => ['example--0123456789abcdef0123456789abcdef0123', 'example--0123456789abcdef0123456789abcdef0123'],
+]);
+
+it('annotates YAML with the first UUID name on each line', function (string $uid) {
+    $otherUid = '6fa459ea-ee8a-4ca4-894e-db77e160355e';
+    $storage = new ConfigStorage;
+    $storage->writeYaml('project', [
+        'example' => "$uid $otherUid",
+        'meta' => ['__names__' => [$uid => 'First component', $otherUid => 'Second component']],
+    ]);
+
+    expect(File::get($this->directory.'/project/project.yaml'))->toContain("example: '$uid $otherUid' # First component");
+})->with(['d62a289c-4a1a-4e4b-955e-3cf9973454e4', 'D62A289C-4A1A-4E4B-955E-3CF9973454E4']);
 
 it('preserves exported files when a yaml written listener fails', function () {
     $storage = new ConfigStorage;

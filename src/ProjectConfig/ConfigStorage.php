@@ -17,7 +17,6 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
@@ -33,24 +32,8 @@ class ConfigStorage
     /** @return array<string|int, mixed> */
     public function readDatabase(?int $cacheDuration): array
     {
-        if (! Cms::isInstalled() || version_compare(Info::fetch()->schemaVersion, '3.1.1', '<')) {
+        if (! Cms::isInstalled()) {
             return [];
-        }
-
-        if (version_compare(Info::fetch()->schemaVersion, '3.4.4', '<')) {
-            $value = Info::fetch()->getAttribute('config');
-
-            if (! $value) {
-                return [];
-            }
-
-            $value = Str::decdec($value);
-
-            try {
-                return Json::decode($value) ?? [];
-            } catch (InvalidArgumentException) {
-                return unserialize($value, ['allowed_classes' => false]);
-            }
         }
 
         return DependencyCache::remember(ProjectConfig::STORED_CACHE_KEY, $cacheDuration, function (): array {
@@ -142,7 +125,13 @@ class ConfigStorage
         }
 
         $data = [];
-        $files = new Finder()->files()->in($this->directory($folder))->ignoreDotFiles(false)->ignoreVCS(false)->name('/\.yaml$/i')->sortByName();
+        $files = new Finder()
+            ->files()
+            ->in($this->directory($folder))
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->name('/\.yaml$/i')
+            ->sortByName();
 
         foreach ($files as $file) {
             $value = Yaml::parseFile($file->getPathname()) ?? [];
@@ -154,7 +143,7 @@ class ConfigStorage
             $segments = $file->getRelativePath() === '' ? [] : explode(DIRECTORY_SEPARATOR, $file->getRelativePath());
             $name = preg_replace('/\.yaml$/i', '', $file->getFilename());
             // In <handle>--<uid> filenames, only the UID belongs to the config path.
-            $name = preg_replace('/^\w+--(?=[a-f0-9-]{36}$)/i', '', $name);
+            $name = preg_replace('/^\w+--(?='.Str::uuidPattern().'$)/', '', $name);
 
             if ($segments !== [] && $name !== end($segments)) {
                 $segments[] = $name;
@@ -186,9 +175,8 @@ class ConfigStorage
 
             foreach (ProjectConfigHelper::splitConfigIntoComponents($data) as $filename => $component) {
                 $yaml = Yaml::dump(ProjectConfigHelper::cleanupConfig($component), 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
-                $yaml = preg_replace_callback('/^.*[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}.*$/mi', function (array $line) use ($names): string {
-                    preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i', $line[0], $match);
-                    $name = trim(str_replace(["\r", "\n"], ' ', $names[$match[0]] ?? ''));
+                $yaml = preg_replace_callback('/^.*?('.Str::uuidPattern().').*$/m', function (array $line) use ($names): string {
+                    $name = trim(str_replace(["\r", "\n"], ' ', $names[$line[1]] ?? ''));
 
                     return $name === '' ? $line[0] : $line[0].' # '.$name;
                 }, $yaml);

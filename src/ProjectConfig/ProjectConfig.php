@@ -81,7 +81,7 @@ class ProjectConfig
     public const string MUTEX_NAME = 'project-config';
 
     /**
-     * Regexp pattern to determine a string that could be used as an UID.
+     * Pattern for `{uid}` tokens, which match UUIDs as well as component handles.
      */
     public const string UID_PATTERN = '[a-zA-Z0-9_-]+';
 
