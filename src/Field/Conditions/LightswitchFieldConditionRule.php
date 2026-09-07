@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Lightswitch;
 use RuntimeException;
 
-class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements FieldConditionRuleInterface
+class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 

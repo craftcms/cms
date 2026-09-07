@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
+use CraftCms\Cms\Activity\ElementActivity;
+use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -419,6 +421,10 @@ class Structures
                 $mode = Mode::Insert;
             }
 
+            $recordMove = $mode === Mode::Update && ElementActivity::shouldRecordWrite($element);
+            $structureUid = null;
+            $origin = null;
+
             /** @var Mode::Insert|Mode::Update $mode */
             [$beforeEvent, $afterEvent] = match ($mode) {
                 Mode::Insert => [StructureElementInserted::class, ElementInserted::class],
@@ -455,6 +461,18 @@ class Structures
             try {
                 DB::beginTransaction();
 
+                if ($recordMove) {
+                    $structureUid = $this->getStructureById($structureId)->uid
+                        ?? throw new Exception("Structure $structureId does not have a UID.");
+                    $originalElement = $element::find()
+                        ->id($element->id)
+                        ->siteId($element->siteId)
+                        ->structureId($structureId)
+                        ->status(null)
+                        ->one() ?? throw new Exception('Unable to capture the original element position.');
+                    $origin = StructuralElementActivity::position($structureUid, $originalElement);
+                }
+
                 if (! $structureElementModel->$method($targetElementModel)) {
                     DB::rollBack($transactionLevel);
 
@@ -469,6 +487,21 @@ class Structures
 
                 // Tell the element about it
                 $element->afterMoveInStructure($structureId);
+
+                if ($recordMove) {
+                    $movedElement = $element::find()
+                        ->id($element->id)
+                        ->siteId($element->siteId)
+                        ->structureId($structureId)
+                        ->status(null)
+                        ->one() ?? throw new Exception('Unable to capture the moved element position.');
+
+                    StructuralElementActivity::recordMoved(
+                        $movedElement,
+                        $origin,
+                        StructuralElementActivity::position($structureUid, $movedElement),
+                    );
+                }
 
                 DB::commit();
             } catch (Throwable $e) {

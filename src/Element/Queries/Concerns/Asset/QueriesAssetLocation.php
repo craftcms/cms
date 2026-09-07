@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -75,50 +76,69 @@ trait QueriesAssetLocation
 
             $assetQuery->join(new Alias(Table::VOLUMEFOLDERS, 'volumeFolders'), 'volumeFolders.id', '=', 'assets.folderId');
 
-            if ($assetQuery->volumeId) {
-                if ($assetQuery->volumeId === ':empty:') {
-                    $assetQuery->whereNull('assets.volumeId');
-                } else {
-                    $assetQuery->whereIn('assets.volumeId', Arr::wrap($assetQuery->volumeId));
-                }
-            }
-
-            if ($assetQuery->folderId) {
-                // [X] => X, so includeSubfolders works with GraphQL
-                // (see https://github.com/craftcms/cms/issues/17023)
-                if (is_array($assetQuery->folderId) && count($assetQuery->folderId) === 1 && Arr::isNumeric($assetQuery->folderId)) {
-                    $assetQuery->folderId = reset($assetQuery->folderId);
-                }
-
-                $assetQuery->where(function (Builder $query) use ($assetQuery) {
-                    $query->whereNumericParam('assets.folderId', $assetQuery->folderId)
-                        ->when(
-                            is_numeric($assetQuery->folderId) && $assetQuery->includeSubfolders,
-                            function (Builder $query) use ($assetQuery) {
-                                $descendants = Folders::getAllDescendantFolders(Folders::getFolderById($assetQuery->folderId));
-
-                                $query->orWhereIn('assets.folderId', array_keys($descendants));
-                            }
-                        );
-                });
-            }
-
-            if ($assetQuery->folderPath) {
-                $folderPath = Arr::wrap($assetQuery->folderPath);
-
-                foreach ($folderPath as &$path) {
-                    if (
-                        is_string($path) &&
-                        ! str_ends_with($path, '/') &&
-                        Query::escapeParam($path) === $path
-                    ) {
-                        $path .= '/';
-                    }
-                }
-
-                $assetQuery->whereParam('volumeFolders.path', $folderPath);
-            }
+            static::applyVolumeId($assetQuery, $assetQuery->volumeId);
+            static::applyFolderId($assetQuery, $assetQuery->folderId, $assetQuery);
+            static::applyFolderPath($assetQuery, $assetQuery->folderPath);
         });
+    }
+
+    public static function applyVolumeId(BuilderContract $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        if ($value === ':empty:') {
+            $query->whereNull('assets.volumeId');
+        } else {
+            $query->whereIn('assets.volumeId', Arr::wrap($value));
+        }
+    }
+
+    public static function applyFolderId(BuilderContract $query, mixed $value, AssetQuery $assetQuery): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        // [X] => X, so includeSubfolders works with GraphQL
+        // (see https://github.com/craftcms/cms/issues/17023)
+        if (is_array($value) && count($value) === 1 && Arr::isNumeric($value)) {
+            $value = reset($value);
+        }
+
+        $query->where(function (Builder $q) use ($value, $assetQuery) {
+            $q->whereNumericParam('assets.folderId', $value)
+                ->when(
+                    is_numeric($value) && $assetQuery->includeSubfolders,
+                    function (Builder $q) use ($value) {
+                        $descendants = Folders::getAllDescendantFolders(Folders::getFolderById($value));
+
+                        $q->orWhereIn('assets.folderId', array_keys($descendants));
+                    }
+                );
+        });
+    }
+
+    public static function applyFolderPath(BuilderContract $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $folderPath = Arr::wrap($value);
+
+        foreach ($folderPath as &$path) {
+            if (
+                is_string($path) &&
+                ! str_ends_with($path, '/') &&
+                Query::escapeParam($path) === $path
+            ) {
+                $path .= '/';
+            }
+        }
+
+        $query->whereParam('volumeFolders.path', $folderPath);
     }
 
     /**

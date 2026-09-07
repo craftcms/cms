@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Facades\Elements;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -593,41 +594,10 @@ trait QueriesStructures
             return;
         }
 
-        $elementQuery->addSelect([
-            'structureelements.root as root',
-            'structureelements.lft as lft',
-            'structureelements.rgt as rgt',
-            'structureelements.level as level',
-        ]);
-
-        if ($elementQuery->structureId) {
-            $elementQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                ->on('structureelements.elementId', '=', 'elements.id')
-                ->where('structureelements.structureId', $elementQuery->structureId));
-        } else {
-            $existsQuery = DB::table(Table::STRUCTURES)
-                // Use index hints to specify index so Mysql does not select the less
-                // performant one (dateDeleted).
-                ->when(
-                    DB::isMysql(),
-                    fn (Builder $query) => $query->useIndex('primary'),
-                )
-                ->whereColumn('id', 'structureelements.structureId')
-                ->whereNull('dateDeleted');
-
-            $elementQuery
-                ->addSelect('structureelements.structureId as structureId')
-                ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                    ->on('structureelements.elementId', '=', 'elements.id')
-                    ->whereExists($existsQuery));
-        }
+        self::prepForStructureParams($elementQuery);
 
         if (isset($elementQuery->hasDescendants)) {
-            $elementQuery->when(
-                $elementQuery->hasDescendants,
-                fn (ElementQuery $query) => $elementQuery->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
-                fn (ElementQuery $query) => $elementQuery->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
-            );
+            self::applyHasDescendantsInternal($elementQuery, $elementQuery->hasDescendants);
         }
 
         if ($elementQuery->ancestorOf) {
@@ -715,21 +685,100 @@ trait QueriesStructures
         }
 
         if (isset($elementQuery->level)) {
-            $allowNull = is_array($elementQuery->level) && in_array(null, $elementQuery->level, true);
-
-            $elementQuery->when(
-                value: $allowNull,
-                callback: fn (ElementQuery $q) => $q->where(function (Builder $q) use ($elementQuery) {
-                    $q->whereNumericParam('structureelements.level', array_filter($elementQuery->level, fn ($v) => $v !== null))
-                        ->orWhereNull('structureelements.level');
-                }),
-                default: fn (ElementQuery $q) => $q->whereNumericParam('structureelements.level', $elementQuery->level),
-            );
+            self::applyLevelInternal($elementQuery, $elementQuery->level);
         }
 
         if ($elementQuery->leaves) {
             $elementQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
         }
+    }
+
+    /**
+     * Joins the structure data into the query, if it hasn't been already.
+     *
+     * @param  ElementQuery<*>  $elementQuery
+     */
+    private static function prepForStructureParams(ElementQuery $elementQuery): void
+    {
+        $joinTable = new Alias(Table::STRUCTUREELEMENTS, 'structureelements');
+
+        if ($elementQuery->query->joinsTable($joinTable)) {
+            return;
+        }
+
+        $elementQuery->query->addSelect([
+            'structureelements.root as root',
+            'structureelements.lft as lft',
+            'structureelements.rgt as rgt',
+            'structureelements.level as level',
+        ]);
+
+        if ($elementQuery->structureId) {
+            $elementQuery->query->leftJoin($joinTable, fn (JoinClause $join) => $join
+                ->on('structureelements.elementId', '=', 'elements.id')
+                ->where('structureelements.structureId', $elementQuery->structureId));
+        } else {
+            $existsQuery = DB::table(Table::STRUCTURES)
+                // Use index hints to specify index so Mysql does not select the less
+                // performant one (dateDeleted).
+                ->when(
+                    DB::isMysql(),
+                    fn (Builder $query) => $query->useIndex('primary'),
+                )
+                ->whereColumn('id', 'structureelements.structureId')
+                ->whereNull('dateDeleted');
+
+            $elementQuery->query
+                ->addSelect('structureelements.structureId as structureId')
+                ->leftJoin($joinTable, fn (JoinClause $join) => $join
+                    ->on('structureelements.elementId', '=', 'elements.id')
+                    ->whereExists($existsQuery));
+        }
+    }
+
+    /** @param ElementQuery<*> $elementQuery */
+    public static function applyHasDescendants(BuilderContract $query, ?bool $value, ElementQuery $elementQuery): void
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        self::prepForStructureParams($elementQuery);
+        self::applyHasDescendantsInternal($query, $value);
+    }
+
+    private static function applyHasDescendantsInternal(BuilderContract $query, ?bool $value): void
+    {
+        $query->when(
+            $value,
+            fn (BuilderContract $q) => $q->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
+            fn (BuilderContract $q) => $q->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
+        );
+    }
+
+    /** @param ElementQuery<*> $elementQuery */
+    public static function applyLevel(BuilderContract $query, mixed $value, ElementQuery $elementQuery): void
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        self::prepForStructureParams($elementQuery);
+        self::applyLevelInternal($query, $value);
+    }
+
+    private static function applyLevelInternal(BuilderContract $query, mixed $value): void
+    {
+        $allowNull = is_array($value) && in_array(null, $value, true);
+
+        $query->when(
+            value: $allowNull,
+            callback: fn (BuilderContract $q) => $q->where(function (Builder $q) use ($value) {
+                $q->whereNumericParam('structureelements.level', array_filter($value, fn ($v) => $v !== null))
+                    ->orWhereNull('structureelements.level');
+            }),
+            default: fn (BuilderContract $q) => $q->whereNumericParam('structureelements.level', $value),
+        );
     }
 
     /**

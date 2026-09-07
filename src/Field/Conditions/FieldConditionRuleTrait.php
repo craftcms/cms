@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use Illuminate\Contracts\Database\Query\Builder;
 use RuntimeException;
@@ -207,23 +208,8 @@ trait FieldConditionRuleTrait
         return currentUser()?->getPreference('showFieldHandles') ?? false;
     }
 
-    public function getExclusiveQueryParams(): array
-    {
-        try {
-            $instances = $this->fieldInstances();
-        } catch (RuntimeException) {
-            return [];
-        }
-
-        $params = [];
-        foreach ($instances as $field) {
-            $params[] = $field->handle;
-        }
-
-        return array_values(array_unique($params));
-    }
-
-    public function modifyQuery(Builder $query): void
+    /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
         $value = $this->elementQueryParam();
 

@@ -87,6 +87,8 @@ export interface ElementEditPayload {
   previewTargets: Array<{label: string; url: string}>;
   elementDisplayName: string;
   activityUrl: string | null;
+  activityTimelineUrl: string | null;
+  activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
   contextMenu: {
     label: string;
@@ -316,6 +318,7 @@ export function useElementEditor({saveData}: Options = {}) {
   // so the shared save pipeline (elevated sessions, error handling, the
   // processing flag) is reused rather than reimplemented per action.
   const pendingAction = ref<ElementFormAction | null>(null);
+  const activityTimelineVersion = ref(0);
 
   const {save} = useSettingsSave(
     form,
@@ -372,9 +375,13 @@ export function useElementEditor({saveData}: Options = {}) {
         // applying a provisional draft deletes the draft it would write them to.
         autosave.cancel();
 
-        // The save itself moved the element's `dateUpdated`; without this the
-        // next poll would report our own write as someone else's change.
-        activity.rebase(props.updatedTimestamps);
+        if (!slideout) {
+          // The save itself moved the element's `dateUpdated`; without this the
+          // next poll would report our own write as someone else's change.
+          activity.rebase(props.updatedTimestamps);
+        }
+
+        activityTimelineVersion.value++;
       },
     }
   );
@@ -520,6 +527,7 @@ export function useElementEditor({saveData}: Options = {}) {
 
   return {
     activity,
+    activityTimelineVersion,
     autosave,
     discardDraft,
     submitAction,
