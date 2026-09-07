@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Conditions\AdminConditionRule;
+use CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule;
 use CraftCms\Cms\User\Conditions\CredentialedConditionRule;
 use CraftCms\Cms\User\Conditions\EmailConditionRule;
 use CraftCms\Cms\User\Conditions\FirstNameConditionRule;
 use CraftCms\Cms\User\Conditions\GroupConditionRule;
+use CraftCms\Cms\User\Conditions\LastLoginDateConditionRule;
 use CraftCms\Cms\User\Conditions\LastNameConditionRule;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Conditions\UsernameConditionRule;
@@ -232,5 +236,96 @@ describe('CredentialedConditionRule', function () {
 
         expect($resultIds)->toContain($inactiveUser->id);
         expect($resultIds)->not->toContain($activeUser->id);
+    });
+});
+
+describe('LastLoginDateConditionRule', function () {
+    it('matchElement with LastLoginDateConditionRule', function (Closure $createUser, string $rangeType, bool $expected) {
+        $userModel = $createUser();
+
+        $condition = new UserCondition(User::class);
+        $rule = $condition->createConditionRule(LastLoginDateConditionRule::class);
+        $rule->rangeType = $rangeType;
+
+        $element = User::find()->id($userModel->id)->one();
+
+        expect($rule->matchElement($element))->toBe($expected);
+    })->with([
+        'notempty matches user with a last login date' => [fn () => UserModel::factory()->create(['lastLoginDate' => new DateTime('2025-06-15')]), 'notempty', true],
+        'notempty does not match user without a last login date' => [fn () => UserModel::factory()->create(['lastLoginDate' => null]), 'notempty', false],
+        'empty matches user without a last login date' => [fn () => UserModel::factory()->create(['lastLoginDate' => null]), 'empty', true],
+    ]);
+
+    it('modifyQuery filters users by last login date', function () {
+        $loggedInUser = UserModel::factory()->create(['lastLoginDate' => new DateTime('2025-06-15')]);
+        UserModel::factory()->create(['lastLoginDate' => null]);
+
+        $condition = new UserCondition(User::class);
+        $rule = $condition->createConditionRule(LastLoginDateConditionRule::class);
+        $rule->rangeType = 'notempty';
+
+        $query = User::find();
+        $rule->modifyQuery($query, $query);
+
+        $results = $query->all();
+
+        expect($results)->toHaveCount(1);
+        expect($results[0]->id)->toBe($loggedInUser->id);
+    });
+});
+
+describe('AffiliatedSiteConditionRule', function () {
+    it('matchElement returns true when user is affiliated with the specified site', function () {
+        Site::factory()->create(['handle' => 'extraSite']);
+        Sites::refreshSites();
+
+        $primarySite = Sites::getPrimarySite();
+        $userModel = UserModel::factory()->create(['affiliatedSiteId' => $primarySite->id]);
+
+        $condition = new UserCondition(User::class);
+        $rule = $condition->createConditionRule(AffiliatedSiteConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$primarySite->uid];
+
+        $element = $userModel->asElement();
+
+        expect($rule->matchElement($element))->toBeTrue();
+    });
+
+    it('matchElement returns false when user is not affiliated with the specified site', function () {
+        Site::factory()->create(['handle' => 'extraSite']);
+        Sites::refreshSites();
+
+        $primarySite = Sites::getPrimarySite();
+        $userModel = UserModel::factory()->create(['affiliatedSiteId' => $primarySite->id]);
+
+        $condition = new UserCondition(User::class);
+        $rule = $condition->createConditionRule(AffiliatedSiteConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = ['bogus-uid'];
+
+        $element = $userModel->asElement();
+
+        expect($rule->matchElement($element))->toBeFalse();
+    });
+
+    it('modifyQuery filters users by affiliated site', function () {
+        $primarySite = Sites::getPrimarySite();
+
+        $affiliated = UserModel::factory()->create(['affiliatedSiteId' => $primarySite->id]);
+        $notAffiliated = UserModel::factory()->create(['affiliatedSiteId' => null]);
+
+        $condition = new UserCondition(User::class);
+        $rule = $condition->createConditionRule(AffiliatedSiteConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$primarySite->uid];
+
+        $query = User::find();
+        $rule->modifyQuery($query, $query);
+
+        $resultIds = collect($query->all())->pluck('id')->toArray();
+
+        expect($resultIds)->toContain($affiliated->id);
+        expect($resultIds)->not->toContain($notAffiliated->id);
     });
 });

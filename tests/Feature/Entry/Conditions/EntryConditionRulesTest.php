@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
+use CraftCms\Cms\Entry\Conditions\AuthorGroupConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule;
+use CraftCms\Cms\Entry\Conditions\FieldConditionRule;
 use CraftCms\Cms\Entry\Conditions\PostDateConditionRule;
+use CraftCms\Cms\Entry\Conditions\SavableConditionRule;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -17,6 +23,10 @@ use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
+use Illuminate\Support\Facades\DB;
+
+use function Pest\Laravel\actingAs;
 
 describe('SectionConditionRule', function () {
     it('matches an element in the selected section', function () {
@@ -162,6 +172,29 @@ describe('TypeConditionRule', function () {
         expect($rule->matchElement($element1))->toBeFalse();
         expect($rule->matchElement($element2))->toBeTrue();
     });
+
+    it('filters query to only entries with the selected entry type', function () {
+        $entryType1 = EntryType::factory()->create();
+        $entryType2 = EntryType::factory()->create();
+
+        $section = Section::factory()->withEntryTypes($entryType1, $entryType2)->create(['type' => SectionType::Channel]);
+
+        $entry1 = EntryModel::factory()->forSection($section)->forEntryType($entryType1)->create();
+        EntryModel::factory()->forSection($section)->forEntryType($entryType2)->create();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(TypeConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$entryType1->uid];
+
+        $query = Entry::find();
+        $rule->modifyQuery($query, $query);
+
+        $results = $query->all();
+
+        expect($results)->toHaveCount(1);
+        expect($results[0]->id)->toBe($entry1->id);
+    });
 });
 
 describe('AuthorConditionRule', function () {
@@ -298,4 +331,219 @@ describe('ExpiryDateConditionRule', function () {
         'notempty does not match entry without expiry date' => [fn () => EntryModel::factory()->create(), 'notempty', false, false],
         'empty matches entry without expiry date' => [fn () => EntryModel::factory()->create(), 'empty', false, true],
     ]);
+
+    it('filters query to only entries with an expiry date', function () {
+        $expiredEntry = EntryModel::factory()->expired()->create();
+        EntryModel::factory()->create();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(ExpiryDateConditionRule::class);
+        $rule->rangeType = 'notempty';
+
+        $query = Entry::find()->status(null);
+        $rule->modifyQuery($query, $query);
+
+        $results = $query->all();
+
+        expect($results)->toHaveCount(1);
+        expect($results[0]->id)->toBe($expiredEntry->id);
+    });
+});
+
+describe('AuthorGroupConditionRule', function () {
+    beforeEach(function () {
+        DB::table(Table::USERGROUPS)->delete();
+        Edition::set(Edition::Pro);
+    });
+
+    it('isSelectable returns true when groups exist', function () {
+        UserGroupModel::factory()->create();
+
+        expect(AuthorGroupConditionRule::isSelectable())->toBeTrue();
+    });
+
+    it('isSelectable returns false when no groups exist', function () {
+        expect(AuthorGroupConditionRule::isSelectable())->toBeFalse();
+    });
+
+    it('matches an element whose author is in the selected group', function () {
+        $group = UserGroupModel::factory()->create();
+        $author = UserModel::factory()->create();
+        $group->users()->attach($author);
+
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+        $element = Entry::find()->id($entry->id)->one();
+        $element->setAuthorId($author->id);
+        Elements::saveElement($element);
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(AuthorGroupConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$group->uid];
+
+        $element = Entry::find()->id($entry->id)->one();
+
+        expect($rule->matchElement($element))->toBeTrue();
+    });
+
+    it('does not match an element whose author is not in the selected group', function () {
+        $group = UserGroupModel::factory()->create();
+        $author = UserModel::factory()->create();
+
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+        $element = Entry::find()->id($entry->id)->one();
+        $element->setAuthorId($author->id);
+        Elements::saveElement($element);
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(AuthorGroupConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$group->uid];
+
+        $element = Entry::find()->id($entry->id)->one();
+
+        expect($rule->matchElement($element))->toBeFalse();
+    });
+
+    it('filters query to only entries authored by a member of the selected group', function () {
+        $group = UserGroupModel::factory()->create();
+        $author = UserModel::factory()->create();
+        $otherAuthor = UserModel::factory()->create();
+        $group->users()->attach($author);
+
+        $entry1 = EntryModel::factory()->create();
+        $entry2 = EntryModel::factory()->create();
+        Sections::refreshSections();
+
+        $element1 = Entry::find()->id($entry1->id)->one();
+        $element1->setAuthorId($author->id);
+        Elements::saveElement($element1);
+
+        $element2 = Entry::find()->id($entry2->id)->one();
+        $element2->setAuthorId($otherAuthor->id);
+        Elements::saveElement($element2);
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(AuthorGroupConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$group->uid];
+
+        $condition->addConditionRule($rule);
+
+        $query = Entry::find();
+        $condition->modifyQuery($query);
+
+        $results = $query->all();
+
+        expect($results)->toHaveCount(1);
+        expect($results[0]->id)->toBe($entry1->id);
+    });
+});
+
+describe('SavableConditionRule', function () {
+    beforeEach(function () {
+        actingAs(UserModel::factory()->create(['admin' => true]));
+    });
+
+    it('matches an element the acting user can save', function () {
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+        $element = Entry::find()->id($entry->id)->one();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(SavableConditionRule::class);
+        $rule->value = true;
+
+        expect($rule->matchElement($element))->toBeTrue();
+    });
+
+    it('modifies query without throwing and returns results for the acting user', function () {
+        EntryModel::factory()->create();
+        Sections::refreshSections();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(SavableConditionRule::class);
+        $rule->value = true;
+
+        $query = Entry::find();
+        $rule->modifyQuery($query, $query);
+
+        expect($query->count())->toBeGreaterThanOrEqual(1);
+    });
+});
+
+describe('ViewableConditionRule', function () {
+    beforeEach(function () {
+        actingAs(UserModel::factory()->create(['admin' => true]));
+    });
+
+    it('matches an element the acting user can view', function () {
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+        $element = Entry::find()->id($entry->id)->one();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(ViewableConditionRule::class);
+        $rule->value = true;
+
+        expect($rule->matchElement($element))->toBeTrue();
+    });
+
+    it('modifies query without throwing and returns results for the acting user', function () {
+        EntryModel::factory()->create();
+        Sections::refreshSections();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(ViewableConditionRule::class);
+        $rule->value = true;
+
+        $query = Entry::find();
+        $rule->modifyQuery($query, $query);
+
+        expect($query->count())->toBeGreaterThanOrEqual(1);
+    });
+});
+
+describe('FieldConditionRule', function () {
+    it('matches a top-level entry with the empty operator', function () {
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+        $element = Entry::find()->id($entry->id)->one();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(FieldConditionRule::class);
+        $rule->operator = 'empty';
+
+        expect($rule->matchElement($element))->toBeTrue();
+    });
+
+    it('does not match a top-level entry with the not_empty operator', function () {
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+        $element = Entry::find()->id($entry->id)->one();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(FieldConditionRule::class);
+        $rule->operator = 'notempty';
+
+        expect($rule->matchElement($element))->toBeFalse();
+    });
+
+    it('filters query to top-level entries with the empty operator', function () {
+        $entry = EntryModel::factory()->create();
+        Sections::refreshSections();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(FieldConditionRule::class);
+        $rule->operator = 'empty';
+
+        $query = Entry::find();
+        $rule->modifyQuery($query, $query);
+
+        $results = $query->all();
+
+        expect(collect($results)->pluck('id')->toArray())->toContain($entry->id);
+    });
 });
