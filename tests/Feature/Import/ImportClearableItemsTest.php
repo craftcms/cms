@@ -62,6 +62,7 @@ beforeEach(function () {
         'title' => 'imported entry',
         'sectionId' => $this->section->handle,
         'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
     ], $fieldValues);
 
     // seed the field value through the same import pipeline, since the entry factory can't
@@ -96,13 +97,6 @@ it('clears an existing field value when the provided value is whitespace only an
     expect($entry->getFieldValue('myPlainText'))->toBeNull();
 });
 
-// KNOWN FAILURE: unrelated to clearableItems. ElementImporter::getRootElement() builds its lookup
-// query with ->drafts()->status(null) — ->drafts() defaults to $value=true, which inner-joins the
-// drafts table and therefore matches ONLY drafts, excluding canonical/live elements entirely (see
-// QueriesDraftsAndRevisions::applyDraftParams()). So matchCriteria never finds the canonical entry
-// seeded in beforeEach(), a brand new entry gets created on every import instead, and the "found"
-// entry below is actually a different, unrelated row with no field value set. Left red intentionally
-// until ->drafts() is fixed to ->drafts(null) (or similar) separately.
 it('leaves an existing field value untouched when the field is not marked clearable, even if the value is missing/empty', function () {
     $this->import->importItem($this->importer, ($this->entryData)());
 

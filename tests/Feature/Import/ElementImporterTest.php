@@ -12,6 +12,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\ImportHelper;
 
 it('returns every field layout provider when the element type has more than one field layout', function () {
     $fieldLayoutA = FieldLayout::factory()->create(['type' => EntryElement::class]);
@@ -20,9 +21,7 @@ it('returns every field layout provider when the element type has more than one 
     $entryTypeB = EntryType::factory()->withFieldLayout($fieldLayoutB)->create(['name' => 'Provider B', 'handle' => 'providerB']);
     Section::factory()->withEntryTypes($entryTypeA, $entryTypeB)->create(['type' => SectionType::Channel]);
 
-    $importer = ElementImporter::create()->className(EntryElement::class);
-
-    $providers = $importer->getAvailableFieldLayoutProviders();
+    $providers = ImportHelper::getAvailableFieldLayoutProviders(EntryElement::class);
     $values = array_column($providers, 'value');
 
     expect($values)->toContain($fieldLayoutA->uid)
@@ -31,9 +30,7 @@ it('returns every field layout provider when the element type has more than one 
 });
 
 it('falls back to the singular field layout when the element type has none via the plural method', function () {
-    $importer = ElementImporter::create()->className(Address::class);
-
-    $providers = $importer->getAvailableFieldLayoutProviders();
+    $providers = ImportHelper::getAvailableFieldLayoutProviders(Address::class);
 
     expect($providers)->toHaveCount(1)
         ->and($providers[0]['label'])->toBe(Address::displayName())
