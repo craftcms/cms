@@ -177,11 +177,13 @@ it('shows changes between disabled relation targets in the activity timeline', f
 
     expect($stored->getFieldValue($field->handle)->status(null)->ids())->toBe([$newTarget->id]);
 
-    postJson(action(ActivityTimelineController::class), [
+    $changes = postJson(action(ActivityTimelineController::class), [
         'elementType' => Entry::class,
         'elementId' => $entry->id,
         'siteId' => $entry->siteId,
-    ])->assertOk()->assertJsonCount(1, 'events')->assertJsonPath('events.0.changes', [[
+    ])->assertOk()->assertJsonCount(1, 'events')->json('events.0.changes');
+
+    expect($changes)->toEqual([[
         'label' => $field->name,
         'old' => [[
             'elementType' => Entry::class,
