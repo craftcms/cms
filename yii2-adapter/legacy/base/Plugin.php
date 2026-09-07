@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -19,6 +22,7 @@ use CraftCms\Cms\Plugin\Concerns\HasSettings;
 use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
@@ -76,10 +80,10 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * @var Model|bool|null The model used to store the plugin’s settings
+     * @var PluginSettings|false|null The model used to store the plugin’s settings
      * @see getSettings()
      */
-    private bool|null|Model $_settings = null;
+    private PluginSettings|false|null $_settings = null;
 
     /**
      * @inheritdoc
@@ -176,7 +180,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getSettings(): ?Model
+    public function getSettings(): ?PluginSettings
     {
         if (!isset($this->_settings)) {
             $this->_settings = $this->createSettingsModel() ?: false;
@@ -200,7 +204,7 @@ class Plugin extends Module implements PluginInterface
             return;
         }
 
-        $model->setAttributes($settings, false);
+        $model->setAttributes($settings);
     }
 
     /**
@@ -291,9 +295,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Creates and returns the model used to store the plugin’s settings.
      *
-     * @return Model|null
+     * @return PluginSettings|null
      */
-    protected function createSettingsModel(): ?Model
+    protected function createSettingsModel(): ?PluginSettings
     {
         return null;
     }

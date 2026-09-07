@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\FluentTestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
@@ -45,15 +46,17 @@ it('dispatches static config factories independently for distinct plugin types',
         ->and(FluentTestPlugin::config()->foo)->toBeNull();
 });
 
-it('requires static factory opt in while preserving instance-only settings hooks', function () {
+it('uses the static factory for retained runtime settings and fresh configuration', function () {
+    TestPlugin::$useSettings = true;
     $plugin = new TestPlugin(app());
+    $settings = $plugin->getSettings();
+    $settings->foo('Runtime');
 
-    expect($plugin->getSettings())->toBeInstanceOf(TestPluginSettings::class)
-        ->toBe($plugin->getSettings());
-    expect(fn () => TestPlugin::config())->toThrow(
-        LogicException::class,
-        'Plugin ['.TestPlugin::class.'] must implement createSettings() to use static config().',
-    );
+    expect($settings)->toBeInstanceOf(TestPluginSettings::class)
+        ->toBe($plugin->getSettings())
+        ->and(TestPlugin::config())->not->toBe($settings)
+        ->and(TestPlugin::config()->foo)->toBeNull()
+        ->and($plugin->getSettings()->foo)->toBe('Runtime');
 });
 
 it('keeps plugins without a settings factory valid', function () {
@@ -62,6 +65,25 @@ it('keeps plugins without a settings factory valid', function () {
     expect($plugin->getSettings())->toBeNull()
         ->and($plugin->getSettings())->toBeNull();
     expect(fn () => $plugin::config())->toThrow(LogicException::class, $plugin::class);
+});
+
+it('retains an absent runtime model without calling the factory again', function () {
+    $plugin = new class(app()) extends Plugin
+    {
+        public static int $settingsCreated = 0;
+
+        protected static function createSettings(): ?PluginSettings
+        {
+            self::$settingsCreated++;
+
+            return null;
+        }
+    };
+    $created = $plugin::create(['handle' => 'no-settings', 'settings' => ['foo' => 'Ignored']]);
+
+    expect($created->getSettings())->toBeNull()
+        ->and($created->getSettings())->toBeNull()
+        ->and($plugin::$settingsCreated)->toBe(1);
 });
 
 it('creates independent concrete settings with explicit fluent setters', function () {

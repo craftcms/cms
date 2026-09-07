@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
@@ -238,11 +237,6 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         return null;
     }
 
-    protected function createSettingsModel(): ?Validatable
-    {
-        return static::createSettings();
-    }
-
     #[Override]
     /** @param array<string, mixed> $config */
     public static function create(array $config): PluginInterface
@@ -251,9 +245,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
         foreach ($config as $key => $value) {
             if ($key === 'settings') {
-                $model = $plugin->createSettingsModel();
-                $model?->setAttributes($value);
-                $plugin->settings = $model;
+                $plugin->getSettings()?->setAttributes($value);
 
                 continue;
             }

@@ -27,7 +27,6 @@ use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettings;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -333,36 +332,6 @@ it('can save settings', function () {
     Event::assertDispatched(PluginSettingsSaved::class);
 });
 
-it('prefers plugin config values over stored settings', function () {
-    app()->offsetUnset(TestPlugin::class);
-
-    Config::set('craft.test-plugin', [
-        'foo' => 'from-config',
-    ]);
-
-    $plugin = $this->plugins->createPlugin('test-plugin', [
-        ...$this->plugins->getStoredPluginInfo('test-plugin'),
-        'settings' => [
-            'foo' => 'from-settings',
-        ],
-    ]);
-
-    expect($plugin)->toBeInstanceOf(TestPlugin::class);
-    expect($plugin->getSettings()?->foo)->toBe('from-config');
-});
-
-it('can cancel saving with a before event', function () {
-    $plugin = $this->plugins->getPlugin('test-plugin');
-
-    expect($plugin->getSettings()->foo)->toBeNull();
-
-    Event::listen(SavingPluginSettings::class, function (SavingPluginSettings $event) {
-        $event->isValid = false;
-    });
-
-    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
-});
-
 it('applies array and object configuration over stored settings without changing the input object', function (string $kind, ?string $expectedBar) {
     app()->offsetUnset(TestPlugin::class);
     $craftConfig = Config::get('craft', []);
@@ -436,7 +405,7 @@ it('uses full defaults and shallow nested replacement without replaying fluent s
     app()->offsetUnset(TestPlugin::class);
     app()->bind(TestPlugin::class, fn () => new class(app()) extends TestPlugin
     {
-        protected function createSettingsModel(): SnapshotPluginSettings
+        protected static function createSettings(): SnapshotPluginSettings
         {
             return new SnapshotPluginSettings;
         }
@@ -509,22 +478,18 @@ it('rejects unsupported configuration with its key and actual type', function (C
     'late settings object' => [TestPluginSettings::create(...)],
 ]);
 
-it('keeps normalized snapshots compatible with absent models including empty snapshots', function (bool $empty) {
+it('keeps configuration compatible with plugins without settings', function (Closure $makeInput) {
     app()->offsetUnset(TestPlugin::class);
     TestPlugin::$useSettings = false;
-    Config::set('craft.test-plugin', $empty ? new class extends PluginSettings {} : TestPluginSettings::create()->foo('File'));
+    Config::set('craft.test-plugin', $makeInput());
     new ConfigServiceProvider(app())->register();
 
     expect($this->plugins->createPlugin('test-plugin', [])->getSettings())->toBeNull();
-})->with([true, false]);
-
-it('keeps array input compatible with plugins without settings', function () {
-    app()->offsetUnset(TestPlugin::class);
-    TestPlugin::$useSettings = false;
-    Config::set('craft.test-plugin', ['foo' => 'File']);
-
-    expect($this->plugins->createPlugin('test-plugin', [])->getSettings())->toBeNull();
-});
+})->with([
+    'empty snapshot' => [fn () => new class extends PluginSettings {}],
+    'populated snapshot' => [fn () => TestPluginSettings::create()->foo('File')],
+    'sparse array' => [fn () => ['foo' => 'File']],
+]);
 
 it('accepts an empty snapshot when the plugin has a model', function () {
     app()->offsetUnset(TestPlugin::class);
@@ -560,26 +525,23 @@ it('saves submitted overrides and omitted file values without mutating configura
 
 it('saves full validation data even when configuration data is customized', function () {
     app()->offsetUnset(TestPlugin::class);
-    $input = new class extends TestPluginSettings
+    $plugin = new class(app()) extends TestPlugin
     {
-        public function configData(): array
+        protected static function createSettings(): TestPluginSettings
         {
-            return ['foo' => 'Config foo'];
+            $settings = new class extends TestPluginSettings
+            {
+                public function configData(): array
+                {
+                    return ['foo' => 'Config foo'];
+                }
+            };
+
+            return $settings->bar('Input bar');
         }
     };
-    $input->foo('Input foo')->bar('Input bar');
-    app()->bind(TestPlugin::class, fn () => new class(app(), $input) extends TestPlugin
-    {
-        public function __construct(Application $app, private readonly TestPluginSettings $settingsInput)
-        {
-            parent::__construct($app);
-        }
-
-        protected function createSettingsModel(): TestPluginSettings
-        {
-            return clone $this->settingsInput;
-        }
-    });
+    app()->bind(TestPlugin::class, fn () => $plugin);
+    $input = $plugin::config()->foo('Input foo')->bar('Input bar');
     Config::set('craft.test-plugin', $input);
     new ConfigServiceProvider(app())->register();
     $plugin = $this->plugins->createPlugin('test-plugin', []);
@@ -618,16 +580,6 @@ it('retains live mutations but does not stage failed or canceled settings saves'
         ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File', 'bar' => 'File bar'])
         ->and($input->validationData())->toBe(['foo' => 'File', 'bar' => 'File bar']);
 })->with(['validation', 'hook', 'event']);
-
-it('can cancel saving with beforeSaveSettings', function () {
-    TestPlugin::$beforeSaveSettings = false;
-
-    $plugin = $this->plugins->getPlugin('test-plugin');
-
-    expect($plugin->getSettings()->foo)->toBeNull();
-
-    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
-});
 
 it('can run a hook on afterSaveSettings', function () {
     $triggered = false;

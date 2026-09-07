@@ -25,10 +25,10 @@ use CraftCms\Cms\Gql\Mutations\Mutation;
 use CraftCms\Cms\Gql\Queries\Query;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
 use CraftCms\Cms\Utility\Utility;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Override;
@@ -324,7 +324,7 @@ class TestPlugin extends Plugin
     }
 
     #[Override]
-    protected function createSettingsModel(): ?Validatable
+    protected static function createSettings(): ?PluginSettings
     {
         if (! self::$useSettings) {
             return null;

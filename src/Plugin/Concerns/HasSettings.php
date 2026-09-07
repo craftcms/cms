@@ -9,9 +9,9 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Plugin\PluginSettingsForm;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 
@@ -34,15 +34,15 @@ trait HasSettings
     public bool $hasReadOnlyCpSettings = false;
 
     /**
-     * @var Validatable|bool|null The model used to store the plugin’s settings
+     * @var PluginSettings|false|null The model used to store the plugin’s settings
      *
      * @see getSettings()
      */
-    private bool|null|Validatable $settings = null;
+    private PluginSettings|false|null $settings = null;
 
-    public function getSettings(): ?Validatable
+    public function getSettings(): ?PluginSettings
     {
-        $this->settings ??= $this->createSettingsModel() ?: false;
+        $this->settings ??= static::createSettings() ?? false;
 
         return $this->settings ?: null;
     }
@@ -111,14 +111,6 @@ trait HasSettings
     public function afterSaveSettings(): void
     {
         // carry on
-    }
-
-    /**
-     * Creates and returns the model used to store the plugin’s settings.
-     */
-    protected function createSettingsModel(): ?Validatable
-    {
-        return null;
     }
 
     public function settingsForm(FormContext $context = new FormContext): ?Form
