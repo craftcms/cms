@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Support\File;
+use Illuminate\Filesystem\Filesystem;
 
 beforeEach(function () {
     $this->sandboxPath = storage_path('framework/testing/file-test/'.uniqid('', true));
@@ -420,6 +421,25 @@ describe('makeDirectory', function () {
 });
 
 describe('cleanDirectory', function () {
+    test('reports failed deletions when cleaning with exclusions', function (bool $directory) {
+        $path = $this->sandboxPath.'/blocked';
+
+        if ($directory) {
+            mkdir($path);
+        } else {
+            file_put_contents($path, 'content');
+        }
+
+        $this->partialMock(Filesystem::class)
+            ->shouldReceive($directory ? 'deleteDirectory' : 'delete')
+            ->with($path)
+            ->once()
+            ->andReturn(false);
+
+        expect(File::cleanDirectory($this->sandboxPath, except: ['.*']))->toBeFalse();
+        expect(file_exists($path))->toBeTrue();
+    })->with(['file' => false, 'directory' => true]);
+
     test('removes all contents', function () {
         $dir = $this->sandboxPath.'/clean-test';
         File::makeDirectory($dir);

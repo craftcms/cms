@@ -63,6 +63,20 @@ it('preserves exported files when a yaml written listener fails', function () {
     expect(Cache::has(ProjectConfig::FILE_ISSUES_CACHE_KEY))->toBeFalse();
 });
 
+it('preserves hidden files and directories when replacing YAML exports', function () {
+    File::writeToFile($this->directory.'/project/.gitignore', 'keep');
+    File::writeToFile($this->directory.'/project/.hidden/file.txt', 'keep');
+    File::writeToFile($this->directory.'/project/obsolete/file.yaml', 'obsolete: true');
+
+    $storage = new ConfigStorage;
+    $storage->writeYaml('project', ['system' => ['name' => 'Example']]);
+
+    expect(File::get($this->directory.'/project/.gitignore'))->toBe('keep');
+    expect(File::get($this->directory.'/project/.hidden/file.txt'))->toBe('keep');
+    expect(File::exists($this->directory.'/project/obsolete'))->toBeFalse();
+    expect($storage->readYaml('project'))->toBe(['system' => ['name' => 'Example']]);
+});
+
 it('uses configured Unix permissions for export and delta directories', function () {
     $mode = Cms::config()->defaultDirMode;
     $mask = umask(0);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
+/** @internal */
 class ConfigChanges
 {
     /** @return array<string, mixed> */
@@ -48,7 +49,6 @@ class ConfigChanges
      */
     public static function pending(array $old, array $new, bool $force = false): array
     {
-        unset($old['imports'], $new['imports']);
         $old = self::leaves($old);
         $new = self::leaves($new);
         $paths = ['newItems' => [], 'removedItems' => [], 'changedItems' => []];
@@ -76,21 +76,18 @@ class ConfigChanges
             // - foo1.bar
             // - foo2.bar.baz
             // - foo2.bar
-            usort($category, function (string $a, string $b): int {
-                $a = ProjectConfigHelper::pathSegments($a);
-                $b = ProjectConfigHelper::pathSegments($b);
+            usort($category, function (string $left, string $right): int {
+                $leftSegments = ProjectConfigHelper::pathSegments($left);
+                $rightSegments = ProjectConfigHelper::pathSegments($right);
+                $sharedDepth = min(count($leftSegments), count($rightSegments));
 
-                foreach ($a as $index => $segment) {
-                    if (! array_key_exists($index, $b)) {
-                        return -1;
-                    }
-
-                    if ($segment !== $b[$index]) {
-                        return $segment <=> $b[$index];
+                for ($index = 0; $index < $sharedDepth; $index++) {
+                    if ($leftSegments[$index] !== $rightSegments[$index]) {
+                        return $leftSegments[$index] <=> $rightSegments[$index];
                     }
                 }
 
-                return count($b) <=> count($a);
+                return count($rightSegments) <=> count($leftSegments);
             });
         }
 

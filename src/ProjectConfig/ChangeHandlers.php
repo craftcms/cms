@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 
+/** @internal */
 class ChangeHandlers
 {
     /** @var list<array{event: string, pattern: string, depth: int, handler: callable, data: mixed}> */
@@ -19,6 +20,7 @@ class ChangeHandlers
     public function register(string $event, string $path, callable $handler, mixed $data): void
     {
         $pattern = str_replace('\{uid\}', '('.ProjectConfig::UID_PATTERN.')', preg_quote($path, '~'));
+
         $this->handlers[] = [
             'event' => $event,
             'pattern' => '~^('.$pattern.')(?:\.|$)~',
@@ -35,7 +37,11 @@ class ChangeHandlers
     public function dispatch(ConfigEvent $event, Closure $parentEvent): void
     {
         foreach ($this->handlers as $registration) {
-            if (! $event instanceof $registration['event'] || ! preg_match($registration['pattern'], $event->path, $matches)) {
+            if (! $event instanceof $registration['event']) {
+                continue;
+            }
+
+            if (! preg_match($registration['pattern'], $event->path, $matches)) {
                 continue;
             }
 

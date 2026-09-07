@@ -6,27 +6,44 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources as ElementSourceTypes;
+use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Facades\EntryTypes;
-use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\Filesystems;
-use CraftCms\Cms\Support\Facades\Gql;
-use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\SiteGroups;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\UserGroups;
-use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Site\SiteGroups;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\DB;
+use CraftCms\Cms\User\UserGroups;
+use Illuminate\Database\DatabaseManager;
 use InvalidArgumentException;
 use RuntimeException;
 
+/** @internal */
 class ConfigRebuilder
 {
+    public function __construct(
+        private readonly AssetTransformers $assetTransformers,
+        private readonly ImageTransforms $imageTransforms,
+        private readonly Conditions $conditions,
+        private readonly EntryTypes $entryTypes,
+        private readonly Fields $fields,
+        private readonly Filesystems $filesystems,
+        private readonly Gql $gql,
+        private readonly Sections $sections,
+        private readonly SiteGroups $siteGroups,
+        private readonly Sites $sites,
+        private readonly UserGroups $userGroups,
+        private readonly Volumes $volumes,
+        private readonly DatabaseManager $database,
+    ) {}
+
     /**
      * @param  array<string|int, mixed>  $config
      * @return array<string|int, mixed>
@@ -37,26 +54,26 @@ class ConfigRebuilder
         $config[ProjectConfig::PATH_DATE_MODIFIED] = now()->getTimestamp();
         $config[ProjectConfig::PATH_SYSTEM]['schemaVersion'] = Info::fetch()->schemaVersion;
         $config[ProjectConfig::PATH_ADDRESSES] = $this->fieldLayout(Address::class);
-        $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] = $this->components(app(AssetTransformers::class)->getAllAssetTransformers());
-        $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components(EntryTypes::getAllEntryTypes());
-        $config[ProjectConfig::PATH_FIELDS] = collect(Fields::getAllFields('global'))
-            ->mapWithKeys(fn ($field): array => [$field->uid => Fields::createFieldConfig($field)])
+        $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] = $this->components($this->assetTransformers->getAllAssetTransformers());
+        $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components($this->entryTypes->getAllEntryTypes());
+        $config[ProjectConfig::PATH_FIELDS] = collect($this->fields->getAllFields('global'))
+            ->mapWithKeys(fn ($field): array => [$field->uid => $this->fields->createFieldConfig($field)])
             ->all();
-        $config[ProjectConfig::PATH_FS] = collect(Filesystems::getAllFilesystems())
-            ->mapWithKeys(fn ($filesystem): array => [$filesystem->handle => Filesystems::createFilesystemConfig($filesystem)])
+        $config[ProjectConfig::PATH_FS] = collect($this->filesystems->getAllFilesystems())
+            ->mapWithKeys(fn ($filesystem): array => [$filesystem->handle => $this->filesystems->createFilesystemConfig($filesystem)])
             ->all();
-        $config[ProjectConfig::PATH_IMAGE_TRANSFORMS] = $this->components(app(ImageTransforms::class)->getAllTransforms());
-        $config[ProjectConfig::PATH_SECTIONS] = $this->components(Sections::getAllSections());
-        $config[ProjectConfig::PATH_SITES] = $this->components(Sites::getAllSites(true));
-        $config[ProjectConfig::PATH_SITE_GROUPS] = $this->components(SiteGroups::getAllGroups());
-        $config[ProjectConfig::PATH_VOLUMES] = $this->components(Volumes::getAllVolumes());
-        $config[ProjectConfig::PATH_USERS]['groups'] = $this->components(UserGroups::getAllGroups());
+        $config[ProjectConfig::PATH_IMAGE_TRANSFORMS] = $this->components($this->imageTransforms->getAllTransforms());
+        $config[ProjectConfig::PATH_SECTIONS] = $this->components($this->sections->getAllSections());
+        $config[ProjectConfig::PATH_SITES] = $this->components($this->sites->getAllSites(true));
+        $config[ProjectConfig::PATH_SITE_GROUPS] = $this->components($this->siteGroups->getAllGroups());
+        $config[ProjectConfig::PATH_VOLUMES] = $this->components($this->volumes->getAllVolumes());
+        $config[ProjectConfig::PATH_USERS]['groups'] = $this->components($this->userGroups->getAllGroups());
         unset($config[ProjectConfig::PATH_USERS]['fieldLayouts']);
         $config[ProjectConfig::PATH_USERS] = array_replace($config[ProjectConfig::PATH_USERS], $this->fieldLayout(User::class));
 
-        $token = Gql::getPublicToken();
+        $token = $this->gql->getPublicToken();
         $config[ProjectConfig::PATH_GRAPHQL] = [
-            'schemas' => $this->components(Gql::getSchemas()),
+            'schemas' => $this->components($this->gql->getSchemas()),
             'publicToken' => [
                 'enabled' => $token->enabled ?? false,
                 'expiryDate' => $token?->expiryDate?->getTimestamp(),
@@ -66,7 +83,7 @@ class ConfigRebuilder
         $plugins = $config[ProjectConfig::PATH_PLUGINS] ?? [];
         $config[ProjectConfig::PATH_PLUGINS] = [];
 
-        foreach (DB::table(Table::PLUGINS)->get(['handle', 'schemaVersion']) as $plugin) {
+        foreach ($this->database->table(Table::PLUGINS)->get(['handle', 'schemaVersion']) as $plugin) {
             $config[ProjectConfig::PATH_PLUGINS][$plugin->handle] = array_replace($plugins[$plugin->handle] ?? [], ['schemaVersion' => $plugin->schemaVersion]);
         }
 
@@ -79,7 +96,7 @@ class ConfigRebuilder
                 }
 
                 try {
-                    $source['condition'] = Conditions::createCondition($source['condition'])->getConfig();
+                    $source['condition'] = $this->conditions->createCondition($source['condition'])->getConfig();
                 } catch (InvalidArgumentException|RuntimeException) {
                     // Preserve conditions whose plugin is currently unavailable.
                 }
@@ -103,7 +120,7 @@ class ConfigRebuilder
     /** @return array{fieldLayouts?: array<string, mixed>} */
     private function fieldLayout(string $elementType): array
     {
-        $layout = Fields::getLayoutByType($elementType, false);
+        $layout = $this->fields->getLayoutByType($elementType, false);
         $config = $layout?->getConfig();
 
         return $config ? ['fieldLayouts' => [$layout->uid => $config]] : [];

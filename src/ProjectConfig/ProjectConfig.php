@@ -348,7 +348,7 @@ class ProjectConfig
     public function find(callable $callback, bool $fromExternalConfig = false): array
     {
         $matches = [];
-        $visit = function (array $data, string $path) use (&$visit, &$matches, $callback): void {
+        $findMatches = function (array $data, string $path) use (&$findMatches, &$matches, $callback): void {
             foreach ($data as $key => $value) {
                 if (! is_array($value)) {
                     continue;
@@ -360,11 +360,11 @@ class ProjectConfig
                 if ($callback($value, $itemPath)) {
                     $matches[$itemPath] = $value;
                 } else {
-                    $visit($value, $itemPath);
+                    $findMatches($value, $itemPath);
                 }
             }
         };
-        $visit($this->get(null, $fromExternalConfig), '');
+        $findMatches($this->get(null, $fromExternalConfig), '');
 
         return $matches;
     }
@@ -999,7 +999,7 @@ class ProjectConfig
             $this->reset();
             $this->readOnly = false;
             $this->muteEvents = true;
-            $rebuilt = new ProjectConfigRebuilt(new ConfigRebuilder()->build($this->get()));
+            $rebuilt = new ProjectConfigRebuilt(app(ConfigRebuilder::class)->build($this->get()));
             event($rebuilt);
             $this->commit(self::PATH_META_NAMES, null);
 

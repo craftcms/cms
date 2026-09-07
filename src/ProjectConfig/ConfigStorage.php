@@ -22,6 +22,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 
+/** @internal */
 class ConfigStorage
 {
     public function dependency(): CallbackDependency
@@ -247,35 +248,14 @@ class ConfigStorage
         }
 
         $path = Path::configDelta(ProjectConfig::CONFIG_DELTA_FILENAME);
-
-        if ($maxDeltas > 1) {
-            File::delete($path.'.'.($maxDeltas - 1));
-        }
-
-        for ($index = $maxDeltas - 2; $index >= 0; $index--) {
-            $source = $index === 0 ? $path : "$path.$index";
-
-            if (File::exists($source)) {
-                File::move($source, $path.'.'.($index + 1));
-            }
-        }
-
+        File::cycle($path, $maxDeltas);
         File::writeToFile($path, Yaml::dump(['dateApplied' => now()->format('Y-m-d H:i:s'), 'changes' => $entries], 20, 2));
     }
 
     private function clearVisibleFiles(string $directory): void
     {
-        // Delete everything except hidden files/folders.
-        foreach (glob($directory.'/*') ?: [] as $path) {
-            if (is_dir($path) && ! is_link($path)) {
-                $deleted = File::deleteDirectory($path);
-            } else {
-                $deleted = File::delete($path);
-            }
-
-            if (! $deleted) {
-                throw new RuntimeException("Unable to remove $path.");
-            }
+        if (! File::cleanDirectory($directory, except: ['.*'])) {
+            throw new RuntimeException("Unable to clear $directory.");
         }
     }
 }
