@@ -28,6 +28,7 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
@@ -129,7 +130,7 @@ class Assets
         return $this->elements->saveElement($asset);
     }
 
-    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true): ?string
+    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true, ImageTransformMode $mode = ImageTransformMode::Crop): ?string
     {
         $height ??= $width;
 
@@ -137,6 +138,7 @@ class Assets
             asset: $asset,
             width: $width,
             height: $height,
+            mode: $mode,
         ));
 
         if ($event->url !== null) {
@@ -149,7 +151,7 @@ class Assets
             $url = $this->assetTransformers->transform($asset, [
                 'width' => $width,
                 'height' => $height,
-                'mode' => 'crop',
+                'mode' => $mode->value,
             ])->url;
         } catch (NotSupportedException) {
             return $iconFallback ? Url::actionUrl('assets/icon', [

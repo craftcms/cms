@@ -49,6 +49,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -1345,7 +1346,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return app(PreviewHtml::class)->elementPreviewHtml($elements->all());
     }
 
-    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
@@ -1353,7 +1354,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $value = (clone $value)->eagerly($handle);
         }
 
-        return $value->one()?->getThumbHtml($size);
+        return $value->one()?->getThumbHtml($size, $mode);
     }
 
     /**

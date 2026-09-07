@@ -64,6 +64,7 @@ use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
@@ -2061,21 +2062,13 @@ JS, [
         return Html::encodeSpaces(AssetsHelper::generateUrl($this));
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($this->isFolder) {
             return null;
         }
 
-        $forCard = $size % 128 === 0;
-
-        if (! $forCard && $this->getWidth() && $this->getHeight()) {
-            [$width, $height] = AssetsHelper::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $size, $size);
-        } else {
-            $width = $height = $size;
-        }
-
-        return AssetsService::getThumbUrl($this, $width, $height, false);
+        return AssetsService::getThumbUrl($this, $size, $size, false, $mode);
     }
 
     protected function thumbSvg(): string
