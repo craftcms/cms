@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Сортувати за',
     'Sort descending' => 'Сортування за спаданням',
     'Sort direction' => 'Напрямок сортування',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Код відділення',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Налаштування джерела збережено',

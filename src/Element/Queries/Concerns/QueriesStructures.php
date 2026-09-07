@@ -126,20 +126,20 @@ trait QueriesStructures
 
     protected function initQueriesStructures(): void
     {
-        $this->afterQuery(function (mixed $result) {
+        $this->afterQuery(static function (mixed $result, ElementQuery $elementQuery) {
             if (! $result instanceof Collection) {
                 return $result;
             }
 
-            if ($this->structureId) {
-                return $result->map(function ($element) {
+            if ($elementQuery->structureId) {
+                return $result->map(function ($element) use ($elementQuery) {
                     if (is_array($element)) {
-                        $element['structureId'] = $this->structureId;
+                        $element['structureId'] = $elementQuery->structureId;
 
                         return $element;
                     }
 
-                    $element->structureId = $this->structureId;
+                    $element->structureId = $elementQuery->structureId;
 
                     return $element;
                 });

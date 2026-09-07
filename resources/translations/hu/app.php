@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Rendezési kulcs',
     'Sort descending' => 'Rendezés csökkenő sorrendben',
     'Sort direction' => 'Rendezés iránya',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Rendezési kód',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Forrás beállítások mentve',

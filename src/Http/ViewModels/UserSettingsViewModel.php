@@ -17,6 +17,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
@@ -90,12 +91,12 @@ class UserSettingsViewModel extends ViewModel
                 Heading::make('public-registration-heading', t('Public Registration')),
                 Field::make(
                     t('Allow public registration'),
-                    Lightswitch::make('allowPublicRegistration'),
+                    Lightswitch::make('allowPublicRegistration')->reactive(),
                 ),
             );
 
-            if ($values['allowPublicRegistration']) {
-                $form->add(
+            $registrationSettings = $values['allowPublicRegistration']
+                ? [
                     Field::make(
                         t('Validate custom fields on public registration'),
                         Lightswitch::make('validateOnPublicRegistration'),
@@ -108,14 +109,15 @@ class UserSettingsViewModel extends ViewModel
                         t('Default User Group'),
                         Choice::make('defaultGroup')->options($this->defaultGroupOptions()),
                     )->instructions(t('Choose a user group that publicly-registered members will be added to by default.')),
-                );
-            } else {
-                $form->add(
+                ]
+                : [
                     HiddenField::make('validateOnPublicRegistration'),
                     HiddenField::make('deactivateByDefault'),
                     HiddenField::make('defaultGroup'),
-                );
-            }
+                ];
+
+            $form->add(Group::make('public-registration-settings', $registrationSettings)
+                ->dependsOn('allowPublicRegistration'));
         }
 
         return $this->formResolver->resolve($form, new FormContext(

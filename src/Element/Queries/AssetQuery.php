@@ -84,7 +84,7 @@ class AssetQuery extends ElementQuery
             'volumeFolders.path as folderPath',
         ]);
 
-        $this->beforeQuery(function (self $elementQuery) {
+        $this->beforeQuery(static function (self $elementQuery) {
             $elementQuery->query->leftJoin(new Alias(Table::ASSETS_SITES, 'assets_sites'), function (JoinClause $join) {
                 $join->on('assets_sites.assetId', '=', 'assets.id')
                     ->whereColumn('assets_sites.siteId', '=', 'elements_sites.siteId');

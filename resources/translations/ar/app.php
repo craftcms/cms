@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'الفرز حسب',
     'Sort descending' => 'ترتيب تنازلي',
     'Sort direction' => 'اتجاه الترتيب',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'رمز الفرز',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'تم حفظ إعدادات المصدر',

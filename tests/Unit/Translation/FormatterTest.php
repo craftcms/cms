@@ -33,7 +33,7 @@ test('asInteger', function (mixed $value, string $output, ?string $locale = null
     [1000, '1.000', 'nl'],
 ]);
 
-test('asDecimal', function (mixed $input, string $output, int $decimals = 2, string $locale = 'en-US') {
+test('asDecimal', function (mixed $input, string $output, ?int $decimals = 2, string $locale = 'en-US') {
     $this->formatter->locale = $locale;
 
     expect($this->formatter->asDecimal($input, $decimals))->toBe($output);
@@ -44,6 +44,21 @@ test('asDecimal', function (mixed $input, string $output, int $decimals = 2, str
     ['87654321098765436', '87,654,321,098,765,436.00'],
     ['95836208451783051.864', '95,836,208,451,783,051.86'],
     ['95836208451783051.864', '95,836,208,451,783,052', 0],
+    ['99999999999999999.995', '100,000,000,000,000,000.00'],
+    ['-99999999999999999.995', '-100,000,000,000,000,000.00'],
+    ['+00087654321098765436.125', '87,654,321,098,765,436.13'],
+    ['-87654321098765436.125', '-87,654,321,098,765,436.13'],
+    ['-0.00000000000000000001', '-0.00'],
+    ['-0.00', '0.00'],
+    ['87654321098765436.5', '87,654,321,098,765,437', 0],
+    ['87654321098765436.5', '87,654,321,098,765,436', -1],
+    ['87654321098765436.1', '87,654,321,098,765,436.1000', 4],
+    ['87654321098765436', '87,654,321,098,765,436.00', null],
+    ['8.7654321098765436E16', '87,654,321,098,765,436.00'],
+    ['8.7654321098765436e16', '87,654,321,098,765,436.00'],
+    ['1.234e20', '123,400,000,000,000,000,000.00'],
+    ['1E-20', '0.00000000000000000001', 20],
+    ['99999999999999999.995', '100.000.000.000.000.000,00', 2, 'nl'],
     [1, '1.00'],
     [0.1, '0.10'],
     [0.1, '0.100', 3],
@@ -436,10 +451,10 @@ test('asShortSize', function (string|int|float|null $input, string $output, int 
     [1000000000000, '1.00 TB', 1000, 2],
 ]);
 
-test('asPercent', function (mixed $input, string $output, ?string $locale = null) {
+test('asPercent', function (mixed $input, string $output, ?string $locale = null, ?int $decimals = null) {
     $this->formatter->locale = $locale;
 
-    expect($this->formatter->asPercent($input))->toBe($output);
+    expect($this->formatter->asPercent($input, $decimals))->toBe($output);
 })->with([
     [null, '0%'],
     ['', '0%'],
@@ -450,6 +465,13 @@ test('asPercent', function (mixed $input, string $output, ?string $locale = null
     ['87654321098765436', '8,765,432,109,876,543,600%'],
     ['95836208451783051.864', '9,583,620,845,178,305,186%'],
     ['95836208451783051.328', '9,583,620,845,178,305,133%'],
+    ['95836208451783051.99995', '9,583,620,845,178,305,200.00%', null, 2],
+    ['-95836208451783051.99995', '-9,583,620,845,178,305,200.00%', null, 2],
+    ['+00087654321098765436.125', '8,765,432,109,876,543,612.50%', null, 2],
+    ['1.234e20', '12,340,000,000,000,000,000,000%'],
+    ['1E-20', '0.000000000000000001%', null, 18],
+    ['-1E-20', '-0.00%', null, 2],
+    ['95836208451783051.328', '9.583.620.845.178.305.132,80%', 'nl', 2],
 ]);
 
 test('willBeMisrepresented', function (mixed $input, bool $output, ?string $locale = null) {

@@ -3,14 +3,21 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Foundation\Testing\CachedState;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 
-beforeAll(fn () => putenv('CRAFT_LOGIN_PATH=sign-in'));
+beforeAll(function () {
+    CachedState::$cachedRoutes = null;
+    putenv('CRAFT_LOGIN_PATH=sign-in');
+});
 
-afterAll(fn () => putenv('CRAFT_LOGIN_PATH'));
+afterAll(function () {
+    putenv('CRAFT_LOGIN_PATH');
+    CachedState::$cachedRoutes = null;
+});
 
 test('localized frontend login is accessible during maintenance mode', function () {
     $user = User::factory()

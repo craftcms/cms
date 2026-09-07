@@ -6,6 +6,8 @@ use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Routing\Router;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\File;
 use yii\base\Module;
 use yii\web\Controller;
@@ -69,6 +71,14 @@ it('does not override the URI for direct legacy action route requests', function
         expect($request->getRequestUri())->toBe('/actions/test-plugin/fail')
             ->and($request->attributes->has(CaptureOriginalActionRequestUri::ORIGINAL_ACTION_REQUEST_URI))->toBeFalse();
     });
+});
+
+it('starts the session for legacy control panel actions', function() {
+    $router = app(Router::class);
+    $route = $router->getRoutes()->getByName('craft.cp.legacy.action');
+
+    expect($router->gatherRouteMiddleware($route))
+        ->toContain(StartSession::class);
 });
 
 it('renders template routes from legacy url rules', function() {

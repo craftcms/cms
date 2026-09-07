@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Sırala',
     'Sort descending' => 'Azalan şekilde sırala',
     'Sort direction' => 'Yöne göre sırala',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sıralama Kodu',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Kaynak ayarları kaydedildi',

@@ -164,13 +164,17 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 FormField::make(t('Use a monospaced font'))
                     ->control(Lightswitch::make('code')->value($this->code)),
                 FormField::make(t('Allow line breaks'))
-                    ->control(Lightswitch::make(['multiline'])->value($this->multiline)),
+                    ->control(Lightswitch::make(['multiline'])
+                        ->value($this->multiline)
+                        ->reactive()),
             ]),
         ])->when($this->multiline, fn (Form $form) => $form->add(
-            FormField::make(t('Initial Rows'))
-                ->control(Number::make('initialRows')
-                    ->value($this->initialRows)
-                    ->min(1)),
+            Group::make('plain-text-multiline-settings', [
+                FormField::make(t('Initial Rows'))
+                    ->control(Number::make('initialRows')
+                        ->value($this->initialRows)
+                        ->min(1)),
+            ])->dependsOn('settings.multiline'),
         ));
     }
 

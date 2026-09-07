@@ -19,9 +19,6 @@ class FixFieldLayoutUidsCommand extends Command
 {
     use CraftCommand;
 
-    /** @var array<string, list<string>> */
-    private array $topLevelUids = [];
-
     #[Override]
     protected $signature = 'craft:utils:fix-field-layout-uids';
 
@@ -33,18 +30,17 @@ class FixFieldLayoutUidsCommand extends Command
 
     public function handle(ProjectConfig $projectConfig): int
     {
-        $this->topLevelUids = [];
         $useExternalConfig = $projectConfig->areChangesPending(force: true);
 
         $this->components->info('Looking for duplicate UUIDs ...');
 
         $count = 0;
         $uids = [];
+        $layoutUids = [];
         $config = $projectConfig->get(getFromExternalConfig: $useExternalConfig);
 
         if (is_array($config)) {
-            $this->fixUids($config, $count, $projectConfig, $useExternalConfig, uids: $uids);
-            $this->fixFieldLayoutUids($count, $projectConfig, $useExternalConfig);
+            $this->fixUids($config, $count, $projectConfig, $useExternalConfig, uids: $uids, layoutUids: $layoutUids);
         }
 
         $summary = $count
@@ -59,6 +55,7 @@ class FixFieldLayoutUidsCommand extends Command
     /**
      * @param  ConfigArray  $config
      * @param  Uids  $uids
+     * @param  array<array-key, true>  $layoutUids
      */
     private function fixUids(
         array $config,
@@ -67,9 +64,10 @@ class FixFieldLayoutUidsCommand extends Command
         bool $useExternalConfig,
         string $path = '',
         array &$uids = [],
+        array &$layoutUids = [],
     ): void {
         if (is_array($config['fieldLayouts'] ?? null)) {
-            $this->fixFieldLayouts($config, $count, $projectConfig, $useExternalConfig, $path, $uids);
+            $this->fixFieldLayouts($config, $count, $projectConfig, $useExternalConfig, $path, $uids, $layoutUids);
 
             return;
         }
@@ -85,13 +83,14 @@ class FixFieldLayoutUidsCommand extends Command
                 continue;
             }
 
-            $this->fixUids($value, $count, $projectConfig, $useExternalConfig, $this->appendPath($path, (string) $key), $uids);
+            $this->fixUids($value, $count, $projectConfig, $useExternalConfig, $this->appendPath($path, (string) $key), $uids, $layoutUids);
         }
     }
 
     /**
      * @param  ConfigArray  $config
      * @param  Uids  $uids
+     * @param  array<array-key, true>  $layoutUids
      */
     private function fixFieldLayouts(
         array $config,
@@ -100,6 +99,7 @@ class FixFieldLayoutUidsCommand extends Command
         bool $useExternalConfig,
         string $path,
         array &$uids,
+        array &$layoutUids,
     ): void {
         $modified = false;
         $packed = isset($config['fieldLayouts'][ProjectConfig::ASSOC_KEY]);
@@ -107,31 +107,42 @@ class FixFieldLayoutUidsCommand extends Command
             ? ProjectConfigHelper::unpackAssociativeArray($config['fieldLayouts'])
             : $config['fieldLayouts'];
 
-        foreach ($fieldLayouts as $fieldLayoutUid => &$fieldLayoutConfig) {
-            $this->topLevelUids[$fieldLayoutUid][] = $path;
+        $repairedLayouts = [];
 
-            if (! is_array($fieldLayoutConfig)) {
-                continue;
+        foreach ($fieldLayouts as $fieldLayoutUid => $fieldLayoutConfig) {
+            if (is_array($fieldLayoutConfig)) {
+                $this->fixUidsInLayout(
+                    $fieldLayoutConfig,
+                    $count,
+                    $this->appendPath($path, "fieldLayouts.$fieldLayoutUid"),
+                    $uids,
+                    $modified,
+                );
             }
 
-            $this->fixUidsInLayout(
-                $fieldLayoutConfig,
-                $count,
-                $this->appendPath($path, "fieldLayouts.$fieldLayoutUid"),
-                $uids,
-                $modified,
-            );
-        }
+            if (isset($layoutUids[$fieldLayoutUid])) {
+                $newUid = (string) Str::uuid();
+                $this->components->task(
+                    sprintf('Duplicate UUID at %s. Setting to %s', $this->appendPath($path, "fieldLayouts.$fieldLayoutUid"), $newUid),
+                    function () use (&$fieldLayoutUid, &$count, &$modified, $newUid): void {
+                        $fieldLayoutUid = $newUid;
+                        $count++;
+                        $modified = true;
+                    },
+                );
+            }
 
-        unset($fieldLayoutConfig);
+            $layoutUids[$fieldLayoutUid] = true;
+            $repairedLayouts[$fieldLayoutUid] = $fieldLayoutConfig;
+        }
 
         if (! $modified) {
             return;
         }
 
         $config['fieldLayouts'] = $packed
-            ? ProjectConfigHelper::packAssociativeArray($fieldLayouts)
-            : $fieldLayouts;
+            ? ProjectConfigHelper::packAssociativeArray($repairedLayouts)
+            : $repairedLayouts;
 
         $this->saveConfig($projectConfig, $path, $config, 'fieldLayouts', $useExternalConfig);
     }
@@ -246,54 +257,6 @@ class FixFieldLayoutUidsCommand extends Command
         );
 
         $uids[$newUid] = true;
-    }
-
-    private function fixFieldLayoutUids(int &$count, ProjectConfig $projectConfig, bool $useExternalConfig): void
-    {
-        foreach ($this->topLevelUids as $fieldLayoutUid => $paths) {
-            if (count($paths) === 1) {
-                unset($this->topLevelUids[$fieldLayoutUid]);
-            }
-        }
-
-        foreach ($this->topLevelUids as $fieldLayoutUid => $paths) {
-            array_shift($paths);
-
-            foreach ($paths as $path) {
-                $config = $projectConfig->get($path, $useExternalConfig);
-                if (! is_array($config)) {
-                    continue;
-                }
-                if (! is_array($config['fieldLayouts'] ?? null)) {
-                    continue;
-                }
-
-                $packed = isset($config['fieldLayouts'][ProjectConfig::ASSOC_KEY]);
-                $fieldLayouts = $packed
-                    ? ProjectConfigHelper::unpackAssociativeArray($config['fieldLayouts'])
-                    : $config['fieldLayouts'];
-
-                if (! array_key_exists($fieldLayoutUid, $fieldLayouts)) {
-                    continue;
-                }
-
-                $newUid = (string) Str::uuid();
-                $fieldLayoutConfig = $fieldLayouts[$fieldLayoutUid];
-                unset($fieldLayouts[$fieldLayoutUid]);
-                $fieldLayouts[$newUid] = $fieldLayoutConfig;
-                $config['fieldLayouts'] = $packed
-                    ? ProjectConfigHelper::packAssociativeArray($fieldLayouts)
-                    : $fieldLayouts;
-
-                $this->components->task(
-                    sprintf('Duplicate UUID at %s. Setting to %s', $this->appendPath($path, "fieldLayouts.$fieldLayoutUid"), $newUid),
-                    function () use (&$count, $config, $path, $projectConfig, $useExternalConfig) {
-                        $this->saveConfig($projectConfig, $path, $config, 'fieldLayouts', $useExternalConfig);
-                        $count++;
-                    }
-                );
-            }
-        }
     }
 
     private function appendPath(string $path, string $suffix): string

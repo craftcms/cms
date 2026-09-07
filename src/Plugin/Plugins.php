@@ -57,6 +57,7 @@ use UnexpectedValueException;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
+/** @phpstan-import-type LicenseInfo from License */
 #[Singleton]
 class Plugins
 {
@@ -475,93 +476,95 @@ class Plugins
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        $configKey = ProjectConfig::PATH_PLUGINS.'.'.$handle;
-
-        $plugin = $this->createPlugin($handle);
-
-        if ($plugin === null) {
-            throw new InvalidPluginException($handle);
-        }
-
-        // Set the edition
-        $edition ??= $projectConfig->get($configKey.'.edition');
-
-        $editions = $plugin::editions();
-
-        if ($edition === null || ! in_array($edition, $editions, true)) {
-            $edition = reset($editions);
-        }
-
-        $plugin->edition = $edition;
-
-        event(new PluginInstalling($plugin));
-
-        DB::beginTransaction();
-
         try {
-            // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
-            DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
+            $configKey = ProjectConfig::PATH_PLUGINS.'.'.$handle;
 
-            DB::table(Table::MIGRATIONS)
-                ->where('track', "plugin:$handle")
-                ->delete();
+            $plugin = $this->createPlugin($handle);
 
-            $info['id'] = DB::table(Table::PLUGINS)->insertGetId([
-                'handle' => $handle,
-                'version' => $plugin->version,
-                'schemaVersion' => $plugin->schemaVersion,
-                'installDate' => $now = now(),
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
-            ]);
-
-            $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
-
-            $plugin->install();
-
-            try {
-                DB::commit();
-            } catch (PDOException $e) {
-                // The transaction could be implicitly committed by Mysql
-                if ($e->getMessage() !== 'There is no active transaction') {
-                    throw $e;
-                }
-            }
-        } catch (Throwable $e) {
-            try {
-                DB::rollBack();
-            } catch (PDOException $e) {
-                // Implicitly committed.
+            if ($plugin === null) {
+                throw new InvalidPluginException($handle);
             }
 
-            if (DB::isMysql()) {
-                // Explicitly remove the plugins row just in case the transaction was implicitly committed
+            // Set the edition
+            $edition ??= $projectConfig->get($configKey.'.edition');
+
+            $editions = $plugin::editions();
+
+            if ($edition === null || ! in_array($edition, $editions, true)) {
+                $edition = reset($editions);
+            }
+
+            $plugin->edition = $edition;
+
+            event(new PluginInstalling($plugin));
+
+            DB::beginTransaction();
+
+            try {
+                // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
                 DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
+
+                DB::table(Table::MIGRATIONS)
+                    ->where('track', "plugin:$handle")
+                    ->delete();
+
+                $info['id'] = DB::table(Table::PLUGINS)->insertGetId([
+                    'handle' => $handle,
+                    'version' => $plugin->version,
+                    'schemaVersion' => $plugin->schemaVersion,
+                    'installDate' => $now = now(),
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ]);
+
+                $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
+
+                $plugin->install();
+
+                try {
+                    DB::commit();
+                } catch (PDOException $e) {
+                    // The transaction could be implicitly committed by Mysql
+                    if ($e->getMessage() !== 'There is no active transaction') {
+                        throw $e;
+                    }
+                }
+            } catch (Throwable $e) {
+                try {
+                    DB::rollBack();
+                } catch (PDOException $e) {
+                    // Implicitly committed.
+                }
+
+                if (DB::isMysql()) {
+                    // Explicitly remove the plugins row just in case the transaction was implicitly committed
+                    DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
+                }
+
+                throw $e;
             }
 
-            throw $e;
+            // Add the plugin to the project config
+            $projectConfig->set(
+                path: $configKey,
+                value: [
+                    'edition' => $edition,
+                    'enabled' => true,
+                    'schemaVersion' => $plugin->schemaVersion,
+                ],
+                message: "Install plugin “{$handle}”",
+            );
+
+            $this->storedPluginInfo[$handle] = $info;
+            $plugin->publishAssets();
+
+            event(new PluginInstalled($plugin));
+
+            return true;
+        } finally {
+            $projectConfig->readOnly = $readOnly;
         }
-
-        // Add the plugin to the project config
-        $projectConfig->set(
-            path: $configKey,
-            value: [
-                'edition' => $edition,
-                'enabled' => true,
-                'schemaVersion' => $plugin->schemaVersion,
-            ],
-            message: "Install plugin “{$handle}”",
-        );
-
-        $this->storedPluginInfo[$handle] = $info;
-        $plugin->publishAssets();
-
-        event(new PluginInstalled($plugin));
-
-        $projectConfig->readOnly = $readOnly;
-
-        return true;
     }
 
     /**
@@ -597,64 +600,66 @@ class Plugins
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        if (($plugin = $this->getPlugin($handle)) === null && ! $force) {
-            throw new InvalidPluginException($handle);
-        }
-
-        event(new PluginUninstalling($plugin));
-
-        DB::beginTransaction();
         try {
-            // Let the plugin uninstall itself first
-            if ($plugin && $enabled) {
+            if (($plugin = $this->getPlugin($handle)) === null && ! $force) {
+                throw new InvalidPluginException($handle);
+            }
+
+            event(new PluginUninstalling($plugin));
+
+            DB::beginTransaction();
+            try {
+                // Let the plugin uninstall itself first
+                if ($plugin && $enabled) {
+                    try {
+                        $plugin->uninstall();
+                    } catch (Throwable $e) {
+                        if (! $force) {
+                            throw $e;
+                        }
+                    }
+                }
+
+                // Clean up the plugins and migrations tables
+                $info = $this->getStoredPluginInfo($handle);
+                if ($info !== null) {
+                    DB::table(Table::PLUGINS)->delete($info['id']);
+                }
+
+                DB::table(Table::MIGRATIONS)
+                    ->where('track', "plugin:$handle")
+                    ->delete();
+
                 try {
-                    $plugin->uninstall();
-                } catch (Throwable $e) {
-                    if (! $force) {
+                    DB::commit();
+                } catch (PDOException $e) {
+                    // The transaction could be implicitly committed by Mysql
+                    if ($e->getMessage() !== 'There is no active transaction') {
                         throw $e;
                     }
                 }
+            } catch (Throwable $e) {
+                DB::rollBack();
+                throw $e;
             }
 
-            // Clean up the plugins and migrations tables
-            $info = $this->getStoredPluginInfo($handle);
-            if ($info !== null) {
-                DB::table(Table::PLUGINS)->delete($info['id']);
+            // Remove the plugin from the project config
+            if ($projectConfig->get(ProjectConfig::PATH_PLUGINS.'.'.$handle, true)) {
+                $projectConfig->remove(ProjectConfig::PATH_PLUGINS.'.'.$handle, "Uninstall the “{$handle}” plugin");
             }
 
-            DB::table(Table::MIGRATIONS)
-                ->where('track', "plugin:$handle")
-                ->delete();
+            unset($this->storedPluginInfo[$handle]);
 
-            try {
-                DB::commit();
-            } catch (PDOException $e) {
-                // The transaction could be implicitly committed by Mysql
-                if ($e->getMessage() !== 'There is no active transaction') {
-                    throw $e;
-                }
+            if ($plugin) {
+                $plugin->removeAssets();
             }
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
+
+            event(new PluginUninstalled($plugin));
+
+            return true;
+        } finally {
+            $projectConfig->readOnly = $readOnly;
         }
-
-        // Remove the plugin from the project config
-        if ($projectConfig->get(ProjectConfig::PATH_PLUGINS.'.'.$handle, true)) {
-            $projectConfig->remove(ProjectConfig::PATH_PLUGINS.'.'.$handle, "Uninstall the “{$handle}” plugin");
-        }
-
-        unset($this->storedPluginInfo[$handle]);
-
-        if ($plugin) {
-            $plugin->removeAssets();
-        }
-
-        event(new PluginUninstalled($plugin));
-
-        $projectConfig->readOnly = $readOnly;
-
-        return true;
     }
 
     /**
@@ -995,12 +1000,11 @@ class Plugins
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
         $info['iconSvg'] = $this->getPluginIconSvg($handle);
 
-        $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
-        $pluginCacheKey = Str::start($handle, 'plugin-');
-        $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
-        $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
-        $info['licenseKeyStatus'] = $licenseInfo[$pluginCacheKey]['status'] ?? LicenseKeyStatus::Unknown->value;
-        $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
+        $licenseInfo = $this->getPluginLicenseInfo($handle);
+        $info['licenseId'] = $licenseInfo['id'] ?? null;
+        $info['licensedEdition'] = $licenseInfo['edition'] ?? null;
+        $info['licenseKeyStatus'] = $licenseInfo['status'] ?? LicenseKeyStatus::Unknown->value;
+        $info['licenseIssues'] = $this->calculateLicenseIssues($pluginInfo, $licenseInfo);
 
         // Plugin store
         $info['pluginStoreUrl'] = $info['private'] ? null : cp_url('plugin-store/'.$handle);
@@ -1012,8 +1016,8 @@ class Plugins
                 $info['licenseKeyStatus'] === LicenseKeyStatus::Trial->value ||
                 (
                     $info['licenseKeyStatus'] === LicenseKeyStatus::Valid->value &&
-                    ! empty($pluginInfo['licensedEdition'])
-                    && $pluginInfo['licensedEdition'] !== $edition
+                    ! empty($info['licensedEdition'])
+                    && $info['licensedEdition'] !== $edition
                 )
             )
         );
@@ -1024,7 +1028,7 @@ class Plugins
             (
                 $info['hasMultipleEditions'] &&
                 (
-                    (! empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions)) ||
+                    (! empty($info['licensedEdition']) && $info['licensedEdition'] !== end($editions)) ||
                     ($pluginInfo['edition'] ?? 'standard') !== end($editions)
                 )
             )
@@ -1059,13 +1063,21 @@ class Plugins
      */
     public function getLicenseIssues(string $handle): array
     {
-        $pluginInfo = $this->getStoredPluginInfo($handle);
+        return $this->calculateLicenseIssues($this->getStoredPluginInfo($handle), $this->getPluginLicenseInfo($handle));
+    }
 
+    /**
+     * @param  array<string, mixed>|null  $pluginInfo
+     * @param  (LicenseInfo&array{status: string})|null  $licenseInfo
+     * @return string[]
+     */
+    private function calculateLicenseIssues(?array $pluginInfo, ?array $licenseInfo): array
+    {
         if ($pluginInfo === null) {
             return [];
         }
 
-        $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown->value;
+        $status = $licenseInfo['status'] ?? LicenseKeyStatus::Unknown->value;
 
         if ($status === LicenseKeyStatus::Unknown->value) {
             // Either we don't know yet, or the plugin is free
@@ -1078,14 +1090,14 @@ class Plugins
         $canTestEditions = Edition::canTest();
         if (
             ! $canTestEditions &&
-            isset($pluginInfo['edition'], $pluginInfo['licensedEdition']) &&
-            $pluginInfo['edition'] !== $pluginInfo['licensedEdition']
+            isset($pluginInfo['edition'], $licenseInfo['edition']) &&
+            $pluginInfo['edition'] !== $licenseInfo['edition']
         ) {
             $issues[] = 'wrong_edition';
         }
 
         // General license issues
-        switch ($pluginInfo['licenseKeyStatus']) {
+        switch ($status) {
             case LicenseKeyStatus::Trial->value:
                 if (! $canTestEditions) {
                     $issues[] = empty($pluginInfo['licenseKey']) ? 'required' : 'no_trials';
@@ -1094,7 +1106,7 @@ class Plugins
             case LicenseKeyStatus::Invalid->value:
             case LicenseKeyStatus::Mismatched->value:
             case LicenseKeyStatus::Astray->value:
-                $issues[] = $pluginInfo['licenseKeyStatus'];
+                $issues[] = $status;
                 break;
         }
 
@@ -1245,9 +1257,25 @@ class Plugins
      */
     public function getPluginLicenseKeyStatus(string $handle): LicenseKeyStatus
     {
-        $info = $this->getStoredPluginInfo($handle);
+        if ($this->getStoredPluginInfo($handle) === null) {
+            return LicenseKeyStatus::Unknown;
+        }
 
-        return LicenseKeyStatus::tryFrom($info['licenseKeyStatus'] ?? '') ?? LicenseKeyStatus::Unknown;
+        return LicenseKeyStatus::tryFrom($this->getPluginLicenseInfo($handle)['status'] ?? '') ?? LicenseKeyStatus::Unknown;
+    }
+
+    /** @return (LicenseInfo&array{status: string})|null */
+    private function getPluginLicenseInfo(string $handle): ?array
+    {
+        /** @var array<string, LicenseInfo> $licenseInfo */
+        $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
+        $info = $licenseInfo[Str::start($handle, 'plugin-')] ?? null;
+
+        if ($info !== null && $info['status'] instanceof LicenseKeyStatus) {
+            $info['status'] = $info['status']->value;
+        }
+
+        return $info;
     }
 
     /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */

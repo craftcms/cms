@@ -63,9 +63,9 @@ trait QueriesUserProperties
 
     protected function initQueriesUserProperties(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if ($userQuery->lastLoginDate) {
-                $userQuery->whereDateParam('users.lastLoginDate', $this->lastLoginDate);
+                $userQuery->whereDateParam('users.lastLoginDate', $userQuery->lastLoginDate);
             }
 
             if (is_bool($userQuery->hasPhoto)) {
@@ -87,7 +87,7 @@ trait QueriesUserProperties
 
                 $userQuery->whereParam(
                     column: "users.$property",
-                    param: $userQuery->$property,
+                    value: $userQuery->$property,
                     caseInsensitive: true,
                 );
             }

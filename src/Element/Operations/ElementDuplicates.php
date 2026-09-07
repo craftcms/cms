@@ -157,6 +157,7 @@ readonly class ElementDuplicates
         ) {
             DB::beginTransaction();
             try {
+                $savedSiteElements = [$mainClone->siteId => $mainClone];
                 if (! $this->elementWrites->save(
                     $mainClone,
                     false,
@@ -267,6 +268,7 @@ readonly class ElementDuplicates
                         StructuralElementActivity::recordDuplicated($siteElement, $siteClone);
 
                         $propagatedTo[$siteClone->siteId] = true;
+                        $savedSiteElements[$siteClone->siteId] = $siteClone;
                         if ($siteClone->isNewForSite) {
                             $mainClone->newSiteIds[] = $siteClone->siteId;
                         }
@@ -284,6 +286,7 @@ readonly class ElementDuplicates
                                         "Element $mainClone->id could not be propagated to site $siteId.");
                             }
                             $propagatedTo[$siteId] = true;
+                            $savedSiteElements[$siteId] = $siteClone;
                             $mainClone->newSiteIds[] = $siteId;
 
                             if ($siteClone instanceof ElementInterface) {
@@ -293,7 +296,7 @@ readonly class ElementDuplicates
                     }
                 }
 
-                $mainClone->afterPropagate(empty($newAttributes['id']));
+                $this->elementWrites->afterPropagate($mainClone, empty($newAttributes['id']), $savedSiteElements);
 
                 DB::commit();
             } catch (Throwable $throwable) {

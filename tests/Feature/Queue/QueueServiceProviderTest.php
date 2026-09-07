@@ -9,6 +9,8 @@ use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueServiceProvider;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\QueueManager;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 
 it('keeps retry windows safely above Craft job timeouts', function () {
@@ -176,8 +178,26 @@ it('does not track jobs on non-tracked queues', function () {
 
 class SyncProgressJob extends Job
 {
+    public static bool $handled = false;
+
     public function handle(): void
     {
+        self::$handled = true;
         $this->setProgress(50);
     }
 }
+
+it('does not run cancelled jobs when the worker reserves them', function () {
+    $queue = app(QueueManager::class)->connection('database');
+    $queue->push(new SyncProgressJob, queue: Cms::config()->queueName);
+    $uid = app(JobProgress::class)->getAll()->sole()->uid;
+    app(JobProgress::class)->cancel($uid);
+    SyncProgressJob::$handled = false;
+
+    Artisan::call('queue:work', ['connection' => 'database', '--queue' => Cms::config()->queueName, '--once' => true]);
+
+    expect(SyncProgressJob::$handled)->toBeFalse()
+        ->and($queue->size(Cms::config()->queueName))->toBe(0)
+        ->and(app(JobProgress::class)->exists($uid))->toBeFalse()
+        ->and(app(JobProgress::class)->getByStatus(JobStatus::Cancelled))->toHaveCount(1);
+});

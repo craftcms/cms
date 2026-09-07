@@ -2294,16 +2294,9 @@ JS, [
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
-            // Temporarily set the unverified email on the User so the verification email goes to the right place
-            $originalEmail = $this->email;
-            $this->email = $this->unverifiedEmail;
-
             $isNew
-                ? Users::sendActivationEmail($this)
+                ? Users::sendActivationEmail($this, $this->unverifiedEmail)
                 : Users::sendNewEmailVerifyEmail($this);
-
-            // Put the original email back into place
-            $this->email = $originalEmail;
         }
     }
 

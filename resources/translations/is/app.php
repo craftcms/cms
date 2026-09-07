@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Raða eftir',
     'Sort descending' => 'Raða lækkandi',
     'Sort direction' => 'Raða stefnu',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Flokkunarkóði',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Upprunastillingar vistaðar',

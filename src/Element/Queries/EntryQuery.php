@@ -77,6 +77,16 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         return 'entries.primaryOwnerId';
     }
 
+    protected function mustHaveField(): bool
+    {
+        return false;
+    }
+
+    protected function mustHaveOwner(): bool
+    {
+        return false;
+    }
+
     /**
      * @var bool|null Whether to only return entries that the user has permission to view.
      *
@@ -114,9 +124,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $this->query->addSelect(['entries.status as status']);
         }
 
-        $this->beforeQuery(function (self $query) {
-            $this->applyAuthParam($query, $query->editable, 'viewEntries', 'viewPeerEntries', 'viewPeerEntryDrafts');
-            $this->applyAuthParam($query, $query->savable, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
+        $this->beforeQuery(static function (self $query) {
+            $query->applyAuthParam($query, $query->editable, 'viewEntries', 'viewPeerEntries', 'viewPeerEntryDrafts');
+            $query->applyAuthParam($query, $query->savable, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
         });
     }
 

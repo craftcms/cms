@@ -44,8 +44,8 @@ trait QueriesEntryTypes
 
     protected function initQueriesEntryTypes(): void
     {
-        $this->beforeQuery(function (EntryQuery $entryQuery) {
-            $this->normalizeTypeId($entryQuery);
+        $this->beforeQuery(static function (EntryQuery $entryQuery) {
+            $entryQuery->normalizeTypeId($entryQuery);
 
             if ($entryQuery->typeId === []) {
                 throw new QueryAbortedException;

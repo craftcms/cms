@@ -27,6 +27,9 @@ class GqlSchema extends Component implements Stringable
     /** @var array<string, array<string, list<string>|true>> */
     private array $_cachedPairs = [];
 
+    /** @var list<string> */
+    private array $_cachedScope = [];
+
     #[Override]
     public function getRules(): array
     {
@@ -52,9 +55,12 @@ class GqlSchema extends Component implements Stringable
     /** @return array<string, array<string, list<string>|true>> */
     public function getAllScopePairs(): array
     {
-        if ($this->_cachedPairs !== []) {
+        if ($this->_cachedScope === $this->scope) {
             return $this->_cachedPairs;
         }
+
+        $this->_cachedScope = $this->scope;
+        $this->_cachedPairs = [];
 
         foreach ($this->scope as $permission) {
             if (! preg_match('/:([\w-]+)$/', (string) $permission, $matches)) {

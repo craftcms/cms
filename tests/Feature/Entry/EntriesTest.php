@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Entries;
@@ -10,6 +11,7 @@ use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
@@ -234,6 +236,43 @@ it('can reassign entries from multiple old authors', function () {
         ->pluck('authorId')
         ->all())->toBe([$newAuthor->id, $newAuthor->id]);
 });
+
+it('preserves lazily loaded authors across reads and saves', function (string $getter) {
+    Edition::set(Edition::Pro);
+
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create([
+        'type' => SectionType::Channel,
+        'maxAuthors' => 2,
+    ]);
+    $author = User::factory()->withPermissions(["viewEntries:$section->uid", "saveEntries:$section->uid"])->create();
+    $coauthor = User::factory()->create();
+    $entry = Entry::factory()->forSection($section)->forEntryType($entryType)
+        ->hasAttached($coauthor, ['sortOrder' => 1], 'authors')
+        ->hasAttached($author, ['sortOrder' => 2], 'authors')
+        ->createElement();
+    $authorless = Entry::factory()->forSection($section)->forEntryType($entryType)->createElement();
+    [$entry, $authorless] = EntryElement::find()->id([$entry->id, $authorless->id])->fixedOrder()->status(null)->all();
+
+    expect($entry->$getter())->toBe($entry->$getter());
+
+    $queryCount = 0;
+    DB::listen(function (QueryExecuted $query) use (&$queryCount) {
+        $queryCount++;
+    });
+
+    $expectedIds = [$coauthor->id, $author->id];
+    expect($entry->getAuthorIds())->toBe($expectedIds)
+        ->and(array_column($entry->getAuthors(), 'id'))->toBe($expectedIds)
+        ->and($authorless->getAuthorIds())->toBe([])
+        ->and($authorless->getAuthors())->toBe([]);
+    expect($queryCount)->toBe(0);
+    expect(app(EntryPolicy::class)->save($author, $entry))->toBeTrue();
+
+    expect(Elements::saveElement($entry))->toBeTrue();
+    expect(DB::table(Table::ENTRIES_AUTHORS)->where('entryId', $entry->id)
+        ->orderBy('sortOrder')->pluck('authorId')->all())->toBe($expectedIds);
+})->with(['getAuthors', 'getAuthor', 'getAuthorIds', 'getAuthorId']);
 
 it('does not delete missing author rows when saving an entry’s authors for the first time', function () {
     $entryType = EntryType::factory()->create();

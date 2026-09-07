@@ -35,17 +35,17 @@ trait QueriesStatuses
 
     protected function initQueriesStatuses(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             if ($elementQuery->archived) {
                 $elementQuery->whereBool('elements.archived', true);
 
                 return;
             }
 
-            $this->applyStatusParam($elementQuery);
+            $elementQuery->applyStatusParam($elementQuery);
 
             // only set archived=false if 'archived' doesn't show up in the status param
-            // (_applyStatusParam() will normalize $this->status to an array if applicable)
+            // (_applyStatusParam() will normalize $elementQuery->status to an array if applicable)
             if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
                 $elementQuery->whereBool('elements.archived', false);
             }

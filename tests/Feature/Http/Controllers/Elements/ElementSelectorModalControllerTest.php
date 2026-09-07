@@ -6,6 +6,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -42,7 +43,7 @@ it('resolves sources in the modal context, not the index context', function () {
     expect($props['context'])->toBe(ElementSources::CONTEXT_MODAL);
 });
 
-it('narrows the sources to the ones the opener allows', function () {
+it('narrows the sources to the ones the opener allows', function (?string $source) {
     $sourceKeys = fn (array $payload) => collect(
         ($this->postBody)($payload)->json('props.sources')
     )
@@ -62,7 +63,12 @@ it('narrows the sources to the ones the opener allows', function () {
         'elementType' => User::class,
         'sources' => ['admins', 'inactive'],
     ]))->toBe(['admins', 'inactive']);
-});
+
+    UserModel::factory()->createElement(['active' => false, 'pending' => false]);
+    $props = ($this->postBody)(['elementType' => User::class, 'sources' => ['inactive'], 'source' => $source])->json('props');
+    expect($props['source']['key'])->toBe('inactive')
+        ->and($props['pagination']['total'])->toBe(1)->and($props['data'])->toHaveCount(1);
+})->with(['absent' => null, 'invalid' => 'missing']);
 
 // A click in the modal is a selection. A linked title would instead navigate
 // the CP behind the modal to the element's edit screen, dropping the selection

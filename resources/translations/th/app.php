@@ -1687,6 +1687,7 @@ return [
     'Sort by' => 'จัดเรียงตาม',
     'Sort descending' => 'เรียงลำดับจากมากไปน้อย',
     'Sort direction' => 'เรียงลำดับตามทิศทาง',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'รหัสการจัดเรียง',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'บันทึกการตั้งค่าแหล่งที่มาแล้ว',

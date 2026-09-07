@@ -35,7 +35,7 @@ trait QueriesAssetUploaders
 
     protected function initQueriesAssetUploaders(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if (! is_bool($userQuery->assetUploaders)) {
                 return;
             }

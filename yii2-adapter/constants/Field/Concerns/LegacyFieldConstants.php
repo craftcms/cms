@@ -47,7 +47,7 @@ use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Field\LinkTypes\Url;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Event;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
@@ -441,10 +441,10 @@ trait LegacyFieldConstants
 
     // Other compatibility methods
 
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         if (!method_exists(static::class, 'queryCondition')) {
-            return $query;
+            return;
         }
 
         $params = [];
@@ -452,7 +452,7 @@ trait LegacyFieldConstants
         $condition = static::queryCondition($instances, $value, $params);
 
         if ($condition === null || $condition === false) {
-            return $query;
+            return;
         }
 
         $db = Craft::$app->getDb();
@@ -461,7 +461,7 @@ trait LegacyFieldConstants
         // Yii uses named parameters, Laravel uses positional
         $sql = preg_replace('/:qp\d+/', '?', $sql);
 
-        return $query->whereRaw($sql, array_values($params));
+        $query->whereRaw($sql, array_values($params));
     }
 
     public function getElementValidationRules(): array

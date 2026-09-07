@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Sortuj według',
     'Sort descending' => 'Sortuj malejąco',
     'Sort direction' => 'Kierunek sortowania',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Kod rozliczeniowy',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Ustawienia źródeł zapisane',

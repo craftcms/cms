@@ -322,9 +322,14 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
         return 'addresses.primaryOwnerId';
     }
 
-    public function shouldJoinElementsOwners(): bool
+    public function shouldApplyNestedElementParams(): bool
     {
-        return ! empty($this->fieldId);
+        return isset($this->fieldId);
+    }
+
+    protected function mustHaveField(): bool
+    {
+        return false;
     }
 
     /** @param array<string, mixed> $config */
@@ -354,10 +359,10 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
             'addresses.longitude as longitude',
         ]);
 
-        $this->beforeQuery(function (self $addressQuery) {
-            $this->normalizeNestedElementParams($addressQuery);
+        $this->beforeQuery(static function (self $addressQuery) {
+            $addressQuery->normalizeNestedElementParams($addressQuery);
 
-            if (empty($addressQuery->fieldId) && (isset($addressQuery->primaryOwnerId) || isset($addressQuery->ownerId))) {
+            if (! isset($addressQuery->fieldId) && (isset($addressQuery->primaryOwnerId) || isset($addressQuery->ownerId))) {
                 // User addresses don't get rows in the elements_owners table
                 if (! $addressQuery->primaryOwnerId && ! $addressQuery->ownerId) {
                     throw new QueryAbortedException;

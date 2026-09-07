@@ -78,6 +78,10 @@ interface Control
 
     public function mode(ControlMode|string $mode): static;
 
+    public function reactive(bool $reactive = true): static;
+
+    public function isReactive(): bool;
+
     /**
      * Returns control-specific configuration for the resolved value and both renderers.
      *

@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -143,20 +144,22 @@ class QuickPost extends Widget
                         'value' => $section->id,
                     ],
                     $sections,
-                ))),
-            Field::make(t('Entry Type'))
-                ->instructions(count($entryTypes) > 1 ? t('Which type of entries do you want to create?') : null)
-                ->control(Choice::make('entryType')->value($this->entryType()?->id)->options(array_map(
-                    fn (EntryType $entryType): array => [
-                        'label' => t($entryType->name, category: 'site'),
-                        'value' => $entryType->id,
-                    ],
-                    $entryTypes,
-                ))),
-            Field::make(t('Widget Title'))
-                ->control(Text::make('customTitle')
-                    ->value($this->customTitle)
-                    ->placeholder(t('Create a new {section} entry', ['section' => $section->getUiLabel()]))),
+                ))->reactive()),
+            Group::make('quick-post-section-settings', [
+                Field::make(t('Entry Type'))
+                    ->instructions(count($entryTypes) > 1 ? t('Which type of entries do you want to create?') : null)
+                    ->control(Choice::make('entryType')->value($this->entryType()?->id)->options(array_map(
+                        fn (EntryType $entryType): array => [
+                            'label' => t($entryType->name, category: 'site'),
+                            'value' => $entryType->id,
+                        ],
+                        $entryTypes,
+                    ))),
+                Field::make(t('Widget Title'))
+                    ->control(Text::make('customTitle')
+                        ->value($this->customTitle)
+                        ->placeholder(t('Create a new {section} entry', ['section' => $section->getUiLabel()]))),
+            ])->dependsOn('section'),
         );
     }
 

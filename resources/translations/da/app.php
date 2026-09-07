@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Sorter efter',
     'Sort descending' => 'Sorter faldende',
     'Sort direction' => 'Sorteringsrækkefølge',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sorteringskode',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Source indstillinger gemt',

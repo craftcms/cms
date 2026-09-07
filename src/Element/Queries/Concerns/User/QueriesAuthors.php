@@ -44,7 +44,7 @@ trait QueriesAuthors
 
     protected function initQueriesAuthors(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if (is_bool($userQuery->authors)) {
                 $method = $userQuery->authors ? 'whereExists' : 'whereNotExists';
 
@@ -58,7 +58,7 @@ trait QueriesAuthors
 
                 $userQuery->whereExists(
                     DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
-                        ->where('entryId', $this->authorOf->id)
+                        ->where('entryId', $userQuery->authorOf->id)
                         ->whereColumn('entries_authors.authorId', 'users.id'),
                 );
             }

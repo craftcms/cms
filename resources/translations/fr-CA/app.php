@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Trier par',
     'Sort descending' => 'Tri décroissant',
     'Sort direction' => 'Tri par direction',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Code de tri',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Paramètres d’emplacement enregistrés',

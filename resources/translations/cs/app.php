@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Třídit podle',
     'Sort descending' => 'Seřadit od největšího',
     'Sort direction' => 'Směr řazení',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Třídící kód',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Nastavení zdroje uložena',

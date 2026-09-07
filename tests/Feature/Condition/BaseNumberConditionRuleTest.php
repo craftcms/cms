@@ -167,6 +167,13 @@ describe('matchElement', function () {
         $rule = createRule($this->condition, 'between', '', (string) ($highElement->id - 1));
 
         expect($rule->matchElement($highElement))->toBeFalse();
+
+        $rule = createRule($this->condition, 'between', '', '0');
+        $query = Entry::find();
+        $rule->modifyQuery($query);
+
+        expect($rule->matchElement($element))->toBeFalse()
+            ->and($query->count())->toBe(0);
     });
 
     test('between operator with neither bound set matches everything', function () {

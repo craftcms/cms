@@ -1686,6 +1686,7 @@ return [
     'Sort by' => '並べ替え',
     'Sort descending' => '降順で並べ替え',
     'Sort direction' => '並べ替え順',
+    'Sorting' => 'Sorting',
     'Sorting Code' => '分類コード',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'ソースの設定を保存する。',
