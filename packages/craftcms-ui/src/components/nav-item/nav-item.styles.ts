@@ -21,6 +21,12 @@ export default css`
   .nav-item__action-item {
     text-decoration: none;
     color: inherit;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
   }
 
   craft-badge-indicator {
