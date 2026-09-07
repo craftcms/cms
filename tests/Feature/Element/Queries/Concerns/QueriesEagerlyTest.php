@@ -19,6 +19,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -38,6 +39,7 @@ beforeEach(function () {
     $section = Section::factory()->create([
         'handle' => 'blog',
     ]);
+    Sections::refreshSections();
 
     $entryType = EntryType::factory()->create([
         'fieldLayoutId' => $fieldLayout->id,
@@ -53,7 +55,10 @@ beforeEach(function () {
             'fieldLayoutId' => $fieldLayout->id,
         ]);
 
-        $relatedEntry = EntryModel::factory()->create();
+        $relatedEntry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->create();
 
         $entryElement = entryQuery()->id($model->id)->firstOrFail();
         $entryElement->title = 'Test entry '.$model->id;

@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
@@ -18,7 +20,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldConditionRuleInterface
+class MoneyFieldConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 

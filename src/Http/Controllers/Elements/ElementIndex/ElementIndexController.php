@@ -70,7 +70,7 @@ class ElementIndexController
         $context = $request->context();
         [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key'), $context);
         $fieldLayouts = $request->fieldLayouts();
-        $currentCondition = $request->condition();
+        $request->condition();
         $id = $request->input('id');
 
         abort_if($id === null || $id === '', 400, 'Request missing required body param');
@@ -88,6 +88,8 @@ class ElementIndexController
             ? $this->conditions->createCondition($conditionConfig)
             : $elementType::createCondition();
 
+        $condition->forQuery = true;
+
         if (! empty($fieldLayouts)) {
             $condition->setFieldLayouts($fieldLayouts);
         }
@@ -96,7 +98,10 @@ class ElementIndexController
         $condition->id = (string) $id;
         $condition->addRuleLabel = t('Add a filter');
 
-        $this->elementIndexes->populateFilterHudQueryParams($condition, $source, $sourceKey, $currentCondition);
+        if ($source && $source['type'] === ElementSources::TYPE_NATIVE) {
+            $condition->sourceKey = $sourceKey;
+        }
+
         $currentElementIndex->activate();
 
         return new JsonResponse([

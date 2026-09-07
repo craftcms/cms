@@ -173,6 +173,8 @@ class DatabaseServiceProvider extends ServiceProvider
         Builder::macro('whereBooleanParam', fn (string|Expression $column, mixed $value, ?bool $defaultValue = null, string $columnType = Query::TYPE_BOOLEAN, string $boolean = 'and'): Builder => Query::whereBooleanParam($this, $column, $value, $defaultValue, $columnType, $boolean));
         Builder::macro('orWhereBooleanParam', fn (string|Expression $column, mixed $value, ?bool $defaultValue = null, string $columnType = Query::TYPE_BOOLEAN): Builder => Query::whereBooleanParam($this, $column, $value, $defaultValue, $columnType, 'or'));
 
+        Builder::macro('joinsTable', fn (Expression|string $table): bool => Query::joinsTable($this, $table));
+
         Builder::macro('idByUid', fn (string $uid): ?int => (int) $this->where('uid', $uid)->value('id') ?: null);
         Builder::macro('idsByUids', fn (array $uids): array => $this->whereIn('uid', $uids)->pluck('id', 'uid')->all());
         Builder::macro('uidById', fn (int $id): ?string => $this->where('id', $id)->value('uid') ?: null);

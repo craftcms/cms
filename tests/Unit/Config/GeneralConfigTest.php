@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Support\Facades\Config;
+use InvalidArgumentException;
 
 it('can get from container', function () {
     expect(app(GeneralConfig::class))->toBe(Config::get('craft.general'));
@@ -33,6 +34,14 @@ it('can set compiledTemplatesPath via fluent setter', function () {
     $config = GeneralConfig::create()->compiledTemplatesPath('@storage/custom-compiled-templates');
 
     expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
+});
+
+it('normalizes activity retention durations and rejects negative values', function () {
+    $config = GeneralConfig::create();
+
+    expect($config->activityRetentionDuration)->toBe(0)
+        ->and($config->activityRetentionDuration('P1D')->activityRetentionDuration)->toBe(86400)
+        ->and(fn () => $config->activityRetentionDuration(-1))->toThrow(InvalidArgumentException::class);
 });
 
 it('requires a default Asset Transformer', function () {

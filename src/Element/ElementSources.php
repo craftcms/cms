@@ -582,6 +582,7 @@ class ElementSources
 
         /** @var ElementConditionInterface $condition */
         $condition = Conditions::createCondition($source['condition']);
+        $condition->forQuery = true;
         $query = $elementType::find();
         $condition->modifyQuery($query);
 
