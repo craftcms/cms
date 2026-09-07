@@ -7,18 +7,20 @@ namespace CraftCms\Cms\Address\Conditions;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\Support\Facades\Fields;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
-class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     use HintableConditionRuleTrait;
 
@@ -28,11 +30,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     public function getLabel(): string
     {
         return t('Field');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['field', 'fieldId'];
     }
 
     protected function options(): array
@@ -45,16 +42,17 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
             ->all();
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        /** @var AddressQuery $query */
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $query->field($this->addressFields()->all());
+            $fieldIds = $this->addressFields()->pluck('id');
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
-            $query->field(false);
+            $fieldIds = false;
         } else {
-            $query->fieldId($this->paramValue(fn ($uid) => Fields::getFieldByUid($uid)->id ?? null));
+            $fieldIds = $this->paramValue(fn ($uid) => Fields::getFieldByUid($uid)->id ?? null);
         }
+
+        AddressQuery::applyFieldId($query, $fieldIds, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

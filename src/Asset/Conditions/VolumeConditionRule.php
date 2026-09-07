@@ -7,23 +7,20 @@ namespace CraftCms\Cms\Asset\Conditions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Volumes;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Volume');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['volume', 'volumeId'];
     }
 
     protected function options(): array
@@ -31,10 +28,9 @@ class VolumeConditionRule extends BaseMultiSelectConditionRule implements Elemen
         return Volumes::getAllVolumes()->pluck('name', 'uid')->all();
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        /** @var AssetQuery $query */
-        $query->volumeId($this->paramValue(fn ($uid) => Volumes::getVolumeByUid($uid)->id ?? null));
+        AssetQuery::applyVolumeId($query, $this->paramValue(fn ($uid) => Volumes::getVolumeByUid($uid)->id ?? null));
     }
 
     public function matchElement(ElementInterface $element): bool

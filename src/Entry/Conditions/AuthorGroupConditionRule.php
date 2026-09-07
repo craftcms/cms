@@ -6,12 +6,14 @@ namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -23,16 +25,11 @@ use function CraftCms\Cms\t;
  *
  * @since 4.0.0
  */
-class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Author Group');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['authorGroup', 'authorGroupId'];
     }
 
     #[Override]
@@ -46,10 +43,9 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
         return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
     }
 
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        $query->authorGroupId($this->paramValue(fn ($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
+        EntryQuery::applyAuthorGroupId($query, $this->paramValue(fn ($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
     }
 
     public function matchElement(ElementInterface $element): bool

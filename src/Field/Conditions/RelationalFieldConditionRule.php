@@ -6,19 +6,23 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use Illuminate\Contracts\Database\Query\Builder as BuilderInterface;
 use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-class RelationalFieldConditionRule extends BaseElementSelectConditionRule implements FieldConditionRuleInterface
+class RelationalFieldConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait {
         modifyQuery as traitModifyQuery;
@@ -105,7 +109,8 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         };
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */
+    public function modifyQuery(BuilderInterface $query, ElementQuery $elementQuery): void
     {
         $field = $this->field();
 
@@ -149,7 +154,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         }
 
         if ($this->operator === self::OPERATOR_RELATED_TO) {
-            $this->traitModifyQuery($query);
+            $this->traitModifyQuery($query, $elementQuery);
         } else {
             // Add the condition manually so we can ignore the related elements’ statuses and the field’s target site
             // so conditions reflect what authors see in the UI

@@ -6,21 +6,18 @@ namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class StatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class StatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Status');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['status'];
     }
 
     protected function options(): array
@@ -31,9 +28,9 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
         return array_map(fn ($info) => $info['label'] ?? $info, $condition->elementType::statuses());
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        $query->status($this->paramValue());
+        ElementQuery::applyStatus($query, $this->paramValue(), $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

@@ -6,33 +6,31 @@ namespace CraftCms\Cms\User\Conditions;
 
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class CredentialedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class CredentialedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Credentialed');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['status'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
         if ($this->value) {
-            $query->status(['active', 'pending']);
+            $statuses = ['active', 'pending'];
         } else {
-            $query->status('inactive');
+            $statuses = ['inactive'];
         }
+
+        UserQuery::applyStatus($query, $statuses, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

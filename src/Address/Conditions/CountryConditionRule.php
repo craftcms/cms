@@ -7,23 +7,20 @@ namespace CraftCms\Cms\Address\Conditions;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Addresses;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Country');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
     }
 
     protected function options(): array
@@ -31,10 +28,9 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
         return Addresses::getCountryList();
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        /** @var AddressQuery $query */
-        $query->countryCode($this->paramValue());
+        AddressQuery::applyCountryCode($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool

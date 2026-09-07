@@ -7,28 +7,24 @@ namespace CraftCms\Cms\Asset\Conditions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class WidthConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class WidthConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Width');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['width'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->width($this->paramValue());
+        AssetQuery::applyWidth($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool

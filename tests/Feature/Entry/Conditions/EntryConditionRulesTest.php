@@ -99,7 +99,7 @@ describe('SectionConditionRule', function () {
         $rule->operator = 'notempty';
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });

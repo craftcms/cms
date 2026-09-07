@@ -6,11 +6,13 @@ namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -22,7 +24,7 @@ use function CraftCms\Cms\t;
  *
  * @since 4.0.0
  */
-class AuthorConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+class AuthorConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
@@ -48,15 +50,9 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
         return true;
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['author', 'authorId'];
-    }
-
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $query->authorId($this->getElementIds());
+        EntryQuery::applyAuthorId($query, $this->getElementIds());
     }
 
     public function matchElement(ElementInterface $element): bool

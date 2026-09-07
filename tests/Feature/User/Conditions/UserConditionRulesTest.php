@@ -36,7 +36,7 @@ describe('AdminConditionRule', function () {
         $rule->value = $ruleValue;
 
         $query = User::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -80,7 +80,7 @@ it('modifyQuery filters users by text-based rules', function (string $ruleClass,
     $rule->value = $ruleValue;
 
     $query = User::find();
-    $rule->modifyQuery($query);
+    $rule->modifyQuery($query, $query);
 
     $results = $query->all();
 
@@ -103,7 +103,7 @@ it('modifyQuery with contains operator finds partial matches', function () {
     $rule->value = 'craft.test';
 
     $query = User::find();
-    $rule->modifyQuery($query);
+    $rule->modifyQuery($query, $query);
 
     $results = $query->all();
 
@@ -168,7 +168,7 @@ describe('GroupConditionRule', function () {
         $rule->values = [$group->uid];
 
         $query = User::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -208,7 +208,7 @@ describe('CredentialedConditionRule', function () {
         $rule->value = true;
 
         $query = User::find()->status(null);
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $resultIds = collect($query->all())->pluck('id')->toArray();
 
@@ -226,7 +226,7 @@ describe('CredentialedConditionRule', function () {
         $rule->value = false;
 
         $query = User::find()->status(null);
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $resultIds = collect($query->all())->pluck('id')->toArray();
 

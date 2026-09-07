@@ -6,13 +6,15 @@ namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -24,7 +26,7 @@ use function CraftCms\Cms\t;
  *
  * @since 4.0.0
  */
-class SectionConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class SectionConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     use HintableConditionRuleTrait;
 
@@ -34,11 +36,6 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function getLabel(): string
     {
         return t('Section');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['section', 'sectionId'];
     }
 
     /** @return string[] */
@@ -59,14 +56,15 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
             ->all();
     }
 
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $query->section('*');
+            $sectionIds = Sections::getAllSectionIds()->values()->all();
         } else {
-            $query->sectionId($this->paramValue(fn ($uid) => Sections::getSectionByUid($uid)->id ?? null));
+            $sectionIds = $this->paramValue(fn ($uid) => Sections::getSectionByUid($uid)->id ?? null);
         }
+
+        EntryQuery::applySectionId($query, $sectionIds, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

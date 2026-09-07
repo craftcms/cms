@@ -8,23 +8,20 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
 
-class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('File Type');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['kind'];
     }
 
     /** @return list<string> */
@@ -46,10 +43,9 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
         return $options;
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        /** @var AssetQuery $query */
-        $query->kind($this->paramValue());
+        AssetQuery::applyKind($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool

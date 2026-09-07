@@ -6,29 +6,25 @@ namespace CraftCms\Cms\User\Conditions;
 
 use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class LastNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class LastNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Last Name');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['lastName'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        $query->lastName($this->paramValue());
+        UserQuery::applyLastName($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool
