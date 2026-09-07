@@ -422,7 +422,7 @@ describe('makeDirectory', function () {
 
 describe('cleanDirectory', function () {
     test('reports failed deletions when cleaning with exclusions', function (bool $directory) {
-        $path = $this->sandboxPath.'/blocked';
+        $path = $this->sandboxPath.DIRECTORY_SEPARATOR.'blocked';
 
         if ($directory) {
             mkdir($path);
