@@ -219,12 +219,12 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
      * Creates fresh configuration input, not the retained runtime settings model.
      * Use getInstance()->getSettings() to access effective runtime settings.
      */
-    public static function settings(): PluginSettings
+    public static function config(): PluginSettings
     {
         $settings = static::createSettings();
 
         if ($settings === null) {
-            throw new LogicException('Plugin ['.static::class.'] must implement createSettings() to use static settings().');
+            throw new LogicException('Plugin ['.static::class.'] must implement createSettings() to use static config().');
         }
 
         return $settings;

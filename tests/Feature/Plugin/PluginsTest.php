@@ -406,7 +406,7 @@ it('hydrates plugin-static configuration before register and boot while keeping 
     $composerInfo = $this->plugins->getComposerPluginInfo('test-plugin');
     $composerInfo['class'] = FluentTestPlugin::class;
     new ReflectionProperty(Plugins::class, 'composerPluginInfo')->setValue($this->plugins, ['test-plugin' => $composerInfo]);
-    $input = FluentTestPlugin::settings()->foo('File');
+    $input = FluentTestPlugin::config()->foo('File');
     Config::set('craft.test-plugin', $input);
     new ConfigServiceProvider(app())->register();
 
@@ -421,8 +421,8 @@ it('hydrates plugin-static configuration before register and boot while keeping 
         ->and($runtime)->not->toBe($input);
 
     $runtime->foo = 'Runtime';
-    $fresh = FluentTestPlugin::settings()->foo('Fresh');
-    $another = FluentTestPlugin::settings();
+    $fresh = FluentTestPlugin::config()->foo('Fresh');
+    $another = FluentTestPlugin::config();
 
     expect($fresh)->not->toBe($input)->not->toBe($runtime)->not->toBe($another)
         ->and($another->configData())->toBe(['foo' => null, 'bar' => null])

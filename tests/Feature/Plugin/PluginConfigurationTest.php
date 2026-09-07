@@ -85,7 +85,7 @@ it('loads installed settings with normalized snapshot or sparse array precedence
     }
 })->with([
     'settings-class snapshot' => [fn () => TestPluginSettings::create()->foo('File foo'), null],
-    'plugin-static snapshot' => [fn () => FluentTestPlugin::settings()->foo('File foo'), null],
+    'plugin-static snapshot' => [fn () => FluentTestPlugin::config()->foo('File foo'), null],
     'sparse array' => [fn () => ['foo' => 'File foo'], 'Stored bar'],
 ]);
 
@@ -96,7 +96,7 @@ it('normalizes disabled and uninstalled handles without constructing them during
     $plugins = configurationTestPlugins();
     app()->beforeResolving(FluentTestPlugin::class, fn () => throw new RuntimeException('Unexpected plugin construction'));
 
-    Config::set('craft.fluent-test-plugin', FluentTestPlugin::settings()->foo('Disabled'));
+    Config::set('craft.fluent-test-plugin', FluentTestPlugin::config()->foo('Disabled'));
     Config::set('craft.uninstalled-plugin', TestPluginSettings::create()->foo('Uninstalled'));
     new ConfigServiceProvider(app())->register();
     $plugins->loadPlugins();
@@ -116,7 +116,7 @@ it('normalizes disabled and uninstalled handles without constructing them during
 });
 
 it('flushes submitted overrides and omitted configuration values to the database on the test connection', function () {
-    $input = FluentTestPlugin::settings()->foo('File foo')->bar('File bar');
+    $input = FluentTestPlugin::config()->foo('File foo')->bar('File bar');
     Config::set('craft.fluent-test-plugin', $input);
     new ConfigServiceProvider(app())->register();
     $plugin = $this->plugins->getPlugin('fluent-test-plugin');
@@ -154,7 +154,7 @@ it('flushes submitted overrides and omitted configuration values to the database
 });
 
 it('does not write invalid settings to the database when project config is flushed', function () {
-    Config::set('craft.fluent-test-plugin', FluentTestPlugin::settings()->foo('File foo')->bar('File bar'));
+    Config::set('craft.fluent-test-plugin', FluentTestPlugin::config()->foo('File foo')->bar('File bar'));
     new ConfigServiceProvider(app())->register();
     $plugin = $this->plugins->getPlugin('fluent-test-plugin');
     $projectConfig = app(ProjectConfig::class);

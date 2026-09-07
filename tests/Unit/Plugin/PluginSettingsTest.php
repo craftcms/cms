@@ -17,8 +17,8 @@ it('creates fresh plugin configuration without resolving plugins providers or th
         app()->beforeResolving($service, fn () => throw new RuntimeException("Unexpected resolution: $service"));
     }
 
-    $first = FluentTestPlugin::settings()->foo('File');
-    $second = FluentTestPlugin::settings()->bar('Other');
+    $first = FluentTestPlugin::config()->foo('File');
+    $second = FluentTestPlugin::config()->bar('Other');
 
     expect($first)->toBeInstanceOf(TestPluginSettings::class)->not->toBe($second)
         ->and($first->configData())->toBe(['foo' => 'File', 'bar' => null])
@@ -26,7 +26,7 @@ it('creates fresh plugin configuration without resolving plugins providers or th
         ->and(app()->bound(FluentTestPlugin::class))->toBeFalse();
 });
 
-it('dispatches static settings factories independently for distinct plugin types', function () {
+it('dispatches static config factories independently for distinct plugin types', function () {
     $otherPlugin = new class(app()) extends Plugin
     {
         protected static function createSettings(): SnapshotPluginSettings
@@ -35,14 +35,14 @@ it('dispatches static settings factories independently for distinct plugin types
         }
     };
 
-    $first = FluentTestPlugin::settings()->foo('First');
-    $other = $otherPlugin::settings();
+    $first = FluentTestPlugin::config()->foo('First');
+    $other = $otherPlugin::config();
     $other->title('Other');
 
     expect($other)->toBeInstanceOf(SnapshotPluginSettings::class)
-        ->and($otherPlugin::settings()->title)->toBe('Default')
+        ->and($otherPlugin::config()->title)->toBe('Default')
         ->and($first->foo)->toBe('First')
-        ->and(FluentTestPlugin::settings()->foo)->toBeNull();
+        ->and(FluentTestPlugin::config()->foo)->toBeNull();
 });
 
 it('requires static factory opt in while preserving instance-only settings hooks', function () {
@@ -50,9 +50,9 @@ it('requires static factory opt in while preserving instance-only settings hooks
 
     expect($plugin->getSettings())->toBeInstanceOf(TestPluginSettings::class)
         ->toBe($plugin->getSettings());
-    expect(fn () => TestPlugin::settings())->toThrow(
+    expect(fn () => TestPlugin::config())->toThrow(
         LogicException::class,
-        'Plugin ['.TestPlugin::class.'] must implement createSettings() to use static settings().',
+        'Plugin ['.TestPlugin::class.'] must implement createSettings() to use static config().',
     );
 });
 
@@ -61,7 +61,7 @@ it('keeps plugins without a settings factory valid', function () {
 
     expect($plugin->getSettings())->toBeNull()
         ->and($plugin->getSettings())->toBeNull();
-    expect(fn () => $plugin::settings())->toThrow(LogicException::class, $plugin::class);
+    expect(fn () => $plugin::config())->toThrow(LogicException::class, $plugin::class);
 });
 
 it('creates independent concrete settings with explicit fluent setters', function () {

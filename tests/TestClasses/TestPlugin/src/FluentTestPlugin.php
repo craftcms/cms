@@ -14,9 +14,9 @@ class FluentTestPlugin extends Plugin
     public array $bootedSettings = [];
 
     #[Override]
-    public static function settings(): TestPluginSettings
+    public static function config(): TestPluginSettings
     {
-        return parent::settings();
+        return parent::config();
     }
 
     #[Override]
