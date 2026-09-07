@@ -59,7 +59,7 @@ trait QueriesRelatedElements
                 )
                 : []
         )->apply(
-            query: $elementQuery->getQuery(),
+            query: $query,
             relatedToParam: $value,
             siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
         );
