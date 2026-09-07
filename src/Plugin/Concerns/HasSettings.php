@@ -14,6 +14,7 @@ use CraftCms\Cms\Plugin\PluginSettingsForm;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
+use LogicException;
 
 use function CraftCms\Cms\t;
 
@@ -39,6 +40,29 @@ trait HasSettings
      * @see getSettings()
      */
     private PluginSettings|false|null $settings = null;
+
+    /**
+     * Creates fresh configuration input, not the retained runtime settings model.
+     * Use getInstance()->getSettings() to access effective runtime settings.
+     */
+    public static function config(): PluginSettings
+    {
+        $settings = static::createSettings();
+
+        if ($settings === null) {
+            throw new LogicException('Plugin ['.static::class.'] must implement createSettings() to use static config().');
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Override to create fresh settings without resolving a plugin or accessing the database.
+     */
+    protected static function createSettings(): ?PluginSettings
+    {
+        return null;
+    }
 
     public function getSettings(): ?PluginSettings
     {
