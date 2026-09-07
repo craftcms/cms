@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
-use CraftCms\Cms\Activity\Models\ActivityEvent;
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static ActivityEvent record(ActivityEventTypeInterface $event)
- * @method static Builder<ActivityEvent> query()
- * @method static string|Htmlable format(ActivityEvent $event)
- * @method static string icon(ActivityEvent $event)
+ * @method static \CraftCms\Cms\Activity\Models\ActivityEvent record(\CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface $event)
+ * @method static \Illuminate\Database\Eloquent\Builder query()
+ * @method static \Illuminate\Contracts\Support\Htmlable|string format(\CraftCms\Cms\Activity\Models\ActivityEvent $event)
+ * @method static string|null icon(\CraftCms\Cms\Activity\Models\ActivityEvent $event)
  *
  * @see \CraftCms\Cms\Activity\Activities
  */
