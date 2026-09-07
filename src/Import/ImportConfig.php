@@ -111,14 +111,24 @@ class ImportConfig
             return null;
         }
 
+        if ($this->configs !== null) {
+            $configs = $editableOnly ? $this->getEditableConfigs() : $this->getAllConfigs();
+
+            /** @var BaseImporter|null */
+            return $configs->where('handle', $handle)->first();
+        }
+
+        $row = $this->_importConfigQuery()->where('handle', $handle)->first();
+        if ($row !== null) {
+            return $this->createImporter((array) $row + ['editable' => true]);
+        }
+
         if ($editableOnly) {
-            $configs = $this->getEditableConfigs();
-        } else {
-            $configs = $this->getAllConfigs();
+            return null;
         }
 
         /** @var BaseImporter|null */
-        return $configs->where('handle', $handle)->first();
+        return $this->getAllConfigs()->where('handle', $handle)->first();
     }
 
     /**
@@ -129,14 +139,24 @@ class ImportConfig
      */
     public function getConfigByUid(string $uid, bool $editableOnly = false): ?BaseImporter
     {
+        if ($this->configs !== null) {
+            $configs = $editableOnly ? $this->getEditableConfigs() : $this->getAllConfigs();
+
+            /** @var BaseImporter|null */
+            return $configs->where('uid', $uid)->first();
+        }
+
+        $row = $this->_importConfigQuery()->where('uid', $uid)->first();
+        if ($row !== null) {
+            return $this->createImporter((array) $row + ['editable' => true]);
+        }
+
         if ($editableOnly) {
-            $configs = $this->getEditableConfigs();
-        } else {
-            $configs = $this->getAllConfigs();
+            return null;
         }
 
         /** @var BaseImporter|null */
-        return $configs->where('uid', $uid)->first();
+        return $this->getAllConfigs()->where('uid', $uid)->first();
     }
 
     /**
@@ -276,15 +296,15 @@ class ImportConfig
     {
         return DB::table(Table::IMPORT_CONFIGS)
             ->select([
-                'import_configs.type',
-                'import_configs.name',
-                'import_configs.handle',
-                'import_configs.description',
-                'import_configs.settings',
+                'type',
+                'name',
+                'handle',
+                'description',
+                'settings',
                 'import_configs.uid',
             ])
-            ->orderBy('import_configs.name')
-            ->orderBy('import_configs.handle')
-            ->whereNull('import_configs.dateDeleted');
+            ->orderBy('name')
+            ->orderBy('handle')
+            ->whereNull('dateDeleted');
     }
 }
