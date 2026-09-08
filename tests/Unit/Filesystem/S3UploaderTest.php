@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Aws\CommandInterface;
 use Aws\Result;
 use Aws\S3\S3Client;
-use CraftCms\Cms\Asset\Data\UploadedAssetFile;
-use CraftCms\Cms\Asset\Models\UploadSession;
-use CraftCms\Cms\Asset\Uploaders\S3Uploader;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Models\UploadSession;
+use CraftCms\Cms\Filesystem\Uploaders\S3Uploader;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
@@ -82,7 +82,7 @@ it('uses multipart storage copies for objects larger than five gib', function ()
     $this->disk->shouldReceive('getDriver')->andReturn(new Filesystem(
         new S3Adapter($this->client, 'upload-bucket', 'prefix'),
     ));
-    $file = new UploadedAssetFile($this->disk, 'staged/file', 'archive.zip');
+    $file = new UploadedFile($this->disk, 'staged/file', 'archive.zip');
     $file->storeAs($this->disk, 'assets/archive.zip', 'application/zip');
 
     $names = array_map(fn ($command) => $command->getName(), $this->commands);
@@ -97,7 +97,7 @@ it('stores processed bytes when sanitization changed the local file', function (
     rewind($stream);
     $this->disk->shouldReceive('readStream')->once()->with('staged/file')->andReturn($stream);
     $this->disk->shouldReceive('size')->once()->with('staged/file')->andReturn(8);
-    $file = new UploadedAssetFile($this->disk, 'staged/file', 'image.svg');
+    $file = new UploadedFile($this->disk, 'staged/file', 'image.svg');
 
     try {
         $path = $file->localPath();

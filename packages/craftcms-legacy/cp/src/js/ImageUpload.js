@@ -21,21 +21,11 @@ Craft.ImageUpload = Garnish.Base.extend(
         $('<div class="progress-shade"></div>').appendTo(this.$container)
       );
 
-      var options = {
+      const options = {
         url: Craft.getActionUrl(this.settings.uploadAction),
         formData: this.settings.postParameters,
         fileInput: this.$container.find(this.settings.fileInputSelector),
-        paramName: this.settings.uploadParamName,
       };
-
-      // If CSRF protection isn't enabled, these won't be defined.
-      if (
-        typeof Craft.csrfTokenName !== 'undefined' &&
-        typeof Craft.csrfTokenValue !== 'undefined'
-      ) {
-        // Add the CSRF token
-        options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-      }
 
       options.events = {};
       options.events.fileuploadstart = this._onUploadStart.bind(this);
@@ -43,14 +33,7 @@ Craft.ImageUpload = Garnish.Base.extend(
       options.events.fileuploaddone = this._onUploadComplete.bind(this);
       options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-      for (const [name, handler] of Object.entries(options.events)) {
-        this.$container.on(name, handler);
-      }
-      this.uploader = this.$container.fileupload({
-        ...options,
-        autoUpload: true,
-        sequentialUploads: true,
-      });
+      this.uploader = new Craft.Uploader(this.$container, options);
 
       this.initButtons();
     },
@@ -86,6 +69,7 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     refreshImage: function (response) {
+      this.uploader.destroy();
       this.$container.replaceWith((this.$container = $(response.html)));
       this.settings.onAfterRefreshImage(response);
       Craft.cp.elementThumbLoader.load(this.$container);
@@ -119,23 +103,25 @@ Craft.ImageUpload = Garnish.Base.extend(
     _onUploadComplete: function (event, data = null) {
       this.refreshImage(data.result);
 
-      // Last file
-      if (this.uploader.fileupload('active') < 2) {
-        this.progressBar.hideProgressBar();
-        this.$container.removeClass('uploading');
-      }
+      this.progressBar.hideProgressBar();
+      this.$container.removeClass('uploading');
     },
 
     /**
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data = null) {
-      const response = data.response();
+      if (data?.errorThrown === 'abort') {
+        this.progressBar.hideProgressBar();
+        this.$container.removeClass('uploading');
+        return;
+      }
+
       let {
         message,
         filename,
         errors = {},
-      } = response?.jqXHR?.responseJSON || {};
+      } = data?.jqXHR?.responseJSON || {};
       filename = filename || data?.files?.[0].name;
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
@@ -168,8 +154,6 @@ Craft.ImageUpload = Garnish.Base.extend(
 
       uploadButtonSelector: null,
       deleteButtonSelector: null,
-
-      uploadParamName: 'files',
     },
   }
 );

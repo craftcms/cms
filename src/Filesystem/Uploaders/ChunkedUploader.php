@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Asset\Uploaders;
+namespace CraftCms\Cms\Filesystem\Uploaders;
 
-use CraftCms\Cms\Asset\Contracts\AssetUploader;
-use CraftCms\Cms\Asset\Data\UploadedAssetFile;
-use CraftCms\Cms\Asset\Data\UploadPartRequest;
-use CraftCms\Cms\Asset\Models\UploadSession;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Contracts\Uploader;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Filesystem\Data\UploadPartRequest;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Support\PHP;
 use RuntimeException;
 
-class ChunkedUploader implements AssetUploader
+class ChunkedUploader implements Uploader
 {
     public function __construct(private readonly Filesystems $filesystems) {}
 
@@ -67,12 +67,12 @@ class ChunkedUploader implements AssetUploader
         }
     }
 
-    public function complete(UploadSession $session): UploadedAssetFile
+    public function complete(UploadSession $session): UploadedFile
     {
         $disk = $this->filesystems->disk($session->disk);
 
         if ($disk->exists($session->path()) && $disk->size($session->path()) === $session->size) {
-            return new UploadedAssetFile($disk, $session->path(), $session->filename);
+            return new UploadedFile($disk, $session->path(), $session->filename);
         }
 
         $buffer = tmpfile();
@@ -108,7 +108,7 @@ class ChunkedUploader implements AssetUploader
             fclose($buffer);
         }
 
-        return new UploadedAssetFile($disk, $session->path(), $session->filename);
+        return new UploadedFile($disk, $session->path(), $session->filename);
     }
 
     public function abort(UploadSession $session): void

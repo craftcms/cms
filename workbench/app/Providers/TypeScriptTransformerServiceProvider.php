@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
-use CraftCms\Cms\Asset\Data\UploadPartRequest;
 use CraftCms\Cms\Asset\Data\UploadResult;
-use CraftCms\Cms\Asset\Data\UploadSessionData;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
 use CraftCms\Cms\Cp\Data\NotificationData;
@@ -15,6 +13,8 @@ use CraftCms\Cms\Dashboard\Data\WidgetData;
 use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Filesystem\Data\UploadPartRequest;
+use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Enums\ControlMode;

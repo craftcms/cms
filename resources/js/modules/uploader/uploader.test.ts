@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vitest';
 import {Uploader} from './uploader';
-import {AssetUpload, UploadError} from '@/upload-client';
+import {FileUpload, UploadError} from '@/upload-client';
 
 vi.mock('./base-uploader', () => ({BaseUploader: class {}}));
 vi.mock('./upload-notification', () => ({
@@ -35,10 +35,10 @@ afterEach(() => {
 });
 
 it('does not cancel a successfully canceled upload again during teardown', async () => {
-  vi.spyOn(AssetUpload.prototype, 'upload').mockRejectedValue(
+  vi.spyOn(FileUpload.prototype, 'upload').mockRejectedValue(
     new UploadError('Upload failed.', 500)
   );
-  const cancel = vi.spyOn(AssetUpload.prototype, 'cancel').mockResolvedValue();
+  const cancel = vi.spyOn(FileUpload.prototype, 'cancel').mockResolvedValue();
   const file = new File(['abc'], 'document.txt');
   const data = fileData(file);
 
@@ -61,7 +61,7 @@ it('allows retry after a replacement failure handler throws', async () => {
       throw handlerError;
     }
   });
-  vi.spyOn(AssetUpload.prototype, 'upload')
+  vi.spyOn(FileUpload.prototype, 'upload')
     .mockRejectedValueOnce(new UploadError('Upload failed.', 500))
     .mockResolvedValueOnce({assetId: 123});
   const file = new File(['abc'], 'replacement.txt');

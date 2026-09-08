@@ -1816,11 +1816,11 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
-     * The registered asset uploader to use, or null to select one from the temporary disk.
+     * The registered upload transport to use, or null to select one from the temporary disk.
      *
      * @group Assets
      */
-    public ?string $assetUploader = null;
+    public ?string $uploader = null;
 
     /**
      * Maximum bytes per PHP upload request. Proxy request limits may require a smaller value.
@@ -4997,9 +4997,9 @@ class GeneralConfig extends BaseConfig
         return $this;
     }
 
-    public function assetUploader(?string $value): self
+    public function uploader(?string $value): self
     {
-        $this->assetUploader = $value;
+        $this->uploader = $value;
 
         return $this;
     }

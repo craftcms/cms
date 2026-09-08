@@ -7,7 +7,8 @@
 
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
-- Added chunked asset uploads, direct S3 multipart uploads, upload retry and cancellation controls, and an extensible upload-session API.
+- Added shared upload sessions for assets and user photos, direct S3 multipart uploads, upload retry and cancellation controls, and extensible upload transports and destination handlers.
+- Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints. Asset uploads now use upload sessions, and filename conflicts are resolved through `assets/resolve-upload-conflict`.
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))

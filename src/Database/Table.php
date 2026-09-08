@@ -17,7 +17,7 @@ readonly class Table
 
     public const string ASSETINDEXINGSESSIONS = 'assetindexingsessions';
 
-    public const string ASSETUPLOADSESSIONS = 'assetuploadsessions';
+    public const string UPLOADSESSIONS = 'uploadsessions';
 
     public const string ASSETS = 'assets';
 

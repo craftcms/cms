@@ -1,9 +1,11 @@
 import {t} from '@craftcms/ui';
 import type {Options} from 'overtype';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
-import {AssetUpload, type UploadResult} from '@/upload-client';
+import {FileUpload} from '@/upload-client';
 import {useFlashMessages} from '@/common/composables/useFlashMessages';
 import {escapeMarkdownLabel} from './utilities';
+
+type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
 
 const ASSET_REF_HANDLE = 'asset';
 
@@ -37,7 +39,7 @@ async function uploadFile(
   uploadFolderId: number,
   uploadSiteId: number | string
 ): Promise<string> {
-  const task = new AssetUpload(file, {
+  const task = new FileUpload<UploadResult>(file, {
     url: store.url(),
     parameters: {folderId: uploadFolderId},
   });

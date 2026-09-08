@@ -21,7 +21,6 @@ use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
-use CraftCms\Cms\Asset\Data\UploadedAssetFile;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
@@ -55,6 +54,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -270,7 +270,7 @@ class Asset extends Element
     public ?string $tempFilePath = null;
 
     /** The staged upload, before it has been promoted into its volume. */
-    public ?UploadedAssetFile $uploadSource = null;
+    public ?UploadedFile $uploadSource = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.

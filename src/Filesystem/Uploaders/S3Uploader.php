@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Asset\Uploaders;
+namespace CraftCms\Cms\Filesystem\Uploaders;
 
-use CraftCms\Cms\Asset\Contracts\AssetUploader;
-use CraftCms\Cms\Asset\Data\UploadedAssetFile;
-use CraftCms\Cms\Asset\Data\UploadPartRequest;
-use CraftCms\Cms\Asset\Models\UploadSession;
+use CraftCms\Cms\Filesystem\Contracts\Uploader;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Filesystem\Data\UploadPartRequest;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Models\UploadSession;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use InvalidArgumentException;
 use Throwable;
 
-class S3Uploader implements AssetUploader
+class S3Uploader implements Uploader
 {
     public function __construct(private readonly Filesystems $filesystems) {}
 
@@ -55,7 +55,7 @@ class S3Uploader implements AssetUploader
         return new UploadPartRequest((string) $request->getUri(), 'PUT', $headers);
     }
 
-    public function complete(UploadSession $session): UploadedAssetFile
+    public function complete(UploadSession $session): UploadedFile
     {
         $disk = $this->disk($session);
 
@@ -92,7 +92,7 @@ class S3Uploader implements AssetUploader
             ]);
         }
 
-        return new UploadedAssetFile($disk, $session->path(), $session->filename);
+        return new UploadedFile($disk, $session->path(), $session->filename);
     }
 
     public function abort(UploadSession $session): void

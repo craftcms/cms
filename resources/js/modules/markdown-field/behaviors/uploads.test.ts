@@ -1,5 +1,5 @@
 import {afterEach, expect, it, vi} from 'vitest';
-import {AssetUpload, UploadError} from '@/upload-client';
+import {FileUpload, UploadError} from '@/upload-client';
 import {fileUploadOptions} from './uploads';
 
 const {flash} = vi.hoisted(() => ({flash: vi.fn()}));
@@ -19,7 +19,7 @@ it.each([
 ])(
   'inserts the asset returned by the upload session for %s',
   async (type, markdown) => {
-    vi.spyOn(AssetUpload.prototype, 'upload').mockResolvedValue({
+    vi.spyOn(FileUpload.prototype, 'upload').mockResolvedValue({
       assetId: 42,
       filename: 'uploaded.png',
     });
@@ -33,7 +33,7 @@ it.each([
 
 it('reports an upload failure without inserting a link', async () => {
   const error = new UploadError('The file is not allowed.', 422);
-  vi.spyOn(AssetUpload.prototype, 'upload').mockRejectedValue(error);
+  vi.spyOn(FileUpload.prototype, 'upload').mockRejectedValue(error);
 
   await expect(
     fileUploadOptions(12, 2)!.onInsertFile!(new File(['contents'], 'file.txt'))

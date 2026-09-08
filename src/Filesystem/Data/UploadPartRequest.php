@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Asset\Data;
+namespace CraftCms\Cms\Filesystem\Data;
 
 use Illuminate\Contracts\Support\Arrayable;
 

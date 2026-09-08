@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use CraftCms\Cms\Asset\Data\UploadedAssetFile;
 use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
@@ -80,7 +80,7 @@ readonly class AssetUploadHandler
     /** @param array<string, mixed> $parameters */
     public function store(
         array $parameters,
-        UploadedAssetFile $file,
+        UploadedFile $file,
         bool $authorizedGuest = false,
         ?int $uploaderId = null,
     ): UploadResult {
@@ -176,7 +176,7 @@ readonly class AssetUploadHandler
         ]);
     }
 
-    public function replace(int $assetId, UploadedAssetFile $file): UploadResult
+    public function replace(int $assetId, UploadedFile $file): UploadResult
     {
         $asset = $this->assets->getAssetById($assetId);
         abort_unless($asset !== null, 404, 'Asset not found.');

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use CraftCms\Cms\Asset\AssetUploads;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use RuntimeException;
 
@@ -14,7 +14,7 @@ class RemoveExpiredUploads extends GarbageCollectionAction
     public function __construct(
         GarbageCollection $garbageCollection,
         GeneralConfig $generalConfig,
-        private readonly AssetUploads $uploads,
+        private readonly Uploads $uploads,
     ) {
         parent::__construct($garbageCollection, $generalConfig);
     }

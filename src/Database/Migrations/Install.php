@@ -306,10 +306,11 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('asset_upload_sessions');
-        Schema::create(Table::ASSETUPLOADSESSIONS, function (Blueprint $table) {
+        $logger?->subLabel('upload_sessions');
+        Schema::create(Table::UPLOADSESSIONS, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('owner');
+            $table->string('handler');
             $table->string('uploader');
             $table->string('disk');
             $table->string('filename');

@@ -1,6 +1,6 @@
 import {Blob as NodeBlob, File as NodeFile} from 'node:buffer';
 import {afterEach, beforeEach, expect, it, vi} from 'vitest';
-import {AssetUpload, UploadError} from './upload-client';
+import {FileUpload, UploadError} from './upload-client';
 
 const control = vi.fn();
 const sent: Blob[] = [];
@@ -10,6 +10,7 @@ const transfers: {
   headers: Record<string, string>;
 }[] = [];
 let statuses: number[];
+let result: unknown;
 let holdTransfers: boolean;
 let partRequest: {url: string; method: string; headers: Record<string, string>};
 
@@ -95,6 +96,7 @@ beforeEach(() => {
   transfers.length = 0;
   holdTransfers = false;
   statuses = [];
+  result = {assetId: 42};
   partRequest = {
     url: 'https://storage.example/part',
     method: 'PUT',
@@ -112,7 +114,7 @@ beforeEach(() => {
           }
         : url === '/part'
           ? partRequest
-          : {assetId: 42};
+          : result;
     return new Response(JSON.stringify(body), {status: 200});
   });
   vi.stubGlobal('Blob', NodeBlob);
@@ -126,25 +128,48 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it.each<typeof partRequest>([
+it.each<{
+  destination: typeof partRequest;
+  response: unknown;
+  parameters: Record<string, unknown>;
+}>([
   {
-    url: 'https://storage.example/part',
-    method: 'PUT',
-    headers: {'X-Storage': 'signed'},
+    destination: {
+      url: 'https://storage.example/part',
+      method: 'PUT',
+      headers: {'X-Storage': 'signed'},
+    },
+    response: {assetId: 42},
+    parameters: {folderId: 12},
   },
-  {url: '/chunk', method: 'POST', headers: {'X-CSRF-TOKEN': 'local-token'}},
+  {
+    destination: {
+      url: '/chunk',
+      method: 'POST',
+      headers: {'X-CSRF-TOKEN': 'local-token'},
+    },
+    response: {photoId: 42, html: '<div>Photo</div>'},
+    parameters: {userId: 7},
+  },
+  {
+    destination: {url: '/chunk', method: 'POST', headers: {}},
+    response: false,
+    parameters: {},
+  },
 ])(
-  'uploads bytes via $method and reports the saved asset',
-  async (destination) => {
+  'uploads bytes via $destination.method and returns the handlers response',
+  async ({destination, response, parameters}) => {
     partRequest = destination;
+    result = response;
     const progress = vi.fn();
-    const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+    const upload = new FileUpload<unknown>(new File(['abcdef'], 'file.txt'), {
       url: '/start',
       csrfToken: 'token',
+      parameters,
       onProgress: progress,
     });
 
-    await expect(upload.upload()).resolves.toEqual({assetId: 42});
+    await expect(upload.upload()).resolves.toEqual(response);
     expect(await Promise.all(sent.map((part) => part.text()))).toEqual([
       'abc',
       'def',
@@ -153,20 +178,24 @@ it.each<typeof partRequest>([
       '/start',
       expect.objectContaining({
         headers: expect.objectContaining({'X-CSRF-TOKEN': 'token'}),
+        body: JSON.stringify({...parameters, filename: 'file.txt', size: 6}),
       })
     );
     expect(transfers).toEqual([destination, destination]);
     expect(progress).toHaveBeenCalledWith(1, 6);
     expect(progress).toHaveBeenCalledWith(4, 6);
     expect(progress).toHaveBeenLastCalledWith(6, 6);
-    await expect(upload.upload()).resolves.toEqual({assetId: 42});
+    await expect(upload.upload()).resolves.toEqual(response);
     expect(sent).toHaveLength(2);
+    expect(
+      control.mock.calls.filter(([url]) => url === '/complete')
+    ).toHaveLength(1);
   }
 );
 
 it('retains acknowledged parts for manual retry', async () => {
   statuses = [200, 500];
-  const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+  const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
     url: '/start',
     retries: 0,
   });
@@ -187,7 +216,7 @@ it('retains acknowledged parts for manual retry', async () => {
 it('stops after the configured number of automatic retries', async () => {
   vi.useFakeTimers();
   statuses = [503, 503, 200];
-  const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+  const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
     url: '/start',
     retries: 1,
   });
@@ -219,7 +248,7 @@ it.each([403, 0, -1])(
       }
       return implementation(url);
     });
-    const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+    const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
       url: '/start',
       headers: {Authorization: 'application-token'},
     });
@@ -250,7 +279,7 @@ it('stops retrying when permission to sign another part is revoked', async () =>
     }
     return implementation(url);
   });
-  const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+  const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
     url: '/start',
   });
 
@@ -265,7 +294,7 @@ it.each(['transfer', 'retry delay'])(
     vi.useFakeTimers();
     holdTransfers = phase === 'transfer';
     statuses = [503];
-    const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+    const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
       url: '/start',
     });
     const result = expect(upload.upload()).rejects.toMatchObject({
@@ -287,7 +316,7 @@ it.each(['transfer', 'retry delay'])(
 
 it('cancels a failed session and prevents another transfer', async () => {
   statuses = [500];
-  const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+  const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
     url: '/start',
     retries: 0,
   });
@@ -314,7 +343,7 @@ it('retries finalization without sending the file again', async () => {
     }
     return implementation(url);
   });
-  const upload = new AssetUpload(new File(['abcdef'], 'file.txt'), {
+  const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
     url: '/start',
     retries: 0,
   });

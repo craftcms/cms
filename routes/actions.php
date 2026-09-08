@@ -19,7 +19,7 @@ use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
 use CraftCms\Cms\Http\Controllers\Assets\ResolveUploadConflictController;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
-use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
+use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController as AssetUploadSessionController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
@@ -75,6 +75,7 @@ use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Http\Controllers\Users\AuthMethodController;
 use CraftCms\Cms\Http\Controllers\Users\EnableController;
@@ -113,10 +114,13 @@ $sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpAc
  */
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
-        Route::prefix('assets/uploads')
+        Route::post('assets/uploads', [AssetUploadSessionController::class, 'store'])
+            ->middleware('throttle:60,1')
+            ->name(in_array('craft.cp', $middleware, true) ? 'craft.cp.uploads.store' : 'craft.uploads.store');
+
+        Route::prefix('uploads')
             ->name(in_array('craft.cp', $middleware, true) ? 'craft.cp.uploads.' : 'craft.uploads.')
             ->group(function () {
-                Route::post('', [UploadSessionController::class, 'store'])->middleware('throttle:60,1')->name('store');
                 Route::post('{upload}/parts', [UploadSessionController::class, 'part'])->whereUuid('upload')->name('part');
                 Route::post('{upload}/parts/{part}', [UploadSessionController::class, 'chunk'])->whereUuid('upload')->whereNumber('part')->name('chunk');
                 Route::post('{upload}/complete', [UploadSessionController::class, 'complete'])->whereUuid('upload')->name('complete');
@@ -407,7 +411,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
 
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
-        Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
+        Route::post('users/upload-user-photo', [PhotoController::class, 'upload'])->middleware('throttle:60,1');
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);

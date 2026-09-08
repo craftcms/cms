@@ -2,9 +2,8 @@ import axios, {type AxiosRequestConfig, type AxiosResponse} from 'axios';
 
 const client = axios.create({adapter: 'xhr'});
 
-export type UploadSession = CraftCms.Cms.Asset.Data.UploadSessionData;
-export type UploadPartRequest = CraftCms.Cms.Asset.Data.UploadPartRequest;
-export type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
+export type UploadSession = CraftCms.Cms.Filesystem.Data.UploadSessionData;
+export type UploadPartRequest = CraftCms.Cms.Filesystem.Data.UploadPartRequest;
 
 export type UploadState =
   | 'ready'
@@ -36,13 +35,13 @@ export class UploadError extends Error {
   }
 }
 
-/** Uploads Craft asset sessions, retaining completed parts for same-page retries. */
-export class AssetUpload {
+/** Uploads Craft sessions, retaining completed parts for same-page retries. */
+export class FileUpload<Result = Record<string, unknown>> {
   state: UploadState = 'ready';
   private session: UploadSession | null = null;
   private completedParts = 0;
-  private result: UploadResult | null = null;
-  private running: Promise<UploadResult> | null = null;
+  private result: {value: Result} | null = null;
+  private running: Promise<Result> | null = null;
   private controller = new AbortController();
 
   constructor(
@@ -50,7 +49,7 @@ export class AssetUpload {
     private readonly options: UploadOptions
   ) {}
 
-  upload(): Promise<UploadResult> {
+  upload(): Promise<Result> {
     if (this.running) {
       return this.running;
     }
@@ -69,7 +68,7 @@ export class AssetUpload {
 
     if (this.state === 'completing') {
       throw new UploadError(
-        'The asset is being saved and can no longer be canceled.',
+        'The file is being saved and can no longer be canceled.',
         409
       );
     }
@@ -84,11 +83,11 @@ export class AssetUpload {
     }
   }
 
-  private async run(): Promise<UploadResult> {
+  private async run(): Promise<Result> {
     this.controller.signal.throwIfAborted();
 
     if (this.result) {
-      return this.result;
+      return this.result.value;
     }
 
     this.setState('uploading');
@@ -162,13 +161,12 @@ export class AssetUpload {
       }
 
       this.setState('completing');
-      this.result = await this.json<UploadResult>(
-        session.urls.complete,
-        'POST'
-      );
+      this.result = {
+        value: await this.json<Result>(session.urls.complete, 'POST'),
+      };
       this.setState('completed');
 
-      return this.result;
+      return this.result.value;
     } catch (error) {
       if (!this.controller.signal.aborted) {
         this.setState('failed');

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetUploaders;
-use CraftCms\Cms\Asset\Models\UploadSession;
-use CraftCms\Cms\Asset\Uploaders\ChunkedUploader;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Models\UploadSession;
+use CraftCms\Cms\Filesystem\Uploaders;
+use CraftCms\Cms\Filesystem\Uploaders\ChunkedUploader;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,9 +19,9 @@ beforeEach(function () {
 });
 
 it('routes custom uploader operations to each sessions disk', function () {
-    $manager = app(AssetUploaders::class);
+    $manager = app(Uploaders::class);
     $manager->extend('custom', fn (Container $app) => $app->make(ChunkedUploader::class));
-    Cms::config()->assetUploader = 'custom';
+    Cms::config()->uploader = 'custom';
 
     expect($manager->getDefaultDriver())->toBe('custom');
 

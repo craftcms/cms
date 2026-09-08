@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Asset\Models;
+namespace CraftCms\Cms\Filesystem\Models;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
+ * @property class-string<UploadHandler> $handler
  * @property string $owner
  * @property string $uploader
  * @property string $disk
@@ -30,7 +32,7 @@ class UploadSession extends BaseModel
     protected $keyType = 'string';
 
     #[\Override]
-    protected $table = Table::ASSETUPLOADSESSIONS;
+    protected $table = Table::UPLOADSESSIONS;
 
     protected function casts(): array
     {

@@ -11,13 +11,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable(Table::ASSETUPLOADSESSIONS)) {
+        if (Schema::hasTable(Table::UPLOADSESSIONS)) {
             return;
         }
 
-        Schema::create(Table::ASSETUPLOADSESSIONS, function (Blueprint $table) {
+        Schema::create(Table::UPLOADSESSIONS, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('owner');
+            $table->string('handler');
             $table->string('uploader');
             $table->string('disk');
             $table->string('filename');
@@ -34,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(Table::ASSETUPLOADSESSIONS);
+        Schema::dropIfExists(Table::UPLOADSESSIONS);
     }
 };

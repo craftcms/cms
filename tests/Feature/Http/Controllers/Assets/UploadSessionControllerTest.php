@@ -7,12 +7,13 @@ use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
-use CraftCms\Cms\Asset\Models\UploadSession;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Filesystem\Models\UploadSession;
+use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -144,11 +145,11 @@ it('expires abandoned sessions but preserves active uploads', function () {
     $this->travel(23)->hours();
     postJson($session['urls']['part'], ['part' => 1])->assertOk();
     $this->travel(2)->hours();
-    expect(app(AssetUploads::class)->cleanupExpired())->toBe(['removed' => 0, 'failed' => 0]);
+    expect(app(Uploads::class)->cleanupExpired())->toBe(['removed' => 0, 'failed' => 0]);
 
     $this->travel(23)->hours();
     postJson($session['urls']['part'], ['part' => 1])->assertGone();
-    expect(app(AssetUploads::class)->cleanupExpired())->toBe(['removed' => 1, 'failed' => 0]);
+    expect(app(Uploads::class)->cleanupExpired())->toBe(['removed' => 1, 'failed' => 0]);
     expect(UploadSession::count())->toBe(0);
 });
 

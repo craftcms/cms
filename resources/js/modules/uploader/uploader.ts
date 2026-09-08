@@ -1,6 +1,6 @@
 import {BaseUploader} from './base-uploader';
 import {UploadNotification} from './upload-notification';
-import {AssetUpload, UploadError} from '@/upload-client';
+import {FileUpload, UploadError} from '@/upload-client';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 
 // blueimp jQuery File Upload plugin seam — see base-uploader.ts.
@@ -28,8 +28,8 @@ export class Uploader extends BaseUploader {
   _onFileAdd: any = null;
   private destroyed = false;
   private queue: Promise<void> = Promise.resolve();
-  private queued = new Set<AssetUpload>();
-  private uploads = new Map<AssetUpload, UploadNotification>();
+  private queued = new Set<FileUpload>();
+  private uploads = new Map<FileUpload, UploadNotification>();
 
   static override get defaults(): any {
     return {
@@ -123,11 +123,11 @@ export class Uploader extends BaseUploader {
   }
 
   private uploadFile(file: File, data: any): void {
-    const task = new AssetUpload(file, {
+    const task = new FileUpload(file, {
       url: this.settings.url,
       parameters: {
         ...this.formData,
-        operation: this.settings.replace ? 'replace' : 'upload',
+        ...(this.settings.replace ? {operation: 'replace'} : {}),
       },
       csrfToken: Craft.csrfTokenValue,
       onProgress: (loaded, total) => {
@@ -155,7 +155,7 @@ export class Uploader extends BaseUploader {
     this.enqueue(task, data);
   }
 
-  private enqueue(task: AssetUpload, data: any): void {
+  private enqueue(task: FileUpload, data: any): void {
     if (
       this.destroyed ||
       this.queued.has(task) ||

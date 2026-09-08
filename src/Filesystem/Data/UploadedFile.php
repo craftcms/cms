@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Asset\Data;
+namespace CraftCms\Cms\Filesystem\Data;
 
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
@@ -12,7 +12,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use League\Flysystem\MountManager;
 use RuntimeException;
 
-class UploadedAssetFile
+class UploadedFile
 {
     private ?string $localPath = null;
 
@@ -66,7 +66,7 @@ class UploadedAssetFile
         $target = fopen($path, 'wb');
 
         if ($target === false) {
-            throw new RuntimeException('Unable to create a temporary asset file.');
+            throw new RuntimeException('Unable to create a temporary upload file.');
         }
 
         $this->localPath = $path;
@@ -116,7 +116,7 @@ class UploadedAssetFile
 
         try {
             if (! $destination->writeStream($path, $stream, ['mimetype' => $mimeType])) {
-                throw new RuntimeException('Unable to store the uploaded asset.');
+                throw new RuntimeException('Unable to store the uploaded file.');
             }
         } finally {
             fclose($stream);
