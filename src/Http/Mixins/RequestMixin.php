@@ -116,8 +116,6 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
-
             if ($request->attributes->has('isCpRequest')) {
                 return (bool) $request->attributes->get('isCpRequest');
             }
@@ -125,6 +123,8 @@ class RequestMixin
             if ($request->routeIs('craft.cp.*')) {
                 return true;
             }
+
+            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
 
             if ($cpTrigger === '') {
                 return true;

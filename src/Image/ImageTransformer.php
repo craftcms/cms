@@ -38,6 +38,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Sleep;
 use RuntimeException;
@@ -337,7 +338,12 @@ class ImageTransformer
 
             if ($this->validateTransformIndexResult($index, $transform, $asset)) {
                 $indexFingerprint = $assetTransformer->uid.':'.$result->assetId.':'.$transformFingerprint;
-                $this->eagerLoadedTransformIndexes[$indexFingerprint] = (array) $result;
+                $this->eagerLoadedTransformIndexes[$indexFingerprint] = [
+                    ...(array) $result,
+                    'dateIndexed' => $index->dateIndexed,
+                    'dateCreated' => $index->dateCreated,
+                    'dateUpdated' => $index->dateUpdated,
+                ];
             } else {
                 $invalidIndexIds[] = $result->id;
             }
@@ -528,8 +534,16 @@ class ImageTransformer
 
         if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->eagerLoadedTransformIndexes[$fingerprint];
+            $timeZone = null;
 
-            return new ImageTransformIndex((array) $result);
+            foreach (['dateIndexed', 'dateCreated', 'dateUpdated'] as $attribute) {
+                if ($result[$attribute] instanceof DateTimeInterface) {
+                    $timeZone ??= Cms::timezone();
+                    $result[$attribute] = Date::instance($result[$attribute])->setTimezone($timeZone);
+                }
+            }
+
+            return new ImageTransformIndex($result);
         }
 
         // Check if an entry exists already
@@ -623,7 +637,7 @@ class ImageTransformer
                 'dateIndexed',
             ], [], false)
         );
-        $now = now();
+        $now = Query::prepareDateForDb(now());
 
         if ($index->id !== null) {
             $this->createTransformIndexQuery()

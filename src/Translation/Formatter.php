@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
 use IntlTimeZone;
 use InvalidArgumentException;
+use Locale as IntlLocale;
 use NumberFormatter;
 use RoundingMode;
 use Throwable;
@@ -61,6 +62,9 @@ class Formatter
         'full' => IntlDateFormatter::FULL,
     ];
 
+    /** @var array<string, IntlDateFormatter> */
+    private array $dateFormatters = [];
+
     public function asCurrency(mixed $value, ?string $currency = null, bool $stripZeros = false): string
     {
         $value = $this->normalizeNumericValue($value);
@@ -96,17 +100,13 @@ class Formatter
         $format = $this->dateTimeFormats[$format]['date'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
-            return new IntlDateFormatter(
-                locale: $this->locale,
+            return $this->dateFormatter(
                 dateType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
                 timeType: IntlDateFormatter::NONE,
-                timezone: $this->timeZone,
             )->format($value->toDateTime());
         }
 
-        return new IntlDateFormatter(
-            locale: $this->locale,
-            timezone: $this->timeZone,
+        return $this->dateFormatter(
             pattern: $format,
         )->format($value->toDateTime());
     }
@@ -129,17 +129,13 @@ class Formatter
         $format = $this->dateTimeFormats[$format]['datetime'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
-            return new IntlDateFormatter(
-                locale: $this->locale,
+            return $this->dateFormatter(
                 dateType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-                timezone: $this->timeZone,
             )->format($value->toDateTime());
         }
 
-        return new IntlDateFormatter(
-            locale: $this->locale,
-            timezone: $this->timeZone,
+        return $this->dateFormatter(
             pattern: $format,
         )->format($value->toDateTime());
     }
@@ -412,19 +408,33 @@ class Formatter
         $format = $this->dateTimeFormats[$format]['time'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
-            return new IntlDateFormatter(
-                locale: $this->locale,
+            return $this->dateFormatter(
                 dateType: IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-                timezone: $this->timeZone,
             )->format($value->toDateTime());
         }
 
-        return new IntlDateFormatter(
-            locale: $this->locale,
-            timezone: $this->timeZone,
+        return $this->dateFormatter(
             pattern: $format,
         )->format($value->toDateTime());
+    }
+
+    private function dateFormatter(
+        int $dateType = IntlDateFormatter::FULL,
+        int $timeType = IntlDateFormatter::FULL,
+        ?string $pattern = null,
+    ): IntlDateFormatter {
+        $locale = $this->locale;
+        $timeZone = $this->timeZone;
+        $key = serialize([$locale, IntlLocale::getDefault(), $timeZone, $dateType, $timeType, $pattern]);
+
+        return $this->dateFormatters[$key] ??= new IntlDateFormatter(
+            locale: $locale,
+            dateType: $dateType,
+            timeType: $timeType,
+            timezone: $timeZone,
+            pattern: $pattern,
+        );
     }
 
     public function asTimestamp(int|string|DateTimeInterface $value, ?string $format = null, bool $withPreposition = false): string
