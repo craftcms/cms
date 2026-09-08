@@ -140,7 +140,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -158,7 +158,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -174,7 +174,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         expect($query->count())->toBeGreaterThanOrEqual(2);
     });
@@ -187,7 +187,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });
@@ -200,7 +200,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         // Entries without expiry dates should be returned
         expect($query->count())->toBeGreaterThanOrEqual(1);

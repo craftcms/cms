@@ -108,6 +108,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return true;
     }
 
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        return true;
+    }
+
     public function getLabelHint(): ?string
     {
         return null;

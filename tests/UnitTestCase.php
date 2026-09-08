@@ -13,6 +13,8 @@ use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Foundation\Testing\CachedState;
+use Illuminate\Foundation\Testing\WithCachedRoutes;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -30,7 +32,18 @@ class UnitTestCase extends Orchestra
 {
     use IsolatesParallelFiles;
     use RegistersPackageAliases;
+    use WithCachedRoutes;
     use WithWorkbench;
+
+    #[Override]
+    protected function resolveApplicationResolvingCallback($app): void
+    {
+        parent::resolveApplicationResolvingCallback($app);
+
+        if (CachedState::$cachedRoutes !== null) {
+            $app->booting(fn () => $this->markRoutesCached($app));
+        }
+    }
 
     #[Override]
     protected function setUp(): void
@@ -41,25 +54,6 @@ class UnitTestCase extends Orchestra
         putenv('CRAFT_EDITION');
 
         Context::forgetHidden(Edition::class);
-        Context::forgetHidden('craft.isInstalled');
-        Context::forgetHidden('craft.info');
-
-        tap(app(ConfigRepository::class), function (ConfigRepository $config) {
-            $config->set('database.default', 'sqlite');
-            $config->set('database.connections.sqlite', array_merge(
-                $config->get('database.connections.sqlite', []),
-                [
-                    'driver' => 'sqlite',
-                    'database' => ':memory:',
-                    'prefix' => '',
-                ],
-            ));
-        });
-
-        DB::purge('sqlite');
-        DB::setDefaultConnection('sqlite');
-
-        Cms::setIsInstalled(false);
 
         Edition::set(Edition::Pro);
         TemplateMode::set(TemplateMode::Cp);
@@ -75,6 +69,19 @@ class UnitTestCase extends Orchestra
     #[Override]
     protected function defineEnvironment($app): void
     {
+        $app->make(ConfigRepository::class)->set([
+            'database.default' => 'sqlite',
+            'database.connections.sqlite.driver' => 'sqlite',
+            'database.connections.sqlite.database' => ':memory:',
+            'database.connections.sqlite.prefix' => '',
+        ]);
+
+        DB::purge('sqlite');
+        DB::setDefaultConnection('sqlite');
+
+        Context::forgetHidden('craft.info');
+        Cms::setIsInstalled(false);
+
         $projectConfigFolder = 'project';
 
         if (($token = getenv('TEST_TOKEN')) !== false) {

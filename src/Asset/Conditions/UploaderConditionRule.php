@@ -6,16 +6,28 @@ namespace CraftCms\Cms\Asset\Conditions;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AssetCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('Uploaded By');
@@ -34,15 +46,9 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
         ];
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['uploader', 'uploaderId'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->uploader($this->getElementId());
+        AssetQuery::applyUploaderId($query, $this->getElementId());
     }
 
     public function matchElement(ElementInterface $element): bool

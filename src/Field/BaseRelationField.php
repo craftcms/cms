@@ -1613,6 +1613,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ],
             ])
             ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
             ->all();
     }
 
@@ -1766,7 +1767,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $selectionCondition->id = 'selection-condition';
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
-            $selectionCondition->queryParams[] = 'site';
 
             $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [

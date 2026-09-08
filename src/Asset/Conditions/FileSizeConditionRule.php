@@ -6,20 +6,32 @@ namespace CraftCms\Cms\Asset\Conditions;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Override;
 use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
 
-class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AssetCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public const string UNIT_B = 'B';
 
     public const string UNIT_KB = 'KB';
@@ -65,16 +77,10 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         );
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        return ['size'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
         if ($this->unit === self::UNIT_B) {
-            $query->size($this->paramValue());
+            AssetQuery::applySize($query, $this->paramValue());
 
             return;
         }
@@ -85,15 +91,17 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         [$minBytes, $maxBytes] = $this->_byteRange();
 
-        match ($this->operator) {
-            self::OPERATOR_EQ => $query->size(['and', ">= $minBytes", "<= $maxBytes"]),
-            self::OPERATOR_NE => $query->size(['or', "< $minBytes", "> $maxBytes"]),
-            self::OPERATOR_LT => $query->size("< $minBytes"),
-            self::OPERATOR_LTE => $query->size("<= $maxBytes"),
-            self::OPERATOR_GT => $query->size("> $maxBytes"),
-            self::OPERATOR_GTE => $query->size(">= $minBytes"),
+        $size = match ($this->operator) {
+            self::OPERATOR_EQ => ['and', ">= $minBytes", "<= $maxBytes"],
+            self::OPERATOR_NE => ['or', "< $minBytes", "> $maxBytes"],
+            self::OPERATOR_LT => "< $minBytes",
+            self::OPERATOR_LTE => "<= $maxBytes",
+            self::OPERATOR_GT => "> $maxBytes",
+            self::OPERATOR_GTE => ">= $minBytes",
             default => throw new UnexpectedValueException("Invalid file size operator: $this->operator"),
         };
+
+        AssetQuery::applySize($query, $size);
     }
 
     public function matchElement(ElementInterface $element): bool
@@ -108,7 +116,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         }
 
         if ($this->unit === self::UNIT_B) {
-            return $this->matchValue($this->value);
+            return $this->matchValue($element->size);
         }
 
         [$minBytes, $maxBytes] = $this->_byteRange();

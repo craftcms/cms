@@ -3,6 +3,16 @@
 ## Unreleased
 
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. Core widgets must declare `component()` (returning `null` to hide the widget) and provide data through `props()`; `getBodyHtml()` remains supported through the Yii adapter. ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
+- Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
+- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
+- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now has a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::isSelectableForCondition()`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface`, which element condition rules that modify element queries should now implement. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed database errors and incorrect ordering when repairing structures. ([#19568](https://github.com/craftcms/cms/pull/19568))
@@ -67,15 +77,12 @@
 - Fixed a bug where numeric conditions could ignore zero-valued bounds. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where failed plugin installation or uninstallation could leave project config writable. ([#19566](https://github.com/craftcms/cms/pull/19566))
 - Fixed a bug where save errors using shortened field paths could fail to appear on Controls within nested Forms. ([#19565](https://github.com/craftcms/cms/pull/19565))
-- Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
-- Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
-- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
-- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now has a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562))
 - Fixed a bug where authenticated Control Panel requests to Yii2 adapter controller actions were treated as unauthenticated. ([#19556](https://github.com/craftcms/cms/pull/19556))
 - Fixed a bug where validating filesystem attributes could resolve `CraftCms\Cms\Filesystem\Filesystems\Filesystem::getRootUrl()`. ([#19535](https://github.com/craftcms/cms/pull/19535))
 - Fixed `CraftCms\Cms\Support\Env::parse()` to preserve unknown aliases rather than throw an exception. ([#19535](https://github.com/craftcms/cms/pull/19535))
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
 - Fixed a bug where visiting the logout path while signed out would store it as the post-login redirect, so signing in would immediately sign the user back out. ([#19551](https://github.com/craftcms/cms/pull/19551))
+- Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
