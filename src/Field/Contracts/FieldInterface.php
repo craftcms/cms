@@ -172,9 +172,9 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * Applies a condition to the query builder for the given field instances, for a user-provided param value.
      *
      * @param  Builder  $query  The query builder to modify
-     * @param  ElementQueryInterface  $elementQuery  The element query being executed
      * @param  static[]  $instances  The field instances to search
      * @param  mixed  $value  The user-supplied param value
+     * @param  ElementQueryInterface  $elementQuery  The element query being executed
      */
     public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void;
 
