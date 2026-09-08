@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use Closure;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
@@ -36,6 +38,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Stringable;
+use WeakMap;
 
 use function CraftCms\Cms\t;
 
@@ -50,10 +53,15 @@ class AssetTransformers
     /** @var Collection<string, AssetTransformer>|null */
     private ?Collection $transformers = null;
 
+    /** @var WeakMap<AssetTransformDriver, array<string, array<string, mixed>>> */
+    private WeakMap $validatedParameters;
+
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly AssetTransformDrivers $transformDrivers,
     ) {
+        $this->validatedParameters = new WeakMap;
+
         $this->parameterRules = [
             'fill' => ['string'],
             'format' => ['string', Rule::enum(ImageTransformFormat::class)],
@@ -268,14 +276,16 @@ class AssetTransformers
 
     /**
      * @param  list<Asset>  $assets
-     * @param  list<mixed>  $definitions
+     * @param  list<mixed>|(Closure(Asset): list<mixed>)  $definitions
      */
-    public function preload(array $assets, #[\SensitiveParameter] array $definitions): void
+    public function preload(array $assets, #[\SensitiveParameter] array|Closure $definitions): void
     {
         $requestsByDriver = [];
 
         foreach ($assets as $asset) {
-            foreach ($this->preloadRequests($asset, $definitions) as $request) {
+            $assetDefinitions = $definitions instanceof Closure ? $definitions($asset) : $definitions;
+
+            foreach ($this->preloadRequests($asset, $assetDefinitions) as $request) {
                 $requestsByDriver[$request->transformer->driver][] = $request;
             }
         }
@@ -293,8 +303,10 @@ class AssetTransformers
     public function parameterRules(AssetTransformer $transformer): array
     {
         $parameterRules = $this->parameterRules;
+        $driver = $this->transformDrivers->driver($transformer->driver);
+        $driverRules = $driver->definition()->parameterRules;
 
-        foreach ($this->transformDrivers->driver($transformer->driver)->definition()->parameterRules as $handle => $rules) {
+        foreach ($driverRules as $handle => $rules) {
             if (! is_string($handle) || $handle === '') {
                 throw new InvalidAssetTransformException('Asset Transform parameter handles must be non-empty strings.');
             }
@@ -351,6 +363,7 @@ class AssetTransformers
     public function reset(): void
     {
         $this->transformers = null;
+        $this->validatedParameters = new WeakMap;
     }
 
     /** @return Collection<string, AssetTransformer> */
@@ -532,10 +545,22 @@ class AssetTransformers
             throw new InvalidAssetTransformException($exception->getMessage(), previous: $exception);
         }
 
+        ksort($parameters);
+
+        if (array_all($parameters, fn (mixed $value): bool => is_scalar($value) || $value === null)) {
+            $driver = $this->transformDrivers->driver($transformer->driver);
+            $key = serialize($parameters);
+            $this->validatedParameters[$driver] ??= [];
+            $parameters = $this->validatedParameters[$driver][$key]
+                ??= $this->validateParameters($transformer, $parameters);
+        } else {
+            $parameters = $this->validateParameters($transformer, $parameters);
+        }
+
         return new AssetTransformRequest(
             asset: $asset,
             transformer: $transformer,
-            parameters: $this->validateParameters($transformer, $parameters),
+            parameters: $parameters,
         );
     }
 

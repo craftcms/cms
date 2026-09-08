@@ -11,6 +11,7 @@
 - Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
 - Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
