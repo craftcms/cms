@@ -25,6 +25,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -366,7 +367,7 @@ class CustomField extends BaseField
         ];
     }
 
-    public function thumbHtml(ElementInterface $element, int $size): ?string
+    public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         try {
             $field = $this->getField();
@@ -378,7 +379,7 @@ class CustomField extends BaseField
             return null;
         }
 
-        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
+        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size, $mode);
     }
 
     #[Override]

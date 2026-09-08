@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 
@@ -42,6 +45,23 @@ it('resolves sources in the modal context, not the index context', function () {
 
     expect($props['context'])->toBe(ElementSources::CONTEXT_MODAL);
 });
+
+it('uses fit for modal thumbnail presence and list rendering', function (string $supportedMode, bool $hasThumb) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    $response = ($this->postBody)()->assertOk();
+    expect($response->json('props.data.0.elementInfo.hasThumb'))->toBe($hasThumb);
+    $title = $response->json('props.data.0.title');
+    if ($hasThumb) {
+        expect($title)->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => 'calc(30rem/16)']);
+    } else {
+        expect($title)->not->toContainTag('craft-thumbnail');
+    }
+})->with(['fit provider' => ['fit', true], 'crop-only provider' => ['crop', false]]);
 
 it('narrows the sources to the ones the opener allows', function (?string $source) {
     $sourceKeys = fn (array $payload) => collect(
