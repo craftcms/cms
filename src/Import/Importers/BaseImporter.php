@@ -7,6 +7,10 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
@@ -19,7 +23,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 abstract class BaseImporter
 {
@@ -116,31 +119,18 @@ abstract class BaseImporter
     }
 
     /**
-     * Generates the HTML for the settings view.
+     * Defines the type-specific settings form for this importer.
      */
-    public function getSettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return $this->settingsHtml(false);
-    }
-
-    /**
-     * Generates the HTML for read-only settings.
-     */
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    /**
-     * Generates the settings HTML for the importer.
-     *
-     * @param  bool  $readOnly  Indicates whether the settings should be rendered in a read-only state.
-     */
-    protected function settingsHtml(bool $readOnly): string
-    {
-        return template('import/_importer-types/base-importer', [
-            'readOnly' => $readOnly,
-            'import' => $this,
+        return Form::make([
+            FormField::make(t('Data File'), Text::make('file')->value($this->file))
+                ->instructions(t('The absolute path to the file containing the data you want to import.'))
+                ->required(),
+            FormField::make(t('Model Class'), Text::make('className')->value($this->className))
+                ->instructions(t('The fully qualified class of the model you’d like to import the data into.')),
+            FormField::make(t('Transformer'), Text::make('transformer')->value($this->transformerAsString()))
+                ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
         ]);
     }
 

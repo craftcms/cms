@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImportRunEditViewModel;
 use CraftCms\Cms\Import\Data\ImportRun as ImportRunData;
 use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
 use CraftCms\Cms\Import\Import;
@@ -167,42 +168,41 @@ class ImportRunController
     private function cpScreenResponse(ImportRunData $run): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
+        $canSave = (bool) $currentUser?->can('saveImportRuns');
+        $editable = ! $this->readOnly && $canSave;
 
         return new CpScreenResponse()
             ->title(! isset($run->uid) ? t('Create a new import run') : t('Edit {name} import run', ['name' => $run->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Runs'), 'import/runs')
-            ->contentTemplate('import/runs/_edit.twig', [
-                'run' => $run,
-                'configs' => $this->importConfigService->getAllConfigs()
-                    ->map(fn ($config) => [
-                        'label' => $config->name,
-                        'value' => $config->isEditable() ? $config->uid : $config->handle,
-                        'data' => ['editable' => $config->isEditable()],
-                    ])
-                    ->prepend(['label' => t('Please select'), 'value' => null])
-                    ->all(),
-                'readOnly' => $this->readOnly,
-                'static' => ! $currentUser?->can('saveImportRuns'),
-            ])
-            ->unless(
-                $this->readOnly || ! $currentUser?->can('saveImportRuns'),
+            ->formAttributes(['action' => action([self::class, 'store'])])
+            ->inertiaPage('import/runs/Edit', new ImportRunEditViewModel(
+                $run,
+                $this->importConfigService,
+                app(FormResolver::class),
+                $this->readOnly,
+                $canSave,
+            ))
+            ->when(
+                $editable,
                 callback: function (CpScreenResponse $response) use ($run) {
                     $response
                         ->action('import/runs/save')
                         ->redirectUrl('import/runs')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'import/runs/{handle}',
-                            'shortcut' => true,
-                            'retainScroll' => true,
-                        ])
                         ->addAltAction(t('Delete'), [
-                            'action' => 'import/runs/delete',
-                            'redirect' => 'import/runs',
-                            'destructive' => true,
-                            'confirm' => t('Are you sure you want to delete “{name}”?', [
-                                'name' => $run->name,
-                            ]),
+                            'variant' => 'danger',
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'DELETE',
+                                'url' => action([self::class, 'destroy']),
+                                'body' => [
+                                    'uid' => $run->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to delete “{name}”?', [
+                                    'name' => $run->name,
+                                ]),
+                            ],
                         ]);
 
                     if ($run->uid) {
@@ -211,11 +211,6 @@ class ImportRunController
                             'redirect' => 'import/runs',
                             'confirm' => t('Are you sure you want to start this import?'),
                         ]);
-                    }
-                },
-                default: function (CpScreenResponse $response) {
-                    if ($this->readOnly) {
-                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
                     }
                 },
             );

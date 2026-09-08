@@ -17,7 +17,6 @@ use Illuminate\Validation\Validator;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * The ModelImporter should be used for importing data into an eloquent model.
@@ -68,15 +67,6 @@ class ModelImporter extends BaseImporter
     public static function displayName(): string
     {
         return t('Model Importer');
-    }
-
-    #[Override]
-    protected function settingsHtml(bool $readOnly): string
-    {
-        return template('import/_importer-types/base-importer', [
-            'readOnly' => $readOnly,
-            'import' => $this,
-        ]);
     }
 
     #[Override]

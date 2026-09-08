@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImportConfigEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportFieldLayoutProviderViewModel;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportConfig;
@@ -21,10 +22,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -35,7 +36,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class ImportConfigController
 {
@@ -46,7 +46,6 @@ class ImportConfigController
     public function __construct(
         private Request $request,
         private GeneralConfig $generalConfig,
-        private HtmlStack $HtmlStack,
         private readonly Import $importService,
         private readonly ImportConfig $importConfigService,
         private readonly Fields $fieldsService,
@@ -132,25 +131,46 @@ class ImportConfigController
         return $this->cpScreenResponse($import);
     }
 
-    public function renderSettings(): JsonResponse
+    public function renderForm(): JsonResponse
     {
-        $this->request->validate([
-            'type' => ['required', 'string', Rule::in($this->importService->getAllImporterTypes())],
-            'namespace' => ['nullable', 'string'],
+        $data = $this->request->validate([
+            'values' => ['required', 'array'],
+            'values.uid' => ['nullable', 'string'],
+            'values.type' => ['nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
+            'values.name' => ['nullable', 'string'],
+            'values.handle' => ['nullable', 'string'],
+            'values.description' => ['nullable', 'string'],
+            'values.settings' => ['nullable', 'array'],
+            'scope' => ['present', 'array', 'size:0'],
         ]);
+        $values = $data['values'];
+        $type = $values['type'] ?? null;
 
-        $type = $this->request->input('type');
-        $import = new $type;
+        $importer = null;
+        if ($type) {
+            $importer = new $type(['uid' => $values['uid'] ?? null]);
+            $importer->name($values['name'] ?? '');
+            $importer->handle($values['handle'] ?? '');
+            $importer->description($values['description'] ?? null);
 
-        $html = template('import/configs/_edit', [
-            'import' => $import,
-            'namespace' => $this->request->input('namespace'),
-        ]);
+            $settings = $values['settings'] ?? [];
+
+            if (array_key_exists('file', $settings)) {
+                $importer->file($settings['file']);
+            }
+            if (property_exists($importer, 'site') && array_key_exists('site', $settings)) {
+                $importer->site($settings['site']);
+            }
+            if (array_key_exists('elementType', $settings) || array_key_exists('className', $settings)) {
+                $importer->className($settings['elementType'] ?? $settings['className']);
+            }
+            if (array_key_exists('transformer', $settings)) {
+                $importer->transformer($settings['transformer']);
+            }
+        }
 
         return new JsonResponse([
-            'settingsHtml' => $html,
-            'headHtml' => $this->HtmlStack->headHtml(),
-            'bodyHtml' => $this->HtmlStack->bodyHtml(),
+            'form' => new ImportConfigEditViewModel($importer, $this->importService, app(FormResolver::class))->form(),
         ]);
     }
 
@@ -645,64 +665,68 @@ class ImportConfigController
     private function cpScreenResponse(?BaseImporter $importer = null): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
-
-        $templateVars = [
-            'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('saveImportConfigs'),
-            'import' => $importer,
-        ];
-
-        if ($importer === null) {
-            $templateVars['importerTypes'] = array_map(fn ($type) => [
-                'label' => $type::displayName(),
-                'value' => $type,
-            ], $this->importService->getAllImporterTypes());
-            array_unshift($templateVars['importerTypes'], ['label' => t('Please select'), 'value' => null]);
-        }
+        $canSave = (bool) $currentUser?->can('saveImportConfigs');
+        $editable = ! $this->readOnly && $canSave;
 
         return new CpScreenResponse()
             ->title(! isset($importer->uid) ? t('Create a new import config') : t('Edit {name} import config', ['name' => $importer->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
-            ->contentTemplate('import/configs/_edit.twig', $templateVars)
-            ->unless(
-                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
+            ->formAttributes(['action' => action([self::class, 'store'])])
+            ->inertiaPage('import/configs/Edit', new ImportConfigEditViewModel(
+                $importer,
+                $this->importService,
+                app(FormResolver::class),
+                $this->readOnly,
+                $canSave,
+            ))
+            ->when(
+                $editable,
                 callback: function (CpScreenResponse $response) use ($importer) {
                     $response
                         ->action('import/configs/save')
                         ->redirectUrl('import/configs')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'import/configs/{handle}',
-                            'shortcut' => ! $importer?->isElementImport(),
-                            'retainScroll' => true,
-                        ])
                         ->addAltAction(t('Delete'), [
-                            'action' => 'import/configs/delete',
-                            'redirect' => 'import/configs',
-                            'destructive' => true,
-                            'confirm' => t('Are you sure you want to delete “{name}”?', [
-                                'name' => $importer?->name,
-                            ]),
+                            'variant' => 'danger',
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'DELETE',
+                                'url' => action([self::class, 'destroy']),
+                                'body' => [
+                                    'uid' => $importer->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to delete “{name}”?', [
+                                    'name' => $importer?->name,
+                                ]),
+                            ],
                         ]);
 
                     if ($importer?->isElementImport()) {
-                        $response->addAltAction(t('Save and configure field layout provider'), [
-                            'redirect' => 'import/configs/{handle}/field-layout-provider',
-                            'shortcut' => true,
-                            'retainScroll' => false,
+                        // TODO (iwona): neither of those work, but I don't know why
+                        $response->addAltAction(t('Save and go to field layout provider'), [
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'POST',
+                                'url' => action([self::class, 'store']),
+                                'body' => [
+                                    'redirect' => Crypt::encrypt(action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle])),
+                                ],
+                            ],
+                        ]);
+                        $response->addAltAction(t('Go to field layout provider'), [
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'GET',
+                                'url' => action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle]),
+                            ],
                         ]);
                     }
                     if ($importer?->isElementImport() === false) {
                         $response->addAltAction(t('Save and configure mapping'), [
                             'redirect' => 'import/configs/{handle}/map',
-                            'shortcut' => true,
                             'retainScroll' => false,
                         ]);
-                    }
-                },
-                default: function (CpScreenResponse $response) {
-                    if ($this->readOnly) {
-                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
                     }
                 },
             );

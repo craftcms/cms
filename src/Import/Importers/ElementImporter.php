@@ -12,6 +12,11 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -29,7 +34,6 @@ use Override;
 use Throwable;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class ElementImporter extends BaseImporter
 {
@@ -72,7 +76,7 @@ class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    protected function settingsHtml(bool $readOnly): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
         $allElementTypes = Elements::getAllElementTypes();
         $availableElementTypes = ImportHelper::getImportableElementTypes($allElementTypes);
@@ -82,14 +86,26 @@ class ElementImporter extends BaseImporter
             $defaultElementType = Entry::class;
         }
 
-        return template('import/_importer-types/element-importer', [
-            'readOnly' => $readOnly,
-            'import' => $this,
-            'availableElementTypes' => $availableElementTypes->all(),
-            'defaultElementType' => $defaultElementType,
-            'availableSites' => Sites::getEditableSites()
-                ->map(fn ($item) => ['label' => $item->name, 'value' => $item->handle])
-                ->all(),
+        $availableSites = Sites::getEditableSites()
+            ->map(fn ($item) => ['label' => $item->name, 'value' => $item->handle])
+            ->all();
+
+        return Form::make([
+            FormField::make(t('Data File'), Text::make('file')->value($this->file))
+                ->instructions(t('The absolute path to the file containing the data you want to import.'))
+                ->required(),
+            FormField::make(t('Site'), Choice::make('site')
+                ->value($this->site?->handle ?? Sites::getPrimarySite()->handle)
+                ->options($availableSites))
+                ->instructions(t('The site you want to import the data into'))
+                ->required(),
+            FormField::make(t('Element Type'), Choice::make('elementType')
+                ->value($this->className ?? $defaultElementType)
+                ->options($availableElementTypes->all()))
+                ->instructions(t('The element type this import is for.')),
+            FormField::make(t('Transformer'), Text::make('transformer')
+                ->value($this->usesDefaultTransformer() ? null : $this->transformerAsString()))
+                ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
         ]);
     }
 
