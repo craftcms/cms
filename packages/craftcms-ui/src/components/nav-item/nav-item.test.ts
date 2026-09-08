@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftPopover from '../popover/popover.js';
 import CraftNavItem from './nav-item.js';
 import './nav-item.js';
@@ -49,6 +49,11 @@ function flyout(item: CraftNavItem): CraftPopover | null {
   return item.shadowRoot!.querySelector<CraftPopover>('craft-popover');
 }
 
+/** The scrolling pane inside the flyout, which carries the height cap. */
+function flyoutPane(item: CraftNavItem): HTMLElement | null {
+  return item.shadowRoot!.querySelector<HTMLElement>('.flyout');
+}
+
 async function hover(item: CraftNavItem, type: string) {
   item.dispatchEvent(new MouseEvent(type));
   await item.updateComplete;
@@ -60,6 +65,14 @@ async function hover(item: CraftNavItem, type: string) {
  * warm-up is off by default here — the tests that care about it turn it back
  * on — so the rest can assert on hover without waiting one out.
  */
+const viewportHeight = window.innerHeight;
+
+// The height tests write to it, and a zero viewport left behind would make
+// every flyout after them measure as having no room.
+afterEach(() => {
+  window.innerHeight = viewportHeight;
+});
+
 beforeEach(() => {
   document.body.innerHTML = '';
   flyoutHoverIntent.reset();
@@ -309,6 +322,40 @@ describe('craft-nav-item flyout', () => {
 
     // Warmth shouldn't outlive the interaction that earned it.
     expect(flyoutHoverIntent.warm).toBe(false);
+  });
+
+  it('caps the flyout to the room left below it', async () => {
+    const item = await createFixture({iconOnly: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+
+    const flyout = flyoutPane(item)!;
+    // happy-dom reports no layout, so stand in for the measurement: a menu
+    // whose top edge sits 700px down a 900px viewport has 184px left under it.
+    flyout.getBoundingClientRect = () => ({top: 700}) as DOMRect;
+    window.innerHeight = 900;
+
+    item.fitFlyout();
+
+    expect(flyout.style.getPropertyValue('--flyout-max-block-size')).toBe(
+      `${900 - 700 - CraftNavItem.flyoutViewportMargin}px`
+    );
+  });
+
+  it('leaves the cap to the stylesheet when there is nothing to measure', async () => {
+    const item = await createFixture({iconOnly: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+
+    const flyout = flyoutPane(item)!;
+    flyout.style.setProperty('--flyout-max-block-size', '100px');
+    flyout.getBoundingClientRect = () => ({top: 0}) as DOMRect;
+    window.innerHeight = 0;
+
+    item.fitFlyout();
+
+    // Pinning it to a measurement that isn't real would shut the menu.
+    expect(flyout.style.getPropertyValue('--flyout-max-block-size')).toBe('');
   });
 
   it('leaves a manual toggle alone across unrelated renders', async () => {

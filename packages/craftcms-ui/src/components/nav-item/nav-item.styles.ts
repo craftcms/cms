@@ -105,10 +105,18 @@ export default css`
     gap: var(--c-spacing-xs);
     padding: var(--c-spacing-sm);
 
-    /* A subnav can be far longer than the viewport — a workbench section with
-       forty entries, say — and the overlay is positioned, not laid out, so
-       nothing else will stop it running off the bottom of the screen. */
-    max-block-size: calc(100dvh - var(--c-spacing-xl) * 2);
+    /* A subnav can be far longer than the room below the item it hangs off —
+       a settings menu, a workbench section with forty entries — and the
+       overlay is positioned, not laid out, so nothing else will stop it
+       running off the bottom of the screen.
+
+       The custom property is set from where the flyout actually landed, since
+       that's the only way to know how much room is left; the fallback is for
+       before that's measured. */
+    max-block-size: var(
+      --flyout-max-block-size,
+      calc(100dvh - var(--c-spacing-xl) * 2)
+    );
     overflow-y: auto;
     overscroll-behavior: contain;
   }

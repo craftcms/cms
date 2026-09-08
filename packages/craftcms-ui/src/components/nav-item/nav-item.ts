@@ -103,6 +103,12 @@ export default class CraftNavItem extends LitElement {
 
   #hoverListeners?: AbortController;
 
+  /** Torn down when the flyout closes; see {@link fitFlyout}. */
+  #flyoutFitListeners?: AbortController;
+
+  /** Space left between a flyout and the bottom of the screen, in px. */
+  static flyoutViewportMargin = 16;
+
   /** Whether the default slot (the item's label) has any content. */
   private get hasLabel(): boolean {
     return Array.from(this.childNodes).some((node) => {
@@ -138,6 +144,67 @@ export default class CraftNavItem extends LitElement {
     this.addEventListener('focusout', this.#scheduleFlyoutClose, {signal});
   }
 
+  override updated(changed: PropertyValues<this>) {
+    if (changed.has('flyoutOpen')) {
+      if (this.flyoutOpen) {
+        this.#watchFlyoutFit();
+      } else {
+        this.#releaseFlyoutFit();
+      }
+    }
+  }
+
+  /**
+   * Caps the flyout to the room below wherever it landed.
+   *
+   * The overlay is positioned rather than laid out, so a menu taller than the
+   * space under its item runs off the bottom of the screen and the items down
+   * there can't be reached at all. Measuring after the fact — rather than
+   * predicting from the item's position — means this holds however the overlay
+   * chose to place itself, including when it flips.
+   */
+  fitFlyout = () => {
+    const flyout = this.shadowRoot?.querySelector<HTMLElement>('.flyout');
+
+    if (!flyout) {
+      return;
+    }
+
+    const {top} = flyout.getBoundingClientRect();
+    const available =
+      window.innerHeight - top - CraftNavItem.flyoutViewportMargin;
+
+    // Zero everywhere means there's no layout to measure — a test environment
+    // without one, or a flyout that hasn't been placed yet. Leave the
+    // stylesheet's fallback in charge rather than pinning it shut.
+    if (!window.innerHeight || available <= 0) {
+      flyout.style.removeProperty('--flyout-max-block-size');
+
+      return;
+    }
+
+    flyout.style.setProperty('--flyout-max-block-size', `${available}px`);
+  };
+
+  #watchFlyoutFit(): void {
+    this.#releaseFlyoutFit();
+
+    const {signal} = (this.#flyoutFitListeners = new AbortController());
+    window.addEventListener('resize', this.fitFlyout, {signal});
+
+    // After the frame the overlay positions itself in, so the measurement is
+    // of where it ended up rather than where it started.
+    requestAnimationFrame(this.fitFlyout);
+  }
+
+  #releaseFlyoutFit(): void {
+    this.#flyoutFitListeners?.abort();
+    this.#flyoutFitListeners = undefined;
+    this.shadowRoot
+      ?.querySelector<HTMLElement>('.flyout')
+      ?.style.removeProperty('--flyout-max-block-size');
+  }
+
   override willUpdate(changed: PropertyValues<this>) {
     // `connectedCallback` sets this once. An Inertia visit patches these
     // elements rather than recreating them, so a nav whose selection moved
@@ -151,6 +218,7 @@ export default class CraftNavItem extends LitElement {
 
   override disconnectedCallback() {
     this.#hoverListeners?.abort();
+    this.#flyoutFitListeners?.abort();
     flyoutHoverIntent.remove(this.#hoverIntent);
     super.disconnectedCallback();
   }
