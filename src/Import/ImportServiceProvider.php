@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Import\Commands\Element;
+use CraftCms\Cms\Import\Commands\Model;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -23,6 +24,7 @@ class ImportServiceProvider extends ServiceProvider
     {
         $this->commands([
             Element::class,
+            Model::class,
         ]);
     }
 

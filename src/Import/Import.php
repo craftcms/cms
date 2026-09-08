@@ -216,7 +216,7 @@ class Import
 
         if (! empty($additionalMatchCriteria)) {
             $matchCriteria = Arr::undot(array_replace(
-                Arr::dot($data['matchCriteria']),
+                Arr::dot($data['matchCriteria'] ?? []),
                 Arr::dot($additionalMatchCriteria)
             ));
             $data = ['matchCriteria' => $matchCriteria] + $data;
