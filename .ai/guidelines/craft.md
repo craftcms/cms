@@ -37,3 +37,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use a `### Description` section and add `### Related issues` only when applicable. Do not add validation summaries.
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
+
+## Regression tests
+
+- After a bug fix or behavior change is verified working, propose adding a test that covers it — don't leave that as an unprompted afterthought.
