@@ -67,6 +67,33 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
   slideout.on('submit', ({response}: any) => announceSaved(response?.data));
 }) as EventListener);
 
+// `craft:edit-entry-type` — the "Entry type settings" item on a Matrix block.
+// Admin-only; the server only emits the item when admin changes are allowed.
+// SAFETY: craft:edit-entry-type is a registered CustomEvent with an {entryTypeId} payload.
+window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
+  const {entryTypeId, trigger} = ev.detail ?? {};
+
+  if (!entryTypeId) {
+    return;
+  }
+
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
+
+  const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);
+
+  if (canUseVueSlideout()) {
+    void openSlideout(url, {
+      opener: trigger instanceof HTMLElement ? trigger : null,
+    });
+
+    return;
+  }
+
+  new Craft.CpScreenSlideout(url);
+}) as EventListener);
+
 // `craft:copy-text-prompt` — the "Copy field handle" / "Copy attribute name"
 // items. Shows the value in a read-only field with a copy button, matching what
 // the legacy `Craft.ui.createCopyTextPrompt` handler did.

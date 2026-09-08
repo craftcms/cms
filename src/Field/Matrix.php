@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\ActionMenu as ActionMenuComponent;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -87,6 +89,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -531,12 +534,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $entryTypes = collect($this->getEntryTypes())
             ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->name])
             ->all() ?: ['entry' => Entry::displayName()];
+        // Disabled blocks still have to reach the editor, or disabling one makes it
+        // disappear from the Form. Matches how `blockInputHtml()` resolves the value.
         $entries = array_values(match (true) {
             $context->value instanceof ElementCollection => $context->value->all(),
-            $context->value instanceof EntryQuery => $context->value->all(),
+            $context->value instanceof EntryQuery => $context->value->getResultOverride()
+                ?? (clone $context->value)
+                    ->drafts(null)
+                    ->canonicalsOnly()
+                    ->status(null)
+                    ->limit(null)
+                    ->all(),
             default => [],
         });
-        $values = $forms = $sortOrder = [];
+        $values = $forms = $sortOrder = $blocks = [];
         $identities = ElementHelper::nestedElementIdentities($entries);
 
         foreach ($entries as $index => $entry) {
@@ -545,7 +556,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
 
             $uid = $identities[$index];
-            $values[$uid] = ['type' => $entry->getType()->handle];
+            $values[$uid] = [
+                'type' => $entry->getType()->handle,
+                'enabled' => $entry->enabled,
+                'collapsed' => $entry->collapsed,
+            ];
+            $blocks[$uid] = ['actions' => $this->blockActions($entry, $uid)];
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
@@ -556,10 +572,101 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return MatrixControl::make($context->path)
             ->entryTypes($entryTypes)
+            ->blocks($blocks)
             ->forms($forms)
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * The items for one block's "⋮" menu.
+     *
+     * Built here rather than in either renderer so both stacks get the same menu,
+     * and so the permission checks stay on the server. Behavior travels with each
+     * item as a declarative `action` descriptor — the instance-local ones as a
+     * `craft:matrix-block-action` event the owning Control listens for, scoped by
+     * the invoking element (see `resources/js/modules/forms/MatrixControl.vue`).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function blockActions(Entry $entry, string $uid): array
+    {
+        $blockAction = fn (string $action, array $detail = []): array => [
+            'type' => 'event',
+            'name' => 'craft:matrix-block-action',
+            'detail' => ['action' => $action, 'uid' => $uid] + $detail,
+        ];
+        $currentUser = currentUserElement();
+        $items = [
+            [
+                'icon' => 'down-left-and-up-right-to-center',
+                'label' => t('Collapse'),
+                'action' => $blockAction('collapse'),
+                'hidden' => $entry->collapsed,
+            ],
+            [
+                'icon' => 'up-right-and-down-left-from-center',
+                'label' => t('Expand'),
+                'action' => $blockAction('expand'),
+                'hidden' => ! $entry->collapsed,
+            ],
+            [
+                'icon' => 'circle-dashed',
+                'label' => t('Disable'),
+                'action' => $blockAction('disable'),
+                'hidden' => ! $entry->enabled,
+            ],
+            [
+                'icon' => 'circle',
+                'label' => t('Enable'),
+                'action' => $blockAction('enable'),
+                'hidden' => $entry->enabled,
+            ],
+        ];
+
+        if ($entry->id !== null) {
+            $items[] = ['hr' => true];
+            $items[] = [
+                'type' => 'link',
+                'icon' => 'external',
+                'label' => t('Open in a new tab'),
+                'url' => $entry->getCpEditUrl(),
+                'target' => '_blank',
+            ];
+        }
+
+        if ($currentUser?->isAdmin() && Cms::config()->allowAdminChanges) {
+            $items[] = [
+                'icon' => 'gear',
+                'label' => t('Entry type settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-entry-type',
+                    'detail' => ['entryTypeId' => $entry->getType()->id],
+                ],
+            ];
+        }
+
+        $items[] = ['hr' => true];
+        $items[] = [
+            'icon' => 'trash',
+            'label' => t('Delete'),
+            'destructive' => true,
+            'action' => $blockAction('delete'),
+        ];
+        $items[] = ['hr' => true];
+
+        foreach ($this->getEntryTypes() as $entryType) {
+            $items[] = [
+                'icon' => $entryType->icon ?? 'plus',
+                'color' => $entryType->color,
+                'label' => t('Add {type} above', ['type' => t($entryType->name, category: 'site')]),
+                'action' => $blockAction('add', ['entryType' => $entryType->handle]),
+            ];
+        }
+
+        return ActionMenuComponent::make()->menuItems($items)->getItems();
     }
 
     /**
@@ -1734,8 +1841,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 if ($uids) {
                     $entry->uid = $entryId;
                 }
+            }
 
-                // Preserve the collapsed state, which the browser can't remember on its own for new entries
+            // `collapsed` has no column — it only lives for the request. Echoing the
+            // posted value back keeps a collapsed block collapsed across an autosave
+            // instead of springing open on the Form the response returns.
+            if (array_key_exists('collapsed', $entryData)) {
                 $entry->collapsed = ! empty($entryData['collapsed']);
             }
 

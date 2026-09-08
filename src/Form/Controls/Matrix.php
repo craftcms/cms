@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form\Controls;
 
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Form\ControlPayload;
@@ -52,6 +53,9 @@ class Matrix extends Control
     /** @var array<string, Form> */
     private array $forms = [];
 
+    /** @var array<string, array{actions: list<array<string, mixed>>}> */
+    private array $blocks = [];
+
     private ?string $addLabel = null;
 
     private ?int $minEntries = null;
@@ -65,6 +69,7 @@ class Matrix extends Control
         $editable = $attributes['name'] !== null;
         $forms = collect($control->forms)->keyBy(fn (NestedFormPayload $form): string => array_last($form->scope));
         $entryTypes = self::resolvedEntryTypes($control->props['entryTypes'] ?? null);
+        $blocks = is_array($control->props['blocks'] ?? null) ? $control->props['blocks'] : [];
         $types = collect($entryTypes)->keyBy('value');
         $items = '';
 
@@ -77,6 +82,7 @@ class Matrix extends Control
             $actions = '';
 
             if ($editable) {
+                $blockActions = $blocks[$uid]['actions'] ?? [];
                 $actions = Html::tag('craft-reorder-button', '', [
                     'class' => 'move-btn',
                     'position' => match (true) {
@@ -85,7 +91,11 @@ class Matrix extends Control
                         $index === array_key_last($order) => 'last',
                         default => 'middle',
                     },
-                ]).Button::make()
+                ]).($blockActions === [] ? '' : ActionMenu::make()
+                    ->items($blockActions)
+                    ->label(t('{type} actions', ['type' => $label]))
+                    ->toHtml()
+                ).Button::make()
                     ->icon('trash')
                     ->accessibleName(t('Remove {type}', ['type' => $label]))
                     ->attributes(['data-form-matrix-remove' => true])
@@ -107,7 +117,12 @@ class Matrix extends Control
             $items .= Html::tag('div', $hidden.$titlebar
                 .($editable ? Html::tag('div', $actions, ['class' => 'actions']) : '')
                 .Html::tag('div', $content, ['class' => 'fields']), [
-                    'class' => ['matrixblock', 'js-deletable'],
+                    'class' => array_filter([
+                        'matrixblock',
+                        'js-deletable',
+                        ($entry['enabled'] ?? true) ? null : 'disabled-entry',
+                        ($entry['collapsed'] ?? false) ? 'collapsed' : null,
+                    ]),
                     'data-id' => $uid,
                     'data-type' => $type,
                     'role' => 'listitem',
@@ -194,6 +209,21 @@ class Matrix extends Control
         return $this;
     }
 
+    /**
+     * Per-block presentation, keyed by identity — the "⋮" menu each block gets.
+     *
+     * Kept out of the value so it never posts back; blocks the browser minted
+     * itself simply have no entry here until the next save materializes them.
+     *
+     * @param  array<string, array{actions: list<array<string, mixed>>}>  $blocks
+     */
+    public function blocks(array $blocks): static
+    {
+        $this->blocks = $blocks;
+
+        return $this;
+    }
+
     public function addLabel(string $addLabel): static
     {
         $this->addLabel = $addLabel;
@@ -244,6 +274,7 @@ class Matrix extends Control
             'addLabel' => $this->addLabel ?? t('Add an entry'),
             'minEntries' => $this->minEntries,
             'maxEntries' => $this->maxEntries,
+            'blocks' => $this->blocks,
         ];
     }
 

@@ -1,11 +1,18 @@
 <script setup lang="ts">
+  // `craft-action-menu`'s `actions` is a JS property (`attribute: false`), so the
+  // element has to be defined before Vue patches it — otherwise the assignment
+  // shadows the accessor and the menu never renders. Same reason ActionMenuNode
+  // imports it. Leaf module, not the barrel.
+  import '@craftcms/ui/components/action-menu/action-menu';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui';
-  import {computed, ref, toRaw, useId} from 'vue';
+  import {computed, onBeforeUnmount, onMounted, ref, toRaw, useId} from 'vue';
   import '@/modules/matrix';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
   import FormNodeList from './FormNodeList.vue';
+  import type {ActionItems} from '@/common/types';
   import {
     NESTED_ELEMENT_UID_PREFIX,
     type FormChange,
@@ -22,6 +29,15 @@
     addLabel: string;
     minEntries?: number | null;
     maxEntries?: number | null;
+    /** Per-block presentation, keyed by identity. Server-built; never posted. */
+    blocks?: Record<string, {actions?: ActionItems}>;
+  };
+  /** The instance-local half of a block's menu. See `Matrix::blockActions()`. */
+  type BlockActionDetail = {
+    action: 'collapse' | 'expand' | 'disable' | 'enable' | 'delete' | 'add';
+    uid: string;
+    entryType?: string;
+    trigger?: unknown;
   };
   type MatrixValue = NestedElementValue;
 
@@ -101,11 +117,173 @@
       entries.map((entry) => {
         const uid = entry.dataset.id!;
 
-        return [uid, value.entries[uid] ?? {type: entry.dataset.type ?? ''}];
+        return [
+          uid,
+          value.entries[uid] ?? {type: entry.dataset.type ?? '', enabled: true},
+        ];
       })
     );
     emit('update:value', value, 'discrete');
   }
+
+  /** Actions whose label depends on live state, so the server's copy goes stale. */
+  const STATEFUL = new Set(['collapse', 'expand', 'disable', 'enable']);
+
+  function blockEvent(
+    uid: string,
+    action: string,
+    detail: Record<string, unknown> = {}
+  ) {
+    return {
+      type: 'event' as const,
+      name: 'craft:matrix-block-action',
+      detail: {action, uid, ...detail},
+    };
+  }
+
+  /** Collapse/Expand and Disable/Enable, resolved against the block right now. */
+  function stateActions(uid: string): ActionItems {
+    const block = model.value.entries[uid];
+
+    return [
+      block?.collapsed
+        ? {
+            label: t('Expand'),
+            icon: 'up-right-and-down-left-from-center',
+            action: blockEvent(uid, 'expand'),
+          }
+        : {
+            label: t('Collapse'),
+            icon: 'down-left-and-up-right-to-center',
+            action: blockEvent(uid, 'collapse'),
+          },
+      block?.enabled === false
+        ? {
+            label: t('Enable'),
+            icon: 'circle',
+            action: blockEvent(uid, 'enable'),
+          }
+        : {
+            label: t('Disable'),
+            icon: 'circle-dashed',
+            action: blockEvent(uid, 'disable'),
+          },
+    ];
+  }
+
+  /**
+   * A block the browser minted has no server-built menu until the next save
+   * materializes it, so compose the half that needs no server data.
+   */
+  function localActions(uid: string): ActionItems {
+    return [
+      ...stateActions(uid),
+      {type: 'hr'},
+      {
+        label: t('Delete'),
+        icon: 'trash',
+        variant: 'danger',
+        action: blockEvent(uid, 'delete'),
+      },
+      {type: 'hr'},
+      ...(props.control.props.entryTypes ?? []).map((type) => ({
+        label: t('Add {type} above', {type: type.label}),
+        icon: 'plus',
+        action: blockEvent(uid, 'add', {entryType: type.value}),
+      })),
+    ];
+  }
+
+  function blockActions(uid: string): ActionItems {
+    const server = props.control.props.blocks?.[uid]?.actions;
+
+    if (!server?.length) {
+      return localActions(uid);
+    }
+
+    // Drop the server's stateful pair — including the ones it marked hidden —
+    // and lead with a freshly resolved one.
+    return [
+      ...stateActions(uid),
+      ...server.filter((item) => {
+        const action = 'action' in item ? item.action : undefined;
+        const name =
+          action?.type === 'event'
+            ? (action.detail?.action as string | undefined)
+            : undefined;
+
+        return !(name && STATEFUL.has(name)) && !('hidden' in item);
+      }),
+    ];
+  }
+
+  /**
+   * `runAction()` dispatches `event` actions on `window`, so every Matrix on the
+   * page hears every block action. Scope by the invoking element: the menu keeps
+   * its content in place, so the trigger is still inside the block it belongs to.
+   */
+  function onBlockAction(event: Event): void {
+    const detail = (event as CustomEvent<BlockActionDetail>).detail;
+
+    if (!detail || !matrixHost.value) {
+      return;
+    }
+
+    const trigger = detail.trigger;
+    const owned =
+      trigger instanceof HTMLElement &&
+      trigger.closest('craft-matrix-input') === matrixHost.value;
+
+    if (!owned) {
+      return;
+    }
+
+    const next = structuredClone(toRaw(model.value));
+    const block = next.entries[detail.uid];
+
+    switch (detail.action) {
+      case 'collapse':
+      case 'expand':
+        if (!block) return;
+        block.collapsed = detail.action === 'collapse';
+        break;
+
+      case 'disable':
+      case 'enable':
+        if (!block) return;
+        block.enabled = detail.action === 'enable';
+        break;
+
+      case 'delete':
+        if (next.sortOrder.length <= (props.control.props.minEntries ?? 0)) {
+          return;
+        }
+        delete next.entries[detail.uid];
+        next.sortOrder = next.sortOrder.filter((uid) => uid !== detail.uid);
+        break;
+
+      case 'add': {
+        // Insert above this block, so the new one lands where the menu was opened.
+        const at = next.sortOrder.indexOf(detail.uid);
+        const uid = `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`;
+        next.entries[uid] = {type: detail.entryType ?? '', enabled: true};
+        next.sortOrder.splice(at < 0 ? next.sortOrder.length : at, 0, uid);
+        break;
+      }
+
+      default:
+        return;
+    }
+
+    emit('update:value', next, 'discrete');
+  }
+
+  onMounted(() =>
+    window.addEventListener('craft:matrix-block-action', onBlockAction)
+  );
+  onBeforeUnmount(() =>
+    window.removeEventListener('craft:matrix-block-action', onBlockAction)
+  );
 
   function entryType(uid: string): EntryType | undefined {
     const handle = model.value.entries[uid]?.type;
@@ -143,6 +321,10 @@
           v-for="(uid, index) in model.sortOrder"
           :key="uid"
           class="matrixblock js-deletable"
+          :class="{
+            collapsed: model.entries[uid]?.collapsed,
+            'disabled-entry': model.entries[uid]?.enabled === false,
+          }"
           :data-id="uid"
           :data-type="String(model.entries[uid]?.type ?? '')"
           data-matrix-block
@@ -164,7 +346,11 @@
             {{ entryType(uid)?.label ?? uid }}
             <div class="preview" />
           </div>
-          <div v-if="editable" slot="actions">
+          <div v-if="editable" slot="actions" class="flex flex-nowrap">
+            <ActionMenu
+              :actions="blockActions(uid)"
+              :label="t('{type} actions', {type: entryType(uid)?.label ?? uid})"
+            />
             <craft-reorder-button
               class="move-btn"
               :disabled="model.sortOrder.length < 2"
@@ -190,7 +376,7 @@
               "
             />
           </div>
-          <div class="fields">
+          <div v-show="!model.entries[uid]?.collapsed" class="fields">
             <template v-if="forms.get(uid)">
               <FormNodeList
                 :nodes="forms.get(uid)!.nodes"

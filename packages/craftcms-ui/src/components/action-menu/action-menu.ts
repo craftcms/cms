@@ -448,14 +448,28 @@ export default class CraftActionMenu extends CraftPopover {
     el: CraftActionItem,
     action: ActionMenuItemButton | ActionMenuItemLink
   ): void {
-    const reserved = new Set(['type', 'label', 'onClick', 'href', 'keywords']);
+    const reserved = new Set([
+      'type',
+      'label',
+      'onClick',
+      'href',
+      'keywords',
+      // Read-only on Element. Server-built descriptors carry it, and assigning
+      // it throws mid-render, which leaves the whole menu blank.
+      'attributes',
+    ]);
     for (const [key, value] of Object.entries(action)) {
       if (reserved.has(key) || value === undefined) {
         continue;
       }
       // Assign as a JS property so object values (action/feedback/shortcut)
-      // are passed through, not stringified.
-      (el as unknown as Record<string, unknown>)[key] = value;
+      // are passed through, not stringified. Guarded: one unwritable key must
+      // not take the rest of the menu down with it.
+      try {
+        (el as unknown as Record<string, unknown>)[key] = value;
+      } catch {
+        // Not a settable property on the item — skip it.
+      }
     }
   }
 
