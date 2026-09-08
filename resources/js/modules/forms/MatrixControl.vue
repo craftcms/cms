@@ -447,10 +447,19 @@
       ...(props.control.props.entryTypes ?? []).map((type) => ({
         label: t('Add {type} above', {type: type.label}),
         icon: 'plus',
+        disabled: adding.value !== null,
         action: blockEvent(uid, 'add', {entryType: type.value}),
       })),
     ];
   }
+
+  /**
+   * Announced while the server mints a block. The add buttons show a spinner,
+   * but "Add {type} above" is a menu item with nowhere to put one.
+   */
+  const statusMessage = computed(() =>
+    adding.value === null ? '' : t('Loading')
+  );
 
   function blockActions(uid: string): ActionItems {
     const server = props.control.props.blocks?.[uid]?.actions;
@@ -469,6 +478,11 @@
           action?.type === 'event'
             ? (action.detail?.action as string | undefined)
             : undefined;
+
+        if (name === 'add') {
+          // Server-built, so it can't know a create is already in flight.
+          Object.assign(item, {disabled: adding.value !== null});
+        }
 
         return !(name && STATEFUL.has(name)) && !('hidden' in item);
       }),
@@ -587,7 +601,9 @@
   >
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
     <div :id="matrixId" class="matrix matrix-field">
-      <span role="status" class="visually-hidden" data-status-message />
+      <span role="status" class="visually-hidden" data-status-message>{{
+        statusMessage
+      }}</span>
       <div class="grid gap-1" role="list" data-matrix-blocks>
         <craft-card
           v-for="(uid, index) in model.sortOrder"

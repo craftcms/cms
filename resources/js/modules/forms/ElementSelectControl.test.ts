@@ -139,6 +139,28 @@ describe('ElementSelectControl', () => {
     ];
   }
 
+  it('renders empty when its value is missing from the values tree', async () => {
+    // A relation nested in a Matrix block resolves its path to undefined for a
+    // beat after the server mints that block. Reading `.length` off undefined
+    // threw, and FormRenderer swapped the whole form for a render error rather
+    // than showing an empty field for one frame.
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: control(),
+          value: undefined,
+          editable: true,
+        } as never),
+    });
+
+    expect(() => app!.mount(container!)).not.toThrow();
+    await nextTick();
+
+    expect(container.querySelectorAll('craft-chip')).toHaveLength(0);
+  });
+
   it('renders exactly one action menu per chip, with Replace and Remove', async () => {
     const root = await mount();
 

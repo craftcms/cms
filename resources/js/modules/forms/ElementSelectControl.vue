@@ -94,7 +94,14 @@
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
-    value: Array<number | string>;
+    /**
+     * Undefined for a beat whenever this Control's path isn't in the values tree
+     * yet — a relation nested in a Matrix block whose identity the server has
+     * just minted, say. Read {@link model}, never this: reading `.length` off
+     * undefined here throws, and FormRenderer swaps the whole form for a render
+     * error rather than showing an empty field for one frame.
+     */
+    value: Array<number | string> | undefined;
     editable: boolean;
   }>();
   const emit = defineEmits<{
@@ -120,7 +127,9 @@
     () => props.editable && props.control.props.canUpload === true
   );
 
-  const ids = computed(() => props.value.map(elementId));
+  const model = computed<Array<number | string>>(() => props.value ?? []);
+
+  const ids = computed(() => model.value.map(elementId));
 
   /** One relation can't be reordered, and a read-only field can't be either. */
   const sortable = computed(() => props.editable && ids.value.length > 1);
@@ -180,7 +189,7 @@
    * next round-trip.
    */
   const listData = computed(() =>
-    props.value.map((selectedValue) => ({
+    model.value.map((selectedValue) => ({
       ...presentation(selectedValue),
       id: elementId(selectedValue),
     }))
@@ -627,7 +636,7 @@
 
       <div
         class="border border-(--c-color-neutral-border-quiet) rounded-sm inset-shadow-sm bg-(--c-color-neutral-fill-quiet) relative"
-        v-if="value.length > 0"
+        v-if="model.length > 0"
       >
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
@@ -715,7 +724,7 @@
         </div>
         <div class="absolute inset-e-1 inset-be-1" v-if="limit && limit > 1">
           <craft-badge size="small" no-prefix
-            >{{ value.length }}/{{ limit }}</craft-badge
+            >{{ model.length }}/{{ limit }}</craft-badge
           >
         </div>
       </div>
