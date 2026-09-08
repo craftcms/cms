@@ -93,10 +93,10 @@ class ImportHelper
         // the BaseTransformer::additionalMatchCriteria() values (if custom transformer is specified)
 
         // get the map
-        $map = $importer->map;
+        $map = $importer->map ?? [];
 
         // get the matchCriteria that are coming from the UI or from a file-based config
-        $matchCriteria = $importer->matchCriteria;
+        $matchCriteria = $importer->matchCriteria ?? [];
 
         // ones coming from the UI will have a value of 1
         // ones coming from the file-based config should be strings that point to the original data keys
