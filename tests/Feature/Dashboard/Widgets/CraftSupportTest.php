@@ -17,7 +17,7 @@ it('can render', function () {
     $dashboard = app(Dashboard::class);
     $widget = $dashboard->createWidget(CraftSupport::class);
 
-    expect($widget->getBodyHtml())->not()->toBeNull();
+    expect($widget->props())->not()->toBeNull();
 });
 
 it('is only selectable by admins', function () {

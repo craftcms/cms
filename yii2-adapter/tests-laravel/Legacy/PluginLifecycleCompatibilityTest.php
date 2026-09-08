@@ -11,6 +11,9 @@ use CraftCms\Cms\Field\FieldTypes;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin as ModernPlugin;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettings;
 use CraftCms\Yii2Adapter\Event\EventCompatibility;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 
@@ -40,7 +43,9 @@ it('creates and runs adapter plugins through the shared plugin interface', funct
 
     expect($plugin)
         ->toBeInstanceOf(PluginInterface::class)
-        ->toBeInstanceOf(AdapterLifecycleTestPlugin::class);
+        ->toBeInstanceOf(AdapterLifecycleTestPlugin::class)
+        ->and($plugin->getSettings())->toBeNull()
+        ->and($plugin->getSettings())->toBeNull();
 
     expect(function() use ($plugin, $plugins): void {
         $plugin->bootPlugin($plugins);
@@ -48,6 +53,32 @@ it('creates and runs adapter plugins through the shared plugin interface', funct
         $plugin->removeAssets();
     })->not()->toThrow(Throwable::class);
 });
+
+it('hydrates validates and saves plugin settings through the legacy service', function(?string $submitted) {
+    $plugin = AdapterSettingsTestPlugin::create([
+        'handle' => 'legacy-settings',
+        'name' => 'Legacy Settings',
+        'basePath' => __DIR__,
+        'settings' => ['foo' => 'Stored'],
+    ]);
+    $settings = $plugin->getSettings();
+    $plugins = new craft\services\Plugins();
+
+    expect($settings)->toBeInstanceOf(PluginSettings::class)
+        ->toBe($plugin->getSettings())
+        ->and($settings->foo)->toBe('Stored');
+
+    $saved = $plugins->savePluginSettings($plugin, ['foo' => $submitted]);
+
+    expect($saved)->toBe($submitted !== null)
+        ->and($settings->errors()->has('foo'))->toBe($submitted === null)
+        ->and($plugin->getSettings())->toBe($settings)
+        ->and($settings->foo)->toBe($submitted)
+        ->and(app(ProjectConfig::class)->get('plugins.legacy-settings.settings'))->toBe($submitted === null ? null : [
+            'bar' => null,
+            'foo' => 'Submitted',
+        ]);
+})->with(['invalid' => null, 'valid' => 'Submitted']);
 
 it('reconciles legacy registrations after legacy and modern plugins register types', function() {
     $plugins = app(Plugins::class);
@@ -84,6 +115,14 @@ it('reconciles legacy registrations after legacy and modern plugins register typ
 
 class AdapterLifecycleTestPlugin extends Plugin
 {
+}
+
+class AdapterSettingsTestPlugin extends Plugin
+{
+    protected function createSettingsModel(): PluginSettings
+    {
+        return new TestPluginSettings();
+    }
 }
 
 class AdapterRegistrationTestPlugin extends Plugin

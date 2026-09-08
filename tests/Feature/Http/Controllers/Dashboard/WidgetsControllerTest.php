@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
+use CraftCms\Cms\Dashboard\Events\WidgetSaving;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
@@ -10,7 +12,9 @@ use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -43,14 +47,7 @@ it('can store a widget with settings', function () {
         ],
     ])->assertOk();
 
-    expect($response->json('info'))->not()->toBeEmpty();
-    expect($response->json('info.settingsForm.scope'))->toBe([sprintf(
-        'widget%s-settings',
-        $response->json('info.id'),
-    )]);
-    expect($response->json('info.settingsHtml'))->toBeNull();
-    expect($response->json('headHtml'))->not()->toBeEmpty();
-    expect($response->json('bodyHtml'))->not()->toBeEmpty();
+    $response->assertJsonPath('info.title', 'Craft News');
 
     expect(WidgetModel::count())->toBe(1);
     tap(WidgetModel::query()->firstOrFail(), function (WidgetModel $widget) {
@@ -58,7 +55,7 @@ it('can store a widget with settings', function () {
     });
 });
 
-it('can refresh native widget settings without saving', function () {
+it('can refresh widget settings without saving', function () {
     postJson(action([WidgetsController::class, 'refreshSettings']), [
         'type' => Feed::class,
         'settings' => [
@@ -81,19 +78,6 @@ test('store needs a valid type', function () {
         ->assertJsonValidationErrorFor('type');
 });
 
-it('can store namespaced settings', function () {
-    postJson(action([WidgetsController::class, 'store']), [
-        'type' => Feed::class,
-        'settingsNamespace' => 'test',
-        'test' => [
-            'title' => 'Craft News',
-            'url' => 'https://craftcms.com/news.rss',
-        ],
-    ])->assertOk();
-
-    expect(WidgetModel::count())->toBe(1);
-});
-
 it('can update a widget with settings', function () {
     $dashboard = app(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget([
@@ -108,18 +92,17 @@ it('can update a widget with settings', function () {
 
     $response = postJson(action([WidgetsController::class, 'update']), [
         'widgetId' => $widget->id,
-        "widget{$widget->id}-settings" => [
+        'settings' => [
             'title' => 'Craft News',
             'limit' => 10,
             'url' => 'https://craftcms.com/feed.rss',
         ],
     ])->assertOk();
 
-    expect($response->json('info'))->not()->toBeEmpty();
-    expect($response->json('headHtml'))->not()->toBeEmpty();
-    expect($response->json('bodyHtml'))->not()->toBeEmpty();
+    $response->assertJsonPath('info.title', 'Craft News')->assertJsonPath('info.data.limit', 10);
 
-    expect(Widget::fromConfig(WidgetModel::first())->url)->toBe('https://craftcms.com/feed.rss');
+    expect(WidgetModel::query()->findOrFail($widget->id)->settings)
+        ->toMatchArray(['title' => 'Craft News', 'url' => 'https://craftcms.com/feed.rss', 'limit' => 10]);
 });
 
 it('validates when updating', function () {
@@ -134,7 +117,7 @@ it('validates when updating', function () {
 
     postJson(action([WidgetsController::class, 'update']), [
         'widgetId' => $widget->id,
-        "widget{$widget->id}-settings" => [],
+        'settings' => [],
     ])
         ->assertJsonValidationErrorFor('title')
         ->assertJsonValidationErrorFor('url')
@@ -196,4 +179,48 @@ it('can delete a widget', function () {
     ])->assertOk();
 
     expect(WidgetModel::count())->toBe(0);
+});
+
+it('does not report a cancelled widget save or deletion as successful', function (string $operation) {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+
+    $eventClass = $operation === 'update'
+        ? WidgetSaving::class
+        : WidgetDeleting::class;
+
+    Event::listen($eventClass, function ($event) {
+        $event->isValid = false;
+    });
+
+    postJson(action([WidgetsController::class, $operation]), [
+        'id' => $widget->id, 'widgetId' => $widget->id, 'settings' => [],
+    ])->assertUnprocessable();
+
+    expect(WidgetModel::query()->whereKey($widget->id)->exists())->toBeTrue();
+})->with(['update', 'delete']);
+
+it('rejects changes to another user’s widget', function (string $operation) {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+
+    $before = WidgetModel::query()->findOrFail($widget->id)->getAttributes();
+    actingAs(UserModel::factory()->admin()->create());
+
+    postJson(action([WidgetsController::class, $operation]), [
+        'id' => $widget->id, 'widgetId' => $widget->id,
+        'settings' => [], 'colspan' => 2, 'ids' => json_encode([$widget->id]),
+    ])->assertUnprocessable();
+
+    expect(WidgetModel::query()->findOrFail($widget->id)->getAttributes())->toBe($before);
+})->with(['update', 'delete', 'updateColspan', 'reorder']);
+
+it('rejects adding another instance of a singleton widget', function () {
+    UserModel::query()->whereKey(Auth::id())->update(['hasDashboard' => true]);
+    app(Dashboard::class)->saveWidget(app(Dashboard::class)->createWidget(Updates::class));
+
+    postJson(action([WidgetsController::class, 'store']), ['type' => Updates::class])
+        ->assertJsonValidationErrorFor('type');
+
+    expect(WidgetModel::query()->count())->toBe(1);
 });

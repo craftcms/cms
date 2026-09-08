@@ -16,7 +16,7 @@ it('refreshes nested settings without losing other values or replaying validatio
     {
         public string $handle = 'nested-settings';
 
-        protected function createSettingsModel(): PluginSettings
+        protected static function createSettings(): PluginSettings
         {
             return new class extends PluginSettings
             {

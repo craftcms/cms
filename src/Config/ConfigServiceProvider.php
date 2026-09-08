@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Config;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
@@ -35,6 +36,8 @@ class ConfigServiceProvider extends ServiceProvider
             return;
         }
 
+        $this->normalizePluginSettings($this->app->make(ConfigRepository::class));
+
         $this->app->singleton(GeneralConfig::class, function () {
             $repository = $this->app->make(ConfigRepository::class);
 
@@ -48,6 +51,28 @@ class ConfigServiceProvider extends ServiceProvider
 
             $this->mergeConfigFrom(__DIR__."/../../config/$file.php", "craft.$file");
         });
+    }
+
+    private function normalizePluginSettings(ConfigRepository $repository): void
+    {
+        $config = $repository->get('craft', []);
+
+        if (! is_array($config)) {
+            throw new InvalidArgumentException('Configuration [craft] must be an array; got '.get_debug_type($config).'.');
+        }
+
+        $changed = false;
+
+        foreach ($config as $handle => $value) {
+            if ($value instanceof PluginSettings) {
+                $config[$handle] = $value->configData();
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $repository->set('craft', $config);
+        }
     }
 
     public function boot(): void
