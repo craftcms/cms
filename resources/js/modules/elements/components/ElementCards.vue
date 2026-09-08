@@ -1,13 +1,9 @@
 <script setup lang="ts">
   import {attrs, t} from '@craftcms/ui';
-  import {computed, ref} from 'vue';
+  import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import Empty from '@/common/components/Empty.vue';
-  import DragShadow from '@/common/components/DragShadow.vue';
-  import {
-    useReorderableItems,
-    type DropState,
-  } from '@/common/composables/useReorderableItems';
+  import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
@@ -57,50 +53,39 @@
   // for anything with an ordered list of ids — the element index, a relation
   // field, or a third-party list.
 
-  const pendingShiftKey = ref(false);
-  function rememberShift(event: MouseEvent) {
-    pendingShiftKey.value = event.shiftKey;
-  }
-
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
   }>();
 
   const ids = computed(() => props.data.map((element) => element.id));
 
-  const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
-    useReorderableItems({
-      getItemIds: () => ids.value,
-      onReorder: (startIndex, finishIndex) =>
-        emit('reorder', startIndex, finishIndex),
-      enabled: () => props.sortable,
-    });
+  /** Per-card attributes the shared frame passes straight through. */
+  function itemClass(id: string | number): unknown {
+    const element = props.data.find((candidate) => candidate.id === id);
 
-  /**
-   * A grid wraps, so its cards run in reading order rather than straight down —
-   * the reorder button says "Move forward"/"Move backward" there, and
-   * "Move up"/"Move down" in the single-column layout.
-   */
-  const reorderOrientation = computed(() =>
-    props.singleColumn ? 'vertical' : 'horizontal'
-  );
-
-  function overDropState(
-    id: string | number
-  ): Extract<DropState, {type: 'is-over'}> | null {
-    const state = getDropState(id);
-
-    return state.type === 'is-over' ? state : null;
+    return {
+      element: true,
+      'element--folder': !!element && isFolderRow(element),
+    };
   }
 
-  function move(index: number, delta: number): void {
-    const target = index + delta;
+  function itemAttrs(id: string | number): Record<string, unknown> | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
 
-    if (target < 0 || target >= props.data.length) {
-      return;
+    return element ? rowMoveAttrs(element) : undefined;
+  }
+
+  function cardAttrs(id: string | number): Record<string, unknown> | undefined {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (!element) {
+      return undefined;
     }
 
-    emit('reorder', index, target);
+    return {
+      ...attrs(element.cardAttributes, {exclude: ['class']}),
+      'thumb-alignment': element.thumbAlignment ?? undefined,
+    };
   }
 
   const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
@@ -108,9 +93,11 @@
   // Folder cards (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (the select checkbox, a link, …).
   // Other cards fall through to the normal click-to-select behavior.
-  function onCardClick(element: CardElement, event: MouseEvent) {
-    if (!isFolderRow(element)) {
-      props.selection.handleClick(element.id, event);
+  function onCardClick(id: string | number, event: MouseEvent) {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (!element || !isFolderRow(element)) {
+      props.selection.handleClick(id, event);
       return;
     }
 
@@ -197,91 +184,47 @@
       </craft-checkbox>
     </div>
 
-    <ul class="card-grid" :class="{'card-grid--single': singleColumn}">
-      <li
-        v-for="(element, cardIdx) in data"
-        :key="element.id"
-        :ref="(el) => setItemRef(el as HTMLElement, element.id)"
-        v-bind="rowMoveAttrs(element)"
-        :tabindex="selectable ? 0 : undefined"
-        @click="onCardClick(element, $event)"
-        @keydown="onCardKeydown(element.id, cardIdx, $event)"
-        :class="{
-          element: true,
-          'element--folder': isFolderRow(element),
-          sel: selection.isSelected(element.id),
-          'element--dragging': getDragState(element.id).type === 'is-dragging',
-          'element--hidden':
-            getDragState(element.id).type === 'is-dragging-and-left-self',
-        }"
-      >
-        <DragShadow
-          v-if="overDropState(element.id)?.closestEdge === 'top'"
-          :height="overDropState(element.id)?.draggingRect?.height"
+    <SelectableCardList
+      tag="ul"
+      :ids="ids"
+      :selection="selection"
+      :selectable="selectable"
+      :sortable="sortable"
+      :read-only="readOnly"
+      :single-column="singleColumn"
+      :list-class="{'card-grid': true, 'card-grid--single': singleColumn}"
+      :item-class="itemClass"
+      :item-attrs="itemAttrs"
+      :card-attrs="cardAttrs"
+      @reorder="(from, to) => emit('reorder', from, to)"
+      @item-click="onCardClick"
+      @item-keydown="onCardKeydown"
+    >
+      <template #thumbnail="{index}">
+        <div v-if="data[index]?.cardThumbHtml" slot="thumbnail">
+          <DynamicHtmlRenderer :html="data[index]!.cardThumbHtml!" />
+        </div>
+      </template>
+
+      <template #label="{index}">
+        <DynamicHtmlRenderer :html="data[index]?.cardHeaderHtml ?? ''" />
+      </template>
+
+      <template #actions="{index}">
+        <slot name="actions" :element="data[index]" :index="index"></slot>
+      </template>
+
+      <template #default="{index}">
+        <DynamicHtmlRenderer :html="data[index]?.cardContentHtml ?? ''" />
+      </template>
+
+      <template #footer="{index}">
+        <DynamicHtmlRenderer
+          :html="data[index]?.cardFooterHtml ?? ''"
+          slot="footer"
         />
-
-        <craft-card
-          v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
-          :active="selection.isSelected(element.id)"
-          :thumb-alignment="element.thumbAlignment ?? undefined"
-        >
-          <div v-if="element.cardThumbHtml" slot="thumbnail">
-            <DynamicHtmlRenderer :html="element.cardThumbHtml" />
-          </div>
-
-          <div
-            slot="header"
-            class="flex gap-2 items-center justify-between w-full"
-          >
-            <div class="flex gap-2 items-center">
-              <craft-checkbox
-                v-if="selectable"
-                label-sr-only
-                .checked="selection.isSelected(element.id)"
-                .disabled="readOnly || !selection.canSelect(element.id)"
-                @click="rememberShift($event)"
-                @model-value-changed="
-                  selection.setChecked(element.id, checkboxValue($event), {
-                    shiftKey: pendingShiftKey,
-                  })
-                "
-              >
-                <label slot="label">{{ t('Select') }}</label>
-              </craft-checkbox>
-              <DynamicHtmlRenderer :html="element.cardHeaderHtml ?? ''" />
-            </div>
-
-            <div class="flex gap-1 items-center">
-              <slot name="actions" :element="element" :index="cardIdx"></slot>
-              <span
-                v-if="sortable"
-                :ref="(el) => setHandleRef(el as HTMLElement, element.id)"
-                class="drag-handle"
-              >
-                <craft-reorder-button
-                  :position="getRowPosition(cardIdx)"
-                  :orientation="reorderOrientation"
-                  @reorder="
-                    (event: CustomEvent<{direction: 'up' | 'down'}>) =>
-                      move(cardIdx, event.detail.direction === 'up' ? -1 : 1)
-                  "
-                ></craft-reorder-button>
-              </span>
-            </div>
-          </div>
-          <DynamicHtmlRenderer :html="element.cardContentHtml ?? ''" />
-          <DynamicHtmlRenderer
-            :html="element.cardFooterHtml ?? ''"
-            slot="footer"
-          />
-        </craft-card>
-
-        <DragShadow
-          v-if="overDropState(element.id)?.closestEdge === 'bottom'"
-          :height="overDropState(element.id)?.draggingRect?.height"
-        />
-      </li>
-    </ul>
+      </template>
+    </SelectableCardList>
   </template>
   <template v-else>
     <slot name="empty">
@@ -318,13 +261,13 @@
 
   // Dragging, but still over itself — dim rather than remove, so the grid
   // doesn't reflow under the cursor.
-  .card-grid > li.element--dragging {
+  .card-grid > li.is-dragging {
     opacity: 0.4;
   }
 
   // Dragged away from itself: collapse but keep the footprint, so the grid
   // doesn't reshuffle around the gap.
-  .card-grid > li.element--hidden {
+  .card-grid > li.is-dragging-away {
     visibility: hidden;
   }
 

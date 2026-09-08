@@ -5,8 +5,6 @@
   // imports it. Leaf module, not the barrel.
   import '@craftcms/ui/components/action-menu/action-menu';
   import '@craftcms/ui/components/button/button';
-  import '@craftcms/ui/components/checkbox/checkbox';
-  import '@craftcms/ui/components/reorder-button/reorder-button';
   import '@craftcms/ui/components/spinner/spinner';
   import {actionClient, t} from '@craftcms/ui';
   import {
@@ -26,8 +24,8 @@
     setBlockCollapsed,
   } from '@/modules/matrix/collapsed-blocks';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import {useSelectable} from '@/common/composables/useSelectable';
+  import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from './FormNodeList.vue';
   import type {ActionItems} from '@/common/types';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
@@ -238,17 +236,9 @@
   });
 
   /**
-   * Drag-sort and selection both come from the shared composables the element
-   * index uses (see ElementCards.vue), rather than the legacy MatrixInput's
-   * Garnish DragSort/Select — those mutate light DOM this component re-renders.
+   * The card frame — selection, the select checkbox, drag-sort and the reorder
+   * handle — comes from SelectableCardList, shared with the element index.
    */
-  const {setItemRef, setHandleRef, getDragState, getRowPosition} =
-    useReorderableItems({
-      getItemIds: () => model.value.sortOrder,
-      onReorder: (startIndex, finishIndex) => move(startIndex, finishIndex),
-      enabled: () => props.editable,
-    });
-
   const selection = useSelectable<string>({
     ids: () => model.value.sortOrder,
     enabled: () => props.editable,
@@ -362,14 +352,24 @@
     emit('update:value', next, 'discrete');
   }
 
-  function onReorderButton(index: number, event: Event): void {
-    // The legacy `craft-matrix-input` listens for `reorder` too; it would reach
-    // for a MatrixEntry controller these blocks don't have.
-    event.stopPropagation();
-    const direction = (event as CustomEvent<{direction: 'up' | 'down'}>).detail
-      .direction;
+  /**
+   * `.matrixblock` stays the direct child of the blocks container: the legacy
+   * `craft-matrix-input` still finds its entries through it, and `sync()` reads
+   * the identity back off `data-id`.
+   */
+  function blockAttrs(id: string | number): Record<string, unknown> {
+    const uid = String(id);
 
-    move(index, direction === 'up' ? index - 1 : index + 1);
+    return {
+      'data-id': uid,
+      'data-type': String(model.value.entries[uid]?.type ?? ''),
+      'data-matrix-block': '',
+      role: 'listitem',
+      class: {
+        collapsed: isCollapsed(uid),
+        'disabled-entry': model.value.entries[uid]?.enabled === false,
+      },
+    };
   }
 
   /**
@@ -452,25 +452,6 @@
         action: blockEvent(uid, 'add', {entryType: type.value}),
       })),
     ];
-  }
-
-  /**
-   * `craft-checkbox` dispatches `model-value-changed` from the host rather than
-   * an inner input, and re-fires it on programmatic `.checked` updates — so read
-   * the host's `checked`, not the event target's type.
-   */
-  function checkboxValue(event: Event): boolean {
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
-
-  /**
-   * The checkbox change event carries no modifier keys, so the shift state is
-   * taken from the click that preceded it and used to extend the range.
-   */
-  const pendingShiftKey = ref(false);
-
-  function rememberShift(event: MouseEvent): void {
-    pendingShiftKey.value = event.shiftKey;
   }
 
   /**
@@ -624,92 +605,88 @@
       <span role="status" class="visually-hidden" data-status-message>{{
         statusMessage
       }}</span>
-      <div class="grid gap-1" role="list" data-matrix-blocks>
-        <craft-card
-          v-for="(uid, index) in model.sortOrder"
-          :key="uid"
-          :ref="(el: unknown) => setItemRef(el as HTMLElement, uid)"
-          class="matrixblock js-deletable"
-          :class="{
-            collapsed: isCollapsed(uid),
-            'disabled-entry': model.entries[uid]?.enabled === false,
-            sel: selection.isSelected(uid),
-            'matrixblock--dragging': getDragState(uid).type === 'is-dragging',
-          }"
-          :active="selection.isSelected(uid)"
-          :tabindex="editable ? 0 : undefined"
-          @click="selection.handleClick(uid, $event)"
-          :data-id="uid"
-          :data-type="String(model.entries[uid]?.type ?? '')"
-          data-matrix-block
-          role="listitem"
-        >
+      <!-- `data-matrix-blocks` sits on the list itself: the legacy
+           `craft-matrix-input` finds its entries with `:scope > .matrixblock`,
+           so a wrapper between the two hides every block from it. -->
+      <SelectableCardList
+        role="list"
+        data-matrix-blocks
+        :ids="model.sortOrder"
+        :selection="selection"
+        :selectable="editable"
+        :sortable="editable"
+        :read-only="!editable"
+        single-column
+        tag="div"
+        item-tag="div"
+        list-class="grid gap-1"
+        :item-class="() => 'matrixblock js-deletable'"
+        :item-attrs="blockAttrs"
+        @reorder="move"
+        @item-click="(uid, event) => selection.handleClick(String(uid), event)"
+      >
+        <template #label="{id: uid}">
+          <div>
+            {{ entryType(String(uid))?.label ?? uid }}
+            <div class="preview" />
+          </div>
+        </template>
+
+        <template v-if="editable" #actions="{id: uid}">
+          <ActionMenu
+            :actions="blockActions(String(uid))"
+            :label="
+              t('{type} actions', {
+                type: entryType(String(uid))?.label ?? uid,
+              })
+            "
+          />
+          <craft-button
+            type="button"
+            icon="trash"
+            size="small"
+            variant="danger-plain"
+            :disabled="
+              model.sortOrder.length <= (control.props.minEntries ?? 0)
+            "
+            data-form-matrix-remove
+            :accessible-name="
+              t('Remove {type}', {
+                type: entryType(String(uid))?.label ?? uid,
+              })
+            "
+          />
+        </template>
+
+        <template #default="{id}">
           <template v-if="editable">
             <input
               type="hidden"
               :name="`${inputName(control.path)}[sortOrder][]`"
-              :value="uid"
+              :value="id"
             />
             <input
               type="hidden"
-              :name="`${inputName(control.path)}[entries][${uid}][type]`"
-              :value="String(model.entries[uid]?.type ?? '')"
+              :name="`${inputName(control.path)}[entries][${id}][type]`"
+              :value="String(model.entries[String(id)]?.type ?? '')"
             />
           </template>
-          <div slot="label">
-            {{ entryType(uid)?.label ?? uid }}
-            <div class="preview" />
-          </div>
-          <div
-            v-if="editable"
-            slot="actions"
-            class="flex flex-nowrap items-center"
-          >
-            <craft-checkbox
-              class="checkbox"
-              label-sr-only
-              .checked="selection.isSelected(uid)"
-              @click="rememberShift($event)"
-              @model-value-changed="
-                selection.setChecked(uid, checkboxValue($event), {
-                  shiftKey: pendingShiftKey,
-                })
-              "
-            >
-              <label slot="label">{{ t('Select') }}</label>
-            </craft-checkbox>
-            <ActionMenu
-              :actions="blockActions(uid)"
-              :label="t('{type} actions', {type: entryType(uid)?.label ?? uid})"
-            />
-            <span
-              :ref="(el: unknown) => setHandleRef(el as HTMLElement, uid)"
-              class="drag-handle"
-            >
-              <craft-reorder-button
-                class="move-btn"
-                :disabled="model.sortOrder.length < 2"
-                :position="getRowPosition(index)"
-                @reorder="onReorderButton(index, $event)"
-              />
-            </span>
-          </div>
-          <div v-show="!isCollapsed(uid)" class="fields">
-            <template v-if="forms.get(uid)">
+          <div v-show="!isCollapsed(String(id))" class="fields">
+            <template v-if="forms.get(String(id))">
               <FormNodeList
-                :nodes="forms.get(uid)!.nodes"
+                :nodes="forms.get(String(id))!.nodes"
                 :values="values"
                 :errors="errors"
                 :touched-paths="touchedPaths"
-                :scope="forms.get(uid)!.scope"
-                :refreshable="forms.get(uid)!.refreshable"
-                @change="nestedChange($event, forms.get(uid)!)"
+                :scope="forms.get(String(id))!.scope"
+                :refreshable="forms.get(String(id))!.refreshable"
+                @change="nestedChange($event, forms.get(String(id))!)"
               />
             </template>
             <craft-spinner v-else :label="t('Loading')" />
           </div>
-        </craft-card>
-      </div>
+        </template>
+      </SelectableCardList>
       <div v-if="canAdd" class="buttons">
         <button
           v-for="type in control.props.entryTypes"
