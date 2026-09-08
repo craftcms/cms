@@ -4,6 +4,7 @@ import {
   type ActionFeedback,
   type BaseAction,
   type FeedbackData,
+  normalizeAction,
   runAction,
 } from '@src/actions';
 import {type AsyncState, AsyncStates} from '@src/types';
@@ -13,8 +14,14 @@ type Constructor<T = object> = new (...args: any[]) => T;
 
 /** The action surface the mixin adds to a host element. */
 export interface ActionableHost {
-  /** The action to run when the host is activated. */
-  action: BaseAction | null;
+  /**
+   * The action to run when the host is activated.
+   *
+   * A raw JSON string is accepted too: Vue's in-DOM compiler sets attribute
+   * values as string properties on an upgraded element, so an element written
+   * in a template arrives with a string where one written in JS has an object.
+   */
+  action: BaseAction | string | null;
   feedback: ActionFeedback | null;
   feedbackDuration: number;
   /** Idle / loading / success / error for the in-flight action. */
@@ -22,7 +29,7 @@ export interface ActionableHost {
   /** Transient message surfaced during feedback (e.g. an error). */
   feedbackMessage: string | null;
   /** Run {@link action} now, driving state + emitting `action:change-state`. */
-  triggerAction(): Promise<void>;
+  triggerAction(sourceEvent?: Event): Promise<void>;
   setActionState(state: AsyncState, detail?: FeedbackData): void;
 }
 
@@ -39,7 +46,7 @@ export interface ActionableHost {
  */
 export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
   class ActionableElement extends Base {
-    @property({type: Object}) action: BaseAction | null = null;
+    @property({type: Object}) action: BaseAction | string | null = null;
     @property({type: Object}) feedback: ActionFeedback | null = null;
     @property({type: Number, attribute: 'feedback-duration'})
     feedbackDuration: number = 1000;
@@ -63,17 +70,22 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     #handleActionClick = (event: Event) => {
-      if (!this.action) {
-        return;
-      }
-
-      // Respect a host-provided `disabled` (craft-button, craft-action-item).
+      // Respect a host-provided `disabled` (craft-button, craft-action-item):
+      // a disabled host swallows the click whether or not it has an action.
       if ((this as unknown as {disabled?: boolean}).disabled) {
         event.preventDefault();
         return;
       }
 
-      void this.triggerAction();
+      if (!normalizeAction(this.action)) {
+        return;
+      }
+
+      // An element that both links somewhere and carries an action runs the
+      // action rather than doing both.
+      event.preventDefault();
+
+      void this.triggerAction(event);
     };
 
     setActionState(state: AsyncState, detail: FeedbackData = {}) {
@@ -86,15 +98,15 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
           composed: true,
           detail: {
             state,
-            actionType: this.action?.type,
+            actionType: normalizeAction(this.action)?.type,
             ...detail,
           },
         })
       );
     }
 
-    async triggerAction() {
-      const action = this.action;
+    async triggerAction(sourceEvent?: Event) {
+      const action = normalizeAction(this.action);
 
       if (!action) {
         return;
@@ -102,14 +114,14 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
 
       // Loading state is only meaningful while a network request is in flight;
       // clipboard/event actions resolve synchronously.
-      const showsLoading = action.type === 'http' || action.type === 'download';
-
-      if (showsLoading) {
+      if (action.type === 'http') {
         this.setActionState(AsyncStates.Loading, this.feedback?.loading);
       }
 
       try {
-        await runAction(action);
+        // The trigger lets an action target the element that ran it — a
+        // confirm prompt anchors to it, a redirect can read its context.
+        await runAction(action, {trigger: this, sourceEvent});
         this.setActionState(AsyncStates.Success, this.feedback?.success);
       } catch (error) {
         this.setActionState(AsyncStates.Error, {
