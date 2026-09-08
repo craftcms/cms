@@ -10,7 +10,14 @@
   import {t} from '@craftcms/ui';
   import {computed, onBeforeUnmount, onMounted, ref, toRaw, useId} from 'vue';
   import '@/modules/matrix';
+  import {
+    collapsedBlockId,
+    isBlockCollapsed,
+    setBlockCollapsed,
+  } from '@/modules/matrix/collapsed-blocks';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import {useSelectable} from '@/common/composables/useSelectable';
   import FormNodeList from './FormNodeList.vue';
   import type {ActionItems} from '@/common/types';
   import {
@@ -126,6 +133,107 @@
     emit('update:value', value, 'discrete');
   }
 
+  /**
+   * Collapsed blocks live in localStorage, not the value — it's a view
+   * preference, and posting it would mark the form dirty just for collapsing
+   * something. Craft 5 did the same. `collapsedTick` re-reads storage after a
+   * write, since a plain module read isn't reactive.
+   */
+  const collapsedTick = ref(0);
+
+  function isCollapsed(uid: string): boolean {
+    void collapsedTick.value;
+
+    return isBlockCollapsed(uid);
+  }
+
+  function setCollapsed(uid: string, collapsed: boolean): void {
+    setBlockCollapsed(uid, collapsed);
+    collapsedTick.value++;
+
+    // A block the browser minted isn't in storage under an identity the server
+    // knows yet, so its state also rides along in the posted value — the same
+    // job Craft 5's hidden `[collapsed]` input did for new blocks.
+    if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX)) {
+      const next = structuredClone(toRaw(model.value));
+
+      if (next.entries[uid]) {
+        next.entries[uid].collapsed = collapsed;
+        emit('update:value', next, 'discrete');
+      }
+    }
+  }
+
+  /**
+   * Blocks the server says are collapsed (a new block whose posted `collapsed`
+   * came back) are adopted into storage once, so the two agree from then on.
+   */
+  onMounted(() => {
+    for (const uid of model.value.sortOrder) {
+      if (model.value.entries[uid]?.collapsed && !isBlockCollapsed(uid)) {
+        setBlockCollapsed(uid, true);
+      }
+    }
+    collapsedTick.value++;
+  });
+
+  /**
+   * Drag-sort and selection both come from the shared composables the element
+   * index uses (see ElementCards.vue), rather than the legacy MatrixInput's
+   * Garnish DragSort/Select — those mutate light DOM this component re-renders.
+   */
+  const {setItemRef, setHandleRef, getDragState, getRowPosition} =
+    useReorderableItems({
+      getItemIds: () => model.value.sortOrder,
+      onReorder: (startIndex, finishIndex) => move(startIndex, finishIndex),
+      enabled: () => props.editable,
+    });
+
+  const selection = useSelectable<string>({
+    ids: () => model.value.sortOrder,
+    enabled: () => props.editable,
+  });
+
+  /** Moves the block at `from` to `to`, keeping `entries` untouched. */
+  function move(from: number, to: number): void {
+    if (from === to || from < 0 || to < 0) {
+      return;
+    }
+
+    const next = structuredClone(toRaw(model.value));
+    const [uid] = next.sortOrder.splice(from, 1);
+
+    if (uid === undefined) {
+      return;
+    }
+
+    next.sortOrder.splice(to, 0, uid);
+    emit('update:value', next, 'discrete');
+  }
+
+  function onReorderButton(index: number, event: Event): void {
+    // The legacy `craft-matrix-input` listens for `reorder` too; it would reach
+    // for a MatrixEntry controller these blocks don't have.
+    event.stopPropagation();
+    const direction = (event as CustomEvent<{direction: 'up' | 'down'}>).detail
+      .direction;
+
+    move(index, direction === 'up' ? index - 1 : index + 1);
+  }
+
+  /**
+   * The blocks a menu action applies to: the whole selection when the invoking
+   * block is part of a multi-selection, otherwise just that block. Craft 5 spelled
+   * this `bulkActionMode()`.
+   */
+  function actionTargets(uid: string): string[] {
+    const selected = selection.selectedIds.value;
+
+    return selected.length > 1 && selection.isSelected(uid)
+      ? model.value.sortOrder.filter((id) => selected.includes(id))
+      : [uid];
+  }
+
   /** Actions whose label depends on live state, so the server's copy goes stale. */
   const STATEFUL = new Set(['collapse', 'expand', 'disable', 'enable']);
 
@@ -146,7 +254,7 @@
     const block = model.value.entries[uid];
 
     return [
-      block?.collapsed
+      isCollapsed(uid)
         ? {
             label: t('Expand'),
             icon: 'up-right-and-down-left-from-center',
@@ -238,29 +346,47 @@
       return;
     }
 
+    const targets = actionTargets(detail.uid);
     const next = structuredClone(toRaw(model.value));
-    const block = next.entries[detail.uid];
 
     switch (detail.action) {
       case 'collapse':
       case 'expand':
-        if (!block) return;
-        block.collapsed = detail.action === 'collapse';
-        break;
+        for (const uid of targets) {
+          setCollapsed(uid, detail.action === 'collapse');
+        }
+
+        return;
 
       case 'disable':
       case 'enable':
-        if (!block) return;
-        block.enabled = detail.action === 'enable';
+        for (const uid of targets) {
+          if (next.entries[uid]) {
+            next.entries[uid].enabled = detail.action === 'enable';
+          }
+        }
         break;
 
-      case 'delete':
-        if (next.sortOrder.length <= (props.control.props.minEntries ?? 0)) {
+      case 'delete': {
+        const minimum = props.control.props.minEntries ?? 0;
+        const removable = targets.slice(
+          0,
+          Math.max(next.sortOrder.length - minimum, 0)
+        );
+
+        if (!removable.length) {
           return;
         }
-        delete next.entries[detail.uid];
-        next.sortOrder = next.sortOrder.filter((uid) => uid !== detail.uid);
+
+        for (const uid of removable) {
+          delete next.entries[uid];
+          selection.select(uid, false);
+        }
+        next.sortOrder = next.sortOrder.filter(
+          (uid) => !removable.includes(uid)
+        );
         break;
+      }
 
       case 'add': {
         // Insert above this block, so the new one lands where the menu was opened.
@@ -320,11 +446,17 @@
         <craft-card
           v-for="(uid, index) in model.sortOrder"
           :key="uid"
+          :ref="(el: unknown) => setItemRef(el as HTMLElement, uid)"
           class="matrixblock js-deletable"
           :class="{
-            collapsed: model.entries[uid]?.collapsed,
+            collapsed: isCollapsed(uid),
             'disabled-entry': model.entries[uid]?.enabled === false,
+            sel: selection.isSelected(uid),
+            'matrixblock--dragging': getDragState(uid).type === 'is-dragging',
           }"
+          :active="selection.isSelected(uid)"
+          :tabindex="editable ? 0 : undefined"
+          @click="selection.handleClick(uid, $event)"
           :data-id="uid"
           :data-type="String(model.entries[uid]?.type ?? '')"
           data-matrix-block
@@ -351,17 +483,17 @@
               :actions="blockActions(uid)"
               :label="t('{type} actions', {type: entryType(uid)?.label ?? uid})"
             />
-            <craft-reorder-button
-              class="move-btn"
-              :disabled="model.sortOrder.length < 2"
-              :position="
-                index === 0
-                  ? 'first'
-                  : index === model.sortOrder.length - 1
-                    ? 'last'
-                    : 'middle'
-              "
-            />
+            <span
+              :ref="(el: unknown) => setHandleRef(el as HTMLElement, uid)"
+              class="drag-handle"
+            >
+              <craft-reorder-button
+                class="move-btn"
+                :disabled="model.sortOrder.length < 2"
+                :position="getRowPosition(index)"
+                @reorder="onReorderButton(index, $event)"
+              />
+            </span>
             <craft-button
               type="button"
               icon="trash"
@@ -376,7 +508,7 @@
               "
             />
           </div>
-          <div v-show="!model.entries[uid]?.collapsed" class="fields">
+          <div v-show="!isCollapsed(uid)" class="fields">
             <template v-if="forms.get(uid)">
               <FormNodeList
                 :nodes="forms.get(uid)!.nodes"

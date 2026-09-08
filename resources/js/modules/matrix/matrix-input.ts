@@ -25,6 +25,12 @@ import {
 import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
 import {containerMatrixInputs} from './support';
+import {
+  collapsedBlockIds,
+  forgetCollapsedBlock,
+  rememberCollapsedBlock,
+  setCollapsedBlockIds,
+} from './collapsed-blocks';
 import type {FormValues} from '@/modules/forms/types';
 import {
   type CopiedElementInfo,
@@ -85,41 +91,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
   entryFactory: ((type: string) => HTMLElement) | null = null;
 
-  static get collapsedEntryStorageKey(): string {
-    return `Craft-${craft().systemUid}.MatrixInput.collapsedEntries`;
-  }
+  // The legacy statics PHP-emitted flash JS still calls. The storage itself
+  // lives in ./collapsed-blocks, shared with the Form control.
+  static getCollapsedEntryIds = collapsedBlockIds;
 
-  static getCollapsedEntryIds(): string[] {
-    const value = localStorage.getItem(MatrixInput.collapsedEntryStorageKey);
-    return value ? craft().filterArray(value.split(',')) : [];
-  }
+  static setCollapsedEntryIds = setCollapsedBlockIds;
 
-  static setCollapsedEntryIds(ids: Array<string | number>): void {
-    localStorage[MatrixInput.collapsedEntryStorageKey] = ids.join(',');
-  }
+  static rememberCollapsedEntryId = rememberCollapsedBlock;
 
-  static rememberCollapsedEntryId(id: string | number): void {
-    if (!('Storage' in globalThis)) {
-      return;
-    }
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
-    if (!collapsedEntries.includes(`${id}`)) {
-      collapsedEntries.push(`${id}`);
-      MatrixInput.setCollapsedEntryIds(collapsedEntries);
-    }
-  }
-
-  static forgetCollapsedEntryId(id: string | number): void {
-    if (!('Storage' in globalThis)) {
-      return;
-    }
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
-    const index = collapsedEntries.indexOf(`${id}`);
-    if (index !== -1) {
-      collapsedEntries.splice(index, 1);
-      MatrixInput.setCollapsedEntryIds(collapsedEntries);
-    }
-  }
+  static forgetCollapsedEntryId = forgetCollapsedBlock;
 
   id: string;
   entryTypes: MatrixEntryType[];
@@ -196,7 +176,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       : MatrixInput.getCollapsedEntryIds();
 
     // only initialise drag-sort if the device has mouse events
-    if (this.settings!.formControl || craft().hasMousePointerEvents()) {
+    // In form-control mode the Vue control owns drag-sort through
+    // `useReorderableItems`, over blocks it renders and re-renders. A second
+    // engine mutating the same nodes just fights it.
+    if (!this.settings!.formControl && craft().hasMousePointerEvents()) {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
@@ -251,10 +234,12 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       );
     }
 
-    for (const container of entries) {
-      const entry = new MatrixEntry(this, container);
-      if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
-        entry.collapse();
+    if (!this.settings!.formControl) {
+      for (const container of entries) {
+        const entry = new MatrixEntry(this, container);
+        if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
+          entry.collapse();
+        }
       }
     }
 

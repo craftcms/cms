@@ -27,6 +27,7 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
 });
 
 import MatrixControl from './MatrixControl.vue';
+import {isBlockCollapsed} from '@/modules/matrix/collapsed-blocks';
 
 describe('MatrixControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -65,6 +66,7 @@ describe('MatrixControl', () => {
 
   beforeEach(() => {
     menus.length = 0;
+    localStorage.clear();
   });
 
   function mount(
@@ -159,7 +161,7 @@ describe('MatrixControl', () => {
     ]);
   });
 
-  it('collapses a block and flips the menu item to Expand', async () => {
+  it('remembers a collapsed block in storage rather than the value', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
       sortOrder: ['block-a'],
@@ -169,16 +171,37 @@ describe('MatrixControl', () => {
     invoke('block-a', 'Collapse');
     await nextTick();
 
-    expect(emitted.at(-1)).toEqual({
-      entries: {'block-a': {type: 'newType', enabled: true, collapsed: true}},
-      sortOrder: ['block-a'],
-    });
+    // Collapsing is a view preference. Posting it would mark the form dirty and
+    // kick off an autosave just for hiding some fields.
+    expect(emitted).toHaveLength(0);
+    expect(isBlockCollapsed('block-a')).toBe(true);
+    expect(container!.querySelector('.matrixblock')!.className).toContain(
+      'collapsed'
+    );
 
     const labels = menus
       .at(-1)!
       .actions.flatMap((item) => ('label' in item ? [item.label] : []));
     expect(labels).toContain('Expand');
     expect(labels).not.toContain('Collapse');
+  });
+
+  it('also posts collapsed state for a block the browser just minted', async () => {
+    // It has no identity the server knows yet, so storage alone would lose it
+    // the moment the next save renames it. Craft 5 posted a hidden input here.
+    mount({
+      entries: {'uid:block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['uid:block-a'],
+    });
+    await nextTick();
+
+    invoke('uid:block-a', 'Collapse');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {'uid:block-a': {collapsed: true}},
+    });
+    expect(isBlockCollapsed('uid:block-a')).toBe(true);
   });
 
   it('disables a block', async () => {
@@ -266,6 +289,64 @@ describe('MatrixControl', () => {
     await nextTick();
 
     expect(emitted).toHaveLength(0);
+  });
+
+  it('reorders through the reorder button', async () => {
+    mount({
+      entries: {
+        'block-a': {type: 'newType', enabled: true},
+        'block-b': {type: 'newType', enabled: true},
+      },
+      sortOrder: ['block-a', 'block-b'],
+    });
+    await nextTick();
+
+    const button = container!.querySelectorAll('craft-reorder-button')[1]!;
+    button.dispatchEvent(
+      new CustomEvent('reorder', {bubbles: true, detail: {direction: 'up'}})
+    );
+    await nextTick();
+
+    expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder).toEqual([
+      'block-b',
+      'block-a',
+    ]);
+  });
+
+  it('selects blocks and applies a menu action across the selection', async () => {
+    mount({
+      entries: {
+        'block-a': {type: 'newType', enabled: true},
+        'block-b': {type: 'newType', enabled: true},
+        'block-c': {type: 'newType', enabled: true},
+      },
+      sortOrder: ['block-a', 'block-b', 'block-c'],
+    });
+    await nextTick();
+
+    const blocks = [...container!.querySelectorAll('.matrixblock')];
+    blocks[0]!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    blocks[1]!.dispatchEvent(
+      new MouseEvent('click', {bubbles: true, shiftKey: true})
+    );
+    await nextTick();
+
+    expect(blocks[0]!.className).toContain('sel');
+    expect(blocks[1]!.className).toContain('sel');
+    expect(blocks[2]!.className).not.toContain('sel');
+
+    // Craft 5's `bulkActionMode()`: a menu action on a block that's part of a
+    // multi-selection applies to the whole selection.
+    invoke('block-a', 'Disable');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: false},
+        'block-b': {enabled: false},
+        'block-c': {enabled: true},
+      },
+    });
   });
 
   it('renders its blocks when the value is present', async () => {
