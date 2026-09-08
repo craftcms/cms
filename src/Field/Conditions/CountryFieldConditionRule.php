@@ -6,11 +6,13 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Country;
 use RuntimeException;
 
-class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
+class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 

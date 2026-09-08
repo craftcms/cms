@@ -139,6 +139,42 @@ it('falls back to UTC when ICU rejects the timezone', function () {
     expect(Cms::timezone())->toBe('UTC');
 });
 
+it('resolves timezone changes after successful ICU validation', function () {
+    Cms::config()->timezone = '$CRAFT_TEST_TIMEZONE';
+
+    try {
+        foreach (['Europe/Paris', 'Asia/Tokyo', 'Not/A_Timezone', 'Europe/Paris'] as $timezone) {
+            $_SERVER['CRAFT_TEST_TIMEZONE'] = $timezone;
+
+            foreach (['en', 'nl-BE'] as $locale) {
+                app()->setLocale($locale);
+
+                expect(Cms::systemTimezone())->toBe($timezone === 'Not/A_Timezone' ? 'UTC' : $timezone);
+            }
+        }
+    } finally {
+        unset($_SERVER['CRAFT_TEST_TIMEZONE']);
+    }
+});
+
+it('resolves CP timezone preferences after switching users and request context', function () {
+    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->timezone = 'Europe/Paris';
+    app()->instance('request', Request::create('/admin'));
+
+    Auth::shouldReceive('hasUser')->andReturnTrue();
+    Auth::shouldReceive('id')->twice()->andReturn(42, 43);
+    Users::shouldReceive('getUserPreference')->once()->with(42, 'timeZone')->andReturn('Asia/Tokyo');
+    Users::shouldReceive('getUserPreference')->once()->with(43, 'timeZone')->andReturn('America/New_York');
+
+    expect(Cms::timezone())->toBe('Asia/Tokyo')
+        ->and(Cms::timezone())->toBe('America/New_York');
+
+    app()->instance('request', Request::create('/site'));
+
+    expect(Cms::timezone())->toBe('Europe/Paris');
+});
+
 it('uses the accepted language while Craft is not installed', function () {
     Cms::setIsInstalled(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['fr', 'en']));

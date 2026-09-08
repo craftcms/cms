@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Contracts\Database\Query\Builder;
 
 /**
  * @internal
@@ -64,34 +65,66 @@ trait QueriesUserProperties
     protected function initQueriesUserProperties(): void
     {
         $this->beforeQuery(static function (UserQuery $userQuery) {
-            if ($userQuery->lastLoginDate) {
-                $userQuery->whereDateParam('users.lastLoginDate', $userQuery->lastLoginDate);
-            }
-
-            if (is_bool($userQuery->hasPhoto)) {
-                $userQuery->when(
-                    $userQuery->hasPhoto,
-                    fn (UserQuery $q) => $q->whereNotNull('users.photoId'),
-                    fn (UserQuery $q) => $q->whereNull('users.photoId'),
-                );
-            }
-
-            foreach (['username', 'email', 'fullName', 'firstName', 'lastName'] as $property) {
-                if (! $userQuery->$property) {
-                    continue;
-                }
-
-                if (is_string($userQuery->$property)) {
-                    $userQuery->$property = Query::escapeCommas($userQuery->$property);
-                }
-
-                $userQuery->whereParam(
-                    column: "users.$property",
-                    param: $userQuery->$property,
-                    caseInsensitive: true,
-                );
-            }
+            static::applyUsername($userQuery, $userQuery->username);
+            static::applyEmail($userQuery, $userQuery->email);
+            static::applyFullName($userQuery, $userQuery->fullName);
+            static::applyFirstName($userQuery, $userQuery->firstName);
+            static::applyLastName($userQuery, $userQuery->lastName);
+            static::applyLastLoginDate($userQuery, $userQuery->lastLoginDate);
+            static::applyHasPhoto($userQuery, $userQuery->hasPhoto);
         });
+    }
+
+    public static function applyUsername(Builder $query, mixed $value): void
+    {
+        self::applyProfileParam($query, 'username', $value);
+    }
+
+    public static function applyEmail(Builder $query, mixed $value): void
+    {
+        self::applyProfileParam($query, 'email', $value);
+    }
+
+    public static function applyFullName(Builder $query, mixed $value): void
+    {
+        self::applyProfileParam($query, 'fullName', $value);
+    }
+
+    public static function applyFirstName(Builder $query, mixed $value): void
+    {
+        self::applyProfileParam($query, 'firstName', $value);
+    }
+
+    public static function applyLastName(Builder $query, mixed $value): void
+    {
+        self::applyProfileParam($query, 'lastName', $value);
+    }
+
+    private static function applyProfileParam(Builder $query, string $column, mixed $value): void
+    {
+        if (is_string($value)) {
+            $value = Query::escapeCommas($value);
+        }
+
+        $query->whereParam("users.$column", $value, caseInsensitive: true);
+    }
+
+    public static function applyLastLoginDate(Builder $query, mixed $value): void
+    {
+        $query->whereDateParam('users.lastLoginDate', $value);
+    }
+
+    public static function applyHasPhoto(Builder $query, ?bool $value): void
+    {
+        if (! is_bool($value)) {
+            return;
+        }
+
+        if ($value) {
+            $query->whereNotNull('users.photoId');
+        } else {
+            $query->whereNull('users.photoId');
+        }
     }
 
     /**

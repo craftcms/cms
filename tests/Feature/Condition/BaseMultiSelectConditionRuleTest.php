@@ -69,7 +69,7 @@ describe('modifyQuery', function () {
         $rule->values = ['live'];
 
         $query = Entry::find()->status(null);
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -88,7 +88,7 @@ describe('modifyQuery', function () {
         $rule->values = ['live'];
 
         $query = Entry::find()->status(null);
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 

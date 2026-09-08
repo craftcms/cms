@@ -175,7 +175,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
-        if (! $rule->isSelectable()) {
+        if (! $rule::isSelectable() || ! $rule::isSelectableForCondition($this)) {
             return false;
         }
 

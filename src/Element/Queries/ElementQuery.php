@@ -1282,7 +1282,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         foreach ($this->query->columns as $column) {
             if ($column instanceof Expression) {
-                $column = $column->getValue($this->query->getGrammar());
+                $select[] = $column;
+
+                continue;
             }
 
             [$column, $alias] = explode(' as ', $column, 2) + [1 => null];

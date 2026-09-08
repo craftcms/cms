@@ -2,16 +2,63 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Models\Address;
+use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Elements\ContentBlock;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
+
+it('preserves select expressions bindings and mapped aliases across element types', function (Closure $factory) {
+    $element = $factory();
+    $query = $element::find()->id($element->id)
+        ->select(['id as selectedId', new Alias(new Expression('6 * 7'), 'computedValue')])
+        ->selectRaw('? + 22 as bound_value', [20])
+        ->selectRaw("'text as value' as text_value")
+        ->asArray();
+
+    $expected = [
+        'selectedId' => $element->id,
+        'computedValue' => 42,
+        'bound_value' => 42,
+        'text_value' => 'text as value',
+    ];
+
+    expect($query->one())->toMatchArray($expected)
+        ->and($query->one())->toMatchArray($expected);
+})->with([
+    'entries' => fn () => EntryModel::factory()->createElement(),
+    'assets' => fn () => Asset::factory()->createElement(),
+    'users' => fn () => User::factory()->createElement(),
+    'addresses' => fn () => Address::factory()->createElement(),
+    'content blocks' => function () {
+        $field = Field::factory()->create(['type' => ContentBlockField::class]);
+        $owner = EntryModel::factory()->create();
+        $element = ElementModel::factory()->create(['type' => ContentBlock::class]);
+
+        DB::table(Table::CONTENTBLOCKS)->insert([
+            'id' => $element->id,
+            'primaryOwnerId' => $owner->id,
+            'fieldId' => $field->id,
+        ]);
+
+        return ContentBlock::find()->id($element->id)->one();
+    },
+]);
 
 it('can run basic queries', function () {
     expect(entryQuery()->all())->toBeEmpty();

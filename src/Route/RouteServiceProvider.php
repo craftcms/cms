@@ -71,9 +71,9 @@ class RouteServiceProvider extends ServiceProvider
         ], $globalMiddleware));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
-            require $this->app->getCachedRoutesPath();
+            $templates = require $this->app->getCachedRoutesPath();
 
-            CraftMaintenanceMiddleware::registerRouteExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions(is_array($templates) ? $templates : null);
             $this->bootRequestForgeryExceptions();
         });
     }

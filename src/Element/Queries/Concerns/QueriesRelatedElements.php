@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\ElementRelationParamFilter;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
@@ -37,18 +38,48 @@ trait QueriesRelatedElements
 
     protected function initQueriesRelatedElements(): void
     {
-        $this->applyRelatedToParam();
-        $this->applyNotRelatedToParam();
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
+            static::applyRelatedTo($elementQuery, $elementQuery->relatedTo, $elementQuery);
+            static::applyNotRelatedTo($elementQuery, $elementQuery->notRelatedTo, $elementQuery);
+        });
     }
 
-    private function applyRelatedToParam(): void
+    /** @param ElementQuery<ElementInterface> $elementQuery */
+    public static function applyRelatedTo(BuilderContract $query, mixed $value, ElementQuery $elementQuery): void
     {
-        $this->beforeQuery(static function (ElementQuery $elementQuery) {
-            if (! $elementQuery->relatedTo) {
-                return;
-            }
+        if (! $value) {
+            return;
+        }
 
-            $applied = new ElementRelationParamFilter(
+        $applied = new ElementRelationParamFilter(
+            fields: $elementQuery->customFields
+                ? Arr::keyBy(
+                    $elementQuery->customFields,
+                    fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+                )
+                : []
+        )->apply(
+            query: $query,
+            relatedToParam: $value,
+            siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
+        );
+
+        if (! $applied) {
+            $query->whereRaw('0 = 1');
+
+            return;
+        }
+    }
+
+    /** @param ElementQuery<ElementInterface> $elementQuery */
+    public static function applyNotRelatedTo(BuilderContract $query, mixed $value, ElementQuery $elementQuery): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $query->whereNot(function (Builder $q) use ($elementQuery, $value) {
+            new ElementRelationParamFilter(
                 fields: $elementQuery->customFields
                     ? Arr::keyBy(
                         $elementQuery->customFields,
@@ -56,41 +87,11 @@ trait QueriesRelatedElements
                     )
                     : []
             )->apply(
-                query: $elementQuery->getQuery(),
-                relatedToParam: $elementQuery->relatedTo,
-                siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
+                query: $q,
+                relatedToParam: $value,
+                siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null,
+                matchNoneWhenInvalid: false,
             );
-
-            if (! $applied) {
-                throw new QueryAbortedException;
-            }
-        });
-    }
-
-    private function applyNotRelatedToParam(): void
-    {
-        $this->beforeQuery(static function (ElementQuery $elementQuery) {
-            if (! $elementQuery->notRelatedTo) {
-                return;
-            }
-
-            $notRelatedToParam = $elementQuery->notRelatedTo;
-
-            $elementQuery->whereNot(function (Builder $query) use ($notRelatedToParam, $elementQuery) {
-                new ElementRelationParamFilter(
-                    fields: $elementQuery->customFields
-                        ? Arr::keyBy(
-                            $elementQuery->customFields,
-                            fn (FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
-                        )
-                        : []
-                )->apply(
-                    query: $query,
-                    relatedToParam: $notRelatedToParam,
-                    siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null,
-                    matchNoneWhenInvalid: false,
-                );
-            });
         });
     }
 

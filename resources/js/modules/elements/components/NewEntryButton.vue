@@ -47,7 +47,10 @@
       .filter((handle): handle is string => !!handle);
 
     return props.publishableSections
-      .filter((section) => site?.id != null && section.sites.includes(site.id))
+      .filter(
+        (section) =>
+          site.value?.id != null && section.sites.includes(site.value.id)
+      )
       .filter((section) => sourceHandles.includes(section.handle));
   });
 
@@ -76,8 +79,8 @@
     if (entryTypeHandle) {
       query.type = entryTypeHandle;
     }
-    if (site?.id != null) {
-      query.siteId = String(site.id);
+    if (site.value?.id != null) {
+      query.siteId = String(site.value.id);
     }
 
     return CreateEntryController['/{cpTrigger?}/entries/{section}/new'].url(

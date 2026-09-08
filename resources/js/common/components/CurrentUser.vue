@@ -7,19 +7,19 @@
   const {currentUser} = useCraftData();
 
   const primaryText = computed(() => {
-    if (currentUser!.name !== currentUser!.username) {
-      return currentUser!.name;
+    if (currentUser.value!.name !== currentUser.value!.username) {
+      return currentUser.value!.name;
     }
 
-    return currentUser!.username;
+    return currentUser.value!.username;
   });
 
   const secondaryText = computed(() => {
-    if (currentUser!.username === currentUser!.name) {
-      return currentUser!.email;
+    if (currentUser.value!.username === currentUser.value!.name) {
+      return currentUser.value!.email;
     }
 
-    return currentUser!.username;
+    return currentUser.value!.username;
   });
 </script>
 

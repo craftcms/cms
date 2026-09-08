@@ -105,6 +105,11 @@ class Install extends Migration
             $logger?->subLabel('Adding foreign keys...');
             $this->addForeignKeys();
             $logger?->success('Foreign keys added.');
+
+            // SQLite rebuilds tables for foreign keys without preserving expression indexes.
+            if (DB::isSqlite()) {
+                Schema::table(Table::ELEMENTS_SITES, fn (Blueprint $table) => $table->rawIndex('lower("uri"), "siteId"', 'sites_uri_siteid_index'));
+            }
         });
 
         event(new TablesCreated);
@@ -208,6 +213,21 @@ class Install extends Migration
     public function createTables(?Logger $logger = null): void
     {
         $this->dropEmptyStarterTable(Table::USERS);
+
+        $logger?->subLabel('activityevents');
+        Schema::create(Table::ACTIVITYEVENTS, function (Blueprint $table) {
+            $table->id();
+            $table->string('eventType');
+            $table->string('source');
+            $table->string('actorType');
+            $table->unsignedBigInteger('actorId')->nullable();
+            $table->string('subjectType')->nullable();
+            $table->string('subjectId')->nullable();
+            $table->unsignedBigInteger('siteId')->nullable();
+            $table->unsignedBigInteger('rootEventId')->nullable();
+            $table->jsonb('payload');
+            $table->dateTime('occurredAt');
+        });
 
         $logger?->subLabel('addresses');
         Schema::create('addresses', function (Blueprint $table) {
@@ -1020,6 +1040,10 @@ class Install extends Migration
 
     public function createIndexes(): void
     {
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['actorType', 'actorId']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
@@ -1039,11 +1063,12 @@ class Install extends Migration
         Schema::createIndex(Table::ELEMENTS, ['fieldLayoutId']);
         Schema::createIndex(Table::ELEMENTS, ['type']);
         Schema::createIndex(Table::ELEMENTS, ['enabled']);
-        Schema::createIndex(Table::ELEMENTS, ['canonicalId']);
+        Schema::createIndex(Table::ELEMENTS, ['canonicalId', 'dateCreated']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateCreated']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled']);
         Schema::createIndex(Table::ELEMENTS_BULKOPS, ['timestamp']);
+        Schema::createIndex(Table::ELEMENTS_OWNERS, ['ownerId']);
         Schema::createIndex(Table::ELEMENTS_OWNERS, ['sortOrder']);
         Schema::createIndex(Table::ELEMENTS_SITES, ['elementId', 'siteId'], unique: true);
         Schema::createIndex(Table::ELEMENTS_SITES, ['siteId']);
@@ -1055,7 +1080,7 @@ class Install extends Migration
         Schema::createIndex(Table::ENTRIES, ['postDate']);
         Schema::createIndex(Table::ENTRIES, ['expiryDate']);
         Schema::createIndex(Table::ENTRIES, ['status']);
-        Schema::createIndex(Table::ENTRIES, ['sectionId']);
+        Schema::createIndex(Table::ENTRIES, ['sectionId', 'postDate']);
         Schema::createIndex(Table::ENTRIES, ['typeId']);
         Schema::createIndex(Table::ENTRIES_AUTHORS, ['authorId']);
         Schema::createIndex(Table::ENTRIES_AUTHORS, ['entryId', 'sortOrder']);
@@ -1157,7 +1182,6 @@ class Install extends Migration
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         } else {
             // SQLite: basic indexes only, no full-text or tsvector
-            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
         }
@@ -1165,6 +1189,7 @@ class Install extends Migration
 
     public function addForeignKeys(): void
     {
+        Schema::table(Table::ACTIVITYEVENTS, fn (Blueprint $table) => $table->foreign('rootEventId')->references('id')->on(Table::ACTIVITYEVENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
