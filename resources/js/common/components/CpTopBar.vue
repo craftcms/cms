@@ -31,6 +31,7 @@
 
   const page = usePage<{craft: CraftData}>();
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
+  const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
   const generalSettingsUrl = computed(() =>
     generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
@@ -87,6 +88,9 @@
         >
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
+        <cp-notification-center
+          :notifications.prop="notifications"
+        ></cp-notification-center>
         <UserMenu />
       </div>
     </div>
