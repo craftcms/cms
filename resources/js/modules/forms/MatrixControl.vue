@@ -27,7 +27,12 @@
 
   const props = defineProps<{
     control: FormControlPayload<MatrixProps>;
-    value: MatrixValue;
+    /**
+     * Undefined for a beat whenever this control's path isn't in the values tree
+     * yet — a nested repeater inside a block whose identity the server has just
+     * rewritten, say. Read {@link model} rather than this.
+     */
+    value: MatrixValue | undefined;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
@@ -37,6 +42,8 @@
     (event: 'update:value', value: MatrixValue, kind: 'discrete'): void;
     (event: 'change', change: FormChange): void;
   }>();
+  const EMPTY: MatrixValue = {entries: {}, sortOrder: []};
+  const model = computed<MatrixValue>(() => props.value ?? EMPTY);
   const matrixHost = ref<HTMLElement>();
   const matrixId = useId();
   const forms = computed(() => {
@@ -57,7 +64,7 @@
     () =>
       props.editable &&
       (!props.control.props.maxEntries ||
-        props.value.sortOrder.length < props.control.props.maxEntries)
+        model.value.sortOrder.length < props.control.props.maxEntries)
   );
   const entryTypes = computed(() =>
     (props.control.props.entryTypes ?? []).map((type, index) => ({
@@ -74,14 +81,14 @@
   );
   const key = computed(() =>
     JSON.stringify([
-      props.value.sortOrder,
+      model.value.sortOrder,
       props.control.forms?.map((form) => form.scope),
       props.editable,
     ])
   );
 
   function sync(event?: Event): void {
-    const value = structuredClone(toRaw(props.value));
+    const value = structuredClone(toRaw(model.value));
     const source =
       event?.currentTarget instanceof HTMLElement
         ? event.currentTarget
@@ -101,7 +108,7 @@
   }
 
   function entryType(uid: string): EntryType | undefined {
-    const handle = props.value.entries[uid]?.type;
+    const handle = model.value.entries[uid]?.type;
 
     return props.control.props.entryTypes?.find(
       (type) => type.value === handle
@@ -133,11 +140,11 @@
       <span role="status" class="visually-hidden" data-status-message />
       <div class="grid gap-1" role="list" data-matrix-blocks>
         <craft-card
-          v-for="(uid, index) in value.sortOrder"
+          v-for="(uid, index) in model.sortOrder"
           :key="uid"
           class="matrixblock js-deletable"
           :data-id="uid"
-          :data-type="String(value.entries[uid]?.type ?? '')"
+          :data-type="String(model.entries[uid]?.type ?? '')"
           data-matrix-block
           role="listitem"
         >
@@ -150,7 +157,7 @@
             <input
               type="hidden"
               :name="`${inputName(control.path)}[entries][${uid}][type]`"
-              :value="String(value.entries[uid]?.type ?? '')"
+              :value="String(model.entries[uid]?.type ?? '')"
             />
           </template>
           <div slot="label">
@@ -160,11 +167,11 @@
           <div v-if="editable" slot="actions">
             <craft-reorder-button
               class="move-btn"
-              :disabled="value.sortOrder.length < 2"
+              :disabled="model.sortOrder.length < 2"
               :position="
                 index === 0
                   ? 'first'
-                  : index === value.sortOrder.length - 1
+                  : index === model.sortOrder.length - 1
                     ? 'last'
                     : 'middle'
               "
@@ -175,7 +182,7 @@
               size="small"
               variant="danger-plain"
               :disabled="
-                value.sortOrder.length <= (control.props.minEntries ?? 0)
+                model.sortOrder.length <= (control.props.minEntries ?? 0)
               "
               data-form-matrix-remove
               :accessible-name="
