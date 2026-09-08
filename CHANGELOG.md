@@ -21,6 +21,9 @@
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Remove `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. Plugins must now declare `createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Replaced the project config implementation with separate change handling, storage, and rebuild components.
+- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
 - Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
