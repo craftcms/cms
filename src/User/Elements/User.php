@@ -535,6 +535,23 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
+    /**
+     * `users/{slug}` — the segment {@see UserIndexViewModel::defaultSourceKey()}
+     * maps back to a source key. Every user source publishes one, groups
+     * included.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        $slug = $source['data']['slug'] ?? null;
+
+        if (! is_string($slug) || $slug === '') {
+            return null;
+        }
+
+        return 'users/'.$slug;
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {

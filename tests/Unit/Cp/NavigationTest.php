@@ -55,7 +55,7 @@ it('selects nav items from paths with the cp trigger', function () {
             'getUtilitiesBadgeCount' => 0,
         ]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 
@@ -75,7 +75,7 @@ it('selects parent nav items when a subnav item matches the cp path', function (
             'getUtilitiesBadgeCount' => 0,
         ]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 
@@ -125,7 +125,7 @@ function navigationCountingBuilds(Request $request, callable $onBuild): Navigati
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
         $utilities,
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 }
@@ -171,7 +171,7 @@ it('keeps selection out of the cached tree', function () {
             'getUtilitiesBadgeCount' => 0,
         ]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 
@@ -188,7 +188,7 @@ it('keeps selection out of the cached tree', function () {
             'getUtilitiesBadgeCount' => 0,
         ]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 
@@ -207,7 +207,7 @@ it('nests the settings screens under Settings, grouped as the index groups them'
             'getUtilitiesBadgeCount' => 0,
         ]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 
@@ -231,7 +231,7 @@ it('hands a group\'s children up for the legacy sidebar, which has no groups', f
             'getUtilitiesBadgeCount' => 0,
         ]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         app(Settings::class),
     );
 
@@ -260,8 +260,8 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
             'label' => 'Posts',
             'data' => ['handle' => 'posts'],
         ],
-        // No URL of its own: reachable only as a `?source=` query, so the nav
-        // has nowhere to send you and leaves it out.
+        // No URL of its own, so it falls back to the query the index's own
+        // sidebar links it by rather than being dropped.
         ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent'],
     ]));
 
@@ -286,13 +286,18 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
 
     $channels = $children->firstWhere('label', 'Channels');
 
+    $members = collect($channels->subnav);
+
     expect($channels->group)->toBeTrue()
-        ->and(collect($channels->subnav)->pluck('label')->all())->toBe(['Posts'])
-        ->and(collect($channels->subnav)->first()->href)
-        ->toEndWith('/content/entries/posts');
+        ->and($members->pluck('label')->all())->toBe(['Posts', 'Recent'])
+        ->and($members->firstWhere('label', 'Posts')->href)
+        ->toEndWith('/content/entries/posts')
+        // No URL of its own, so it's linked the way the sidebar links it.
+        ->and($members->firstWhere('label', 'Recent')->href)
+        ->toEndWith('/content/entries?source=custom%3A1');
 });
 
-it('drops a heading whose members all turned out to be unreachable', function () {
+it('drops a heading whose members all turned out to be unusable', function () {
     $this->totalEditableSections = 1;
 
     $sources = Mockery::mock(ElementSources::class);
@@ -300,7 +305,8 @@ it('drops a heading whose members all turned out to be unreachable', function ()
     $sources->shouldReceive('getPageSettings')->andReturn([]);
     $sources->shouldReceive('getSources')->andReturn(collect([
         ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Saved'],
-        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent'],
+        // No key, so there's no query that would select it either.
+        ['type' => ElementSources::TYPE_CUSTOM, 'label' => 'Broken'],
     ]));
 
     $navigation = new Navigation(

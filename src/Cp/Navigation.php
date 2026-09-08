@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -202,7 +203,11 @@ readonly class Navigation
                         )
                         ->href(sprintf('content/%s', Str::slug($page)))
                         ->icon($entryPageSettings[$page]['icon'] ?? 'newspaper')
-                        ->subnav($this->sourceSubnav(Entry::class, $page))
+                        ->subnav($this->sourceSubnav(
+                            Entry::class,
+                            sprintf('content/%s', Str::slug($page)),
+                            $page,
+                        ))
                     )
                 );
             } else {
@@ -210,7 +215,7 @@ readonly class Navigation
                     ->label(t('Entries'))
                     ->href('content/entries')
                     ->icon('newspaper')
-                    ->subnav($this->sourceSubnav(Entry::class)));
+                    ->subnav($this->sourceSubnav(Entry::class, 'content/entries')));
             }
         }
 
@@ -219,7 +224,7 @@ readonly class Navigation
                 ->label(t('Assets'))
                 ->href('assets')
                 ->icon('image')
-                ->subnav($this->sourceSubnav(Asset::class)));
+                ->subnav($this->sourceSubnav(Asset::class, 'assets')));
         }
 
         if (
@@ -229,7 +234,8 @@ readonly class Navigation
             $navItems->add(new NavItem()
                 ->label(t('Users'))
                 ->href('users')
-                ->icon('user-group'));
+                ->icon('user-group')
+                ->subnav($this->sourceSubnav(User::class, 'users')));
         }
 
         // Add any Plugin nav items
@@ -311,14 +317,16 @@ readonly class Navigation
      * a label over its members rather than somewhere to go, which is how the
      * sources sidebar renders one too.
      *
-     * Sources with no URL of their own — a custom source, reachable only as a
-     * `?source=` query on the index — are left out. The nav is a list of
-     * places, and those aren't places yet.
+     * A source without a URL of its own — Temporary Uploads, a custom source —
+     * falls back to the `?source=` query the index's own sidebar links it by,
+     * which is what {@see ContentIndexViewModel::sourceUrl()} does. Dropping
+     * them would leave the nav saying less than the sidebar it mirrors.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @param  string  $indexUri  The index these sources hang off
      * @return NavItem[]
      */
-    private function sourceSubnav(string $elementType, ?string $page = null): array
+    private function sourceSubnav(string $elementType, string $indexUri, ?string $page = null): array
     {
         $items = [];
         $group = null;
@@ -339,15 +347,15 @@ readonly class Navigation
                 continue;
             }
 
-            $uri = $elementType::sourceCpUri($source, $page);
+            $key = (string) ($source['key'] ?? '');
 
-            if ($uri === null) {
+            if ($key === '') {
                 continue;
             }
 
             $item = new NavItem()
                 ->label((string) ($source['label'] ?? ''))
-                ->href($uri);
+                ->href($elementType::sourceCpUri($source, $page) ?? $this->sourceQueryUri($indexUri, $key));
 
             if ($group !== null) {
                 $group->subnav = [...$group->subnav, $item];
@@ -364,6 +372,19 @@ readonly class Navigation
             $items,
             fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
         ));
+    }
+
+    /**
+     * The index URL with the source named in the query.
+     *
+     * The “all elements” source is what the bare index already shows, so it's
+     * addressed by the index's own URL rather than a query repeating it.
+     */
+    private function sourceQueryUri(string $indexUri, string $key): string
+    {
+        return $key === '*'
+            ? $indexUri
+            : $indexUri.'?source='.rawurlencode($key);
     }
 
     /**
