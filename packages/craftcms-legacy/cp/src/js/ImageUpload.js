@@ -43,7 +43,14 @@ Craft.ImageUpload = Garnish.Base.extend(
       options.events.fileuploaddone = this._onUploadComplete.bind(this);
       options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-      this.uploader = Craft.createUploader(null, this.$container, options);
+      for (const [name, handler] of Object.entries(options.events)) {
+        this.$container.on(name, handler);
+      }
+      this.uploader = this.$container.fileupload({
+        ...options,
+        autoUpload: true,
+        sequentialUploads: true,
+      });
 
       this.initButtons();
     },
@@ -113,7 +120,7 @@ Craft.ImageUpload = Garnish.Base.extend(
       this.refreshImage(data.result);
 
       // Last file
-      if (this.uploader.isLastUpload()) {
+      if (this.uploader.fileupload('active') < 2) {
         this.progressBar.hideProgressBar();
         this.$container.removeClass('uploading');
       }

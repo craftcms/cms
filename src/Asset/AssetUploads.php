@@ -119,9 +119,7 @@ class AssetUploads
                     ? $this->uploads->replace((int) $session->parameters['assetId'], $file)
                     : $this->uploads->store(
                         $session->parameters,
-                        $file->filename,
-                        $file->mimeType(),
-                        source: $file,
+                        $file,
                         authorizedGuest: ! $request->user(),
                         uploaderId: $request->craftUser()?->getCraftUserId(),
                     );

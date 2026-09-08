@@ -24,7 +24,8 @@ beforeEach(() => {
   uploader.$element = {trigger, off: vi.fn()};
   uploader.uploader = {fileupload: vi.fn()};
   uploader.events = {};
-  uploader.settings = {};
+  uploader.settings = {url: '/uploads', maxFileSize: Number.MAX_SAFE_INTEGER};
+  uploader.processErrorMessages = vi.fn();
   uploader._inProgressCounter = 0;
 });
 
@@ -39,9 +40,9 @@ it('does not cancel a successfully canceled upload again during teardown', async
   );
   const cancel = vi.spyOn(AssetUpload.prototype, 'cancel').mockResolvedValue();
   const file = new File(['abc'], 'document.txt');
-  const data = {files: [file], abort: async () => {}};
+  const data = fileData(file);
 
-  uploader['uploadFile'](file, data);
+  uploader.onFileAdd({stopPropagation: vi.fn()}, data);
   await vi.waitFor(() =>
     expect(trigger).toHaveBeenCalledWith('fileuploadstop')
   );
@@ -64,9 +65,9 @@ it('allows retry after a replacement failure handler throws', async () => {
     .mockRejectedValueOnce(new UploadError('Upload failed.', 500))
     .mockResolvedValueOnce({assetId: 123});
   const file = new File(['abc'], 'replacement.txt');
-  const data = {files: [file], submit: () => {}};
+  const data = fileData(file);
 
-  uploader['uploadFile'](file, data);
+  uploader.onFileAdd({stopPropagation: vi.fn()}, data);
   await vi.waitFor(() =>
     expect(reportError).toHaveBeenCalledWith(handlerError)
   );
@@ -82,3 +83,13 @@ it('allows retry after a replacement failure handler throws', async () => {
     trigger.mock.calls.filter(([name]) => name === 'fileuploadstop')
   ).toHaveLength(2);
 });
+
+function fileData(file: File) {
+  return {
+    files: [file],
+    originalFiles: [file],
+    process: () => ({done: (callback: () => void) => callback()}),
+    abort: async () => {},
+    submit: () => {},
+  };
+}

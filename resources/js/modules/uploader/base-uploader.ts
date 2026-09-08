@@ -21,8 +21,6 @@ const DEFAULTS = {
   headers: {Accept: 'application/json;q=0.9,*/*;q=0.8'},
   paramName: 'assets-upload',
   url: null,
-  createAction: null,
-  replaceAction: null,
   deleteAction: null,
   replace: false,
 };
@@ -64,12 +62,6 @@ export class BaseUploader extends Base {
     this.formData = this.settings.formData;
     this.$fileInput = this.settings.fileInput || $element;
     this.events = this.settings.events;
-
-    if (!this.settings.url) {
-      this.settings.url = this.settings.replace
-        ? Craft.getActionUrl(this.settings.replaceAction)
-        : Craft.getActionUrl(this.settings.createAction);
-    }
 
     if (this.settings.allowedKinds && this.settings.allowedKinds.length) {
       if (Object(this.settings.allowedKinds).constructor === String) {

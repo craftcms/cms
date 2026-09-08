@@ -68,7 +68,7 @@ it('opens the file picker and configures uploads for the selected folder', async
     input,
     expect.objectContaining({
       fileInput: input,
-      url: '/admin/actions/assets/upload',
+      url: '/admin/actions/assets/uploads',
     })
   );
   expect(setParams).toHaveBeenCalledWith({folderId: 12});

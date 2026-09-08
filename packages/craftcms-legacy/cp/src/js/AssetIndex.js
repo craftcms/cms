@@ -600,7 +600,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       var doFollowup = (parameterArray, parameterIndex, callback) => {
         var data = {};
         var action = null;
-        const {replaceAction, deleteAction} = this.uploader.settings;
+        const {resolveConflictAction, deleteAction} = this.uploader.settings;
 
         const followupAlways = () => {
           parameterIndex++;
@@ -626,7 +626,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         };
 
         if (parameterArray[parameterIndex].choice === 'replace') {
-          action = replaceAction;
+          action = resolveConflictAction;
           data.sourceAssetId = parameterArray[parameterIndex].assetId;
 
           if (parameterArray[parameterIndex].conflictingAssetId) {

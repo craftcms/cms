@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetUploads;
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Models\UploadSession;
@@ -275,3 +277,29 @@ it('replaces the existing asset without creating a second asset', function (stri
     'volume root' => [''],
     'volume subpath' => ['uploads/'],
 ]);
+
+it('rejects uploaded files that do not match the fields selection condition', function () {
+    $result = Entry::factory()
+        ->withField('attachment', Assets::class, [
+            'defaultUploadLocationSource' => "volume:{$this->volume->uid}",
+            'selectionCondition' => [
+                'class' => AssetCondition::class,
+                'conditionRules' => [[
+                    'class' => FileTypeConditionRule::class,
+                    'values' => ['image'],
+                ]],
+            ],
+        ])->createElementWithFields([]);
+
+    $session = postJson(action([UploadSessionController::class, 'store']), [
+        'filename' => 'attachment.txt', 'size' => 3,
+        'fieldId' => $result->fields->get('attachment')->id,
+        'elementId' => $result->element->id,
+    ])->assertCreated()->json();
+    $part = postJson($session['urls']['part'], ['part' => 1])->assertOk()->json();
+    $this->call('POST', $part['url'], server: ['CONTENT_TYPE' => 'application/octet-stream'], content: 'abc')->assertNoContent();
+
+    postJson($session['urls']['complete'])->assertBadRequest()
+        ->assertJsonPath('message', 'attachment.txt isn’t selectable for this field.');
+    expect(Asset::find()->count())->toBe(0);
+});

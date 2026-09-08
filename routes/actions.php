@@ -17,8 +17,8 @@ use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderControl
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
 use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
+use CraftCms\Cms\Http\Controllers\Assets\ResolveUploadConflictController;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
-use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadController;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
@@ -338,8 +338,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
 
         // Assets
-        Route::post('assets/upload', [AssetsUploadController::class, 'upload']);
-        Route::post('assets/replace-file', [AssetsUploadController::class, 'replaceFile']);
+        Route::post('assets/resolve-upload-conflict', ResolveUploadConflictController::class);
         Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
         Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
         Route::post('assets/download-asset', [AssetsActionController::class, 'downloadAsset']);

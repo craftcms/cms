@@ -2,7 +2,6 @@ import {BaseUploader} from './base-uploader';
 import {UploadNotification} from './upload-notification';
 import {AssetUpload, UploadError} from '@/upload-client';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
-import {upload, replaceFile} from '@actions/Assets/UploadController';
 
 // blueimp jQuery File Upload plugin seam — see base-uploader.ts.
 declare const $: any;
@@ -11,12 +10,8 @@ declare const Craft: any;
 const DEFAULTS = {
   autoUpload: false,
   sequentialUploads: true,
-  // Resolved from `Craft.maxUploadSize` via the static getter (see below).
-  // SAFETY: Upload size is nullable until the runtime Craft config is available.
-  maxFileSize: null as number | null,
   replaceFileInput: false,
-  createAction: 'assets/upload',
-  replaceAction: 'assets/replace-file',
+  resolveConflictAction: 'assets/resolve-upload-conflict',
   deleteAction: 'assets/delete-asset',
 };
 
@@ -31,14 +26,17 @@ export class Uploader extends BaseUploader {
   _totalFileCounter = 0;
   _validFileCounter = 0;
   _onFileAdd: any = null;
-  private sessionUploads = false;
   private destroyed = false;
   private queue: Promise<void> = Promise.resolve();
   private queued = new Set<AssetUpload>();
   private uploads = new Map<AssetUpload, UploadNotification>();
 
   static override get defaults(): any {
-    return {...DEFAULTS, maxFileSize: Craft.maxUploadSize};
+    return {
+      ...DEFAULTS,
+      url: store.url(),
+      maxFileSize: Craft.maxAssetUploadSize,
+    };
   }
 
   constructor($element?: any, settings?: any) {
@@ -49,25 +47,9 @@ export class Uploader extends BaseUploader {
   }
 
   override init($element: any, settings: any): void {
-    const customMaxFileSize = settings?.maxFileSize;
     settings = $.extend({}, Uploader.defaults, settings);
     super.init($element, settings);
     delete this.settings.events;
-
-    const target = new URL(this.settings.url, location.href);
-    const expected = new URL(
-      this.settings.replace ? replaceFile.url() : upload.url(),
-      location.href
-    );
-    this.sessionUploads =
-      this.settings.uploadSessions !== false &&
-      (target.pathname === expected.pathname ||
-        target.searchParams.get('action') ===
-          (this.settings.replace ? 'assets/replace-file' : 'assets/upload'));
-
-    if (this.sessionUploads && customMaxFileSize == null) {
-      this.settings.maxFileSize = Craft.maxAssetUploadSize;
-    }
 
     this.uploader = this.$element.fileupload(this.settings);
 
@@ -77,28 +59,6 @@ export class Uploader extends BaseUploader {
 
     this._onFileAdd = this.onFileAdd.bind(this);
     this.$element.on('fileuploadadd', this._onFileAdd);
-  }
-
-  /**
-   * Set uploader parameters.
-   */
-  override setParams(paramObject: any): void {
-    super.setParams(paramObject);
-
-    // Only set params if the uploader has been initialized
-    // It won't be if the input is disabled
-    if (this.uploader.data('blueimpFileupload')) {
-      this.uploader.fileupload('option', {formData: this.formData});
-    }
-  }
-
-  /**
-   * Get the number of uploads in progress.
-   */
-  override getInProgress(): number {
-    return this.sessionUploads
-      ? this._inProgressCounter
-      : this.uploader.fileupload('active');
   }
 
   /**
@@ -149,11 +109,7 @@ export class Uploader extends BaseUploader {
 
       if (pass) {
         this._validFileCounter++;
-        if (this.sessionUploads) {
-          this.uploadFile(file, data);
-        } else {
-          data.submit();
-        }
+        this.uploadFile(file, data);
       }
 
       if (++this._totalFileCounter === data.originalFiles.length) {
@@ -168,7 +124,7 @@ export class Uploader extends BaseUploader {
 
   private uploadFile(file: File, data: any): void {
     const task = new AssetUpload(file, {
-      url: store.url(),
+      url: this.settings.url,
       parameters: {
         ...this.formData,
         operation: this.settings.replace ? 'replace' : 'upload',

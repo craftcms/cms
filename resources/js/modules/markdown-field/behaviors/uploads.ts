@@ -1,27 +1,11 @@
 import {t} from '@craftcms/ui';
-import {useHttp} from '@inertiajs/vue3';
 import type {Options} from 'overtype';
-import {upload as uploadAsset} from '@actions/Assets/UploadController';
+import {store} from '@/routes/craft/actions/craft/cp/uploads';
+import {AssetUpload, type UploadResult} from '@/upload-client';
 import {useFlashMessages} from '@/common/composables/useFlashMessages';
 import {escapeMarkdownLabel} from './utilities';
-import axios from 'axios';
 
 const ASSET_REF_HANDLE = 'asset';
-
-type AssetUploadResponse = {
-  assetId?: number | string;
-  filename?: string;
-  message?: string;
-};
-
-type UploadRequest = {
-  'assets-upload': File;
-  folderId: string;
-};
-
-interface UploadErrorEnvelope {
-  response?: {data?: string};
-}
 
 const {flash} = useFlashMessages();
 
@@ -36,7 +20,7 @@ export function fileUploadOptions(
   return {
     batch: false,
     enabled: true,
-    // OverType defaults to 10 MB when omitted; keep this high so PHP validates uploads.
+    // Let the upload session enforce the configured asset size limit.
     maxSize: Number.MAX_SAFE_INTEGER,
     onInsertFile: (file) => {
       const upload = Array.isArray(file) ? file[0] : file;
@@ -53,21 +37,19 @@ async function uploadFile(
   uploadFolderId: number,
   uploadSiteId: number | string
 ): Promise<string> {
-  const uploadRequest = useHttp<UploadRequest, AssetUploadResponse>({
-    'assets-upload': file,
-    folderId: uploadFolderId.toString(),
+  const task = new AssetUpload(file, {
+    url: store.url(),
+    parameters: {folderId: uploadFolderId},
   });
 
   try {
-    const data = await uploadRequest.post(uploadAsset().url);
+    const data = await task.upload();
 
     return uploadedAssetMarkdown(file, data, uploadSiteId);
   } catch (error) {
     flash(
       'error',
-      uploadErrorMessage(
-        error instanceof Object ? error : new Error(String(error))
-      )
+      error instanceof Error ? error.message : t('Couldn’t upload file.')
     );
 
     throw error;
@@ -76,7 +58,7 @@ async function uploadFile(
 
 function uploadedAssetMarkdown(
   file: File,
-  response: AssetUploadResponse,
+  response: UploadResult,
   uploadSiteId: number | string
 ): string {
   if (!response.assetId) {
@@ -89,31 +71,4 @@ function uploadedAssetMarkdown(
   return file.type.startsWith('image/')
     ? `![${label}](${ref})`
     : `[${label || ref}](${ref})`;
-}
-
-function uploadErrorMessage(error: Error | UploadErrorEnvelope): string {
-  const responseData = axios.isAxiosError<string>(error)
-    ? error.response?.data
-    : undefined;
-  const responseMessage =
-    Object(responseData).constructor === String
-      ? parseUploadErrorMessage(String(responseData))
-      : undefined;
-
-  if (responseMessage) {
-    return responseMessage;
-  }
-
-  return error instanceof Error ? error.message : t('Couldn’t upload file.');
-}
-
-function parseUploadErrorMessage(responseData: string): string | undefined {
-  try {
-    // SAFETY: The upload error endpoint serializes an object with an optional message string.
-    const data = JSON.parse(responseData) as {message?: string};
-
-    return data.message;
-  } catch {
-    return undefined;
-  }
 }

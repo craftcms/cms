@@ -16,7 +16,6 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -81,15 +80,13 @@ readonly class AssetUploadHandler
     /** @param array<string, mixed> $parameters */
     public function store(
         array $parameters,
-        string $originalName,
-        string $mimeType,
-        ?string $tempPath = null,
-        ?UploadedAssetFile $source = null,
+        UploadedAssetFile $file,
         bool $authorizedGuest = false,
         ?int $uploaderId = null,
     ): UploadResult {
         [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
 
+        $originalName = $file->filename;
         $filename = AssetsHelper::prepareAssetName($originalName);
 
         if ($selectionCondition) {
@@ -105,13 +102,12 @@ readonly class AssetUploadHandler
         }
 
         $asset = new Asset;
-        $asset->tempFilePath = $tempPath;
-        $asset->uploadSource = $source;
+        $asset->uploadSource = $file;
         if ($authorizedGuest) {
             $asset->sanitizeOnUpload = true;
         }
         $asset->setFilename($filename);
-        $asset->setMimeType($tempPath ? (File::getMimeType($tempPath, checkExtension: false) ?? $mimeType) : $mimeType);
+        $asset->setMimeType($file->mimeType());
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = $uploaderId;

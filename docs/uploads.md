@@ -1,6 +1,6 @@
 # Asset uploads
 
-Craft uploads files in parts, then validates and saves the asset. The control panel supports progress, cancellation, and retry for asset uploads and replacements. Existing multipart form uploads remain supported.
+Craft uploads files in parts, then validates and saves the asset. The control panel supports progress, cancellation, and retry for asset uploads and replacements. All asset uploads use upload sessions.
 
 ## Configuration
 
@@ -97,4 +97,10 @@ The contract has four methods:
 
 Uploaders are cached by name. Keep upload-specific state on the session and resolve its disk through `Filesystems::disk($session->disk)`. Keep provider credentials on the server.
 
-Craft handles authorization, expiry, asset validation and creation, browser retries, and progress. The control panel’s `Craft.createUploader()` factory still supports custom JavaScript uploader classes registered for a filesystem type. Custom legacy uploaders can opt out of upload sessions with `uploadSessions: false`.
+Craft handles authorization, expiry, asset validation and creation, browser retries, and progress. The control panel’s `Craft.createUploader()` factory still supports custom JavaScript uploader classes registered for a filesystem type.
+
+## Migrating existing integrations
+
+The `assets/upload` and `assets/replace-file` multipart endpoints have been removed. Send files through `AssetUpload` or the upload-session endpoints instead. Custom JavaScript uploaders must use upload sessions; `uploadSessions: false` is no longer supported.
+
+After a filename conflict, use `assets/resolve-upload-conflict` to replace an existing asset or unindexed file with the already-uploaded asset. Supply `sourceAssetId` and either `assetId` or `targetFilename`. This endpoint does not receive file bytes.
