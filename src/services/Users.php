@@ -486,6 +486,24 @@ class Users extends Component
      */
     public function sendPasswordResetEmail(User $user): bool
     {
+        $cooldown = Craft::$app->getConfig()->getGeneral()->passwordResetCooldownDuration;
+        if ($cooldown > 0) {
+            try {
+                $userRecord = $this->_getUserRecordById($user->id);
+                $issuedAtRaw = $userRecord->verificationCodeIssuedDate;
+                $issuedAt = $issuedAtRaw ? new DateTime($issuedAtRaw, new DateTimeZone('UTC')) : null;
+            } catch (\Throwable) {
+                return false;
+            }
+
+            if ($issuedAt) {
+                $elapsed = time() - $issuedAt->getTimestamp();
+                if ($elapsed < $cooldown) {
+                    return false;
+                }
+            }
+        }
+
         $url = $this->getPasswordResetUrl($user);
 
         return Craft::$app->getMailer()
