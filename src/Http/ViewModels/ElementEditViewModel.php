@@ -279,6 +279,18 @@ abstract class ElementEditViewModel extends ViewModel
             : null;
     }
 
+    /** Where this editor's activity timeline is loaded on demand. */
+    public function activityTimelineUrl(): ?string
+    {
+        return null;
+    }
+
+    /** Where the full activity page can be viewed. */
+    public function activityPageUrl(): ?string
+    {
+        return null;
+    }
+
     /**
      * The element's and its canonical's last-modified stamps at render time.
      * Activity polling compares these against the server's to notice that

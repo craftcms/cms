@@ -29,6 +29,11 @@ interface ConditionRuleInterface extends ComponentInterface
     public static function supportsProjectConfig(): bool;
 
     /**
+     * Returns whether the rule can be selected for the provided condition.
+     */
+    public static function isSelectableForCondition(ConditionInterface $condition): bool;
+
+    /**
      * Returns the rule’s option label.
      */
     public function getLabel(): string;

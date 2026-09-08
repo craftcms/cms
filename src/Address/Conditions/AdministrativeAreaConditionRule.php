@@ -6,20 +6,32 @@ namespace CraftCms\Cms\Address\Conditions;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
 
-class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AddressCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public string $countryCode = 'US';
 
     /** @return array<string, mixed> */
@@ -44,11 +56,6 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         return t('Administrative Area');
     }
 
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
-
     protected function options(): array
     {
         $administrativeAreas = Addresses::getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
@@ -62,10 +69,9 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         return $administrativeAreas;
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        /** @var AddressQuery $query */
-        $query->administrativeArea($this->paramValue());
+        AddressQuery::applyAdministrativeArea($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool

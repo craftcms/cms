@@ -624,9 +624,15 @@ class Html
                     $normalized[$name] = self::explodeStyle($value);
                     break;
                 default:
+                    if (! is_array($value)) {
+                        $normalized[$name] = $value;
+
+                        break;
+                    }
+
                     // See if it's a data attribute
                     foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                        if (is_array($value) && str_starts_with((string) $name, (string) $dataAttribute)) {
+                        if (str_starts_with((string) $name, (string) $dataAttribute)) {
                             foreach ($value as $n => $v) {
                                 $normalized[$name.'-'.$n] = $v;
                             }

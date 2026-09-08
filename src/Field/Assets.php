@@ -986,10 +986,7 @@ class Assets extends BaseRelationField
 
     protected function createSelectionCondition(): ElementCondition
     {
-        $condition = Asset::createCondition();
-        $condition->queryParams = ['volume', 'volumeId', 'kind'];
-
-        return $condition;
+        return Asset::createCondition();
     }
 
     #[Override]

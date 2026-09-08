@@ -1767,7 +1767,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $selectionCondition->id = 'selection-condition';
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
-            $selectionCondition->queryParams[] = 'site';
 
             $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [

@@ -26,14 +26,6 @@
   const emit = defineEmits<{
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
-
-  function onInput(event: Event): void {
-    if (!(event.target instanceof HTMLTextAreaElement)) {
-      throw new TypeError('Expected a textarea event target.');
-    }
-
-    emit('update:value', event.target.value, 'typing');
-  }
 </script>
 
 <template>
@@ -51,7 +43,13 @@
     :required="editable && required"
     :aria-invalid="invalid ? 'true' : undefined"
     .value="value ?? ''"
-    @input="onInput"
+    @input="
+      emit(
+        'update:value',
+        ($event.target as HTMLTextAreaElement).value,
+        'typing'
+      )
+    "
   />
   <craft-text-expander
     v-if="editable && control.props.textExpanderTriggers"
