@@ -11,6 +11,7 @@
 - Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
 - Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
 - Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.

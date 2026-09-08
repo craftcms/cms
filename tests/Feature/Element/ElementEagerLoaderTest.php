@@ -217,6 +217,8 @@ it('eager loads nested elements per site and collects cache expiry data', functi
         ->and($relatedForSourceA?->last()?->getEagerLoadedElements('child')?->pluck('id')->all())->toBe([401])
         ->and($relatedForSourceC?->first()?->getEagerLoadedElements('child')?->pluck('id')->all())->toBe([402])
         ->and($relatedForSourceA?->first()?->eagerLoadInfo?->plan->handle)->toBe('related')
+        ->and(array_column($relatedForSourceA?->first()?->elementQueryResult ?? [], 'id'))->toBe([201, 202])
+        ->and(array_column($relatedForSourceC?->first()?->elementQueryResult ?? [], 'id'))->toBe([301])
         ->and(array_merge(...TestElementEagerLoaderQuery::$afterHydrateCalls[TestElementEagerLoaderExpirableTargetElement::class]))->toBe([201, 202, 301])
         ->and(array_merge(...TestElementEagerLoaderQuery::$afterHydrateCalls[TestElementEagerLoaderNestedTargetElement::class]))->toBe([401, 402])
         ->and($duration)->toBeInt()

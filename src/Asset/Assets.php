@@ -40,6 +40,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
@@ -127,6 +128,37 @@ class Assets
         }
 
         return $this->elements->saveElement($asset);
+    }
+
+    /**
+     * @param  list<Asset>  $assets
+     * @param  list<int>  $sizes
+     */
+    public function preloadThumbs(array $assets, array $sizes): void
+    {
+        if (Event::hasListeners(ThumbUrlResolving::class)) {
+            return;
+        }
+
+        $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
+            && ! $asset->isFolder
+            && ! $asset->getFieldLayout()?->thumbFieldKey));
+
+        $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(function (int $size) use ($asset): array {
+            [$width, $height] = $this->getThumbDimensions($asset, $size);
+
+            return ['width' => $width, 'height' => $height, 'mode' => 'crop'];
+        }, $sizes));
+    }
+
+    /** @return array{int, int} */
+    public function getThumbDimensions(Asset $asset, int $size): array
+    {
+        if ($size % 128 !== 0 && $asset->getWidth() && $asset->getHeight()) {
+            return AssetsHelper::scaledDimensions((int) $asset->getWidth(), (int) $asset->getHeight(), $size, $size);
+        }
+
+        return [$size, $size];
     }
 
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true): ?string

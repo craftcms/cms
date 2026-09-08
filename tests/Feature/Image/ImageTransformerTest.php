@@ -511,3 +511,84 @@ it('rejects invalid Craft driver settings', function () {
         ['width' => 100],
     )))->toThrow(FilesystemException::class);
 });
+
+it('keeps eager loaded index dates independent and follows the current timezone', function () {
+    $asset = ($this->createImageAsset)();
+    $transform = new ImageTransform(['width' => 100]);
+    $original = $this->transformer->getTransformIndex($asset, $transform);
+    $this->transformer->eagerLoadTransforms([$transform], [$asset]);
+
+    $first = $this->transformer->getTransformIndex($asset, $transform);
+    $first->dateIndexed->modify('+1 year');
+    $first->dateCreated->modify('+1 year');
+    $first->dateUpdated->modify('+1 year');
+    $first->fileExists = true;
+    $first->transform->width = 999;
+    Cms::config()->timezone('Europe/Brussels');
+
+    $second = $this->transformer->getTransformIndex($asset, $transform);
+    $persisted = $this->transformer->getTransformIndexModelById($original->id);
+
+    expect($second->id)->toBe($original->id)
+        ->and($second->fileExists)->toBeFalse()
+        ->and($second->transform->width)->toBe(100);
+
+    foreach (['dateIndexed', 'dateCreated', 'dateUpdated'] as $attribute) {
+        expect($second->$attribute->getTimestamp())->toBe($persisted->$attribute->getTimestamp())
+            ->and($second->$attribute->getTimezone()->getName())->toBe('Europe/Brussels')
+            ->and($second->$attribute)->not->toBe($first->$attribute);
+    }
+});
+
+it('reevaluates stale generation state when retrieving an eager loaded index', function (string $timeZone) {
+    Cms::config()->timezone($timeZone);
+    Cms::setDefaultTimezone();
+    $this->freezeSecond();
+    $asset = ($this->createImageAsset)();
+    $asset->dateModified = now()->subMinute();
+    $transform = new ImageTransform(['width' => 100]);
+    $original = $this->transformer->getTransformIndex($asset, $transform);
+    $original->inProgress = true;
+    $this->transformer->storeTransformIndexData($original);
+    $this->transformer->eagerLoadTransforms([$transform], [$asset]);
+
+    expect($this->transformer->getTransformIndex($asset, $transform)->inProgress)->toBeTrue();
+
+    $this->travel(31)->seconds();
+
+    expect($this->transformer->getTransformIndex($asset, $transform)->inProgress)->toBeFalse();
+
+    $this->travelBack();
+
+    expect($this->transformer->getTransformIndex($asset, $transform)->inProgress)->toBeTrue();
+})->with(['UTC', 'America/Los_Angeles', 'Asia/Tokyo']);
+
+it('stores transform creation and update times in UTC', function (string $timeZone) {
+    Cms::config()->timezone($timeZone);
+    Cms::setDefaultTimezone();
+    $this->freezeSecond();
+    $createdAt = now()->utc()->format('Y-m-d H:i:s');
+    $asset = ($this->createImageAsset)();
+    $transform = new ImageTransform(['width' => 100]);
+    $index = $this->transformer->getTransformIndex($asset, $transform);
+
+    $this->assertDatabaseHas(Table::IMAGETRANSFORMINDEX, [
+        'id' => $index->id,
+        'dateCreated' => $createdAt,
+        'dateUpdated' => $createdAt,
+    ]);
+
+    $this->travel(10)->seconds();
+    $updatedAt = now()->utc()->format('Y-m-d H:i:s');
+    $index->inProgress = true;
+    $this->transformer->storeTransformIndexData($index);
+
+    $this->assertDatabaseHas(Table::IMAGETRANSFORMINDEX, [
+        'id' => $index->id,
+        'dateCreated' => $createdAt,
+        'dateUpdated' => $updatedAt,
+        'inProgress' => true,
+    ]);
+
+    expect($this->transformer->getTransformIndexModelById($index->id)->inProgress)->toBeTrue();
+})->with(['America/Los_Angeles', 'Asia/Tokyo']);
