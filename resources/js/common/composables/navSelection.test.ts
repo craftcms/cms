@@ -1,7 +1,7 @@
 import {expect, it} from 'vite-plus/test';
 
 import {withNavBadges, withNavSelection} from './navSelection';
-import {node} from '@/common/components/NavTree.fixture';
+import {node} from '@/common/components/nav.fixture';
 
 const tree = () => [
   node('Dashboard', {href: '/admin/dashboard'}),

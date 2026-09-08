@@ -1,7 +1,7 @@
 import {expect, it} from 'vite-plus/test';
 
 import {navItemActions} from './navActions';
-import {node} from '@/common/components/NavTree.fixture';
+import {node} from '@/common/components/nav.fixture';
 import type {ActionItemGroup, ActionItemLink} from '@/common/types';
 
 it('carries a nav item’s children across as descriptors', () => {

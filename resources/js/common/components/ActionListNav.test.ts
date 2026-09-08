@@ -1,8 +1,9 @@
 import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {createApp, nextTick} from 'vue';
 
-import NavTree from './NavTree.vue';
-import {navFixture, node, selectFixtureItem} from './NavTree.fixture';
+import ActionList from './ActionList.vue';
+import {navItemActions} from '@/common/composables/navActions';
+import {navFixture, node, selectFixtureItem} from './nav.fixture';
 
 let container: HTMLElement;
 let app: ReturnType<typeof createApp> | null = null;
@@ -21,7 +22,13 @@ afterEach(() => {
 });
 
 function mount(props: Record<string, unknown> = {}) {
-  app = createApp(NavTree, {items: navFixture, ...props});
+  const {items = navFixture, ...rest} = props as {items?: typeof navFixture};
+
+  app = createApp(ActionList, {
+    actions: navItemActions(items),
+    as: 'craft-nav-item',
+    ...rest,
+  });
   app.mount(container);
 
   return nextTick();
@@ -127,6 +134,22 @@ it('bullets an icon-less item below the root so labels line up', async () => {
   // A heading isn't a destination, and the root has nothing to line up with.
   expect(bullet('Heading')).toBeNull();
   expect(bullet('Bare root')).toBeNull();
+});
+
+it('treats a group as a heading, not a level of its own', async () => {
+  await mount({
+    items: [
+      node('Heading', {
+        group: true,
+        subnav: [node('Bare', {href: '/bare'})],
+      }),
+    ],
+  });
+
+  // A group's children sit at the group's own depth, so a group at the root
+  // leaves them at the root — where nothing is bulleted, because there's no
+  // icon-bearing row above them to line up with.
+  expect(item('Bare')?.querySelector(':scope > .nav-bullet')).toBeNull();
 });
 
 it('renders a destination-less branch as a static item', async () => {

@@ -6,7 +6,7 @@
    * modal. A full index page renders the same descriptors through
    * `SecondaryNav`, so the list and the menu it collapses into stay in step.
    */
-  import NavEntry from '@/common/components/NavEntry.vue';
+  import ActionList from '@/common/components/ActionList.vue';
   import {useElementSourceActions} from '@/modules/elements/composables/useElementSourceActions';
   import type {
     ElementIndexRoute,
@@ -39,24 +39,8 @@
 
 <template>
   <craft-nav-list>
-    <template v-for="(action, index) in actions" :key="index">
-      <template v-if="action.type === 'group'">
-        <craft-nav-item initial-state="open">
-          <span class="text-xs font-bold">{{ action.heading }}</span>
-          <craft-nav-list slot="subnav">
-            <NavEntry
-              v-for="(child, childIndex) in action.items"
-              :key="childIndex"
-              :item="child"
-            />
-          </craft-nav-list>
-        </craft-nav-item>
-      </template>
-
-      <NavEntry
-        v-else-if="action.type !== 'hr' && action.type !== 'display'"
-        :item="action"
-      />
-    </template>
+    <!-- `inline`: a source list is a list, not a nav you travel through, so
+      every group stays open rather than waiting to be hovered. -->
+    <ActionList :actions="actions" as="craft-nav-item" mode="inline" />
   </craft-nav-list>
 </template>

@@ -67,6 +67,25 @@ function mountWith(items: Array<NavItem>): HTMLElement {
   return container;
 }
 
+/** Both halves: the nav itself and the controls that belong to it. */
+function mountNavAndActions(items: Array<NavItem> = []): HTMLElement {
+  const container = document.createElement('div');
+  document.body.append(container);
+
+  const app = createApp({
+    render: () =>
+      h(SecondaryNav, {items: navItemActions(items), actions: ACTIONS}),
+  });
+  app.mount(container);
+
+  teardown = () => {
+    app.unmount();
+    container.remove();
+  };
+
+  return container;
+}
+
 function mount(): HTMLElement {
   const container = document.createElement('div');
   document.body.append(container);
@@ -179,14 +198,19 @@ describe('SecondaryNav', () => {
     };
     await nextTick();
 
-    // The nav and its controls are one list, so the checkmark gutter is
-    // decided once — otherwise the labels below the rule sit at a different
-    // indent from the ones above it.
-    expect(
-      [...container.querySelectorAll('craft-action-item')].map(
+    // The nav is a choice, so its menu gets the checkmark gutter. The
+    // controls are their own menu now, and commands alone are not a choice —
+    // so the gutter is decided per menu rather than across both.
+    const menus = [
+      ...container.querySelectorAll('craft-popover, craft-action-menu'),
+    ];
+    const typesIn = (root: Element) =>
+      [...root.querySelectorAll('craft-action-item')].map(
         (item) => (item as HTMLElement & {type?: string}).type
-      )
-    ).toEqual(['checkbox', 'checkbox']);
+      );
+
+    expect(typesIn(menus[0]!)).toEqual(['checkbox']);
+    expect(typesIn(menus[1]!)).toEqual(['button']);
   });
 
   it('stands a group aside for its children in the collapsed menu', async () => {
@@ -212,18 +236,23 @@ describe('SecondaryNav', () => {
     ).toEqual(['Profile', 'Password', 'Passkeys']);
   });
 
-  it('renders its actions as buttons while the nav is expanded', async () => {
+  it('puts its actions in a menu below the nav while expanded', async () => {
     stubViewport(true);
 
-    const container = mount();
+    const container = mountNavAndActions([navItem({label: 'Entries'})]);
     await nextTick();
 
-    const button = container.querySelector(
-      '.secondary-nav__actions craft-button'
-    );
+    const actions = container.querySelector('.secondary-nav__actions')!;
 
-    expect(button?.textContent).toContain('New Group');
-    expect(container.querySelector('craft-action-menu')).toBeNull();
+    // Below the nav rather than folded into it: while there's room for the
+    // list, the controls belong to it rather than being entries in it.
+    expect(actions).not.toBeNull();
+    expect(
+      [...actions.querySelectorAll('craft-action-item')].map((item) =>
+        item.textContent?.trim()
+      )
+    ).toContain('New Group');
+    expect(container.querySelector('craft-nav-item')).not.toBeNull();
   });
 
   it('keeps a later action inside the menu it belongs to', async () => {
@@ -260,25 +289,28 @@ describe('SecondaryNav', () => {
     ).toEqual(['New Group', 'New Site']);
   });
 
-  it('moves the same actions into the menu once the nav collapses', async () => {
+  it('gives the nav and its actions each a menu once collapsed', async () => {
     stubViewport(false);
 
-    const container = mount();
+    const container = mountNavAndActions([navItem({label: 'Entries'})]);
     await nextTick();
 
+    const nav = container.querySelector('craft-popover')!;
     const menu = container.querySelector('craft-action-menu')!;
-    const items = [...menu.querySelectorAll('craft-action-item')];
 
-    // Appended after the nav's own items, behind a separator — the page
-    // described these once and didn't write either rendering.
-    expect(items.at(-1)?.textContent).toContain('New Group');
-    expect(menu.querySelector('hr')).not.toBeNull();
-    // Commands alone are not a choice, so nothing is guttered here.
+    // The same descriptors either way — the page described these once and
+    // didn't write either rendering.
     expect(
-      items.every(
-        (item) => (item as HTMLElement & {type?: string}).type === 'button'
+      [...nav.querySelectorAll('craft-action-item')].map((item) =>
+        item.textContent?.trim()
       )
-    ).toBe(true);
+    ).toContain('Entries');
+    expect(
+      [...menu.querySelectorAll('craft-action-item')].map((item) =>
+        item.textContent?.trim()
+      )
+    ).toContain('New Group');
+    // The expanded presentation is gone, not merely hidden.
     expect(container.querySelector('.secondary-nav__actions')).toBeNull();
   });
 });

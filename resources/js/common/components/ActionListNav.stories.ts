@@ -1,7 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 
-import NavTree from './NavTree.vue';
-import {navFixture, selectFixtureItem} from './NavTree.fixture';
+import ActionList from './ActionList.vue';
+import {navItemActions} from '@/common/composables/navActions';
+import {navFixture, selectFixtureItem} from './nav.fixture';
 
 /**
  * PROTOTYPE. The deep, flyout-capable CP navigation, driven by a fixture.
@@ -14,9 +15,9 @@ import {navFixture, selectFixtureItem} from './NavTree.fixture';
  * `Trail` is the proposed behaviour. `AllFlyouts` and `AllInline` are the two
  * halves it's built from, kept so they can be compared against it.
  */
-const meta: Meta<typeof NavTree> = {
-  title: 'CP/NavTree',
-  component: NavTree,
+const meta: Meta<typeof ActionList> = {
+  title: 'CP/Navigation',
+  component: ActionList,
   argTypes: {
     mode: {
       control: 'inline-radio',
@@ -28,7 +29,7 @@ const meta: Meta<typeof NavTree> = {
     },
   },
   args: {
-    items: navFixture,
+    actions: navItemActions(navFixture),
     mode: 'trail',
     iconOnly: false,
   },
@@ -40,7 +41,7 @@ type Story = StoryObj<typeof meta>;
 const railWidth = 'calc(var(--c-size-touch-target) + var(--c-spacing-md))';
 
 const render = (args: Record<string, unknown>) => ({
-  components: {NavTree},
+  components: {ActionList},
   setup: () => ({args}),
   template: `
     <div :style="{
@@ -50,7 +51,7 @@ const render = (args: Record<string, unknown>) => ({
       minHeight: '100vh',
     }">
       <craft-nav-list>
-        <NavTree v-bind="args" />
+        <ActionList v-bind="args" as="craft-nav-item" />
       </craft-nav-list>
     </div>
   `,
@@ -90,7 +91,7 @@ export const AllInline: Story = {
  */
 export const TrailToAnotherBranch: Story = {
   render,
-  args: {items: selectFixtureItem('Utilities')},
+  args: {actions: navItemActions(selectFixtureItem('Utilities'))},
 };
 
 /**

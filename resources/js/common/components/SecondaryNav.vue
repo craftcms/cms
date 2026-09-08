@@ -4,7 +4,6 @@
   import {useMediaQuery} from '@vueuse/core';
   import CpLink from '@/common/components/CpLink.vue';
   import ActionList from '@/common/components/ActionList.vue';
-  import NavEntry from '@/common/components/NavEntry.vue';
   import type {ActionItems} from '@/common/types';
   import VarDump from '@/common/components/VarDump.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -133,38 +132,9 @@ Nav states:
   >
     <slot>
       <craft-nav-list v-if="items.length">
-        <template v-for="(item, index) in items" :key="index">
-          <!-- A group heads its children rather than being somewhere to go. -->
-          <template v-if="item.type === 'group'">
-            <craft-nav-item
-              v-if="item.heading"
-              initial-state="open"
-              block
-              flush
-              group
-            >
-              <span class="text-xs font-bold">{{ item.heading }}</span>
-              <craft-nav-list slot="subnav">
-                <NavEntry
-                  v-for="(child, childIndex) in item.items"
-                  :key="childIndex"
-                  :item="child"
-                />
-              </craft-nav-list>
-            </craft-nav-item>
-            <NavEntry
-              v-else
-              v-for="(child, childIndex) in item.items"
-              :key="`${index}-${childIndex}`"
-              :item="child"
-            />
-          </template>
-
-          <NavEntry
-            v-else-if="item.type !== 'hr' && item.type !== 'display'"
-            :item="item"
-          />
-        </template>
+        <!-- `inline`: this is a list, not a nav you travel through, so every
+          group stays open rather than waiting to be hovered. -->
+        <ActionList :actions="items" as="craft-nav-item" mode="inline" />
       </craft-nav-list>
     </slot>
     <!-- Only while the nav is the presentation: below the large breakpoint
