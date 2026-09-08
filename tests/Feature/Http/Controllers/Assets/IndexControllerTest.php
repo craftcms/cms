@@ -7,6 +7,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -119,5 +120,44 @@ it('passes the route path segment through as defaultSource', function () {
             // URL; the resolved source key drives which source is active.
             ->where('defaultSource', $volume->handle)
             ->where('source.key', "volume:{$volume->uid}")
+        );
+});
+
+it('gives the index a header trail like every other index has', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'testvolume',
+        'name' => 'Test Volume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    // The folder chain in the pane is the trail *within* a volume. These are
+    // the trail *to* it, which the header had none of.
+    get("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->count() === 2
+                && $crumbs->first()['label'] === 'Assets'
+                && str_ends_with((string) $crumbs->first()['href'], '/assets')
+                && $crumbs->last()['label'] === 'Test Volume'
+                // Linked by the URL the nav and the rest of the CP use, not a
+                // `?source=` query naming the same thing.
+                && str_ends_with((string) $crumbs->last()['href'], "/assets/{$volume->handle}")
+            )
+            ->etc()
+        );
+});
+
+it('leaves the bare index a single crumb', function () {
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->isNotEmpty()
+                && $crumbs->first()['label'] === 'Assets'
+            )
+            ->etc()
         );
 });

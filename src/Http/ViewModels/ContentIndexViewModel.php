@@ -247,10 +247,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * doesn't move the breadcrumbs around.
      *
      * Screens with no URL of their own ({@see indexUrl()}) opt out: the element
-     * selector modal has no header to put a trail in, and the asset index shows
-     * its volume-and-folder chain in the index pane instead
-     * ({@see AssetIndexViewModel::breadcrumbs()}), which this would only repeat
-     * the first steps of.
+     * selector modal has no header to put a trail in.
      *
      * @return list<ActionItem|array<string, mixed>>
      */

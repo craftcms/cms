@@ -24,9 +24,9 @@ use function CraftCms\Cms\t;
  * A `defaultSource` path like `volumeHandle/sub/folder` selects the volume's
  * source and resolves the subfolder chain into `breadcrumbs`.
  *
- * Those breadcrumbs, in the index pane, are this screen's trail — so it leaves
- * {@see ContentIndexViewModel::indexUrl()} at `null` and renders no header
- * crumbs, which would only repeat the chain's first steps.
+ * Those breadcrumbs are the trail *within* a volume, drawn in the index pane.
+ * The header crumbs are the trail *to* it — `Assets › Uploads` — which is the
+ * same trail every other index shows and the one the main nav agrees with.
  */
 class AssetIndexViewModel extends ContentIndexViewModel
 {
@@ -140,6 +140,34 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * Folder rows have no element id, so key them by folder id to stay unique
      * and stable for the client's table/selection.
      */
+    /**
+     * The assets index is a page of its own, so its crumbs start there.
+     *
+     * The folder chain in the pane covers everything below the volume; without
+     * this there was nothing above it, and the header sat empty while every
+     * other index had a trail.
+     */
+    #[Override]
+    protected function indexUrl(): ?string
+    {
+        return Url::cpUrl('assets');
+    }
+
+    /**
+     * Volumes have index URLs of their own, which is what the nav and the rest
+     * of the CP link them by — so a crumb lands on the same URL rather than a
+     * `?source=` query naming the same thing.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    #[Override]
+    protected function sourceUrl(array $source): ?string
+    {
+        $uri = Asset::sourceCpUri($source);
+
+        return $uri === null ? parent::sourceUrl($source) : Url::cpUrl($uri);
+    }
+
     #[Override]
     protected function rowId(ElementInterface $element): string|int|null
     {
