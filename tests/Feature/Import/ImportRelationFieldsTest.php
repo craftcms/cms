@@ -5,21 +5,17 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Transformers\EntryTransformer;
-use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\Support\ImportFixtures;
 use CraftCms\Cms\User\Models\User;
 
 beforeEach(function () {
@@ -36,32 +32,17 @@ beforeEach(function () {
     $this->relatedUser = User::factory()->createElement();
     $this->relatedAsset = Asset::factory()->createElement();
 
-    $layoutElements[] = new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]);
-    foreach ($allFields as $field) {
-        $layoutElements[] = CustomField::make($field->handle);
-    }
+    $layoutElements = array_map(fn ($field) => CustomField::make($field->handle), $allFields);
 
-    $fieldLayout = FieldLayout::factory()->withContentTab($layoutElements)->create();
+    $seed = ImportFixtures::seedEntry($layoutElements, ['name' => 'With Relation Fields', 'handle' => 'withRelationFields']);
 
-    $entryType = EntryType::factory()
-        ->withFieldLayout($fieldLayout)
-        ->create(['name' => 'With Relation Fields', 'handle' => 'withRelationFields', 'hasTitleField' => true]);
-
-    $section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
-
-    $seedResult = Entry::factory()
-        ->forSection($section)
-        ->forEntryType($entryType)
-        ->withFieldLayout($fieldLayout)
-        ->createElementWithFields(['title' => 'seed entry', 'slug' => 'seed-entry']);
-
-    $this->section = $seedResult->element->getSection();
-    $this->entryType = $seedResult->element->getType();
+    $this->section = $seed->section;
+    $this->entryType = $seed->entryType;
 
     $relatedResult = Entry::factory()
-        ->forSection($section)
-        ->forEntryType($entryType)
-        ->withFieldLayout($fieldLayout)
+        ->forSection($seed->section)
+        ->forEntryType($seed->entryType)
+        ->withFieldLayout($seed->fieldLayout)
         ->createElementWithFields(['title' => 'related entry', 'slug' => 'related-entry']);
 
     $this->relatedEntry = $relatedResult->element;

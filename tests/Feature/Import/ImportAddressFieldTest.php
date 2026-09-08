@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\Support\ImportFixtures;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -28,34 +23,14 @@ beforeEach(function () {
 
     Fields::refreshFields();
 
-    $fieldLayout = FieldLayout::factory()
-        ->withContentTab([
-            new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
-            CustomField::make($addressesField->handle),
-        ])
-        ->create();
+    $seed = ImportFixtures::seedEntry(
+        [CustomField::make($addressesField->handle)],
+        ['name' => 'With Addresses Field', 'handle' => 'withAddressesField'],
+        entryAttrs: ['title' => 'some entry', 'slug' => 'some-entry'],
+    );
 
-    $entryType = EntryType::factory()
-        ->withFieldLayout($fieldLayout)
-        ->create([
-            'name' => 'With Addresses Field',
-            'handle' => 'withAddressesField',
-            'hasTitleField' => true,
-        ]);
-
-    $section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
-
-    $result = Entry::factory()
-        ->forSection($section)
-        ->forEntryType($entryType)
-        ->withFieldLayout($fieldLayout)
-        ->createElementWithFields([
-            'title' => 'some entry',
-            'slug' => 'some-entry',
-        ]);
-
-    $this->section = $result->element->getSection();
-    $this->entryType = $result->element->getType();
+    $this->section = $seed->section;
+    $this->entryType = $seed->entryType;
 
     $this->importer = ElementImporter::create()
         ->className(EntryElement::class)

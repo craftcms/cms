@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
-use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -16,11 +14,10 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\Support\ImportFixtures;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -72,11 +69,7 @@ beforeEach(function () {
 
     Fields::refreshFields();
 
-    $plainTextField = Field::factory()->create([
-        'name' => 'Plain Text',
-        'handle' => 'plainText',
-        'type' => PlainText::class,
-    ]);
+    $plainTextField = ImportFixtures::plainTextField('plainText', 'Plain Text');
 
     Fields::refreshFields();
 
@@ -96,44 +89,15 @@ beforeEach(function () {
             'hasTitleField' => true,
         ]);
 
-    $matrixField = Field::factory()->create([
-        'name' => 'My Matrix',
-        'handle' => 'myMatrix',
-        'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$forMatrixEntryType->id]],
-    ]);
+    $matrixField = ImportFixtures::matrixField('myMatrix', [$forMatrixEntryType], 'My Matrix');
 
-    EntryTypes::refreshEntryTypes();
-    Fields::refreshFields();
+    $seed = ImportFixtures::seedEntry(
+        [CustomField::make($matrixField->handle)],
+        ['name' => 'With Matrix Field', 'handle' => 'withMatrixField'],
+    );
 
-    $fieldLayout = FieldLayout::factory()
-        ->withContentTab([
-            new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
-            CustomField::make($matrixField->handle),
-        ])
-        ->create();
-
-    $entryType = EntryType::factory()
-        ->withFieldLayout($fieldLayout)
-        ->create([
-            'name' => 'With Matrix Field',
-            'handle' => 'withMatrixField',
-            'hasTitleField' => true,
-        ]);
-
-    $section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
-
-    $result = Entry::factory()
-        ->forSection($section)
-        ->forEntryType($entryType)
-        ->withFieldLayout($fieldLayout)
-        ->createElementWithFields([
-            'title' => 'seed entry',
-            'slug' => 'seed-entry',
-        ]);
-
-    $this->section = $result->element->getSection();
-    $this->entryType = $result->element->getType();
+    $this->section = $seed->section;
+    $this->entryType = $seed->entryType;
 
     $this->importer = ElementImporter::create()
         ->className(EntryElement::class)
