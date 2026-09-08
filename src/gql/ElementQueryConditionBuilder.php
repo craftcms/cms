@@ -37,6 +37,7 @@ use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
+use Illuminate\Support\Arr;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -83,8 +84,13 @@ class ElementQueryConditionBuilder extends Component
      */
     private ArgumentManager $_argumentManager;
 
+    /**
+     * @var FieldInterface[]
+     * @see setCustomFields()
+     */
+    private array $_fields = [];
+
     private array $_fragments;
-    private array $_eagerLoadableFieldsByContext = [];
     private array $_transformableAssetProperties = ['url', 'width', 'height'];
     private array $_additionalEagerLoadableNodes;
 
@@ -102,15 +108,6 @@ class ElementQueryConditionBuilder extends Component
         }
 
         parent::__construct($config);
-
-        // Cache all eager-loadable fields by context
-        $allFields = Craft::$app->getFields()->getAllFields(false);
-
-        foreach ($allFields as $field) {
-            if ($field instanceof EagerLoadingFieldInterface) {
-                $this->_eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
-            }
-        }
     }
 
     /**
@@ -133,6 +130,17 @@ class ElementQueryConditionBuilder extends Component
     public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->_argumentManager = $argumentManager;
+    }
+
+    /**
+     * Sets the custom fields that may be involved in the query.
+     *
+     * @param FieldInterface[] $fields
+     * @since 5.5.0
+     */
+    public function setCustomFields(array $fields): void
+    {
+        $this->_fields = $fields;
     }
 
     /**
@@ -410,7 +418,7 @@ class ElementQueryConditionBuilder extends Component
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
                 /** @var FieldInterface|null $craftContentField */
-                $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
+                $craftContentField = Arr::first($this->_fields, fn(FieldInterface $field) => $field->handle === $nodeName);
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
