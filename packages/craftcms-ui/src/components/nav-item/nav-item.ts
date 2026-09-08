@@ -9,6 +9,7 @@ import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
+import {dispatchNavigateEvent} from '@src/utilities/navigate-event.js';
 
 /**
  *
@@ -148,6 +149,13 @@ export default class CraftNavItem extends LitElement {
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
+  #handleLinkClick = (event: MouseEvent) => {
+    if (!this.href) {
+      return;
+    }
+    dispatchNavigateEvent(this, this.href, event);
+  };
+
   renderIconItem(hasSubnav: boolean) {
     const itemId = `item-${this.id}`;
     // Without an href there's nothing to link to, so render a plain span.
@@ -164,6 +172,7 @@ export default class CraftNavItem extends LitElement {
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
         aria-expanded="${hasSubnav ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
+        @click="${this.#handleLinkClick}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
@@ -277,6 +286,7 @@ export default class CraftNavItem extends LitElement {
         class="nav-item__action-item"
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
+        @click="${this.#handleLinkClick}"
       >
         <slot
           id="${this.id}-label"

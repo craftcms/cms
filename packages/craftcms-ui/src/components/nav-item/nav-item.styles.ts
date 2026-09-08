@@ -22,7 +22,7 @@ export default css`
       outline-offset: var(--c-focus-outline-offset);
     }
   }
-  
+
   .nav-item__action-item {
     text-decoration: none;
     color: inherit;
@@ -32,7 +32,7 @@ export default css`
       position: absolute;
       inset: 0;
     }
-    
+
     &:focus-visible {
       outline: none;
     }
