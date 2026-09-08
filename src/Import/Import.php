@@ -128,10 +128,12 @@ class Import
     }
 
     /**
-     * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items, then hands the item to the importer and fires the imported event.
+     * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items,
+     * then hands the item to the importer and fires the imported event.
      *
      * @param  BaseImporter  $importer  The importer config to import into.
      * @param  array  $data  The raw item data being imported.
+     * @param  array  $matchCriteria  any criteria that should be used to match incoming data against existing elements
      */
     public function importItem(BaseImporter $importer, array $data, array $matchCriteria = []): void
     {

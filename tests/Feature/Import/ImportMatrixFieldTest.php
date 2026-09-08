@@ -540,7 +540,13 @@ describe('raw grouped/flat data through the full pipeline', function () {
 
         $rawData = $makeRawData($this->section->handle, $this->entryType->handle, 'foo');
 
-        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
+        $this->import->importItem(
+            $importer,
+            ImportHelper::remapData($map, $rawData),
+            // we must pass the importer's matchCriteria as this way because it only depends on the importer config,
+            // so it's done once per config rather than for each root item that is being imported
+            ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer),
+        );
 
         $entry = EntryElement::find()->title('imported entry')->one();
         expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
@@ -554,7 +560,11 @@ describe('raw grouped/flat data through the full pipeline', function () {
         // untouched on a freshly created duplicate.
         $rawData = $makeRawData($this->section->handle, $this->entryType->handle, null);
 
-        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
+        $this->import->importItem(
+            $importer,
+            ImportHelper::remapData($map, $rawData),
+            ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer),
+        );
 
         $entry = EntryElement::find()->title('imported entry')->one();
         expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
