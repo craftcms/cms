@@ -363,6 +363,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         $elements = $this->resolvePaginator()->items();
+        $this->prepareElements($elements);
 
         return match ($this->mode()) {
             ElementIndexViewMode::Cards->value => $this->cardData($elements),
@@ -370,6 +371,9 @@ abstract class ContentIndexViewModel extends ViewModel
             default => $this->tableRows($elements),
         };
     }
+
+    /** @param list<ElementInterface|array<string, mixed>> $elements */
+    protected function prepareElements(array $elements): void {}
 
     /** @return array<int, array<string, mixed>>|null */
     public function actions(): ?array

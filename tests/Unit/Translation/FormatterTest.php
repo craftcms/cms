@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Facades\Date;
+use Locale as IntlLocale;
 
 beforeEach(function () {
     $this->formatter = app(Formatter::class);
@@ -485,3 +486,58 @@ test('willBeMisrepresented', function (mixed $input, bool $output, ?string $loca
     ['9.00', false],
     ['87654321098765436', true],
 ]);
+
+test('date formatting follows locale timezone and pattern changes on the same formatter', function () {
+    $date = Date::parse('2026-01-15 14:15:16', 'UTC');
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'UTC';
+
+    expect($this->formatter->asDateTime($date, 'yyyy-MM-dd HH:mm'))->toBe('2026-01-15 14:15');
+
+    $this->formatter->timeZone = 'America/New_York';
+
+    expect($this->formatter->asDateTime($date, 'yyyy-MM-dd HH:mm'))->toBe('2026-01-15 09:15');
+
+    $this->formatter->locale = 'nl';
+
+    expect($this->formatter->asDate($date, 'MMMM'))->toBe('januari');
+
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'UTC';
+
+    expect($this->formatter->asDateTime($date, 'yyyy-MM-dd HH:mm'))->toBe('2026-01-15 14:15')
+        ->and($this->formatter->asDate($date, 'MMMM'))->toBe('January');
+});
+
+test('date formatting keeps date and time styles separate across repeated values', function () {
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'UTC';
+
+    foreach (['2026-01-15 14:15:16', '2026-02-16 14:15:16'] as $value) {
+        $date = Date::parse($value, 'UTC');
+        $expectedDate = $date->format('M j, Y');
+
+        expect($this->formatter->asDate($date))->toBe($expectedDate)
+            ->and($this->formatter->asTime($date))->toBe('2:15:16 PM')
+            ->and($this->formatter->asDateTime($date))->toBe("{$expectedDate}, 2:15:16 PM");
+    }
+});
+
+test('date formatting follows the ICU default locale when its locale is empty', function () {
+    $previousLocale = IntlLocale::getDefault();
+    $this->formatter->locale = '';
+    $this->formatter->timeZone = 'UTC';
+    $date = Date::parse('2026-01-15 14:15:16', 'UTC');
+
+    try {
+        IntlLocale::setDefault('en_US');
+
+        expect($this->formatter->asDate($date, 'MMMM'))->toBe('January');
+
+        IntlLocale::setDefault('nl_NL');
+
+        expect($this->formatter->asDate($date, 'MMMM'))->toBe('januari');
+    } finally {
+        IntlLocale::setDefault($previousLocale);
+    }
+});

@@ -12,6 +12,8 @@ use Override;
  * @method static int getTotalAssets(mixed $criteria = null)
  * @method static void replaceAssetFile(\CraftCms\Cms\Asset\Elements\Asset $asset, string $pathOnServer, string $filename, string|null $mimeType = null)
  * @method static bool moveAsset(\CraftCms\Cms\Asset\Elements\Asset $asset, \CraftCms\Cms\Asset\Data\VolumeFolder $folder, string $filename = '')
+ * @method static void preloadThumbs(array $assets, array $sizes)
+ * @method static array getThumbDimensions(\CraftCms\Cms\Asset\Elements\Asset $asset, int $size)
  * @method static string|null getThumbUrl(\CraftCms\Cms\Asset\Elements\Asset $asset, int $width, int|null $height = null, bool $iconFallback = true, \CraftCms\Cms\Image\Enums\ImageTransformMode $mode = \CraftCms\Cms\Image\Enums\ImageTransformMode::Crop)
  * @method static string getImagePreviewUrl(\CraftCms\Cms\Asset\Elements\Asset $asset, int $maxWidth, int $maxHeight)
  * @method static string getNameReplacementInFolder(string $originalFilename, int $folderId)

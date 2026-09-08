@@ -314,6 +314,8 @@ class OAuth
             ->where('userId', $user->id)
             ->where('provider', $provider->handle)
             ->delete();
+
+        $user->setHasSsoIdentity(null);
     }
 
     /**
@@ -370,6 +372,8 @@ class OAuth
                 'dateUpdated' => $now,
             ]);
         });
+
+        $user->setHasSsoIdentity(null);
     }
 
     private function normalizeProvider(string $handle, mixed $config): ?ProviderDefinition

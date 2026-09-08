@@ -4,19 +4,68 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\freezeTime;
 
 beforeEach(function () {
     $this->service = app(JobProgress::class);
+});
+
+it('checks reserved and pending job presence without hydrating the backlog', function () {
+    expect($this->service->hasReservedJobs())->toBeFalse()
+        ->and($this->service->hasPendingJobs())->toBeFalse();
+
+    $this->service->queued('pending-one', 'First pending job');
+    $this->service->queued('pending-two', 'Second pending job');
+    $this->service->processing('reserved-one');
+    $this->service->processing('reserved-two');
+
+    $retrieved = 0;
+    Event::listen('eloquent.retrieved: '.JobProgressModel::class, function () use (&$retrieved): void {
+        $retrieved++;
+    });
+
+    expect($this->service->hasReservedJobs())->toBeTrue()
+        ->and($this->service->hasPendingJobs())->toBeTrue()
+        ->and($retrieved)->toBe(0);
+});
+
+it('shares queue status while loading only the displayed job', function () {
+    $this->service->queued('pending-one', 'First pending job');
+    $this->service->queued('pending-two', 'Second pending job');
+    $this->service->processing('reserved-one');
+    $this->service->processing('reserved-two');
+
+    $request = Request::create(route('craft.cp.dashboard'));
+    $request->setLaravelSession(session()->driver());
+    $queue = app(HandleInertiaRequests::class)->share($request)['queue'];
+    $retrieved = 0;
+    Event::listen('eloquent.retrieved: '.JobProgressModel::class, function () use (&$retrieved): void {
+        $retrieved++;
+    });
+
+    $state = $queue();
+    $status = json_decode(json_encode($state, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($status['displayedJob'])->not()->toBeNull()
+        ->and($status['hasReservedJobs'])->toBeTrue()
+        ->and($status['hasWaitingJobs'])->toBeTrue()
+        ->and($retrieved)->toBe(1);
+
+    json_encode($state, JSON_THROW_ON_ERROR);
+
+    expect($retrieved)->toBe(1);
 });
 
 it('can set and retrieve job progress', function () {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
@@ -110,7 +111,7 @@ trait SearchesElements
             throw new QueryAbortedException;
         }
 
-        $elementQuery->whereIn('elements.id', $searchQuery->pluck('elementId'));
+        $elementQuery->whereExists($searchQuery->whereColumn(Table::SEARCHINDEX.'.elementId', 'elements_sites.elementId'));
     }
 
     /**

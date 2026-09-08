@@ -341,6 +341,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     private ?array $_groups = null;
 
+    private ?bool $_hasSsoIdentity = null;
+
     /**
      * @see setAttributesFromRequest()
      * @see afterSave()
@@ -417,7 +419,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->id;
     }
 
-    /** @return MorphMany<DatabaseNotification, Model> */
+    /** @return MorphMany<DatabaseNotification, Model&AuthenticatableContract> */
     public function notifications(): MorphMany
     {
         $user = Auth::getProvider()->retrieveById($this->getAuthIdentifier());
@@ -935,6 +937,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function setAttributesFromRequest(array $values): void
     {
         unset(
+            $values['hasSsoIdentity'],
             $values['invalidLoginCount'],
             $values['lastInvalidLoginDate'],
             $values['lastLoginAttemptIp'],
@@ -1022,7 +1025,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        return $this->id !== null && app(OAuth::class)->hasIdentity($this->id);
+        return $this->id !== null && ($this->_hasSsoIdentity ?? app(OAuth::class)->hasIdentity($this->id));
+    }
+
+    public function setHasSsoIdentity(?bool $hasSsoIdentity): void
+    {
+        $this->_hasSsoIdentity = $hasSsoIdentity;
     }
 
     #[Override]

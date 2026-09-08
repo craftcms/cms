@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -19,7 +21,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
+use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -77,6 +82,61 @@ it('paginates elements via query params', function () {
             ->where('pagination.current_page', 1)
         );
 });
+
+it('does not render element chips when only pagination is requested', function () {
+    EntryModel::factory()->count(3)->create();
+
+    $this->partialMock(ElementHtml::class, fn (MockInterface $mock) => $mock
+        ->shouldReceive('elementChipHtml')->never());
+
+    get("/{$this->cpTrigger}/content/entries", [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'content/Index',
+        'X-Inertia-Partial-Data' => 'pagination',
+    ])
+        ->assertOk()
+        ->assertJsonPath('props.pagination.total', 3)
+        ->assertJsonMissingPath('props.data');
+});
+
+it('selects identity presence with users without separate lookups when rendering entry pages', function (bool $showAuthors) {
+    $section = Section::factory()->create();
+    $type = EntryType::factory()->create();
+    $authors = UserModel::factory()->count(4)->active()->create();
+
+    foreach ([0, 1, 2, 0, 3] as $index => $authorIndex) {
+        EntryModel::factory()->forSection($section)->forEntryType($type)
+            ->title("Article $index")
+            ->create()
+            ->authors()->attach($authors[$authorIndex]->id, ['sortOrder' => 1]);
+    }
+
+    DB::enableQueryLog();
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'columns' => [$showAuthors ? 'authors' : 'id'],
+        'sort' => [['field' => 'title', 'direction' => 'asc']],
+        'per_page' => 4,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'content/Index',
+        'X-Inertia-Partial-Data' => 'data,pagination',
+    ])
+        ->assertOk()
+        ->assertJsonCount(4, 'props.data');
+
+    $queries = array_values(array_filter(DB::getQueryLog(), fn (array $query): bool => str_contains($query['query'], Table::SSO_IDENTITIES)));
+    DB::disableQueryLog();
+
+    expect($queries)->toHaveCount(1)
+        ->and($queries[0]['query'])->toContain('hasSsoIdentity');
+
+    if ($showAuthors) {
+        expect($queries[0]['bindings'])->toEqualCanonicalizing($authors->take(3)->modelKeys());
+    }
+})->with(['visible authors' => true, 'hidden authors' => false]);
 
 it('accepts sort parameters', function () {
     EntryModel::factory()->createElement(['title' => 'Zebra']);

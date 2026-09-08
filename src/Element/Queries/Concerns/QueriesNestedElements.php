@@ -116,6 +116,13 @@ trait QueriesNestedElements
 
             self::prepForNestedElementParams($elementQuery);
 
+            if ($elementQuery->ownerId) {
+                // Restrict candidates before the other joins when the query planner starts with the elements table.
+                $elementQuery->whereIn('elements.id', DB::table(Table::ELEMENTS_OWNERS)
+                    ->select('elementId')
+                    ->whereIn('ownerId', $elementQuery->ownerId));
+            }
+
             if (isset($elementQuery->fieldId)) {
                 self::applyFieldIdInternal($elementQuery, $elementQuery->fieldId, $elementQuery);
             }
