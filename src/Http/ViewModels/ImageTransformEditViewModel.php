@@ -65,27 +65,27 @@ class ImageTransformEditViewModel extends ViewModel
                 t('Mode'),
                 Choice::make('mode')
                     ->options(ImageTransformMode::asOptions())
-                    ->presentation(ChoicePresentation::Radios),
+                    ->presentation(ChoicePresentation::Radios)
+                    ->reactive(),
             )->required(),
         ]);
 
         $form->add(
-            $mode === ImageTransformMode::Letterbox->value
-                ? Field::make(t('Fill Color'), Color::make('fill'))
-                : HiddenField::make('fill'),
-        );
-
-        $form->add(
-            in_array($mode, [ImageTransformMode::Crop->value, ImageTransformMode::Letterbox->value], true)
-                ? Field::make(
-                    $mode === ImageTransformMode::Letterbox->value
-                        ? t('Image Position')
-                        : t('Default Focal Point'),
-                    Choice::make('position')
-                        ->options(ImageTransformPosition::asOptions())
-                        ->presentation(ChoicePresentation::Radios),
-                )
-                : HiddenField::make('position'),
+            Group::make('image-transform-mode-settings', [
+                $mode === ImageTransformMode::Letterbox->value
+                    ? Field::make(t('Fill Color'), Color::make('fill'))
+                    : HiddenField::make('fill'),
+                in_array($mode, [ImageTransformMode::Crop->value, ImageTransformMode::Letterbox->value], true)
+                    ? Field::make(
+                        $mode === ImageTransformMode::Letterbox->value
+                            ? t('Image Position')
+                            : t('Default Focal Point'),
+                        Choice::make('position')
+                            ->options(ImageTransformPosition::asOptions())
+                            ->presentation(ChoicePresentation::Radios),
+                    )
+                    : HiddenField::make('position'),
+            ])->dependsOn('mode'),
             Field::make(t('Width'), Number::make('width')->min(1)->size(5)),
             Field::make(t('Height'), Number::make('height')->min(1)->size(5)),
             Field::make(t('Allow Upscaling'), Lightswitch::make('upscale')),

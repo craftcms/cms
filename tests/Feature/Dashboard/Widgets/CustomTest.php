@@ -17,6 +17,9 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
+    $this->originalBasePath = app()->basePath();
+    app()->setBasePath(storage_path('framework/testing/custom-widgets'));
+
     $this->widgetsPath = resource_path('widgets');
     File::ensureDirectoryExists($this->widgetsPath);
     File::cleanDirectory($this->widgetsPath);
@@ -24,6 +27,7 @@ beforeEach(function () {
 
 afterEach(function () {
     File::deleteDirectory($this->widgetsPath);
+    app()->setBasePath($this->originalBasePath);
 });
 
 it('discovers top-level Markdown files', function () {

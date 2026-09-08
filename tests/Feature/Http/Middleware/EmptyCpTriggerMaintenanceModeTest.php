@@ -2,11 +2,19 @@
 
 declare(strict_types=1);
 
+use Illuminate\Foundation\Testing\CachedState;
+
 use function Pest\Laravel\get;
 
-beforeAll(fn () => putenv('CRAFT_CP_TRIGGER='));
+beforeAll(function () {
+    CachedState::$cachedRoutes = null;
+    putenv('CRAFT_CP_TRIGGER=');
+});
 
-afterAll(fn () => putenv('CRAFT_CP_TRIGGER'));
+afterAll(function () {
+    putenv('CRAFT_CP_TRIGGER');
+    CachedState::$cachedRoutes = null;
+});
 
 test('public shared actions are blocked during maintenance mode', function () {
     auth()->logout();

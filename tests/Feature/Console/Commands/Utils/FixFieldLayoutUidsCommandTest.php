@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -13,7 +14,7 @@ it('reports when no duplicate field layout uids exist', function () {
         ->assertSuccessful();
 });
 
-it('fixes duplicate and missing field layout uids', function () {
+it('fixes duplicate and missing field layout uids', function (bool $external, bool $packed) {
     $fieldLayoutUid = (string) Str::uuid();
     $sharedTabUid = (string) Str::uuid();
     $sharedElementUid = (string) Str::uuid();
@@ -75,7 +76,22 @@ it('fixes duplicate and missing field layout uids', function () {
         ],
     ]);
 
+    if ($packed) {
+        foreach (['first' => 'fieldLayouts', 'second' => 'fieldLayouts', 'solo' => 'fieldLayout'] as $owner => $key) {
+            $path = "testFixture.$owner.$key";
+            ProjectConfig::set($path, ProjectConfigHelper::packAssociativeArray(ProjectConfig::get($path)));
+        }
+    }
+
     ProjectConfig::regenerateExternalConfig();
+
+    if ($external) {
+        $snapshot = ProjectConfig::get();
+        $snapshot['testFixture']['pending'] = true;
+        new ReflectionProperty(ProjectConfig::getFacadeRoot(), '_externalConfig')
+            ->setValue(ProjectConfig::getFacadeRoot(), new ReadOnlyProjectConfigData($snapshot, ProjectConfig::getFacadeRoot()));
+        expect(ProjectConfig::areChangesPending(force: true))->toBeTrue();
+    }
 
     $this->artisan('craft:utils/fix-field-layout-uids')
         ->expectsOutputToContain('Looking for duplicate UUIDs ...')
@@ -95,7 +111,7 @@ it('fixes duplicate and missing field layout uids', function () {
     $firstLayout = $firstFieldLayouts[$fieldLayoutUid];
     $secondFieldLayoutUid = array_key_first($secondFieldLayouts);
     $secondLayout = $secondFieldLayouts[$secondFieldLayoutUid];
-    $soloLayout = $soloConfig['fieldLayout'];
+    $soloLayout = ProjectConfigHelper::unpackAssociativeArray($soloConfig['fieldLayout']);
 
     expect($secondFieldLayoutUid)->not->toBe($fieldLayoutUid)
         ->and($firstLayout['tabs'][0]['uid'])->toBe($sharedTabUid)
@@ -118,4 +134,11 @@ it('fixes duplicate and missing field layout uids', function () {
     ];
 
     expect(array_unique($allUids))->toHaveCount(count($allUids));
-});
+
+    ProjectConfig::writeYamlFiles(true);
+    ProjectConfig::reset();
+    expect(ProjectConfig::get('testFixture.second', true))->toBe($secondConfig);
+    $this->artisan('craft:utils:fix-field-layout-uids')
+        ->expectsOutputToContain('No duplicate UUIDs were found.')
+        ->assertSuccessful();
+})->with([false, true])->with([false, true]);

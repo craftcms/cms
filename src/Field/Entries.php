@@ -203,10 +203,7 @@ class Entries extends BaseRelationField
 
     protected function createSelectionCondition(): ElementCondition
     {
-        $condition = Entry::createCondition();
-        $condition->queryParams = ['section', 'sectionId'];
-
-        return $condition;
+        return Entry::createCondition();
     }
 
     #[Override]

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use Illuminate\Support\Collection;
 
 /**
@@ -36,20 +37,20 @@ trait EagerloadsTransforms
 
     protected function initEagerloadsTransforms(): void
     {
-        $this->afterQuery(function (mixed $result) {
+        $this->afterQuery(static function (mixed $result, AssetQuery $assetQuery) {
             if (! $result instanceof Collection) {
                 return $result;
             }
 
-            if (! $this->withTransforms) {
+            if (! $assetQuery->withTransforms) {
                 return $result;
             }
 
-            if ($this->asArray) {
+            if ($assetQuery->asArray) {
                 return $result;
             }
 
-            $transforms = $this->withTransforms;
+            $transforms = $assetQuery->withTransforms;
             if (! is_array($transforms)) {
                 $transforms = is_string($transforms)
                     ? str($transforms)->explode(',')->all()

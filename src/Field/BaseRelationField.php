@@ -65,6 +65,7 @@ use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder as BuilderInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -146,7 +147,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
+    public static function modifyQuery(BuilderInterface $query, array $instances, mixed $value): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -204,19 +205,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             if ($query instanceof ElementQuery) {
                 $filter->apply($query->getQuery(), $relationCriteria, $siteId !== '*' ? $siteId : null);
 
-                return $query;
+                return;
             }
 
             if ($query instanceof Builder) {
                 $filter->apply($query, $relationCriteria);
 
-                return $query;
+                return;
             }
 
             $query->where(fn (Builder $query) => $filter->apply($query, $relationCriteria));
         }
-
-        return $query;
     }
 
     /**
@@ -456,6 +455,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (array_key_exists('useTargetSite', $config)) {
             if (empty($config['useTargetSite'])) {
                 unset($config['targetSiteId']);
+            } elseif (empty($config['targetSiteId'])) {
+                // Nothing is stored for the switch itself — it's just "is there
+                // a target site" — so switching it on with nothing chosen has to
+                // land on one, or it reads as still being off.
+                $config['targetSiteId'] = Sites::getPrimarySite()->uid;
             }
             unset($config['useTargetSite']);
         }
@@ -532,7 +536,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      *
      * Mirrors the `sourcesField` block of Craft 5’s `elementfieldsettings.twig`.
      */
-    protected function sourcesField(): FormField
+    protected function sourcesField(bool $reactive = false): FormField
     {
         $elementType = static::elementType();
         $sourceOptions = array_map(fn (array $option): array => [
@@ -546,7 +550,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (! $this->allowMultipleSources) {
             return FormField::make(t('Source'))
                 ->instructions($instructions)
-                ->control(Choice::make('source')->options($sourceOptions)->value($this->source));
+                ->control(Choice::make('source')
+                    ->options($sourceOptions)
+                    ->value($this->source)
+                    ->reactive($reactive));
         }
 
         // Some element types expose an “All …” source of their own (entries,
@@ -575,7 +582,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 // Storing “all” as a token rather than today's source list is
                 // what lets the field pick up sources added later.
                 ->allOption($allLabel, self::ALL_SOURCES)
-                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources));
+                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources)
+                ->reactive($reactive));
     }
 
     /**
@@ -759,18 +767,33 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $sites = Sites::getAllSites()->map(fn ($site): array => [
                 'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
-            ])->all();
+            ])->values()->all();
+            // `useTargetSite` isn't stored: it's the presence of a target site.
+            // The site picker is hidden rather than omitted so its value survives
+            // the refresh and the switch can be turned back on.
+            $useTargetSite = ! empty($this->targetSiteId);
+            $targetSiteNodes = [
+                FormField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
+                    ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId))
+                    ->visible($useTargetSite),
+            ];
+
+            // The inverse of the picker above: relating from one fixed site
+            // leaves nothing for a site menu to switch between.
+            if (static::canShowSiteMenu()) {
+                $targetSiteNodes[] = FormField::make(t('Show the site menu'))
+                    ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu))
+                    ->visible(! $useTargetSite);
+            }
+
             $advanced->add(
                 FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
-                    ->control(Lightswitch::make('useTargetSite')->value(! empty($this->targetSiteId))),
-                FormField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
-                    ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId)),
+                    ->control(Lightswitch::make('useTargetSite')
+                        ->value($useTargetSite)
+                        ->reactive()),
+                Group::make('relation-target-site-settings', $targetSiteNodes)
+                    ->dependsOn('settings.useTargetSite'),
             );
-
-            if (static::canShowSiteMenu()) {
-                $advanced->add(FormField::make(t('Show the site menu'))
-                    ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu)));
-            }
         }
 
         return $advanced;
@@ -1590,6 +1613,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ],
             ])
             ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
             ->all();
     }
 
@@ -1743,7 +1767,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $selectionCondition->id = 'selection-condition';
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
-            $selectionCondition->queryParams[] = 'site';
 
             $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [

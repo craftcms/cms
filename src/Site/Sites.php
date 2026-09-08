@@ -364,6 +364,12 @@ class Sites
 
     public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
     {
+        $site = $this->allSitesById[$siteId] ?? null;
+
+        if ($site === ($this->enabledSitesById[$siteId] ?? null)) {
+            return $site;
+        }
+
         return $this->allSites($withDisabled)[$siteId] ?? null;
     }
 

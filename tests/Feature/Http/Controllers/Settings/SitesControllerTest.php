@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Models\SiteGroup;
@@ -47,7 +49,8 @@ it('requires admin changes', function () {
     $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+            ->where('form.nodes', fn ($nodes): bool => collect(flattenFormNodes(collect($nodes)->all()))
+                ->whereNotNull('control')
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly')));
 
     // Not allowed
@@ -158,8 +161,8 @@ it('refreshes base URL visibility from current form values', function () {
         'scope' => [],
     ])->json('form.nodes');
 
-    expect(collect($withoutBaseUrl)->pluck('control.path'))->not->toContain(['baseUrl'])
-        ->and(collect($withBaseUrl)->pluck('control.path'))->toContain(['baseUrl']);
+    expect(collect(flattenFormNodes($withoutBaseUrl))->pluck('control.path'))->not->toContain(['baseUrl'])
+        ->and(collect(flattenFormNodes($withBaseUrl))->pluck('control.path'))->toContain(['baseUrl']);
 });
 
 it('404s when a site does not exist', function () {
@@ -282,7 +285,7 @@ it('can reorder sites', function () {
     expect($defaultSite->fresh()->sortOrder)->toBe(2);
 });
 
-it('requires transferContentTo when contentDestination is transfer', function () {
+it('validates site deletion intent', function (array $input, string $field) {
     $this->sites->saveSite($newSite = new SiteData([
         'name' => 'New site',
         'handle' => 'newSite',
@@ -294,11 +297,21 @@ it('requires transferContentTo when contentDestination is transfer', function ()
 
     deleteJson(action([SitesController::class, 'destroy'], [$newSite->id]), [
         'id' => $newSite->id,
-        'contentDestination' => 'transfer',
-    ])->assertInvalid(['transferContentTo']);
-});
+        ...$input,
+    ])->assertInvalid([$field]);
 
-it('can delete a site', function () {
+    expect(Site::count())->toBe(2);
+})->with([
+    'missing destination' => [['contentDestination' => 'transfer'], 'transferContentTo'],
+    'null destination' => [['contentDestination' => 'transfer', 'transferContentTo' => null], 'transferContentTo'],
+    'nonexistent destination' => [['contentDestination' => 'transfer', 'transferContentTo' => 999999], 'transferContentTo'],
+    'noninteger destination' => [['contentDestination' => 'transfer', 'transferContentTo' => 'invalid'], 'transferContentTo'],
+    'array destination' => [['contentDestination' => 'transfer', 'transferContentTo' => [1]], 'transferContentTo'],
+    'missing mode' => [[], 'contentDestination'],
+    'invalid mode' => [['contentDestination' => 'invalid'], 'contentDestination'],
+]);
+
+it('can delete a site', function (string $mode, string $destination, bool $primary = false) {
     $this->sites->saveSite($newSite = new SiteData([
         'name' => 'New site',
         'handle' => 'newSite',
@@ -306,13 +319,43 @@ it('can delete a site', function () {
         'groupId' => SiteGroup::first()->id,
     ]));
 
-    expect(Site::count())->toBe(2);
+    [$siteToDelete, $targetSite] = $primary
+        ? [Site::firstOrFail(), $newSite]
+        : [$newSite, Site::firstOrFail()];
+    $section = Section::factory()->create();
+    $section->siteSettings()->update(['siteId' => $siteToDelete->id]);
+    $entry = Entry::factory()->forSection($section)->create();
+    $entry->element->siteSettings()->update(['siteId' => $siteToDelete->id]);
 
-    deleteJson(action([SitesController::class, 'destroy'], [$newSite->id]), [
-        'id' => $newSite->id,
-        'contentDestination' => 'transfer',
-        'transferContentTo' => Site::first()->id,
-    ])->assertRedirect(route('craft.cp.settings.sites.index'));
+    ProjectConfig::rebuild();
 
-    expect(Site::count())->toBe(1);
-});
+    $input = ['id' => $siteToDelete->id, 'contentDestination' => $mode];
+
+    if ($destination !== 'missing') {
+        $input['transferContentTo'] = $destination === 'valid' ? (string) $targetSite->id : ['invalid'];
+    }
+
+    $response = deleteJson(action([SitesController::class, 'destroy'], [$siteToDelete->id]), $input);
+
+    if ($primary) {
+        $response->assertServerError()->assertJsonPath('message', 'You cannot delete the primary site.');
+    } else {
+        $response->assertRedirect(route('craft.cp.settings.sites.index'));
+    }
+
+    $deletesContent = ! $primary && $mode === 'delete';
+    $expectedSiteId = ! $primary && $mode === 'transfer' ? $targetSite->id : $siteToDelete->id;
+
+    expect(Site::count())->toBe($primary ? 2 : 1);
+    expect($entry->element->fresh()->trashed())->toBe($deletesContent);
+    expect($section->fresh()->trashed())->toBe($deletesContent);
+    expect($section->siteSettings()->pluck('siteId')->all())->toBe([$expectedSiteId]);
+    expect($entry->element->siteSettings()->pluck('siteId')->all())->toBe([$expectedSiteId]);
+})->with([
+    'primary site delete' => ['delete', 'missing', true],
+    'primary site transfer' => ['transfer', 'valid', true],
+    'transfer' => ['transfer', 'valid'],
+    'delete without destination' => ['delete', 'missing'],
+    'delete with stale destination' => ['delete', 'valid'],
+    'delete with malformed destination' => ['delete', 'invalid'],
+]);

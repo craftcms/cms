@@ -314,6 +314,8 @@ class OAuth
             ->where('userId', $user->id)
             ->where('provider', $provider->handle)
             ->delete();
+
+        $user->setHasSsoIdentity(null);
     }
 
     /**
@@ -370,6 +372,8 @@ class OAuth
                 'dateUpdated' => $now,
             ]);
         });
+
+        $user->setHasSsoIdentity(null);
     }
 
     private function normalizeProvider(string $handle, mixed $config): ?ProviderDefinition
@@ -525,13 +529,28 @@ class OAuth
 
     private function resolveNamedDriver(ProviderDefinition $provider, bool $isCpRequest): SocialiteProvider
     {
-        Config::set("services.{$provider->driver}", $this->resolveNamedDriverConfig($provider, $isCpRequest));
+        $key = "services.{$provider->driver}";
+        $exists = Config::has($key);
+        $original = Config::get($key);
+        $config = $this->resolveNamedDriverConfig($provider, $isCpRequest);
+        $socialite = $this->socialite;
 
-        if ($this->socialite instanceof SocialiteManager) {
-            $this->socialite->forgetDrivers();
+        if ($socialite instanceof SocialiteManager) {
+            $socialite = clone $socialite;
+            $socialite->forgetDrivers();
         }
 
-        return $this->socialite->driver($provider->driver);
+        try {
+            Config::set($key, $config);
+
+            return $socialite->driver($provider->driver);
+        } finally {
+            if ($exists) {
+                Config::set($key, $original);
+            } else {
+                Config::set('services', Arr::except(Config::get('services', []), $provider->driver));
+            }
+        }
     }
 
     /**

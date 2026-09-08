@@ -70,3 +70,17 @@ it('can sort packages', function () {
 
     expect($packages)->toBe($expected);
 });
+
+it('leaves composer.json untouched when preparation fails', function () {
+    $path = tempnam(sys_get_temp_dir(), 'craft-composer-');
+    $original = "{\n\t\"require\": \"invalid\"\n}\n";
+    File::put($path, $original);
+    Aliases::set('@root/composer.json', $path);
+
+    try {
+        expect(fn () => $this->composer->install(['vendor/package' => '^1.0']))->toThrow(TypeError::class);
+        expect(File::get($path))->toBe($original);
+    } finally {
+        File::delete($path);
+    }
+});

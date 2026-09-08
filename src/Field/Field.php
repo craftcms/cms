@@ -353,12 +353,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return Query::TYPE_TEXT;
     }
 
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         $valueSql = static::valueSql($instances);
 
         if ($valueSql === null) {
-            return $query;
+            return;
         }
 
         $caseInsensitive = false;
@@ -368,9 +368,9 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             $value = $value['value'];
         }
 
-        return $query->whereParam(
+        $query->whereParam(
             column: $valueSql,
-            param: $value,
+            value: $value,
             caseInsensitive: $caseInsensitive,
             columnType: Query::TYPE_JSON,
         );

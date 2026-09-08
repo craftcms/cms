@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
@@ -13,7 +15,7 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
-class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
+class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 

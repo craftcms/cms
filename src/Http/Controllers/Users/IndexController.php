@@ -21,9 +21,11 @@ readonly class IndexController
 
         Edition::require(Edition::Team);
 
-        return Inertia::render('users/Index', new UserIndexViewModel(
-            $request,
-            slug: $slug,
-        ));
+        return Inertia::render('users/Index', [
+            new UserIndexViewModel(
+                $request,
+                slug: $slug,
+            ),
+        ]);
     }
 }

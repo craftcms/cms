@@ -77,10 +77,6 @@ readonly class CraftSupportController
                 'name' => 'name',
                 'contents' => $request->craftUser()?->asElement()->fullName,
             ],
-            [
-                'name' => 'message',
-                'contents' => $data['message'],
-            ],
         ];
 
         // If there's a custom attachment, see if we should include it in the zip
@@ -115,6 +111,11 @@ readonly class CraftSupportController
                 'filename' => $this->attachmentFilename($attachment),
             ];
         }
+
+        $parts[] = [
+            'name' => 'message',
+            'contents' => $data['message'],
+        ];
 
         try {
             $this->api->request('POST', 'support', [

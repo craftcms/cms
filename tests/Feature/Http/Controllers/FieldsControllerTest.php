@@ -101,7 +101,12 @@ it('can create a new field', function () {
             ->where('form.values.translationKeyFormat', '')
             ->has('supportedTranslationMethods')
             ->where('form.refreshable', true)
-            ->has('form.nodes')
+            ->where('form.nodes', function (Collection $nodes): bool {
+                $settings = $nodes->firstWhere('uid', 'field-settings');
+
+                return data_get($settings, 'props.dependsOn') === ['type']
+                        && collect(data_get($settings, 'children'))->isNotEmpty();
+            })
             ->where('submit.method', 'post')
             ->where('refreshUrl', action([FieldsController::class, 'renderForm'])));
 });

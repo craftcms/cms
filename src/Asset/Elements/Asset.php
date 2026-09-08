@@ -2077,13 +2077,7 @@ JS, [
             return null;
         }
 
-        $forCard = $size % 128 === 0;
-
-        if (! $forCard && $this->getWidth() && $this->getHeight()) {
-            [$width, $height] = AssetsHelper::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $size, $size);
-        } else {
-            $width = $height = $size;
-        }
+        [$width, $height] = AssetsService::getThumbDimensions($this, $size);
 
         return AssetsService::getThumbUrl($this, $width, $height, false);
     }

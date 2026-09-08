@@ -239,6 +239,18 @@ test('logout honors a configured post-logout redirect', function () {
         ->assertRedirect('https://localhost/goodbye');
 });
 
+test('logout clears itself as the post-login return URL', function (Closure $url) {
+    session(['url.intended' => $url()]);
+
+    get($url())
+        ->assertRedirect();
+
+    expect(session('url.intended'))->toBeNull();
+})->with([
+    'control panel' => fn (): string => cp_url(CpAuthPath::Logout->value),
+    'site' => fn (): string => '/'.Cms::config()->getLogoutPath(),
+]);
+
 test('showLoginModal requires email parameter', function () {
     postJson(action([LoginController::class, 'showLoginModal']), [])
         ->assertJsonValidationErrors(['email']);

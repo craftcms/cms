@@ -414,7 +414,7 @@ class AuthMethods
         }
     }
 
-    public function getAuthError(CraftUser $user): ?AuthError
+    public function getAuthError(CraftUser $user, ?bool $isCpRequest = null): ?AuthError
     {
         $user = $user->asElement();
 
@@ -442,7 +442,7 @@ class AuthMethods
                     return AuthError::PasswordResetRequired;
                 }
 
-                if (request()->isCpRequest()) {
+                if ($isCpRequest ?? request()->isCpRequest()) {
                     if (! $user->can('accessCp')) {
                         return AuthError::NoCpAccess;
                     }

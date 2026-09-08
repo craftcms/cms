@@ -90,6 +90,7 @@
     "laravel/socialite": "^5.23",
     "orchestra/testbench": "^11.0",
     "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-agent": "^5.0",
     "pestphp/pest-plugin-arch": "^5.0",
     "pestphp/pest-plugin-laravel": "^5.0",
     "phpstan/phpstan": "^2.1",
@@ -185,6 +186,7 @@
         "CraftCms\\Cms\\Providers\\CraftServiceProvider"
       ],
       "aliases": {
+        "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",

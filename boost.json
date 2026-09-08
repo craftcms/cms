@@ -8,6 +8,9 @@
     "guidelines": true,
     "mcp": true,
     "nightwatch": false,
+    "packages": [
+        "pestphp/pest-plugin-agent"
+    ],
     "sail": false,
     "skills": [
         "infer-conventions",
@@ -15,6 +18,7 @@
         "wayfinder-development",
         "socialite-development",
         "inertia-vue-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "pest-plugin-agent"
     ]
 }

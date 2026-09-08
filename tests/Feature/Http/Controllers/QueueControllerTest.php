@@ -6,9 +6,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Foundation\Application;
+use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
@@ -199,19 +201,30 @@ it('cancels all jobs', function () {
     post(action([QueueController::class, 'cancelAll']))
         ->assertRedirectBack();
 
+    app(JobProgress::class)->processing('job-1');
+    app(JobProgress::class)->completed('job-2');
+
     expect(app(JobProgress::class)->getTotalJobs())->toBe(0);
 });
 
-it('retries a job and returns the queue runner response', function () {
+it('explicitly reactivates retried jobs with the same UID', function (string $method) {
     Cms::config()->runQueueAutomatically(false);
+    $queue = app(QueueManager::class)->connection('database');
+    $queue->push(new FindAndReplace('missing', 'replacement'), queue: Cms::config()->queueName);
+    $job = $queue->pop(Cms::config()->queueName);
+    $uid = $job->uuid();
+    $failedId = app('queue.failer')->log('database', Cms::config()->queueName, $job->getRawBody(), new RuntimeException('Failed'));
+    $job->delete();
+    app(JobProgress::class)->cancel($uid);
 
-    Artisan::shouldReceive('call')->once()->with('queue:retry', [
-        'id' => 'job-1',
-    ])->andReturn(0);
-
-    post(action([QueueController::class, 'retry'], ['job-1']))
+    post(action([QueueController::class, $method], $method === 'retry' ? [$failedId] : []))
         ->assertRedirectBack();
-});
+
+    expect(app(JobProgress::class)->getProgress($uid)?->status)->toBe(JobStatus::Pending);
+
+    Artisan::call('queue:work', ['connection' => 'database', '--queue' => Cms::config()->queueName, '--once' => true]);
+    expect(app(JobProgress::class)->getProgress($uid)?->status)->toBe(JobStatus::Done);
+})->with(['retry', 'retryAll']);
 
 it('retries all jobs and returns the queue runner response', function () {
     Cms::config()->runQueueAutomatically(false);

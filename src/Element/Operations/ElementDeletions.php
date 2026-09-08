@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\ElementActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementDeleted as ElementDeletedActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementRestored as ElementRestoredActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementSiteRemoved;
+use CraftCms\Cms\Activity\EventTypes\ElementTrashed;
+use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -26,6 +33,7 @@ use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -61,7 +69,10 @@ readonly class ElementDeletions
 
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        return DB::transaction(function () use ($mergedElement, $prevailingElement) {
+        $mergedSubject = ActivitySubject::fromElement($mergedElement);
+        $prevailingSubject = ActivitySubject::fromElement($prevailingElement);
+
+        return DB::transaction(function () use ($mergedElement, $prevailingElement, $mergedSubject, $prevailingSubject) {
             $data = DB::table(Table::RELATIONS, 'r')
                 ->select(['r.sourceId', 'r.sourceSiteId', 'e.type'])
                 ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'r.sourceId')
@@ -182,7 +193,13 @@ readonly class ElementDeletions
 
             event(new ElementsMerged($mergedElement->id, $prevailingElement->id));
 
-            return $this->deleteElement($mergedElement);
+            if (! $this->deleteElement($mergedElement, recordActivity: false)) {
+                return false;
+            }
+
+            StructuralElementActivity::recordMerged($mergedSubject, $prevailingSubject);
+
+            return true;
         });
     }
 
@@ -220,8 +237,11 @@ readonly class ElementDeletions
         return $this->deleteElement($element, $hardDelete);
     }
 
-    public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
-    {
+    public function deleteElement(
+        ElementInterface $element,
+        bool $hardDelete = false,
+        bool $recordActivity = true,
+    ): bool {
         event($event = new ElementDeleting($element, $hardDelete));
 
         $element->hardDelete = $hardDelete || $event->hardDelete;
@@ -234,9 +254,32 @@ readonly class ElementDeletions
             return false;
         }
 
-        BulkOps::ensure(function () use ($element) {
+        $recordActivity = $recordActivity &&
+            $this->shouldRecordLifecycleActivity($element);
+
+        return BulkOps::ensure(function () use ($element, $recordActivity) {
             DB::beginTransaction();
+            DateTimeHelper::pause();
+
             try {
+                $elementRecord = DB::table(Table::ELEMENTS)
+                    ->select('dateDeleted')
+                    ->where('id', $element->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($elementRecord === null) {
+                    DB::rollBack();
+
+                    return false;
+                }
+
+                if (! $element->hardDelete && $elementRecord->dateDeleted !== null) {
+                    DB::commit();
+
+                    return true;
+                }
+
                 while (($record = StructureElementModel::where('elementId', $element->id)->first()) !== null) {
                     while (($child = $record->children(1)->first()) !== null) {
                         /** @var StructureElementModel $child */
@@ -247,8 +290,6 @@ readonly class ElementDeletions
                 }
 
                 $this->elementCaches->invalidateForElement($element);
-
-                DateTimeHelper::pause();
 
                 if ($element->hardDelete) {
                     DB::table(Table::ELEMENTS)->delete($element->id);
@@ -270,6 +311,20 @@ readonly class ElementDeletions
                 $element->dateDeleted = now();
                 $element->afterDelete();
 
+                if ($recordActivity) {
+                    $event = $element->hardDelete
+                        ? new ElementDeletedActivity(
+                            subject: $element,
+                            site: Sites::getSiteById($element->siteId),
+                        )
+                        : new ElementTrashed(
+                            subject: $element,
+                            site: Sites::getSiteById($element->siteId),
+                        );
+
+                    Activities::record($event);
+                }
+
                 if (! $element->hardDelete) {
                     BulkOps::trackElement($element);
                 }
@@ -282,11 +337,11 @@ readonly class ElementDeletions
             } finally {
                 DateTimeHelper::resume();
             }
+
+            event(new ElementDeleted($element));
+
+            return true;
         });
-
-        event(new ElementDeleted($element));
-
-        return true;
     }
 
     public function deleteElementForSite(ElementInterface $element): void
@@ -312,64 +367,89 @@ readonly class ElementDeletions
             }
         }
 
-        $multiSiteElementIds = $firstElement::find()
-            ->id(Arr::pluck($elements, 'id'))
-            ->status(null)
-            ->drafts(null)
-            ->siteId(['not', $firstElement->siteId])
-            ->unique()
-            ->pluck('elements.id')
-            ->all();
-
-        $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
-        $multiSiteElements = [];
-        $singleSiteElements = [];
-
-        foreach ($elements as $element) {
-            if (isset($multiSiteElementIdsIdx[$element->id])) {
-                $multiSiteElements[] = $element;
-            } else {
-                $singleSiteElements[] = $element;
-            }
-        }
-
-        if (! empty($multiSiteElements)) {
-            foreach ($multiSiteElements as $element) {
-                event(new ElementDeletingForSite($element));
-            }
-
-            foreach ($multiSiteElements as $element) {
-                $element->beforeDeleteForSite();
-            }
-
-            DB::table(Table::ELEMENTS_SITES)
-                ->whereIn('elementId', $multiSiteElementIds)
+        DB::transaction(function () use ($elements, $firstElement) {
+            $siteElementIds = DB::table(Table::ELEMENTS_SITES)
+                ->whereIn('elementId', Arr::pluck($elements, 'id'))
                 ->where('siteId', $firstElement->siteId)
-                ->delete();
+                ->lockForUpdate()
+                ->pluck('elementId')
+                ->flip();
 
-            $this->elementWrites->resaveElements(
-                query: $firstElement::find()
-                    ->id($multiSiteElementIds)
-                    ->status(null)
-                    ->drafts(null)
-                    ->site('*')
-                    ->unique(),
-                continueOnError: true,
-                updateSearchIndex: false,
+            $elements = array_filter(
+                $elements,
+                fn (ElementInterface $element) => $siteElementIds->has($element->id),
             );
 
-            foreach ($multiSiteElements as $element) {
-                $element->afterDeleteForSite();
+            if ($elements === []) {
+                return;
             }
 
-            foreach ($multiSiteElements as $element) {
-                event(new ElementDeletedForSite($element));
-            }
-        }
+            $multiSiteElementIds = $firstElement::find()
+                ->id(Arr::pluck($elements, 'id'))
+                ->status(null)
+                ->drafts(null)
+                ->siteId(['not', $firstElement->siteId])
+                ->unique()
+                ->pluck('elements.id')
+                ->all();
 
-        foreach ($singleSiteElements as $element) {
-            $this->deleteElement($element, true);
-        }
+            $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
+            $multiSiteElements = [];
+            $singleSiteElements = [];
+
+            foreach ($elements as $element) {
+                if (isset($multiSiteElementIdsIdx[$element->id])) {
+                    $multiSiteElements[] = $element;
+                } else {
+                    $singleSiteElements[] = $element;
+                }
+            }
+
+            if (! empty($multiSiteElements)) {
+                foreach ($multiSiteElements as $element) {
+                    event(new ElementDeletingForSite($element));
+                }
+
+                foreach ($multiSiteElements as $element) {
+                    $element->beforeDeleteForSite();
+                }
+
+                DB::table(Table::ELEMENTS_SITES)
+                    ->whereIn('elementId', $multiSiteElementIds)
+                    ->where('siteId', $firstElement->siteId)
+                    ->delete();
+
+                $this->elementWrites->resaveElements(
+                    query: $firstElement::find()
+                        ->id($multiSiteElementIds)
+                        ->status(null)
+                        ->drafts(null)
+                        ->site('*')
+                        ->unique(),
+                    continueOnError: true,
+                    updateSearchIndex: false,
+                );
+
+                foreach ($multiSiteElements as $element) {
+                    $element->afterDeleteForSite();
+
+                    if ($this->shouldRecordLifecycleActivity($element)) {
+                        Activities::record(new ElementSiteRemoved(
+                            subject: $element,
+                            site: Sites::getSiteById($element->siteId),
+                        ));
+                    }
+                }
+
+                foreach ($multiSiteElements as $element) {
+                    event(new ElementDeletedForSite($element));
+                }
+            }
+
+            foreach ($singleSiteElements as $element) {
+                $this->deleteElement($element, true);
+            }
+        });
     }
 
     public function restoreElement(ElementInterface $element): bool
@@ -393,6 +473,23 @@ readonly class ElementDeletions
         DB::beginTransaction();
 
         try {
+            $recordActivity = [];
+            $elementStates = DB::table(Table::ELEMENTS)
+                ->whereIn('id', Arr::pluck($elements, 'id'))
+                ->lockForUpdate()
+                ->pluck('dateDeleted', 'id');
+
+            foreach ($elements as $element) {
+                if (! $elementStates->has($element->id) && $element->uid !== null) {
+                    DB::rollBack();
+
+                    return false;
+                }
+
+                $recordActivity[spl_object_id($element)] = $this->shouldRecordLifecycleActivity($element) &&
+                    $elementStates->get($element->id) !== null;
+            }
+
             /** @var Element $element */
             foreach ($elements as $element) {
                 $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
@@ -463,6 +560,13 @@ readonly class ElementDeletions
                 $element->dateDeleted = null;
                 $element->deletedWithOwner = null;
 
+                if ($recordActivity[spl_object_id($element)]) {
+                    Activities::record(new ElementRestoredActivity(
+                        subject: $element,
+                        site: Sites::getSiteById($element->siteId),
+                    ));
+                }
+
                 event(new ElementRestored($element));
             }
 
@@ -474,6 +578,12 @@ readonly class ElementDeletions
         }
 
         return true;
+    }
+
+    private function shouldRecordLifecycleActivity(ElementInterface $element): bool
+    {
+        return $element->uid !== null &&
+            ElementActivity::shouldRecord($element);
     }
 
     private function setDraftAndRevisionDeletionState(int $canonicalId, bool $delete = true): void

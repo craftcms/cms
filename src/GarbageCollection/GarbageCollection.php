@@ -30,6 +30,7 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteStructures;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
+use CraftCms\Cms\GarbageCollection\Actions\PurgeExpiredActivity;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
@@ -93,6 +94,7 @@ class GarbageCollection
             PurgeUnsavedDrafts::class,
             PurgePendingUsers::class,
             DeleteStaleElementActivity::class,
+            PurgeExpiredActivity::class,
             DeleteStaleBulkOpData::class,
             DeleteStaleNotifications::class,
 

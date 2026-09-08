@@ -167,6 +167,13 @@ describe('matchElement', function () {
         $rule = createRule($this->condition, 'between', '', (string) ($highElement->id - 1));
 
         expect($rule->matchElement($highElement))->toBeFalse();
+
+        $rule = createRule($this->condition, 'between', '', '0');
+        $query = Entry::find();
+        $rule->modifyQuery($query, $query);
+
+        expect($rule->matchElement($element))->toBeFalse()
+            ->and($query->count())->toBe(0);
     });
 
     test('between operator with neither bound set matches everything', function () {
@@ -192,7 +199,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, '=', (string) $entry->id);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -205,7 +212,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, '!=', (string) $entry->id);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -218,7 +225,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, '>', (string) $entry->id);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -231,7 +238,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, '<=', (string) $entry->id);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -245,7 +252,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, 'between', $min, $max);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -257,7 +264,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, 'between', $min);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -270,7 +277,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, 'between', '', $max);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
@@ -281,7 +288,7 @@ describe('modifyQuery', function () {
         $rule = createRule($this->condition, 'between');
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $rule->modifyQuery($query, $query);
 
         $results = $query->all();
 
