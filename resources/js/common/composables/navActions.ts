@@ -13,6 +13,10 @@ type NavItem = CraftCms.Cms.Cp.Data.NavItem;
  * breadcrumb, and the secondary nav's own menu once it collapses — and those
  * should be the same menu, not two that drifted. Mapping once here is what
  * keeps the checkmark on the current item and the icons in both.
+ *
+ * The whole tree comes across, children and all. A menu draws a flat list and
+ * ignores the children; a nav draws them. What neither has to do is go back to
+ * a second, differently-shaped description of the same nav to find them.
  */
 export function navItemActions(
   items: Array<NavItem>
@@ -34,11 +38,13 @@ export function navItemActions(
 export function navItemAction(
   item: NavItem
 ): ActionItemLink | ActionItemButton {
+  const children = Array.isArray(item.subnav) ? item.subnav : [];
   const shared = {
     label: item.label ?? '',
     selected: item.selected,
     ...(item.icon ? {icon: item.icon} : {}),
     ...(item.badgeCount > 0 ? {indicator: true} : {}),
+    ...(children.length > 0 ? {subnav: navItemActions(children)} : {}),
   };
 
   // Not everything in a nav is a destination — a heading isn't, and neither is

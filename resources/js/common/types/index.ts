@@ -122,6 +122,14 @@ export interface ActionItemButton {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /**
+   * Items that hang off this one — the nav's own children.
+   *
+   * A menu draws a flat list and ignores this; a nav draws it beside or below
+   * the item. It lives on the descriptor either way so the two are describing
+   * the same thing rather than each having a shape the other can't read.
+   */
+  subnav?: ActionItems;
 }
 
 export interface ActionItemLink {
@@ -156,15 +164,25 @@ export interface ActionItemLink {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /**
+   * Items that hang off this one — the nav's own children.
+   *
+   * A menu draws a flat list and ignores this; a nav draws it beside or below
+   * the item. It lives on the descriptor either way so the two are describing
+   * the same thing rather than each having a shape the other can't read.
+   */
+  subnav?: ActionItems;
 }
 
 /**
  * A heading over a run of items — the shape a source list's headings and the
  * navigation's groups both take.
  *
- * One level deep. The heading labels its items visually but is never itself a
- * choice, and the items stay siblings of any ungrouped ones so a menu's roving
- * focus and search filter keep treating them alike.
+ * One level deep, as a heading: its members may have children of their own,
+ * but a heading never sits inside another heading. The heading labels its
+ * items visually but is never itself a choice, and the items stay siblings of
+ * any ungrouped ones so a menu's roving focus and search filter keep treating
+ * them alike.
  */
 export interface ActionItemGroup {
   type: 'group';
