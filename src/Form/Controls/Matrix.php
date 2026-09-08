@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormHtmlRenderer;
@@ -16,8 +17,32 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * The repeater Control behind nested element fields (Matrix, Addresses).
+ *
+ * Its value is a delta envelope keyed by nested element identity:
+ *
+ * ```
+ * [
+ *     'entries' => ['<uuid>' => ['type' => '<entry type handle>', ...]],
+ *     'sortOrder' => ['<uuid>', ...],
+ * ]
+ * ```
+ *
+ * Identities are bare UUIDs here and in the {@see NestedFormPayload} scopes the browser
+ * matches blocks against. On the wire they may carry a `uid:` prefix — the browser puts
+ * it on blocks it minted itself, and `_components/fieldtypes/Matrix/block.twig` puts it
+ * on `entries` keys but not `sortOrder` values. Fields normalize both halves through
+ * {@see ElementHelper::nestedElementDelta()} on the way in.
+ *
+ * @phpstan-type MatrixControlValue array{
+ *     entries: array<string, array<string, mixed>>,
+ *     sortOrder: list<string>,
+ * }
+ */
 class Matrix extends Control
 {
+    /** @var MatrixControlValue */
     #[\Override]
     protected mixed $value = ['entries' => [], 'sortOrder' => []];
 
@@ -239,7 +264,7 @@ class Matrix extends Control
         return $forms;
     }
 
-    /** @return array{entries: array<string, array<string, mixed>>, sortOrder: list<string>} */
+    /** @return MatrixControlValue */
     private function validatedValue(mixed $value): array
     {
         if (! is_array($value) || ! is_array(Arr::get($value, 'entries')) || ! is_array(Arr::get($value, 'sortOrder'))) {

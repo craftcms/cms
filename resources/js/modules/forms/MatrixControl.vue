@@ -6,12 +6,13 @@
   import {computed, ref, toRaw, useId} from 'vue';
   import '@/modules/matrix';
   import FormNodeList from './FormNodeList.vue';
-  import type {
-    FormChange,
-    FormControlPayload,
-    FormPayload,
-    FormValues,
-    NestedFormPayload,
+  import {
+    NESTED_ELEMENT_UID_PREFIX,
+    type FormChange,
+    type FormControlPayload,
+    type FormPayload,
+    type NestedElementValue,
+    type NestedFormPayload,
   } from './types';
   import {inputName} from './runtime';
 
@@ -22,16 +23,7 @@
     minEntries?: number | null;
     maxEntries?: number | null;
   };
-  interface MatrixEntryValues extends FormValues {
-    type?: string;
-  }
-  interface MatrixEntries {
-    [key: string]: MatrixEntryValues;
-  }
-  type MatrixValue = {
-    entries: MatrixEntries;
-    sortOrder: string[];
-  };
+  type MatrixValue = NestedElementValue;
 
   const props = defineProps<{
     control: FormControlPayload<MatrixProps>;
@@ -56,7 +48,7 @@
       // bare UUID while the block is still keyed with the prefix.
       const uid = form.scope.at(-1)!;
       map.set(uid, form);
-      map.set(`uid:${uid}`, form);
+      map.set(`${NESTED_ELEMENT_UID_PREFIX}${uid}`, form);
     }
 
     return map;

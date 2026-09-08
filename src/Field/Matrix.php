@@ -1600,21 +1600,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         /** @var EntryType[] $entryTypes */
         $entryTypes = Arr::keyBy($this->_entryTypes, 'handle');
 
-        // Were the entries posted by UUID or ID?
-        $uids = (
-            (isset($value['entries']) && str_starts_with((string) array_key_first($value['entries']), 'uid:')) ||
-            (isset($value['sortOrder']) && Str::isUuid(reset($value['sortOrder'])))
-        );
-
-        if ($uids) {
-            // strip out the `uid:` key prefixes
-            if (isset($value['entries'])) {
-                $value['entries'] = array_combine(
-                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($value['entries'])),
-                    array_values($value['entries']),
-                );
-            }
-        }
+        // Were the entries posted by UUID or ID, and with which `uid:` prefixes?
+        ['delta' => $delta, 'uids' => $uids, 'entries' => $postedEntries, 'sortOrder' => $postedSortOrder] =
+            ElementHelper::nestedElementDelta($value);
 
         // Get the old entries
         if ($element->id) {
@@ -1666,16 +1654,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseEntryFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
-        // Was the value posted in the new (delta) format?
-        if (isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder'])) {
-            $newEntryData = $value['entries'] ?? $value['blocks'] ?? [];
-            $newSortOrder = $value['sortOrder'] ?? array_keys($oldEntriesById);
-            if ($baseEntryFieldNamespace) {
-                $baseEntryFieldNamespace .= '.entries';
-            }
-        } else {
-            $newEntryData = $value;
-            $newSortOrder = array_keys($value);
+        $newEntryData = $postedEntries;
+        $newSortOrder = $postedSortOrder ?? array_keys($delta ? $oldEntriesById : $postedEntries);
+
+        if ($delta && $baseEntryFieldNamespace) {
+            $baseEntryFieldNamespace .= '.entries';
         }
 
         foreach ($newSortOrder as $entryId) {

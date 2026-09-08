@@ -2,6 +2,7 @@ import {MatrixInput, type MatrixEntryType} from './matrix-input';
 import {MatrixEntry} from './matrix-entry';
 import {ControllerElement} from '@/common/web-components';
 import {t} from '@craftcms/ui';
+import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/forms/types';
 
 /**
  * `<craft-matrix-input>` — boots a {@link MatrixInput} around the
@@ -125,7 +126,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     type: string,
     entryTypes: MatrixEntryType[]
   ): HTMLElement {
-    const uid = `uid:${crypto.randomUUID()}`;
+    const uid = `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`;
     const name = this.getAttribute('input-name-prefix')!;
     const label =
       entryTypes.find((entryType) => entryType.handle === type)?.name ?? type;
