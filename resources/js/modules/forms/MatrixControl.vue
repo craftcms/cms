@@ -7,8 +7,17 @@
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import '@craftcms/ui/components/spinner/spinner';
-  import {t} from '@craftcms/ui';
-  import {computed, onBeforeUnmount, onMounted, ref, toRaw, useId} from 'vue';
+  import {actionClient, t} from '@craftcms/ui';
+  import {
+    computed,
+    onBeforeUnmount,
+    nextTick,
+    onMounted,
+    ref,
+    toRaw,
+    useId,
+    watch,
+  } from 'vue';
   import '@/modules/matrix';
   import {
     collapsedBlockId,
@@ -20,15 +29,18 @@
   import {useSelectable} from '@/common/composables/useSelectable';
   import FormNodeList from './FormNodeList.vue';
   import type {ActionItems} from '@/common/types';
+  import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import {
     NESTED_ELEMENT_UID_PREFIX,
     type FormChange,
     type FormControlPayload,
     type FormPayload,
+    type FormValue,
+    type FormValues,
     type NestedElementValue,
     type NestedFormPayload,
   } from './types';
-  import {inputName} from './runtime';
+  import {inputName, isRecord, valueAt} from './runtime';
 
   type EntryType = {value: string; label: string};
   type MatrixProps = {
@@ -38,6 +50,23 @@
     maxEntries?: number | null;
     /** Per-block presentation, keyed by identity. Server-built; never posted. */
     blocks?: Record<string, {actions?: ActionItems}>;
+    /**
+     * What `matrix/create-entry` needs to mint a block, or absent when the server
+     * can't — an unsaved owner, or a nested element field that isn't Matrix-backed.
+     */
+    create?: {
+      fieldId: number;
+      ownerId: number;
+      ownerElementType: string;
+      siteId: number;
+      entryTypeIds: Record<string, number>;
+    } | null;
+  };
+  type CreatedBlock = {
+    uid: string;
+    type: string;
+    form: NestedFormPayload;
+    values: FormValues;
   };
   /** The instance-local half of a block's menu. See `Matrix::blockActions()`. */
   type BlockActionDetail = {
@@ -69,8 +98,20 @@
   const model = computed<MatrixValue>(() => props.value ?? EMPTY);
   const matrixHost = ref<HTMLElement>();
   const matrixId = useId();
+  /**
+   * Forms for blocks the server minted since the last full payload. They're
+   * dropped as soon as that payload catches up and carries them itself.
+   */
+  const created = ref(new Map<string, NestedFormPayload>());
+  const {flash} = useFlashMessages();
+  const adding = ref<string | null>(null);
+
   const forms = computed(() => {
     const map = new Map<string, NestedFormPayload>();
+
+    for (const [uid, form] of created.value) {
+      map.set(uid, form);
+    }
 
     for (const form of props.control.forms ?? []) {
       // Entries added client-side are keyed with a `uid:` prefix, which the
@@ -168,6 +209,24 @@
    * Blocks the server says are collapsed (a new block whose posted `collapsed`
    * came back) are adopted into storage once, so the two agree from then on.
    */
+  watch(
+    () => props.control.forms,
+    (serverForms) => {
+      if (!created.value.size || !serverForms?.length) {
+        return;
+      }
+
+      const known = new Set(serverForms.map((form) => form.scope.at(-1)));
+      const next = new Map(
+        [...created.value].filter(([uid]) => !known.has(uid))
+      );
+
+      if (next.size !== created.value.size) {
+        created.value = next;
+      }
+    }
+  );
+
   onMounted(() => {
     for (const uid of model.value.sortOrder) {
       if (model.value.entries[uid]?.collapsed && !isBlockCollapsed(uid)) {
@@ -193,6 +252,97 @@
     ids: () => model.value.sortOrder,
     enabled: () => props.editable,
   });
+
+  /**
+   * Adds a block, letting the server mint it the way Craft 5 did: the button
+   * shows a loading state while `matrix/create-entry` persists the entry as a
+   * draft and hands back its form nodes, which render through FormNodeList like
+   * any other form. The identity is the server's, so nothing has to be
+   * reconciled when the next save comes around.
+   *
+   * Without a `create` config (an unsaved owner, or an Addresses field on this
+   * same Control) the browser mints the block and the next save materializes it.
+   */
+  async function addBlock(
+    entryType: string,
+    beforeUid?: string
+  ): Promise<void> {
+    if (!canAdd.value || adding.value !== null) {
+      return;
+    }
+
+    const create = props.control.props.create;
+    const at = beforeUid
+      ? model.value.sortOrder.indexOf(beforeUid)
+      : model.value.sortOrder.length;
+    const index = at < 0 ? model.value.sortOrder.length : at;
+
+    if (!create) {
+      await insertBlock(
+        `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`,
+        entryType,
+        index
+      );
+
+      return;
+    }
+
+    adding.value = entryType;
+
+    try {
+      const {data} = await actionClient.post<CreatedBlock>(
+        'matrix/create-entry',
+        {
+          fieldId: create.fieldId,
+          entryTypeId: create.entryTypeIds[entryType],
+          ownerId: create.ownerId,
+          ownerElementType: create.ownerElementType,
+          siteId: create.siteId,
+          path: props.control.path,
+        }
+      );
+
+      created.value = new Map(created.value).set(data.uid, data.form);
+
+      // The block's own field values ride along in the same emit. Writing them
+      // straight into `values` wouldn't survive: the Control's value is written
+      // back wholesale at its own path, which would drop anything under the
+      // block that wasn't part of it.
+      const blockValues = valueAt(data.values as FormValue, data.form.scope);
+      await insertBlock(
+        data.uid,
+        data.type,
+        index,
+        isRecord(blockValues) ? blockValues : {}
+      );
+    } catch (error) {
+      flash('error', t('Couldn’t create {type}.', {type: t('entry')}));
+      throw error;
+    } finally {
+      adding.value = null;
+    }
+  }
+
+  /**
+   * Deferred a tick on purpose. Changing sortOrder re-keys `craft-matrix-input`,
+   * which tears the whole subtree down and rebuilds it — and the button that was
+   * clicked lives in there. Doing that while its click is still dispatching
+   * leaves Vue patching against DOM a Lion overlay inside a block has already
+   * moved, which throws `insertBefore` on null and takes the form down with it.
+   */
+  async function insertBlock(
+    uid: string,
+    entryType: string,
+    index: number,
+    values: FormValues = {}
+  ): Promise<void> {
+    await nextTick();
+
+    const next = structuredClone(toRaw(model.value));
+    next.entries[uid] = {...values, type: entryType, enabled: true};
+    next.sortOrder.splice(index, 0, uid);
+    emit('update:value', next, 'discrete');
+  }
 
   /** Moves the block at `from` to `to`, keeping `entries` untouched. */
   function move(from: number, to: number): void {
@@ -388,14 +538,10 @@
         break;
       }
 
-      case 'add': {
-        // Insert above this block, so the new one lands where the menu was opened.
-        const at = next.sortOrder.indexOf(detail.uid);
-        const uid = `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`;
-        next.entries[uid] = {type: detail.entryType ?? '', enabled: true};
-        next.sortOrder.splice(at < 0 ? next.sortOrder.length : at, 0, uid);
-        break;
-      }
+      case 'add':
+        void addBlock(detail.entryType ?? '', detail.uid);
+
+        return;
 
       default:
         return;
@@ -530,7 +676,11 @@
           :key="type.value"
           type="button"
           class="btn add icon dashed wrap"
+          :class="{loading: adding === type.value}"
+          :disabled="adding !== null"
+          :aria-busy="adding === type.value"
           :data-form-matrix-add="type.value"
+          @click.stop.prevent="addBlock(type.value)"
         >
           {{
             control.props.entryTypes?.length === 1

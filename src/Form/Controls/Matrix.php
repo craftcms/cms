@@ -56,6 +56,9 @@ class Matrix extends Control
     /** @var array<string, array{actions: list<array<string, mixed>>}> */
     private array $blocks = [];
 
+    /** @var array<string, mixed>|null */
+    private ?array $create = null;
+
     private ?string $addLabel = null;
 
     private ?int $minEntries = null;
@@ -224,6 +227,21 @@ class Matrix extends Control
         return $this;
     }
 
+    /**
+     * What the browser needs to have the server mint a new block, or null when it
+     * can't — an unsaved owner, or a nested element field that isn't Matrix-backed
+     * (Addresses uses this Control too). Without it the browser mints the block
+     * itself and the next save materializes it.
+     *
+     * @param  array<string, mixed>|null  $create
+     */
+    public function create(?array $create): static
+    {
+        $this->create = $create;
+
+        return $this;
+    }
+
     public function addLabel(string $addLabel): static
     {
         $this->addLabel = $addLabel;
@@ -275,6 +293,7 @@ class Matrix extends Control
             'minEntries' => $this->minEntries,
             'maxEntries' => $this->maxEntries,
             'blocks' => $this->blocks,
+            'create' => $this->create,
         ];
     }
 

@@ -16,6 +16,9 @@ use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\NestedFormPayload;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -68,7 +71,14 @@ readonly class MatrixController
             'ownerId' => ['required'],
             'ownerElementType' => ['required', 'string', new ElementTypeRule],
             'siteId' => ['required'],
-            'namespace' => ['required'],
+            // The legacy stack asks for rendered block HTML and passes the input
+            // namespace it wants that HTML written under. Form controls pass the
+            // control's `path` instead and get form nodes back. See the response
+            // at the bottom of this method; the HTML half goes when the Twig
+            // block renderer does.
+            'namespace' => ['required_without:path'],
+            'path' => ['required_without:namespace', 'array'],
+            'path.*' => ['string'],
             'staticEntries' => ['nullable', 'boolean'],
             'duplicate' => ['nullable'],
         ]);
@@ -88,6 +98,15 @@ readonly class MatrixController
         $entryType = $this->entryTypes->getEntryTypeById($validated['entryTypeId']);
 
         abort_if(is_null($entryType), 400, "Invalid entry type ID: $validated[entryTypeId]");
+
+        // Any entry type would save, and then the field couldn't render what it
+        // got back — `Form\Controls\Matrix` rejects a block whose type it doesn't
+        // offer, which takes the whole edit screen down with it.
+        abort_if(
+            ! in_array($entryType->id, array_column($field->getEntryTypes(), 'id'), true),
+            400,
+            "Entry type $validated[entryTypeId] is not available to Matrix field $validated[fieldId].",
+        );
 
         $site = $this->sites->getSiteById($validated['siteId'], true);
 
@@ -160,6 +179,10 @@ readonly class MatrixController
         /** @var Entry[] $entries */
         $entries = $value->all();
 
+        if (isset($validated['path'])) {
+            return new JsonResponse($this->blockFormResponse($entry, $validated['path']));
+        }
+
         $html = InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
             'name' => $field->handle,
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
@@ -174,6 +197,35 @@ readonly class MatrixController
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
+    }
+
+    /**
+     * The new block as form nodes, in the same shape the Matrix Control ships its
+     * blocks in — so the browser renders it with FormNodeList like anything else,
+     * rather than splicing in server-rendered HTML.
+     *
+     * @param  list<string>  $path  The Matrix Control's path, e.g. `['fields', 'pageBuilder']`
+     * @return array{uid: string, type: string, form: array<string, mixed>, values: array<string, mixed>}
+     */
+    private function blockFormResponse(Entry $entry, array $path): array
+    {
+        $scope = [...$path, 'entries', $entry->uid];
+        $payload = app(FieldLayoutCompiler::class)->compile(
+            $entry->getFieldLayout(),
+            $entry,
+            new FormContext(namespace: $scope, refreshable: true),
+        );
+
+        return [
+            'uid' => $entry->uid,
+            'type' => $entry->getType()->handle,
+            'form' => new NestedFormPayload(
+                scope: $scope,
+                refreshable: true,
+                nodes: $payload->nodes,
+            )->jsonSerialize(),
+            'values' => $payload->values,
+        ];
     }
 
     /** @param class-string<ElementInterface> $elementType */

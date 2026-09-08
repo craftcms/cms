@@ -237,6 +237,45 @@ it('creates a new matrix entry draft and renders its block html', function () {
         ->toBe(['testNamespace', 'matrixField', 'entries', "uid:{$entry->uid}"]);
 });
 
+it('returns the new block as form nodes when given a control path', function () {
+    // The Form control renders blocks with FormNodeList, so it asks for nodes
+    // rather than the rendered block HTML the legacy stack splices in.
+    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'namespace' => null,
+        'path' => ['fields', 'matrixField'],
+    ]))
+        ->assertOk()
+        ->assertJsonStructure(['uid', 'type', 'form' => ['scope', 'refreshable', 'nodes'], 'values']);
+
+    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+
+    // The server minted the identity, and it is the bare UUID the Control keys
+    // blocks by — no `uid:` prefix, nothing for the browser to reconcile.
+    expect($response->json('uid'))->toBe($entry->uid)
+        ->and($response->json('type'))->toBe($this->fixture['entryType']->handle)
+        ->and($response->json('form.scope'))
+        ->toBe(['fields', 'matrixField', 'entries', $entry->uid])
+        ->and($response->json('form.nodes'))->not->toBeEmpty()
+        ->and($response->json('values'))->not->toBeEmpty();
+    ;
+});
+
+it('refuses an entry type the field does not offer', function () {
+    // It would save happily, and then the field couldn't render what it got back:
+    // the Matrix Control rejects a block whose type it doesn't offer, which takes
+    // the whole edit screen down with it.
+    $other = EntryType::factory()->create([
+        'name' => 'Not On This Field',
+        'handle' => 'notOnThisField',
+    ]);
+
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'entryTypeId' => $other->id,
+    ]))->assertBadRequest();
+
+    expect(matrixControllerNestedEntries($this->fixture))->toHaveCount(0);
+});
+
 it('returns a failure response when saving a new matrix draft fails', function () {
     app()->instance(Drafts::class, new readonly class(app(Elements::class)) extends Drafts
     {

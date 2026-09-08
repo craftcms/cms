@@ -10,6 +10,13 @@ const menuStub = vi.hoisted(() => ({
   instances: [] as Array<{actions: ActionItems}>,
 }));
 
+const action = vi.hoisted(() => ({post: vi.fn()}));
+
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  actionClient: {post: action.post},
+}));
+
 vi.mock('@/common/components/ActionMenu.vue', async () => {
   const {h: createElement} = await import('vue');
 
@@ -67,11 +74,13 @@ describe('MatrixControl', () => {
   beforeEach(() => {
     menus.length = 0;
     localStorage.clear();
+    action.post.mockReset();
   });
 
   function mount(
     value: unknown,
-    props: Record<string, unknown> = {}
+    props: Record<string, unknown> = {},
+    values: Record<string, unknown> = {}
   ): {value: unknown} {
     emitted = [];
     const state = reactive({value});
@@ -85,7 +94,7 @@ describe('MatrixControl', () => {
             props: {...control().props, ...props},
           },
           value: state.value,
-          values: {},
+          values,
           errors: [],
           touchedPaths: new Set<string>(),
           editable: true,
@@ -347,6 +356,95 @@ describe('MatrixControl', () => {
         'block-c': {enabled: true},
       },
     });
+  });
+
+  it('has the server mint a block when it can, and renders the nodes it returns', async () => {
+    const uid = '9f1c0a3e-0000-4000-8000-000000000001';
+    action.post.mockResolvedValueOnce({
+      data: {
+        uid,
+        type: 'newType',
+        form: {
+          scope: ['fields', 'pageBuilder', 'entries', uid],
+          refreshable: true,
+          nodes: [],
+        },
+        values: {
+          fields: {pageBuilder: {entries: {[uid]: {fields: {body: 'hi'}}}}},
+        },
+      },
+    });
+
+    const values: Record<string, unknown> = {};
+    mount(
+      {entries: {}, sortOrder: []},
+      {
+        create: {
+          fieldId: 33,
+          ownerId: 1568,
+          ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          siteId: 1,
+          entryTypeIds: {newType: 25},
+        },
+      },
+      values
+    );
+    await nextTick();
+
+    const button = container!.querySelector<HTMLButtonElement>(
+      '[data-form-matrix-add="newType"]'
+    )!;
+    button.click();
+    await nextTick();
+
+    // The button reports itself busy while the server is working.
+    expect(button.getAttribute('aria-busy')).toBe('true');
+
+    await vi.waitFor(() => expect(emitted).toHaveLength(1));
+    await nextTick();
+
+    expect(action.post).toHaveBeenCalledWith('matrix/create-entry', {
+      fieldId: 33,
+      entryTypeId: 25,
+      ownerId: 1568,
+      ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+      siteId: 1,
+      path: ['fields', 'pageBuilder'],
+    });
+
+    // The server's identity is used as-is — no `uid:` prefix to reconcile later.
+    expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder).toEqual([uid]);
+
+    // Its field values ride in the same emit. Written straight into `values`
+    // they wouldn't survive — the Control's value is written back wholesale at
+    // its own path, dropping anything under the block that wasn't part of it.
+    expect(
+      (emitted.at(-1) as {entries: Record<string, unknown>}).entries[uid]
+    ).toEqual({type: 'newType', enabled: true, fields: {body: 'hi'}});
+    // The Control re-keys its whole subtree when sortOrder changes, so the
+    // button that was busy is not the button that's there now.
+    await vi.waitFor(() =>
+      expect(
+        container!
+          .querySelector('[data-form-matrix-add="newType"]')!
+          .getAttribute('aria-busy')
+      ).toBe('false')
+    );
+  });
+
+  it('mints the block itself when the server offers no create config', async () => {
+    mount({entries: {}, sortOrder: []});
+    await nextTick();
+
+    container!
+      .querySelector<HTMLButtonElement>('[data-form-matrix-add="newType"]')!
+      .click();
+    await nextTick();
+
+    expect(action.post).not.toHaveBeenCalled();
+    expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder[0]).toMatch(
+      /^uid:/
+    );
   });
 
   it('renders its blocks when the value is present', async () => {

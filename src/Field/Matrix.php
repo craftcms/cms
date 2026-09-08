@@ -573,10 +573,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return MatrixControl::make($context->path)
             ->entryTypes($entryTypes)
             ->blocks($blocks)
+            ->create($this->createConfig($context->element))
             ->forms($forms)
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * What the browser posts to `matrix/create-entry` to have the server mint a
+     * block. Null until the owner has an ID to hang one off — a nested block
+     * inside an unsaved block, say, which has nothing to own it yet.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function createConfig(?ElementInterface $element): ?array
+    {
+        if ($element?->id === null || $this->id === null) {
+            return null;
+        }
+
+        return [
+            'fieldId' => $this->id,
+            'ownerId' => $element->id,
+            'ownerElementType' => $element::class,
+            'siteId' => $element->siteId,
+            'entryTypeIds' => collect($this->getEntryTypes())
+                ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->id])
+                ->all(),
+        ];
     }
 
     /**
