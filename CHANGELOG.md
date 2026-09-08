@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. Core widgets must declare `component()` (returning `null` to hide the widget) and provide data through `props()`; `getBodyHtml()` remains supported through the Yii adapter. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))

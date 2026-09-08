@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\from;
 use function Pest\Laravel\mock;
 use function Pest\Laravel\postJson;
 
@@ -26,6 +27,7 @@ beforeEach(function () {
     actingAs(User::find()->one());
 
     $this->dashboard = app(Dashboard::class);
+    $this->mock(Api::class)->shouldReceive('request')->andReturn(new Response(new GuzzleResponse(200)));
 });
 
 it('sends the completed message and cleans up its archive', function (?string $failure, bool $apiFails) {
@@ -60,7 +62,7 @@ it('sends the completed message and cleans up its archive', function (?string $f
         app()->instance(CraftSupportController::class, $controller);
     }
 
-    postJson(action(CraftSupportController::class), [
+    $response = postJson(action(CraftSupportController::class), [
         'widgetId' => $widget->id,
         'fromEmail' => 'sender@example.com',
         'message' => 'Original support message',
@@ -68,7 +70,13 @@ it('sends the completed message and cleans up its archive', function (?string $f
         'attachDbBackup' => $failure === 'backup',
         'attachTemplates' => false,
         'attachAdditionalFile' => UploadedFile::fake()->createWithContent('additional.txt', 'Extra details'),
-    ])->assertOk()->assertSee('success: '.($apiFails ? '0' : '1'), escape: false);
+    ]);
+
+    if ($apiFails) {
+        $response->assertUnprocessable()->assertJsonValidationErrors('support');
+    } else {
+        $response->assertRedirect(route('craft.cp.dashboard'))->assertSessionHas('success');
+    }
 
     $messages = $parts->where('name', 'message');
     expect($messages)->toHaveCount(1);
@@ -105,14 +113,12 @@ it('validates data after widget id', function (array $data, array $errors) {
     $response = postJson(action(CraftSupportController::class), array_merge(['widgetId' => $widget->id], $data));
 
     if (count($errors) === 0) {
-        $response->assertOk();
+        $response->assertRedirect(route('craft.cp.dashboard'))->assertSessionHas('success');
 
         return;
     }
 
-    foreach ($errors as $error) {
-        $response->assertSee("errors: {\"$error\"", escape: false);
-    }
+    $response->assertUnprocessable()->assertJsonValidationErrors($errors);
 })->with([
     [
         'data' => [
@@ -173,4 +179,26 @@ it('sanitizes attachment names used in support archives', function () {
         $zip->close();
         File::delete($zipData['zipPath']);
     }
+});
+
+it('redirects back with validation errors for the Inertia support form', function () {
+    from(route('craft.cp.dashboard'))
+        ->post(action(CraftSupportController::class), ['widgetId' => 1])
+        ->assertRedirect(route('craft.cp.dashboard'))
+        ->assertSessionHasErrors(['fromEmail', 'message']);
+});
+
+it('redirects back with an error when sending fails', function () {
+    $this->mock(Api::class)->shouldReceive('request')->andThrow(new RuntimeException('Unavailable'));
+
+    from(route('craft.cp.dashboard'))
+        ->post(action(CraftSupportController::class), [
+            'widgetId' => 1,
+            'fromEmail' => 'support@example.com',
+            'message' => 'Test message',
+            'attachAdditionalFile' => UploadedFile::fake()->create('details.txt', 1, 'text/plain'),
+            'attachLogs' => '0',
+        ])
+        ->assertRedirect(route('craft.cp.dashboard'))
+        ->assertSessionHasErrors('support');
 });
