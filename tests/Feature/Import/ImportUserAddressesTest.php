@@ -19,6 +19,7 @@ beforeEach(function () {
     $this->userData = fn (array $addresses, array $overrides = []) => array_merge([
         'username' => 'importeduser',
         'email' => 'imported@example.com',
+        'matchCriteria' => ['email' => 'email'],
     ], $overrides, ['addresses' => $addresses]);
 
     $this->address = [
@@ -67,10 +68,7 @@ it('maps native address fields correctly', function () {
 });
 
 it('updates an existing address when match criteria matches', function () {
-    // matchCriteria values are matched literally against the address's own saved attributes
-    // (see Addresses::normalizeValueForImport(), which passes them straight into Typecast::configure()),
-    // so the criteria value here must equal the address's actual title, not just reference the key name.
-    $importer = (clone $this->importer)->matchCriteria(['email' => 'email']);
+    $importer = (clone $this->importer);
 
     $addressWithCriteria = array_merge($this->address, [
         'matchCriteria' => ['title' => $this->address['title']],
@@ -94,7 +92,7 @@ it('updates an existing address when match criteria matches', function () {
 });
 
 it('creates a new address when match criteria does not match any existing address', function () {
-    $importer = (clone $this->importer)->matchCriteria(['email' => 'email']);
+    $importer = (clone $this->importer);
 
     $firstAddress = array_merge($this->address, [
         'matchCriteria' => ['title' => $this->address['title']],

@@ -115,6 +115,7 @@ beforeEach(function () {
         'title' => 'imported entry',
         'sectionId' => $this->section->handle,
         'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
     ], $fieldValues);
 });
 

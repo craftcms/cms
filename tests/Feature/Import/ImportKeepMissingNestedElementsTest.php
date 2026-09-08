@@ -74,6 +74,7 @@ describe('nested matrix pruning', function () {
             'title' => 'matrix entry',
             'sectionId' => $this->matrixSection->handle,
             'typeId' => $this->matrixEntryType->handle,
+            'matchCriteria' => ['title' => 'title'],
             'myMatrix' => $blocks,
         ];
 
@@ -253,6 +254,7 @@ describe('matrix in matrix pruning', function () {
             'title' => 'matrix in matrix entry',
             'sectionId' => $this->matrixInMatrixSection->handle,
             'typeId' => $this->matrixInMatrixEntryType->handle,
+            'matchCriteria' => ['title' => 'title'],
             'outerMatrix' => $outerBlocks,
         ];
 

@@ -154,6 +154,7 @@ beforeEach(function () {
         'sectionId' => $this->section->handle,
         'typeId' => $this->entryType->handle,
         'myMatrix' => $blocks,
+        'matchCriteria' => ['title' => 'title'],
     ];
 });
 

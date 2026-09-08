@@ -93,6 +93,7 @@ beforeEach(function () {
         'sectionId' => $this->section->handle,
         'typeId' => $this->entryType->handle,
         'myContentBlock' => $contentBlock,
+        'matchCriteria' => ['title' => 'title'],
     ];
 });
 

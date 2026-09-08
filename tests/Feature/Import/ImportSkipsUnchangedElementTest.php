@@ -63,6 +63,7 @@ beforeEach(function () {
         'sectionId' => $this->section->handle,
         'typeId' => $this->entryType->handle,
         'myPlainText' => 'original text',
+        'matchCriteria' => ['title' => 'title'],
     ], $fieldValues);
 
     // establish the initial field value through the importer itself, so re-imports below can compare against it
