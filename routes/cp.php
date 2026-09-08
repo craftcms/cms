@@ -29,6 +29,7 @@ use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
+use CraftCms\Cms\Http\Controllers\Import\ImportController;
 use CraftCms\Cms\Http\Controllers\Import\ImportRunController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\NotificationsController;
@@ -220,7 +221,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     /**
      * Import
      */
-    Route::view('import', 'craftcms::import/index');
+    Route::get('import', [ImportController::class, 'index']);
     Route::middleware('can:viewImportConfigs')->group(function () {
         Route::get('import/configs', [ImportConfigController::class, 'index']);
         Route::middleware('can:saveImportConfigs')->get('import/configs/new', [ImportConfigController::class, 'create']);

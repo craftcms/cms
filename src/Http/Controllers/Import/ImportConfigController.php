@@ -9,8 +9,10 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImportFieldLayoutProviderViewModel;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -18,8 +20,8 @@ use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +29,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -50,13 +54,60 @@ class ImportConfigController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): View
+    public function index(): InertiaResponse
     {
-        return view('craftcms::import.configs.index', [
+        $currentUser = $this->request->craftUser();
+
+        return Inertia::render('import/configs/Index', [
+            'title' => t('Import configs'),
+            'crumbs' => [
+                ['label' => t('Import'), 'href' => Url::cpUrl('import')],
+            ],
             'readOnly' => $this->readOnly,
-            'editableImportConfigs' => $this->importConfigService->getEditableConfigs(),
-            'nonEditableImportConfigs' => $this->importConfigService->getNonEditableConfigs(),
+            'canSave' => ! $this->readOnly && (bool) $currentUser?->can('saveImportConfigs'),
+            'canDelete' => ! $this->readOnly && (bool) $currentUser?->can('deleteImportConfigs'),
+            'canTriggerRuns' => (bool) $currentUser?->can('triggerImportRuns'),
+            'editableConfigs' => $this->importConfigService->getEditableConfigs()
+                ->map(fn (BaseImporter $config) => $this->editableConfigRow($config))
+                ->values()
+                ->all(),
+            'nonEditableConfigs' => $this->importConfigService->getNonEditableConfigs()
+                ->map(fn (BaseImporter $config) => $this->nonEditableConfigRow($config))
+                ->values()
+                ->all(),
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function editableConfigRow(BaseImporter $config): array
+    {
+        return [
+            'uid' => $config->uid,
+            'name' => $config->name,
+            'handle' => $config->handle,
+            'file' => $config->file,
+            'site' => property_exists($config, 'site') ? $config->site?->name : null,
+            'isElementImport' => $config->isElementImport(),
+            'className' => $config->className,
+            'editUrl' => Url::cpUrl('import/configs/'.$config->handle),
+            'mapUrl' => ! $config->isElementImport() || (property_exists($config, 'fieldLayout') && ! empty($config->fieldLayout))
+                ? Url::cpUrl('import/configs/'.$config->handle.'/map')
+                : null,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function nonEditableConfigRow(BaseImporter $config): array
+    {
+        return [
+            'handle' => $config->handle,
+            'name' => $config->name,
+            'site' => property_exists($config, 'site') ? $config->site?->name : null,
+            'isElementImport' => $config->isElementImport(),
+            'className' => $config->className,
+            'transformer' => $config->transformerAsString(),
+            'hasMap' => $config->map !== [],
+        ];
     }
 
     public function create(): CpScreenResponse
@@ -181,22 +232,23 @@ class ImportConfigController
         $importer ??= $found;
 
         $currentUser = $this->request->craftUser();
-
-        $templateVars = [
-            'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('saveImportConfigs'),
-            'import' => $importer,
-            'availableFieldLayoutProviders' => ImportHelper::getAvailableFieldLayoutProviders($importer->className),
-        ];
+        $canSave = (bool) $currentUser?->can('saveImportConfigs');
+        $editable = ! $this->readOnly && $canSave;
 
         return new CpScreenResponse()
             ->title(t('Edit Field Layout Provider', ['name' => $importer->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
             ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
-            ->contentTemplate('import/configs/_field-layout-provider.twig', $templateVars)
-            ->unless(
-                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
+            ->formAttributes(['action' => action([self::class, 'storeFieldLayoutProvider'])])
+            ->inertiaPage('import/configs/FieldLayoutProvider', new ImportFieldLayoutProviderViewModel(
+                $importer,
+                app(FormResolver::class),
+                $this->readOnly,
+                $canSave,
+            ))
+            ->when(
+                $editable,
                 callback: function (CpScreenResponse $response) {
                     $response
                         ->action('import/configs/saveFieldLayoutProvider')
@@ -211,11 +263,6 @@ class ImportConfigController
                             'shortcut' => true,
                             'retainScroll' => false,
                         ]);
-                },
-                default: function (CpScreenResponse $response) {
-                    if ($this->readOnly) {
-                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
-                    }
                 },
             );
     }

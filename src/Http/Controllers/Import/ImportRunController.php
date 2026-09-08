@@ -14,9 +14,11 @@ use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\ImportRun;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use Illuminate\Contracts\View\View;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -38,11 +40,28 @@ class ImportRunController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): View
+    public function index(): InertiaResponse
     {
-        return view('craftcms::import.runs.index', [
+        $currentUser = $this->request->craftUser();
+
+        return Inertia::render('import/runs/Index', [
+            'title' => t('Import runs'),
+            'crumbs' => [
+                ['label' => t('Import'), 'href' => Url::cpUrl('import')],
+            ],
             'readOnly' => $this->readOnly,
-            'runs' => $this->importRunService->getImportRuns(),
+            'canSave' => ! $this->readOnly && (bool) $currentUser?->can('saveImportRuns'),
+            'canTriggerRuns' => (bool) $currentUser?->can('triggerImportRuns'),
+            'canDelete' => ! $this->readOnly && (bool) $currentUser?->can('deleteImportRuns'),
+            'runs' => $this->importRunService->getImportRuns()
+                ->map(fn (ImportRunData $run) => [
+                    'uid' => $run->uid,
+                    'name' => $run->name,
+                    'handle' => $run->handle,
+                    'editUrl' => Url::cpUrl('import/runs/'.$run->handle),
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 

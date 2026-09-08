@@ -15,6 +15,7 @@ $lightIcons = [
     'envelope',
     'files',
     'folder-open',
+    'gear',
     'globe',
     'image',
     'map-location',
@@ -25,6 +26,7 @@ $lightIcons = [
     'sitemap',
     'sliders',
     'tags',
+    'upload',
     'user-group',
 ];
 
