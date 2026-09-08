@@ -56,6 +56,7 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -1743,7 +1744,9 @@ class ProjectConfig
         $data = DependencyCache::remember(self::STORED_CACHE_KEY, $this->cacheDuration, function () {
             $data = [];
             // Load the project config data
-            $rows = DB::table(Table::PROJECTCONFIG)->orderBy('path')->pluck('value', 'path');
+            // Paths only need parent-before-child ordering, not locale-aware sorting.
+            $orderBy = DB::connection()->isPgsql() ? new Expression('path COLLATE "C"') : 'path';
+            $rows = DB::table(Table::PROJECTCONFIG)->orderBy($orderBy)->pluck('value', 'path');
 
             foreach ($rows as $path => $value) {
                 $current = &$data;
