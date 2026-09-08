@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Uploaders;
 
+use Aws\S3\Exception\S3Exception;
+use Aws\S3\S3Client;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadPartRequest;
@@ -11,7 +13,6 @@ use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use InvalidArgumentException;
-use Throwable;
 
 class S3Uploader implements Uploader
 {
@@ -59,38 +60,40 @@ class S3Uploader implements Uploader
     {
         $disk = $this->disk($session);
 
-        if (! $disk->exists($session->path())) {
-            $uploadedParts = [];
-            $marker = null;
+        if ($disk->exists($session->path())) {
+            return new UploadedFile($disk, $session->path(), $session->filename);
+        }
 
-            do {
-                $result = $this->client($session)->listParts([
-                    ...$this->location($session),
-                    'UploadId' => $session->state['uploadId'],
-                    ...($marker === null ? [] : ['PartNumberMarker' => $marker]),
-                ]);
+        $uploadedParts = [];
+        $marker = null;
 
-                foreach ($result['Parts'] ?? [] as $part) {
-                    $number = (int) $part['PartNumber'];
-                    abort_unless((int) $part['Size'] === $session->partSize($number), 422, 'An S3 upload part has an incorrect size.');
-                    $uploadedParts[] = ['PartNumber' => $number, 'ETag' => $part['ETag']];
-                }
-
-                $marker = $result['NextPartNumberMarker'] ?? null;
-            } while ($result['IsTruncated'] ?? false);
-
-            abort_unless(count($uploadedParts) === $session->partCount(), 422, 'The S3 upload is missing a part.');
-
-            foreach ($uploadedParts as $index => $part) {
-                abort_unless($part['PartNumber'] === $index + 1, 422, 'The S3 upload is missing a part.');
-            }
-
-            $this->client($session)->completeMultipartUpload([
+        do {
+            $result = $this->client($session)->listParts([
                 ...$this->location($session),
                 'UploadId' => $session->state['uploadId'],
-                'MultipartUpload' => ['Parts' => $uploadedParts],
+                ...($marker === null ? [] : ['PartNumberMarker' => $marker]),
             ]);
+
+            foreach ($result['Parts'] ?? [] as $part) {
+                $number = (int) $part['PartNumber'];
+                abort_unless((int) $part['Size'] === $session->partSize($number), 422, 'An S3 upload part has an incorrect size.');
+                $uploadedParts[] = ['PartNumber' => $number, 'ETag' => $part['ETag']];
+            }
+
+            $marker = $result['NextPartNumberMarker'] ?? null;
+        } while ($result['IsTruncated'] ?? false);
+
+        abort_unless(count($uploadedParts) === $session->partCount(), 422, 'The S3 upload is missing a part.');
+
+        foreach ($uploadedParts as $index => $part) {
+            abort_unless($part['PartNumber'] === $index + 1, 422, 'The S3 upload is missing a part.');
         }
+
+        $this->client($session)->completeMultipartUpload([
+            ...$this->location($session),
+            'UploadId' => $session->state['uploadId'],
+            'MultipartUpload' => ['Parts' => $uploadedParts],
+        ]);
 
         return new UploadedFile($disk, $session->path(), $session->filename);
     }
@@ -103,8 +106,8 @@ class S3Uploader implements Uploader
                     ...$this->location($session),
                     'UploadId' => $session->state['uploadId'],
                 ]);
-            } catch (Throwable $exception) {
-                if (! method_exists($exception, 'getAwsErrorCode') || $exception->getAwsErrorCode() !== 'NoSuchUpload') {
+            } catch (S3Exception $exception) {
+                if ($exception->getAwsErrorCode() !== 'NoSuchUpload') {
                     throw $exception;
                 }
             }
@@ -120,7 +123,10 @@ class S3Uploader implements Uploader
     {
         $disk = $this->disk($session);
 
-        return ['Bucket' => $disk->getConfig()['bucket'], 'Key' => $disk->path($session->path())];
+        return [
+            'Bucket' => $disk->getConfig()['bucket'],
+            'Key' => $disk->path($session->path()),
+        ];
     }
 
     private function disk(UploadSession $session): AwsS3V3Adapter
@@ -134,8 +140,7 @@ class S3Uploader implements Uploader
         return $disk;
     }
 
-    /** The SDK is an optional dependency supplied by the S3 filesystem adapter. */
-    private function client(UploadSession $session): mixed
+    private function client(UploadSession $session): S3Client
     {
         return $this->disk($session)->getClient();
     }
