@@ -2,12 +2,7 @@ import {expect, it, vi} from 'vite-plus/test';
 import {createApp, nextTick, reactive} from 'vue';
 
 const state = vi.hoisted(() => ({
-  craftData: null as any,
   page: null as any,
-}));
-
-vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => state.craftData,
 }));
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -17,7 +12,7 @@ vi.mock('@inertiajs/vue3', async () => ({
 
 it('updates the active item when the shared navigation changes', async () => {
   const {default: MainNav} = await import('./MainNav.vue');
-  state.craftData = reactive({
+  const craftData = {
     nav: [
       {
         label: 'Entries',
@@ -38,9 +33,10 @@ it('updates the active item when the shared navigation changes', async () => {
         subnav: false,
       },
     ],
-  });
+  };
   state.page = reactive({
     props: {
+      craft: craftData,
       queue: {
         displayedJob: null,
         hasReservedJobs: false,
@@ -55,10 +51,16 @@ it('updates the active item when the shared navigation changes', async () => {
   app.mount(container);
   await nextTick();
 
-  state.craftData.nav = state.craftData.nav.map((item: any) => ({
-    ...item,
-    selected: item.url === '/assets',
-  }));
+  state.page.props = {
+    ...state.page.props,
+    craft: {
+      ...craftData,
+      nav: craftData.nav.map((item) => ({
+        ...item,
+        selected: item.url === '/assets',
+      })),
+    },
+  };
   await nextTick();
 
   const items = Array.from(container.querySelectorAll('craft-nav-item'));
