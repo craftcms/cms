@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Form\Controls\Choice;
@@ -12,16 +13,12 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\RecentEntriesAsset;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class RecentEntries extends Widget
 {
@@ -134,24 +131,23 @@ class RecentEntries extends Widget
         return $title;
     }
 
-    #[Override]
-    public function getBodyHtml(): string
+    public function component(): ?string
     {
-        $params = [];
+        return 'craft:widget-recent-entries';
+    }
 
-        if (is_numeric($this->section)) {
-            $params['sectionId'] = (int) $this->section;
-        }
-
-        app(InternalAssetRegistry::class)->register(RecentEntriesAsset::class);
-        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
-        HtmlStack::js($js);
-
-        $entries = $this->getEntries();
-
-        return template('_components/widgets/RecentEntries/body', [
-            'entries' => $entries->all(),
-        ]);
+    /** @return array{entries: list<array{url: ?string, title: string, dateCreated: ?string, dateLabel: string, author: ?string}>} */
+    public function props(): array
+    {
+        return [
+            'entries' => $this->getEntries()->map(fn (Entry $entry): array => [
+                'url' => $entry->getCpEditUrl(),
+                'title' => (string) $entry,
+                'dateCreated' => $entry->dateCreated?->format(DATE_ATOM),
+                'dateLabel' => I18N::getFormatter()->asTimestamp($entry->dateCreated, 'short'),
+                'author' => Edition::get() !== Edition::Solo ? $entry->getAuthor()?->username : null,
+            ])->values()->all(),
+        ];
     }
 
     /**

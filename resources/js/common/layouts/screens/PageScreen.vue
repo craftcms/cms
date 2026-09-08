@@ -70,7 +70,7 @@
 
   const registry = provideLayoutSlotRegistry();
   provideScreenContext('page');
-  const craftData = useCraftData();
+  const {general} = useCraftData();
 
   // A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
   // second one — it renders transparently instead.
@@ -281,7 +281,7 @@
                   <craft-icon name="search" :label="t('Search')"></craft-icon>
                 </craft-button>
                 <cp-notification-center
-                  :notifications.prop="craftData.general.notifications"
+                  :notifications.prop="general.notifications"
                 ></cp-notification-center>
                 <UserMenu />
               </div>
