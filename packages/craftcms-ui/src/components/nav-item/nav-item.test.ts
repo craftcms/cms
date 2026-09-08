@@ -1,6 +1,8 @@
 import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftPopover from '../popover/popover.js';
 import CraftNavItem from './nav-item.js';
+import navItemStyles from './nav-item.styles.js';
+import popoverStyles from '../popover/popover.styles.js';
 import './nav-item.js';
 import '../nav-list/nav-list.js';
 import {flyoutHoverIntent} from '@src/utilities/hover-intent.js';
@@ -49,8 +51,8 @@ function flyout(item: CraftNavItem): CraftPopover | null {
   return item.shadowRoot!.querySelector<CraftPopover>('craft-popover');
 }
 
-/** The scrolling pane inside the flyout, which carries the height cap. */
-function flyoutPane(item: CraftNavItem): HTMLElement | null {
+/** The flyout's content, whose position says how much room is left below. */
+function flyoutContent(item: CraftNavItem): HTMLElement | null {
   return item.shadowRoot!.querySelector<HTMLElement>('.flyout');
 }
 
@@ -329,17 +331,31 @@ describe('craft-nav-item flyout', () => {
     item.subnavDisplay = 'flyout';
     await item.updateComplete;
 
-    const flyout = flyoutPane(item)!;
     // happy-dom reports no layout, so stand in for the measurement: a menu
     // whose top edge sits 700px down a 900px viewport has 184px left under it.
-    flyout.getBoundingClientRect = () => ({top: 700}) as DOMRect;
+    flyoutContent(item)!.getBoundingClientRect = () => ({top: 700}) as DOMRect;
     window.innerHeight = 900;
 
     item.fitFlyout();
 
-    expect(flyout.style.getPropertyValue('--flyout-max-block-size')).toBe(
-      `${900 - 700 - CraftNavItem.flyoutViewportMargin}px`
-    );
+    // On the popover, whose pane is the scroller — so a subnav taller than
+    // this scrolls inside it rather than running off the screen.
+    expect(
+      flyout(item)!.style.getPropertyValue('--popover-max-block-size')
+    ).toBe(`${900 - 700 - CraftNavItem.flyoutViewportMargin}px`);
+  });
+
+  it('leaves the flyout with exactly one scroller', () => {
+    // Asserted against the stylesheets rather than computed styles, which
+    // happy-dom doesn't resolve through `var()`.
+    const flyoutRule = /\.flyout \{([^}]*)\}/.exec(navItemStyles.cssText)?.[1];
+
+    expect(flyoutRule).toBeDefined();
+    // The popover's pane is the scroller. A second one in the content would
+    // clip against it, each with its own idea of how tall it may be.
+    expect(flyoutRule).not.toMatch(/overflow|max-block-size|max-height/);
+    // And the pane's cap has to be the one the item can drive.
+    expect(popoverStyles.cssText).toContain('var(--popover-max-block-size');
   });
 
   it('leaves the cap to the stylesheet when there is nothing to measure', async () => {
@@ -347,15 +363,15 @@ describe('craft-nav-item flyout', () => {
     item.subnavDisplay = 'flyout';
     await item.updateComplete;
 
-    const flyout = flyoutPane(item)!;
-    flyout.style.setProperty('--flyout-max-block-size', '100px');
-    flyout.getBoundingClientRect = () => ({top: 0}) as DOMRect;
+    const popover = flyout(item)!;
+    popover.style.setProperty('--popover-max-block-size', '100px');
+    flyoutContent(item)!.getBoundingClientRect = () => ({top: 0}) as DOMRect;
     window.innerHeight = 0;
 
     item.fitFlyout();
 
     // Pinning it to a measurement that isn't real would shut the menu.
-    expect(flyout.style.getPropertyValue('--flyout-max-block-size')).toBe('');
+    expect(popover.style.getPropertyValue('--popover-max-block-size')).toBe('');
   });
 
   it('leaves a manual toggle alone across unrelated renders', async () => {

@@ -14,7 +14,12 @@ export default css`
     min-width: calc(180rem / 16);
     max-width: calc(320rem / 16);
     overflow: auto;
-    max-height: 40vh;
+    overscroll-behavior: contain;
+
+    /* 40vh suits a popover that sits near what opened it. One anchored far
+       down the screen, or holding a long menu, wants the room it actually has
+       — which only the thing that opened it can measure. */
+    max-height: var(--popover-max-block-size, 40vh);
   }
 
   /* The overlay wrapper is the one given the invoker's width, so the pane has

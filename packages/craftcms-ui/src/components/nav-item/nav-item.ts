@@ -155,18 +155,23 @@ export default class CraftNavItem extends LitElement {
   }
 
   /**
-   * Caps the flyout to the room below wherever it landed.
+   * Caps the flyout to the room below wherever it landed, so a subnav longer
+   * than that scrolls instead of running off the bottom of the screen.
    *
-   * The overlay is positioned rather than laid out, so a menu taller than the
-   * space under its item runs off the bottom of the screen and the items down
-   * there can't be reached at all. Measuring after the fact — rather than
-   * predicting from the item's position — means this holds however the overlay
-   * chose to place itself, including when it flips.
+   * The cap goes on the popover, whose pane is already the scrolling one —
+   * capping the content inside it instead would nest a second scroller within
+   * the first, each with its own idea of how tall it may be.
+   *
+   * Measured after the fact rather than predicted from the item's position, so
+   * it holds however the overlay chose to place itself, including when it
+   * flips.
    */
   fitFlyout = () => {
+    const popover =
+      this.shadowRoot?.querySelector<HTMLElement>('craft-popover');
     const flyout = this.shadowRoot?.querySelector<HTMLElement>('.flyout');
 
-    if (!flyout) {
+    if (!popover || !flyout) {
       return;
     }
 
@@ -178,12 +183,12 @@ export default class CraftNavItem extends LitElement {
     // without one, or a flyout that hasn't been placed yet. Leave the
     // stylesheet's fallback in charge rather than pinning it shut.
     if (!window.innerHeight || available <= 0) {
-      flyout.style.removeProperty('--flyout-max-block-size');
+      popover.style.removeProperty('--popover-max-block-size');
 
       return;
     }
 
-    flyout.style.setProperty('--flyout-max-block-size', `${available}px`);
+    popover.style.setProperty('--popover-max-block-size', `${available}px`);
   };
 
   #watchFlyoutFit(): void {
@@ -201,8 +206,8 @@ export default class CraftNavItem extends LitElement {
     this.#flyoutFitListeners?.abort();
     this.#flyoutFitListeners = undefined;
     this.shadowRoot
-      ?.querySelector<HTMLElement>('.flyout')
-      ?.style.removeProperty('--flyout-max-block-size');
+      ?.querySelector<HTMLElement>('craft-popover')
+      ?.style.removeProperty('--popover-max-block-size');
   }
 
   override willUpdate(changed: PropertyValues<this>) {
