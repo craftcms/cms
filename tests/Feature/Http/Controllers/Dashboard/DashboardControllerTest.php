@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Models\Widget;
-use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost;
 use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
@@ -56,30 +55,31 @@ it('preserves an intentionally empty dashboard', function () {
     expect(Widget::query()->where('userId', $user->id)->count())->toBe(0);
 });
 
-it('shows a plugin’s HTML override', function () {
+it('omits hidden widgets from the dashboard', function () {
     actingAs($user = User::find()->one());
     UserModel::query()->whereKey($user->id)->update(['hasDashboard' => true]);
-    app(WidgetTypes::class)->register(DashboardPluginFeed::class);
-
-    $widget = Widget::query()->create([
+    app(WidgetTypes::class)->register(HiddenDashboardWidget::class);
+    Widget::query()->create([
         'userId' => $user->id,
-        'type' => DashboardPluginFeed::class,
-        'settings' => ['title' => 'Plugin feed', 'url' => 'https://example.com/feed'],
+        'type' => HiddenDashboardWidget::class,
+        'settings' => [],
         'sortOrder' => 1,
     ]);
 
     get(route('craft.cp.dashboard'))
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('widgets.0.id', $widget->id)
-            ->where('widgets.0.component', 'craft:html-widget')
-            ->where('widgets.0.fragment.html', '<p>Plugin body</p>'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('widgets', 0));
 });
 
-class DashboardPluginFeed extends Feed
+class HiddenDashboardWidget extends CraftCms\Cms\Dashboard\Widgets\Widget
 {
-    public function getBodyHtml(): string
+    public function component(): ?string
     {
-        return '<p>Plugin body</p>';
+        return null;
+    }
+
+    public function props(): array
+    {
+        throw new LogicException('Hidden widgets must not render props.');
     }
 }
 
@@ -101,9 +101,9 @@ it('renders a plugin component without a core widget mapping', function () {
             ->where('widgets.0.data.message', 'Plugin component'));
 });
 
-class DashboardVueWidget extends DashboardPluginFeed
+class DashboardVueWidget extends CraftCms\Cms\Dashboard\Widgets\Widget
 {
-    public function component(): ?string
+    public function component(): string
     {
         return 'example:dashboard-widget';
     }
@@ -111,28 +111,5 @@ class DashboardVueWidget extends DashboardPluginFeed
     public function props(): array
     {
         return ['message' => 'Plugin component'];
-    }
-}
-
-it('omits hidden widgets from the dashboard', function () {
-    actingAs($user = User::find()->one());
-    UserModel::query()->whereKey($user->id)->update(['hasDashboard' => true]);
-    app(WidgetTypes::class)->register(HiddenDashboardWidget::class);
-    Widget::query()->create([
-        'userId' => $user->id,
-        'type' => HiddenDashboardWidget::class,
-        'settings' => [],
-        'sortOrder' => 1,
-    ]);
-
-    get(route('craft.cp.dashboard'))
-        ->assertInertia(fn (AssertableInertia $page) => $page->has('widgets', 0));
-});
-
-class HiddenDashboardWidget extends CraftCms\Cms\Dashboard\Widgets\Widget
-{
-    public function getBodyHtml(): ?string
-    {
-        return null;
     }
 }

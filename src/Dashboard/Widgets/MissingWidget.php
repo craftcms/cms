@@ -13,7 +13,7 @@ class MissingWidget extends Widget implements MissingComponentInterface
     use MissingComponentTrait;
 
     #[Override]
-    public function getBodyHtml(): ?string
+    public function component(): ?string
     {
         return null;
     }

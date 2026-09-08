@@ -63,17 +63,12 @@ class CraftSupport extends Widget
 
     public function component(): ?string
     {
-        return 'craft:widget-craft-support';
+        return currentUser()?->isAdmin() ? 'craft:widget-craft-support' : null;
     }
 
-    /** @return array<string, mixed>|null */
-    public function props(): ?array
+    /** @return array<string, mixed> */
+    public function props(): array
     {
-        // Only admins get the Craft Support widget.
-        if (! currentUser()?->isAdmin()) {
-            return null;
-        }
-
         $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;
 

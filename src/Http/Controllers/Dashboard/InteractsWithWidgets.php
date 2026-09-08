@@ -11,37 +11,27 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\View\HtmlStack;
-use ReflectionMethod;
 
 trait InteractsWithWidgets
 {
     protected function getWidgetData(WidgetInterface $widget): WidgetData|false
     {
-        $component = $widget->component() ?? 'craft:html-widget';
-
-        // A plugin's HTML override takes precedence over an inherited Vue component.
-        $htmlOverride = $component !== 'craft:html-widget' && new ReflectionMethod($widget, 'getBodyHtml')->getDeclaringClass()->isSubclassOf(
-            new ReflectionMethod($widget, 'component')->getDeclaringClass()->getName(),
-        );
-
-        if ($htmlOverride) {
-            $component = 'craft:html-widget';
-        }
-
         $htmlStack = app(HtmlStack::class);
-        $data = null;
-        $fragment = $htmlStack->capture(function () use ($widget, $component, $htmlOverride, &$data): string {
-            if ($htmlOverride) {
-                $html = $widget->getBodyHtml();
-                $data = $html === null ? null : ['html' => $html];
-            } else {
-                $data = $widget->props();
+        $component = null;
+        $data = [];
+        $fragment = $htmlStack->capture(function () use ($widget, &$component, &$data): string {
+            $component = $widget->component();
+
+            if ($component === null) {
+                return '';
             }
+
+            $data = $widget->props();
 
             return $component === 'craft:html-widget' ? ($data['html'] ?? '') : '';
         });
 
-        if ($data === null) {
+        if ($component === null) {
             return false;
         }
 

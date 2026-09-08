@@ -47,16 +47,12 @@ class Updates extends Widget
 
     public function component(): ?string
     {
-        return 'craft:widget-updates';
+        return currentUser()->can('performUpdates') ? 'craft:widget-updates' : null;
     }
 
-    /** @return array{cached: bool, total: int}|null */
-    public function props(): ?array
+    /** @return array{cached: bool, total: int} */
+    public function props(): array
     {
-        if (! currentUser()->can('performUpdates')) {
-            return null;
-        }
-
         return [
             'cached' => $this->updates->isUpdateInfoCached(),
             'total' => $this->updates->totalAvailableUpdates(),

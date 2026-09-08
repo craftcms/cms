@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace craft\base;
 
+use function CraftCms\Cms\craftAsset;
+
 /**
  * WidgetTrait implements the common methods and properties for dashboard widget classes.
  *
@@ -23,16 +25,30 @@ trait WidgetTrait
      */
     public ?int $colspan = null;
 
+    private string $widgetBodyHtml = '';
+
     public function component(): ?string
     {
-        return 'craft:html-widget';
+        $html = $this->getBodyHtml();
+        $this->widgetBodyHtml = $html ?? '';
+
+        return $html === null ? null : 'craft:html-widget';
     }
 
-    /** @return array<string, mixed>|null */
-    public function props(): ?array
+    /** @return array<string, mixed> */
+    public function props(): array
     {
-        $html = $this->getBodyHtml();
+        return ['html' => $this->widgetBodyHtml];
+    }
 
-        return $html === null ? null : ['html' => $html];
+    public function getBodyHtml(): ?string
+    {
+        $url = craftAsset('legacy/cp/dist/images/prg.jpg');
+
+        return <<<EOD
+<div style="margin: 0 -24px -24px;">
+    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="$url">
+</div>
+EOD;
     }
 }

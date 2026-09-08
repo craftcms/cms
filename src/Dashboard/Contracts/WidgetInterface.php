@@ -34,11 +34,11 @@ interface WidgetInterface extends ConfigurableComponentInterface, SavableCompone
      */
     public static function maxColspan(): ?int;
 
-    /** Returns a registered CP component name; the default is craft:html-widget. */
+    /** Returns a registered CP component name, or null to hide the widget. */
     public function component(): ?string;
 
-    /** @return array<string, mixed>|null Component data, or null to hide the widget. */
-    public function props(): ?array;
+    /** @return array<string, mixed> Component data. */
+    public function props(): array;
 
     public function getType(): string;
 
@@ -61,13 +61,4 @@ interface WidgetInterface extends ConfigurableComponentInterface, SavableCompone
      * @return string|null The widget’s subtitle
      */
     public function getSubtitle(): ?string;
-
-    /**
-     * Returns the widget's body HTML.
-     *
-     * @return string|null The widget’s body HTML, or `null` if the widget
-     *                     should not be visible. (If you don’t want the widget to be selectable in
-     *                     the first place, use [[isSelectable()]].)
-     */
-    public function getBodyHtml(): ?string;
 }

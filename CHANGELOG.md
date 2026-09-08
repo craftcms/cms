@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. Core widgets must declare `component()` (returning `null` to hide the widget) and provide data through `props()`; `getBodyHtml()` remains supported through the Yii adapter. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed database errors and incorrect ordering when repairing structures. ([#19568](https://github.com/craftcms/cms/pull/19568))

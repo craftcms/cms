@@ -87,7 +87,7 @@ MD);
         ->getSubtitle()->toStartWith('Craft edition ')
         ->getIcon()->toBe('hand-wave')
         ->getMaxColspan()->toBe(2)
-        ->and($widget->getBodyHtml())
+        ->and($widget->props()['html'])
         ->toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
         ->not->toContain('<script>');
 });
@@ -255,7 +255,7 @@ it('hides saved widgets whose definition no longer exists', function () {
 
     File::delete("$this->widgetsPath/welcome.md");
 
-    expect($dashboard->getWidgetById($widget->id)->getBodyHtml())->toBeNull()
+    expect($dashboard->getWidgetById($widget->id)->component())->toBeNull()
         ->and(WidgetModel::query()->whereKey($widget->id)->exists())->toBeTrue();
 });
 
@@ -273,5 +273,5 @@ it('resolves handled widgets after their files are renamed', function () {
 
     File::move("$this->widgetsPath/old-name.md", "$this->widgetsPath/new-name.md");
 
-    expect($dashboard->getWidgetById($widget->id)->getBodyHtml())->toContain('Welcome');
+    expect($dashboard->getWidgetById($widget->id)->props()['html'])->toContain('Welcome');
 });

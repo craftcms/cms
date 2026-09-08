@@ -39,7 +39,13 @@ class HtmlExample extends Widget
     }
 
     #[Override]
-    public function getBodyHtml(): string
+    public function component(): string
+    {
+        return 'craft:html-widget';
+    }
+
+    #[Override]
+    public function props(): array
     {
         $id = "html-example-{$this->id}";
         $message = htmlspecialchars($this->message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -57,12 +63,12 @@ class HtmlExample extends Widget
             })();
             JS);
 
-        return <<<HTML
+        return ['html' => <<<HTML
             <div id="$id" class="html-example">
                 <p>$message</p>
                 <p>Clicks: <output aria-live="polite">0</output></p>
                 <craft-button type="button">Increment</craft-button>
             </div>
-            HTML;
+            HTML];
     }
 }

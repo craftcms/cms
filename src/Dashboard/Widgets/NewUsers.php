@@ -68,16 +68,12 @@ class NewUsers extends Widget
 
     public function component(): ?string
     {
-        return 'craft:widget-new-users';
+        return Edition::get()->value >= Edition::Pro->value ? 'craft:widget-new-users' : null;
     }
 
-    /** @return array{userGroupId: ?int, dateRange: string}|null */
-    public function props(): ?array
+    /** @return array{userGroupId: ?int, dateRange: string} */
+    public function props(): array
     {
-        if (Edition::get()->value < Edition::Pro->value) {
-            return null;
-        }
-
         return ['userGroupId' => $this->userGroupId, 'dateRange' => $this->dateRange ?? 'd7'];
     }
 
