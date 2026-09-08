@@ -5,6 +5,7 @@
   // imports it. Leaf module, not the barrel.
   import '@craftcms/ui/components/action-menu/action-menu';
   import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import '@craftcms/ui/components/spinner/spinner';
   import {actionClient, t} from '@craftcms/ui';
@@ -454,6 +455,25 @@
   }
 
   /**
+   * `craft-checkbox` dispatches `model-value-changed` from the host rather than
+   * an inner input, and re-fires it on programmatic `.checked` updates — so read
+   * the host's `checked`, not the event target's type.
+   */
+  function checkboxValue(event: Event): boolean {
+    return Boolean((event.target as {checked?: boolean} | null)?.checked);
+  }
+
+  /**
+   * The checkbox change event carries no modifier keys, so the shift state is
+   * taken from the click that preceded it and used to extend the range.
+   */
+  const pendingShiftKey = ref(false);
+
+  function rememberShift(event: MouseEvent): void {
+    pendingShiftKey.value = event.shiftKey;
+  }
+
+  /**
    * Announced while the server mints a block. The add buttons show a spinner,
    * but "Add {type} above" is a menu item with nowhere to put one.
    */
@@ -640,7 +660,24 @@
             {{ entryType(uid)?.label ?? uid }}
             <div class="preview" />
           </div>
-          <div v-if="editable" slot="actions" class="flex flex-nowrap">
+          <div
+            v-if="editable"
+            slot="actions"
+            class="flex flex-nowrap items-center"
+          >
+            <craft-checkbox
+              class="checkbox"
+              label-sr-only
+              .checked="selection.isSelected(uid)"
+              @click="rememberShift($event)"
+              @model-value-changed="
+                selection.setChecked(uid, checkboxValue($event), {
+                  shiftKey: pendingShiftKey,
+                })
+              "
+            >
+              <label slot="label">{{ t('Select') }}</label>
+            </craft-checkbox>
             <ActionMenu
               :actions="blockActions(uid)"
               :label="t('{type} actions', {type: entryType(uid)?.label ?? uid})"
@@ -656,19 +693,6 @@
                 @reorder="onReorderButton(index, $event)"
               />
             </span>
-            <craft-button
-              type="button"
-              icon="trash"
-              size="small"
-              variant="danger-plain"
-              :disabled="
-                model.sortOrder.length <= (control.props.minEntries ?? 0)
-              "
-              data-form-matrix-remove
-              :accessible-name="
-                t('Remove {type}', {type: entryType(uid)?.label ?? uid})
-              "
-            />
           </div>
           <div v-show="!isCollapsed(uid)" class="fields">
             <template v-if="forms.get(uid)">

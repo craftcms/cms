@@ -322,6 +322,33 @@ describe('MatrixControl', () => {
     ]);
   });
 
+  it('renders a select checkbox on each block', async () => {
+    mount({
+      entries: {
+        'block-a': {type: 'newType', enabled: true},
+        'block-b': {type: 'newType', enabled: true},
+      },
+      sortOrder: ['block-a', 'block-b'],
+    });
+    await nextTick();
+
+    const boxes = container!.querySelectorAll('.matrixblock craft-checkbox');
+    expect(boxes).toHaveLength(2);
+
+    // `craft-checkbox` reports its change from the host, not an inner input.
+    const first = boxes[0]!;
+    Object.assign(first, {checked: true});
+    first.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    first.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await nextTick();
+
+    expect(container!.querySelectorAll('.matrixblock')[0]!.className).toContain(
+      'sel'
+    );
+  });
+
   it('selects blocks and applies a menu action across the selection', async () => {
     mount({
       entries: {
