@@ -32,6 +32,7 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -340,6 +341,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     private ?array $_groups = null;
 
+    private ?bool $_hasSsoIdentity = null;
+
     /**
      * @see setAttributesFromRequest()
      * @see afterSave()
@@ -416,7 +419,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->id;
     }
 
-    /** @return MorphMany<DatabaseNotification, Model> */
+    /** @return MorphMany<DatabaseNotification, Model&AuthenticatableContract> */
     public function notifications(): MorphMany
     {
         $user = Auth::getProvider()->retrieveById($this->getAuthIdentifier());
@@ -934,6 +937,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function setAttributesFromRequest(array $values): void
     {
         unset(
+            $values['hasSsoIdentity'],
             $values['invalidLoginCount'],
             $values['lastInvalidLoginDate'],
             $values['lastLoginAttemptIp'],
@@ -1021,7 +1025,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        return $this->id !== null && app(OAuth::class)->hasIdentity($this->id);
+        return $this->id !== null && ($this->_hasSsoIdentity ?? app(OAuth::class)->hasIdentity($this->id));
+    }
+
+    public function setHasSsoIdentity(?bool $hasSsoIdentity): void
+    {
+        $this->_hasSsoIdentity = $hasSsoIdentity;
     }
 
     #[Override]
@@ -1242,10 +1251,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         };
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($photo = $this->getPhoto()) {
-            return AssetsService::getThumbUrl($photo, $size, iconFallback: false);
+            return AssetsService::getThumbUrl($photo, $size, iconFallback: false, mode: ImageTransformMode::Crop);
         }
 
         return null;
@@ -2294,16 +2303,9 @@ JS, [
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
-            // Temporarily set the unverified email on the User so the verification email goes to the right place
-            $originalEmail = $this->email;
-            $this->email = $this->unverifiedEmail;
-
             $isNew
-                ? Users::sendActivationEmail($this)
+                ? Users::sendActivationEmail($this, $this->unverifiedEmail)
                 : Users::sendNewEmailVerifyEmail($this);
-
-            // Put the original email back into place
-            $this->email = $originalEmail;
         }
     }
 

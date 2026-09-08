@@ -32,6 +32,9 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
@@ -242,6 +245,13 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
         Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
         Route::post('elements/validate', ValidateElementController::class);
+        Route::post('elements/activity', ActivityTimelineController::class);
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('elements/activity/comments', [ActivityCommentsController::class, 'store']);
+            Route::patch('elements/activity/comments', [ActivityCommentsController::class, 'update']);
+            Route::delete('elements/activity/comments', [ActivityCommentsController::class, 'destroy']);
+        });
+        Route::get('elements/activity/mentions', ActivityMentionSuggestionsController::class)->middleware('throttle:120,1');
         Route::post('elements/recent-activity', ElementActivityController::class);
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);

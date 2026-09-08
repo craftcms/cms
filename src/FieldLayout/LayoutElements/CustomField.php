@@ -25,6 +25,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -174,6 +175,8 @@ class CustomField extends BaseField
         if ($this->_field !== null) {
             $this->_field->handle = $handle ?? $this->_originalHandle;
         }
+
+        $this->getLayout()?->reset();
 
         return $this;
     }
@@ -364,7 +367,7 @@ class CustomField extends BaseField
         ];
     }
 
-    public function thumbHtml(ElementInterface $element, int $size): ?string
+    public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         try {
             $field = $this->getField();
@@ -376,7 +379,7 @@ class CustomField extends BaseField
             return null;
         }
 
-        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
+        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size, $mode);
     }
 
     #[Override]
@@ -471,6 +474,8 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+
+        $this->getLayout()?->reset();
     }
 
     /**
@@ -489,6 +494,8 @@ class CustomField extends BaseField
         $this->_fieldUid = $uid;
         $this->_field = null;
         $this->_sourceField = null;
+
+        $this->getLayout()?->reset();
     }
 
     /**
@@ -628,17 +635,20 @@ class CustomField extends BaseField
             Group::make('custom-field-settings', array_values(array_filter([
                 $originalField === null ? null : Field::make(t('Field'), FieldSelect::make('fieldId')
                     ->limit(1)
-                    ->value($originalField->id))
+                    ->value($originalField->id)
+                    ->reactive())
                     ->warning(t('Changing this may result in data loss.')),
-                $this->labelSettingsNode($context),
-                Field::make(t('Handle'), Text::make('handle')
-                    ->monospace()
-                    ->maxLength(64)
-                    ->value($this->handle)
-                    ->placeholder($this->_originalHandle))
-                    ->required(),
-                ...$this->instructionsSettingsNodes($context),
-                ...$this->noticeSettingsNodes($context),
+                Group::make('custom-field-configuration', [
+                    $this->labelSettingsNode($context),
+                    Field::make(t('Handle'), Text::make('handle')
+                        ->monospace()
+                        ->maxLength(64)
+                        ->value($this->handle)
+                        ->placeholder($this->_originalHandle))
+                        ->required(),
+                    ...$this->instructionsSettingsNodes($context),
+                    ...$this->noticeSettingsNodes($context),
+                ])->dependsOn('fieldId'),
             ]))),
         ];
     }

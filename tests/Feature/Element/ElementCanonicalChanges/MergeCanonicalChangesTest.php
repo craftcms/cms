@@ -201,6 +201,7 @@ it('merges and saves localized derivatives before the requested site', function 
 
     $saveCalls = [];
     $writes = Mockery::mock(ElementWrites::class);
+    $writes->shouldReceive('afterPropagate')->andReturnUsing(app(ElementWrites::class)->afterPropagate(...));
     $writes->shouldReceive('save')
         ->twice()
         ->andReturnUsing(function (Entry $element, bool $runValidation, bool $propagate, ?bool $updateSearchIndex = null, ?array $supportedSites = null) use (&$saveCalls) {
@@ -278,6 +279,7 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
     $currentSiteElement->localizedQuery = new TestMergeCanonicalChangesQuery([$otherSiteElement]);
 
     $writes = Mockery::mock(ElementWrites::class);
+    $writes->shouldReceive('afterPropagate')->andReturnUsing(app(ElementWrites::class)->afterPropagate(...));
     $writes->shouldReceive('save')
         ->twice()
         ->andReturnUsing(fn () => true);

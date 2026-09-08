@@ -183,6 +183,8 @@ readonly class LoginController extends AuthenticationController
 
     public function logout(Request $request): Response
     {
+        $request->session()->forget('url.intended');
+
         auth()->logout();
 
         if ($request->wantsJson()) {

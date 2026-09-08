@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
@@ -18,7 +20,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldConditionRuleInterface
+class MoneyFieldConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
@@ -151,10 +153,34 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             return true;
         }
 
-        if ($value instanceof MoneyLibrary) {
-            $value = (float) $value->getAmount();
+        if (! $value instanceof MoneyLibrary || in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY], true)) {
+            return $this->matchValue($value instanceof MoneyLibrary ? $value->getAmount() : $value);
         }
 
-        return $this->matchValue($value);
+        $compare = fn (string $amount): int => $value->compare(MoneyHelper::toMoney([
+            'value' => $amount,
+            'currency' => $value->getCurrency(),
+        ]));
+
+        if ($this->operator === self::OPERATOR_BETWEEN) {
+            return ($this->value === '' || $compare($this->value) >= 0)
+                && ($this->maxValue === '' || $compare($this->maxValue) <= 0);
+        }
+
+        if ($this->value === '') {
+            return true;
+        }
+
+        $comparison = $compare($this->value);
+
+        return match ($this->operator) {
+            self::OPERATOR_EQ => $comparison === 0,
+            self::OPERATOR_NE => $comparison !== 0,
+            self::OPERATOR_LT => $comparison < 0,
+            self::OPERATOR_LTE => $comparison <= 0,
+            self::OPERATOR_GT => $comparison > 0,
+            self::OPERATOR_GTE => $comparison >= 0,
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
+        };
     }
 }

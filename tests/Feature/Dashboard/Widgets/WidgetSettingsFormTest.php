@@ -41,14 +41,19 @@ it('exposes native widget settings as typed forms', function () {
             $widget->settingsForm(),
             new FormContext(namespace: 'settings'),
         );
-
-        expect(array_map(
-            fn ($node): string => implode('.', array_slice($node->control->path, 1)),
+        $nodes = flattenFormNodes(array_map(
+            fn ($node): array => $node->jsonSerialize(),
             $payload->nodes,
-        ))->toBe($paths);
+        ));
+        $controls = collect($nodes)->pluck('control')->filter()->values();
+
+        expect($controls->map(
+            fn (array $control): string => implode('.', array_slice($control['path'], 1)),
+        )->all())->toBe($paths);
 
         if ($widget instanceof QuickPost) {
-            expect($payload->nodes[1]->props['label'])->toBe('Entry Type');
+            expect(collect($nodes)->firstWhere('control.path', ['settings', 'entryType'])['props']['label'])
+                ->toBe('Entry Type');
         }
     }
 });

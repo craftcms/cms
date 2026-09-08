@@ -109,27 +109,25 @@
 
 <template>
   <form @submit.prevent="save()">
-    <craft-pane appearance="raised" padding="none">
-      <div class="py-2">
-        <craft-field-group class="py-4">
-          <FormRenderer
-            ref="renderer"
-            :payload="form"
-            :refresh="refreshUrl ? refresh : undefined"
-            :errors="errors"
-            @update:mutation="onMutation"
-            @change="onChange"
+    <craft-pane appearance="raised">
+      <craft-field-group class="py-4">
+        <FormRenderer
+          ref="renderer"
+          :payload="form"
+          :refresh="refreshUrl ? refresh : undefined"
+          :errors="errors"
+          @update:mutation="onMutation"
+          @change="onChange"
+        >
+          <template
+            v-for="(_, slotName) in $slots"
+            :key="slotName"
+            #[slotName]="slotProps"
           >
-            <template
-              v-for="(_, slotName) in $slots"
-              :key="slotName"
-              #[slotName]="slotProps"
-            >
-              <slot :name="slotName" v-bind="slotProps" />
-            </template>
-          </FormRenderer>
-        </craft-field-group>
-      </div>
+            <slot :name="slotName" v-bind="slotProps" />
+          </template>
+        </FormRenderer>
+      </craft-field-group>
     </craft-pane>
   </form>
 </template>

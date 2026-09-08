@@ -25,6 +25,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
@@ -78,17 +79,19 @@ class EntryTypeEditViewModel extends ViewModel
             $form->add(
                 Field::make(
                     t('Title Translation Method'),
-                    Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions()),
+                    Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
                 )->instructions(t('How should the title be translated?')),
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Field::make(
-                    t('Title Translation Key Format'),
-                    Text::make('titleTranslationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers($objectTemplateTriggers),
-                )->tip($objectTemplateTip));
+                $form->add(Group::make('entry-type-title-translation-settings', [
+                    Field::make(
+                        t('Title Translation Key Format'),
+                        Text::make('titleTranslationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers($objectTemplateTriggers),
+                    )->tip($objectTemplateTip),
+                ])->dependsOn('titleTranslationMethod'));
             }
         }
 
@@ -99,25 +102,30 @@ class EntryTypeEditViewModel extends ViewModel
                 ->instructions(t('The format that {type} titles should take when generated.', ['type' => Entry::lowerDisplayName()]))
                 ->tip($objectTemplateTip),
             Field::make(t('Allow line breaks in titles'), Lightswitch::make('allowLineBreaksInTitles')),
-            Field::make(t('Show the Slug field'), Lightswitch::make('showSlugField')),
+            Field::make(t('Show the Slug field'), Lightswitch::make('showSlugField')->reactive()),
         );
 
         if (Sites::isMultiSite() && ($values['showSlugField'] ?? false)) {
-            $form->add(
+            $slugSettings = [
                 Field::make(
                     t('Slug Translation Method'),
-                    Choice::make('slugTranslationMethod')->options(TranslationMethod::asOptions()),
+                    Choice::make('slugTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
                 )->instructions(t('How should slugs be translated?')),
-            );
+            ];
 
             if (($values['slugTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Field::make(
-                    t('Slug Translation Key Format'),
-                    Text::make('slugTranslationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers($objectTemplateTriggers),
-                )->tip($objectTemplateTip));
+                $slugSettings[] = Group::make('entry-type-slug-translation-settings', [
+                    Field::make(
+                        t('Slug Translation Key Format'),
+                        Text::make('slugTranslationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers($objectTemplateTriggers),
+                    )->tip($objectTemplateTip),
+                ])->dependsOn('slugTranslationMethod');
             }
+
+            $form->add(Group::make('entry-type-slug-settings', $slugSettings)
+                ->dependsOn('showSlugField'));
         }
 
         $form->add(

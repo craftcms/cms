@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Rendezési kulcs',
     'Sort descending' => 'Rendezés csökkenő sorrendben',
     'Sort direction' => 'Rendezés iránya',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Rendezési kód',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Forrás beállítások mentve',
@@ -2233,11 +2234,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => 'Hello {{user.friendlyName|e}},
+    'account_activation_body' => "Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>',
+<{{link}}>",
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',
@@ -2252,6 +2253,9 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'by {creator}' => 'Készítette: {creator}',
     'categories' => 'kategóriák',
     'category' => 'kategória',
+    'comment_mention_body' => "Hey {{user.friendlyName|e}},\n\n{{author|e}} mentioned you in a comment on “{{subject|e}}”:\n\n{{comment}}\n\n<{{link}}>",
+    'comment_mention_heading' => 'When someone mentions a user in a comment:',
+    'comment_mention_subject' => 'You were mentioned in a comment',
     'contains' => 'tartalmaz',
     'content block' => 'tartalomblokk',
     'content blocks' => 'tartalomblokkok',

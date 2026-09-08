@@ -152,8 +152,8 @@ it('refreshes public registration fields without losing their current values', f
         ->assertJsonPath('form.values.allowPublicRegistration', false)
         ->assertJsonPath('form.values.validateOnPublicRegistration', true);
 
-    $shownNode = collect($shown->json('form.nodes'))->firstWhere('control.path', ['validateOnPublicRegistration']);
-    $hiddenNode = collect($hidden->json('form.nodes'))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $shownNode = collect(flattenFormNodes($shown->json('form.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $hiddenNode = collect(flattenFormNodes($hidden->json('form.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
 
     expect($shownNode['component'])->toBe('craft:field')
         ->and($hiddenNode['component'])->toBe('craft:hidden-field');

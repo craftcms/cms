@@ -11,9 +11,9 @@ use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
+use Illuminate\Database\Query\Builder;
 
 function createHtmlRule(string $ruleClass): mixed
 {
@@ -368,12 +368,7 @@ describe('BaseSelectConditionRule::getHtml()', function () {
                 ];
             }
 
-            public function getExclusiveQueryParams(): array
-            {
-                return [];
-            }
-
-            public function modifyQuery(ElementQueryInterface $query): void {}
+            public function modifyQuery(Builder $query): void {}
 
             public function matchElement(ElementInterface $element): bool
             {

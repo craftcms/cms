@@ -318,71 +318,76 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         $linkTypes = $this->getLinkTypes();
-        $linkType = null;
-        $config = [
-            'value' => $value,
-        ];
-
-        if (is_array($value)) {
-            $typeId = $value['type'] ?? UrlType::id();
-            $config = array_filter([
-                'label' => (! empty($value['label']) && $this->showLabelField) ? $value['label'] : null,
-                'urlSuffix' => (! empty($value['urlSuffix']) && in_array('urlSuffix', $this->advancedFields)) ? $value['urlSuffix'] : null,
-                'target' => (! empty($value['target']) && in_array('target', $this->advancedFields)) ? $value['target'] : null,
-                'title' => (! empty($value['title']) && in_array('title', $this->advancedFields)) ? $value['title'] : null,
-                'class' => (! empty($value['class']) && in_array('class', $this->advancedFields))
-                    ? (implode(' ', array_map(Html::id(...), explode(' ', (string) $value['class']))))
-                    : null,
-                'id' => (! empty($value['id']) && in_array('id', $this->advancedFields)) ? Html::id($value['id']) : null,
-                'rel' => (! empty($value['rel']) && in_array('rel', $this->advancedFields))
-                    ? (implode(' ', array_map(Html::id(...), explode(' ', (string) $value['rel']))))
-                    : null,
-                'ariaLabel' => (! empty($value['ariaLabel']) && in_array('ariaLabel', $this->advancedFields)) ? $value['ariaLabel'] : null,
-                'download' => (! empty($value['download']) && in_array('download', $this->advancedFields)) ? (bool) $value['download'] : null,
-                'filename' => (! empty($value['filename']) && in_array('download', $this->advancedFields)) ? $value['filename'] : null,
-            ]);
-
-            $value = $value['value'] ?? $value[$typeId]['value'] ?? '';
-
-            if (is_string($value)) {
-                $value = trim($value);
-            }
-
-            if (! $value) {
-                return null;
-            }
-
-            if (isset($config['urlSuffix']) && ! str_starts_with((string) $config['urlSuffix'], '#')) {
-                $config['urlSuffix'] = Str::start($config['urlSuffix'], '?');
-            }
-
-            if (isset($linkTypes[$typeId])) {
-                $linkType = $linkTypes[$typeId];
-            } else {
-                $type = self::types()[$typeId] ?? null;
-                if (! $type) {
-                    throw new InvalidArgumentException("Invalid link type: $typeId");
-                }
-                $linkType = ComponentHelper::createComponent($type, BaseLinkType::class);
-            }
-
-            $config['value'] = $linkType->normalizeValue($value);
-        } else {
+        if (! is_array($value)) {
             if (! $value) {
                 return null;
             }
 
             $typeId = $this->resolveType($value);
             $linkType = $linkTypes[$typeId] ?? ComponentHelper::createComponent(self::types()[$typeId], BaseLinkType::class);
+
+            return new LinkData($value, $linkType);
         }
 
-        return new LinkData($config['value'], $linkType);
+        $typeId = $value['type'] ?? UrlType::id();
+        $destination = $value['value'] ?? $value[$typeId]['value'] ?? '';
+        if (is_string($destination)) {
+            $destination = trim($destination);
+        }
+
+        if (! $destination) {
+            return null;
+        }
+
+        if (isset($linkTypes[$typeId])) {
+            $linkType = $linkTypes[$typeId];
+        } else {
+            $type = self::types()[$typeId] ?? null;
+            if (! $type) {
+                throw new InvalidArgumentException("Invalid link type: $typeId");
+            }
+            $linkType = ComponentHelper::createComponent($type, BaseLinkType::class);
+        }
+
+        $link = new LinkData($linkType->normalizeValue($destination), $linkType);
+        if (! empty($value['label']) && $this->showLabelField) {
+            $link->setLabel($value['label']);
+        }
+
+        foreach (['urlSuffix', 'target', 'title', 'ariaLabel'] as $attribute) {
+            if (! empty($value[$attribute]) && in_array($attribute, $this->advancedFields)) {
+                $link->$attribute = $value[$attribute];
+            }
+        }
+
+        if ($link->urlSuffix !== null && ! str_starts_with($link->urlSuffix, '#')) {
+            $link->urlSuffix = Str::start($link->urlSuffix, '?');
+        }
+
+        foreach (['class', 'rel'] as $attribute) {
+            if (! empty($value[$attribute]) && in_array($attribute, $this->advancedFields)) {
+                $link->$attribute = implode(' ', array_map(Html::id(...), explode(' ', (string) $value[$attribute])));
+            }
+        }
+
+        if (! empty($value['id']) && in_array('id', $this->advancedFields)) {
+            $link->id = Html::id($value['id']);
+        }
+
+        if (in_array('download', $this->advancedFields)) {
+            $link->download = ! empty($value['download']);
+            if (! empty($value['filename'])) {
+                $link->setFilename($value['filename']);
+            }
+        }
+
+        return $link;
     }
 
     /**
      * Localize the value of the link field when linking to an element.
      *
-     * @return LinkData|array{type: string, value: string}
+     * @return LinkData|array<string, mixed>
      */
     private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
     {
@@ -393,10 +398,8 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 $localizedQuery instanceof ElementQueryInterface &&
                 $localizedQuery->siteId($element->siteId)->exists()
             ) {
-                $type = $value->getType();
-
                 return [
-                    'type' => $type,
+                    ...$value->serialize(),
                     'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
                 ];
             }

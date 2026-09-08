@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -82,37 +83,54 @@ trait QueriesAssetProperties
 
     protected function initQueriesAssetProperties(): void
     {
-        $this->beforeQuery(function (AssetQuery $assetQuery) {
-            if ($assetQuery->uploaderId) {
-                $assetQuery->whereIn('uploaderId', Arr::wrap($assetQuery->uploaderId));
-            }
+        $this->beforeQuery(static function (AssetQuery $assetQuery) {
+            static::applyUploaderId($assetQuery, $assetQuery->uploaderId);
+            static::applyFilename($assetQuery, $assetQuery->filename);
+            static::applyKind($assetQuery, $assetQuery->kind);
+            static::applyDateModified($assetQuery, $assetQuery->dateModified);
+        });
+    }
 
-            if ($assetQuery->filename) {
-                $assetQuery->whereParam('assets.filename', $assetQuery->filename);
-            }
+    public static function applyUploaderId(BuilderContract $query, ?int $value): void
+    {
+        if (! $value) {
+            return;
+        }
 
-            if ($assetQuery->kind) {
-                $assetQuery->where(function (Builder $query) use ($assetQuery) {
-                    $query->whereParam('assets.kind', $assetQuery->kind);
+        $query->whereIn('uploaderId', Arr::wrap($value));
+    }
 
-                    $kinds = AssetsHelper::getFileKinds();
+    public static function applyFilename(BuilderContract $query, mixed $value): void
+    {
+        $query->whereParam('assets.filename', $value);
+    }
 
-                    foreach ((array) $assetQuery->kind as $kind) {
-                        if (! isset($kinds[$kind])) {
-                            continue;
-                        }
+    public static function applyKind(BuilderContract $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
 
-                        foreach ($kinds[$kind]['extensions'] as $extension) {
-                            $query->orWhereLike('assets.filename', "%.$extension");
-                        }
-                    }
-                });
-            }
+        $query->where(function (Builder $query) use ($value) {
+            $query->whereParam('assets.kind', $value);
 
-            if ($assetQuery->dateModified) {
-                $assetQuery->whereDateParam('assets.dateModified', $assetQuery->dateModified);
+            $kinds = AssetsHelper::getFileKinds();
+
+            foreach ((array) $value as $kind) {
+                if (! isset($kinds[$kind])) {
+                    continue;
+                }
+
+                foreach ($kinds[$kind]['extensions'] as $extension) {
+                    $query->orWhereLike('assets.filename', "%.$extension");
+                }
             }
         });
+    }
+
+    public static function applyDateModified(BuilderContract $query, mixed $value): void
+    {
+        $query->whereDateParam('assets.dateModified', $value);
     }
 
     /**

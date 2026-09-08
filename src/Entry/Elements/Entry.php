@@ -1724,7 +1724,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             // eager-load authors for all queried entries
             Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
-            return [];
+            return $this->_authors ?? [];
         }
 
         $this->setAuthors(User::find()

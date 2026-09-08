@@ -72,11 +72,11 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         $valueSql = self::valueSql($instances);
 
-        return $query->whereDateParam($valueSql, $value);
+        $query->whereDateParam($valueSql, $value);
     }
 
     /**

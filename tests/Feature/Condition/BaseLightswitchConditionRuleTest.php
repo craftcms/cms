@@ -49,7 +49,7 @@ it('modifyQuery filters by admin value', function (bool $ruleValue, bool $expect
     $rule->value = $ruleValue;
 
     $query = User::find();
-    $rule->modifyQuery($query);
+    $rule->modifyQuery($query, $query);
 
     $results = $query->all();
 

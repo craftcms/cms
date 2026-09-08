@@ -296,9 +296,12 @@ describe('craft-combobox', () => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    const fired: unknown[] = [];
-    combobox.addEventListener('model-value-changed', () => {
-      fired.push(combobox.modelValue);
+    const fired: Array<{value: unknown; changeSource?: string}> = [];
+    combobox.addEventListener('model-value-changed', (event) => {
+      fired.push({
+        value: combobox.modelValue,
+        changeSource: (event as CustomEvent).detail?.changeSource,
+      });
     });
 
     const input = combobox._inputNode as HTMLInputElement;
@@ -309,7 +312,10 @@ describe('craft-combobox', () => {
     await new Promise((resolve) => setTimeout(resolve));
 
     expect(combobox.modelValue).toBe('$MY_ENV');
-    expect(fired).toContain('$MY_ENV');
+    expect(fired).toContainEqual({
+      value: '$MY_ENV',
+      changeSource: 'input',
+    });
   });
 
   it('keeps updating the model past the first keystroke, even with a v-model write-back', async () => {
@@ -428,4 +434,41 @@ describe('craft-combobox', () => {
     const node = combobox._listboxNode as HTMLElement;
     expect(node.querySelector('.combobox__footer')).not.toBeNull();
   });
+});
+
+it('adopts a model value naming an option from a replaced option set', async () => {
+  // The field editor swaps the whole option set when the field type changes and
+  // writes the new value in the same tick. Lit patches the option elements in
+  // place, so without keying they never disconnect, Lion never re-registers
+  // them, and the combobox silently keeps — and keeps announcing — the previous
+  // value. The next form refresh then posts the old field type.
+  const combobox = await createFixture((c) => {
+    c.options = [
+      {label: 'Plain Text', value: 'plain'},
+      {label: 'Dropdown', value: 'dropdown'},
+    ];
+    c.modelValue = 'plain';
+  });
+
+  const announced: string[] = [];
+  combobox.addEventListener('model-value-changed', () => {
+    announced.push(combobox.modelValue);
+  });
+
+  combobox.options = [
+    {label: 'Matrix', value: 'matrix'},
+    {label: 'Money', value: 'money'},
+  ];
+  combobox.modelValue = 'matrix';
+
+  await combobox.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  await combobox.updateComplete;
+
+  expect(combobox.modelValue).toBe('matrix');
+  // Nothing stale escapes: the bound v-model is written on every announcement,
+  // so an interim one carrying the previous value lands in the form's values
+  // and marks it changed before being corrected.
+  expect(announced).toEqual(['matrix']);
+  expect(combobox.querySelector('input')?.value).toBe('Matrix');
 });

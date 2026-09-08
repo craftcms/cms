@@ -409,7 +409,7 @@ import './dashboard.scss';
       this.storedSettings = storedSettings;
 
       this.$settingsToggle = this.$container.find('[data-settings-toggle]');
-      this.$gridItem = this.$container.parent();
+      this.$gridItem = this.$container.closest('.item');
 
       // Store a reference to this object on the container element
       this.$container.data('widget', this);
@@ -425,11 +425,13 @@ import './dashboard.scss';
       }
 
       this.$front = this.$container.children('.front');
-      this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
-      this.$heading = this.$front.find('> .pane > .widget-heading');
+      const $pane = this.$front.children('.pane, craft-pane');
+
+      this.$settingsBtn = $pane.children('.icon.settings, .widget-settings-button');
+      this.$heading = $pane.children('.widget-heading');
       this.$title = this.$heading.find('> h2');
       this.$subtitle = this.$heading.find('> h5');
-      this.$bodyContainer = this.$front.find('> .pane > .body');
+      this.$bodyContainer = $pane.children('.body');
 
       this.setSettings(settingsHtml, initSettingsFn, settingsForm);
 

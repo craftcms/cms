@@ -222,9 +222,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
         foreach ($config as $key => $value) {
             if ($key === 'settings') {
-                $model = $plugin->createSettingsModel();
-                $model?->setAttributes($value);
-                $plugin->settings = $model;
+                $plugin->getSettings()?->setAttributes($value);
 
                 continue;
             }

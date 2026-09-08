@@ -8,12 +8,14 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
+use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
@@ -143,7 +145,7 @@ test('render components skips unresolved component types', function () {
     $response = postJson(action([RenderController::class, 'components']), [
         'components' => [
             [
-                'type' => CraftCms\Cms\Section\Data\Section::class,
+                'type' => SectionData::class,
                 'id' => 99999,
                 'instances' => [[]],
             ],
@@ -160,32 +162,48 @@ test('render components skips unresolved component types', function () {
         );
 });
 
-test('render components returns chip and menu item html for sections', function () {
-    $section = Section::factory()->create([
-        'name' => 'Articles',
-        'handle' => 'articles',
-    ]);
+test('render components returns chip and menu item html for sections', function (array $order) {
+    $sections = collect(['Articles', 'News'])->map(fn (string $name) => Section::factory()->create([
+        'name' => $name,
+        'handle' => strtolower($name),
+    ]));
+    $baseComponents = $sections->map(fn (Section $section) => SectionData::get($section->id));
+    $instances = [
+        ['showHandle' => true, 'overrides' => ['name' => 'Custom label']],
+        ['showHandle' => true],
+        ['showHandle' => true, 'overrides' => ['id' => 12345]],
+    ];
+    $orderedInstances = array_map(fn (int $index) => $instances[$index], $order);
 
     $response = postJson(action([RenderController::class, 'components']), [
-        'components' => [
-            [
-                'type' => CraftCms\Cms\Section\Data\Section::class,
-                'id' => $section->id,
-                'instances' => [
-                    [
-                        'showHandle' => true,
-                    ],
-                ],
-            ],
-        ],
+        'components' => $sections->map(fn (Section $section) => [
+            'type' => SectionData::class,
+            'id' => $section->id,
+            'instances' => $orderedInstances,
+        ])->all(),
         'withMenuItems' => true,
         'menuId' => 'sections-menu',
-    ]);
+    ])->assertOk();
 
-    $response->assertOk()
-        ->assertJsonPath("components.CraftCms\\Cms\\Section\\Data\\Section.{$section->id}.0", fn (string $html) => str_contains($html, 'Articles') && str_contains($html, CraftCms\Cms\Section\Data\Section::class) && str_contains($html, "data-id=\"{$section->id}\""))
-        ->assertJsonPath("menuItems.CraftCms\\Cms\\Section\\Data\\Section.{$section->id}", fn (string $html) => str_contains($html, 'Articles') && str_contains($html, CraftCms\Cms\Section\Data\Section::class) && str_contains($html, "data-id=\"{$section->id}\""));
-});
+    foreach ($sections as $index => $section) {
+        foreach ($orderedInstances as $position => $instance) {
+            $html = $response->json('components.'.SectionData::class.'.'.$section->id.'.'.$position);
+            $chip = new Crawler($html)->filter('craft-chip');
+            expect($chip->attr('data-label'))->toBe($instance['overrides']['name'] ?? $section->name);
+            expect($chip->attr('data-id'))->toBe((string) ($instance['overrides']['id'] ?? $section->id));
+        }
+
+        $menu = $response->json('menuItems.'.SectionData::class.'.'.$section->id);
+        expect($menu)->toContain($section->name)->not->toContain('Custom label');
+        expect($menu)->toContain('data-id="'.$section->id.'"');
+        expect($baseComponents[$index]->name)->toBe($section->name);
+        expect($baseComponents[$index]->id)->toBe($section->id);
+        expect(SectionData::get($section->id))->toBe($baseComponents[$index]);
+    }
+})->with([
+    'label then unmodified then ID' => [[0, 1, 2]],
+    'ID then label then unmodified' => [[2, 0, 1]],
+]);
 
 test('render markdown validates required flavor', function () {
     postJson(action([RenderController::class, 'markdown']), [

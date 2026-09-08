@@ -1686,6 +1686,7 @@ return [
     'Sort by' => 'Sorter etter',
     'Sort descending' => 'Sorter synkende',
     'Sort direction' => 'Sorter etter retning',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sorteringskode',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Kildeinnstillinger lagret',
@@ -2248,6 +2249,9 @@ return [
     'by {creator}' => 'av {creator}',
     'categories' => 'kategorier',
     'category' => 'kategori',
+    'comment_mention_body' => "Hey {{user.friendlyName|e}},\n\n{{author|e}} mentioned you in a comment on “{{subject|e}}”:\n\n{{comment}}\n\n<{{link}}>",
+    'comment_mention_heading' => 'When someone mentions a user in a comment:',
+    'comment_mention_subject' => 'You were mentioned in a comment',
     'contains' => 'inneholder',
     'content block' => 'innholdsblokk',
     'content blocks' => 'innholdsblokker',
@@ -2316,9 +2320,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

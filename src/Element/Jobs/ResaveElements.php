@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Operations\ResaveMutation;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -54,71 +51,17 @@ class ResaveElements extends BatchedElementJob
 
     protected function processElement(ElementInterface $element): void
     {
-        if ($this->toDefault) {
-            if ($this->set) {
-                /** @var ElementInterface $element */
-                $fields = [$element->getFieldLayout()?->getFieldByHandle($this->set)];
-            } else {
-                $fields = array_map(
-                    function (string $handle) use ($element) {
-                        $field = Fields::getFieldByHandle($handle);
-                        if (! $field) {
-                            return null;
-                        }
-
-                        return $element->getFieldLayout()?->getFieldByUid($field->uid);
-                    },
-                    $this->withFields,
-                );
-            }
-
-            $fields = array_filter(
-                $fields,
-                fn (?FieldInterface $field) => $field instanceof DefaultableFieldInterface
-            );
-
-            foreach ($fields as $field) {
-                $set = true;
-                if ($this->ifEmpty) {
-                    if (! ElementHelper::isAttributeEmpty($element, $field->handle)) {
-                        $set = false;
-                    }
-                } elseif ($this->ifInvalid) {
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-                    if ($element->validate("field:$field->handle")) {
-                        $set = false;
-                    }
-                }
-
-                if ($set) {
-                    /** @var ElementInterface $element */
-                    /** @var DefaultableFieldInterface $field */
-                    $defaultValue = $field->getDefaultValue();
-                    if ($defaultValue !== null) {
-                        $element->setFieldValue($field->handle, $defaultValue);
-                    }
-                }
-            }
-        } elseif (isset($this->set)) {
-            $set = true;
-
-            if ($this->ifEmpty) {
-                if (! ElementHelper::isAttributeEmpty($element, $this->set)) {
-                    $set = false;
-                }
-            } elseif ($this->ifInvalid) {
-                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-
-                if ($element->validate($this->set) && $element->validate("field:$this->set")) {
-                    $set = false;
-                }
-            }
-
-            if ($set) {
-                $to = ResaveCommand::normalizeTo($this->to);
-                $element->{$this->set} = $to($element);
-            }
-        }
+        ResaveMutation::apply(
+            $element,
+            $this->set,
+            $this->to,
+            $this->toDefault,
+            $this->toDefault && ! $this->set
+                ? array_filter(array_map(Fields::getFieldByHandle(...), $this->withFields))
+                : [],
+            $this->ifEmpty,
+            $this->ifInvalid,
+        );
 
         $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $element->resaving = true;
