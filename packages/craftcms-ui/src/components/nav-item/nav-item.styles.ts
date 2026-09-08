@@ -44,6 +44,12 @@ export default css`
     inset-block-end: 0;
   }
 
+  .nav-item__prefix craft-button,
+  .nav-item__suffix craft-button {
+    position: relative;
+    z-index: 1;
+  }
+
   .nav-item--prefixed {
     padding-inline: var(--c-spacing-sm);
     grid-template-columns: calc(24rem / 16) 1fr auto;
