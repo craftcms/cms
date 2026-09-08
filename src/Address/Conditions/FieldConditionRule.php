@@ -12,11 +12,11 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
-use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\Support\Facades\Fields;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -52,7 +52,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
             ->all();
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $fieldIds = $this->addressFields()->pluck('id');

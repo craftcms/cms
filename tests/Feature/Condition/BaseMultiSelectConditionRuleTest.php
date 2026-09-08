@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Query\Builder;
 
 use function Pest\Laravel\actingAs;
 
@@ -69,7 +70,7 @@ describe('modifyQuery', function () {
         $rule->values = ['live'];
 
         $query = Entry::find()->status(null);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -88,7 +89,7 @@ describe('modifyQuery', function () {
         $rule->values = ['live'];
 
         $query = Entry::find()->status(null);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 

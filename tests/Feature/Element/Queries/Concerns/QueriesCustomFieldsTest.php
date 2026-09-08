@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -11,7 +12,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
@@ -23,7 +24,7 @@ class TestActiveQueryField extends PlainText
     public static bool $throw = false;
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         self::$activeQueryDuringModify = ElementQuery::$activeQuery;
 
@@ -31,7 +32,7 @@ class TestActiveQueryField extends PlainText
             throw new RuntimeException('Active query failure.');
         }
 
-        parent::modifyQuery($query, $instances, $value);
+        parent::modifyQuery($query, $instances, $value, $elementQuery);
     }
 
     public static function reset(): void

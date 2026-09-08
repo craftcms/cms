@@ -11,12 +11,10 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use Illuminate\Contracts\Database\Query\Builder as BuilderInterface;
 use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
@@ -109,8 +107,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         };
     }
 
-    /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */
-    public function modifyQuery(BuilderInterface $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         $field = $this->field();
 

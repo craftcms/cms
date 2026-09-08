@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
 use function CraftCms\Cms\currentUser;
@@ -208,8 +208,7 @@ trait FieldConditionRuleTrait
         return currentUser()?->getPreference('showFieldHandles') ?? false;
     }
 
-    /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         $value = $this->elementQueryParam();
 
@@ -220,11 +219,7 @@ trait FieldConditionRuleTrait
         $instances = $this->fieldInstances();
         $firstInstance = $instances[0];
 
-        if (! method_exists($firstInstance, 'modifyQuery')) {
-            return;
-        }
-
-        $firstInstance::modifyQuery($query, $instances, $value);
+        $firstInstance::modifyQuery($query, $instances, $value, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

@@ -28,8 +28,8 @@ use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Query\Builder;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -171,11 +171,12 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Applies a condition to the query builder for the given field instances, for a user-provided param value.
      *
-     * @param  Builder  $query  The query instance to modify
+     * @param  Builder  $query  The query builder to modify
+     * @param  ElementQueryInterface  $elementQuery  The element query being executed
      * @param  static[]  $instances  The field instances to search
      * @param  mixed  $value  The user-supplied param value
      */
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void;
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).

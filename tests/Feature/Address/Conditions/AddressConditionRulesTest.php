@@ -18,6 +18,7 @@ use CraftCms\Cms\Address\Conditions\PostalCodeConditionRule;
 use CraftCms\Cms\Address\Conditions\SortingCodeConditionRule;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
+use Illuminate\Database\Query\Builder;
 
 it('matchElement with text-based rules', function (string $ruleClass, string $property, string $factoryValue, string $ruleValue, bool $expected) {
     $element = AddressModel::factory()->createElement([$property => $factoryValue]);
@@ -61,7 +62,7 @@ it('modifyQuery filters addresses by text-based rules', function (string $ruleCl
     $rule->value = $ruleValue;
 
     $query = Address::find();
-    $rule->modifyQuery($query, $query);
+    $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
     $results = $query->all();
 
@@ -114,7 +115,7 @@ describe('CountryConditionRule', function () {
         $rule->values = ['US'];
 
         $query = Address::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -157,7 +158,7 @@ describe('AdministrativeAreaConditionRule', function () {
         $rule->countryCode = 'FR';
 
         $query = Address::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -195,7 +196,7 @@ describe('FieldConditionRule', function () {
         $rule->operator = 'empty';
 
         $query = Address::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $resultIds = collect($query->all())->pluck('id')->toArray();
 

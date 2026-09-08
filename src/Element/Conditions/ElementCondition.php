@@ -19,6 +19,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Database\Query\Builder;
 use Override;
 use RuntimeException;
 
@@ -247,17 +248,19 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         ];
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(ElementQueryInterface $elementQuery): void
     {
-        $query->beforeQuery(function (ElementQueryInterface $query) {
-            foreach ($this->getConditionRules() as $rule) {
-                try {
-                    /** @var ElementQueryConditionRuleInterface $rule */
-                    $rule->modifyQuery($query, $query);
-                } catch (RuntimeException) {
-                    // The rule is misconfigured
+        $elementQuery->beforeQuery(function (ElementQueryInterface $elementQuery) {
+            $elementQuery->where(function (Builder $query) use ($elementQuery) {
+                foreach ($this->getConditionRules() as $rule) {
+                    try {
+                        /** @var ElementQueryConditionRuleInterface $rule */
+                        $rule->modifyQuery($query, $elementQuery);
+                    } catch (RuntimeException) {
+                        // The rule is misconfigured
+                    }
                 }
-            }
+            });
         });
     }
 
