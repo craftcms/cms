@@ -50,9 +50,13 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     {
         return [
             self::OPERATOR_EQ,
+            self::OPERATOR_NE,
             self::OPERATOR_BEGINS_WITH,
+            self::OPERATOR_NOT_BEGINS_WITH,
             self::OPERATOR_ENDS_WITH,
+            self::OPERATOR_NOT_ENDS_WITH,
             self::OPERATOR_CONTAINS,
+            self::OPERATOR_NOT_CONTAINS,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
         ];
@@ -132,8 +136,11 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
         return match ($this->operator) {
             self::OPERATOR_BEGINS_WITH => "$value*",
+            self::OPERATOR_NOT_BEGINS_WITH => "not $value*",
             self::OPERATOR_ENDS_WITH => "*$value",
+            self::OPERATOR_NOT_ENDS_WITH => "not *$value",
             self::OPERATOR_CONTAINS => "*$value*",
+            self::OPERATOR_NOT_CONTAINS => "not *$value*",
             default => "$this->operator $value",
         };
     }
@@ -165,8 +172,11 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_GT => $value > $this->value,
             self::OPERATOR_GTE => $value >= $this->value,
             self::OPERATOR_BEGINS_WITH => is_string($value) && StringHelper::startsWith($value, $this->value),
+            self::OPERATOR_NOT_BEGINS_WITH => !(is_string($value) && StringHelper::startsWith($value, $this->value)),
             self::OPERATOR_ENDS_WITH => is_string($value) && StringHelper::endsWith($value, $this->value),
+            self::OPERATOR_NOT_ENDS_WITH => !(is_string($value) && StringHelper::endsWith($value, $this->value)),
             self::OPERATOR_CONTAINS => is_string($value) && StringHelper::contains($value, $this->value),
+            self::OPERATOR_NOT_CONTAINS => !(is_string($value) && StringHelper::contains($value, $this->value)),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
     }
