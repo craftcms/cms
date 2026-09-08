@@ -106,6 +106,13 @@ export default css`
     padding: var(--c-spacing-sm);
   }
 
+  /* Quieter than the label it trails, and sized to the toggle chevron it
+     stands in for. */
+  .flyout-indicator {
+    font-size: calc(10rem / 16);
+    color: var(--c-color-neutral-on-quiet, currentcolor);
+  }
+
   .flyout__label {
     padding-inline: var(--c-spacing-sm);
     font-size: var(--c-text-sm);

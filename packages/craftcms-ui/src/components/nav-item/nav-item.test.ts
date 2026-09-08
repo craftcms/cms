@@ -374,6 +374,37 @@ describe('craft-nav-item flyout', () => {
     expect(popover.style.getPropertyValue('--popover-max-block-size')).toBe('');
   });
 
+  it('marks an item whose subnav opens beside it', async () => {
+    const item = await createFixture({iconOnly: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+
+    const indicator = item.shadowRoot!.querySelector('.flyout-indicator');
+
+    // A flyout has no toggle, so without this there's nothing to tell it from
+    // a leaf until you happen to hover it.
+    expect(indicator).not.toBeNull();
+    expect(indicator!.getAttribute('name')).toBe('chevron-right');
+  });
+
+  it('leaves a collapsible item to its toggle', async () => {
+    const item = await createFixture({iconOnly: false});
+    await item.updateComplete;
+
+    // Its chevron is in the disclosure toggle; a second one would just be
+    // two chevrons saying different things.
+    expect(item.shadowRoot!.querySelector('.flyout-indicator')).toBeNull();
+    expect(item.shadowRoot!.querySelector('craft-button')).not.toBeNull();
+  });
+
+  it('gives a childless item no indicator', async () => {
+    const item = await createFixture({iconOnly: false, subnav: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+
+    expect(item.shadowRoot!.querySelector('.flyout-indicator')).toBeNull();
+  });
+
   it('leaves a manual toggle alone across unrelated renders', async () => {
     const item = await createFixture({iconOnly: false});
 

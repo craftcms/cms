@@ -366,19 +366,41 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderSuffix(showToggle: boolean = false) {
+  /**
+   * An item whose subnav opens beside it says so.
+   *
+   * A collapsible item has its chevron in the toggle; a flyout has no toggle,
+   * so without this there's nothing to distinguish it from a leaf until you
+   * happen to hover it.
+   */
+  renderFlyoutIndicator() {
+    return html`
+      <craft-icon
+        class="flyout-indicator"
+        name="chevron-right"
+        aria-hidden="true"
+      ></craft-icon>
+    `;
+  }
+
+  renderSuffix(showToggle: boolean = false, showFlyoutIndicator = false) {
     return html`
       <div class="nav-item__suffix">
         <slot name="suffix">
           ${showToggle && this.togglePosition === 'suffix'
             ? this.renderSubnavToggle()
             : nothing}
+          ${showFlyoutIndicator ? this.renderFlyoutIndicator() : nothing}
         </slot>
       </div>
     `;
   }
 
-  renderItem(showToggle: boolean, hasPrefix: boolean = false) {
+  renderItem(
+    showToggle: boolean,
+    hasPrefix: boolean = false,
+    showFlyoutIndicator = false
+  ) {
     // Without an href there's nothing to link to, so render a plain span.
     const tag = this.href ? literal`a` : literal`span`;
 
@@ -399,7 +421,7 @@ export default class CraftNavItem extends LitElement {
           id="${this.id}-label"
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
-        ${this.renderSuffix(showToggle)}
+        ${this.renderSuffix(showToggle, showFlyoutIndicator)}
       </${tag}>
     `;
   }
@@ -427,7 +449,7 @@ export default class CraftNavItem extends LitElement {
       <li>
         ${this.iconOnly
           ? this.renderIconItem(hasSubnav)
-          : this.renderItem(showToggle, hasPrefix)}
+          : this.renderItem(showToggle, hasPrefix, useFlyout)}
         ${!this.iconOnly && useFlyout
           ? this.renderFlyout(`item-${this.id}`, false)
           : nothing}
