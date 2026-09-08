@@ -19,6 +19,7 @@ use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadController;
+use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
@@ -112,6 +113,16 @@ $sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpAc
  */
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
+        Route::prefix('assets/uploads')
+            ->name(in_array('craft.cp', $middleware, true) ? 'craft.cp.uploads.' : 'craft.uploads.')
+            ->group(function () {
+                Route::post('', [UploadSessionController::class, 'store'])->middleware('throttle:60,1')->name('store');
+                Route::post('{upload}/parts', [UploadSessionController::class, 'part'])->whereUuid('upload')->name('part');
+                Route::post('{upload}/parts/{part}', [UploadSessionController::class, 'chunk'])->whereUuid('upload')->whereNumber('part')->name('chunk');
+                Route::post('{upload}/complete', [UploadSessionController::class, 'complete'])->whereUuid('upload')->name('complete');
+                Route::delete('{upload}', [UploadSessionController::class, 'destroy'])->whereUuid('upload')->name('destroy');
+            });
+
         // App
         Route::allowDuringMaintenance()->get('app/health-check', HealthCheckController::class);
 

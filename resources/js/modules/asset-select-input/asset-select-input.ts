@@ -256,6 +256,12 @@ export class AssetSelectInput extends BaseElementSelectInput {
   }
 
   _onUploadFailure(event: any, data: any = null): void {
+    if (data?.errorThrown === 'abort') {
+      this.progressBar.hideProgressBar();
+      this.$container.removeClass('uploading');
+      return;
+    }
+
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 

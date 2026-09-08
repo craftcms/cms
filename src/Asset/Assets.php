@@ -356,9 +356,7 @@ class Assets
      */
     public function getTempAssetUploadDisk(): FilesystemAdapter
     {
-        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
-
-        return Filesystems::disk($handle ?: 'disk:'.FilesystemsService::TEMP_ASSET_DISK);
+        return Filesystems::disk(Cms::config()->getTempAssetUploadFs());
     }
 
     public function createTempAssetQuery(): AssetQuery

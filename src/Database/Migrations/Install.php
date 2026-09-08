@@ -306,6 +306,23 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
+        $logger?->subLabel('asset_upload_sessions');
+        Schema::create(Table::ASSETUPLOADSESSIONS, function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('owner');
+            $table->string('uploader');
+            $table->string('disk');
+            $table->string('filename');
+            $table->unsignedBigInteger('size');
+            $table->unsignedBigInteger('chunkSize')->default(1);
+            $table->jsonb('parameters');
+            $table->jsonb('state');
+            $table->jsonb('result')->nullable();
+            $table->dateTime('expiresAt')->index();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+        });
+
         $logger?->subLabel('assets_sites');
         Schema::create('assets_sites', function (Blueprint $table) {
             $table->integer('assetId');

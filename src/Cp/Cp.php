@@ -220,6 +220,7 @@ readonly class Cp
             'isMultiSite' => Sites::isMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => AssetsHelper::getMaxUploadSize(),
+            'maxAssetUploadSize' => AssetsHelper::getMaxAssetUploadSize(),
             'notificationDuration' => (int) (
                 $currentUser->getPreference('notificationDuration')
                 ?? $generalConfig->accessibilityDefaults['notificationDuration']

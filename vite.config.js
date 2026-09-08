@@ -335,6 +335,7 @@ export default defineConfig(({mode}) => {
               input: [
                 'resources/js/cp.ts',
                 'resources/js/legacy.ts',
+                'resources/js/uploads.ts',
                 'resources/css/cp.css',
                 'workbench/resources/js/cp.ts',
               ],

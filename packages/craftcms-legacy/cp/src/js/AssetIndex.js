@@ -538,6 +538,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data = null) {
+      if (data?.errorThrown === 'abort') {
+        return;
+      }
+
       const response =
         event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 

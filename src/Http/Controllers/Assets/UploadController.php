@@ -6,21 +6,16 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\AssetUploadHandler;
+use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\UploadFailedException;
-use CraftCms\Cms\Asset\Folders;
-use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Field\Assets as AssetsField;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -36,8 +31,7 @@ readonly class UploadController
 
     public function __construct(
         private Assets $assets,
-        private Folders $folders,
-        private Fields $fields,
+        private AssetUploadHandler $uploads,
         private Elements $elements,
     ) {}
 
@@ -49,127 +43,15 @@ readonly class UploadController
 
         abort_if(! $uploadedFile, 400, 'No file was uploaded');
 
-        $folderId = $request->integer('folderId') ?: null;
-        $fieldId = $request->integer('fieldId') ?: null;
-
-        abort_if(! $folderId && ! $fieldId, 400, 'No target destination provided for uploading');
-
         $tempPath = $this->getUploadedFileTempPath($uploadedFile);
 
-        if (empty($folderId)) {
-            /** @var AssetsField|null $field */
-            $field = $this->fields->getFieldById($fieldId);
-
-            abort_if(! $field instanceof AssetsField, 400, 'The field provided is not an Assets field');
-
-            if ($elementId = $request->integer('elementId')) {
-                $siteId = $request->integer('siteId') ?: null;
-                $element = $this->elements->getElementById($elementId, null, $siteId);
-            } else {
-                $element = null;
-            }
-            $folderId = $field->resolveDynamicPathToFolderId($element);
-
-            $selectionCondition = $field->getSelectionCondition();
-            if ($selectionCondition instanceof ElementCondition) {
-                $selectionCondition->referenceElement = $element;
-            }
-        } else {
-            $selectionCondition = null;
-        }
-
-        abort_if(empty($folderId), 400, 'The target destination provided for uploading is not valid');
-
-        $folder = $this->folders->findFolder(['id' => $folderId]);
-
-        abort_if(! $folder, 400, 'The target folder provided for uploading is not valid');
-
-        Gate::authorize('uploadAsset', $folder);
-
-        $filename = AssetsHelper::prepareAssetName($uploadedFile->getClientOriginalName());
-
-        if ($selectionCondition) {
-            $tempFolder = $this->assets->getUserTemporaryUploadFolder();
-
-            if ($folder->id !== $tempFolder->id) {
-                // upload to the user's temp folder initially, with a temp name
-                $originalFolder = $folder;
-                $originalFilename = $filename;
-                $folder = $tempFolder;
-                $filename = uniqid('asset', true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
-            }
-        }
-
-        $asset = new Asset;
-        $asset->tempFilePath = $tempPath;
-        $asset->setFilename($filename);
-        $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $uploadedFile->getClientMimeType());
-        $asset->newFolderId = $folder->id;
-        $asset->setVolumeId($folder->volumeId);
-        $asset->uploaderId = $request->craftUser()?->getCraftUserId();
-        $asset->avoidFilenameConflicts = true;
-
-        if (isset($originalFilename)) {
-            $asset->title = AssetsHelper::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
-        }
-
-        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
-        $result = $this->elements->saveElement($asset);
-
-        // In case of error, let user know about it.
-        if (! $result) {
-            return $this->asModelFailure($asset);
-        }
-
-        if ($selectionCondition) {
-            if (! $selectionCondition->matchElement($asset)) {
-                // delete and reject it
-                $this->elements->deleteElement($asset, true);
-
-                return $this->asFailure(t('{filename} isn’t selectable for this field.', [
-                    'filename' => $uploadedFile->getClientOriginalName(),
-                ]));
-            }
-
-            if (isset($originalFilename, $originalFolder)) {
-                // move it into the original target destination
-                $asset->newFilename = $originalFilename;
-                $asset->newFolderId = $originalFolder->id;
-                $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
-
-                if (! $this->elements->saveElement($asset)) {
-                    return $this->asModelFailure($asset);
-                }
-            }
-        }
-
-        // try to get uploaded asset's URL
-        $url = null;
-        try {
-            $url = $asset->getUrl();
-        } catch (Throwable) {
-            // do nothing
-        }
-
-        if ($asset->conflictingFilename !== null) {
-            $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
-
-            return new JsonResponse([
-                'conflict' => t('A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
-                'assetId' => $asset->id,
-                'filename' => $asset->conflictingFilename,
-                'conflictingAssetId' => $conflictingAsset->id ?? null,
-                'suggestedFilename' => $asset->suggestedFilename,
-                'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->sourceHasUrls()) ? $conflictingAsset->getUrl() : null,
-                'url' => $url,
-            ]);
-        }
-
-        return $this->asSuccess(data: [
-            'filename' => $asset->getFilename(),
-            'assetId' => $asset->id,
-            'url' => $url,
-        ]);
+        return $this->respond($this->uploads->store(
+            $request->all(),
+            $uploadedFile->getClientOriginalName(),
+            $uploadedFile->getClientMimeType(),
+            $tempPath,
+            uploaderId: $request->craftUser()?->getCraftUserId(),
+        ));
     }
 
     public function replaceFile(Request $request): Response
@@ -260,20 +142,20 @@ readonly class UploadController
 
         $resultingAsset = $assetToReplace ?: $sourceAsset;
 
-        return $this->asSuccess(data: [
-            'assetId' => $assetId,
-            'filename' => $resultingAsset->getFilename(),
-            'formattedSize' => $resultingAsset->getFormattedSize(0),
-            'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => I18N::getFormatter()->asDatetime(
-                $resultingAsset->dateUpdated,
-                Formatter::FORMAT_WIDTH_SHORT,
-                true,
-            ),
-            'dimensions' => $resultingAsset->getDimensions(),
-            'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
-            'resultingUrl' => $resultingAsset->getUrl(),
-        ]);
+        return $this->respond($this->uploads->replacementResult($resultingAsset, $assetId));
+    }
+
+    private function respond(UploadResult $result): Response
+    {
+        if ($result->status !== 200) {
+            return $this->asFailure($result->message ?? null, $result->payload());
+        }
+
+        if (isset($result->conflict)) {
+            return new JsonResponse($result->payload());
+        }
+
+        return $this->asSuccess(data: $result->payload());
     }
 
     /**

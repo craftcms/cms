@@ -293,6 +293,10 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
           router.reload();
         },
         fileuploadfail: (event: any, data: any) => {
+          if (data?.errorThrown === 'abort') {
+            return;
+          }
+
           const response =
             event instanceof CustomEvent
               ? event.detail

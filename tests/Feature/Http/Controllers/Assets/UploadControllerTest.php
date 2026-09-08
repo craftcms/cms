@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -26,12 +29,12 @@ beforeEach(function () {
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
-it('requires authentication', function () {
+it('requires authentication', function (string $action) {
     auth()->logout();
 
-    postJson(action([UploadController::class, 'upload']))
+    postJson(action([UploadController::class, $action]))
         ->assertUnauthorized();
-});
+})->with(['upload', 'replaceFile']);
 
 it('requires a file or field for upload', function () {
     postJson(action([UploadController::class, 'upload']), [
@@ -69,13 +72,6 @@ it('uploads to a dynamic field location using posted element context', function 
         ->exists())->toBeTrue();
 });
 
-it('requires authentication for replace file', function () {
-    auth()->logout();
-
-    postJson(action([UploadController::class, 'replaceFile']))
-        ->assertUnauthorized();
-});
-
 it('validates replace file parameters', function () {
     postJson(action([UploadController::class, 'replaceFile']))->assertBadRequest();
 });
@@ -93,4 +89,36 @@ it('casts posted asset IDs before looking them up', function (Closure $requestDa
         'sourceAssetId' => '999999',
         'targetFilename' => 'replacement.jpg',
     ]],
+]);
+
+it('reports rejected field uploads in the requested response format', function (bool $json) {
+    $result = EntryModel::factory()
+        ->withField('attachment', AssetsField::class, [
+            'defaultUploadLocationSource' => "volume:{$this->volume->uid}",
+            'selectionCondition' => [
+                'class' => AssetCondition::class,
+                'conditionRules' => [[
+                    'class' => FileTypeConditionRule::class,
+                    'values' => ['image'],
+                ]],
+            ],
+        ])->createElementWithFields([]);
+
+    $response = post(action([UploadController::class, 'upload']), [
+        'fieldId' => $result->fields->get('attachment')->id,
+        'elementId' => $result->element->id,
+        'assets-upload' => UploadedFile::fake()->createWithContent('attachment.txt', 'abc'),
+    ], ['Accept' => $json ? 'application/json' : 'text/html']);
+
+    $message = 'attachment.txt isn’t selectable for this field.';
+    if ($json) {
+        $response->assertBadRequest()->assertJsonPath('message', $message);
+    } else {
+        $response->assertRedirect()->assertSessionHas('error', $message);
+    }
+
+    expect(Asset::find()->count())->toBe(0);
+})->with([
+    'JSON' => [true],
+    'HTML' => [false],
 ]);

@@ -1,4 +1,8 @@
 import {BaseUploader} from './base-uploader';
+import {UploadNotification} from './upload-notification';
+import {AssetUpload, UploadError} from '@/upload-client';
+import {store} from '@/routes/craft/actions/craft/cp/uploads';
+import {upload, replaceFile} from '@actions/Assets/UploadController';
 
 // blueimp jQuery File Upload plugin seam — see base-uploader.ts.
 declare const $: any;
@@ -27,6 +31,11 @@ export class Uploader extends BaseUploader {
   _totalFileCounter = 0;
   _validFileCounter = 0;
   _onFileAdd: any = null;
+  private sessionUploads = false;
+  private destroyed = false;
+  private queue: Promise<void> = Promise.resolve();
+  private queued = new Set<AssetUpload>();
+  private uploads = new Map<AssetUpload, UploadNotification>();
 
   static override get defaults(): any {
     return {...DEFAULTS, maxFileSize: Craft.maxUploadSize};
@@ -40,9 +49,25 @@ export class Uploader extends BaseUploader {
   }
 
   override init($element: any, settings: any): void {
+    const customMaxFileSize = settings?.maxFileSize;
     settings = $.extend({}, Uploader.defaults, settings);
     super.init($element, settings);
     delete this.settings.events;
+
+    const target = new URL(this.settings.url, location.href);
+    const expected = new URL(
+      this.settings.replace ? replaceFile.url() : upload.url(),
+      location.href
+    );
+    this.sessionUploads =
+      this.settings.uploadSessions !== false &&
+      (target.pathname === expected.pathname ||
+        target.searchParams.get('action') ===
+          (this.settings.replace ? 'assets/replace-file' : 'assets/upload'));
+
+    if (this.sessionUploads && customMaxFileSize == null) {
+      this.settings.maxFileSize = Craft.maxAssetUploadSize;
+    }
 
     this.uploader = this.$element.fileupload(this.settings);
 
@@ -71,7 +96,9 @@ export class Uploader extends BaseUploader {
    * Get the number of uploads in progress.
    */
   override getInProgress(): number {
-    return this.uploader.fileupload('active');
+    return this.sessionUploads
+      ? this._inProgressCounter
+      : this.uploader.fileupload('active');
   }
 
   /**
@@ -96,7 +123,7 @@ export class Uploader extends BaseUploader {
       let pass = true;
       if (validateExtension) {
         const matches = file.name.match(/\.([a-z0-4_]+)$/i);
-        const fileExtension = matches[1];
+        const fileExtension = matches?.[1] ?? '';
         if (
           $.inArray(fileExtension.toLowerCase(), this._extensionList) === -1
         ) {
@@ -122,7 +149,11 @@ export class Uploader extends BaseUploader {
 
       if (pass) {
         this._validFileCounter++;
-        data.submit();
+        if (this.sessionUploads) {
+          this.uploadFile(file, data);
+        } else {
+          data.submit();
+        }
       }
 
       if (++this._totalFileCounter === data.originalFiles.length) {
@@ -135,7 +166,106 @@ export class Uploader extends BaseUploader {
     return true;
   }
 
+  private uploadFile(file: File, data: any): void {
+    const task = new AssetUpload(file, {
+      url: store.url(),
+      parameters: {
+        ...this.formData,
+        operation: this.settings.replace ? 'replace' : 'upload',
+      },
+      csrfToken: Craft.csrfTokenValue,
+      onProgress: (loaded, total) => {
+        this.uploads.get(task)?.updateProgress(loaded);
+        this.$element.trigger('fileuploadprogressall', {loaded, total});
+      },
+      onStateChange: (state) => this.uploads.get(task)?.updateState(state),
+    });
+
+    const cancel = async () => {
+      await task.cancel();
+      this.uploads.delete(task);
+    };
+
+    const notification = new UploadNotification(
+      file,
+      () => this.enqueue(task, data),
+      () => {
+        cancel().catch((error: Error) => Craft.cp.displayError(error.message));
+      }
+    );
+    this.uploads.set(task, notification);
+    data.abort = cancel;
+    data.submit = () => this.enqueue(task, data);
+    this.enqueue(task, data);
+  }
+
+  private enqueue(task: AssetUpload, data: any): void {
+    if (
+      this.destroyed ||
+      this.queued.has(task) ||
+      ['uploading', 'completing', 'completed', 'canceled'].includes(task.state)
+    ) {
+      return;
+    }
+
+    this.queued.add(task);
+    this._inProgressCounter++;
+    if (this._inProgressCounter === 1) {
+      this.$element.trigger('fileuploadstart');
+    }
+
+    this.queue = this.queue
+      .then(async () => {
+        try {
+          if (this.destroyed) {
+            return;
+          }
+
+          data.result = await task.upload();
+          this.uploads.delete(task);
+          this.$element.trigger('fileuploaddone', data);
+        } catch (error) {
+          if (!this.destroyed) {
+            data.errorThrown = task.state === 'canceled' ? 'abort' : 'error';
+            data.jqXHR = {
+              responseJSON:
+                error instanceof UploadError
+                  ? {message: error.message, ...error.data}
+                  : {
+                      message:
+                        error instanceof Error
+                          ? error.message
+                          : Craft.t('app', 'Upload failed.'),
+                    },
+            };
+            this.$element.trigger('fileuploadfail', data);
+          }
+        } finally {
+          this.queued.delete(task);
+          if (!this.destroyed) {
+            this.$element.trigger('fileuploadalways', data);
+          }
+          this._inProgressCounter--;
+          if (!this.destroyed && this._inProgressCounter === 0) {
+            this.$element.trigger('fileuploadstop');
+          }
+        }
+      })
+      .catch((error) => reportError(error));
+  }
+
   override destroy(): void {
+    this.destroyed = true;
+    for (const [task, notification] of this.uploads) {
+      if (task.state !== 'completing') {
+        task
+          .cancel()
+          .catch((error: Error) => Craft.cp.displayError(error.message));
+      }
+      notification.close();
+    }
+    this.uploads.clear();
+
     if (this.uploader.fileupload('instance')) {
       this.uploader.fileupload('destroy');
     }

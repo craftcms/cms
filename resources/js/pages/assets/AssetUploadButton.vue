@@ -90,6 +90,10 @@
           }
         },
         fileuploadfail: (event: Event, data: any = null) => {
+          if (data?.errorThrown === 'abort') {
+            return;
+          }
+
           const response =
             event instanceof CustomEvent && event.detail
               ? event.detail

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
+use CraftCms\Cms\Asset\Data\UploadPartRequest;
+use CraftCms\Cms\Asset\Data\UploadResult;
+use CraftCms\Cms\Asset\Data\UploadSessionData;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
 use CraftCms\Cms\Cp\Data\NotificationData;
@@ -58,6 +61,9 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->provider(new ClassListTransformedProvider(
                 [
                     AssetTransformerIndexData::class,
+                    UploadPartRequest::class,
+                    UploadResult::class,
+                    UploadSessionData::class,
                     GqlSchema::class,
                     GqlToken::class,
                     ImageTransform::class,
