@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574) and [#19563](https://github.com/craftcms/cms/pull/19563) for details.
+
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
+- Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
 - Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
 - `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now has a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562))
@@ -14,6 +18,7 @@
 - Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. Widgets must now declare `component()` and provide data through `props()`. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Remove `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. Plugins must now declare `createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
