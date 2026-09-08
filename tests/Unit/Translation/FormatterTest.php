@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Facades\Date;
+use Locale as IntlLocale;
 
 beforeEach(function () {
     $this->formatter = app(Formatter::class);
@@ -33,7 +34,7 @@ test('asInteger', function (mixed $value, string $output, ?string $locale = null
     [1000, '1.000', 'nl'],
 ]);
 
-test('asDecimal', function (mixed $input, string $output, int $decimals = 2, string $locale = 'en-US') {
+test('asDecimal', function (mixed $input, string $output, ?int $decimals = 2, string $locale = 'en-US') {
     $this->formatter->locale = $locale;
 
     expect($this->formatter->asDecimal($input, $decimals))->toBe($output);
@@ -44,6 +45,21 @@ test('asDecimal', function (mixed $input, string $output, int $decimals = 2, str
     ['87654321098765436', '87,654,321,098,765,436.00'],
     ['95836208451783051.864', '95,836,208,451,783,051.86'],
     ['95836208451783051.864', '95,836,208,451,783,052', 0],
+    ['99999999999999999.995', '100,000,000,000,000,000.00'],
+    ['-99999999999999999.995', '-100,000,000,000,000,000.00'],
+    ['+00087654321098765436.125', '87,654,321,098,765,436.13'],
+    ['-87654321098765436.125', '-87,654,321,098,765,436.13'],
+    ['-0.00000000000000000001', '-0.00'],
+    ['-0.00', '0.00'],
+    ['87654321098765436.5', '87,654,321,098,765,437', 0],
+    ['87654321098765436.5', '87,654,321,098,765,436', -1],
+    ['87654321098765436.1', '87,654,321,098,765,436.1000', 4],
+    ['87654321098765436', '87,654,321,098,765,436.00', null],
+    ['8.7654321098765436E16', '87,654,321,098,765,436.00'],
+    ['8.7654321098765436e16', '87,654,321,098,765,436.00'],
+    ['1.234e20', '123,400,000,000,000,000,000.00'],
+    ['1E-20', '0.00000000000000000001', 20],
+    ['99999999999999999.995', '100.000.000.000.000.000,00', 2, 'nl'],
     [1, '1.00'],
     [0.1, '0.10'],
     [0.1, '0.100', 3],
@@ -436,10 +452,10 @@ test('asShortSize', function (string|int|float|null $input, string $output, int 
     [1000000000000, '1.00 TB', 1000, 2],
 ]);
 
-test('asPercent', function (mixed $input, string $output, ?string $locale = null) {
+test('asPercent', function (mixed $input, string $output, ?string $locale = null, ?int $decimals = null) {
     $this->formatter->locale = $locale;
 
-    expect($this->formatter->asPercent($input))->toBe($output);
+    expect($this->formatter->asPercent($input, $decimals))->toBe($output);
 })->with([
     [null, '0%'],
     ['', '0%'],
@@ -450,6 +466,13 @@ test('asPercent', function (mixed $input, string $output, ?string $locale = null
     ['87654321098765436', '8,765,432,109,876,543,600%'],
     ['95836208451783051.864', '9,583,620,845,178,305,186%'],
     ['95836208451783051.328', '9,583,620,845,178,305,133%'],
+    ['95836208451783051.99995', '9,583,620,845,178,305,200.00%', null, 2],
+    ['-95836208451783051.99995', '-9,583,620,845,178,305,200.00%', null, 2],
+    ['+00087654321098765436.125', '8,765,432,109,876,543,612.50%', null, 2],
+    ['1.234e20', '12,340,000,000,000,000,000,000%'],
+    ['1E-20', '0.000000000000000001%', null, 18],
+    ['-1E-20', '-0.00%', null, 2],
+    ['95836208451783051.328', '9.583.620.845.178.305.132,80%', 'nl', 2],
 ]);
 
 test('willBeMisrepresented', function (mixed $input, bool $output, ?string $locale = null) {
@@ -463,3 +486,58 @@ test('willBeMisrepresented', function (mixed $input, bool $output, ?string $loca
     ['9.00', false],
     ['87654321098765436', true],
 ]);
+
+test('date formatting follows locale timezone and pattern changes on the same formatter', function () {
+    $date = Date::parse('2026-01-15 14:15:16', 'UTC');
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'UTC';
+
+    expect($this->formatter->asDateTime($date, 'yyyy-MM-dd HH:mm'))->toBe('2026-01-15 14:15');
+
+    $this->formatter->timeZone = 'America/New_York';
+
+    expect($this->formatter->asDateTime($date, 'yyyy-MM-dd HH:mm'))->toBe('2026-01-15 09:15');
+
+    $this->formatter->locale = 'nl';
+
+    expect($this->formatter->asDate($date, 'MMMM'))->toBe('januari');
+
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'UTC';
+
+    expect($this->formatter->asDateTime($date, 'yyyy-MM-dd HH:mm'))->toBe('2026-01-15 14:15')
+        ->and($this->formatter->asDate($date, 'MMMM'))->toBe('January');
+});
+
+test('date formatting keeps date and time styles separate across repeated values', function () {
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'UTC';
+
+    foreach (['2026-01-15 14:15:16', '2026-02-16 14:15:16'] as $value) {
+        $date = Date::parse($value, 'UTC');
+        $expectedDate = $date->format('M j, Y');
+
+        expect($this->formatter->asDate($date))->toBe($expectedDate)
+            ->and($this->formatter->asTime($date))->toBe('2:15:16 PM')
+            ->and($this->formatter->asDateTime($date))->toBe("{$expectedDate}, 2:15:16 PM");
+    }
+});
+
+test('date formatting follows the ICU default locale when its locale is empty', function () {
+    $previousLocale = IntlLocale::getDefault();
+    $this->formatter->locale = '';
+    $this->formatter->timeZone = 'UTC';
+    $date = Date::parse('2026-01-15 14:15:16', 'UTC');
+
+    try {
+        IntlLocale::setDefault('en_US');
+
+        expect($this->formatter->asDate($date, 'MMMM'))->toBe('January');
+
+        IntlLocale::setDefault('nl_NL');
+
+        expect($this->formatter->asDate($date, 'MMMM'))->toBe('januari');
+    } finally {
+        IntlLocale::setDefault($previousLocale);
+    }
+});

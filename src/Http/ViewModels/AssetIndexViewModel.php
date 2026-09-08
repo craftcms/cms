@@ -8,11 +8,14 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Override;
 
@@ -60,6 +63,18 @@ class AssetIndexViewModel extends ContentIndexViewModel
     public function defaultSource(): ?string
     {
         return $this->defaultSource;
+    }
+
+    #[Override]
+    protected function prepareElements(array $elements): void
+    {
+        if ($this->viewState()['mode'] !== ElementIndexViewMode::Table->value) {
+            return;
+        }
+
+        $assets = array_values(array_filter($elements, fn (mixed $element): bool => $element instanceof Asset));
+
+        Assets::preloadThumbs($assets, [30, 60]);
     }
 
     /**

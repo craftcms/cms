@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
@@ -72,11 +74,12 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         ]);
     }
 
+    /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */
     #[\Override]
-    public function modifyQuery(Builder $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
         if ($this->operator !== self::OPERATOR_TYPE) {
-            parent::modifyQuery($query);
+            parent::modifyQuery($query, $elementQuery);
 
             return;
         }

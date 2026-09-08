@@ -88,6 +88,28 @@ class GeneralConfig extends BaseConfig
     public string $actionTrigger = 'actions';
 
     /**
+     * @var mixed The maximum age of activity events before garbage collection deletes them.
+     *
+     * Set to `0` to retain activity indefinitely.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->activityRetentionDuration('P90D')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ACTIVITY_RETENTION_DURATION=P90D
+     * ```
+     * :::
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt Unlimited
+     */
+    public mixed $activityRetentionDuration = 0;
+
+    /**
      * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
@@ -3057,6 +3079,7 @@ class GeneralConfig extends BaseConfig
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
             // durations
+            ->activityRetentionDuration($this->activityRetentionDuration)
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
@@ -3119,6 +3142,36 @@ class GeneralConfig extends BaseConfig
     public function actionTrigger(string $value): self
     {
         $this->actionTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The maximum age of activity events before garbage collection deletes them.
+     *
+     * Set to `0` to retain activity indefinitely.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ```php
+     * ->activityRetentionDuration('P90D')
+     * ```
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt Unlimited
+     *
+     * @see $activityRetentionDuration
+     */
+    public function activityRetentionDuration(mixed $value): self
+    {
+        $duration = ConfigHelper::durationInSeconds($value);
+
+        if ($duration < 0) {
+            throw new InvalidArgumentException('Activity retention duration must be zero or greater.');
+        }
+
+        $this->activityRetentionDuration = $duration;
 
         return $this;
     }

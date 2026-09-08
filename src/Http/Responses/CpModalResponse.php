@@ -165,9 +165,7 @@ class CpModalResponse implements Responsable
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            InputNamespace::set($namespace);
-            call_user_func($this->prepareModal, $this, $containerId);
-            InputNamespace::set(null);
+            InputNamespace::with($namespace, fn () => call_user_func($this->prepareModal, $this, $containerId));
         }
 
         $content = InputNamespace::namespaceInputs(function () {

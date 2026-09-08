@@ -1,6 +1,7 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
 import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
+import {keyed} from 'lit/directives/keyed.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
 import {t} from '@src/utilities/translate';
@@ -100,6 +101,23 @@ export default class CraftCombobox extends LionCombobox {
     // We own filtering (see `matchCondition`), so keep Lion in list mode and
     // avoid its inline-autofill, which would fight our pre-filtered set.
     this.autocomplete = 'list';
+
+    // Lion announces while it still holds the previous value: a requested value
+    // is only adopted once the option naming it registers, so until then
+    // `pendingModelValue` runs ahead of `modelValue`. A bound v-model writes
+    // every announcement straight back, so letting that one out puts the old
+    // value into the consumer's state and marks it changed. Registered in the
+    // constructor so it precedes any listener the consumer attaches.
+    this.addEventListener('model-value-changed', (event: Event) => {
+      if (
+        event.target === this &&
+        !(event as CustomEvent).detail?.isTriggeredByUser &&
+        this.pendingModelValue !== undefined &&
+        this.modelValue !== this.pendingModelValue
+      ) {
+        event.stopImmediatePropagation();
+      }
+    });
   }
 
   /** Last model value we've announced via `model-value-changed`. */
@@ -300,6 +318,7 @@ export default class CraftCombobox extends LionCombobox {
             </div>`
           : nothing;
       lastGroup = entry.groupLabel;
+
       return html`${header}${this.#optionTemplate(entry.option)}`;
     });
 
@@ -313,7 +332,32 @@ export default class CraftCombobox extends LionCombobox {
           </div>`
         : nothing;
 
-    render(html`${rows}${footer}`, node);
+    // Keyed on the option *set*, not on each row. A changed set has to yield
+    // new `<craft-option>` elements: Lit would otherwise patch the existing
+    // ones in place, and because they never disconnect, Lion's form registry
+    // keeps the previous options — `addFormElement` never runs for the new
+    // values, so a `modelValue` naming one of them can never be adopted and the
+    // combobox keeps announcing the value it already had. Filtering leaves the
+    // set alone, so it still patches in place rather than rebuilding the list
+    // on every keystroke.
+    render(keyed(this.#optionSetKey(), html`${rows}${footer}`), node);
+  }
+
+  /** Identifies the current option set, so a changed one rebuilds the list. */
+  #optionSetKey(): string {
+    const values: string[] = [];
+
+    for (const item of this.options) {
+      if (this.#isGroup(item)) {
+        for (const option of item.options) {
+          values.push(String(option.value));
+        }
+      } else {
+        values.push(String(item.value));
+      }
+    }
+
+    return values.join('\u0000');
   }
 
   #optionTemplate(option: ComboboxOption) {

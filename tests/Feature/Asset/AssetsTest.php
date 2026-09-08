@@ -76,6 +76,17 @@ it('can get total assets', function () {
     expect($this->assets->getTotalAssets())->toBe(3);
 });
 
+it('resolves thumbnail dimensions for table and card sizes', function (?int $width, ?int $height, int $size, array $expected) {
+    $asset = AssetModel::factory()->createElement(['width' => $width, 'height' => $height]);
+
+    expect($this->assets->getThumbDimensions($asset, $size))->toBe($expected);
+})->with([
+    'landscape' => [800, 400, 30, [30, 15]],
+    'portrait' => [400, 600, 60, [40, 60]],
+    'card' => [800, 400, 128, [128, 128]],
+    'missing dimensions' => [null, null, 30, [30, 30]],
+]);
+
 it('dispatches ThumbUrlResolving event in getThumbUrl', function () {
     Event::fake([ThumbUrlResolving::class]);
 

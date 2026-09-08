@@ -802,9 +802,7 @@ class CpScreenResponse implements Responsable
         if ($this->prepareScreen) {
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            InputNamespace::set($namespace);
-            call_user_func($this->prepareScreen, $this, $containerId);
-            InputNamespace::set(null);
+            InputNamespace::with($namespace, fn () => call_user_func($this->prepareScreen, $this, $containerId));
         }
 
         $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
@@ -991,15 +989,16 @@ class CpScreenResponse implements Responsable
             'crumbs' => $crumbs,
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
-            'actionMenuItems' => $this->actionMenuItemProps(),
-            'actionMenu' => $this->actionMenu(config: [
+            'actionMenuItems' => $actionMenuItems = $this->actionMenuItemProps(),
+            'actionMenu' => $actionMenuItems ? app(MenuHtml::class)->disclosureMenu($actionMenuItems, [
+                'id' => 'action-menu',
                 'hiddenLabel' => t('Actions'),
                 'buttonAttributes' => [
                     'id' => 'action-btn',
                     'class' => ['action-btn', 'hairline-dark', 'm'],
                     'title' => t('Actions'),
                 ],
-            ]),
+            ]) : null,
             'submitButtonLabel' => $this->submitButtonLabel,
             'additionalButtons' => $addlButtons,
             'tabs' => $this->tabs,

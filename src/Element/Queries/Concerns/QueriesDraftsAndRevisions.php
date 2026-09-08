@@ -96,9 +96,9 @@ trait QueriesDraftsAndRevisions
 
     protected function initQueriesDraftsAndRevisions(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            $this->applyDraftParams($elementQuery);
-            $this->applyRevisionParams($elementQuery);
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
+            $elementQuery->applyDraftParams($elementQuery);
+            $elementQuery->applyRevisionParams($elementQuery);
         });
     }
 

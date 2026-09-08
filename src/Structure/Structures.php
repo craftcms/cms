@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
+use CraftCms\Cms\Activity\ElementActivity;
+use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -396,87 +398,119 @@ class Structures
             $this->locks[$structureId] = $lock;
         }
 
-        $structureElementModel = null;
-
-        /** @var Element $element */
-        // Figure out what we're doing
-        if ($mode !== Mode::Insert) {
-            // See if there's an existing structure element record
-            $structureElementModel = $this->getElementModel($structureId, $element);
-
-            if ($structureElementModel !== null) {
-                $mode = Mode::Update;
-            }
-        }
-
-        if ($structureElementModel === null) {
-            $structureElementModel = new StructureElementModel([
-                'structureId' => $structureId,
-                'elementId' => $element->id,
-            ]);
-
-            $mode = Mode::Insert;
-        }
-
-        /** @var Mode::Insert|Mode::Update $mode */
-        [$beforeEvent, $afterEvent] = match ($mode) {
-            Mode::Insert => [StructureElementInserted::class, ElementInserted::class],
-            Mode::Update => [StructureElementUpdating::class, ElementUpdated::class],
-        };
-
-        $targetElementId = $targetElementModel->isRoot() ? null : $targetElementModel->elementId;
-
-        event($event = new $beforeEvent(
-            element: $element,
-            structureId: $structureId,
-            targetElementId: $targetElementId,
-            action: $action,
-        ));
-
-        if (! $event->isValid) {
-            $this->releaseLock($structureId, $ownsLock);
-
-            return false;
-        }
-
-        // Tell the element about it
-        if (! $element->beforeMoveInStructure($structureId)) {
-            $this->releaseLock($structureId, $ownsLock);
-
-            return false;
-        }
-
-        $method = match ($action) {
-            Action::Prepend => 'prependTo',
-            Action::Append => 'appendTo',
-            Action::PlaceBefore => 'insertBefore',
-            Action::PlaceAfter => 'insertAfter',
-        };
-
-        DB::beginTransaction();
         try {
-            if (! $structureElementModel->$method($targetElementModel)) {
-                DB::rollBack();
-                $this->releaseLock($structureId, $ownsLock);
+            $structureElementModel = null;
 
+            /** @var Element $element */
+            // Figure out what we're doing
+            if ($mode !== Mode::Insert) {
+                // See if there's an existing structure element record
+                $structureElementModel = $this->getElementModel($structureId, $element);
+
+                if ($structureElementModel !== null) {
+                    $mode = Mode::Update;
+                }
+            }
+
+            if ($structureElementModel === null) {
+                $structureElementModel = new StructureElementModel([
+                    'structureId' => $structureId,
+                    'elementId' => $element->id,
+                ]);
+
+                $mode = Mode::Insert;
+            }
+
+            $recordMove = $mode === Mode::Update && ElementActivity::shouldRecordWrite($element);
+            $structureUid = null;
+            $origin = null;
+
+            /** @var Mode::Insert|Mode::Update $mode */
+            [$beforeEvent, $afterEvent] = match ($mode) {
+                Mode::Insert => [StructureElementInserted::class, ElementInserted::class],
+                Mode::Update => [StructureElementUpdating::class, ElementUpdated::class],
+            };
+
+            $targetElementId = $targetElementModel->isRoot() ? null : $targetElementModel->elementId;
+
+            event($event = new $beforeEvent(
+                element: $element,
+                structureId: $structureId,
+                targetElementId: $targetElementId,
+                action: $action,
+            ));
+
+            if (! $event->isValid) {
                 return false;
             }
 
-            // Update the element with the latest values.
-            $element->root = $structureElementModel->root;
-            $element->lft = $structureElementModel->lft;
-            $element->rgt = $structureElementModel->rgt;
-            $element->level = $structureElementModel->level;
-
             // Tell the element about it
-            $element->afterMoveInStructure($structureId);
+            if (! $element->beforeMoveInStructure($structureId)) {
+                return false;
+            }
 
-            DB::commit();
+            $method = match ($action) {
+                Action::Prepend => 'prependTo',
+                Action::Append => 'appendTo',
+                Action::PlaceBefore => 'insertBefore',
+                Action::PlaceAfter => 'insertAfter',
+            };
+
+            $transactionLevel = DB::transactionLevel();
+
+            try {
+                DB::beginTransaction();
+
+                if ($recordMove) {
+                    $structureUid = $this->getStructureById($structureId)->uid
+                        ?? throw new Exception("Structure $structureId does not have a UID.");
+                    $originalElement = $element::find()
+                        ->id($element->id)
+                        ->siteId($element->siteId)
+                        ->structureId($structureId)
+                        ->status(null)
+                        ->one() ?? throw new Exception('Unable to capture the original element position.');
+                    $origin = StructuralElementActivity::position($structureUid, $originalElement);
+                }
+
+                if (! $structureElementModel->$method($targetElementModel)) {
+                    DB::rollBack($transactionLevel);
+
+                    return false;
+                }
+
+                // Update the element with the latest values.
+                $element->root = $structureElementModel->root;
+                $element->lft = $structureElementModel->lft;
+                $element->rgt = $structureElementModel->rgt;
+                $element->level = $structureElementModel->level;
+
+                // Tell the element about it
+                $element->afterMoveInStructure($structureId);
+
+                if ($recordMove) {
+                    $movedElement = $element::find()
+                        ->id($element->id)
+                        ->siteId($element->siteId)
+                        ->structureId($structureId)
+                        ->status(null)
+                        ->one() ?? throw new Exception('Unable to capture the moved element position.');
+
+                    StructuralElementActivity::recordMoved(
+                        $movedElement,
+                        $origin,
+                        StructuralElementActivity::position($structureUid, $movedElement),
+                    );
+                }
+
+                DB::commit();
+            } catch (Throwable $e) {
+                DB::rollBack($transactionLevel);
+
+                throw $e;
+            }
+        } finally {
             $this->releaseLock($structureId, $ownsLock);
-        } catch (Throwable $e) {
-            DB::rollBack();
-            $this->releaseLock($structureId, $ownsLock);
-            throw $e;
         }
 
         // Invalidate all caches for the element type

@@ -7,18 +7,20 @@ namespace CraftCms\Cms\Element\Conditions;
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Contracts\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     /**
      * @var class-string<ElementInterface>
@@ -49,11 +51,6 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         return true;
     }
 
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
-
     #[\Override]
     protected function elementSelectConfig(): array
     {
@@ -62,12 +59,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         ]);
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
     {
-        $elementIds = $this->getElementIds();
-        if (! empty($elementIds)) {
-            $query->andRelatedTo($elementIds);
-        }
+        ElementQuery::applyRelatedTo($query, $this->getElementIds(), $elementQuery);
     }
 
     #[\Override]

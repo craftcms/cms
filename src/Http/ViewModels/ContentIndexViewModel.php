@@ -71,7 +71,7 @@ abstract class ContentIndexViewModel extends ViewModel
     private ?array $visibleColumns = null;
 
     /** @var list<array<string, mixed>>|null */
-    private ?array $resolvedSources = null;
+    protected ?array $resolvedSources = null;
 
     public function __construct(
         /** @var class-string<ElementInterface> */
@@ -445,6 +445,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         $elements = $this->resolvePaginator()->items();
+        $this->prepareElements($elements);
 
         return match ($this->mode()) {
             ElementIndexViewMode::Cards->value => $this->cardData($elements),
@@ -452,6 +453,9 @@ abstract class ContentIndexViewModel extends ViewModel
             default => $this->tableRows($elements),
         };
     }
+
+    /** @param list<ElementInterface|array<string, mixed>> $elements */
+    protected function prepareElements(array $elements): void {}
 
     /** @return array<int, array<string, mixed>>|null */
     public function actions(): ?array
@@ -655,27 +659,25 @@ abstract class ContentIndexViewModel extends ViewModel
 
         // An explicit ?source= wins; otherwise the element type's default
         // (e.g. a section-handle or volume-path URL) selects its source.
-        $requestedSource = $this->request->input('source')
-            ?? $this->defaultSourceKey()
-            ?? '*';
+        $requestedSource = $this->request->input('source') ?? $this->defaultSourceKey();
 
-        $resolved = app(ElementIndexes::class)
-            ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
+        if ($requestedSource !== null) {
+            $resolved = app(ElementIndexes::class)
+                ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
+
+            if ($resolved[0] !== null) {
+                return $this->resolvedSource = $resolved;
+            }
+        }
 
         // Not every element type has a `*` source (assets index per-volume,
         // for example), so mirror the legacy index's behavior and fall back
         // to the first available source.
-        if ($resolved[0] === null) {
-            $firstSourceKey = ElementSources::getSources($this->elementType, static::RENDER_CONTEXT)
-                ->first(fn (array $source): bool => isset($source['key']))['key'] ?? null;
+        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key']) && ! ($source['disabled'] ?? false));
+        $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
+            ?? array_first($sources);
 
-            if ($firstSourceKey !== null && $firstSourceKey !== $requestedSource) {
-                $resolved = app(ElementIndexes::class)
-                    ->resolveSource($this->elementType, $firstSourceKey, static::RENDER_CONTEXT);
-            }
-        }
-
-        return $this->resolvedSource = $resolved;
+        return $this->resolvedSource = [$source['keyPath'] ?? $source['key'] ?? null, $source];
     }
 
     /**
@@ -743,7 +745,7 @@ abstract class ContentIndexViewModel extends ViewModel
             condition: $this->request->condition(),
         )['query'];
 
-        $query->status($this->status() ?: null);
+        $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
 
         if (($search = $this->search()) !== null && $search !== '') {
             $query->search($search);

@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Plugin\PluginSettingsForm;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 use LogicException;
@@ -36,15 +35,38 @@ trait HasSettings
     public bool $hasReadOnlyCpSettings = false;
 
     /**
-     * @var Validatable|bool|null The model used to store the plugin’s settings
+     * @var PluginSettings|false|null The model used to store the plugin’s settings
      *
      * @see getSettings()
      */
-    private bool|null|Validatable $settings = null;
+    private PluginSettings|false|null $settings = null;
 
-    public function getSettings(): ?Validatable
+    /**
+     * Creates fresh configuration input, not the retained runtime settings model.
+     * Use getInstance()->getSettings() to access effective runtime settings.
+     */
+    public static function config(): PluginSettings
     {
-        $this->settings ??= $this->createSettingsModel() ?: false;
+        $settings = static::createSettings();
+
+        if ($settings === null) {
+            throw new LogicException('Plugin ['.static::class.'] must implement createSettings() to use static config().');
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Override to create fresh settings without resolving a plugin or accessing the database.
+     */
+    protected static function createSettings(): ?PluginSettings
+    {
+        return null;
+    }
+
+    public function getSettings(): ?PluginSettings
+    {
+        $this->settings ??= static::createSettings() ?? false;
 
         return $this->settings ?: null;
     }
@@ -86,24 +108,7 @@ trait HasSettings
 
     private function settingsResponse(bool $readOnly): mixed
     {
-        $settings = $this->getSettings();
-
-        if (! $readOnly && $settings === null) {
-            throw new LogicException("Plugin [{$this->handle}] must provide a settings model when using the standard editable settings response.");
-        }
-
-        $context = new FormContext(
-            namespace: 'settings',
-            values: ['settings' => $settings?->validationData() ?? []],
-            errors: $settings?->errors()->getMessages() ?? [],
-            mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
-            refreshable: ! $readOnly,
-        );
-        $form = $this->settingsForm($context);
-
-        if ($form === null) {
-            throw new LogicException("Plugin [{$this->handle}] must return a Form from settingsForm() when using the standard settings response.");
-        }
+        $form = app(PluginSettingsForm::class)->render($this, $readOnly);
 
         return new CpScreenResponse()
             ->title($this->name)
@@ -111,7 +116,7 @@ trait HasSettings
             ->addCrumb(t('Plugins'), 'settings/plugins')
             ->redirectUrl('settings')
             ->inertiaPage('Form', [
-                'form' => app(FormResolver::class)->resolve($form, $context),
+                'form' => $form,
                 'submit' => [
                     'method' => 'post',
                     'url' => Url::cpUrl("settings/plugins/{$this->handle}"),
@@ -130,14 +135,6 @@ trait HasSettings
     public function afterSaveSettings(): void
     {
         // carry on
-    }
-
-    /**
-     * Creates and returns the model used to store the plugin’s settings.
-     */
-    protected function createSettingsModel(): ?Validatable
-    {
-        return null;
     }
 
     public function settingsForm(FormContext $context = new FormContext): ?Form

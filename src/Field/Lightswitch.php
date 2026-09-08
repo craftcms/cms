@@ -66,7 +66,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         $valueSql = self::valueSql($instances);
         $strict = false;
@@ -78,7 +78,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
 
         $defaultValue = $strict ? null : $instances[0]->default;
 
-        return $query->whereBooleanParam($valueSql, $value, $defaultValue, Query::TYPE_JSON);
+        $query->whereBooleanParam($valueSql, $value, $defaultValue, Query::TYPE_JSON);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
@@ -156,6 +157,7 @@ readonly class ElementDuplicates
         ) {
             DB::beginTransaction();
             try {
+                $savedSiteElements = [$mainClone->siteId => $mainClone];
                 if (! $this->elementWrites->save(
                     $mainClone,
                     false,
@@ -171,6 +173,8 @@ readonly class ElementDuplicates
                 if ($copyModifiedFields) {
                     $this->copyModifiedFields($element, $mainClone);
                 }
+
+                StructuralElementActivity::recordDuplicated($element, $mainClone);
 
                 if (
                     $placeInStructure &&
@@ -261,7 +265,10 @@ readonly class ElementDuplicates
                             $this->copyModifiedFields($siteElement, $siteClone);
                         }
 
+                        StructuralElementActivity::recordDuplicated($siteElement, $siteClone);
+
                         $propagatedTo[$siteClone->siteId] = true;
+                        $savedSiteElements[$siteClone->siteId] = $siteClone;
                         if ($siteClone->isNewForSite) {
                             $mainClone->newSiteIds[] = $siteClone->siteId;
                         }
@@ -279,12 +286,17 @@ readonly class ElementDuplicates
                                         "Element $mainClone->id could not be propagated to site $siteId.");
                             }
                             $propagatedTo[$siteId] = true;
+                            $savedSiteElements[$siteId] = $siteClone;
                             $mainClone->newSiteIds[] = $siteId;
+
+                            if ($siteClone instanceof ElementInterface) {
+                                StructuralElementActivity::recordDuplicated($element, $siteClone);
+                            }
                         }
                     }
                 }
 
-                $mainClone->afterPropagate(empty($newAttributes['id']));
+                $this->elementWrites->afterPropagate($mainClone, empty($newAttributes['id']), $savedSiteElements);
 
                 DB::commit();
             } catch (Throwable $throwable) {

@@ -69,7 +69,7 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
   function sourceUrl(key: string): string {
     return toValue(options.route).url({
       source: key,
-      site: site?.handle,
+      site: site.value?.handle,
       viewMode: toValue(options.viewMode) || undefined,
     });
   }

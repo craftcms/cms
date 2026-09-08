@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -14,8 +19,10 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -32,6 +39,7 @@ beforeEach(function () {
     $section = Section::factory()->create([
         'handle' => 'blog',
     ]);
+    Sections::refreshSections();
 
     $entryType = EntryType::factory()->create([
         'fieldLayoutId' => $fieldLayout->id,
@@ -47,7 +55,10 @@ beforeEach(function () {
             'fieldLayoutId' => $fieldLayout->id,
         ]);
 
-        $relatedEntry = EntryModel::factory()->create();
+        $relatedEntry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->create();
 
         $entryElement = entryQuery()->id($model->id)->firstOrFail();
         $entryElement->title = 'Test entry '.$model->id;
@@ -60,15 +71,62 @@ beforeEach(function () {
     $this->entryModels = $entryModels;
 });
 
-test('with', function () {
-    $result = entryQuery()->id($this->entryModels->first()->id)->first();
+test('with loads relations once when creating results', function (string $mode) {
+    $entry = entryQuery()->id($this->entryModels->first()->id)->first();
+    expect($entry->entriesField)->toBeInstanceOf(ElementQuery::class);
+    $relatedId = $entry->entriesField->ids()[0];
+    $row = (object) entryQuery()->id($entry->id)->asArray()->first();
+    $expectedId = $mode === 'provisional'
+        ? app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true)->id
+        : $entry->id;
+    $query = entryQuery()->id($entry->id)->with($mode === 'nested' ? 'entriesField.authors as writers' : 'entriesField');
+    if ($mode === 'override') {
+        $query->setResultOverride([$entry]);
+    }
 
-    expect($result->entriesField)->toBeInstanceOf(ElementQuery::class);
+    Event::fake([ElementsEagerLoading::class]);
+    $hydratedRelations = [];
+    Event::listen(ElementsHydrated::class, function (ElementsHydrated $event) use (&$hydratedRelations) {
+        foreach ($event->elements as $element) {
+            if ($element->hasEagerLoadedElements('entriesField')) {
+                $hydratedRelations[$element->id] = $element->entriesField;
+            }
+        }
+    });
+    DB::enableQueryLog();
+    DB::flushQueryLog();
 
-    $result = entryQuery()->id($this->entryModels->first()->id)->with('entriesField')->first();
+    $result = match ($mode) {
+        'hydrate' => $query->hydrate([$row])[0],
+        'getModels' => $query->getModels()[0],
+        'cursor' => $query->cursor()->first(),
+        'provisional' => $query->withProvisionalDrafts()->first(),
+        default => $query->first(),
+    };
 
-    expect($result->entriesField)->toBeInstanceOf(ElementCollection::class);
-});
+    expect($result->id)->toBe($expectedId)
+        ->and($result->entriesField)->toBeInstanceOf(ElementCollection::class)
+        ->and($result->entriesField->pluck('id')->all())->toBe([$relatedId]);
+    Event::assertDispatchedTimes(ElementsEagerLoading::class, $mode === 'nested' ? 2 : 1);
+    expect(collect(DB::getQueryLog())->filter(fn ($query) => str_contains($query['query'], 'postDate') && in_array($relatedId, $query['bindings'], true)))->toHaveCount(1);
+    if (! in_array($mode, ['override', 'cursor'])) {
+        expect($hydratedRelations[$expectedId])->toBe($result->entriesField);
+    }
+    if ($mode === 'nested') {
+        Event::assertDispatched(fn (ElementsEagerLoading $event) => $event->with[0]->alias === 'writers');
+        $queries = DB::getQueryLog();
+        $result->entriesField->first()->getAuthors();
+        expect(DB::getQueryLog())->toBe($queries);
+    }
+})->with(['get', 'getModels', 'hydrate', 'override', 'cursor', 'provisional', 'nested']);
+
+test('with skips eager loading for array and empty results', function (bool $empty) {
+    Event::fake([ElementsEagerLoading::class]);
+    $query = entryQuery()->id($empty ? 0 : $this->entryModels->first()->id)->with('entriesField');
+
+    expect($empty ? $query->all() : $query->asArray()->first())->toBeArray();
+    Event::assertNotDispatched(ElementsEagerLoading::class);
+})->with([false, true]);
 
 test('andWith', function () {
     $result = entryQuery()->id($this->entryModels->first()->id)->andWith('entriesField')->first();

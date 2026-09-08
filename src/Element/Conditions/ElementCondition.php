@@ -8,6 +8,7 @@ use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -44,9 +45,9 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public string $fieldContext = 'global';
 
     /**
-     * @var string[] The element query params that available rules shouldn’t compete with.
+     * @var bool Whether the condition will be applied to an element query, as opposed to an instantiated element.
      */
-    public array $queryParams = [];
+    public bool $forQuery = false;
 
     /**
      * @var ElementInterface|null The element that this condition is being executed in reference to, if any.
@@ -129,24 +130,15 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     #[Override]
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
-        if (! $rule instanceof ElementConditionRuleInterface) {
+        $contract = $this->forQuery
+            ? ElementQueryConditionRuleInterface::class
+            : ElementConditionRuleInterface::class;
+
+        if (! is_a($rule, $contract)) {
             return false;
         }
 
-        if (! parent::isConditionRuleSelectable($rule)) {
-            return false;
-        }
-
-        // Make sure the rule doesn't conflict with the existing params
-        $queryParams = array_merge($this->queryParams);
-        foreach ($this->getConditionRules() as $existingRule) {
-            /** @var ElementConditionRuleInterface $existingRule */
-            array_push($queryParams, ...$existingRule->getExclusiveQueryParams());
-        }
-
-        $queryParams = array_flip($queryParams);
-
-        return array_all($rule->getExclusiveQueryParams(), fn ($param) => ! isset($queryParams[$param]));
+        return parent::isConditionRuleSelectable($rule);
     }
 
     protected function selectableConditionRules(): array
@@ -251,19 +243,22 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return [
             'elementType' => $this->elementType,
             'fieldContext' => $this->fieldContext,
+            'forQuery' => $this->forQuery,
         ];
     }
 
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        foreach ($this->getConditionRules() as $rule) {
-            try {
-                /** @var ElementConditionRuleInterface $rule */
-                $rule->modifyQuery($query);
-            } catch (RuntimeException) {
-                // The rule is misconfigured
+        $query->beforeQuery(function (ElementQueryInterface $query) {
+            foreach ($this->getConditionRules() as $rule) {
+                try {
+                    /** @var ElementQueryConditionRuleInterface $rule */
+                    $rule->modifyQuery($query, $query);
+                } catch (RuntimeException) {
+                    // The rule is misconfigured
+                }
             }
-        }
+        });
     }
 
     public function matchElement(ElementInterface $element): bool

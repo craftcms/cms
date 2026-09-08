@@ -15,8 +15,6 @@ use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
-use function CraftCms\Cms\craftAsset;
-
 /**
  * Provides a base implementation for dashboard widgets.
  */
@@ -26,6 +24,14 @@ abstract class Widget extends Component implements WidgetInterface
     use SavableComponent;
 
     public ?int $colspan = null;
+
+    abstract public function component(): ?string;
+
+    /** @return array<string, mixed> */
+    public function props(): array
+    {
+        return [];
+    }
 
     #[Override]
     public static function isSelectable(): bool
@@ -130,25 +136,6 @@ abstract class Widget extends Component implements WidgetInterface
     public function getSubtitle(): ?string
     {
         return null;
-    }
-
-    /**
-     * Returns the widget's body HTML.
-     *
-     * @return string|null The widget’s body HTML, or `null` if the widget
-     *                     should not be visible. (If you don’t want the widget to be selectable in
-     *                     the first place, use [[isSelectable()]].)
-     */
-    #[Override]
-    public function getBodyHtml(): ?string
-    {
-        $url = craftAsset('legacy/cp/dist/images/prg.jpg');
-
-        return <<<EOD
-<div style="margin: 0 -24px -24px;">
-    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="$url">
-</div>
-EOD;
     }
 
     #[Override]

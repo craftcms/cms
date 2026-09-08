@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
@@ -9,12 +10,23 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
 use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\EntryTypeSaving;
+use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Foundation\Http\Events\RequestHandled;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -160,17 +172,49 @@ it('can delete an entry type by id', function () {
     Event::assertDispatchedOnce(EntryTypeDeleted::class);
 });
 
-it('can delete an entry type', function () {
+it('restores only entries deleted with their entry type', function () {
     $this->entryTypes->saveEntryType($entryType = new EntryTypeData([
         'name' => 'Pages',
         'handle' => 'pages',
     ]));
-
-    expect(EntryType::count())->toBe(1);
+    $type = EntryType::findOrFail($entryType->id);
+    $section = Section::factory()->withEntryTypes($type)->create();
+    Sections::refreshSections();
+    $entry = Entry::factory()->forSection($section)->forEntryType($type)->createElement();
+    $trashed = Entry::factory()->forSection($section)->forEntryType($type)->createElement();
+    Elements::deleteElement($trashed);
+    $config = $entryType->getConfig();
 
     $this->entryTypes->deleteEntryType($entryType);
 
     expect(EntryType::count())->toBe(0);
+    expect(DB::table(Table::ENTRIES)->where('deletedWithEntryType', true)->pluck('id')->all())->toBe([$entry->id]);
+    expect(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->not->toBeNull();
+
+    ProjectConfig::set("entryTypes.$entryType->uid", $config);
+    event(new RequestHandled(Request::create('/'), new Response));
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->toBeNull();
+    expect(DB::table(Table::ELEMENTS)->where('id', $trashed->id)->value('dateDeleted'))->not->toBeNull();
+    expect(Entry::findOrFail($entry->id)->deletedWithEntryType)->toBeFalsy();
+});
+
+it('rolls back entry deletion and provenance when layout deletion fails', function () {
+    $layout = FieldLayout::factory()->create();
+    $type = EntryType::factory()->create(['fieldLayoutId' => $layout->id]);
+    $entry = Entry::factory()->forEntryType($type)->createElement();
+    $this->entryTypes->refreshEntryTypes();
+    Fields::shouldReceive('deleteLayoutById')->once()->with($layout->id)->andThrow(new RuntimeException('Layout deletion failed'));
+
+    expect(fn () => $this->entryTypes->handleDeletedEntryType(new ItemRemoved(
+        path: "entryTypes.$type->uid",
+        tokenMatches: [$type->uid],
+    )))->toThrow(RuntimeException::class, 'Layout deletion failed');
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->toBeNull();
+    expect(Entry::findOrFail($entry->id)->deletedWithEntryType)->toBeFalsy();
+    expect(EntryType::find($type->id))->not->toBeNull();
+    expect(FieldLayout::find($layout->id))->not->toBeNull();
 });
 
 it('can get table data', function () {

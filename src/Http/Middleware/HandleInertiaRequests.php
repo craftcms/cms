@@ -13,8 +13,8 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\QueueState;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
@@ -134,11 +134,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => Flash::getSuccess(),
                 'error' => Flash::getError(),
             ],
-            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? [
-                'displayedJob' => $progressService->getDisplayedJob(),
-                'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
-                'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
-            ] : [
+            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? new QueueState($progressService) : [
                 'displayedJob' => null,
                 'hasReservedJobs' => false,
                 'hasWaitingJobs' => false,
@@ -183,7 +179,7 @@ class HandleInertiaRequests extends Middleware
                 // front end marks the trail from the URL it's on — and no
                 // badge counts, which are volatile and ride along below.
                 'nav' => Inertia::once(fn () => $nav->getTree())->as('craft.nav'),
-                'navBadges' => $nav->getBadgeCounts(...),
+                'navBadges' => fn (): object => (object) $nav->getBadgeCounts(),
             ],
         ];
     }

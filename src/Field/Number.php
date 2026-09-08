@@ -80,11 +80,11 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
     {
         $valueSql = self::valueSql($instances);
 
-        return $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
+        $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
     }
 
     #[Override]

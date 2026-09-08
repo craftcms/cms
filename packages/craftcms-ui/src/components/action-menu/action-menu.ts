@@ -158,25 +158,17 @@ export default class CraftActionMenu extends CraftPopover {
   private _swallowNextEscUp = false;
 
   /**
-   * Closes the menu when an item is clicked.
+   * Closes the menu when one of its items is clicked.
    *
-   * Delegated to the content container rather than bound per item, because in
-   * slot-based mode the consumer owns the items and may add or remove them at
-   * any point — a framework rendering the list reactively, say. Binding per
-   * item would only ever cover the ones present when the overlay was set up,
-   * and later arrivals would stay open on click.
+   * Bound to each item rather than delegated to the container: an item's click
+   * doesn't reach the container, so a delegated listener never fires.
    *
-   * `event.target` is retargeted to the `craft-action-item` host as the click
-   * leaves its shadow root, so `closest()` finds the item itself.
+   * One shared handler, so re-registering is a no-op — which is what lets
+   * {@link _addEventListeners} be re-run whenever the content changes without
+   * stacking duplicates that would fire `change` more than once.
    */
-  private readonly _onContentClick = (event: Event): void => {
-    const item = (event.target as Element | null)?.closest?.(
-      'craft-action-item'
-    ) as CraftActionItem | null;
-
-    if (!item) {
-      return;
-    }
+  private readonly _onItemClick = (event: Event): void => {
+    const item = event.currentTarget as CraftActionItem;
 
     this.opened = false;
 
@@ -188,14 +180,34 @@ export default class CraftActionMenu extends CraftPopover {
     }
   };
 
+  /**
+   * Watches the slotted content for items arriving or leaving.
+   *
+   * `slotchange` only fires when the slot's *assigned* nodes change, and a
+   * framework rendering the list reactively adds items inside the node that's
+   * already assigned — so nothing would tell us to bind them.
+   */
+  private _contentObserver?: MutationObserver;
+
   private _addEventListeners() {
     const content = this.contentNodes[0];
     if (!content) return;
 
-    // Re-registering the same listener is a no-op, so the several paths that
-    // call this (overlay setup, generated-menu rewiring, provider re-eval)
-    // don't stack handlers on a content node that hasn't changed.
-    content.addEventListener('click', this._onContentClick);
+    content
+      .querySelectorAll<CraftActionItem>('craft-action-item')
+      .forEach((item) => item.addEventListener('click', this._onItemClick));
+
+    this._observeContent(content);
+  }
+
+  private _observeContent(content: HTMLElement): void {
+    this._contentObserver?.disconnect();
+    this._contentObserver = new MutationObserver(() => {
+      content
+        .querySelectorAll<CraftActionItem>('craft-action-item')
+        .forEach((item) => item.addEventListener('click', this._onItemClick));
+    });
+    this._contentObserver.observe(content, {childList: true, subtree: true});
   }
 
   private _dispatchChange(
@@ -268,6 +280,8 @@ export default class CraftActionMenu extends CraftPopover {
   }
 
   override _teardownOverlayCtrl() {
+    this._contentObserver?.disconnect();
+    this._contentObserver = undefined;
     this._overlayCtrl?.removeEventListener('show', this._onOverlayShow);
     super._teardownOverlayCtrl();
   }
@@ -993,6 +1007,12 @@ export default class CraftActionMenu extends CraftPopover {
    */
   private _onContentSlotChange = (): void => {
     this._syncSearchInput();
+
+    // In slot-based mode the consumer owns the items and may add or remove
+    // them at any point — a framework rendering the list reactively does.
+    // Binding only at overlay setup would cover whichever items existed then,
+    // and later arrivals would stay open on click.
+    this._addEventListeners();
   };
 
   /**

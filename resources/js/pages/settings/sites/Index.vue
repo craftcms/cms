@@ -180,7 +180,7 @@
     state: {
       get columnVisibility() {
         return {
-          actions: !readOnly,
+          actions: !readOnly.value,
         };
       },
     },

@@ -76,11 +76,8 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
         if (is_string($value)) {
             try {
                 $value = JsonHelper::decode($value);
-            } catch (InvalidArgumentException $e) {
-                $value = [
-                    '__ERROR__' => $e->getMessage(),
-                    '__VALUE__' => $value,
-                ];
+            } catch (InvalidArgumentException) {
+                return JsonData::fromInvalidInput($value);
             }
         }
 
@@ -163,7 +160,7 @@ JS, [
                     return;
                 }
 
-                if (isset($value['__ERROR__'])) {
+                if ($value->getInvalidInput() !== null) {
                     $fail(t('{attribute} must be valid JSON.', [
                         'attribute' => $this->getUiLabel(),
                     ]));

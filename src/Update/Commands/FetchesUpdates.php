@@ -31,7 +31,7 @@ trait FetchesUpdates
     }
 
     /** @return array{handle: string, from: string, to: string, status: string} */
-    protected function formatLine(string $handle, string $from, Update $update): array
+    protected function formatLine(string $handle, string $from, Update $update, ?string $to = null): array
     {
         $expired = $update->status === UpdateStatus::EXPIRED;
         $color = $expired
@@ -41,7 +41,7 @@ trait FetchesUpdates
         return [
             'handle' => $color($this->cyan($handle)),
             'from' => $color($this->cyan($from)),
-            'to' => $color($this->cyan($update->latest()?->version)),
+            'to' => $color($this->cyan($to ?? $update->latest()?->version)),
             'status' => match (true) {
                 $update->hasCritical() => $this->bold($color($this->red('CRITICAL'))),
                 $expired => $this->bold($color($this->red('EXPIRED'))),
