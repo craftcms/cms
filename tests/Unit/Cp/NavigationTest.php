@@ -16,6 +16,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
+/** Settings without the plugin lookup, which `all()` would otherwise hit the database for. */
+function cpSettings(): Settings
+{
+    return new Settings(
+        Cms::config(),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+    );
+}
+
 beforeEach(function () {
     Cms::setIsInstalled();
 
@@ -56,7 +65,7 @@ it('selects nav items from paths with the cp trigger', function () {
         ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 
     $settingsItem = collect($navigation->getItems())->firstWhere('label', 'Settings');
@@ -76,7 +85,7 @@ it('selects parent nav items when a subnav item matches the cp path', function (
         ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 
     $graphqlItem = collect($navigation->getItems())->firstWhere('label', 'GraphQL');
@@ -126,7 +135,7 @@ function navigationCountingBuilds(Request $request, callable $onBuild): Navigati
         $utilities,
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 }
 
@@ -172,7 +181,7 @@ it('keeps selection out of the cached tree', function () {
         ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 
     // Same user, same everything — so the second request reads the first
@@ -189,7 +198,7 @@ it('keeps selection out of the cached tree', function () {
         ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 
     $items = collect($graphql->getItems());
@@ -208,7 +217,7 @@ it('nests the settings screens under Settings, grouped as the index groups them'
         ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 
     $settings = collect($navigation->getTree())->firstWhere('label', 'Settings');
@@ -232,7 +241,7 @@ it('hands a group\'s children up for the legacy sidebar, which has no groups', f
         ]),
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
-        app(Settings::class),
+        cpSettings(),
     );
 
     $settings = collect($navigation->getShallowItems())->firstWhere('label', 'Settings');
@@ -274,7 +283,7 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
         ]),
         Cms::config(),
         $sources,
-        app(Settings::class),
+        cpSettings(),
     );
 
     $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
@@ -318,7 +327,7 @@ it('drops a heading whose members all turned out to be unusable', function () {
         ]),
         Cms::config(),
         $sources,
-        app(Settings::class),
+        cpSettings(),
     );
 
     $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');

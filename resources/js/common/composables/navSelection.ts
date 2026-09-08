@@ -42,19 +42,46 @@ function selectWithin(
   path: string,
   state: {found: boolean}
 ): Array<NavNode> {
-  return items.map((item) => {
+  // Every child first, so a deeper match settles the question before any item
+  // at this level gets to answer it.
+  const resolved = items.map((item) => {
     const children = childrenOf(item);
     const subnav = children.length
       ? selectWithin(children, path, state)
       : item.subnav;
 
-    const descendantSelected =
-      Array.isArray(subnav) && subnav.some((child) => child.selected);
+    return {
+      item,
+      subnav,
+      descendantSelected:
+        Array.isArray(subnav) && subnav.some((child) => child.selected),
+    };
+  });
 
-    // A selected descendant claims its ancestors unconditionally — it has
-    // already closed the search, and the trail has to reach the root.
-    const selected =
-      descendantSelected || (!state.found && matches(path, pathOf(item.href)));
+  // The longest match among siblings, not the first.
+  //
+  // An index sits alongside the sources beneath it — `content/entries` next to
+  // `content/entries/blog` — and prefixes every one of them. First-match-wins
+  // handed it the selection on every source page, and the source you were
+  // actually on never lit up.
+  let best = -1;
+  let bestLength = -1;
+
+  if (!state.found) {
+    resolved.forEach(({item}, index) => {
+      const itemPath = pathOf(item.href);
+
+      if (matches(path, itemPath) && itemPath.length > bestLength) {
+        best = index;
+        bestLength = itemPath.length;
+      }
+    });
+  }
+
+  return resolved.map(({item, subnav, descendantSelected}, index) => {
+    // A selected descendant claims its ancestors unconditionally — the trail
+    // has to reach the root.
+    const selected = descendantSelected || index === best;
 
     if (selected) {
       state.found = true;

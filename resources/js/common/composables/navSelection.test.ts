@@ -45,6 +45,58 @@ it('gives the trail to the deepest match rather than the first', function () {
   expect(labelsSelected(selected)).toEqual(['GraphQL', 'Schemas']);
 });
 
+it('picks the source over the index that sits beside it', function () {
+  // This is how a real sources subnav is shaped: the index is a sibling of the
+  // sources, not their parent, and its path prefixes every one of them. Taking
+  // the first match handed it the selection on every source page, and the
+  // source you were actually on never lit up.
+  const items = [
+    node('Entries', {
+      href: '/admin/content/entries',
+      subnav: [
+        node('All Entries', {href: '/admin/content/entries'}),
+        node('Channels', {
+          group: true,
+          subnav: [node('Blog', {href: '/admin/content/entries/blog'})],
+        }),
+      ],
+    }),
+  ];
+
+  expect(
+    labelsSelected(withNavSelection(items, '/admin/content/entries/blog'))
+  ).toEqual(['Entries', 'Channels', 'Blog']);
+});
+
+it('falls back to the index when no source matches', function () {
+  const items = [
+    node('Entries', {
+      href: '/admin/content/entries',
+      subnav: [
+        node('All Entries', {href: '/admin/content/entries'}),
+        node('Blog', {href: '/admin/content/entries/blog'}),
+      ],
+    }),
+  ];
+
+  expect(
+    labelsSelected(withNavSelection(items, '/admin/content/entries'))
+  ).toEqual(['Entries', 'All Entries']);
+});
+
+it('prefers the longer of two matching siblings', function () {
+  // Both prefix the url and neither has a matching child, so the tie is broken
+  // on specificity rather than on which happens to come first.
+  const items = [
+    node('Users', {href: '/admin/settings/users'}),
+    node('User Groups', {href: '/admin/settings/users/groups'}),
+  ];
+
+  expect(
+    labelsSelected(withNavSelection(items, '/admin/settings/users/groups/2'))
+  ).toEqual(['User Groups']);
+});
+
 it('selects nothing for a page the nav does not cover', function () {
   expect(labelsSelected(withNavSelection(tree(), '/admin/nowhere'))).toEqual(
     []
