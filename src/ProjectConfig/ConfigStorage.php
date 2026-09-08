@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -40,7 +41,10 @@ class ConfigStorage
         return DependencyCache::remember(ProjectConfig::STORED_CACHE_KEY, $cacheDuration, function (): array {
             $data = [];
 
-            foreach (DB::table(Table::PROJECTCONFIG)->orderBy('path')->pluck('value', 'path') as $path => $value) {
+            // Paths only need parent-before-child ordering, not locale-aware sorting.
+            $orderBy = DB::connection()->isPgsql() ? new Expression('path COLLATE "C"') : 'path';
+
+            foreach (DB::table(Table::PROJECTCONFIG)->orderBy($orderBy)->pluck('value', 'path') as $path => $value) {
                 $value = Json::decode(Str::decdec($value));
                 $segments = ProjectConfigHelper::pathSegments($path);
                 $cursor = &$data;
