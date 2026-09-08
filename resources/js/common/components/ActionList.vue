@@ -4,10 +4,13 @@
    *
    * One set of descriptors, three presentations: buttons where there's room
    * for them, menu items where there isn't, and nav items when the same list
-   * is the navigation. `craft-button`, `craft-action-item` and
-   * `craft-nav-item` all take the same declarative `action` / `feedback`
-   * primitives (the `Actionable` mixin), so an action behaves identically
-   * whichever it is and only its rendering changes.
+   * is the navigation.
+   *
+   * `craft-button` and `craft-action-item` each take the declarative `action`
+   * / `feedback` primitives, so an action behaves the same either way and only
+   * its rendering changes. `craft-nav-item` doesn't take them at all, so a nav
+   * descriptor carrying one does nothing — they're left off there rather than
+   * passed and ignored.
    *
    * The nav presentation is the one that nests: it draws `subnav` recursively,
    * where the flat presentations ignore it. That's the whole reason the
