@@ -3283,19 +3283,24 @@ describe('FormRenderer', () => {
       },
     });
 
-    while (
-      container.querySelector<HTMLElement>(
-        '.matrixblock craft-button[data-form-matrix-remove]'
-      )
-    ) {
-      required(
-        container.querySelector<HTMLElement>(
-          '.matrixblock craft-button[data-form-matrix-remove]'
-        ),
-        'Expected a Matrix remove button while entries remain.'
-      ).click();
+    // Delete lives in the block's "⋮" menu, which dispatches on window and is
+    // scoped by the invoking element.
+    for (let guard = 0; guard < 10; guard++) {
+      const block = container.querySelector<HTMLElement>('.matrixblock');
+
+      if (!block) {
+        break;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {action: 'delete', uid: block.dataset.id, trigger: block},
+        })
+      );
       await nextTick();
     }
+
+    expect(container.querySelector('.matrixblock')).toBeNull();
 
     expect(mutation).toEqual({
       settings: {matrix: {entries: {}, sortOrder: []}},

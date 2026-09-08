@@ -641,21 +641,6 @@
               })
             "
           />
-          <craft-button
-            type="button"
-            icon="trash"
-            size="small"
-            variant="danger-plain"
-            :disabled="
-              model.sortOrder.length <= (control.props.minEntries ?? 0)
-            "
-            data-form-matrix-remove
-            :accessible-name="
-              t('Remove {type}', {
-                type: entryType(String(uid))?.label ?? uid,
-              })
-            "
-          />
         </template>
 
         <template #default="{id}">

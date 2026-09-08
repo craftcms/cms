@@ -25,6 +25,11 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    // `craft-field` only stretches a slotted control carrying this class
+    // (`::slotted(.form-control)`); without it the field sizes to its own
+    // content, so a nested Matrix ends up narrower than the field it sits in.
+    // Applied here rather than in each renderer so both stacks get it.
+    this.classList.add('form-control');
     this.listener?.abort();
     this.listener = new AbortController();
     const {signal} = this.listener;
