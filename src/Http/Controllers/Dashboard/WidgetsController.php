@@ -10,10 +10,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Dashboard\WidgetTypes;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -25,7 +22,6 @@ readonly class WidgetsController
     use InteractsWithWidgets;
 
     public function __construct(
-        private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
         private CustomWidgets $customWidgets,
         private WidgetTypes $widgetTypes,
@@ -48,11 +44,17 @@ readonly class WidgetsController
             ]);
         }
 
-        $settings = $data['settings'] ?? [];
+        $selectable = $widgetType
+            ? $widgetType::isSelectable()
+            : $this->dashboard->getAllWidgets()->doesntContain(
+                fn (WidgetInterface $widget) => $widget instanceof Custom && $widget->definitionId === $customDefinition->id,
+            );
 
-        if (! $settings && $request->has('settingsNamespace')) {
-            $settings = $request->input($request->input('settingsNamespace'));
+        if (! $selectable) {
+            throw ValidationException::withMessages(['type' => 'This widget cannot be added.']);
         }
+
+        $settings = $data['settings'] ?? [];
 
         $widget = $customDefinition
             ? $this->dashboard->createWidget([
@@ -72,6 +74,7 @@ readonly class WidgetsController
     public function update(Request $request): JsonResponse
     {
         $request->validate([
+            'settings' => ['sometimes', 'array'],
             'widgetId' => [
                 'required',
                 'integer',
@@ -84,7 +87,7 @@ readonly class WidgetsController
         // Create a new widget model with the new settings
         $settings = $widget instanceof Custom
             ? $widget->getSettings()
-            : $request->input("widget{$widget->id}-settings");
+            : $request->input('settings', []);
 
         Validator::validate($settings, $widget->getRules());
 
@@ -119,15 +122,9 @@ readonly class WidgetsController
             'type' => $widgetType,
             'settings' => $data['settings'] ?? [],
         ]);
-        $context = new FormContext(
-            namespace: $data['namespace'],
-            values: [$data['namespace'] => $widget->getSettings()],
-            refreshable: true,
-        );
-        $form = $widget->settingsForm($context);
 
         return new JsonResponse([
-            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
+            'form' => $this->getWidgetSettingsForm($widget, $data['namespace']),
         ]);
     }
 
@@ -175,21 +172,19 @@ readonly class WidgetsController
             ],
         ]);
 
-        $this->dashboard->deleteWidgetById($request->integer('id'));
+        if (! $this->dashboard->deleteWidgetById($request->integer('id'))) {
+            throw ValidationException::withMessages(['widget' => 'Couldn’t delete widget.']);
+        }
 
         return new JsonResponse;
     }
 
     private function saveAndReturnWidget(WidgetInterface $widget): JsonResponse
     {
-        $this->dashboard->saveWidget($widget);
+        if (! $this->dashboard->saveWidget($widget)) {
+            throw ValidationException::withMessages(['widget' => 'Couldn’t save widget.']);
+        }
 
-        $info = $this->getWidgetInfo($widget);
-
-        return new JsonResponse([
-            'info' => $info,
-            'headHtml' => $this->HtmlStack->headHtml(),
-            'bodyHtml' => $this->HtmlStack->bodyHtml(),
-        ]);
+        return new JsonResponse(['info' => $this->getWidgetData($widget)]);
     }
 }

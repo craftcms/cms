@@ -7,6 +7,10 @@ module.exports = getConfig({
   config: {
     entry: {
       'component-select-input': './component-select-input.js',
+      dashboard: require('path').resolve(
+        __dirname,
+        '../../../yii2-adapter/resources/js/dashboard.js'
+      ),
       'cp-compat': './cp-compat.js',
       'legacy-html-control': './legacy-html-control.js',
     },
