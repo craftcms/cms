@@ -29,21 +29,14 @@ it('gives a utility screen breadcrumbs the Vue breadcrumbs can follow', function
         );
 });
 
-it('describes the utilities nav instead of leaving the page to draw it', function () {
-    // The page used to fill `SecondaryNav`'s default slot with its own markup,
-    // which the nav's collapsed action menu — built from the items — could not
-    // see, so below the large breakpoint it listed nothing at all.
+it('leaves the utilities nav to the main navigation', function () {
+    // The utilities hang off the Utilities item in `Cp\Navigation` now, so the
+    // page no longer describes a nav of its own — and without a `subnav` prop
+    // the shell draws no secondary sidebar beside the utility.
     get('/admin/utilities/deprecation-errors')
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('subnav', fn (Collection $subnav): bool => $subnav->isNotEmpty()
-                && $subnav->every(fn (array $item): bool => isset($item['label'], $item['href']))
-                && $subnav->where('selected', true)->count() === 1
-                && str_ends_with(
-                    $subnav->firstWhere('selected', true)['href'],
-                    '/utilities/deprecation-errors',
-                )
-            )
+            ->missing('subnav')
             ->etc()
         );
 });

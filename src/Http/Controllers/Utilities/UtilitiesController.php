@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Cp\Data\ActionItem;
-use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
@@ -88,7 +87,6 @@ readonly class UtilitiesController
             // Inertia visits.
             'headHtml' => self::join($content->headHtml, $toolbar->headHtml, $footer->headHtml),
             'bodyHtml' => self::join($content->bodyHtml, $toolbar->bodyHtml, $footer->bodyHtml),
-            'subnav' => $this->subnav($id),
         ]);
     }
 
@@ -98,28 +96,5 @@ readonly class UtilitiesController
     private static function join(string ...$parts): string
     {
         return implode(PHP_EOL, array_filter($parts, fn (string $part) => $part !== ''));
-    }
-
-    /**
-     * The utilities nav.
-     *
-     * Described rather than drawn by the page: the secondary nav renders these
-     * as a list when it has the room and as menu items once it collapses, and
-     * the breadcrumbs pick the selected one up as well.
-     *
-     * @return list<NavItem>
-     */
-    private function subnav(string $selectedId): array
-    {
-        return $this->utilitiesService
-            ->getAuthorizedUtilityTypes()
-            ->map(fn (string $class) => new NavItem()
-                ->label($class::displayName())
-                ->href(Url::cpUrl('utilities/'.$class::id()))
-                ->icon($class::icon())
-                ->badgeCount($class::badgeCount())
-                ->selected($class::id() === $selectedId))
-            ->values()
-            ->all();
     }
 }

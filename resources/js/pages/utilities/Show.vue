@@ -3,10 +3,8 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
-  // The utilities nav arrives as the `subnav` page prop and is drawn by the
-  // shell's own `SecondaryNav`. Drawing it here meant it existed only as
-  // markup, so the nav's collapsed action menu — which is built from the
-  // items — had nothing to show below the large breakpoint.
+  // No nav of its own: the utilities hang off the Utilities item in the main
+  // navigation, so a utility is a plain page with no sidebar beside it.
   const props = defineProps<{
     id: string;
     title: string;
