@@ -9,6 +9,7 @@
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Added shared upload sessions for assets and user photos, direct S3 multipart uploads, upload retry and cancellation controls, and extensible upload transports and destination handlers.
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
+- Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints. Asset uploads now use upload sessions, and filename conflicts are resolved through `assets/resolve-upload-conflict`.
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
