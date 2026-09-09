@@ -5,6 +5,7 @@
   // imports it. Leaf module, not the barrel.
   import '@craftcms/ui/components/action-menu/action-menu';
   import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/status/status';
   import '@craftcms/ui/components/spinner/spinner';
   import {actionClient, t} from '@craftcms/ui';
   import {
@@ -226,9 +227,18 @@
     }
   );
 
+  function isDisabled(uid: string): boolean {
+    return model.value.entries[uid]?.enabled === false;
+  }
+
   onMounted(() => {
     for (const uid of model.value.sortOrder) {
-      if (model.value.entries[uid]?.collapsed && !isBlockCollapsed(uid)) {
+      // A disabled block isn't being edited, so it opens out of the way. It can
+      // still be expanded from its menu — this only decides where it starts.
+      const startsCollapsed =
+        model.value.entries[uid]?.collapsed || isDisabled(uid);
+
+      if (startsCollapsed && !isBlockCollapsed(uid)) {
         setBlockCollapsed(uid, true);
       }
     }
@@ -524,13 +534,26 @@
         return;
 
       case 'disable':
-      case 'enable':
+      case 'enable': {
+        const enabled = detail.action === 'enable';
+
         for (const uid of targets) {
           if (next.entries[uid]) {
-            next.entries[uid].enabled = detail.action === 'enable';
+            next.entries[uid].enabled = enabled;
+
+            // Disabling folds the block away; enabling brings it back, which is
+            // what Craft 5's enable did too. Written straight onto `next` rather
+            // than through `setCollapsed`, whose own emit this one would clobber.
+            if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX)) {
+              next.entries[uid].collapsed = !enabled;
+            }
           }
+
+          setBlockCollapsed(uid, !enabled);
         }
+        collapsedTick.value++;
         break;
+      }
 
       case 'delete': {
         const minimum = props.control.props.minEntries ?? 0;
@@ -602,7 +625,7 @@
   >
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
     <div :id="matrixId" class="matrix matrix-field">
-      <span role="status" class="visually-hidden" data-status-message>{{
+      <span role="status" class="sr-only" data-status-message>{{
         statusMessage
       }}</span>
       <!-- `data-matrix-blocks` sits on the list itself: the legacy
@@ -632,8 +655,14 @@
           </div>
         </template>
 
-        <template v-if="editable" #actions="{id: uid}">
+        <template #actions="{id: uid}">
+          <craft-status
+            v-if="isDisabled(String(uid))"
+            status="disabled"
+            :label="t('Disabled')"
+          />
           <ActionMenu
+            v-if="editable"
             :actions="blockActions(String(uid))"
             :label="
               t('{type} actions', {
@@ -672,15 +701,15 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="buttons">
-        <button
+      <div v-if="canAdd" class="flex gap-1 items-center mt-3">
+        <craft-button
           v-for="type in control.props.entryTypes"
           :key="type.value"
           type="button"
-          class="btn add icon dashed wrap"
-          :class="{loading: adding === type.value}"
+          variant="dashed"
+          icon="plus"
+          :loading="adding === type.value"
           :disabled="adding !== null"
-          :aria-busy="adding === type.value"
           :data-form-matrix-add="type.value"
           @click.stop.prevent="addBlock(type.value)"
         >
@@ -689,8 +718,21 @@
               ? control.props.addLabel
               : t('Add {type}', {type: type.label})
           }}
-        </button>
+        </craft-button>
       </div>
     </div>
   </craft-matrix-input>
 </template>
+
+<style scoped lang="scss">
+  /**
+   * A disabled block reads as a problem to fix rather than a neutral off state,
+   * so its dot is red. Set through the status component's own custom properties
+   * — they inherit into its shadow DOM — rather than repainting the shared
+   * `--c-status-disabled-*` tokens, which every other disabled thing uses.
+   */
+  .matrixblock.disabled-entry craft-status {
+    --c-status-disabled-fill: var(--c-status-expired-fill);
+    --c-status-disabled-border: var(--c-status-expired-border);
+  }
+</style>

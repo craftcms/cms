@@ -213,7 +213,7 @@ describe('MatrixControl', () => {
     expect(isBlockCollapsed('uid:block-a')).toBe(true);
   });
 
-  it('disables a block', async () => {
+  it('disables a block, folds it away, and flags it', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
       sortOrder: ['block-a'],
@@ -226,6 +226,38 @@ describe('MatrixControl', () => {
     expect(emitted.at(-1)).toMatchObject({
       entries: {'block-a': {enabled: false}},
     });
+
+    const block = container!.querySelector('.matrixblock')!;
+
+    expect(block.className).toContain('disabled-entry');
+    expect(block.className).toContain('collapsed');
+    expect(isBlockCollapsed('block-a')).toBe(true);
+    // `status` isn't reflected, so Vue sets it as a property on the element.
+    expect(
+      (block.querySelector('craft-status') as {status?: string} | null)?.status
+    ).toBe('disabled');
+  });
+
+  it('brings a block back when it is enabled again', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: false}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    // A block that arrives disabled starts folded away.
+    expect(container!.querySelector('.matrixblock')!.className).toContain(
+      'collapsed'
+    );
+
+    invoke('block-a', 'Enable');
+    await nextTick();
+
+    const block = container!.querySelector('.matrixblock')!;
+
+    expect(block.className).not.toContain('disabled-entry');
+    expect(block.className).not.toContain('collapsed');
+    expect(block.querySelector('craft-status')).toBeNull();
   });
 
   it('adds a block above the one whose menu was used', async () => {
@@ -387,7 +419,16 @@ describe('MatrixControl', () => {
 
   it('has the server mint a block when it can, and renders the nodes it returns', async () => {
     const uid = '9f1c0a3e-0000-4000-8000-000000000001';
-    action.post.mockResolvedValueOnce({
+    // Held open on purpose: the busy state only exists while the request is in
+    // flight, and an immediately-resolved mock closes that window inside a
+    // microtask — the assertion below would be racing it.
+    let settle: (value: unknown) => void;
+    action.post.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve;
+      })
+    );
+    const response = {
       data: {
         uid,
         type: 'newType',
@@ -400,7 +441,7 @@ describe('MatrixControl', () => {
           fields: {pageBuilder: {entries: {[uid]: {fields: {body: 'hi'}}}}},
         },
       },
-    });
+    };
 
     const values: Record<string, unknown> = {};
     mount(
@@ -418,15 +459,17 @@ describe('MatrixControl', () => {
     );
     await nextTick();
 
-    const button = container!.querySelector<HTMLButtonElement>(
+    const button = container!.querySelector<HTMLElement>(
       '[data-form-matrix-add="newType"]'
     )!;
     button.click();
     await nextTick();
 
-    // The button reports itself busy while the server is working.
-    expect(button.getAttribute('aria-busy')).toBe('true');
+    // The button reports itself busy while the server is working. `loading`
+    // isn't reflected, so Vue sets it as a property on the element.
+    expect((button as {loading?: boolean}).loading).toBe(true);
 
+    settle!(response);
     await vi.waitFor(() => expect(emitted).toHaveLength(1));
     await nextTick();
 
@@ -452,10 +495,12 @@ describe('MatrixControl', () => {
     // button that was busy is not the button that's there now.
     await vi.waitFor(() =>
       expect(
-        container!
-          .querySelector('[data-form-matrix-add="newType"]')!
-          .getAttribute('aria-busy')
-      ).toBe('false')
+        (
+          container!.querySelector('[data-form-matrix-add="newType"]') as {
+            loading?: boolean;
+          }
+        ).loading
+      ).toBe(false)
     );
   });
 
