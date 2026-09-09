@@ -65,7 +65,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * @var ConditionGroupInterface The rules this condition is configured with.
      */
     public ConditionGroupInterface $conditionRules {
-        set {
+        set(ConditionGroupInterface|array $value) {
             $this->conditionRules = $this->normalizeConditionRules($value);
         }
     }
