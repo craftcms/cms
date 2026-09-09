@@ -58,7 +58,9 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -2569,15 +2571,11 @@ JS, [
     }
 
     #[Override]
-    protected function inlineAttributeInputHtml(string $attribute): string
+    protected function inlineAttributeInputForm(string $attribute): ?Form
     {
-        return match ($attribute) {
-            'alt' => FormFields::textareaHtml([
-                'name' => 'alt',
-                'value' => $this->alt,
-            ]),
-            default => parent::inlineAttributeInputHtml($attribute),
-        };
+        return $attribute === 'alt'
+            ? Form::make([Field::make(control: Textarea::make('alt')->value($this->alt))])
+            : parent::inlineAttributeInputForm($attribute);
     }
 
     /**
