@@ -242,7 +242,6 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\BaseUiElement;
 use craft\fieldlayoutelements\CustomField;
-use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Html;
@@ -622,7 +621,6 @@ class ClassAliases
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationTaxIdField::class, OrganizationTaxIdField::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField::class, AltField::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Assets\AssetTitleField::class, AssetTitleField::class);
-        class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField::class, EntryTitleField::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Users\AffiliatedSiteField::class, AffiliatedSiteField::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField::class, EmailField::class);
         class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Users\FullNameField::class, FullNameField::class);
