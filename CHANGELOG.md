@@ -8,6 +8,7 @@
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Added shared upload sessions for assets and user photos, direct S3 multipart uploads, upload retry and cancellation controls, and extensible upload transports and destination handlers.
+- Added background uploads in the Assets index that continue during Control Panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
 - Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints. Asset uploads now use upload sessions, and filename conflicts are resolved through `assets/resolve-upload-conflict`.

@@ -34,6 +34,21 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it('hands accepted index files to the application queue without owning their lifetime', () => {
+  const enqueueUpload = vi.fn();
+  uploader.settings.enqueueUpload = enqueueUpload;
+  const upload = vi.spyOn(FileUpload.prototype, 'upload');
+  const file = new File(['abc'], 'document.txt');
+  const data = fileData(file);
+
+  uploader.onFileAdd({stopPropagation: vi.fn()}, data);
+  uploader.destroy();
+
+  expect(enqueueUpload).toHaveBeenCalledWith(file, data.originalFiles);
+  expect(upload).not.toHaveBeenCalled();
+  expect(trigger).not.toHaveBeenCalled();
+});
+
 it('does not cancel a successfully canceled upload again during teardown', async () => {
   vi.spyOn(FileUpload.prototype, 'upload').mockRejectedValue(
     new UploadError('Upload failed.', 500)
@@ -82,6 +97,70 @@ it('allows retry after a replacement failure handler throws', async () => {
   expect(
     trigger.mock.calls.filter(([name]) => name === 'fileuploadstop')
   ).toHaveLength(2);
+});
+
+it('reports cancellation of a waiting file and keeps legacy start/stop events balanced', async () => {
+  let finish!: (result: Record<string, unknown>) => void;
+  const upload = vi.spyOn(FileUpload.prototype, 'upload').mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+  );
+  const first = fileData(new File(['a'], 'first.txt'));
+  const second = fileData(new File(['b'], 'second.txt'));
+  uploader.onFileAdd({stopPropagation: vi.fn()}, first);
+  uploader.onFileAdd({stopPropagation: vi.fn()}, second);
+  await vi.waitFor(() => expect(upload).toHaveBeenCalledOnce());
+
+  await second.abort();
+  finish({assetId: 123});
+
+  await vi.waitFor(() =>
+    expect(trigger).toHaveBeenCalledWith('fileuploadstop')
+  );
+  expect(upload).toHaveBeenCalledOnce();
+  expect(trigger).toHaveBeenCalledWith(
+    'fileuploadfail',
+    expect.objectContaining({errorThrown: 'abort'})
+  );
+  expect(
+    trigger.mock.calls.filter(([name]) => name === 'fileuploadstart')
+  ).toHaveLength(1);
+  expect(
+    trigger.mock.calls.filter(([name]) => name === 'fileuploadalways')
+  ).toHaveLength(2);
+});
+
+it('detaches a final save and cancels waiting files when a local picker is destroyed', async () => {
+  let finish!: (result: Record<string, unknown>) => void;
+  const upload = vi
+    .spyOn(FileUpload.prototype, 'upload')
+    .mockImplementation(function (this: FileUpload) {
+      this.state = 'completing';
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+  const cancel = vi.spyOn(FileUpload.prototype, 'cancel');
+  uploader.onFileAdd(
+    {stopPropagation: vi.fn()},
+    fileData(new File(['a'], 'first.txt'))
+  );
+  uploader.onFileAdd(
+    {stopPropagation: vi.fn()},
+    fileData(new File(['b'], 'second.txt'))
+  );
+  await vi.waitFor(() => expect(upload).toHaveBeenCalledOnce());
+
+  uploader.destroy();
+  trigger.mockClear();
+  finish({assetId: 123});
+
+  await upload.mock.results[0]!.value;
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(upload).toHaveBeenCalledOnce();
+  expect(trigger).not.toHaveBeenCalled();
 });
 
 function fileData(file: File) {

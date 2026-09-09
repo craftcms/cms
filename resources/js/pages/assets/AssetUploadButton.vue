@@ -3,6 +3,8 @@
   import {router} from '@inertiajs/vue3';
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
   import {store} from '@/routes/craft/actions/craft/cp/uploads';
+  import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
+  import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
   declare const $: any;
 
@@ -20,6 +22,8 @@
       canUpload: boolean;
       folderId?: number;
       fsType?: string;
+      /** Assets index uploads belong to the application queue when a destination is supplied. */
+      destination?: AssetUploadDestination;
       /**
        * An element that also accepts dropped files. The asset index doesn't
        * set one — its drop target is the whole page, handled elsewhere — but
@@ -60,6 +64,7 @@
     }
 
     const input = $(fileInput.value);
+    const destination = props.destination ? {...props.destination} : null;
 
     uploader = Craft.createUploader(props.fsType!, input, {
       fileInput: input,
@@ -67,6 +72,12 @@
       // what makes a relation field a drop target.
       ...(props.dropZone ? {dropZone: $(props.dropZone)} : {}),
       url: store.url(),
+      ...(destination
+        ? {
+            enqueueUpload: (file: File, selection: File[]) =>
+              assetUploadQueue.enqueue(file, destination, selection),
+          }
+        : {}),
       events: {
         // jQuery File Upload calls this as `(event, data)` with the parsed
         // response on `data.result`; the CustomEvent branch covers an uploader
@@ -123,6 +134,9 @@
       () => props.folderId,
       () => props.fsType,
       () => props.dropZone,
+      () => props.destination?.folderId,
+      () => props.destination?.url,
+      () => props.destination?.label,
     ],
     createUploader
   );

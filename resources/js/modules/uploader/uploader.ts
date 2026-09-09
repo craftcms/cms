@@ -1,6 +1,6 @@
 import {BaseUploader} from './base-uploader';
-import {UploadNotification} from './upload-notification';
-import {FileUpload, UploadError} from '@/upload-client';
+import {UploadQueue} from './upload-queue';
+import {UploadError} from '@/upload-client';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 
 // blueimp jQuery File Upload plugin seam — see base-uploader.ts.
@@ -27,9 +27,7 @@ export class Uploader extends BaseUploader {
   _validFileCounter = 0;
   _onFileAdd: any = null;
   private destroyed = false;
-  private queue: Promise<void> = Promise.resolve();
-  private queued = new Set<FileUpload>();
-  private uploads = new Map<FileUpload, UploadNotification>();
+  private uploads = new UploadQueue();
 
   static override get defaults(): any {
     return {
@@ -109,7 +107,11 @@ export class Uploader extends BaseUploader {
 
       if (pass) {
         this._validFileCounter++;
-        this.uploadFile(file, data);
+        if (this.settings.enqueueUpload) {
+          this.settings.enqueueUpload(file, data.originalFiles);
+        } else {
+          this.uploadFile(file, data);
+        }
       }
 
       if (++this._totalFileCounter === data.originalFiles.length) {
@@ -123,104 +125,65 @@ export class Uploader extends BaseUploader {
   }
 
   private uploadFile(file: File, data: any): void {
-    const task = new FileUpload(file, {
-      url: this.settings.url,
-      parameters: {
-        ...this.formData,
-        ...(this.settings.replace ? {operation: 'replace'} : {}),
-      },
-      csrfToken: Craft.csrfTokenValue,
-      onProgress: (loaded, total) => {
-        this.uploads.get(task)?.updateProgress(loaded);
-        this.$element.trigger('fileuploadprogressall', {loaded, total});
-      },
-      onStateChange: (state) => this.uploads.get(task)?.updateState(state),
-    });
-
-    const cancel = async () => {
-      await task.cancel();
-      this.uploads.delete(task);
-    };
-
-    const notification = new UploadNotification(
+    const job = this.uploads.add(
       file,
-      () => this.enqueue(task, data),
-      () => {
-        cancel().catch((error: Error) => Craft.cp.displayError(error.message));
-      }
-    );
-    this.uploads.set(task, notification);
-    data.abort = cancel;
-    data.submit = () => this.enqueue(task, data);
-    this.enqueue(task, data);
-  }
-
-  private enqueue(task: FileUpload, data: any): void {
-    if (
-      this.destroyed ||
-      this.queued.has(task) ||
-      ['uploading', 'completing', 'completed', 'canceled'].includes(task.state)
-    ) {
-      return;
-    }
-
-    this.queued.add(task);
-    this._inProgressCounter++;
-    if (this._inProgressCounter === 1) {
-      this.$element.trigger('fileuploadstart');
-    }
-
-    this.queue = this.queue
-      .then(async () => {
-        try {
+      {
+        url: this.settings.url,
+        parameters: {
+          ...this.formData,
+          ...(this.settings.replace ? {operation: 'replace'} : {}),
+        },
+        csrfToken: Craft.csrfTokenValue,
+      },
+      undefined,
+      {
+        queued: () => {
+          if (++this._inProgressCounter === 1) {
+            this.$element.trigger('fileuploadstart');
+          }
+        },
+        progress: (loaded, total) =>
+          this.$element.trigger('fileuploadprogressall', {loaded, total}),
+        done: (result) => {
+          data.result = result;
+          this.$element.trigger('fileuploaddone', data);
+        },
+        fail: (error, canceled) => {
           if (this.destroyed) {
             return;
           }
-
-          data.result = await task.upload();
-          this.uploads.delete(task);
-          this.$element.trigger('fileuploaddone', data);
-        } catch (error) {
-          if (!this.destroyed) {
-            data.errorThrown = task.state === 'canceled' ? 'abort' : 'error';
-            data.jqXHR = {
-              responseJSON:
-                error instanceof UploadError
-                  ? {message: error.message, ...error.data}
-                  : {
-                      message:
-                        error instanceof Error
-                          ? error.message
-                          : Craft.t('app', 'Upload failed.'),
-                    },
-            };
-            this.$element.trigger('fileuploadfail', data);
-          }
-        } finally {
-          this.queued.delete(task);
+          data.errorThrown = canceled ? 'abort' : 'error';
+          data.jqXHR = {
+            responseJSON:
+              error instanceof UploadError
+                ? {message: error.message, ...error.data}
+                : {
+                    message:
+                      error instanceof Error
+                        ? error.message
+                        : Craft.t('app', 'Upload failed.'),
+                  },
+          };
+          this.$element.trigger('fileuploadfail', data);
+        },
+        settled: () => {
+          this._inProgressCounter--;
           if (!this.destroyed) {
             this.$element.trigger('fileuploadalways', data);
+            if (this._inProgressCounter === 0) {
+              this.$element.trigger('fileuploadstop');
+            }
           }
-          this._inProgressCounter--;
-          if (!this.destroyed && this._inProgressCounter === 0) {
-            this.$element.trigger('fileuploadstop');
-          }
-        }
-      })
-      .catch((error) => reportError(error));
+        },
+      }
+    );
+    data.abort = () => this.uploads.cancel(job);
+    data.submit = () => this.uploads.retry(job);
   }
 
   override destroy(): void {
     this.destroyed = true;
-    for (const [task, notification] of this.uploads) {
-      if (task.state !== 'completing') {
-        task
-          .cancel()
-          .catch((error: Error) => Craft.cp.displayError(error.message));
-      }
-      notification.close();
-    }
-    this.uploads.clear();
+    void this.uploads.cancelAll();
 
     if (this.uploader.fileupload('instance')) {
       this.uploader.fileupload('destroy');
