@@ -5,6 +5,7 @@
   // imports it. Leaf module, not the barrel.
   import '@craftcms/ui/components/action-menu/action-menu';
   import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/status/status';
   import '@craftcms/ui/components/spinner/spinner';
   import {actionClient, t} from '@craftcms/ui';
@@ -49,7 +50,15 @@
     minEntries?: number | null;
     maxEntries?: number | null;
     /** Per-block presentation, keyed by identity. Server-built; never posted. */
-    blocks?: Record<string, {actions?: ActionItems}>;
+    blocks?: Record<
+      string,
+      {
+        label?: string;
+        icon?: {name: string; family: string} | null;
+        color?: string | null;
+        actions?: ActionItems;
+      }
+    >;
     /**
      * What `matrix/create-entry` needs to mint a block, or absent when the server
      * can't — an unsaved owner, or a nested element field that isn't Matrix-backed.
@@ -362,22 +371,27 @@
     emit('update:value', next, 'discrete');
   }
 
+  /** Collapsing is the card's own state, so it can fold away body and footer. */
+  function blockCardAttrs(uid: string): Record<string, unknown> {
+    return {collapsed: isCollapsed(uid)};
+  }
+
+  function blockIcon(uid: string): {name: string; family: string} | null {
+    return props.control.props.blocks?.[uid]?.icon ?? null;
+  }
+
   /**
    * `.matrixblock` stays the direct child of the blocks container: the legacy
    * `craft-matrix-input` still finds its entries through it, and `sync()` reads
    * the identity back off `data-id`.
    */
-  /** Collapsing is the card's own state, so it can fold away body and footer. */
-  function blockCardAttrs(id: string | number): Record<string, unknown> {
-    return {collapsed: isCollapsed(String(id))};
-  }
-
-  function blockAttrs(id: string | number): Record<string, unknown> {
-    const uid = String(id);
-
+  function blockAttrs(uid: string): Record<string, unknown> {
     return {
       'data-id': uid,
-      'data-type': String(model.value.entries[uid]?.type ?? ''),
+      'data-type': model.value.entries[uid]?.type ?? '',
+      // The CP's generated colorable rules turn this into the whole `--c-color-*`
+      // alias set, which the card and everything in it paints from.
+      'data-color': props.control.props.blocks?.[uid]?.color ?? undefined,
       'data-matrix-block': '',
       role: 'listitem',
       class: {
@@ -476,6 +490,23 @@
   const statusMessage = computed(() =>
     adding.value === null ? '' : t('Loading')
   );
+
+  /**
+   * What a folded-up block is called. Its own fields aren't on screen to
+   * identify it, so the UI label stands in.
+   *
+   * The server's copy is authoritative but only as fresh as the last save, so a
+   * live title wins while it's being typed.
+   */
+  function uiLabel(uid: string): string {
+    const title = model.value.entries[uid]?.title;
+
+    if (typeof title === 'string' && title.trim() !== '') {
+      return title;
+    }
+
+    return props.control.props.blocks?.[uid]?.label ?? '';
+  }
 
   function blockActions(uid: string): ActionItems {
     const server = props.control.props.blocks?.[uid]?.actions;
@@ -652,27 +683,31 @@
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
-        @item-click="(uid, event) => selection.handleClick(String(uid), event)"
+        @item-click="(uid, event) => selection.handleClick(uid, event)"
       >
         <template #label="{id: uid}">
-          <div>
-            {{ entryType(String(uid))?.label ?? uid }}
-            <div class="preview" />
+          <div class="flex flex-nowrap gap-1 items-center">
+            <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
+            {{ entryType(uid)?.label ?? uid }}
+
+            <div class="preview" v-if="isCollapsed(uid)">
+              {{ uiLabel(uid) }}
+            </div>
           </div>
         </template>
 
         <template #actions="{id: uid}">
           <craft-status
-            v-if="isDisabled(String(uid))"
+            v-if="isDisabled(uid)"
             status="disabled"
             :label="t('Disabled')"
           />
           <ActionMenu
             v-if="editable"
-            :actions="blockActions(String(uid))"
+            :actions="blockActions(uid)"
             :label="
               t('{type} actions', {
-                type: entryType(String(uid))?.label ?? uid,
+                type: entryType(uid)?.label ?? uid,
               })
             "
           />
@@ -688,19 +723,19 @@
             <input
               type="hidden"
               :name="`${inputName(control.path)}[entries][${id}][type]`"
-              :value="String(model.entries[String(id)]?.type ?? '')"
+              :value="model.entries[id]?.type ?? ''"
             />
           </template>
           <div class="fields">
-            <template v-if="forms.get(String(id))">
+            <template v-if="forms.get(id)">
               <FormNodeList
-                :nodes="forms.get(String(id))!.nodes"
+                :nodes="forms.get(id)!.nodes"
                 :values="values"
                 :errors="errors"
                 :touched-paths="touchedPaths"
-                :scope="forms.get(String(id))!.scope"
-                :refreshable="forms.get(String(id))!.refreshable"
-                @change="nestedChange($event, forms.get(String(id))!)"
+                :scope="forms.get(id)!.scope"
+                :refreshable="forms.get(id)!.refreshable"
+                @change="nestedChange($event, forms.get(id)!)"
               />
             </template>
             <craft-spinner v-else :label="t('Loading')" />
@@ -740,5 +775,20 @@
   .matrixblock.disabled-entry craft-status {
     --c-status-disabled-fill: var(--c-status-expired-fill);
     --c-status-disabled-border: var(--c-status-expired-border);
+  }
+
+  .preview {
+    position: relative;
+    padding-inline-start: var(--c-spacing-sm);
+    margin-inline-start: var(--c-spacing-sm);
+
+    &:before {
+      content: '';
+      height: 60%;
+      inset-block-start: 15%;
+      border-inline-start: 1px solid color-mix(transparent, currentColor);
+      position: absolute;
+      inset-inline-start: 0;
+    }
   }
 </style>

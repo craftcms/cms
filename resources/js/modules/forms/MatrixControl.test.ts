@@ -213,6 +213,73 @@ describe('MatrixControl', () => {
     expect(isBlockCollapsed('uid:block-a')).toBe(true);
   });
 
+  it('names a folded block in its header, and only then', async () => {
+    mount(
+      {
+        entries: {'block-a': {type: 'newType', enabled: true, title: 'Hero'}},
+        sortOrder: ['block-a'],
+      },
+      {blocks: {'block-a': {label: 'Saved label'}}}
+    );
+    await nextTick();
+
+    // Expanded, the block's own fields identify it — there's nothing to say.
+    expect(container!.querySelector('.matrixblock .preview')).toBeNull();
+
+    invoke('block-a', 'Collapse');
+    await nextTick();
+
+    // A title being typed is fresher than the server's copy.
+    expect(
+      container!.querySelector('.matrixblock .preview')!.textContent!.trim()
+    ).toBe('Hero');
+  });
+
+  it('falls back to the label the server sent when there is no title', async () => {
+    mount(
+      {
+        entries: {'block-a': {type: 'newType', enabled: true, title: ''}},
+        sortOrder: ['block-a'],
+      },
+      {blocks: {'block-a': {label: 'Saved label'}}}
+    );
+    await nextTick();
+
+    invoke('block-a', 'Collapse');
+    await nextTick();
+
+    expect(
+      container!.querySelector('.matrixblock .preview')!.textContent!.trim()
+    ).toBe('Saved label');
+  });
+
+  it('carries the entry type icon and colour into the block header', async () => {
+    mount(
+      {
+        entries: {'block-a': {type: 'newType', enabled: true}},
+        sortOrder: ['block-a'],
+      },
+      {
+        blocks: {
+          'block-a': {icon: {name: 'gear', family: 'solid'}, color: 'red'},
+        },
+      }
+    );
+    await nextTick();
+
+    const block = container!.querySelector('.matrixblock')!;
+    const icon = block.querySelector('craft-icon') as {
+      name?: string;
+      family?: string;
+    } | null;
+
+    expect(icon?.name).toBe('gear');
+    expect(icon?.family).toBe('solid');
+    // `data-color` is all it takes — the CP's colorable rules turn it into the
+    // whole `--c-color-*` set the card paints from.
+    expect(block.getAttribute('data-color')).toBe('red');
+  });
+
   it('disables a block, folds it away, and flags it', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},

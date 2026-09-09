@@ -104,6 +104,15 @@ it('ships each block with the state it needs to render', function () {
         ->toBe(['type' => 'actionBlock', 'enabled' => true, 'collapsed' => false]);
 });
 
+it('names each block for when it is folded up', function () {
+    [$owner, $uid] = matrixActionsFixture();
+
+    // The block's own fields aren't on screen once it's collapsed, so its UI
+    // label stands in for them.
+    expect(matrixActionsControl($owner)->props(matrixActionsControl($owner)->getValue())['blocks'][$uid]['label'])
+        ->toBe('Block');
+});
+
 it('builds a menu for each block', function () {
     [$owner, $uid] = matrixActionsFixture();
     $labels = matrixActionLabels(matrixActionsControl($owner), $uid);

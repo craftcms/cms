@@ -53,7 +53,7 @@ class Matrix extends Control
     /** @var array<string, Form> */
     private array $forms = [];
 
-    /** @var array<string, array{actions: list<array<string, mixed>>}> */
+    /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>}> */
     private array $blocks = [];
 
     /** @var array<string, mixed>|null */
@@ -112,9 +112,22 @@ class Matrix extends Control
             $content = $form instanceof NestedFormPayload
                 ? $renderer->renderNestedForm($form)
                 : Html::tag('craft-spinner', '', ['label' => t('Loading')]);
+            $icon = $blocks[$uid]['icon'] ?? null;
             $titlebar = Html::tag('div',
-                Html::tag('div', Html::encode($label), ['class' => ['blocktype', 'flex', 'flex-nowrap', 'flex-gap-xs']])
-                .Html::tag('div', '', ['class' => 'preview']),
+                Html::tag(
+                    'div',
+                    (is_array($icon) ? Html::tag('craft-icon', '', $icon) : '').Html::encode($label),
+                    ['class' => ['blocktype', 'flex', 'flex-nowrap', 'flex-gap-xs']],
+                )
+                // Folded up, the block's own fields aren't there to identify it,
+                // so its UI label stands in for them.
+                .Html::tag(
+                    'div',
+                    ($entry['collapsed'] ?? false)
+                        ? Html::encode((string) ($blocks[$uid]['label'] ?? ''))
+                        : '',
+                    ['class' => 'preview'],
+                ),
                 ['class' => 'titlebar'],
             );
             $items .= Html::tag('div', $hidden.$titlebar
@@ -128,6 +141,9 @@ class Matrix extends Control
                     ]),
                     'data-id' => $uid,
                     'data-type' => $type,
+                    // The CP's generated colorable rules turn this into the whole
+                    // `--c-color-*` alias set, which the block paints from.
+                    'data-color' => $blocks[$uid]['color'] ?? null,
                     'role' => 'listitem',
                 ]);
         }
@@ -218,7 +234,7 @@ class Matrix extends Control
      * Kept out of the value so it never posts back; blocks the browser minted
      * itself simply have no entry here until the next save materializes them.
      *
-     * @param  array<string, array{actions: list<array<string, mixed>>}>  $blocks
+     * @param  array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>}>  $blocks
      */
     public function blocks(array $blocks): static
     {

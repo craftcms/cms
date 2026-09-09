@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="Id extends SelectableId = SelectableId">
   // Leaf modules, not the barrel — the barrel boots every `craft-*` element.
   import '@craftcms/ui/components/card/card';
   import '@craftcms/ui/components/checkbox/checkbox';
@@ -27,8 +27,8 @@
   const props = withDefaults(
     defineProps<{
       /** Ids in display order. Selection ranges and reordering both walk this. */
-      ids: Array<SelectableId>;
-      selection: Selectable<any>;
+      ids: Array<Id>;
+      selection: Selectable<Id>;
       selectable?: boolean;
       sortable?: boolean;
       readOnly?: boolean;
@@ -40,13 +40,13 @@
       tag?: string;
       itemTag?: string;
       listClass?: unknown;
-      itemClass?: (id: SelectableId, index: number) => unknown;
+      itemClass?: (id: Id, index: number) => unknown;
       itemAttrs?: (
-        id: SelectableId,
+        id: Id,
         index: number
       ) => Record<string, unknown> | undefined;
       cardAttrs?: (
-        id: SelectableId,
+        id: Id,
         index: number
       ) => Record<string, unknown> | undefined;
       /** The select checkbox's accessible label. */
@@ -69,10 +69,10 @@
 
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
-    (event: 'item-click', id: SelectableId, mouseEvent: MouseEvent): void;
+    (event: 'item-click', id: Id, mouseEvent: MouseEvent): void;
     (
       event: 'item-keydown',
-      id: SelectableId,
+      id: Id,
       index: number,
       keyboardEvent: KeyboardEvent
     ): void;
@@ -90,9 +90,7 @@
     props.singleColumn ? 'vertical' : 'horizontal'
   );
 
-  function overDropState(
-    id: SelectableId
-  ): Extract<DropState, {type: 'is-over'}> | null {
+  function overDropState(id: Id): Extract<DropState, {type: 'is-over'}> | null {
     const state = getDropState(id);
 
     return state.type === 'is-over' ? state : null;
@@ -132,7 +130,7 @@
     return Boolean((event.target as {checked?: boolean} | null)?.checked);
   }
 
-  function onCheckboxChange(id: SelectableId, event: Event): void {
+  function onCheckboxChange(id: Id, event: Event): void {
     props.selection.setChecked(id, checkboxValue(event), {
       shiftKey: pendingShiftKey.value,
     });

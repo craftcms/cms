@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\ActionMenu as ActionMenuComponent;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -442,6 +443,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'value' => $viewMode['mode'],
         ], array_filter(Entry::indexViewModes(), fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false))));
 
+        $isIndex = $this->viewMode === self::VIEW_MODE_INDEX;
+
         return $form->add(
             Group::make('matrix-site-settings', [
                 FormField::make(t('Site Settings'))
@@ -466,16 +469,25 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                         ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
                         ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
                     ])
-                    ->value($this->viewMode)),
+                    ->value($this->viewMode)
+                    ->reactive()),
+            // Only the index view has a table to include, or pages to size — and
+            // there are only columns to choose once that table is switched on.
             FormField::make(t('Include Table View'))
                 ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
-                ->control(Lightswitch::make('includeTableView')->value($this->includeTableView)),
-            FormField::make(t('Default Table Columns'))
-                ->instructions(t('Choose which table columns should be visible by default.'))
-                ->control(Choice::make('defaultTableColumns')
-                    ->multiple()
-                    ->options(self::defaultTableColumnOptions($this->_entryTypes))
-                    ->value($this->defaultTableColumns)),
+                ->control(Lightswitch::make('includeTableView')
+                    ->value($this->includeTableView)
+                    ->reactive())
+                ->visible($isIndex),
+            Group::make('matrix-table-columns', [
+                FormField::make(t('Default Table Columns'))
+                    ->instructions(t('Choose which table columns should be visible by default.'))
+                    ->control(Choice::make('defaultTableColumns')
+                        ->multiple()
+                        ->options(self::defaultTableColumnOptions($this->_entryTypes))
+                        ->value($this->defaultTableColumns))
+                    ->visible($isIndex && $this->includeTableView),
+            ])->dependsOn('settings.includeTableView'),
             FormField::make(t('Default View Mode'))
                 ->control(Choice::make('defaultIndexViewMode')->options($indexViewModes)->value($this->defaultIndexViewMode)),
             FormField::make(t('{type} Per Page', ['type' => t('Entries')]))
@@ -483,7 +495,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->control(Choice::make('pageSize')->options(array_map(fn (int $size): array => [
                     'label' => (string) $size,
                     'value' => $size,
-                ], [10, 20, 50, 100]))->value($this->pageSize ?? 50)),
+                ], [10, 20, 50, 100]))->value($this->pageSize ?? 50))
+                ->visible($isIndex),
             FormField::make(t('“New” Button Label'))
                 ->instructions(t('The text label for the entry creation button.'))
                 ->control(Text::make('createButtonLabel')->placeholder($this->defaultCreateButtonLabel())->value($this->createButtonLabel)),
@@ -561,7 +574,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'enabled' => $entry->enabled,
                 'collapsed' => $entry->collapsed,
             ];
-            $blocks[$uid] = ['actions' => $this->blockActions($entry, $uid)];
+            $entryType = $entry->getType();
+            $blocks[$uid] = [
+                // What the block is called once it's folded up and its fields
+                // aren't there to identify it. Empty for a block type with no
+                // title or UI label format — there'd be nothing to say.
+                'label' => $entry->getUiLabel(),
+                'icon' => $entryType->icon !== null ? Icons::resolveIconData($entryType->icon) : null,
+                // Drives `data-color`, which the CP's generated colorable rules
+                // turn into the whole `--c-color-*` alias set — so the card and
+                // everything in it takes the entry type's color for free.
+                'color' => $entryType->color?->value,
+                'actions' => $this->blockActions($entry, $uid),
+            ];
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
