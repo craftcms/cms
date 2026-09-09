@@ -328,6 +328,11 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public ?string $longitude = null;
 
     /**
+     * @var float|null Distance in meters
+     */
+    public ?float $distance = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
