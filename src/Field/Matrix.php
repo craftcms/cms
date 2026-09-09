@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\ActionMenu as ActionMenuComponent;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
@@ -463,12 +464,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
-                    ->options([
+                    // Illustrated the way a relation field's view mode is, so the
+                    // two settings screens read the same.
+                    ->options(array_map(fn (array $mode): array => [
+                        ...$mode,
+                        'thumbnail' => Cp::viewModeThumbnail($mode['value']),
+                    ], [
                         ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
                         ['label' => t('Card grid'), 'value' => self::VIEW_MODE_CARDS_GRID],
                         ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
                         ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                    ])
+                    ]))
                     ->value($this->viewMode)
                     ->reactive()),
             // Only the index view has a table to include, or pages to size — and

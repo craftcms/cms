@@ -44,6 +44,31 @@ function matrixSettingsVisibility(Matrix $field): array
 
 beforeEach(fn () => actingAs(User::findOne()));
 
+it('illustrates each view mode, the way a relation field does', function () {
+    $payload = app(FormResolver::class)->resolve((new Matrix)->settingsForm(), new FormContext);
+    $options = [];
+
+    $walk = function (array $nodes) use (&$walk, &$options): void {
+        foreach ($nodes as $node) {
+            /** @var NodePayload $node */
+            if (($node->control?->path[0] ?? null) === 'viewMode') {
+                $options = $node->control->props['options'];
+            }
+
+            $walk($node->children ?? []);
+        }
+    };
+
+    $walk($payload->nodes);
+
+    expect($options)->toHaveCount(4);
+
+    foreach ($options as $option) {
+        expect($option['thumbnail']['src'])
+            ->toContain("images/view-modes/{$option['value']}.svg");
+    }
+});
+
 it('hides the index-only settings for other view modes', function () {
     $field = new Matrix;
     $field->viewMode = Matrix::VIEW_MODE_BLOCKS;
