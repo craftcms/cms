@@ -15,6 +15,7 @@ use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 
@@ -40,6 +41,8 @@ class ElementSelect extends Control
     private ?string $selectionLabel = null;
 
     private ?int $limit = null;
+
+    private bool $single = false;
 
     private bool $showSiteMenu = false;
 
@@ -67,7 +70,7 @@ class ElementSelect extends Control
     {
         $editable = $attributes['name'] !== null;
 
-        return FormFields::elementSelectHtml([
+        return Html::tag('div', FormFields::elementSelectHtml([
             'id' => $attributes['id'],
             'name' => $attributes['name'],
             'elements' => self::elements($control->props['elementType'], $value),
@@ -76,6 +79,7 @@ class ElementSelect extends Control
             'criteria' => $control->props['criteria'],
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
+            'single' => $control->props['single'] ?? false,
             'showSiteMenu' => $control->props['showSiteMenu'],
             'allowAdd' => $editable,
             'allowRemove' => $editable,
@@ -83,7 +87,7 @@ class ElementSelect extends Control
             'disabled' => ! $editable,
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
-        ]);
+        ]));
     }
 
     public function component(): string
@@ -141,6 +145,17 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /** Selects and submits one scalar element ID instead of an ID list. */
+    public function single(bool $single = true): static
+    {
+        $this->single = $single;
+        if ($this->value === [] || $this->value === null) {
+            $this->value = $single ? null : [];
+        }
+
+        return $this;
+    }
+
     public function showSiteMenu(bool $showSiteMenu = true): static
     {
         $this->showSiteMenu = $showSiteMenu;
@@ -191,7 +206,8 @@ class ElementSelect extends Control
             'sources' => $this->sources,
             'criteria' => $this->criteria,
             'selectionLabel' => $this->selectionLabel ?? t('Choose'),
-            'limit' => $this->limit,
+            'limit' => $this->single ? 1 : $this->limit,
+            'single' => $this->single,
             'showSiteMenu' => $this->showSiteMenu,
             'viewMode' => $this->viewMode,
         ];
@@ -329,6 +345,10 @@ class ElementSelect extends Control
      */
     private static function elements(string $elementType, mixed $value): array
     {
+        if (is_int($value) || is_string($value) && $value !== '') {
+            $value = [$value];
+        }
+
         if (! is_array($value) || $value === []) {
             return [];
         }
