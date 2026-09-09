@@ -28,6 +28,21 @@ type JsonValue =
   | JsonValue[]
   | {[key: string]: JsonValue};
 
+/**
+ * A part of a block, whether it sits directly under `.matrixblock` or inside the
+ * `craft-card` frame both Matrix renderers now wrap their blocks in. Scoped to
+ * that one level either way, so a nested Matrix inside the block keeps its own
+ * titlebar, fields and inputs to itself.
+ */
+function blockPart<T extends Element = HTMLElement>(
+  container: HTMLElement,
+  selector: string
+): T | null {
+  return container.querySelector<T>(
+    `:scope > ${selector}, :scope > craft-card > ${selector}`
+  );
+}
+
 export class MatrixEntry extends Base {
   /** The entry controller for a `.matrixblock` container, if one was booted. */
   static forContainer(container: Element): MatrixEntry | undefined {
@@ -55,10 +70,9 @@ export class MatrixEntry extends Base {
 
     this.matrix = matrix;
     this.container = container;
-    this.titlebar = container.querySelector(':scope > .titlebar');
-    this.previewContainer =
-      this.titlebar?.querySelector(':scope > .preview') ?? null;
-    this.fieldsContainer = container.querySelector(':scope > .fields');
+    this.titlebar = blockPart(container, '.titlebar');
+    this.previewContainer = this.titlebar?.querySelector('.preview') ?? null;
+    this.fieldsContainer = blockPart(container, '.fields');
     const formHost =
       this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
         'craft-entry-field-layout-form'
@@ -93,8 +107,9 @@ export class MatrixEntry extends Base {
     this.id = container.dataset.id ?? null;
     this.isNew = !this.id || this.id.startsWith('new');
 
-    const actionMenuBtn = this.container.querySelector<HTMLElement>(
-      ':scope > .actions > .action-btn'
+    const actionMenuBtn = blockPart<HTMLElement>(
+      this.container,
+      '.actions > .action-btn'
     );
     if (actionMenuBtn) {
       this.actionDisclosure =
@@ -482,8 +497,9 @@ export class MatrixEntry extends Base {
   }
 
   override disable(): void {
-    const enabledInput = this.container.querySelector<HTMLInputElement>(
-      ':scope > input[name$="[enabled]"]'
+    const enabledInput = blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[enabled]"]'
     );
     if (enabledInput) {
       enabledInput.value = '';
@@ -493,8 +509,9 @@ export class MatrixEntry extends Base {
   }
 
   override enable(): void {
-    const enabledInput = this.container.querySelector<HTMLInputElement>(
-      ':scope > input[name$="[enabled]"]'
+    const enabledInput = blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[enabled]"]'
     );
     if (enabledInput) {
       enabledInput.value = '1';

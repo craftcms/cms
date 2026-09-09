@@ -157,6 +157,10 @@ export default class CraftChip extends LitElement {
     </div>`;
   }
 
+  #hasSlotted(name: string): boolean {
+    return !!this.querySelector(`:scope > [slot="${name}"]`);
+  }
+
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.#thumbLoader.load(this);
@@ -167,14 +171,16 @@ export default class CraftChip extends LitElement {
     void this.lightDom;
 
     // query the element Light DOM children for slotted elements
+    // Scoped to direct children: only those can be assigned to a slot, and a
+    // descendant search would read a nested chip's slotted content as our own.
     const renderPrefix =
-      !!this.querySelector('[slot="prefix"]') ||
-      !!this.querySelector('[slot="icon"]') ||
-      !!this.querySelector('[slot="thumbnail"]') ||
-      !!this.querySelector('[slot="indicator"]') ||
-      !!this.querySelector('[slot="status"]') ||
+      this.#hasSlotted('prefix') ||
+      this.#hasSlotted('icon') ||
+      this.#hasSlotted('thumbnail') ||
+      this.#hasSlotted('indicator') ||
+      this.#hasSlotted('status') ||
       this.icon;
-    const renderSuffix = !!this.querySelector('[slot="suffix"]');
+    const renderSuffix = this.#hasSlotted('suffix');
 
     return html`
       <div

@@ -686,7 +686,7 @@
         @item-click="(uid, event) => selection.handleClick(uid, event)"
       >
         <template #label="{id: uid}">
-          <div class="flex flex-nowrap gap-1 items-center">
+          <div class="blocktype flex flex-nowrap gap-1 items-center">
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
             {{ entryType(uid)?.label ?? uid }}
 
@@ -764,31 +764,3 @@
     </div>
   </craft-matrix-input>
 </template>
-
-<style scoped lang="scss">
-  /**
-   * A disabled block reads as a problem to fix rather than a neutral off state,
-   * so its dot is red. Set through the status component's own custom properties
-   * — they inherit into its shadow DOM — rather than repainting the shared
-   * `--c-status-disabled-*` tokens, which every other disabled thing uses.
-   */
-  .matrixblock.disabled-entry craft-status {
-    --c-status-disabled-fill: var(--c-status-expired-fill);
-    --c-status-disabled-border: var(--c-status-expired-border);
-  }
-
-  .preview {
-    position: relative;
-    padding-inline-start: var(--c-spacing-sm);
-    margin-inline-start: var(--c-spacing-sm);
-
-    &:before {
-      content: '';
-      height: 60%;
-      inset-block-start: 15%;
-      border-inline-start: 1px solid color-mix(transparent, currentColor);
-      position: absolute;
-      inset-inline-start: 0;
-    }
-  }
-</style>

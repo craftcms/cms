@@ -10,6 +10,7 @@ CP Styles
 @import './fld.css';
 @import './cvd.css';
 @import './global-sidebar.css';
+@import './matrix.css';
 @import './slideout.css';
 
 :root {

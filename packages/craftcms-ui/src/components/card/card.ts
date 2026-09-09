@@ -110,11 +110,21 @@ export default class CraftCard extends LitElement {
 
   private _syncSlotPresence() {
     this._hasSlottedHeader =
-      !!this.querySelector('[slot="header"]') ||
-      !!this.querySelector('[slot="label"]') ||
-      !!this.querySelector('[slot="actions"]');
-    this._hasSlottedFooter = !!this.querySelector('[slot="footer"]');
-    this._hasThumbnail = !!this.querySelector('[slot="thumbnail"]');
+      this._hasSlotted('header') ||
+      this._hasSlotted('label') ||
+      this._hasSlotted('actions');
+    this._hasSlottedFooter = this._hasSlotted('footer');
+    this._hasThumbnail = this._hasSlotted('thumbnail');
+  }
+
+  /**
+   * Only a direct child can be assigned to a slot, so the search stops there. A
+   * plain descendant search reaches into this card's own body and reads a
+   * nested card or chip's thumbnail as if it were ours — which is what a
+   * populated relation field inside a Matrix block looks like.
+   */
+  private _hasSlotted(name: string): boolean {
+    return !!this.querySelector(`:scope > [slot="${name}"]`);
   }
 
   private _handleThumbnailSlotChange(event: Event) {

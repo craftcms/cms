@@ -1,0 +1,33 @@
+/**
+ * Matrix block chrome shared by both stacks.
+ *
+ * The blocks themselves come from two renderers — `MatrixControl.vue` and
+ * `Form\Controls\Matrix::renderHtml()` — that emit the same `craft-card`
+ * frame, so their styling lives here rather than scoped to the Vue component.
+ */
+
+/* A disabled block reads as a problem to fix rather than a neutral off state,
+   so its dot is red. Set through the status component's own custom properties —
+   they inherit into its shadow DOM — rather than repainting the shared
+   `--c-status-disabled-*` tokens, which every other disabled thing uses. */
+.matrixblock.disabled-entry craft-status {
+  --c-status-disabled-fill: var(--c-status-expired-fill);
+  --c-status-disabled-border: var(--c-status-expired-border);
+}
+
+/* The UI label a folded-up block shows in place of its fields, set off from the
+   entry type name by a hairline. */
+.matrixblock .preview {
+  position: relative;
+  padding-inline-start: var(--c-spacing-sm);
+  margin-inline-start: var(--c-spacing-sm);
+
+  &::before {
+    content: '';
+    height: 60%;
+    inset-block-start: 15%;
+    border-inline-start: 1px solid color-mix(transparent, currentcolor);
+    position: absolute;
+    inset-inline-start: 0;
+  }
+}

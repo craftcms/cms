@@ -78,6 +78,32 @@ describe('craft-card thumbnail', () => {
     expect(shadow(element, '.card-body--thumb-end')).not.toBeNull();
   });
 
+  /**
+   * A Matrix block's card holds a whole nested form, and a relation field in it
+   * renders cards and chips of its own — each carrying `[slot="thumbnail"]`.
+   * Those belong to the nested element, not to the block.
+   */
+  it('ignores a thumbnail slotted into a nested card', async () => {
+    const element = await createCard(
+      {},
+      `<div class="fields"><craft-card>${thumb}</craft-card></div>`
+    );
+    await settle(element);
+
+    expect(shadow(element, '.card--has-thumbnail')).toBeNull();
+    expect(shadow(element, '.card-body__thumb')!.hidden).toBe(true);
+  });
+
+  it('ignores a header slotted into a nested card', async () => {
+    const element = await createCard(
+      {},
+      '<div><craft-card><span slot="label">Nested</span>Body</craft-card></div>'
+    );
+    await settle(element);
+
+    expect(shadow(element, '.card__header')).toBeNull();
+  });
+
   it('suppresses the thumbnail region when show-thumb is false', async () => {
     const element = await createCard({}, thumb);
     await settle(element);

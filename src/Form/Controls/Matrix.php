@@ -82,11 +82,21 @@ class Matrix extends Control
             $type = (string) ($entry['type'] ?? '');
             $label = (string) ($types[$type]['label'] ?? $type ?: $uid);
             $form = $forms->get($uid);
-            $actions = '';
+            $collapsed = (bool) ($entry['collapsed'] ?? false);
+            $enabled = (bool) ($entry['enabled'] ?? true);
+            $icon = $blocks[$uid]['icon'] ?? null;
+            $actions = $enabled ? '' : Html::tag('craft-status', '', [
+                'status' => 'disabled',
+                'label' => t('Disabled'),
+            ]);
 
             if ($editable) {
                 $blockActions = $blocks[$uid]['actions'] ?? [];
-                $actions = Html::tag('craft-reorder-button', '', [
+                $actions .= ($blockActions === [] ? '' : ActionMenu::make()
+                    ->items($blockActions)
+                    ->label(t('{type} actions', ['type' => $label]))
+                    ->toHtml()
+                ).Html::tag('span', Html::tag('craft-reorder-button', '', [
                     'class' => 'move-btn',
                     'position' => match (true) {
                         count($order) === 1 => 'first',
@@ -94,15 +104,15 @@ class Matrix extends Control
                         $index === array_key_last($order) => 'last',
                         default => 'middle',
                     },
-                ]).($blockActions === [] ? '' : ActionMenu::make()
-                    ->items($blockActions)
-                    ->label(t('{type} actions', ['type' => $label]))
-                    ->toHtml()
-                ).Button::make()
-                    ->icon('trash')
-                    ->accessibleName(t('Remove {type}', ['type' => $label]))
-                    ->attributes(['data-form-matrix-remove' => true])
-                    ->toHtml();
+                ]), ['class' => 'drag-handle'])
+                    // The browser stack deletes through the menu, which posts the
+                    // change back; without a Vue control listening, this button is
+                    // what `craft-matrix-input` acts on.
+                    .Button::make()
+                        ->icon('trash')
+                        ->accessibleName(t('Remove {type}', ['type' => $label]))
+                        ->attributes(['data-form-matrix-remove' => true])
+                        ->toHtml();
             }
 
             $hidden = $editable
@@ -112,37 +122,40 @@ class Matrix extends Control
             $content = $form instanceof NestedFormPayload
                 ? $renderer->renderNestedForm($form)
                 : Html::tag('craft-spinner', '', ['label' => t('Loading')]);
-            $icon = $blocks[$uid]['icon'] ?? null;
-            $titlebar = Html::tag('div',
-                Html::tag(
-                    'div',
-                    (is_array($icon) ? Html::tag('craft-icon', '', $icon) : '').Html::encode($label),
-                    ['class' => ['blocktype', 'flex', 'flex-nowrap', 'flex-gap-xs']],
-                )
-                // Folded up, the block's own fields aren't there to identify it,
-                // so its UI label stands in for them.
-                .Html::tag(
-                    'div',
-                    ($entry['collapsed'] ?? false)
-                        ? Html::encode((string) ($blocks[$uid]['label'] ?? ''))
-                        : '',
-                    ['class' => 'preview'],
-                ),
-                ['class' => 'titlebar'],
+            $header = Html::tag('div',
+                Html::tag('div',
+                    Html::tag(
+                        'div',
+                        (is_array($icon) ? Html::tag('craft-icon', '', $icon) : '').Html::encode($label)
+                        // Folded up, the block's own fields aren't there to
+                        // identify it, so its UI label stands in for them.
+                        .($collapsed
+                            ? Html::tag('div', Html::encode((string) ($blocks[$uid]['label'] ?? '')), ['class' => 'preview'])
+                            : ''),
+                        ['class' => ['blocktype', 'flex', 'flex-nowrap', 'gap-1', 'items-center']],
+                    ),
+                    ['class' => ['titlebar', 'flex', 'gap-2', 'items-center']],
+                ).Html::tag('div', $actions, ['class' => ['actions', 'flex', 'gap-1', 'items-center']]),
+                [
+                    'slot' => 'header',
+                    'class' => ['flex', 'gap-2', 'items-center', 'justify-between', 'w-full'],
+                ],
             );
-            $items .= Html::tag('div', $hidden.$titlebar
-                .($editable ? Html::tag('div', $actions, ['class' => 'actions']) : '')
-                .Html::tag('div', $content, ['class' => 'fields']), [
+            $items .= Html::tag('div',
+                Html::tag('craft-card',
+                    $header.$hidden.Html::tag('div', $content, ['class' => 'fields']),
+                    ['collapsed' => $collapsed],
+                ), [
                     'class' => array_filter([
                         'matrixblock',
                         'js-deletable',
-                        ($entry['enabled'] ?? true) ? null : 'disabled-entry',
-                        ($entry['collapsed'] ?? false) ? 'collapsed' : null,
+                        $enabled ? null : 'disabled-entry',
+                        $collapsed ? 'collapsed' : null,
                     ]),
                     'data-id' => $uid,
                     'data-type' => $type,
                     // The CP's generated colorable rules turn this into the whole
-                    // `--c-color-*` alias set, which the block paints from.
+                    // `--c-color-*` alias set, which the card paints from.
                     'data-color' => $blocks[$uid]['color'] ?? null,
                     'role' => 'listitem',
                 ]);
@@ -167,9 +180,15 @@ class Matrix extends Control
 
         $clear = $editable ? (string) Html::hiddenInput((string) $attributes['name'], '') : '';
         $matrix = Html::tag('div',
-            Html::tag('span', '', ['role' => 'status', 'class' => 'visually-hidden', 'data-status-message' => true])
-            .Html::tag('div', $items, ['class' => 'blocks', 'role' => 'list'])
-            .($buttons === '' ? '' : Html::tag('div', $buttons, ['class' => 'buttons'])), [
+            Html::tag('span', '', ['role' => 'status', 'class' => 'sr-only', 'data-status-message' => true])
+            .Html::tag('div', $items, [
+                'class' => ['blocks', 'grid', 'gap-1'],
+                'data-matrix-blocks' => true,
+                'role' => 'list',
+            ])
+            .($buttons === '' ? '' : Html::tag('div', $buttons, [
+                'class' => ['buttons', 'flex', 'flex-wrap', 'gap-1', 'items-center', 'mt-3'],
+            ])), [
                 'id' => $attributes['id'],
                 'class' => ['matrix', 'matrix-field'],
             ]);

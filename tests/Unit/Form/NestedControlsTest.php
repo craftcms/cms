@@ -96,6 +96,21 @@ it('renders nested Controls with Craft web components and no nested forms', func
         ->and($crawler->text())->toContain('Body is invalid.');
 });
 
+it('frames server-rendered Matrix blocks the same way the browser control does', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+    $block = $crawler->filter('.matrixblock[data-id="block-a"]');
+
+    expect($block->filter('craft-card'))->toHaveCount(1)
+        ->and($block->filter('craft-card > [slot="header"] .titlebar .blocktype'))->toHaveCount(1)
+        ->and($block->filter('craft-card > [slot="header"] .actions craft-reorder-button'))->toHaveCount(1)
+        ->and($block->filter('craft-card > .fields'))->toHaveCount(1)
+        // A nested element's own thumbnail must not sit where `craft-card` looks
+        // for its own, or the block reserves a thumbnail column it never fills.
+        ->and($block->filter('craft-card > [slot="thumbnail"]'))->toHaveCount(0)
+        ->and($crawler->filter('[data-matrix-blocks][role="list"]'))->toHaveCount(1);
+});
+
 it('uses explicit empty canonical values', function () {
     $form = Form::make([
         Field::make()->control(Matrix::make('matrix')->entryTypes(['text' => 'Text'])),
