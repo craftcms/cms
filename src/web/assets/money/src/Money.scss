@@ -15,7 +15,7 @@
     box-sizing: border-box;
     background: transparent;
     display: flex;
-    height: 100%;
+    min-height: var(--input-height);
     padding-block: 6px;
     padding-inline: 9px;
     white-space: nowrap;
