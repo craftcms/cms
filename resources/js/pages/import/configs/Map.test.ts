@@ -80,7 +80,7 @@ function mount(
             {label: 'Name', value: 'name'},
         ],
         values,
-        submit: {method: 'post', url: '/actions/import/configs/saveMap'},
+        submit: {method: 'post', url: '/actions/import/configs/save-map'},
         nestedColsUrl: '/actions/import/configs/nested-mapping-cols',
         readOnly: false,
         canSave: true,

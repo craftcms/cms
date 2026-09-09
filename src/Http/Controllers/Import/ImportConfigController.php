@@ -273,7 +273,7 @@ class ImportConfigController
                 $editable,
                 callback: function (CpScreenResponse $response) use ($importer) {
                     $response
-                        ->action('import/configs/saveFieldLayoutProvider')
+                        ->action('import/configs/save-field-layout-provider')
                         ->redirectUrl('import/configs')
                         // TODO (iwona): ideally we want to use save+redirect action and not "just" a link to the next step
                         ->addAltAction(t('Go to mapping configuration'), [
@@ -341,7 +341,7 @@ class ImportConfigController
                 $this->readOnly || ! $canSave,
                 callback: function (CpScreenResponse $response) {
                     $response
-                        ->action('import/configs/saveMap')
+                        ->action('import/configs/save-map')
                         ->redirectUrl('import/configs');
                 },
                 default: function (CpScreenResponse $response) {
