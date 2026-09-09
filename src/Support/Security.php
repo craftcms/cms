@@ -107,7 +107,6 @@ class Security
             $drive = substr($winRoot, 0, 3); // e.g. "C:/" because we've normalized it
             $sensitiveDirs = [
                 $winRoot, // C:/Windows
-                $drive.'Users', // C:/Users
                 $drive.'Program Files',
                 $drive.'Program Files (x86)',
                 $drive.'ProgramData',

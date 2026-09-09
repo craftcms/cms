@@ -9,6 +9,8 @@ use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Image\Svg;
 use CraftCms\Cms\Support\Facades\Images as ImagesFacade;
 use Illuminate\Support\Facades\File;
+use Intervention\Image\FileExtension;
+use Intervention\Image\Interfaces\DriverInterface;
 
 beforeEach(function () {
     $this->service = app(Images::class);
@@ -121,6 +123,34 @@ it('includes baseline supported image formats', function () {
     if ($this->service->getSupportsHeic()) {
         expect($formats)->toContain('heic');
     }
+});
+
+it('discovers additional image formats once and preserves configured formats and driver changes', function () {
+    $driver = Mockery::mock(DriverInterface::class);
+    $calls = [];
+    $driver->shouldReceive('supports')->andReturnUsing(function (FileExtension $extension) use (&$calls): bool {
+        $calls[] = $extension->value;
+
+        return $extension === FileExtension::WEBP;
+    });
+    $this->service->getManager()->driver = $driver;
+
+    expect($this->service->getSupportedImageFormats())->toBe(['jpg', 'jpeg', 'gif', 'png', 'webp']);
+    $firstCalls = $calls;
+
+    expect($this->service->getSupportedImageFormats())->toBe(['jpg', 'jpeg', 'gif', 'png', 'webp'])
+        ->and($calls)->toBe($firstCalls);
+
+    $this->service->setSupportedImageFormats(['custom']);
+
+    expect($this->service->getSupportedImageFormats())->toBe(['custom', 'webp'])
+        ->and($calls)->toBe($firstCalls);
+
+    $replacement = Mockery::mock(DriverInterface::class);
+    $replacement->shouldReceive('supports')->andReturnUsing(fn (FileExtension $extension): bool => $extension === FileExtension::AVIF);
+    $this->service->getManager()->driver = $replacement;
+
+    expect($this->service->getSupportedImageFormats())->toBe(['custom', 'avif']);
 });
 
 it('returns true for memory checks on svg and empty files', function () {

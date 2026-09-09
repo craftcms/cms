@@ -2,18 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Models\Volume;
-use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
-use CraftCms\Cms\Element\Conditions\ElementCondition;
-use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
+use CraftCms\Cms\User\Models\User as UserModel;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -21,202 +17,119 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::findOne());
 
-    $this->elementIndexHtmlState = new stdClass;
+    $this->postBody = fn (array $payload = []) => postJson(
+        action(ElementSelectorModalController::class),
+        array_merge([
+            'context' => ElementSources::CONTEXT_MODAL,
+            'elementType' => Entry::class,
+        ], $payload),
+        ['Accept' => 'application/json'],
+    );
+});
 
-    app()->instance(ElementIndexHtml::class, new readonly class($this->elementIndexHtmlState) extends ElementIndexHtml
-    {
-        public function __construct(
-            private stdClass $state,
-        ) {}
+it('serves index props alongside the html the legacy index still boots from', function () {
+    $response = ($this->postBody)();
 
-        public function html(string $elementType, array $config = []): string
-        {
-            $this->state->elementType = $elementType;
-            $this->state->config = $config;
-            $this->state->sortOptions = $elementType::sortOptions();
+    $response->assertOk();
+    // The HTML is still there — the modal hasn't stopped using it yet.
+    expect($response->json('html'))->toBeString()->not->toBeEmpty();
 
-            return '<div class="element-index">Modal body</div>';
-        }
+    $props = $response->json('props');
+    expect($props)->toBeArray();
+    expect($props['elementType'])->toBe(Entry::class);
+    expect($props['sources'])->toBeArray()->not->toBeEmpty();
+});
+
+it('resolves sources in the modal context, not the index context', function () {
+    $props = ($this->postBody)()->json('props');
+
+    expect($props['context'])->toBe(ElementSources::CONTEXT_MODAL);
+});
+
+it('uses fit for modal thumbnail presence and list rendering', function (string $supportedMode, bool $hasThumb) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    $response = ($this->postBody)()->assertOk();
+    expect($response->json('props.data.0.elementInfo.hasThumb'))->toBe($hasThumb);
+    $title = $response->json('props.data.0.title');
+    if ($hasThumb) {
+        expect($title)->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => 'calc(30rem/16)']);
+    } else {
+        expect($title)->not->toContainTag('craft-thumbnail');
+    }
+})->with(['fit provider' => ['fit', true], 'crop-only provider' => ['crop', false]]);
+
+it('narrows the sources to the ones the opener allows', function (?string $source) {
+    $sourceKeys = fn (array $payload) => collect(
+        ($this->postBody)($payload)->json('props.sources')
+    )
+        ->where('type', '!=', ElementSources::TYPE_HEADING)
+        ->pluck('key')
+        ->filter()
+        ->values()
+        ->all();
+
+    // Users rather than entries: they're the fixture type with more than one
+    // source, so narrowing can actually be observed.
+    $all = $sourceKeys(['elementType' => User::class]);
+    expect($all)->toContain('admins', 'inactive');
+    expect(count($all))->toBeGreaterThan(2);
+
+    expect($sourceKeys([
+        'elementType' => User::class,
+        'sources' => ['admins', 'inactive'],
+    ]))->toBe(['admins', 'inactive']);
+
+    UserModel::factory()->createElement(['active' => false, 'pending' => false]);
+    $props = ($this->postBody)(['elementType' => User::class, 'sources' => ['inactive'], 'source' => $source])->json('props');
+    expect($props['source']['key'])->toBe('inactive')
+        ->and($props['pagination']['total'])->toBe(1)->and($props['data'])->toHaveCount(1);
+})->with(['absent' => null, 'invalid' => 'missing']);
+
+// A click in the modal is a selection. A linked title would instead navigate
+// the CP behind the modal to the element's edit screen, dropping the selection
+// the opener was collecting — so nothing in the modal's payload links out.
+//
+// Users rather than entries throughout: they're the fixture type that actually
+// has rows, and they support all three view modes.
+describe('titles are not links', function () {
+    // Without this the rest would pass for the wrong reason — an element with no
+    // edit URL renders unlinked everywhere, modal or not.
+    beforeEach(fn () => expect(User::findOne()->getCpEditUrl())->not->toBeNull());
+
+    it('renders table titles as plain chips rather than links', function () {
+        $titles = collect(($this->postBody)(['elementType' => User::class])->json('props.data'))
+            ->pluck('title');
+
+        expect($titles)->not->toBeEmpty();
+        $titles->each(fn (string $title) => expect($title)
+            ->toContain('craft-chip')
+            ->not->toContain('CpLink'));
+    });
+
+    it('hands thumbs no url to navigate to', function () {
+        $thumbs = collect(($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'thumbs',
+        ])->json('props.data'));
+
+        expect($thumbs)->not->toBeEmpty();
+        $thumbs->each(fn (array $thumb) => expect($thumb['url'])->toBeNull());
     });
 });
 
-it('requires authentication', function () {
-    Auth::logout();
+it('excludes the target IDs supplied by replacement modals', function () {
+    $first = EntryModel::factory()->createElement();
+    $second = EntryModel::factory()->createElement();
+    $replacement = EntryModel::factory()->createElement();
 
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-    ])->assertUnauthorized();
-});
-
-it('validates missing required payload', function () {
-    postJson(action(ElementSelectorModalController::class), [])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors(['elementType']);
-});
-
-it('validates invalid request payloads', function (array $payload, array $errors) {
-    postJson(action(ElementSelectorModalController::class), $payload)
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors($errors);
-})->with([
-    'invalid element type' => [[
-        'elementType' => ElementSelectorModalController::class,
-    ], ['elementType']],
-    'invalid show site menu' => [[
-        'elementType' => Entry::class,
-        'showSiteMenu' => 'auto',
-    ], ['showSiteMenu']],
-    'invalid sources type' => [[
-        'elementType' => Entry::class,
-        'sources' => 123,
-    ], ['sources']],
-    'invalid source item type' => [[
-        'elementType' => Entry::class,
-        'sources' => [123],
-    ], ['sources.0']],
-    'invalid condition type' => [[
-        'elementType' => Entry::class,
-        'condition' => 123,
-    ], ['condition']],
-    'missing condition class' => [[
-        'elementType' => Entry::class,
-        'condition' => [],
-    ], ['condition']],
-    'invalid reference element ids' => [[
-        'elementType' => Entry::class,
-        'referenceElementId' => 'invalid',
-        'referenceElementOwnerId' => 'invalid',
-        'referenceElementSiteId' => 'invalid',
-    ], ['referenceElementId', 'referenceElementOwnerId', 'referenceElementSiteId']],
-]);
-
-it('renders modal HTML with the expected config', function () {
-    $response = postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-        'context' => ElementSources::CONTEXT_MODAL,
-        'showSiteMenu' => '1',
-        'sources' => ['*', 'singles'],
-    ])
-        ->assertOk()
-        ->assertExactJson([
-            'html' => '<div class="element-index">Modal body</div>',
-        ]);
-
-    expect($response->json('html'))->toBe('<div class="element-index">Modal body</div>')
-        ->and($this->elementIndexHtmlState->elementType)->toBe(Entry::class)
-        ->and($this->elementIndexHtmlState->config)->toMatchArray([
-            'class' => 'content',
-            'context' => ElementSources::CONTEXT_MODAL,
-            'registerJs' => false,
-            'showSiteMenu' => '1',
-            'showStatusMenu' => true,
-            'sources' => ['*', 'singles'],
-        ])
-        ->and(array_keys($this->elementIndexHtmlState->config['statuses']))->toBe(array_keys(Entry::statuses()));
-});
-
-it('accepts string sources', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-        'sources' => '[]',
+    $response = ($this->postBody)([
+        'criteria' => ['id' => ['not', $first->id, $second->id]],
     ])->assertOk();
 
-    expect($this->elementIndexHtmlState->config['sources'])->toBe('[]');
-});
-
-it('passes the provided context through to the element index html', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-        'context' => ElementSources::CONTEXT_INDEX,
-    ])->assertOk();
-
-    expect($this->elementIndexHtmlState->config['context'])->toBe(ElementSources::CONTEXT_INDEX);
-});
-
-it('uses auto for show site menu when it is omitted', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-    ])->assertOk();
-
-    expect($this->elementIndexHtmlState->config['showSiteMenu'])->toBe('auto');
-});
-
-it('passes null statuses and disables the status menu for element types without statuses', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Address::class,
-    ])->assertOk();
-
-    expect($this->elementIndexHtmlState->elementType)->toBe(Address::class)
-        ->and($this->elementIndexHtmlState->config['showStatusMenu'])->toBeFalse()
-        ->and($this->elementIndexHtmlState->config['statuses'])->toBeNull();
-});
-
-it('filters statuses using an in status condition rule', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-        'condition' => [
-            'class' => ElementCondition::class,
-            'elementType' => Entry::class,
-            'conditionRules' => [[
-                'class' => StatusConditionRule::class,
-                'operator' => 'in',
-                'values' => ['live'],
-            ]],
-        ],
-    ])->assertOk();
-
-    expect($this->elementIndexHtmlState->config['statuses']->keys()->all())->toBe(['live']);
-});
-
-it('filters statuses using an excluding status condition rule', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-        'condition' => [
-            'class' => ElementCondition::class,
-            'elementType' => Entry::class,
-            'conditionRules' => [[
-                'class' => StatusConditionRule::class,
-                'operator' => 'not in',
-                'values' => ['pending'],
-            ]],
-        ],
-    ])->assertOk();
-
-    expect($this->elementIndexHtmlState->config['statuses']->keys()->all())
-        ->toBe(array_values(array_diff(array_keys(Entry::statuses()), ['pending'])));
-});
-
-it('leaves statuses unchanged when the condition has no status rule', function () {
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Entry::class,
-        'condition' => [
-            'class' => ElementCondition::class,
-            'elementType' => Entry::class,
-        ],
-    ])->assertOk();
-
-    expect(array_keys($this->elementIndexHtmlState->config['statuses']))->toBe(array_keys(Entry::statuses()));
-});
-
-it('activates element index context for folder-only asset selector requests', function () {
-    config()->set('filesystems.disks.test-disk', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/element-selector-modal-controller-test/test-disk'),
-    ]);
-
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
-    VolumeFolderModel::factory()->create([
-        'volumeId' => $volume->id,
-        'name' => 'Docs',
-        'path' => 'docs/',
-    ]);
-
-    postJson(action(ElementSelectorModalController::class), [
-        'elementType' => Asset::class,
-        'foldersOnly' => true,
-    ])->assertOk();
-
-    expect($this->elementIndexHtmlState->sortOptions)->toBe([
-        'title' => 'Folder',
-    ]);
+    expect(array_column($response->json('props.data'), 'id'))->toBe([$replacement->id]);
 });

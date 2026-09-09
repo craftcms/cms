@@ -41,9 +41,7 @@ class RestoreCommand extends Command
     {
         $path = $this->argument('path');
 
-        if (is_null($path)) {
-            $path = $this->resolveBackupPath();
-        }
+        $path ??= $this->resolveBackupPath();
 
         if (! is_string($path) || ! is_readable($path)) {
             $this->components->error("Backup path doesn't exist: $path");

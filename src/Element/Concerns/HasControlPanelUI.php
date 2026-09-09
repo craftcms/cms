@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
@@ -216,6 +217,7 @@ trait HasControlPanelUI
         if (
             ! $this->getIsRevision() &&
             ! request()->headers->has('X-Craft-Container-Id') &&
+            app()->resolved(ElementRequest::class) &&
             app(ElementRequest::class)->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());
@@ -345,8 +347,9 @@ JS, [
      *
      * @return list<array<string, mixed>>
      */
-    public function actionMenuDescriptors(): array
-    {
+    public function actionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
         $items = [];
         $isDraft = $this->getIsDraft();
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
@@ -393,7 +396,7 @@ JS, [
             ];
         }
 
-        $items = [...$items, ...$this->extraActionMenuDescriptors()];
+        $items = [...$items, ...$this->extraActionMenuDescriptors($context)];
 
         // Destructive items sort last and are flagged so the menu can style them.
         $canDeleteForSite = (
@@ -445,7 +448,28 @@ JS, [
             ];
         }
 
-        return $items;
+        if ($context->isEditor()) {
+            return $items;
+        }
+
+        return array_values(array_filter($items, self::showsInChips(...)));
+    }
+
+    /**
+     * Whether an action belongs in a chip or card, as opposed to the element's
+     * own editor.
+     *
+     * Every non-destructive action is shown by default; an item opts in or out
+     * explicitly with `showInChips`. Destructive ones are held back because the
+     * screen around them owns a different destructive action — a relation
+     * field's Remove detaches the element rather than deleting it — and the two
+     * sitting together invites picking the wrong one.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private static function showsInChips(array $item): bool
+    {
+        return (bool) ($item['showInChips'] ?? ! ($item['destructive'] ?? false));
     }
 
     /**
@@ -467,8 +491,9 @@ JS, [
      *
      * @return list<array<string, mixed>>
      */
-    protected function extraActionMenuDescriptors(): array
-    {
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
         return [];
     }
 
@@ -704,7 +729,22 @@ JS,
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        return app(ElementAttributeRenderer::class)->renderInlineInput($this, $attribute);
+        $renderer = app(ElementAttributeRenderer::class);
+        $form = $this->inlineAttributeInputForm($attribute);
+
+        return $form === null
+            ? $renderer->renderInlineInput($this, $attribute)
+            : $renderer->renderInlineForm($form, $this->errors()->getMessages());
+    }
+
+    /**
+     * Defines a native attribute's inline controls. Custom fields are resolved by
+     * ElementAttributeRenderer. HTML overrides and the resolving event still run
+     * through getInlineAttributeInputHtml() before this default implementation.
+     */
+    protected function inlineAttributeInputForm(string $attribute): ?Form
+    {
+        return null;
     }
 
     public function getSidebarHtml(bool $static): string|Stringable

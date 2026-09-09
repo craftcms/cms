@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
 use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
@@ -31,8 +32,8 @@ use function CraftCms\Cms\t;
 /**
  * @property FsInterface $fs
  * @property string $fsHandle
+ * @property string|null $assetTransformer
  * @property string $subpath
- * @property string $transformSubpath
  */
 #[Ruleset(VolumeRules::class)]
 class Volume extends Component implements CpEditable, CustomFieldLayoutProviderInterface
@@ -68,13 +69,6 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         }
     }
 
-    public ?string $transformFsHandle {
-        get => $this->getTransformFsHandle();
-        set {
-            $this->setTransformFsHandle($value);
-        }
-    }
-
     public ?string $subpath {
         get => $this->getSubpath();
         set {
@@ -82,24 +76,13 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         }
     }
 
-    public ?string $transformSubpath {
-        get => $this->getTransformSubpath();
-        set {
-            $this->setTransformSubpath($value);
-        }
-    }
+    public ?string $assetTransformer = null;
 
     private string $_subpath = '';
-
-    private string $_transformSubpath = '';
 
     private ?FsInterface $_fs = null;
 
     private ?string $_fsHandle = null;
-
-    private ?FsInterface $_transformFs = null;
-
-    private ?string $_transformFsHandle = null;
 
     private bool $_temporary = false;
 
@@ -111,10 +94,6 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
         if (isset($config['fs']) && is_string($config['fs'])) {
             $config['fsHandle'] = Arr::pull($config, 'fs');
-        }
-
-        if (isset($config['transformFs']) && is_string($config['transformFs'])) {
-            $config['transformFsHandle'] = Arr::pull($config, 'transformFs');
         }
 
         parent::__construct($config);
@@ -140,9 +119,8 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
             'fsHandle' => $this->getFsHandle(false),
+            'assetTransformer' => $this->getAssetTransformerHandle(false),
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
-            'transformFsHandle' => $this->getTransformFsHandle(false),
-            'transformSubpath' => $this->getTransformSubpath(ensureTrailing: false, parse: false),
         ]);
     }
 
@@ -153,9 +131,8 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => t('Handle'),
             'name' => t('Name'),
             'fsHandle' => t('Asset Filesystem'),
+            'assetTransformer' => t('Asset Transformer'),
             'subpath' => t('Subpath'),
-            'transformFsHandle' => t('Transform Filesystem'),
-            'transformSubpath' => t('Transform Subpath'),
         ];
     }
 
@@ -331,55 +308,16 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         $this->_fs = null;
     }
 
-    public function getTransformFs(): FsInterface
-    {
-        if (! isset($this->_transformFs)) {
-            if (! $this->getTransformFsHandle()) {
-                return $this->getFs();
-            }
-
-            $fs = Filesystems::resolve($this->_transformFsHandle);
-            if (! $fs) {
-                Log::error("Invalid transform filesystem handle: $this->_transformFsHandle for the $this->name volume.");
-
-                return new MissingFs(['handle' => $this->_transformFsHandle]);
-            }
-
-            $this->_transformFs = $fs;
-        }
-
-        return $this->_transformFs;
-    }
-
-    public function setTransformFs(?FsInterface $fs): void
-    {
-        if ($fs) {
-            $this->_transformFs = $fs;
-            $this->_transformFsHandle = $fs->handle ?? null;
-        } else {
-            $this->_transformFsHandle = $this->_transformFs = null;
-        }
-    }
-
-    public function getTransformFsHandle(bool $parse = true): ?string
-    {
-        return $this->parseStorageHandle($this->_transformFsHandle, $parse);
-    }
-
-    public function setTransformFsHandle(?string $handle): void
-    {
-        $this->_transformFsHandle = $this->normalizeStorageHandle($handle);
-        $this->_transformFs = null;
-    }
-
     public function getResolvedFsTarget(bool $parse = true): ?string
     {
         return $this->resolveStorageTargetKey($this->_fsHandle, $parse);
     }
 
-    public function getResolvedTransformFsTarget(bool $parse = true): ?string
+    public function getAssetTransformerHandle(bool $parse = true): ?string
     {
-        return $this->resolveStorageTargetKey($this->_transformFsHandle, $parse);
+        $handle = $parse ? Env::parse($this->assetTransformer) : $this->assetTransformer;
+
+        return is_string($handle) && $handle !== '' ? $handle : null;
     }
 
     /** @return array<string, array<string, array<string, list<array<string, mixed>|string>|string|null>>|int|string|null> */
@@ -390,8 +328,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
             'subpath' => $this->_subpath,
-            'transformFs' => $this->_transformFsHandle,
-            'transformSubpath' => $this->_transformSubpath,
+            'assetTransformer' => $this->assetTransformer ?: null,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod->value,
@@ -407,7 +344,9 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             ];
         }
 
-        return $config;
+        event($event = new VolumeConfigPreparing($this, $config));
+
+        return $event->config;
     }
 
     public function getSubpath(bool $ensureTrailing = true, bool $parse = true): string
@@ -426,22 +365,6 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         $this->_subpath = $subpath ?? '';
     }
 
-    public function getTransformSubpath(bool $ensureTrailing = true, bool $parse = true): string
-    {
-        $subpath = $parse ? (Env::parse($this->_transformSubpath) ?? '') : $this->_transformSubpath;
-
-        if ($ensureTrailing && $subpath !== '' && ! str_ends_with($subpath, '/')) {
-            $subpath .= '/';
-        }
-
-        return $subpath;
-    }
-
-    public function setTransformSubpath(?string $subpath): void
-    {
-        $this->_transformSubpath = $subpath ?? '';
-    }
-
     public function sourceDisk(): FilesystemAdapter
     {
         return Filesystems::disk(
@@ -450,24 +373,9 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         );
     }
 
-    public function transformDisk(): FilesystemAdapter
-    {
-        $hasTransformFs = (bool) $this->getTransformFsHandle(false);
-
-        return Filesystems::disk(
-            $this->diskNameForOperations($hasTransformFs ? $this->_transformFsHandle : $this->_fsHandle),
-            $this->_transformSubpath,
-        );
-    }
-
     public function sourceHasUrls(): bool
     {
-        return $this->getFs()->hasUrls;
-    }
-
-    public function transformHasUrls(): bool
-    {
-        return $this->getTransformFs()->hasUrls;
+        return $this->getFs()->getRootUrl() !== null;
     }
 
     /** @return class-string<FsInterface> */

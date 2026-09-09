@@ -6,19 +6,172 @@ namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Asset\LegacyVolumeTransformData;
 use Generator;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
+use RuntimeException;
 use Throwable;
 
 class VolumeMixin
 {
+    private LegacyVolumeTransformData $transformData;
+
+    public function __construct()
+    {
+        $this->transformData = new LegacyVolumeTransformData();
+    }
+
+    public function getTransformFs(): Closure
+    {
+        $data = $this->transformData;
+
+        return function() use ($data): FsInterface {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $handle = $data->get($this)->filesystem;
+            if (!$handle) {
+                return $this->getFs();
+            }
+
+            $filesystem = Filesystems::resolve($handle);
+            if ($filesystem) {
+                return $filesystem;
+            }
+
+            Log::error("Invalid transform filesystem handle: {$handle} for the {$this->name} volume.");
+
+            return new \CraftCms\Cms\Filesystem\Filesystems\MissingFs(['handle' => $handle]);
+        };
+    }
+
+    public function setTransformFs(): Closure
+    {
+        $data = $this->transformData;
+
+        return function(FsInterface|string|null $filesystem) use ($data): void {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $handle = $filesystem instanceof FsInterface ? $filesystem->handle : $filesystem;
+            $data->setFilesystem($this, $handle);
+        };
+    }
+
+    public function getTransformFsHandle(): Closure
+    {
+        $data = $this->transformData;
+
+        return function(bool $parse = true) use ($data): ?string {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $handle = $data->get($this)->filesystem;
+
+            return $parse ? Env::parse($handle) : $handle;
+        };
+    }
+
+    public function setTransformFsHandle(): Closure
+    {
+        $data = $this->transformData;
+
+        return function(?string $handle) use ($data): void {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $data->setFilesystem($this, $handle);
+        };
+    }
+
+    public function getResolvedTransformFsTarget(): Closure
+    {
+        $data = $this->transformData;
+
+        return function(bool $parse = true) use ($data): ?string {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            return $this->resolveStorageTargetKey($data->get($this)->filesystem, $parse);
+        };
+    }
+
+    public function getTransformSubpath(): Closure
+    {
+        $data = $this->transformData;
+
+        return function(bool $ensureTrailing = true, bool $parse = true) use ($data): string {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $subpath = $data->get($this)->subpath;
+            $subpath = $parse ? (Env::parse($subpath) ?? '') : $subpath;
+
+            return $ensureTrailing && $subpath !== '' ? Str::finish($subpath, '/') : $subpath;
+        };
+    }
+
+    public function setTransformSubpath(): Closure
+    {
+        $data = $this->transformData;
+
+        return function(?string $subpath) use ($data): void {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $data->setSubpath($this, $subpath ?? '');
+        };
+    }
+
+    public function transformDisk(): Closure
+    {
+        $data = $this->transformData;
+
+        return function() use ($data): FilesystemAdapter {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $values = $data->get($this);
+            $target = $this->resolveStorageTargetKey($values->filesystem ?: $this->getFsHandle(false));
+            if ($target === null) {
+                throw new RuntimeException('Volume is missing or has an invalid transform filesystem handle.');
+            }
+
+            return Filesystems::disk($target, $values->subpath);
+        };
+    }
+
+    public function transformHasUrls(): Closure
+    {
+        return function(): bool {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            return $this->getTransformFs()->getRootUrl() !== null;
+        };
+    }
+
     public function getRootUrl(): Closure
     {
         return function(): string {

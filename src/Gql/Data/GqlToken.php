@@ -142,9 +142,7 @@ class GqlToken extends Component implements Stringable
     /** @return list<string>|null */
     public function getScope(): ?array
     {
-        if (! isset($this->_scope)) {
-            $this->_scope = $this->getSchema()?->scope;
-        }
+        $this->_scope ??= $this->getSchema()?->scope;
 
         return $this->_scope;
     }

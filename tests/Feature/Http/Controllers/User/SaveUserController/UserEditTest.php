@@ -208,7 +208,7 @@ it('returns proper error message on validation failure when editing another user
         'email' => 'invalid-email',
     ]);
 
-    $response->assertStatus(400);
+    $response->assertBadRequest();
 
     $content = $response->json();
     expect($content)->toHaveKey('errors');

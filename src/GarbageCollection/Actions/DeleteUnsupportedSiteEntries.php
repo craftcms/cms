@@ -9,9 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Sections;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Deletes entries for sites that aren’t enabled by their section.
@@ -36,34 +34,19 @@ class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
             'deleting entries in unsupported sites',
             function () {
                 $siteIds = $this->sites->getAllSiteIds(true);
-                $deleteIds = collect();
 
-                // get sections that are not enabled for given site
                 foreach (Sections::getAllSections() as $section) {
-                    $sectionSettings = $section->getSiteSettings();
+                    $unsupportedSiteIds = $siteIds->diff(array_keys($section->getSiteSettings()));
 
-                    foreach ($siteIds as $siteId) {
-                        if (isset($sectionSettings[$siteId])) {
-                            continue;
-                        }
-
-                        $ids = DB::table(Table::ELEMENTS_SITES, 'es')
-                            ->leftJoin(new Alias(Table::ENTRIES, 'en'), 'en.id', 'es.elementId')
-                            ->where('en.sectionId', $section->id)
-                            ->where('es.siteId', $siteId)
-                            ->pluck('es.id');
-
-                        $deleteIds->merge($ids);
+                    if ($unsupportedSiteIds->isEmpty()) {
+                        continue;
                     }
-                }
 
-                $deleteIds
-                    ->chunk($this->garbageCollection::CHUNK_SIZE)
-                    ->each(function (Collection $idsChunk) {
-                        DB::table(Table::ELEMENTS_SITES)
-                            ->whereIn('id', $idsChunk)
-                            ->delete();
-                    });
+                    DB::table(Table::ELEMENTS_SITES)
+                        ->whereIn('siteId', $unsupportedSiteIds)
+                        ->whereIn('elementId', DB::table(Table::ENTRIES)->select('id')->where('sectionId', $section->id))
+                        ->delete();
+                }
             },
         );
     }

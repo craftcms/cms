@@ -72,13 +72,23 @@ export default class CraftLoginChallenge extends LitElement {
       return;
     }
 
+    // Build the form off-DOM so it can be fully initialised before it's
+    // ever visible or interactive.
+    const template = document.createElement('template');
+    template.innerHTML = this.data.authForm.trim();
+    const $authForm = template.content.firstElementChild;
+
+    if (!$authForm) {
+      return;
+    }
+
     await Craft.appendHeadHtml(this.data.headHtml);
     await Craft.appendBodyHtml(this.data.bodyHtml);
-    Craft.initUiElements(this._container);
+    Craft.initUiElements($authForm);
 
     Craft.createAuthFormHandler(
       this.data.authMethod,
-      this._container,
+      $authForm,
       () => {
         this.dispatchEvent(
           new CustomEvent('login-verified', {
@@ -98,6 +108,10 @@ export default class CraftLoginChallenge extends LitElement {
         );
       }
     );
+
+    // defer injecting the form until after the form handlers are loaded
+    // see https://craftcms.slack.com/archives/C040W72JA5N/p1787812546586339
+    this._container.append($authForm);
 
     this._container
       .querySelector<HTMLElement>(':focus-visible, input, button')
@@ -137,9 +151,18 @@ export default class CraftLoginChallenge extends LitElement {
       `;
     }
 
+    // Native methods render their own web component directly; legacy forms
+    // are injected imperatively by #initLegacyForm(), once their form
+    // handlers are ready (see the comment there).
+    const isNativeMethod = CraftAuthChallengeForm.isNative(
+      this.data?.authMethod
+    );
+
     return html`
       <craft-pane>
-        <div class="auth-form-container">${unsafeHTML(this.data.authForm)}</div>
+        <div class="auth-form-container">
+          ${isNativeMethod ? unsafeHTML(this.data.authForm) : nothing}
+        </div>
         ${this.data.otherMethods.length
           ? html`
               <hr />

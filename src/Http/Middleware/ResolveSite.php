@@ -11,11 +11,14 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
 readonly class ResolveSite
 {
+    public const string HAD_SITE_TOKEN_KEY = 'craft.siteToken.hadToken';
+
     public function __construct(
         private Sites $sites,
         private Updates $updates,
@@ -76,6 +79,7 @@ readonly class ResolveSite
         $site = $this->sites->getSiteById((int) $siteId, true);
 
         abort_if($site === null, 400, 'Invalid site ID: '.$siteId);
+        Context::addHidden(self::HAD_SITE_TOKEN_KEY, true);
 
         return $site;
     }

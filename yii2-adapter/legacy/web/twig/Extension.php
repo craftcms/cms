@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
+use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
@@ -32,9 +35,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getFilters(): array
     {
         return [
-            new TwigFilter('filterByValue', ArrayHelper::where(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
-            new TwigFilter('firstWhere', ArrayHelper::firstWhere(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '6.0.0')]),
-            new TwigFilter('index', ArrayHelper::index(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '6.0.0')]),
+            new TwigFilter('filterByValue', [$this, 'filterByValueFilter'], ['needs_is_sandboxed' => true, 'deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
+            new TwigFilter('firstWhere', [$this, 'firstWhereFilter'], ['needs_is_sandboxed' => true, 'deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '6.0.0')]),
+            new TwigFilter('index', [$this, 'indexFilter'], ['needs_is_sandboxed' => true, 'deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '6.0.0')]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
@@ -53,7 +56,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucfirstFilter(mixed $string): string
     {
         Deprecator::log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
-        return mb_ucfirst((string)$string);
+
+        return mb_ucfirst((string) $string);
     }
 
     /**
@@ -90,6 +94,61 @@ class Extension extends AbstractExtension implements GlobalsInterface
         if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
         }
+
         return ucwords(strtolower($string));
+    }
+
+    /**
+     * @throws RuntimeError
+     */
+    public function filterByValueFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'filterByValue');
+
+        return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
+    }
+
+    /**
+     * @throws RuntimeError
+     */
+    public function firstWhereFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'firstWhere');
+
+        return ArrayHelper::firstWhere($array, $key, $value, $strict);
+    }
+
+    /**
+     * @throws RuntimeError
+     */
+    public function indexFilter(bool $isSandboxed, iterable $array, mixed $key, mixed $groups = []): array
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'index');
+
+        $groups = (array) $groups;
+        foreach ($groups as $group) {
+            $this->preventDottedNameInSandbox($isSandboxed, $group, 'index');
+        }
+
+        return ArrayHelper::index($array, $key, $groups);
+    }
+
+    /**
+     * Throws a RuntimeError if the given name/key is a string containing a "." character and the environment is
+     * sandboxed.
+     *
+     * @throws RuntimeError
+     */
+    private function preventDottedNameInSandbox(bool $isSandboxed, mixed $name, string $filterName): void
+    {
+        if (!$isSandboxed || !is_string($name)) {
+            return;
+        }
+
+        foreach (['.', '[', ']'] as $char) {
+            if (str_contains($name, $char)) {
+                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
+            }
+        }
     }
 }

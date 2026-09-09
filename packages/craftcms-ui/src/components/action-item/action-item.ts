@@ -42,7 +42,7 @@ export default class CraftActionItem extends LitElement {
   @property({type: Boolean}) disabled: boolean = false;
   @property({reflect: true}) variant: VariantValue = Variant.Neutral;
   @property({type: Boolean}) checked: boolean = false;
-  @property({type: Boolean}) active: boolean = false;
+  @property({type: Boolean, reflect: true}) active: boolean = false;
   @property() type: 'button' | 'checkbox' = 'button';
   @property({type: Object}) action: BaseAction | string | null = null;
   @property({type: Object}) feedback: ActionFeedback | null = null;
@@ -193,9 +193,11 @@ export default class CraftActionItem extends LitElement {
 
   renderPrefix() {
     const hasIcon = !!this.querySelector('[slot="icon"]') || !!this.icon;
+    const hasPrefix = !!this.querySelector('[slot="prefix"]');
 
     return html`
       ${this.type === 'checkbox' ? this.renderCheckbox() : nothing}
+      ${hasPrefix ? html`<slot name="prefix" part="prefix"></slot>` : nothing}
       ${hasIcon
         ? html`<div class="action-item__icon">${this.renderIcon()}</div>`
         : nothing}

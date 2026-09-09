@@ -12,6 +12,8 @@
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import {TableSpacing} from '@/common/types';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
+  import {ref} from 'vue';
+  import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -43,8 +45,9 @@
     loading,
     visibleViewModes,
     onActionPerformed,
-    createCustomizeSourcesModal,
   } = page;
+
+  const customizeSourcesActive = ref(false);
 </script>
 
 <template>
@@ -70,7 +73,7 @@
         :actions="[
           {
             label: t('Customize sources'),
-            onClick: () => createCustomizeSourcesModal(),
+            onClick: () => (customizeSourcesActive = true),
           },
         ]"
       />
@@ -111,21 +114,21 @@
         />
       </template>
       <template #navbar><slot name="navbar"></slot></template>
-      <template #body>
+      <template #body="{selection}">
         <!-- Delegated so every view mode gets double-click-to-edit without
           any of them knowing about it, matching Craft 5's element container
           listener. -->
         <div @dblclick="quickEdit.onDblClick">
           <ElementCards
             v-if="mode === 'cards'"
-            :table="elementTable"
+            :selection="selection"
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
           />
           <ElementThumbs
             v-else-if="mode === 'thumbs'"
-            :table="elementTable"
+            :selection="selection"
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
@@ -141,6 +144,14 @@
       </template>
     </BaseElementIndex>
   </craft-pane>
+
+  <CustomizeSourcesModal
+    :is-active="customizeSourcesActive"
+    :element-type="elementIndex.elementType"
+    :page="elementIndex.page"
+    :source-key="elementIndex.source?.key"
+    @close="customizeSourcesActive = false"
+  />
 </template>
 
 <style scoped lang="scss">

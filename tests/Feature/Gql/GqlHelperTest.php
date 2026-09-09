@@ -62,6 +62,7 @@ it('reports query permissions for common schema scopes', function () {
 
     expect(GqlHelper::canQueryEntries())->toBeTrue()
         ->and(GqlHelper::canQueryUsers())->toBeTrue()
+        ->and(GqlHelper::canQueryAllUsers())->toBeTrue()
         ->and(GqlHelper::canQueryAssets())->toBeFalse();
 });
 

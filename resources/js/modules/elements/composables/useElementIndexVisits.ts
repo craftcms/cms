@@ -84,7 +84,7 @@ export function createIndexVisitor(route: ElementIndexRoute) {
    * strip every bracketed form of the key — otherwise stale values accumulate
    * alongside the new ones.
    */
-  function currentQuery(replacing: Array<string> = []): Record<string, string> {
+  function currentQuery(replacing: Array<string> = []): IndexQueryParams {
     return Object.fromEntries(
       [...new URLSearchParams(window.location.search)].filter(
         ([key]) =>

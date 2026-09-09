@@ -4,19 +4,68 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\freezeTime;
 
 beforeEach(function () {
     $this->service = app(JobProgress::class);
+});
+
+it('checks reserved and pending job presence without hydrating the backlog', function () {
+    expect($this->service->hasReservedJobs())->toBeFalse()
+        ->and($this->service->hasPendingJobs())->toBeFalse();
+
+    $this->service->queued('pending-one', 'First pending job');
+    $this->service->queued('pending-two', 'Second pending job');
+    $this->service->processing('reserved-one');
+    $this->service->processing('reserved-two');
+
+    $retrieved = 0;
+    Event::listen('eloquent.retrieved: '.JobProgressModel::class, function () use (&$retrieved): void {
+        $retrieved++;
+    });
+
+    expect($this->service->hasReservedJobs())->toBeTrue()
+        ->and($this->service->hasPendingJobs())->toBeTrue()
+        ->and($retrieved)->toBe(0);
+});
+
+it('shares queue status while loading only the displayed job', function () {
+    $this->service->queued('pending-one', 'First pending job');
+    $this->service->queued('pending-two', 'Second pending job');
+    $this->service->processing('reserved-one');
+    $this->service->processing('reserved-two');
+
+    $request = Request::create(route('craft.cp.dashboard'));
+    $request->setLaravelSession(session()->driver());
+    $queue = app(HandleInertiaRequests::class)->share($request)['queue'];
+    $retrieved = 0;
+    Event::listen('eloquent.retrieved: '.JobProgressModel::class, function () use (&$retrieved): void {
+        $retrieved++;
+    });
+
+    $state = $queue();
+    $status = json_decode(json_encode($state, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($status['displayedJob'])->not()->toBeNull()
+        ->and($status['hasReservedJobs'])->toBeTrue()
+        ->and($status['hasWaitingJobs'])->toBeTrue()
+        ->and($retrieved)->toBe(1);
+
+    json_encode($state, JSON_THROW_ON_ERROR);
+
+    expect($retrieved)->toBe(1);
 });
 
 it('can set and retrieve job progress', function () {
@@ -61,6 +110,18 @@ it('atomically creates and updates existing job progress', function () {
     expect($creationQueries)->toHaveCount(1)
         ->and($updateQueries)->toHaveCount(1)
         ->and($count)->toBe(1);
+
+    $cancel = true;
+    DB::beforeExecuting(function (string $sql) use ($uid, &$cancel) {
+        if ($cancel && str_starts_with($sql, 'insert')) {
+            $cancel = false;
+            $this->service->cancel($uid);
+        }
+    });
+    $this->service->setProgress($uid, 'Racing update', 99);
+
+    expect($this->service->exists($uid))->toBeFalse()
+        ->and(JobProgressModel::find($uid)?->status)->toBe(JobStatus::Cancelled);
 });
 
 it('does not leak a transaction when persistence fails', function () {
@@ -329,15 +390,32 @@ it('clearCompleted only removes done status jobs', function () {
     expect(DB::table(Table::JOBPROGRESS)->where('uid', 'done-1')->exists())->toBeFalse();
 });
 
-it('can cancel a job by deleting its progress entry', function () {
+it('keeps cancellation hidden and immune to later writes', function () {
     $uid = 'job-to-cancel';
-
     $this->service->queued($uid, 'Job to Cancel');
-    expect($this->service->getProgress($uid))->not->toBeNull();
-
     $this->service->cancel($uid);
 
-    expect($this->service->getProgress($uid))->toBeNull();
+    $this->service->processing($uid);
+    $this->service->setProgress($uid, 'Late progress', 75);
+    $this->service->completed($uid);
+    $this->service->failed($uid, error: 'Late failure');
+    $this->service->updateStatus($uid, JobStatus::Pending);
+
+    expect($this->service->getProgress($uid))->toBeNull()
+        ->and($this->service->exists($uid))->toBeFalse()
+        ->and($this->service->getTotalJobs())->toBe(0)
+        ->and($this->service->getAll())->toBeEmpty()
+        ->and($this->service->getJobInfo())->toBeEmpty()
+        ->and(JobProgressModel::find($uid))
+        ->status->toBe(JobStatus::Cancelled)
+        ->description->toBe('Job to Cancel')
+        ->progress->toBe(0);
+
+    $this->travel(30)->days();
+    expect(new JobProgressModel()->prunable()->where('uid', $uid)->exists())->toBeFalse();
+
+    $this->service->queued($uid, 'Explicit retry');
+    expect($this->service->getProgress($uid)?->status)->toBe(JobStatus::Pending);
 });
 
 it('can check if a job exists', function () {

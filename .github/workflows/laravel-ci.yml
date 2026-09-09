@@ -149,7 +149,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --ci --compact --testsuite=Unit
+          test-command: ./vendor/bin/pest --parallel --ci --compact --testsuite=Unit
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
@@ -167,7 +167,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --ci --testsuite=Arch
+          test-command: ./vendor/bin/pest --parallel --ci --testsuite=Arch
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
@@ -229,7 +229,7 @@ jobs:
         env:
           CRAFT_REQUIRE_VIPS: ${{ matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite' && '1' || '' }}
         with:
-          test-command: ./vendor/bin/pest --ci --compact --testsuite=Feature
+          test-command: ./vendor/bin/pest --parallel --ci --compact --testsuite=Feature
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}

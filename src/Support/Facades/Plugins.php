@@ -35,7 +35,7 @@ use Override;
  * @method static bool hasIssues(string $handle)
  * @method static string[] getLicenseIssues(string $handle)
  * @method static string getPluginIconSvg(string $handle)
- * @method static string|null getPluginLicenseKey(string $handle)
+ * @method static string|false|null getPluginLicenseKey(string $handle)
  * @method static bool setPluginLicenseKey(string $handle, string|null $licenseKey = null)
  * @method static string|null normalizePluginLicenseKey(string|null $licenseKey = null)
  * @method static \CraftCms\Cms\Shared\Enums\LicenseKeyStatus getPluginLicenseKeyStatus(string $handle)

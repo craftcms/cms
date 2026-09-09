@@ -58,9 +58,7 @@ class ValidationRulesResolving
      */
     public function addRule(string $attribute, mixed $rule): void
     {
-        if (! isset($this->rules[$attribute])) {
-            $this->rules[$attribute] = [];
-        }
+        $this->rules[$attribute] ??= [];
 
         $this->rules[$attribute][] = $rule;
     }
@@ -73,9 +71,7 @@ class ValidationRulesResolving
      */
     public function addRules(string $attribute, array $rules): void
     {
-        if (! isset($this->rules[$attribute])) {
-            $this->rules[$attribute] = [];
-        }
+        $this->rules[$attribute] ??= [];
 
         $this->rules[$attribute] = array_merge($this->rules[$attribute], $rules);
     }

@@ -49,18 +49,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteVolume(volume: VolumeData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}?', {
-          name: volume.name,
-        })
-      )
-    ) {
-      router.delete(destroy({volumeId: volume.id}));
-    }
-  }
-
   const volumeIds = ref(props.volumes.map((volume) => volume.id));
   const volumes = computed((): VolumeData[] => {
     return (volumeIds.value ?? [])
@@ -113,7 +101,12 @@
     }),
     columnHelper.handle('handle'),
     columnHelper.actions(({row}) => [
-      h(DeleteButton, {onClick: () => deleteVolume(row.original)}),
+      h(DeleteButton, {
+        confirm: t('Are you sure you want to delete “{name}?', {
+          name: row.original.name,
+        }),
+        onClick: () => router.delete(destroy({volumeId: row.original.id})),
+      }),
     ]),
   ]);
 

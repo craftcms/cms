@@ -12,6 +12,11 @@ use PHPUnit\Framework\Assert;
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
 
+pest()->tia()
+    ->locally()    // run TIA on every local invocation, no --tia flag needed
+    ->baselined()  // fetch the shared baseline from CI when no local graph exists
+    ->filtered();  // narrow PHPUnit to only affected test files
+
 /**
  * Asserts the HTML under expectation contains an element with the given tag
  * name, optionally carrying the given attributes. Attribute matching is
@@ -85,6 +90,22 @@ function swapUrlRequest(string $uri, string $method = 'GET', array $parameters =
 {
     app()->instance('request', Request::create($uri, $method, $parameters));
     app()->forgetScopedInstances();
+}
+
+/**
+ * @param  list<array<string, mixed>>  $nodes
+ * @return list<array<string, mixed>>
+ */
+function flattenFormNodes(array $nodes): array
+{
+    $flattened = [];
+
+    foreach ($nodes as $node) {
+        $flattened[] = $node;
+        array_push($flattened, ...flattenFormNodes($node['children'] ?? []));
+    }
+
+    return $flattened;
 }
 
 function buildExpectedUrl(string $url, string $scheme): string

@@ -11,6 +11,22 @@ use Illuminate\Support\Facades\Schema;
 #[Singleton]
 class LaravelMigrations
 {
+    public function ensureNotificationsTable(): void
+    {
+        if (Schema::hasTable('notifications')) {
+            return;
+        }
+
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+    }
+
     public function ensureSessionsTable(): void
     {
         if (Schema::hasTable(Table::SESSIONS)) {

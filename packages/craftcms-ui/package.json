@@ -44,6 +44,15 @@
       "development": "./src/components/*.ts",
       "default": "./dist/components/*.ts.mjs"
     },
+    "./core": {
+      "development": "./src/core/element-selector/index.ts",
+      "types": "./dist/core/element-selector/index.ts.d.mts",
+      "import": "./dist/core/element-selector/index.ts.mjs"
+    },
+    "./core/*": {
+      "development": "./src/core/*.ts",
+      "default": "./dist/core/*.ts.mjs"
+    },
     "./services/*": {
       "development": "./src/services/*.ts",
       "default": "./dist/services/*.ts.mjs"

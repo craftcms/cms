@@ -1497,19 +1497,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceActions: function () {
-      let actions = [];
-
-      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
-        actions.push({
-          label: Craft.t('app', 'Customize sources'),
-          administrative: true,
-          onSelect: () => {
-            this.createCustomizeSourcesModal();
-          },
-        });
-      }
-
-      return actions;
+      // "Customize sources" now lives on the Inertia/Vue element index.
+      return [];
     },
 
     updateViewMenu: function () {
@@ -2985,19 +2974,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     hideIndexLoadingStyles: function () {
       this.$elements.removeClass('busy');
       this.$updateSpinner.remove();
-    },
-
-    createCustomizeSourcesModal: function () {
-      // Recreate it each time
-      var modal = new Craft.CustomizeSourcesModal(this, {
-        hideOnEsc: false,
-        hideOnShadeClick: false,
-        onFadeOut: function () {
-          modal.destroy();
-        },
-      });
-
-      return modal;
     },
 
     disable: function () {

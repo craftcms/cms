@@ -5,7 +5,7 @@
   const {app, cpUrl} = useCraftData();
 
   const fullEditionName = computed(() => {
-    return `${app.edition.name} Edition`;
+    return `${app.value.edition.name} Edition`;
   });
 </script>
 

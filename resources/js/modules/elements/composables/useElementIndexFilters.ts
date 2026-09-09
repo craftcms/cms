@@ -35,6 +35,7 @@ export function useElementIndexFilters(
     form
       .transform((data) => ({
         ...data,
+        source: props.source?.key,
         sort: viewState.value.sources?.[sourceKey]?.sort,
         viewMode: viewState.value.mode,
         condition: conditions?.value ?? undefined,

@@ -157,9 +157,7 @@ class PHP
      */
     public static function isPathAllowed(string $path): bool
     {
-        if (! isset(self::$basePaths)) {
-            self::$basePaths = self::configValueAsPaths('open_basedir');
-        }
+        self::$basePaths ??= self::configValueAsPaths('open_basedir');
 
         if (! self::$basePaths) {
             return true;

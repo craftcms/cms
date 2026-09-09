@@ -18,7 +18,7 @@ use RuntimeException;
 class DependencyCollector implements CacheCollectorInterface
 {
     /**
-     * @var array<int, array{tags: array<string, bool>, duration: int|null}>
+     * @var array<int, array{tags: array<string, bool>, expiryTimestamp: int|null}>
      */
     private array $buffers = [];
 
@@ -27,7 +27,7 @@ class DependencyCollector implements CacheCollectorInterface
      */
     private ?array $tags = null;
 
-    private ?int $duration = null;
+    private ?int $expiryTimestamp = null;
 
     public static function key(): string
     {
@@ -39,12 +39,12 @@ class DependencyCollector implements CacheCollectorInterface
         if ($this->isCollecting()) {
             $this->buffers[] = [
                 'tags' => $this->tags,
-                'duration' => $this->duration,
+                'expiryTimestamp' => $this->expiryTimestamp,
             ];
         }
 
         $this->tags = [];
-        $this->duration = null;
+        $this->expiryTimestamp = null;
     }
 
     /**
@@ -52,11 +52,11 @@ class DependencyCollector implements CacheCollectorInterface
      */
     public function end(TemplateCacheContext $context): array
     {
-        [$dependency, $duration] = $this->stop();
+        [$dependency, $expiryTimestamp] = $this->finish();
 
         return [
             'tags' => $dependency->tags ?? [],
-            'expiryDate' => $duration ? DateTimeHelper::toIso8601(now()->add($duration, 'seconds')) : null,
+            'expiryDate' => $expiryTimestamp !== null ? DateTimeHelper::toIso8601(now()->setTimestamp($expiryTimestamp)) : null,
         ];
     }
 
@@ -73,7 +73,7 @@ class DependencyCollector implements CacheCollectorInterface
         }
 
         if ($cacheInfo['expiryDate']) {
-            $this->setExpiryDate(DateTimeHelper::toDateTime($cacheInfo['expiryDate']));
+            $this->mergeExpiryTimestamp(DateTimeHelper::toDateTime($cacheInfo['expiryDate'])->getTimestamp());
         }
     }
 
@@ -100,10 +100,17 @@ class DependencyCollector implements CacheCollectorInterface
             return;
         }
 
-        $duration = $expiryDate->getTimestamp() - now()->getTimestamp();
+        $expiryTimestamp = $expiryDate->getTimestamp();
 
-        if ($duration > 0 && ($this->duration === null || $duration < $this->duration)) {
-            $this->duration = $duration;
+        if ($expiryTimestamp > now()->getTimestamp()) {
+            $this->mergeExpiryTimestamp($expiryTimestamp);
+        }
+    }
+
+    private function mergeExpiryTimestamp(int $expiryTimestamp): void
+    {
+        if ($this->expiryTimestamp === null || $expiryTimestamp < $this->expiryTimestamp) {
+            $this->expiryTimestamp = $expiryTimestamp;
         }
     }
 
@@ -134,32 +141,42 @@ class DependencyCollector implements CacheCollectorInterface
      */
     public function stop(): array
     {
+        [$dependency, $expiryTimestamp] = $this->finish();
+
+        return [$dependency, $expiryTimestamp !== null ? max(0, $expiryTimestamp - now()->getTimestamp()) : null];
+    }
+
+    /**
+     * @return array{TagDependency|null, int|null}
+     */
+    private function finish(): array
+    {
         if (! $this->isCollecting()) {
             throw new RuntimeException('Element cache invalidation tags are not currently being collected.');
         }
 
         $tags = array_keys($this->tags);
-        $duration = $this->duration;
+        $expiryTimestamp = $this->expiryTimestamp;
 
         if (! empty($this->buffers)) {
             $parent = array_pop($this->buffers);
             $this->tags = $parent['tags'];
-            $this->duration = $parent['duration'];
+            $this->expiryTimestamp = $parent['expiryTimestamp'];
             $this->collectTags($tags);
 
-            if ($duration) {
-                $this->setExpiryDate(now()->add($duration, 'seconds'));
+            if ($expiryTimestamp !== null) {
+                $this->mergeExpiryTimestamp($expiryTimestamp);
             }
         } else {
             $this->tags = null;
-            $this->duration = null;
+            $this->expiryTimestamp = null;
         }
 
         if (empty($tags)) {
-            return [null, $duration];
+            return [null, $expiryTimestamp];
         }
 
-        return [new TagDependency($tags), $duration];
+        return [new TagDependency($tags), $expiryTimestamp];
     }
 
     /**

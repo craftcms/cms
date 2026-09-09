@@ -21,16 +21,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteGroup(group: UserGroup) {
-    if (
-      confirm(
-        t('Are you sure you want to delete "{name}"?', {name: group.name})
-      )
-    ) {
-      router.delete(destroy({groupId: group.id}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<UserGroup>();
   const table = useVueTable({
     get columns() {
@@ -44,7 +34,17 @@
         }),
         columnHelper.handle('handle'),
         columnHelper.actions(({row}) => [
-          h(DeleteButton, {onClick: () => deleteGroup(row.original)}),
+          h(DeleteButton, {
+            confirm: t('Are you sure you want to delete "{name}"?', {
+              name: row.original.name,
+            }),
+            onClick: () =>
+              router
+                .optimistic<{groups: Array<UserGroup>}>(({groups}) => ({
+                  groups: groups.filter(({id}) => id !== row.original.id),
+                }))
+                .delete(destroy({groupId: row.original.id})),
+          }),
         ]),
       ];
     },

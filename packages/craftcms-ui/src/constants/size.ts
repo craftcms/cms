@@ -1,7 +1,7 @@
-const Size = {
-  small: 'small',
-  medium: 'medium',
-  large: 'large',
+export const Size = {
+  Small: 'small',
+  Medium: 'medium',
+  Large: 'large',
 } as const;
 
 export const sizes = Object.values(Size);

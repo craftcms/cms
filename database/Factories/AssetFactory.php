@@ -22,7 +22,7 @@ class AssetFactory extends Factory
         return [
             'id' => Element::factory()->set('type', \CraftCms\Cms\Asset\Elements\Asset::class),
             'volumeId' => Volume::factory(),
-            'folderId' => VolumeFolder::factory(),
+            'folderId' => fn (array $attributes) => VolumeFolder::factory()->state(['volumeId' => $attributes['volumeId']]),
             'filename' => fake()->word().'.jpg',
             'kind' => 'image',
         ];

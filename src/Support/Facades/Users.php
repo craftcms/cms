@@ -16,7 +16,7 @@ use Override;
  * @method static void saveUserPreferences(\CraftCms\Cms\User\Contracts\CraftUser $user, array $preferences)
  * @method static mixed getUserPreference(int $userId, string $key, mixed $default = null)
  * @method static bool sendPasswordResetEmail(\CraftCms\Cms\User\Elements\User $user)
- * @method static bool sendActivationEmail(\CraftCms\Cms\User\Elements\User $user)
+ * @method static bool sendActivationEmail(\CraftCms\Cms\User\Elements\User $user, string|null $recipient = null)
  * @method static bool sendNewEmailVerifyEmail(\CraftCms\Cms\User\Elements\User $user)
  * @method static string getActivationUrl(\CraftCms\Cms\User\Elements\User $user, string|null $token = null)
  * @method static string getEmailVerifyUrl(\CraftCms\Cms\User\Elements\User $user, string|null $token = null)

@@ -33,6 +33,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
@@ -46,6 +47,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -59,7 +61,6 @@ use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -72,8 +73,7 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -142,7 +142,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -161,7 +161,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         if ($value === ':empty:') {
-            return $query->whereNotExists($exists);
+            $query->whereNotExists($exists);
+
+            return;
         }
 
         if ($value !== ':notempty:') {
@@ -175,7 +177,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $exists->whereIn("entries_$ns.id", $ids);
         }
 
-        return $query->whereExists($exists);
+        $query->whereExists($exists);
     }
 
     /**
@@ -383,7 +385,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             FormField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(GroupedEntryTypeManager::make('entryTypes')
-                    ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))),
+                    ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))
+                    ->reactive()),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -438,9 +441,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ], array_filter(Entry::indexViewModes(), fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false))));
 
         return $form->add(
-            FormField::make(t('Site Settings'))
-                ->instructions(t('Choose the site-specific settings for nested entries.'))
-                ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
+            Group::make('matrix-site-settings', [
+                FormField::make(t('Site Settings'))
+                    ->instructions(t('Choose the site-specific settings for nested entries.'))
+                    ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
+            ])->dependsOn('settings.entryTypes'),
             FormField::make(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->control(Number::make('minEntries')->min(0)->value($this->minEntries)),
@@ -869,7 +874,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
     /** @return list<array<string,mixed>> */
     #[Override]
-    protected function actionMenuItems(): array
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
         if ($this->maxEntries !== 1) {
             $items = match ($this->viewMode) {
@@ -881,7 +886,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $items = [];
         }
 
-        $parentItems = parent::actionMenuItems();
+        $parentItems = parent::fieldLayoutActionMenuItems($context);
 
         if (! empty($items) && ! empty($parentItems)) {
             return [
@@ -902,60 +907,38 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         // Expand/Collapse all. These operate on the field's input, so they're
         // excluded from chip menus, where the input may not be present (e.g.
         // the field layout designer's field-settings slideout).
-        $expandAllId = sprintf('expand-all-%s', mt_rand());
-        $collapseAllId = sprintf('collapse-all-%s', mt_rand());
+        // Behavior travels with each item as a declarative action, handled by
+        // the field action listeners in `resources/js/modules/fields`. The
+        // listeners resolve the blocks from the invoking item's own field, so
+        // no ID coordination between PHP and the Vue renderer is needed.
         $items[] = [
-            'id' => $expandAllId,
+            'id' => sprintf('expand-all-%s', mt_rand()),
             'icon' => 'expand',
             'label' => mb_ucfirst(t('Expand all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
             'showInChips' => false,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:matrix-toggle-all',
+                'detail' => ['collapse' => false],
+            ],
         ];
         $items[] = [
-            'id' => $collapseAllId,
+            'id' => sprintf('collapse-all-%s', mt_rand()),
             'icon' => 'collapse',
             'label' => mb_ucfirst(t('Collapse all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
             'showInChips' => false,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:matrix-toggle-all',
+                'detail' => ['collapse' => true],
+            ],
         ];
-        HtmlStack::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
-(() => {
-  const field = $('#' + $fieldId);
-  const expandBtn = $('#' + $expandAllId);
-  const collapseBtn = $('#' + $collapseAllId);
-  const menu = expandBtn.closest('.menu');
-  const getBlocks = () => field.find(' > .blocks > .matrixblock');
 
-  expandBtn.on('activate', () => {
-    getBlocks().each((i, block) => {
-      $(block).data('entry').expand();
-    });
-  });
-
-  collapseBtn.on('activate', () => {
-    getBlocks().each((i, block) => {
-      $(block).data('entry').collapse();
-    });
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      let blocks = getBlocks();
-      disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
-      disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($expandAllId),
-            InputNamespace::namespaceId($collapseAllId),
-            InputNamespace::namespaceId($this->getInputId()),
-        ]);
-
-        $items[] = $this->copyAction(t('blocks'), ' > .blocks > .matrixblock');
+        $items[] = $this->copyAction(t('blocks'), '.matrixblock');
 
         return $items;
     }
@@ -968,66 +951,17 @@ JS, [
         // Copy
         $items[] = $this->copyAction(
             Entry::pluralLowerDisplayName(),
-            ' > .nested-element-cards > .elements > li > .element',
+            '.nested-element-cards .elements > li > .element',
         );
 
         return $items;
     }
 
-    /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false} */
+    /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false,action:array<string,mixed>} */
     private function copyAction(string $type, string $entrySelector): array
     {
-        $id = sprintf('action-copy-%s', mt_rand());
-
-        $baseInfo = Json::encode([
-            'type' => Entry::class,
-            'fieldId' => $this->id,
-        ]);
-
-        HtmlStack::jsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getEntries = () => field.find($entrySelector)
-
-  btn.on('activate', () => {
-    Craft.cp.copyElements(getEntries().toArray().map((element) => {
-      element = $(element);
-      return {
-          ... $baseInfo,
-          id: element.data('id'),
-          draftId: element.data('draftId'),
-          revisionId: element.data('revisionId'),
-          ownerId: element.data('ownerId'),
-          siteId: element.data('siteId'),
-        }
-    }));
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      btn.toggleClass('disabled', !getEntries().length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            InputNamespace::namespaceId($this->getInputId()),
-            $entrySelector,
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-%s', mt_rand()),
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
             'label' => mb_ucfirst(t('Copy all {type}', [
@@ -1036,6 +970,15 @@ JS, [
             // Operates on the field's input, which isn't present where chips
             // render (e.g. the field layout designer's settings slideout)
             'showInChips' => false,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-nested-elements',
+                'detail' => [
+                    'selector' => $entrySelector,
+                    'elementType' => Entry::class,
+                    'fieldId' => $this->id,
+                ],
+            ],
         ];
     }
 
@@ -1395,16 +1338,17 @@ JS, [
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = DB::table(Table::ENTRIES, 'entries')
+        $map = DB::table(Table::ELEMENTS_OWNERS, 'elements_owners')
             ->select([
                 'elements_owners.ownerId as source',
-                'entries.id as target',
+                'elements_owners.elementId as target',
             ])
-            ->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->whereColumn('elements_owners.elementId', 'entries.id')
-                    ->whereIn('elements_owners.ownerId', $sourceElementIds);
-            })
-            ->where('entries.fieldId', $this->id)
+            ->whereIn('elements_owners.ownerId', $sourceElementIds)
+            ->whereExists(fn (Builder $query) => $query
+                ->selectRaw('1')
+                ->from(Table::ENTRIES, 'entries')
+                ->whereColumn('entries.id', 'elements_owners.elementId')
+                ->where('entries.fieldId', $this->id))
             ->orderBy('elements_owners.sortOrder')
             ->get()
             ->map(fn (object $row) => (array) $row)

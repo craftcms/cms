@@ -28,9 +28,9 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0-alpha.17';
+    public const string VERSION = '6.0.0-alpha.18';
 
-    public const string SCHEMA_VERSION = '6.0.0.5';
+    public const string SCHEMA_VERSION = '6.0.0.10';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
@@ -92,6 +92,9 @@ readonly class Cms
 
     private static function validatedTimezone(?string $timezone): string
     {
+        static $validatedTimezone = null;
+        static $validatedLocale = null;
+
         $timezone = Env::parse($timezone);
 
         if (! $timezone) {
@@ -99,11 +102,20 @@ readonly class Cms
         }
 
         if ($timezone !== 'UTC') {
+            $locale = app()->getLocale();
+
+            if ($timezone === $validatedTimezone && $locale === $validatedLocale) {
+                return $timezone;
+            }
+
             // Make sure that ICU supports this timezone
             try {
-                $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                $formatter = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
                 if (! $formatter->setTimeZone($timezone)) {
                     $timezone = 'UTC';
+                } else {
+                    $validatedTimezone = $timezone;
+                    $validatedLocale = $locale;
                 }
             } catch (IntlException) {
                 Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());

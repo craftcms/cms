@@ -212,6 +212,7 @@ class FormResolver
             mode: $mode,
             deltaGroup: $deltaGroup,
             forms: $forms,
+            reactive: $control->isReactive(),
         );
     }
 

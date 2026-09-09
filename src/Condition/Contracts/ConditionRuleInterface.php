@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Condition\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
+use CraftCms\Cms\Form\Form;
 use RuntimeException;
 
 /**
@@ -27,6 +28,11 @@ interface ConditionRuleInterface extends ComponentInterface
      * Returns whether the rule is safe to include in conditions that are stored in the project config.
      */
     public static function supportsProjectConfig(): bool;
+
+    /**
+     * Returns whether the rule can be selected for the provided condition.
+     */
+    public static function isSelectableForCondition(ConditionInterface $condition): bool;
 
     /**
      * Returns the rule’s option label.
@@ -58,9 +64,9 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getConfig(): array;
 
     /**
-     * Returns the rule’s HTML for a condition builder.
+     * Returns the rule’s Form schema for a condition builder.
      */
-    public function getHtml(): string;
+    public function getForm(): Form;
 
     /**
      * Sets the condition associated with this rule.

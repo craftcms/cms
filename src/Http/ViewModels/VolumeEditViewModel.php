@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -20,6 +22,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
@@ -34,6 +37,7 @@ class VolumeEditViewModel extends ViewModel
         private readonly Volume $volume,
         private readonly Volumes $volumes,
         private readonly FormResolver $formResolver,
+        private readonly AssetTransformers $assetTransformers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -82,23 +86,11 @@ class VolumeEditViewModel extends ViewModel
                 ->instructions(t('Where assets should be stored on the filesystem.'))
                 ->tip(t('Type `$` to choose an environment variable.')),
             Field::make(
-                t('Transform Filesystem'),
-                FilesystemSelect::make('transformFsHandle')
-                    ->disabledTargets($disabledFilesystemTargets)
-                    ->emptyOption(t('Same as asset filesystem'))
-                    ->includeEnvVars()
-                    ->create()
-                    ->placeholder(t('Same as asset filesystem'))
-                    ->clearable(),
-            )
-                ->instructions(t('Choose which filesystem image transforms should be stored in.'))
-                ->tip(t('This can be set to an environment variable matching one of the option values.')),
-            Field::make(
-                t('Transform Subpath'),
-                Text::make('transformSubpath')->textExpanderTriggers($envTextExpanderTriggers),
-            )
-                ->instructions(t('Where transforms should be stored on the filesystem.'))
-                ->tip(t('Type `$` to choose an environment variable.')),
+                t('Asset Transformer'),
+                Combobox::make('assetTransformer')
+                    ->options($this->assetTransformerOptions())
+                    ->showAllOnEmpty(),
+            )->instructions(t('Select the Asset Transformer for this volume. Leave blank to use the global default.')),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -106,39 +98,43 @@ class VolumeEditViewModel extends ViewModel
                 Separator::make('translation-separator'),
                 Field::make(
                     t('{name} Translation Method', ['name' => t('Title')]),
-                    Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions()),
+                    Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
                 )->instructions(t('How should {name} values be translated?', ['name' => t('Title')])),
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Field::make(
-                    t('{name} Translation Key Format', ['name' => t('Title')]),
-                    Text::make('titleTranslationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers($objectTemplateTriggers),
-                )
-                    ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
-                        'name' => t('Title'),
-                    ]))
-                    ->tip($objectTemplateTip));
+                $form->add(Group::make('volume-title-translation-settings', [
+                    Field::make(
+                        t('{name} Translation Key Format', ['name' => t('Title')]),
+                        Text::make('titleTranslationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers($objectTemplateTriggers),
+                    )
+                        ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
+                            'name' => t('Title'),
+                        ]))
+                        ->tip($objectTemplateTip),
+                ])->dependsOn('titleTranslationMethod'));
             }
 
             $form->add(Field::make(
                 t('{name} Translation Method', ['name' => t('Alternative Text')]),
-                Choice::make('altTranslationMethod')->options(TranslationMethod::asOptions()),
+                Choice::make('altTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
             )->instructions(t('How should {name} values be translated?', ['name' => t('Alternative Text')])));
 
             if (($values['altTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Field::make(
-                    t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
-                    Text::make('altTranslationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers($objectTemplateTriggers),
-                )
-                    ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
-                        'name' => t('Alternative Text'),
-                    ]))
-                    ->tip($objectTemplateTip));
+                $form->add(Group::make('volume-alt-translation-settings', [
+                    Field::make(
+                        t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
+                        Text::make('altTranslationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers($objectTemplateTriggers),
+                    )
+                        ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
+                            'name' => t('Alternative Text'),
+                        ]))
+                        ->tip($objectTemplateTip),
+                ])->dependsOn('altTranslationMethod'));
             }
         }
 
@@ -185,8 +181,7 @@ class VolumeEditViewModel extends ViewModel
             'handle' => $this->volume->handle ?? '',
             'fsHandle' => $this->volume->getFsHandle(false) ?? '',
             'subpath' => $this->volume->getSubpath(ensureTrailing: false, parse: false),
-            'transformFsHandle' => $this->volume->getTransformFsHandle(false) ?? '',
-            'transformSubpath' => $this->volume->getTransformSubpath(ensureTrailing: false, parse: false),
+            'assetTransformer' => $this->volume->getAssetTransformerHandle(false) ?? '',
             'titleTranslationMethod' => $this->volume->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->volume->titleTranslationKeyFormat ?? '',
             'altTranslationMethod' => $this->volume->altTranslationMethod->value,
@@ -197,5 +192,21 @@ class VolumeEditViewModel extends ViewModel
                 ...($fieldLayout->getConfig() ?? []),
             ],
         ];
+    }
+
+    /** @return list<array{value:string,label:string}> */
+    private function assetTransformerOptions(): array
+    {
+        return $this->assetTransformers
+            ->getAllAssetTransformers()
+            ->map(fn ($transformer): array => [
+                'value' => $transformer->handle,
+                'label' => $transformer->name,
+            ])
+            ->sortBy('label')
+            ->prepend(['value' => '', 'label' => t('Default')])
+            ->concat(SelectOptions::getEnvSuggestions())
+            ->values()
+            ->all();
     }
 }

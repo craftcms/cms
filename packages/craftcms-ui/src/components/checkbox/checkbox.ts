@@ -1,5 +1,6 @@
 import {LionCheckbox} from '@lion/ui/checkbox-group.js';
 import {css, type PropertyValues} from 'lit';
+import {choiceInputStyles} from '@src/styles/form.styles';
 import {property} from 'lit/decorators.js';
 import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
 
@@ -99,6 +100,7 @@ export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
   static override get styles() {
     return [
       ...LionCheckbox.styles,
+      choiceInputStyles,
       css`
         /* same as radio, potentially consolidate */
         :host(:not([label-sr-only])) {
@@ -140,25 +142,6 @@ export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
         ::slotted(label) {
           font: inherit;
           grid-area: label;
-        }
-
-        ::slotted([slot='input']) {
-          background-color: var(--c-input-fill, var(--c-form-control-fill));
-          border-width: var(
-            --c-input-border-width,
-            var(--c-form-control-border-width)
-          );
-          border-style: var(
-            --c-input-border-style,
-            var(--c-form-control-border-style)
-          );
-          border-color: var(
-            --c-input-border-color,
-            var(--c-form-control-border-color)
-          );
-          border-radius: var(--c-input-radius, var(--c-radius-sm));
-          width: var(--c-checkbox-size);
-          height: var(--c-checkbox-size);
         }
 
         .choice-field__help-text {

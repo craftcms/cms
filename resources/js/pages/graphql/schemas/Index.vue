@@ -23,18 +23,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteSchema(schema: SchemaData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete the “{name}” schema?', {
-          name: schema.name,
-        })
-      )
-    ) {
-      router.delete(destroy({schemaId: schema.id}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<SchemaData>();
   const table = useVueTable({
     get columns() {
@@ -63,7 +51,18 @@
         columnHelper.actions(({row}) => [
           row.original.isPublic
             ? null
-            : h(DeleteButton, {onClick: () => deleteSchema(row.original)}),
+            : h(DeleteButton, {
+                confirm: t(
+                  'Are you sure you want to delete the “{name}” schema?',
+                  {name: row.original.name}
+                ),
+                onClick: () =>
+                  router
+                    .optimistic<{schemas: Array<SchemaData>}>(({schemas}) => ({
+                      schemas: schemas.filter(({id}) => id !== row.original.id),
+                    }))
+                    .delete(destroy({schemaId: row.original.id})),
+              }),
         ]),
       ];
     },

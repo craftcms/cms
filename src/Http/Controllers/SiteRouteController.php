@@ -7,19 +7,13 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
-
-use function CraftCms\Cms\t;
 
 readonly class SiteRouteController
 {
@@ -36,7 +30,6 @@ readonly class SiteRouteController
             return response(status: 404);
         }
 
-        $this->enforceOfflineAccess($request);
         $path = $this->sites->getRequestPath($request);
 
         return $this->matchElement($request, $path) ?? response(status: 404);
@@ -83,22 +76,5 @@ readonly class SiteRouteController
         }
 
         return response(status: 404);
-    }
-
-    private function enforceOfflineAccess(Request $request): void
-    {
-        if (app()->isLive() || $request->getHadToken() || $request->siteToken()) {
-            return;
-        }
-
-        if (Auth::guest()) {
-            throw new ServiceUnavailableHttpException(
-                retryAfter: app(ProjectConfig::class)->get('system.retryDuration'),
-            );
-        }
-
-        if (! Gate::check('accessSiteWhenSystemIsOff')) {
-            throw new ServiceUnavailableHttpException(t('Your account doesn’t have permission to access the site when the system is offline.'));
-        }
     }
 }

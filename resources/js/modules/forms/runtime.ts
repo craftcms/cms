@@ -1,6 +1,13 @@
 import {Validator} from '@lion/ui/form-core.js';
 import type {InjectionKey, Ref, Slots} from 'vue';
-import type {FormChange, FormValue, FormValues} from './types';
+import type {
+  CanonicalFormValue,
+  FormChange,
+  FormControlPayload,
+  FormNodePayload,
+  FormValue,
+  FormValues,
+} from './types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
@@ -12,6 +19,10 @@ export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
 /** Modified delta groups as dotted paths, provided to every field beneath. */
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormModifiedGroups');
+
+/** Control paths whose changes have an active Form refresh. */
+export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
+  Symbol('FormRefreshingFields');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
@@ -49,7 +60,21 @@ export function formChangeFromEvent(
     return change;
   }
 
-  return change instanceof CustomEvent ? (change.detail ?? null) : null;
+  const detail = change instanceof CustomEvent ? change.detail : null;
+
+  // Only a Control's own CustomEvent carries a FormChange. Plenty of other
+  // CustomEvents bubble through a form — htmx's request lifecycle puts
+  // `{elt, xhr, …}` in `detail` — and forwarding one as a change hands
+  // listeners an object with no `path`.
+  return isFormChange(detail) ? detail : null;
+}
+
+function isFormChange(value: unknown): value is FormChange {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Array.isArray((value as FormChange).path)
+  );
 }
 
 export function inputName(path: string[]): string {
@@ -111,10 +136,69 @@ export function unsetValue(source: FormValue, path: string[]): void {
   }
 }
 
+export function visitControls(
+  nodes: FormNodePayload[],
+  visit: (control: FormControlPayload) => void
+): void {
+  for (const node of nodes) {
+    if (node.control) {
+      visit(node.control);
+      node.control.forms?.forEach((form) => visitControls(form.nodes, visit));
+    }
+
+    if (node.children) {
+      visitControls(node.children, visit);
+    }
+  }
+}
+
 export function pathsMatch(left: string[], right: string[]): boolean {
   return (
     left.length === right.length &&
     left.every((segment, index) => segment === right[index])
+  );
+}
+
+/**
+ * A stable string for a form value, for equality checks.
+ *
+ * `JSON.stringify` on its own is key-order sensitive, so two values a form
+ * would treat as identical can serialize differently purely because a server
+ * renderer emitted the keys in another order. Anything asking "did this
+ * change?" wants this rather than raw `JSON.stringify`.
+ */
+export function canonical(value: FormValue): string {
+  return JSON.stringify(canonicalValue(value));
+}
+
+export function canonicalValue(value: FormValue): CanonicalFormValue {
+  // Nothing and empty mean the same thing to a form, so a control reporting
+  // one where the server sent the other has not edited anything. Without
+  // this, populating a field on load can read as a change purely because the
+  // control's idea of empty differs from the server's.
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(canonicalValue);
+  }
+
+  if (value instanceof File) {
+    return {
+      name: value.name,
+      size: value.size,
+      type: value.type,
+      lastModified: value.lastModified,
+    };
+  }
+
+  if (!isRecord(value)) return value;
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, canonicalValue(value[key])])
   );
 }
 

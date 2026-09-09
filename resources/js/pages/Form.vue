@@ -133,7 +133,7 @@
   -->
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
     <craft-pane appearance="raised">
-      <craft-field-group>
+      <craft-field-group class="py-4">
         <FormRenderer
           ref="renderer"
           :payload="form"

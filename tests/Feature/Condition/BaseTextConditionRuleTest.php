@@ -22,6 +22,7 @@ function createTitleRule(string $operator, string $value = ''): TitleConditionRu
 function createTitleConditionWithRule(string $operator, string $value = ''): ElementCondition
 {
     $condition = new ElementCondition(Entry::class);
+    $condition->forQuery = true;
     $rule = $condition->createConditionRule(TitleConditionRule::class);
     $rule->operator = $operator;
     $rule->value = $value;

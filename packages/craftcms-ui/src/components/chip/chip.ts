@@ -58,7 +58,20 @@ export default class CraftChip extends LitElement {
   showStatus: boolean = false;
   @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean =
     false;
+  /** Whether the chip offers a selection checkbox. */
   @property({type: Boolean}) selectable: boolean = false;
+
+  /** Whether the chip is selected. Only meaningful alongside `selectable`. */
+  @property({type: Boolean, reflect: true}) selected: boolean = false;
+
+  /** Accessible name for the selection checkbox. */
+  @property({attribute: 'select-label'}) selectLabel: string | null = null;
+
+  /**
+   * The modifier state of the click that preceded `change`, captured because
+   * `change` itself doesn't carry it and range selection needs it.
+   */
+  #selectShiftKey = false;
 
   #thumbLoader = new ThumbnailLoader();
 
@@ -91,6 +104,39 @@ export default class CraftChip extends LitElement {
   override disconnectedCallback(): void {
     this.#observer.disconnect();
     super.disconnectedCallback();
+  }
+
+  #onSelectClick(event: MouseEvent): void {
+    this.#selectShiftKey = event.shiftKey;
+
+    // Ticking the box is the checkbox's business, not a click on the chip body;
+    // stop it here rather than making every host filter it back out.
+    event.stopPropagation();
+  }
+
+  #onSelectChange(event: Event): void {
+    const {checked} = event.target as HTMLInputElement;
+
+    this.selected = checked;
+    this.dispatchEvent(
+      new CustomEvent('selected-change', {
+        detail: {selected: checked, shiftKey: this.#selectShiftKey},
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  renderSelect() {
+    return html`<input
+      type="checkbox"
+      class="cp-chip__select"
+      part="select"
+      .checked=${this.selected}
+      aria-label=${this.selectLabel ?? nothing}
+      @click=${this.#onSelectClick}
+      @change=${this.#onSelectChange}
+    />`;
   }
 
   renderPrefix() {
@@ -126,6 +172,7 @@ export default class CraftChip extends LitElement {
       !!this.querySelector('[slot="icon"]') ||
       !!this.querySelector('[slot="thumbnail"]') ||
       !!this.querySelector('[slot="indicator"]') ||
+      !!this.querySelector('[slot="status"]') ||
       this.icon;
     const renderSuffix = !!this.querySelector('[slot="suffix"]');
 
@@ -144,7 +191,7 @@ export default class CraftChip extends LitElement {
           'cp-chip--show-status': this.showStatus,
         })}"
       >
-        ${this.selectable ? html` <input type="checkbox" />` : nothing}
+        ${this.selectable ? this.renderSelect() : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
         <slot class="cp-chip__body"></slot>
         ${renderSuffix

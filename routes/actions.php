@@ -6,7 +6,6 @@ use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
-use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
@@ -33,6 +32,9 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
@@ -111,39 +113,40 @@ $sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpAc
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
         // App
-        Route::get('app/health-check', HealthCheckController::class);
+        Route::allowDuringMaintenance()->get('app/health-check', HealthCheckController::class);
 
         // Auth
-        Route::middleware([EnsureTwoFactorChallengeIsRecent::class, 'throttle:'.TwoFactorRateLimiter::NAME])->group(function () {
-            Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
-            Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+        Route::allowDuringMaintenance()->group(function () use ($middleware) {
+            Route::middleware([EnsureTwoFactorChallengeIsRecent::class, 'throttle:'.TwoFactorRateLimiter::NAME])->group(function () {
+                Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
+                Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+            });
+            Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
+            Route::post('users/login', [LoginController::class, 'attemptLogin'])
+                ->middleware('throttle:'.LoginRateLimiter::NAME);
+            Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
+                ->middleware('throttle:'.LoginRateLimiter::NAME);
+            Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
+            Route::any('users/redirect', [LoginController::class, 'redirect']);
+            Route::post('users/set-password', [SetPasswordController::class, 'store']);
+            Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
+            Route::any('users/session-info', [SessionInfoController::class, 'show'])
+                ->middleware(StartSessionWithoutPersistence::class)
+                ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
+            Route::middleware(
+                in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
+            )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         });
-        Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
-        Route::post('users/login', [LoginController::class, 'attemptLogin'])
-            ->middleware('throttle:'.LoginRateLimiter::NAME);
-        Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
-            ->middleware('throttle:'.LoginRateLimiter::NAME);
-        Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
-        Route::any('users/redirect', [LoginController::class, 'redirect']);
-        Route::post('users/set-password', [SetPasswordController::class, 'store']);
-        Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
-        Route::any('users/session-info', [SessionInfoController::class, 'show'])
-            ->middleware(StartSessionWithoutPersistence::class)
-            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::post('users/confirm-password', [SessionInfoController::class, 'confirmPassword'])
             ->middleware(['auth', 'can:accessCp'])
             ->block();
-        Route::middleware(
-            in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
-        )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
 
         // Asset Transforms (anonymous access)
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
-        Route::get('assets/generate-fallback-transform', [TransformController::class, 'generateFallback']);
 
         // GQL API
         Route::any('graphql/api', GqlApiController::class);
@@ -159,7 +162,7 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
  * Actions that are accessible without CP can be registered here.
  */
 Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
-    Route::post('migrate', MigrateController::class);
+    Route::allowDuringMaintenance()->post('migrate', MigrateController::class);
 
     Route::middleware(['auth'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
@@ -242,6 +245,13 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
         Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
         Route::post('elements/validate', ValidateElementController::class);
+        Route::post('elements/activity', ActivityTimelineController::class);
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('elements/activity/comments', [ActivityCommentsController::class, 'store']);
+            Route::patch('elements/activity/comments', [ActivityCommentsController::class, 'update']);
+            Route::delete('elements/activity/comments', [ActivityCommentsController::class, 'destroy']);
+        });
+        Route::get('elements/activity/mentions', ActivityMentionSuggestionsController::class)->middleware('throttle:120,1');
         Route::post('elements/recent-activity', ElementActivityController::class);
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
@@ -265,6 +275,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
             Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);
+            Route::post('element-index-settings/source-settings-form', [ElementSourcesController::class, 'form']);
         });
 
         // Entries
@@ -365,9 +376,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
-        // Users
-        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
-
         Route::middleware('password.confirm')->group(function () {
             Route::post('users/save-password', [PasswordController::class, 'store']);
         });
@@ -403,7 +411,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
         });
 
-        Route::prefix('pluginstore/install')->middleware([
+        Route::allowDuringMaintenance()->prefix('pluginstore/install')->middleware([
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('/', [PluginStoreInstallController::class, 'index']);

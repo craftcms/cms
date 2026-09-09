@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
@@ -70,7 +72,9 @@ class FieldEditViewModel extends ViewModel
                 ->instructions(t('Helper text to guide the author.')),
             FormField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
-        $typeField = FormField::make(t('Field Type'), Choice::make('type')->options($this->fieldTypeOptions()))
+        $typeField = FormField::make(t('Field Type'), Combobox::make('type')
+            ->options($this->fieldTypeOptions())
+            ->reactive())
             ->instructions(t('What type of field is this?'))
             ->required();
 
@@ -89,18 +93,20 @@ class FieldEditViewModel extends ViewModel
         if (Sites::isMultiSite() && count($translationOptions) > 1) {
             $nodes[] = FormField::make(
                 t('Translation Method'),
-                Choice::make('translationMethod')->options($translationOptions),
+                Choice::make('translationMethod')->options($translationOptions)->reactive(),
             )->instructions(t('How should this field’s values be translated?'));
 
             if ($translationMethod === TranslationMethod::Custom->value) {
-                $nodes[] = FormField::make(
-                    t('Translation Key Format'),
-                    Text::make('translationKeyFormat')
-                        ->monospace()
-                        ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
-                )
-                    ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
-                    ->tip(SelectOptions::getObjectTemplateTip());
+                $nodes[] = Group::make('field-translation-settings', [
+                    FormField::make(
+                        t('Translation Key Format'),
+                        Text::make('translationKeyFormat')
+                            ->monospace()
+                            ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
+                    )
+                        ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
+                        ->tip(SelectOptions::getObjectTemplateTip()),
+                ])->dependsOn('translationMethod');
             }
         } else {
             $nodes[] = HiddenField::make('translationMethod');
@@ -127,10 +133,12 @@ class FieldEditViewModel extends ViewModel
             refreshable: $refreshable,
         ));
         $settingsContext = $this->settingsFormContext();
-        $settings = $formResolver->resolve(
-            $this->settingsFormDefinition($settingsContext) ?? Form::make(),
-            $settingsContext,
-        );
+        $settingsForm = $this->settingsFormDefinition($settingsContext);
+        $settings = $formResolver->resolve($settingsForm === null
+            ? Form::make()
+            : Form::make([
+                Group::make('field-settings', $settingsForm->nodes())->dependsOn('type'),
+            ]), $settingsContext);
 
         return new FormPayload(
             scope: [],
@@ -207,6 +215,11 @@ class FieldEditViewModel extends ViewModel
                 $name = $class::displayName();
 
                 return [
+                    'data' => [
+                        'icon' => $class === $currentType && ! $this->field instanceof MissingField
+                            ? $this->field->getIcon()
+                            : $class::icon(),
+                    ],
                     'value' => $class,
                     'label' => $class === $currentType || $compatibleFieldTypes->contains($class)
                         ? $name

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -249,17 +252,6 @@ class Plugins extends Component
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
-        if (is_null($pluginSettings = $plugin->getSettings())) {
-            return false;
-        }
-
-        /**
-         * We override this as the legacy service needs
-         * to save with setting safeOnly to `false`.
-         * @var \craft\base\Model $pluginSettings
-         */
-        $pluginSettings->setAttributes($settings, false);
-
         return app(PluginsService::class)->savePluginSettings($plugin, $settings);
     }
 
@@ -448,10 +440,10 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return string|null The plugin’s license key, or null if it isn’t known
+     * @return string|false|null The plugin’s license key, `false` if it’s set to a non-existent environment variable, or `null` if it isn’t known
      * @throws InvalidLicenseKeyException
      */
-    public function getPluginLicenseKey(string $handle): ?string
+    public function getPluginLicenseKey(string $handle): string|false|null
     {
         return app(PluginsService::class)->getPluginLicenseKey($handle);
     }

@@ -88,6 +88,18 @@ test('normalizes slug using lowercase when uppercase is disallowed', function ()
         ->toBe('word'.Cms::config()->slugWordSeparator.'word');
 });
 
+test('normalize slug respects language', function (string $expected, string $slug, ?string $language) {
+    // The slug can only get lowercased if uppercase characters aren't allowed
+    Cms::config()->allowUppercaseInSlug = false;
+
+    expect(ElementHelper::normalizeSlug($slug, $language))->toBe($expected);
+})->with([
+    // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+    // (https://github.com/craftcms/cms/discussions/19555)
+    ['ıstanbul', 'Istanbul', 'tr'],
+    ['istanbul', 'Istanbul', null],
+]);
+
 test('detects slug tags in uri formats', function (bool $expected, string $uriFormat) {
     expect(ElementHelper::doesUriFormatHaveSlugTag($uriFormat))->toBe($expected);
 })->with([

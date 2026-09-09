@@ -38,6 +38,13 @@ CP Styles
     var(--workspace-bg-image);
 }
 
+/* Held by overlays — modals and slideouts — while any of them is open. The
+   legacy stylesheet and panel-stack.css each define this too; repeated here so
+   the lock still works on a CP page that loads neither. */
+body.no-scroll {
+  overflow: hidden;
+}
+
 /**
 Temporary holding for cp-pane styles until craft-pane is a thing
  */
@@ -206,4 +213,19 @@ doesn't leave a trail of selected text behind it.
 .is-resizing-inline * {
   cursor: col-resize !important;
   user-select: none !important;
+}
+
+/*
+ * Choice option illustrations (View Mode and friends). The label is `for`-bound
+ * to its radio, so clicking the illustration selects the option — what Craft 5
+ * got from wrapping the image and the input in a single label.
+ */
+.radio-thumbnail {
+  display: block;
+  margin-block-end: var(--c-spacing-xs);
+  cursor: pointer;
+}
+
+.radio-thumbnail img {
+  display: block;
 }

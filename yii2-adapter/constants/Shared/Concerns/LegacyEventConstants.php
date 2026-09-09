@@ -9,8 +9,9 @@ use craft\base\FieldLayoutElement;
 use craft\events\DefineFieldActionsEvent;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use Illuminate\Support\Facades\Event;
@@ -46,8 +47,9 @@ trait LegacyEventConstants
 
     /**
      * @event DefineShowFieldLayoutComponentInFormEvent The event that is triggered when determining whether the component should be shown in a field layout.
-     * @see showInForm()
+     * @see FieldLayoutComponent::showInForm()
      * @since 5.3.0
+     * @deprecated 6.0.0 Use {@see FieldLayoutComponentShowInFormResolving} instead.
      */
     public const EVENT_DEFINE_SHOW_IN_FORM = 'defineShowInForm';
 
@@ -56,8 +58,9 @@ trait LegacyEventConstants
     /**
      * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
      *
-     * @see actionMenuItems()
+     * @see FieldLayoutComponent::actionMenuItems()
      * @since 5.9.0
+     * @deprecated 6.0.0 Use {@see FieldLayoutComponentActionMenuItemsResolving} instead.
      */
     public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
 
@@ -78,11 +81,11 @@ trait LegacyEventConstants
             }
         });
 
-        Event::listen(function(FieldLayoutActionMenuItemsResolving $event) {
+        Event::listen(function(FieldLayoutComponentActionMenuItemsResolving $event) {
             if (YiiEvent::hasHandlers(FieldLayoutElement::class, FieldLayoutElement::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
                 $yiiEvent = new DefineFieldActionsEvent([
                     'element' => $event->element,
-                    'static' => $event->static,
+                    'static' => $event->mode !== ControlMode::Editable,
                     'items' => $event->items,
                 ]);
 

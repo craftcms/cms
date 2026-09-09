@@ -59,13 +59,23 @@ abstract class ChoiceGroup extends ViewComponent
         return [];
     }
 
+    /** Rendered inside an option's wrapper, before the option itself. */
+    protected function optionLeadingHtml(ViewComponent $option): string
+    {
+        return '';
+    }
+
     #[\Override]
     protected function renderSlots(): string
     {
         $html = [$this->leadingHtml()];
 
         foreach ($this->options as $option) {
-            $html[] = Html::tag('div', $option->toHtml(), $this->optionWrapperAttributes($option));
+            $html[] = Html::tag(
+                'div',
+                $this->optionLeadingHtml($option).$option->toHtml(),
+                $this->optionWrapperAttributes($option),
+            );
         }
 
         $html[] = $this->trailingHtml();

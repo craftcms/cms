@@ -8,6 +8,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveDefaultValueFromAssignedPropertyRector;
 use Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
+use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
 use RectorLaravel\Rector\Class_\AnonymousMigrationsRector;
@@ -39,6 +40,13 @@ return RectorConfig::configure()
         ],
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
             __DIR__.'/src/Http/Mixins/SessionMixin.php',
+            // the arrow function is rebound via ->call($field, ...) below, so $this->searchKeywords()
+            // must stay lazily resolved rather than being turned into a first-class callable bound to the test case
+            __DIR__.'/tests/Feature/Field/MarkdownFieldTest.php',
+        ],
+        ArrayToFirstClassCallableRector::class => [
+            // the array callable is deliberately not a Closure, to test that non-Closure callables are rejected
+            __DIR__.'/tests/Unit/Twig/Extensions/ArrayTwigExtensionTest.php',
         ],
         AppToResolveRector::class,
         RemoveDefaultValueFromAssignedPropertyRector::class,

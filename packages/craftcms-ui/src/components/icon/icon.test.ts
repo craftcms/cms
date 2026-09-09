@@ -46,7 +46,9 @@ describe('craft-icon', () => {
     await createIcon({name: 'pencil'});
     expect(fetchMock).toHaveBeenCalledWith(
       '/vendor/craft/icons/solid/pencil.svg',
-      {mode: 'cors'}
+      {
+        mode: 'cors',
+      }
     );
   });
 
@@ -55,7 +57,9 @@ describe('craft-icon', () => {
     await createIcon({name: 'custom-icons/graphql'});
     expect(fetchMock).toHaveBeenCalledWith(
       '/vendor/craft/icons/custom-icons/graphql.svg',
-      {mode: 'cors'}
+      {
+        mode: 'cors',
+      }
     );
   });
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
@@ -108,5 +110,6 @@ test('cloned executed structure queries can be further narrowed', function () {
     $elements = $query->all();
 
     expect($elements)->toHaveCount(2)
-        ->and($query->clone()->descendantOf($elements[0])->count())->toBe(0);
+        ->and($query->clone()->descendantOf($elements[0])->count())->toBe(0)
+        ->and($query->clone()->structureId(123)->applyAfterQueryCallbacks(collect([[]]))->first())->toBe(['structureId' => 123]);
 });

@@ -24,6 +24,16 @@ class InputPassword extends Input
     #[\Override]
     protected string $type = 'password';
 
+    protected ?string $passwordRules = null;
+
+    public function passwordRules(?string $passwordRules): static
+    {
+        $this->passwordRules = $passwordRules;
+        $this->inputAttributes['passwordrules'] = $passwordRules;
+
+        return $this;
+    }
+
     #[\Override]
     protected function tagName(): string
     {
@@ -45,6 +55,8 @@ class InputPassword extends Input
         foreach (['type', 'maxlength', 'size', 'small', 'width', 'center', 'monospace', 'hidden-input'] as $key) {
             unset($attributes[$key]);
         }
+
+        $attributes['passwordrules'] = $this->passwordRules;
 
         return $attributes;
     }

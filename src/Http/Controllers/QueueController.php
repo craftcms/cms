@@ -27,7 +27,7 @@ readonly class QueueController
 
     public function run(): Response
     {
-        if (! Cms::config()->runQueueAutomatically) {
+        if (app()->isDownForMaintenance() || ! Cms::config()->runQueueAutomatically) {
             return response()->make();
         }
 
@@ -92,7 +92,6 @@ readonly class QueueController
             'id' => $id,
         ]);
 
-        $this->jobProgress->delete($id);
         $this->run();
 
         return $this->asSuccess();
@@ -108,7 +107,6 @@ readonly class QueueController
             'id' => 'all',
         ]);
 
-        $this->jobProgress->clearFailed();
         $this->run();
 
         return $this->asSuccess();

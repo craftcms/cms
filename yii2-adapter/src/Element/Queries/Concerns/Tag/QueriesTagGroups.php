@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -43,7 +44,7 @@ trait QueriesTagGroups
     {
         $this->beforeQuery(function(TagQuery $tagQuery) {
             $this->normalizeGroupId($tagQuery);
-            $this->applyGroupIdParam($tagQuery);
+            static::applyGroupId($tagQuery, $tagQuery->groupId);
         });
     }
 
@@ -140,13 +141,13 @@ trait QueriesTagGroups
     /**
      * Applies the 'groupId' param to the query being prepared.
      */
-    private function applyGroupIdParam(TagQuery $tagQuery): void
+    public static function applyGroupId(Builder $query, mixed $value): void
     {
-        if (!$tagQuery->groupId) {
+        if (!$value) {
             return;
         }
 
-        $tagQuery->whereIn('tags.groupId', $tagQuery->groupId);
+        $query->whereIn('tags.groupId', Arr::wrap($value));
     }
 
     /**

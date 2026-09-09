@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Auth\Passkeys;
 
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Json;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredentialUserEntity;
@@ -23,7 +22,7 @@ readonly class CredentialRepository
     /**
      * Finds a webauthn record in the database for given id and returns the CredentialRecord for its credential value.
      */
-    public function findOneByCredentialId(string $publicKeyCredentialId, bool $checkOldUserHandle = false): ?CredentialRecord
+    public function findOneByCredentialId(string $publicKeyCredentialId): ?CredentialRecord
     {
         $model = $this->findByCredentialId($publicKeyCredentialId);
 
@@ -38,15 +37,14 @@ readonly class CredentialRepository
             'json',
         );
 
-        if (! $checkOldUserHandle) {
-            return $credentialRecord;
-        }
+        // if the userHandle is already a fully decoded user UID it means it was created with webauthn v4;
+        // in that case, we should be able to find user by it
+        $found = Users::getUserByUid($credentialRecord->userHandle) !== null;
 
-        // if the record was created using webauthn v4 then the credential was run through Json::encode() before storing in the DB
-        // deserializing such value base64 decodes the userHandle too, and leads to user handle mismatch;
-        // so, if we failed to log user in based on the handle mismatch exception, we'll try again but using the encoded (old) handle
-        $credential = Json::decodeIfJson($model->credential);
-        $credentialRecord->userHandle = $credential['userHandle'];
+        // and if that's the case, we want to base64 encode it again, so that we're comparing correct values
+        if ($found) {
+            $credentialRecord->userHandle = Base64UrlSafe::encodeUnpadded($credentialRecord->userHandle);
+        }
 
         return $credentialRecord;
     }

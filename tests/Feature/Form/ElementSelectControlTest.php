@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -13,7 +14,29 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
+
+it('selects thumbnail modes for each relationship presentation', function (string $viewMode, string $key, string $mode, int $size) {
+    $asset = AssetModel::factory()->createElement();
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
+        $event->url = '/thumbnail.jpg';
+    });
+
+    $element = ElementSelect::make('related')->elementType($asset::class)->viewMode($viewMode)
+        ->props([$asset->id])['elements'][0];
+
+    expect($element[$key])->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
+    if ($key === 'cardThumbHtml') {
+        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail');
+    }
+})->with([
+    'list' => ['list', 'thumbHtml', 'fit', 30],
+    'inline list' => ['list-inline', 'thumbHtml', 'fit', 30],
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
+    'cards' => ['cards', 'cardThumbHtml', 'crop', 120],
+    'card grid' => ['cards-grid', 'cardThumbHtml', 'crop', 120],
+]);
 
 it('resolves and renders ordered element relationships', function () {
     $first = Entry::factory()->title('First entry')->create();
@@ -34,7 +57,12 @@ it('resolves and renders ordered element relationships', function () {
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($control->component)->toBe('craft:element-select')
-        ->and($control->props['elements'])->toMatchArray([
+        // Identity only; the payload also carries what the chip's own action
+        // menu needs (`url`, `canEdit`, `canCopy`, …), covered separately.
+        ->and(array_map(
+            fn (array $element) => array_intersect_key($element, array_flip(['id', 'label', 'siteId'])),
+            $control->props['elements'],
+        ))->toBe([
             ['id' => $second->id, 'label' => 'Second entry', 'siteId' => 1],
             ['id' => $first->id, 'label' => 'First entry', 'siteId' => 1],
         ])
@@ -99,7 +127,56 @@ it('resolves non-empty modern relationship values', function (Closure $createEle
 
     expect($payload->nodes[0]->control->props['elements'][0]['id'])->toBe($element->getId());
 })->with([
-    'assets' => fn () => AssetModel::factory()->createElement(),
+    'assets' => fn () => AssetModel::factory()->createElement(['filename' => 'document.pdf', 'kind' => 'pdf']),
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);
+
+/**
+ * The control's props are serialized to the client, so the resolver rejects
+ * anything that isn't a JSON-safe scalar or array. The action descriptors are
+ * the easiest place to trip that: an enum case reads naturally in PHP but is an
+ * object by the time it gets here.
+ */
+it('resolves JSON-safe props for every element type', function (Closure $createElement) {
+    $this->actingAs(UserModel::first());
+    $element = $createElement();
+    $form = Form::make([
+        Field::make()->control(
+            ElementSelect::make('related')->elementType($element::class),
+        ),
+    ]);
+
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+        namespace: 'settings',
+        values: ['settings' => ['related' => [$element->getId()]]],
+    ));
+
+    expect(json_encode($payload->nodes[0]->control->props, JSON_THROW_ON_ERROR))->toBeString();
+})->with([
+    'assets' => fn () => AssetModel::factory()->createElement(['filename' => 'document.pdf', 'kind' => 'pdf']),
+    'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
+    'users' => fn () => UserModel::factory()->createElement(),
+]);
+
+it('renders a scalar element selection without changing list selection semantics', function (bool $single) {
+    $entry = Entry::factory()->createElement();
+    $control = ElementSelect::make('replacement')->elementType(EntryElement::class)->limit(1);
+    if ($single) {
+        $control->single();
+    }
+
+    $value = $single ? $entry->id : [$entry->id];
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Field::make('Replacement', $control),
+    ]), new FormContext(values: ['replacement' => $value]));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $settings = json_decode($crawler->filter('craft-entry-select-input')->attr('settings'), true);
+    $name = $single ? 'replacement' : 'replacement[]';
+
+    expect($payload->values['replacement'])->toBe($value)
+        ->and($settings['single'])->toBe($single)
+        ->and($settings['limit'])->toBe(1)
+        ->and($crawler->filter('craft-field > [slot="input"] craft-entry-select-input'))->toHaveCount(1)
+        ->and($crawler->filter("craft-chip input[name=\"{$name}\"]")->attr('value'))->toBe((string) $entry->id);
+})->with([false, true]);

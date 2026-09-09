@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -18,6 +19,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -27,6 +29,8 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
@@ -223,30 +227,124 @@ it('clears existing native entry attributes', function () {
     expect($entry->expiryDate)->toBeNull();
 });
 
-it('can duplicate an entry', function () {
-    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
+it('can duplicate an entry', function (bool $enabled, bool $postedEnabled, bool $provisional, bool $json, bool $uriConflict) {
+    $field = Field::factory()->create(['handle' => 'bodyField', 'type' => PlainText::class]);
+    $layout = FieldLayout::create(['type' => Entry::class, 'config' => createFieldLayoutConfig($field)]);
+    $this->entryType->update(['fieldLayoutId' => $layout->id]);
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
+    Fields::refreshFields();
 
-    // Original entry should be enabled by default (from factory)
-    // Wait, let's ensure it's enabled
-    $entryModel->element()->update(['enabled' => true]);
+    if ($uriConflict) {
+        SectionSiteSettings::where('sectionId', $this->section->id)->update(['hasUrls' => true, 'uriFormat' => 'fixed-uri']);
+    }
 
-    postJson(action(StoreEntryController::class), [
-        'entryId' => $entryModel->id,
+    $source = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->createElement([
+        'title' => 'Original title',
+        'slug' => 'original-slug',
+    ]);
+    $source->enabled = $enabled;
+    $source->setFieldValue('bodyField', 'Original body');
+    expect(Elements::saveElement($source))->toBeTrue();
+
+    if ($provisional) {
+        $draft = app(Drafts::class)->createDraft($source, $this->user->id);
+        $draft->isProvisionalDraft = true;
+        $draft->setFieldValue('bodyField', 'Draft body');
+        expect(Elements::saveElement($draft))->toBeTrue();
+    }
+
+    $data = [
+        'entryId' => $source->id,
         'duplicate' => true,
-        'enabled' => false,
-    ])->assertOk();
+        'provisional' => $provisional,
+        'title' => 'Copy title',
+        'slug' => 'copy-slug',
+        'enabled' => $postedEnabled,
+        'fields' => ['bodyField' => 'Copy body'],
+        'redirect' => Crypt::encrypt('/entries/{id}'),
+    ];
+    $response = $json ? postJson(action(StoreEntryController::class), $data) : post(action(StoreEntryController::class), $data, ['Accept' => 'text/html']);
+    if ($json) {
+        $response->assertOk();
+    }
+    $copy = Entry::find()->status(null)->id(['not', $source->id])->one();
 
-    // Check that we have 2 canonical entries (original + duplicate)
-    // We avoid EntryModel::count() because it might include revisions/drafts
-    $count = Entry::find()->status(null)->count();
-    expect($count)->toBe(2);
+    expect($copy)->not->toBeNull();
+    expect($copy->title)->toBe('Copy title');
+    expect($copy->slug)->toBe('copy-slug');
+    expect($copy->enabled)->toBe($uriConflict ? false : $postedEnabled);
+    expect($copy->getFieldValue('bodyField'))->toBe('Copy body');
+    expect(Entry::find()->status(null)->count())->toBe(2);
 
-    // The new entry should have the same title (or copied title logic)
-    // and should be disabled if original was enabled
-    $newEntry = Entry::find()->status(null)->orderByDesc('dateCreated')->one();
-    expect($newEntry->id)->not->toBe($entryModel->id)
-        ->and($newEntry->enabled)->toBeTrue();
-});
+    if ($json) {
+        $response->assertOk()->assertJsonPath('id', $copy->id)->assertJsonPath('modelId', $copy->id)
+            ->assertJsonPath('redirect', '/entries/'.$copy->id);
+    } else {
+        $response->assertRedirect('/entries/'.$copy->id)->assertSessionHas('modelId', $copy->id);
+    }
+
+    $original = Entry::find()->id($source->id)->status(null)->one();
+    expect($original->title)->toBe('Original title');
+    expect($original->slug)->toBe('original-slug');
+    expect($original->enabled)->toBe($enabled);
+    expect($original->getFieldValue('bodyField'))->toBe('Original body');
+
+    if ($provisional) {
+        $originalDraft = Entry::find()->provisionalDrafts()->id($draft->id)->status(null)->one();
+        expect($originalDraft->isProvisionalDraft)->toBeTrue();
+        expect($originalDraft->getFieldValue('bodyField'))->toBe('Draft body');
+        expect($copy->draftId)->toBeNull();
+        expect($copy->isProvisionalDraft)->toBeFalse();
+    }
+})->with([
+    'disable copy' => [true, false, false, true, false],
+    'enable copy' => [false, true, false, true, false],
+    'redirect to copy' => [true, false, false, false, false],
+    'provisional source' => [true, false, true, true, false],
+    'URI conflict keeps copy disabled' => [true, true, false, true, true],
+]);
+
+it('returns the correct entry when duplication or saving fails', function (bool $duringDuplication, bool $json) {
+    $source = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->createElement([
+        'title' => 'Original title',
+    ]);
+    $failedEntry = null;
+    Event::listen(ElementSaving::class, function (ElementSaving $event) use ($duringDuplication, &$failedEntry) {
+        if (! $event->element instanceof Entry || $event->element->title !== ($duringDuplication ? 'Original title' : 'Copy title')) {
+            return;
+        }
+
+        $failedEntry = $event->element;
+        $event->element->errors()->add('title', 'Save rejected');
+        $event->isValid = false;
+    });
+
+    $data = [
+        'entryId' => $source->id,
+        'duplicate' => true,
+        'title' => 'Copy title',
+        'entryVariable' => Crypt::encrypt('editedEntry'),
+    ];
+    $response = $json ? postJson(action(StoreEntryController::class), $data) : post(action(StoreEntryController::class), $data, ['Accept' => 'text/html']);
+    expect($failedEntry)->not->toBeNull();
+    $modelName = $duringDuplication ? ($json ? 'model' : 'entry') : 'editedEntry';
+    $expectedId = $duringDuplication && ! $json ? $source->id : $failedEntry->id;
+
+    if ($json) {
+        $response->assertBadRequest()->assertJsonPath('modelName', $modelName)
+            ->assertJsonPath($modelName.'.id', $expectedId)->assertJsonPath('errors.title', ['Save rejected']);
+    } else {
+        $response->assertRedirect()->assertSessionHas($modelName.'.id', $expectedId)->assertSessionHasErrors('title');
+    }
+
+    expect(Entry::find()->id($source->id)->status(null)->one()->title)->toBe('Original title');
+    expect(Entry::find()->status(null)->count())->toBe($duringDuplication ? 1 : 2);
+    if (! $duringDuplication) {
+        expect($failedEntry->id)->not->toBe($source->id);
+        expect(Entry::find()->id($failedEntry->id)->status(null)->one()->title)->toBe('Original title');
+    }
+})->with([true, false])->with([true, false]);
 
 it('handles provisional drafts', function () {
     // 1. Create a live entry

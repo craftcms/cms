@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -27,12 +28,14 @@ use CraftCms\Cms\Gql\Queries\Query as BaseQuery;
 use CraftCms\Cms\Gql\TypeLoader;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -182,7 +185,11 @@ it('fills the cache when querying through the new service', function () {
 
     $result = $gql->executeQuery($schema, '{ping}');
 
+    $gql->setActiveSchema(new GqlSchema);
     expect($gql->getCachedResult($cacheKey))->toBe($result);
+
+    $gql->flushCaches();
+    expect($gql->getCachedResult($cacheKey))->toBeNull();
 });
 
 it('does not create cache keys for mutations', function (string $query, ?string $operationName) {
@@ -213,24 +220,34 @@ it('flushes graphql registries and loaders', function () {
         ->and(fn () => TypeLoader::loadType($typeName))->toThrow(GqlException::class);
 });
 
-it('changes schema definitions when token scope changes', function () {
+it('changes schema definitions when token scope changes', function (bool $newScope) {
     $gql = app(Gql::class);
+    $schema = new GqlSchema;
+    app(GqlQueries::class)->register(MockQuery::class);
 
-    $schemaA = $gql->getSchemaDef(new GqlSchema([
-        'id' => random_int(1, 1000),
-        'name' => 'Something',
-        'scope' => ['usergroups.everyone:read'],
-    ]));
+    foreach ([true, false, true] as $allowUsers) {
+        if ($newScope) {
+            app()->forgetInstance(Gql::class);
+            $gql = app(Gql::class);
+        }
+        $schema->scope = $allowUsers ? ['usergroups.everyone:read'] : [];
+        $query = $gql->getSchemaDef($schema)->getQueryType();
 
-    $gql->flushCaches();
+        expect($query->hasField('users'))->toBe($allowUsers)
+            ->and($query->hasField('mockQuery'))->toBeTrue();
+    }
+})->with(['same service' => false, 'new scoped service' => true]);
 
-    $schemaB = $gql->getSchemaDef(new GqlSchema([
-        'id' => random_int(1, 1000),
-        'name' => 'Something',
-        'scope' => ['volumes.someVolume:read'],
-    ]));
+it('resets cached field arguments when the active schema changes', function () {
+    $gql = app(Gql::class);
+    $layout = new FieldLayout(['type' => User::class]);
+    $layout->setGeneratedFields([['handle' => 'oldField']]);
+    expect($gql->getFieldLayoutArguments($layout))->toHaveKey('oldField');
 
-    expect($schemaB)->not->toBe($schemaA);
+    $layout->setGeneratedFields([['handle' => 'newField']]);
+    $gql->setActiveSchema(new GqlSchema);
+
+    expect($gql->getFieldLayoutArguments($layout))->toHaveKey('newField')->not->toHaveKey('oldField');
 });
 
 it('generates the expected permission list through the new service', function () {
@@ -312,6 +329,27 @@ it('invalidates cached results when schemas change', function () {
     expect($gql->getCachedResult($cacheKey))->toBeNull();
 
     $gql->deleteSchemaById($schema->id);
+});
+
+it('preserves cache dependencies when a result is served from cache', function () {
+    $gql = app(Gql::class);
+    $cacheKey = 'testCachedResultCollectsCacheInfo';
+    $cacheValue = ['testValue'];
+
+    $gql->setCachedResult($cacheKey, $cacheValue, new TagDependency(['testTag']), 60);
+
+    ElementCaches::startCollectingCacheInfo();
+    $cachedResult = $gql->getCachedResult($cacheKey);
+    /** @var TagDependency $dependency */
+    [$dependency, $duration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($cachedResult)->toBe($cacheValue)
+        ->and($dependency)->toBeInstanceOf(TagDependency::class)
+        ->and($dependency->tags)->toContain('testTag')
+        ->and($dependency->tags)->toContain(Gql::CACHE_TAG)
+        ->and($duration)->not->toBeNull()
+        ->and($duration)->toBeGreaterThan(0)
+        ->and($duration)->toBeLessThanOrEqual(60);
 });
 
 it('supports token operations through the new service', function () {

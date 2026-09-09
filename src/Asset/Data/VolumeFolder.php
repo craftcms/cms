@@ -212,9 +212,7 @@ class VolumeFolder extends Component implements Stringable
     /** @return self[] */
     public function getChildren(): array
     {
-        if ($this->_children === null) {
-            $this->_children = Folders::findFolders(['parentId' => $this->id])->all();
-        }
+        $this->_children ??= Folders::findFolders(['parentId' => $this->id])->all();
 
         return $this->_children;
     }

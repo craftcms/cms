@@ -192,7 +192,7 @@ class ElementExporters
                 contentType: 'application/xml; charset=UTF-8',
             ),
             'yaml' => $this->binaryResponse(
-                content: Yaml::dump($data, 20, 2),
+                content: Yaml::dump($data, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING),
                 filename: $filename,
                 contentType: 'application/x-yaml; charset=UTF-8',
             ),

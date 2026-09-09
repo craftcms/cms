@@ -41,7 +41,7 @@ class GenerateImageTransform extends Job implements ShouldBeUnique
             return;
         }
 
-        $transformer->getTransformUrl($asset, $index->getTransform(), true);
+        $transformer->getTransformUrlForIndex($asset, $index, true);
     }
 
     public function uniqueId(): string

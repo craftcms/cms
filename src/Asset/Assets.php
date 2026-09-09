@@ -27,9 +27,10 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
-use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\FallbackTransformer;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
@@ -40,6 +41,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
@@ -58,6 +60,8 @@ class Assets
     public function __construct(
         private readonly Folders $folders,
         private readonly Elements $elements,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly CraftAssetTransformDriver $craftAssetTransformDriver,
     ) {}
 
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
@@ -127,7 +131,37 @@ class Assets
         return $this->elements->saveElement($asset);
     }
 
-    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true): ?string
+    /**
+     * @param  list<Asset>  $assets
+     * @param  list<int>  $sizes
+     */
+    public function preloadThumbs(array $assets, array $sizes): void
+    {
+        if (Event::hasListeners(ThumbUrlResolving::class)) {
+            return;
+        }
+
+        $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
+            && ! $asset->isFolder
+            && ! $asset->getFieldLayout()?->thumbFieldKey));
+
+        $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
+            fn (int $size): array => ['width' => $size, 'height' => $size, 'mode' => ImageTransformMode::Fit->value],
+            $sizes,
+        ));
+    }
+
+    /** @return array{int, int} */
+    public function getThumbDimensions(Asset $asset, int $size): array
+    {
+        if ($size % 128 !== 0 && $asset->getWidth() && $asset->getHeight()) {
+            return AssetsHelper::scaledDimensions((int) $asset->getWidth(), (int) $asset->getHeight(), $size, $size);
+        }
+
+        return [$size, $size];
+    }
+
+    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true, ImageTransformMode $mode = ImageTransformMode::Crop): ?string
     {
         $height ??= $width;
 
@@ -135,6 +169,7 @@ class Assets
             asset: $asset,
             width: $width,
             height: $height,
+            mode: $mode,
         ));
 
         if ($event->url !== null) {
@@ -143,26 +178,13 @@ class Assets
 
         $extension = $asset->getExtension();
 
-        if (! ImageHelper::canManipulateAsImage($extension)) {
-            return $iconFallback ? Url::actionUrl('assets/icon', [
-                'extension' => $extension,
-            ]) : null;
-        }
-
-        $transform = new ImageTransform([
-            'width' => $width,
-            'height' => $height,
-            'mode' => 'crop',
-        ]);
-
-        $url = $asset->getUrl($transform);
-
-        if (! $url) {
-            $transform->setTransformer(FallbackTransformer::class);
-            $url = $asset->getUrl($transform);
-        }
-
-        if ($url === null) {
+        try {
+            $url = $this->assetTransformers->transform($asset, [
+                'width' => $width,
+                'height' => $height,
+                'mode' => $mode->value,
+            ])->url;
+        } catch (NotSupportedException) {
             return $iconFallback ? Url::actionUrl('assets/icon', [
                 'extension' => $extension,
             ]) : null;
@@ -187,16 +209,28 @@ class Assets
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = new ImageTransform([
+            $transform = [
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
-            ]);
+            ];
         } else {
             $transform = null;
         }
 
-        if (! $url = $asset->getUrl($transform, true)) {
+        try {
+            $url = $transform !== null
+                ? $this->craftAssetTransformDriver->withImmediateTransforms(
+                    fn (): string => $this->assetTransformers->transform($asset, $transform)->url,
+                )
+                : $asset->getUrl();
+        } catch (NotSupportedException) {
+            return Url::actionUrl('assets/icon', [
+                'extension' => $asset->getExtension(),
+            ]);
+        }
+
+        if (! $url) {
             throw new AssetNotPreviewableException("A preview URL couldn't be generated for the asset.");
         }
 

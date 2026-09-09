@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -26,6 +25,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -76,6 +76,11 @@ class CustomField extends BaseField
      * @var string|null The field handle override.
      */
     public ?string $handle = null;
+
+    /**
+     * @var string|null The previously-selected field’s UUID, if there was one
+     */
+    public ?string $oldFieldUid = null;
 
     private ?FieldInterface $_field = null;
 
@@ -170,6 +175,8 @@ class CustomField extends BaseField
         if ($this->_field !== null) {
             $this->_field->handle = $handle ?? $this->_originalHandle;
         }
+
+        $this->getLayout()?->reset();
 
         return $this;
     }
@@ -360,7 +367,7 @@ class CustomField extends BaseField
         ];
     }
 
-    public function thumbHtml(ElementInterface $element, int $size): ?string
+    public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         try {
             $field = $this->getField();
@@ -372,7 +379,7 @@ class CustomField extends BaseField
             return null;
         }
 
-        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
+        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size, $mode);
     }
 
     #[Override]
@@ -415,6 +422,22 @@ class CustomField extends BaseField
      * @throws RuntimeException
      * @throws FieldNotFoundException
      */
+    /**
+     * The layout author's warning, plus anything the field itself needs to
+     * flag — a misconfigured volume, say, which the author can't see from the
+     * layout. Both are shown when both apply.
+     */
+    #[Override]
+    protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        $warnings = array_filter([
+            parent::warningText($element, $static),
+            $this->getField()->formWarning($element),
+        ]);
+
+        return $warnings !== [] ? implode(' ', $warnings) : null;
+    }
+
     public function getField(): FieldInterface
     {
         if (isset($this->_field)) {
@@ -451,6 +474,8 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+
+        $this->getLayout()?->reset();
     }
 
     /**
@@ -469,6 +494,8 @@ class CustomField extends BaseField
         $this->_fieldUid = $uid;
         $this->_field = null;
         $this->_sourceField = null;
+
+        $this->getLayout()?->reset();
     }
 
     /**
@@ -570,6 +597,7 @@ class CustomField extends BaseField
         return [
             ...parent::fields(),
             'fieldUid' => 'fieldUid',
+            ...($this->oldFieldUid !== null ? ['oldFieldUid' => 'oldFieldUid'] : []),
             'editCondition' => fn () => $this->getEditCondition()?->getConfig(),
             'elementEditCondition' => fn () => $this->getElementEditCondition()?->getConfig(),
         ];
@@ -607,17 +635,20 @@ class CustomField extends BaseField
             Group::make('custom-field-settings', array_values(array_filter([
                 $originalField === null ? null : Field::make(t('Field'), FieldSelect::make('fieldId')
                     ->limit(1)
-                    ->value($originalField->id))
+                    ->value($originalField->id)
+                    ->reactive())
                     ->warning(t('Changing this may result in data loss.')),
-                $this->labelSettingsNode($context),
-                Field::make(t('Handle'), Text::make('handle')
-                    ->monospace()
-                    ->maxLength(64)
-                    ->value($this->handle)
-                    ->placeholder($this->_originalHandle))
-                    ->required(),
-                ...$this->instructionsSettingsNodes($context),
-                ...$this->noticeSettingsNodes($context),
+                Group::make('custom-field-configuration', [
+                    $this->labelSettingsNode($context),
+                    Field::make(t('Handle'), Text::make('handle')
+                        ->monospace()
+                        ->maxLength(64)
+                        ->value($this->handle)
+                        ->placeholder($this->_originalHandle))
+                        ->required(),
+                    ...$this->instructionsSettingsNodes($context),
+                    ...$this->noticeSettingsNodes($context),
+                ])->dependsOn('fieldId'),
             ]))),
         ];
     }
@@ -926,7 +957,7 @@ class CustomField extends BaseField
 
     /** @return list<array<string, mixed>> */
     #[Override]
-    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    protected function actionMenuItemsForContext(FieldLayoutElementContext $context): array
     {
         try {
             $field = $this->getField();
@@ -934,12 +965,17 @@ class CustomField extends BaseField
             $field = null;
         }
 
-        if ($field instanceof Actionable) {
-            $field->static = $static;
-            $items = $field->getActionMenuItems();
-        } else {
-            $items = [];
-        }
+        return [
+            ...($field?->getFieldLayoutActionMenuItems($context) ?? []),
+            ...parent::actionMenuItemsForContext($context),
+        ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    #[Override]
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = parent::actionMenuItems($element, $static);
 
         $user = currentUser();
         if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {

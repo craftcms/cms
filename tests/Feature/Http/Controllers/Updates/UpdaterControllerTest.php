@@ -12,6 +12,7 @@ use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -75,14 +76,10 @@ test('finish requires encrypted update data', function () {
     auth()->logout();
     app()->maintenanceMode()->activate([]);
 
-    try {
-        postJson(action([UpdaterController::class, 'finish']))
-            ->assertJsonValidationErrors(['data']);
+    postJson(action([UpdaterController::class, 'finish']))
+        ->assertJsonValidationErrors(['data']);
 
-        expect(app()->isDownForMaintenance())->toBeTrue();
-    } finally {
-        app()->maintenanceMode()->deactivate();
-    }
+    get('/')->assertServiceUnavailable();
 });
 
 test('index returns Inertia Updater page', function () {

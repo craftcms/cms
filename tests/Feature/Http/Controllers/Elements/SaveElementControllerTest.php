@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 
@@ -327,7 +329,7 @@ describe('store', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -366,7 +368,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -406,7 +408,7 @@ describe('store', function () {
         app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
         actingAs(UserModel::findOrFail(auth()->id()));
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public ?bool $capturedCrossSiteValidate = null;
 
@@ -533,6 +535,7 @@ describe('store', function () {
     });
 
     it('can clear asset alt text', function () {
+        Queue::fake();
         config()->set('filesystems.disks.save-element-controller-test', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/save-element-controller-test'),
@@ -540,11 +543,12 @@ describe('store', function () {
 
         $volume = Volume::factory()->create(['fs' => 'disk:save-element-controller-test']);
         $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
-        $asset = AssetModel::factory()->createElement([
+        $assetModel = AssetModel::factory()->create([
             'volumeId' => $volume->id,
             'folderId' => $folder->id,
-            'alt' => 'Existing alt text',
         ]);
+        $asset = Asset::find()->id($assetModel->id)->one();
+        $assetModel->sites()->attach($asset->siteId, ['alt' => 'Existing alt text']);
 
         postJson(action([SaveElementController::class, 'store']), [
             'elementType' => Asset::class,
@@ -553,13 +557,14 @@ describe('store', function () {
             'alt' => '',
         ])->assertOk();
 
-        expect(Asset::find()->id($asset->id)->one()->alt)->toBe('');
+        // Laravel's ConvertEmptyStringsToNull middleware turns the posted '' into null before it reaches the element.
+        expect(Asset::find()->id($asset->id)->one()->alt)->toBeNull();
     });
 
     it('marks nested elements to update their owner search index before saving', function () {
         $fixture = createSaveElementMatrixFixture();
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public bool $capturedNestedOwnerIndexFlag = false;
 
@@ -722,7 +727,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
@@ -774,7 +779,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 

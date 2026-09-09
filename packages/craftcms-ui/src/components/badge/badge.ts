@@ -1,10 +1,11 @@
-import {html, LitElement} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import styles from './badge.styles.js';
 import {Color, type ColorValue} from '@src/constants/colors';
 import '../indicator/indicator.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {Size, type SizeValue} from '@src/constants/size';
 
 /**
  * @summary A colored status pill: a `<craft-indicator>` dot (by default)
@@ -30,6 +31,10 @@ export default class CraftBadge extends LitElement {
   /** The badge color — a color value from `Color` (e.g. `red`, `emerald`). */
   @property({reflect: true}) fill: ColorValue = Color.Gray;
 
+  @property({attribute: 'no-prefix', type: Boolean}) noPrefix: boolean = false;
+
+  @property() size: SizeValue = Size.Medium;
+
   /** The resolved color value used for the badge fill. */
   private getFill(): ColorValue {
     return this.fill;
@@ -49,15 +54,19 @@ export default class CraftBadge extends LitElement {
         part="badge"
         class="${classMap({
           badge: true,
+          'badge--small': this.size === Size.Small,
+          'badge--large': this.size === Size.Large,
         })}"
       >
         <span class="badge__prefix">
-          <slot name="prefix" part="prefix">
-            <craft-indicator
-              part="indicator"
-              fill=${this.getFill()}
-            ></craft-indicator>
-          </slot>
+          ${this.noPrefix
+            ? nothing
+            : html` <slot name="prefix" part="prefix">
+                <craft-indicator
+                  part="indicator"
+                  fill="${this.getFill()}"
+                ></craft-indicator>
+              </slot>`}
         </span>
         <slot></slot>
         <span class="badge__suffix">

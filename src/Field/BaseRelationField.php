@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\ElementRelationParamFilter;
@@ -48,6 +48,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -60,8 +61,6 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -76,7 +75,6 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -87,6 +85,9 @@ use function CraftCms\Cms\template;
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
+    /** The source key meaning “every source, including ones added later”. */
+    public const string ALL_SOURCES = '*';
+
     public const string VIEW_MODE_LIST = 'list';
 
     public const string VIEW_MODE_LIST_INLINE = 'list-inline';
@@ -142,7 +143,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -186,7 +187,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (! empty($value)) {
-            $siteId = ElementQuery::$activeQuery?->siteId;
+            $siteId = $elementQuery instanceof ElementQuery ? $elementQuery->siteId : null;
 
             $filter = new ElementRelationParamFilter(fields: [
                 $field->handle => $field,
@@ -197,22 +198,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'field' => $field->handle,
             ];
 
-            if ($query instanceof ElementQuery) {
-                $filter->apply($query->getQuery(), $relationCriteria, $siteId !== '*' ? $siteId : null);
-
-                return $query;
-            }
-
-            if ($query instanceof Builder) {
-                $filter->apply($query, $relationCriteria);
-
-                return $query;
-            }
-
-            $query->where(fn (Builder $query) => $filter->apply($query, $relationCriteria));
+            $filter->apply($query, $relationCriteria, $siteId !== '*' ? $siteId : null);
         }
-
-        return $query;
     }
 
     /**
@@ -282,13 +269,27 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ? []
             : $this->serializeValue($context->value, $context->element);
 
-        return ElementSelect::make($context->path)
+        return $this->selectControl($context)
             ->elementType(static::elementType())
             ->sources($sources)
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)
+            ->viewMode($this->viewMode())
             ->value($value);
+    }
+
+    /**
+     * The select Control this field relates through.
+     *
+     * Override to return an {@see ElementSelect} subclass carrying whatever
+     * the element type can do beyond plain relating — {@see Assets} returns an
+     * {@see AssetSelect}, which can also upload. Configure it here; the shared
+     * relation settings are applied by {@see formControl()} afterwards.
+     */
+    protected function selectControl(FieldContext $context): ElementSelect
+    {
+        return ElementSelect::make($context->path);
     }
 
     /**
@@ -438,6 +439,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (array_key_exists('useTargetSite', $config)) {
             if (empty($config['useTargetSite'])) {
                 unset($config['targetSiteId']);
+            } elseif (empty($config['targetSiteId'])) {
+                // Nothing is stored for the switch itself — it's just "is there
+                // a target site" — so switching it on with nothing chosen has to
+                // land on one, or it reads as still being off.
+                $config['targetSiteId'] = Sites::getPrimarySite()->uid;
             }
             unset($config['useTargetSite']);
         }
@@ -491,121 +497,290 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     #[Override]
     public function settingsForm(FormContext $context = new FormContext): Form
     {
+        // Each setting is its own overridable chunk, mirroring the blocks Craft 5
+        // exposed from `elementfieldsettings.twig`. Nulls are filtered out, so a
+        // subclass can drop or reorder settings without reimplementing the Form.
+        return Form::make(array_values(array_filter([
+            $this->sourcesField(),
+            $this->selectionConditionField(),
+            $this->maintainHierarchyField(),
+            ...$this->limitFields(),
+            $this->branchLimitField(),
+            $this->defaultPlacementField(),
+            $this->viewModeField(),
+            $this->selectionLabelField(),
+            $this->showSearchInputField(),
+            $this->validateRelatedElementsField(),
+            $this->advancedSettingsGroup(),
+        ])));
+    }
+
+    /**
+     * Returns the “Sources” (or “Source”) setting.
+     *
+     * Mirrors the `sourcesField` block of Craft 5’s `elementfieldsettings.twig`.
+     */
+    protected function sourcesField(bool $reactive = false): FormField
+    {
         $elementType = static::elementType();
         $sourceOptions = array_map(fn (array $option): array => [
             'label' => (string) $option['label'],
             'value' => $option['value'],
         ], $this->getSourceOptions());
-        $viewModes = [];
-        foreach ($this->supportedViewModes() as $value => $label) {
-            $viewModes[] = ['label' => $label, 'value' => $value];
-        }
-
-        $form = Form::make([
-            FormField::make($this->allowMultipleSources ? t('Sources') : t('Source'))
-                ->instructions(t('Which sources do you want to select {type} from?', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ]))
-                ->control($this->allowMultipleSources
-                    ? Choice::make('sources')
-                        ->multiple()
-                        ->presentation(ChoicePresentation::Checkboxes)
-                        ->options($sourceOptions)
-                        ->value($this->sources === '*' ? ['*'] : $this->sources)
-                    : Choice::make('source')->options($sourceOptions)->value($this->source)),
+        $instructions = t('Which sources do you want to select {type} from?', [
+            'type' => $elementType::pluralLowerDisplayName(),
         ]);
 
+        if (! $this->allowMultipleSources) {
+            return FormField::make(t('Source'))
+                ->instructions($instructions)
+                ->control(Choice::make('source')
+                    ->options($sourceOptions)
+                    ->value($this->source)
+                    ->reactive($reactive));
+        }
+
+        // Some element types expose an “All …” source of their own (entries,
+        // users); it becomes the group's All checkbox rather than rendering
+        // beside it. Others (assets) have none, and fall back to “All”.
+        $allLabel = null;
+        $sourceOptions = array_values(array_filter(
+            $sourceOptions,
+            function (array $option) use (&$allLabel): bool {
+                if ($option['value'] !== self::ALL_SOURCES) {
+                    return true;
+                }
+
+                $allLabel = $option['label'];
+
+                return false;
+            },
+        ));
+
+        return FormField::make(t('Sources'))
+            ->instructions($instructions)
+            ->control(Choice::make('sources')
+                ->multiple()
+                ->presentation(ChoicePresentation::Checkboxes)
+                ->options($sourceOptions)
+                // Storing “all” as a token rather than today's source list is
+                // what lets the field pick up sources added later.
+                ->allOption($allLabel, self::ALL_SOURCES)
+                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources)
+                ->reactive($reactive));
+    }
+
+    /**
+     * Returns the selection condition builder, or `null` if the element type has no condition.
+     */
+    protected function selectionConditionField(): ?FormField
+    {
         $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
-        if ($selectionCondition !== null) {
-            $form->add(FormField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
-                ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ])))
-                ->control(ConditionBuilder::make('selectionCondition')
-                    ->conditionClass($selectionCondition::class)
-                    ->queryParams(['site'])
-                    ->forProjectConfig()
-                    ->value($selectionCondition->getConfig())));
+
+        if ($selectionCondition === null) {
+            return null;
         }
 
-        $form->add(FormField::make(t('Maintain hierarchy'))
-            ->instructions(t('Whether the structure of the related {type} should be maintained.', [
+        $elementType = static::elementType();
+
+        return FormField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
+            ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
                 'type' => $elementType::pluralLowerDisplayName(),
+            ])))
+            ->control(ConditionBuilder::make('selectionCondition')
+                ->conditionClass($selectionCondition::class)
+                ->queryParams(['site'])
+                ->forProjectConfig()
+                ->value($selectionCondition->getConfig()));
+    }
+
+    /**
+     * Returns the “Maintain hierarchy” setting.
+     *
+     * Field types that can’t relate to a structure (e.g. Assets) omit this from
+     * their Form entirely, the way Craft 5’s `Assets/settings.twig` never
+     * rendered the `maintainHierarchy` block. Return `null` to drop it.
+     */
+    protected function maintainHierarchyField(): ?FormField
+    {
+        return FormField::make(t('Maintain hierarchy'))
+            ->instructions(t('Whether the structure of the related {type} should be maintained.', [
+                'type' => static::elementType()::pluralLowerDisplayName(),
             ]))
-            ->control(Lightswitch::make('maintainHierarchy')->value($this->maintainHierarchy)));
+            ->control(Lightswitch::make('maintainHierarchy')->value($this->maintainHierarchy));
+    }
 
-        if ($this->allowLimit) {
-            $form->add(
-                FormField::make(t('Min Relations'))
-                    ->instructions(t('The minimum number of {type} that may be selected.', ['type' => $elementType::pluralLowerDisplayName()]))
-                    ->control(Number::make('minRelations')->min(0)->value($this->minRelations)),
-                FormField::make(t('Max Relations'))
-                    ->instructions(t('The maximum number of {type} that may be selected.', ['type' => $elementType::pluralLowerDisplayName()]))
-                    ->control(Number::make('maxRelations')->min(0)->value($this->maxRelations)),
-            );
+    /**
+     * Returns the “Min Relations” / “Max Relations” settings, or nothing when
+     * the field type doesn’t support limits.
+     *
+     * @return list<FormField>
+     */
+    protected function limitFields(): array
+    {
+        if (! $this->allowLimit) {
+            return [];
         }
 
-        $form->add(
-            FormField::make(t('Branch Limit'))
-                ->instructions(t('Limit the number of selectable {type} branches.', ['type' => $elementType::lowerDisplayName()]))
-                ->control(Number::make('branchLimit')->min(0)->value($this->branchLimit)),
-            FormField::make(t('Default {type} Placement', ['type' => $elementType::displayName()]))
-                ->instructions(t('Where new {type} should be placed by default in the field.', ['type' => $elementType::pluralLowerDisplayName()]))
-                ->control(Choice::make('defaultPlacement')->options([
-                    ['label' => t('Before other {type}', ['type' => $elementType::pluralLowerDisplayName()]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
-                    ['label' => t('After other {type}', ['type' => $elementType::pluralLowerDisplayName()]), 'value' => self::DEFAULT_PLACEMENT_END],
-                ])->value($this->defaultPlacement)),
-        );
+        $pluralType = static::elementType()::pluralLowerDisplayName();
 
-        if (count($viewModes) > 1) {
-            $form->add(FormField::make(t('View Mode'))
-                ->instructions(t('Choose how the field should look for authors.'))
-                ->control(Choice::make('viewMode')
-                    ->presentation(ChoicePresentation::Radios)
-                    ->options($viewModes)
-                    ->value($this->viewMode())));
+        return [
+            FormField::make(t('Min Relations'))
+                ->instructions(t('The minimum number of {type} that may be selected.', ['type' => $pluralType]))
+                ->control(Number::make('minRelations')->min(0)->value($this->minRelations)),
+            FormField::make(t('Max Relations'))
+                ->instructions(t('The maximum number of {type} that may be selected.', ['type' => $pluralType]))
+                ->control(Number::make('maxRelations')->min(0)->value($this->maxRelations)),
+        ];
+    }
+
+    /**
+     * Returns the “Branch Limit” setting, which only applies to structured
+     * sources. Return `null` to drop it.
+     */
+    protected function branchLimitField(): ?FormField
+    {
+        return FormField::make(t('Branch Limit'))
+            ->instructions(t('Limit the number of selectable {type} branches.', [
+                'type' => static::elementType()::lowerDisplayName(),
+            ]))
+            ->control(Number::make('branchLimit')->min(0)->value($this->branchLimit));
+    }
+
+    /**
+     * Returns the “Default {Type} Placement” setting.
+     */
+    protected function defaultPlacementField(): FormField
+    {
+        $elementType = static::elementType();
+        $pluralType = $elementType::pluralLowerDisplayName();
+
+        return FormField::make(t('Default {type} Placement', ['type' => $elementType::displayName()]))
+            ->instructions(t('Where new {type} should be placed by default in the field.', ['type' => $pluralType]))
+            ->control(Choice::make('defaultPlacement')->options([
+                ['label' => t('Before other {type}', ['type' => $pluralType]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
+                ['label' => t('After other {type}', ['type' => $pluralType]), 'value' => self::DEFAULT_PLACEMENT_END],
+            ])->value($this->defaultPlacement));
+    }
+
+    /**
+     * Returns the “View Mode” setting, or `null` when there’s only one supported mode.
+     */
+    protected function viewModeField(): ?FormField
+    {
+        $viewModes = [];
+        foreach ($this->supportedViewModes() as $value => $label) {
+            // The list illustration is narrower than the rest, as in Craft 5.
+            $width = $value === self::VIEW_MODE_LIST ? 48 : 80;
+            $viewModes[] = [
+                'label' => $label,
+                'value' => $value,
+                'thumbnail' => [
+                    // Illustrations live in Vite's publicDir; see Cp::publicAssetUrl().
+                    'src' => Cp::publicAssetUrl("images/view-modes/$value.svg"),
+                    'width' => $width,
+                    'height' => 60,
+                    'aspectRatio' => "$width / 60",
+                ],
+            ];
         }
 
-        $form->add(
-            FormField::make(t('“Add” Button Label'))
-                ->instructions(t('The text label for {type} selection buttons.', ['type' => $elementType::lowerDisplayName()]))
-                ->control(Text::make('selectionLabel')->placeholder(static::defaultSelectionLabel())->value($this->selectionLabel)),
-            FormField::make(t('Show the search input'))
-                ->control(Lightswitch::make('showSearchInput')->value($this->showSearchInput)),
-            FormField::make(t('Validate related {type}', ['type' => $elementType::pluralLowerDisplayName()]))
-                ->instructions(t('Whether validation errors on the related {type} should prevent the source element from being saved.', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ]))
-                ->control(Lightswitch::make('validateRelatedElements')->value($this->validateRelatedElements)),
-        );
+        if (count($viewModes) <= 1) {
+            return null;
+        }
 
+        return FormField::make(t('View Mode'))
+            ->instructions(t('Choose how the field should look for authors.'))
+            ->control(Choice::make('viewMode')
+                ->presentation(ChoicePresentation::Radios)
+                ->options($viewModes)
+                ->value($this->viewMode()));
+    }
+
+    /**
+     * Returns the “‘Add’ Button Label” setting.
+     */
+    protected function selectionLabelField(): FormField
+    {
+        return FormField::make(t('“Add” Button Label'))
+            ->instructions(t('The text label for {type} selection buttons.', [
+                'type' => static::elementType()::lowerDisplayName(),
+            ]))
+            ->control(Text::make('selectionLabel')->placeholder(static::defaultSelectionLabel())->value($this->selectionLabel));
+    }
+
+    /**
+     * Returns the “Show the search input” setting.
+     */
+    protected function showSearchInputField(): FormField
+    {
+        return FormField::make(t('Show the search input'))
+            ->control(Lightswitch::make('showSearchInput')->value($this->showSearchInput));
+    }
+
+    /**
+     * Returns the “Validate related {type}” setting.
+     */
+    protected function validateRelatedElementsField(): FormField
+    {
+        $pluralType = static::elementType()::pluralLowerDisplayName();
+
+        return FormField::make(t('Validate related {type}', ['type' => $pluralType]))
+            ->instructions(t('Whether validation errors on the related {type} should prevent the source element from being saved.', [
+                'type' => $pluralType,
+            ]))
+            ->control(Lightswitch::make('validateRelatedElements')->value($this->validateRelatedElements));
+    }
+
+    /**
+     * Returns the collapsible “Advanced” group.
+     */
+    protected function advancedSettingsGroup(): Group
+    {
+        $elementType = static::elementType();
         $advanced = Group::make('relation-advanced-settings', [
             FormField::make(t('Allow self relations'))
-                ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', ['type' => $elementType::lowerDisplayName()]))
+                ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', [
+                    'type' => $elementType::lowerDisplayName(),
+                ]))
                 ->control(Lightswitch::make('allowSelfRelations')->value($this->allowSelfRelations)),
         ])->label(t('Advanced'))->collapsible();
 
         if (Sites::isMultiSite() && $elementType::isLocalized()) {
+            $pluralType = $elementType::pluralLowerDisplayName();
             $sites = Sites::getAllSites()->map(fn ($site): array => [
                 'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
-            ])->all();
-            $advanced->add(
-                FormField::make(t('Relate {type} from a specific site?', ['type' => $elementType::pluralLowerDisplayName()]))
-                    ->control(Lightswitch::make('useTargetSite')->value(! empty($this->targetSiteId))),
-                FormField::make(t('Which site should {type} be related from?', ['type' => $elementType::pluralLowerDisplayName()]))
-                    ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId)),
-            );
+            ])->values()->all();
+            // `useTargetSite` isn't stored: it's the presence of a target site.
+            // The site picker is hidden rather than omitted so its value survives
+            // the refresh and the switch can be turned back on.
+            $useTargetSite = ! empty($this->targetSiteId);
+            $targetSiteNodes = [
+                FormField::make(t('Which site should {type} be related from?', ['type' => $pluralType]))
+                    ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId))
+                    ->visible($useTargetSite),
+            ];
 
+            // The inverse of the picker above: relating from one fixed site
+            // leaves nothing for a site menu to switch between.
             if (static::canShowSiteMenu()) {
-                $advanced->add(FormField::make(t('Show the site menu'))
-                    ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu)));
+                $targetSiteNodes[] = FormField::make(t('Show the site menu'))
+                    ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu))
+                    ->visible(! $useTargetSite);
             }
+
+            $advanced->add(
+                FormField::make(t('Relate {type} from a specific site?', ['type' => $pluralType]))
+                    ->control(Lightswitch::make('useTargetSite')
+                        ->value($useTargetSite)
+                        ->reactive()),
+                Group::make('relation-target-site-settings', $targetSiteNodes)
+                    ->dependsOn('settings.useTargetSite'),
+            );
         }
 
-        $form->add($advanced);
-
-        return $form;
+        return $advanced;
     }
 
     public function afterValidate(?Validator $validator = null): void
@@ -1154,7 +1329,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return app(PreviewHtml::class)->elementPreviewHtml($elements->all());
     }
 
-    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
@@ -1162,7 +1337,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $value = (clone $value)->eagerly($handle);
         }
 
-        return $value->one()?->getThumbHtml($size);
+        return $value->one()?->getThumbHtml($size, $mode);
     }
 
     /**
@@ -1422,178 +1597,14 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ],
             ])
             ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
             ->all();
-    }
-
-    /**
-     * Returns the HTML for the Target Site setting.
-     */
-    public function getTargetSiteFieldHtml(): ?string
-    {
-        $class = static::elementType();
-
-        if (! Sites::isMultiSite() || ! $class::isLocalized()) {
-            return null;
-        }
-
-        $type = $class::lowerDisplayName();
-        $pluralType = $class::pluralLowerDisplayName();
-        $showTargetSite = ! empty($this->targetSiteId);
-        $siteOptions = [];
-
-        foreach (Sites::getAllSites() as $site) {
-            $siteOptions[] = [
-                'label' => t($site->getName(), category: 'site'),
-                'value' => $site->uid,
-            ];
-        }
-
-        $html =
-            FormFields::checkboxFieldHtml([
-                'checkboxLabel' => t('Relate {type} from a specific site?', ['type' => $pluralType]),
-                'name' => 'useTargetSite',
-                'checked' => $showTargetSite,
-                'toggle' => 'target-site-field',
-                'reverseToggle' => 'show-site-menu-field',
-            ]).
-            FormFields::selectFieldHtml([
-                'fieldClass' => ! $showTargetSite ? ['hidden'] : null,
-                'label' => t('Which site should {type} be related from?', ['type' => $pluralType]),
-                'id' => 'target-site',
-                'name' => 'targetSiteId',
-                'options' => $siteOptions,
-                'value' => $this->targetSiteId,
-            ]);
-
-        if (static::canShowSiteMenu()) {
-            $html .= FormFields::checkboxFieldHtml([
-                'fieldset' => true,
-                'fieldClass' => $showTargetSite ? ['hidden'] : null,
-                'checkboxLabel' => t('Show the site menu'),
-                'instructions' => t('Whether the site menu should be shown for {type} selection modals.',
-                    [
-                        'type' => $type,
-                    ]),
-                'warning' => t(
-                    'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.',
-                    [
-                        'type' => $pluralType,
-                    ]),
-                'id' => 'show-site-menu',
-                'name' => 'showSiteMenu',
-                'checked' => $this->showSiteMenu,
-            ]);
-        }
-
-        return $html;
-    }
-
-    /**
-     * Returns the HTML for the View Mode setting.
-     */
-    public function getViewModeFieldHtml(): ?string
-    {
-        $supportedViewModes = $this->supportedViewModes();
-
-        if (count($supportedViewModes) === 1) {
-            return null;
-        }
-
-        if (empty(array_diff(array_keys($supportedViewModes), [
-            self::VIEW_MODE_LIST,
-            self::VIEW_MODE_LIST_INLINE,
-            self::VIEW_MODE_THUMBS,
-            self::VIEW_MODE_CARDS,
-            self::VIEW_MODE_CARDS_GRID,
-        ]))) {
-            $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
-            app(InternalAssetRegistry::class)->register(CpAsset::class);
-            $baseIconsUrl = craftAsset('legacy/cp/dist/images/view-modes');
-
-            foreach ($supportedViewModes as $key => $label) {
-                $html .= Html::beginTag('label', ['class' => 'nowrap']).
-                    Html::img("$baseIconsUrl/$key.svg", '', [
-                        'class' => 'mb-xs',
-                        'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
-                        'height' => 60,
-                    ]).
-                    Html::radio('viewMode', $key, [
-                        'value' => $key,
-                        'checked' => $this->viewMode === $key,
-                    ]).
-                    ' '.$label.
-                    Html::endTag('label');
-            }
-
-            $html .= Html::endTag('div');
-        } else {
-            $viewModeOptions = [];
-
-            foreach ($supportedViewModes as $key => $label) {
-                $viewModeOptions[] = ['label' => $label, 'value' => $key];
-            }
-
-            $html = FormFields::selectHtml([
-                'id' => 'viewMode',
-                'name' => 'viewMode',
-                'options' => $viewModeOptions,
-                'value' => $this->viewMode,
-            ]);
-        }
-
-        return FormFields::fieldHtml($html, [
-            'label' => t('View Mode'),
-            'instructions' => t('Choose how the field should look for authors.'),
-            'id' => 'viewMode',
-        ]);
     }
 
     #[Override]
     public function useFieldset(): bool
     {
         return true;
-    }
-
-    /**
-     * Returns an array of variables that should be passed to the settings template.
-     *
-     * @return array{
-     *     field:static,
-     *     upperElementType:string,
-     *     elementType:string,
-     *     pluralElementType:string,
-     *     selectionCondition:string|null,
-     * }
-     */
-    protected function settingsTemplateVariables(): array
-    {
-        $elementType = static::elementType();
-
-        $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
-        if ($selectionCondition) {
-            $selectionCondition->mainTag = 'div';
-            $selectionCondition->id = 'selection-condition';
-            $selectionCondition->name = 'selectionCondition';
-            $selectionCondition->forProjectConfig = true;
-            $selectionCondition->queryParams[] = 'site';
-
-            $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
-                'label' => t('Selectable {type} Condition', [
-                    'type' => $elementType::pluralDisplayName(),
-                ]),
-                'instructions' => mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ])),
-            ]);
-        }
-
-        return [
-            'field' => $this,
-            'upperElementType' => $elementType::displayName(),
-            'elementType' => $elementType::lowerDisplayName(),
-            'pluralElementType' => $elementType::pluralLowerDisplayName(),
-            'selectionCondition' => $selectionConditionHtml ?? null,
-        ];
     }
 
     /**

@@ -10,6 +10,7 @@ use Closure;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
 use CraftCms\Cms\Database\Migrator;
@@ -104,6 +105,11 @@ class Install extends Migration
             $logger?->subLabel('Adding foreign keys...');
             $this->addForeignKeys();
             $logger?->success('Foreign keys added.');
+
+            // SQLite rebuilds tables for foreign keys without preserving expression indexes.
+            if (DB::isSqlite()) {
+                Schema::table(Table::ELEMENTS_SITES, fn (Blueprint $table) => $table->rawIndex('lower("uri"), "siteId"', 'sites_uri_siteid_index'));
+            }
         });
 
         event(new TablesCreated);
@@ -197,6 +203,8 @@ class Install extends Migration
                 $table->integer('last_activity')->index();
             });
         }
+
+        app(LaravelMigrations::class)->ensureNotificationsTable();
     }
 
     /**
@@ -205,6 +213,21 @@ class Install extends Migration
     public function createTables(?Logger $logger = null): void
     {
         $this->dropEmptyStarterTable(Table::USERS);
+
+        $logger?->subLabel('activityevents');
+        Schema::create(Table::ACTIVITYEVENTS, function (Blueprint $table) {
+            $table->id();
+            $table->string('eventType');
+            $table->string('source');
+            $table->string('actorType');
+            $table->unsignedBigInteger('actorId')->nullable();
+            $table->string('subjectType')->nullable();
+            $table->string('subjectId')->nullable();
+            $table->unsignedBigInteger('siteId')->nullable();
+            $table->unsignedBigInteger('rootEventId')->nullable();
+            $table->jsonb('payload');
+            $table->dateTime('occurredAt');
+        });
 
         $logger?->subLabel('addresses');
         Schema::create('addresses', function (Blueprint $table) {
@@ -229,18 +252,6 @@ class Install extends Migration
             $table->string('longitude')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
-        });
-
-        $logger?->subLabel('announcements');
-        Schema::create('announcements', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('userId');
-            $table->integer('pluginId')->nullable();
-            $table->string('heading');
-            $table->text('body');
-            $table->boolean('unread')->default(true);
-            $table->dateTime('dateRead')->nullable();
-            $table->dateTime('dateCreated');
         });
 
         $logger?->subLabel('assetindexdata');
@@ -284,7 +295,6 @@ class Install extends Migration
             $table->string('filename');
             $table->string('mimeType')->nullable();
             $table->string('kind', 50)->default(FileKind::Unknown->value);
-            $table->text('alt')->nullable();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
@@ -335,6 +345,7 @@ class Install extends Migration
             $table->enum('interlace', ['none', 'line', 'plane', 'partition'])->default('none');
             $table->string('fill', 11)->nullable()->default(null);
             $table->boolean('upscale')->default(true);
+            $table->json('parameters')->nullable();
             $table->dateTime('parameterChangeTime')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -975,8 +986,7 @@ class Install extends Migration
             $table->string('handle');
             $table->string('fs');
             $table->string('subpath')->nullable();
-            $table->string('transformFs')->nullable();
-            $table->string('transformSubpath')->nullable();
+            $table->string('assetTransformer')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
@@ -1030,8 +1040,10 @@ class Install extends Migration
 
     public function createIndexes(): void
     {
-        Schema::createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
-        Schema::createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['actorType', 'actorId']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
@@ -1051,11 +1063,12 @@ class Install extends Migration
         Schema::createIndex(Table::ELEMENTS, ['fieldLayoutId']);
         Schema::createIndex(Table::ELEMENTS, ['type']);
         Schema::createIndex(Table::ELEMENTS, ['enabled']);
-        Schema::createIndex(Table::ELEMENTS, ['canonicalId']);
+        Schema::createIndex(Table::ELEMENTS, ['canonicalId', 'dateCreated']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateCreated']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled']);
         Schema::createIndex(Table::ELEMENTS_BULKOPS, ['timestamp']);
+        Schema::createIndex(Table::ELEMENTS_OWNERS, ['ownerId']);
         Schema::createIndex(Table::ELEMENTS_OWNERS, ['sortOrder']);
         Schema::createIndex(Table::ELEMENTS_SITES, ['elementId', 'siteId'], unique: true);
         Schema::createIndex(Table::ELEMENTS_SITES, ['siteId']);
@@ -1067,7 +1080,7 @@ class Install extends Migration
         Schema::createIndex(Table::ENTRIES, ['postDate']);
         Schema::createIndex(Table::ENTRIES, ['expiryDate']);
         Schema::createIndex(Table::ENTRIES, ['status']);
-        Schema::createIndex(Table::ENTRIES, ['sectionId']);
+        Schema::createIndex(Table::ENTRIES, ['sectionId', 'postDate']);
         Schema::createIndex(Table::ENTRIES, ['typeId']);
         Schema::createIndex(Table::ENTRIES_AUTHORS, ['authorId']);
         Schema::createIndex(Table::ENTRIES_AUTHORS, ['entryId', 'sortOrder']);
@@ -1169,7 +1182,6 @@ class Install extends Migration
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         } else {
             // SQLite: basic indexes only, no full-text or tsvector
-            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
         }
@@ -1177,10 +1189,9 @@ class Install extends Migration
 
     public function addForeignKeys(): void
     {
+        Schema::table(Table::ACTIVITYEVENTS, fn (Blueprint $table) => $table->foreign('rootEventId')->references('id')->on(Table::ACTIVITYEVENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
-        Schema::table(Table::ANNOUNCEMENTS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
-        Schema::table(Table::ANNOUNCEMENTS, fn (Blueprint $table) => $table->foreign('pluginId')->references('id')->on(Table::PLUGINS)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('sessionId')->references('id')->on(Table::ASSETINDEXINGSESSIONS)->cascadeOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('folderId')->references('id')->on(Table::VOLUMEFOLDERS)->cascadeOnDelete());
@@ -1205,7 +1216,6 @@ class Install extends Migration
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
-        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->nullOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('revisionId')->references('id')->on(Table::REVISIONS)->cascadeOnDelete());
@@ -1430,7 +1440,6 @@ class Install extends Migration
             'system' => [
                 'edition' => Edition::Solo->handle(),
                 'name' => $this->site->getName(),
-                'live' => true,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
                 'timeZone' => $this->timezone ?? 'America/Los_Angeles',
             ],

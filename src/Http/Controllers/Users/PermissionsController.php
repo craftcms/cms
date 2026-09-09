@@ -17,11 +17,13 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -71,26 +73,48 @@ readonly class PermissionsController
 
         $user = $this->editedUser($userId);
 
-        // Is their admin status changing?
-        if ($currentUser->isAdmin()) {
-            $adminParam = $request->boolean('admin', $user->admin);
+        /** @var array{admin: bool, groups: UserGroup[]|null, permissions: string[]|null} $changes */
+        $changes = [
+            'admin' => $currentUser->isAdmin() ? $request->boolean('admin', $user->admin) : $user->admin,
+            'groups' => null,
+            'permissions' => null,
+        ];
 
-            if ($adminParam !== $user->admin) {
-                if ($adminParam) {
-                    $this->requireConfirmedPassword();
-                }
+        if ($changes['admin'] && ! $user->admin) {
+            $this->requireConfirmedPassword();
+        }
 
-                $user->admin = $adminParam;
-                $elements->saveElement($user, false);
+        $proposedUser = clone $user;
+        $proposedUser->admin = $changes['admin'];
+
+        if (Edition::isAtLeast(Edition::Pro)) {
+            $changes['groups'] = $this->prepareUserGroups($request, $proposedUser, $currentUser);
+            if ($changes['groups'] !== null) {
+                $proposedUser->setGroups($changes['groups']);
+            }
+            $changes['permissions'] = $this->prepareUserPermissions($request, $proposedUser, $currentUser, $changes['groups']);
+        }
+
+        if ($changes['admin'] !== $user->admin) {
+            $user->admin = $changes['admin'];
+            if (! $elements->saveElement($user, false)) {
+                return $this->asFailure(t('Couldn’t save permissions.'));
             }
         }
 
         if (Edition::isAtLeast(Edition::Pro)) {
             event(new UserGroupsAndPermissionsAssigning($user));
 
-            // Assign user groups and permissions if the current user is allowed to do that
-            $this->saveUserGroups($request, $user, $currentUser);
-            $this->saveUserPermissions($request, $user, $currentUser);
+            if ($changes['groups'] !== null) {
+                if (! Users::assignUserToGroups($user->id, Arr::pluck($changes['groups'], 'id'))) {
+                    return $this->asFailure(t('Couldn’t save permissions.'));
+                }
+                $user->setGroups($changes['groups']);
+            }
+
+            if ($changes['permissions'] !== null && ! UserPermissions::saveUserPermissions($user->id, $changes['permissions'])) {
+                return $this->asFailure(t('Couldn’t save permissions.'));
+            }
 
             event(new GroupsAndPermissionsAssigned($user));
         }
@@ -112,16 +136,17 @@ readonly class PermissionsController
         return $this->asSuccess(t('Permissions saved.'));
     }
 
-    private function saveUserGroups(Request $request, UserElement $user, CraftUser $currentUser): void
+    /** @return UserGroup[]|null */
+    private function prepareUserGroups(Request $request, UserElement $user, CraftUser $currentUser): ?array
     {
         if (! $currentUser->can('assignUserGroups', $user)) {
-            return;
+            return null;
         }
 
         $groupIds = $request->input('groups');
 
         if ($groupIds === null) {
-            return;
+            return null;
         }
 
         if ($groupIds === '') {
@@ -154,15 +179,17 @@ readonly class PermissionsController
             $this->requireConfirmedPassword();
         }
 
-        Users::assignUserToGroups($user->id, $groupIds);
-
-        $user->setGroups($newGroups);
+        return $newGroups;
     }
 
-    private function saveUserPermissions(Request $request, UserElement $user, CraftUser $currentUser): void
+    /**
+     * @param  UserGroup[]|null  $groups
+     * @return string[]|null
+     */
+    private function prepareUserPermissions(Request $request, UserElement $user, CraftUser $currentUser, ?array $groups): ?array
     {
         if (! $currentUser->can('assignUserPermissions')) {
-            return;
+            return null;
         }
 
         // Resolve the permission set
@@ -174,23 +201,41 @@ readonly class PermissionsController
 
             // If the request doesn’t indicate the current user is trying to update permissions, we can just bail:
             if (! $request->has('permissions')) {
-                return;
+                return null;
             }
 
             // Now it’s safe to normalize whatever was sent (including an empty set) into an array:
             $permissions = $request->array('permissions');
         }
 
+        // Evaluate inherited permissions against the proposed groups without persisting them.
+        $effectivePermissions = null;
+        if ($groups !== null && $permissions !== []) {
+            $effectivePermissions = DB::table(Table::USERPERMISSIONS)
+                ->join(Table::USERPERMISSIONS_USERS, 'permissionId', '=', Table::USERPERMISSIONS.'.id')
+                ->where('userId', $user->id)
+                ->pluck('name');
+
+            foreach ($groups as $group) {
+                $effectivePermissions = $effectivePermissions->merge(UserPermissions::getPermissionsByGroupId($group->id));
+            }
+        }
+
         // See if there are any new permissions in here
         $hasNewPermissions = false;
 
         foreach ($permissions as $permission) {
-            if (! $user->can($permission)) {
+            $hasPermission = $effectivePermissions !== null
+                ? $effectivePermissions->contains(fn (string $name) => strcasecmp($name, $permission) === 0)
+                : $user->can($permission);
+
+            if (! $hasPermission) {
                 $hasNewPermissions = true;
 
-                // Make sure the current user even has permission to grant it
+                // The policy can see old group membership, so also check the grantor when groups are being replaced.
                 abort_if(
-                    ! $currentUser->can('assignPermission', [$user, $permission]),
+                    ! $currentUser->can('assignPermission', [$user, $permission]) ||
+                    ($groups !== null && ! $currentUser->can($permission)),
                     403,
                     "Your account doesn't have permission to assign the $permission permission to a user.",
                 );
@@ -201,6 +246,6 @@ readonly class PermissionsController
             $this->requireConfirmedPassword();
         }
 
-        UserPermissions::saveUserPermissions($user->id, $permissions);
+        return $permissions;
     }
 }

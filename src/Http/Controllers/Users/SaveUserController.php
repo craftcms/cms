@@ -313,17 +313,9 @@ readonly class SaveUserController
 
         // Do we need to send a verification email out?
         if ($sendActivationEmail) {
-            // Temporarily set the unverified email on the User so the verification email goes to the
-            // right place
-            $originalEmail = $user->email;
-            $user->email = $user->unverifiedEmail;
-
             $isNewUser
-                ? $this->users->sendActivationEmail($user)
+                ? $this->users->sendActivationEmail($user, $user->unverifiedEmail)
                 : $this->users->sendNewEmailVerifyEmail($user);
-
-            // Put the original email back into place
-            $user->email = $originalEmail;
         }
 
         // Is this public registration, and was the user going to be activated automatically?

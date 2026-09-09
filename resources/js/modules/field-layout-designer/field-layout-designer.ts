@@ -141,10 +141,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
+    // `typeof` rather than a bare `$`: until the legacy bundle loads there is no
+    // global to reference at all, and an undeclared identifier throws a
+    // ReferenceError instead of evaluating falsy — which `deferUntil` would
+    // surface as a rejected promise that never polls again.
     void deferUntil(
       () =>
         !!Craft?.Grid &&
-        $ instanceof Function &&
+        typeof $ === 'function' &&
         !!this.$fieldLibrary.querySelector('input[type="search"]')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(
@@ -500,8 +504,15 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   createField(): void {
+    // The library lives in a HUD that `HUD.show()` re-parents to <body>, so
+    // `$createFieldBtn` sits outside the panel DOM. Opening from it would read
+    // as coming from the base page and close the panel we're inside; the HUD's
+    // trigger is the button in the tab, which stays put. It's also the right
+    // place to send focus back to, since the HUD closes below.
+    const hud = this.getActiveHud();
+
     void openSlideout(Craft.getCpUrl('settings/fields/edit'), {
-      opener: this.$createFieldBtn,
+      opener: hud?.$trigger ?? this.$createFieldBtn,
       onSaved: ({data}) => {
         // add the library selector
         const selectorHtml = data?.selectorHtml;
@@ -520,12 +531,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
         // add it to the active tab
         this.addLibraryElementToActiveTab($selector);
-
-        requestAnimationFrame(() => {
-          this.getActiveHud()?.hide();
-        });
       },
     });
+
+    // Close the library popup now the editor is open — the HUD only hides, so
+    // `getActiveHud()` still resolves it for the save handler above.
+    hud?.hide();
   }
 
   initLibraryElements($elements: any): void {

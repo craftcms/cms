@@ -1,5 +1,6 @@
 /** global: Craft */
 /** global: Garnish */
+import {serializeFormInputs} from '@craftcms/ui/utilities/dom';
 /**
  * Table Element Index View
  */
@@ -130,7 +131,18 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   initForInlineEditing: function () {
     if (this.elementIndex.inlineEditing) {
       Craft.initUiElements(this.$elementContainer);
-      this.initialSerializedValue = this.serializeInputs();
+      this.inlineInputsReady = Promise.all(
+        [
+          ...this.$elementContainer[0].querySelectorAll(
+            'craft-inline-attribute-form'
+          ),
+        ].map(async (form) => {
+          await customElements.whenDefined('craft-inline-attribute-form');
+          await form.ready;
+        })
+      ).then(() => {
+        this.initialSerializedValue = this.serializeInputs();
+      });
 
       this.$saveBtn = Craft.ui
         .createSubmitButton({
@@ -157,9 +169,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                   const $row = this.$elementContainer.children(
                     `[data-id="${elementId}"]`
                   );
+                  $row.find('craft-inline-attribute-form').each((i, form) => {
+                    form.errors = data.errors[elementId];
+                  });
                   for (const attribute in data.errors[elementId]) {
                     $row
-                      .find(`[name*="${attribute}"]`)
+                      .find(`[name*="${attribute.replace(/^field:/, '')}"]`)
                       .closest('td')
                       .addClass('errors');
                   }
@@ -188,7 +203,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
           });
       });
 
-      this.addListener(this.$cancelBtn, 'activate', () => {
+      this.addListener(this.$cancelBtn, 'activate', async () => {
+        await this.inlineInputsReady;
         if (
           !this.getDeltaInputChanges() ||
           confirm(
@@ -252,12 +268,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   serializeInputs: function () {
-    const data = Garnish.getPostData(this.$elementContainer);
-    const serialized = [];
-    for (const i in data) {
-      serialized.push(encodeURIComponent(`${i}=${data[i]}`));
-    }
-    return serialized.join('&');
+    return serializeFormInputs(this.$elementContainer[0]);
   },
 
   getDeltaInputChanges: function () {
@@ -278,10 +289,25 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   haveInputsChanged: function () {
-    return this.serializeInputs() !== this.initialSerializedValue;
+    return (
+      this.initialSerializedValue !== null &&
+      this.serializeInputs() !== this.initialSerializedValue
+    );
   },
 
   saveChanges: async function () {
+    await this.inlineInputsReady;
+
+    if (
+      [
+        ...this.$elementContainer[0].querySelectorAll(
+          'craft-inline-attribute-form'
+        ),
+      ].some((form) => !form.canSubmit())
+    ) {
+      throw new Error('Cannot save inline inputs that failed to render.');
+    }
+
     let data = this.getDeltaInputChanges();
     if (!data) {
       return {};

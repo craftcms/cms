@@ -5,12 +5,11 @@
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {router} from '@inertiajs/vue3';
+  import {Link, router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
-  import CpLink from '@/common/components/CpLink.vue';
   import Empty from '@/common/components/Empty.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -27,21 +26,6 @@
     data: Array<EntryTypeRow>;
     readOnly: boolean;
   }>();
-
-  function deleteEntryType(entryType: EntryTypeRow) {
-    if (
-      confirm(
-        t(
-          'Are you sure you want to delete “{name}” and all entries of that type?',
-          {
-            name: entryType.title,
-          }
-        )
-      )
-    ) {
-      router.delete(destroy({entryType: entryType.id}));
-    }
-  }
 
   const searchTerm = ref(props.searchTerm ?? '');
   const entryTypes = computed(() => props.data);
@@ -74,7 +58,11 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteEntryType(row.original),
+        confirm: t(
+          'Are you sure you want to delete “{name}” and all entries of that type?',
+          {name: row.original.title}
+        ),
+        onClick: () => router.delete(destroy({entryType: row.original.id})),
       }),
     ]),
   ]);
@@ -144,15 +132,9 @@
 
 <template>
   <LayoutSlot name="actions">
-    <CpLink
-      appearance="button"
-      :href="create().url"
-      variant="accent"
-      :inertia="false"
-      icon="plus"
-    >
+    <Link as="craft-button" :href="create().url" variant="primary" icon="plus">
       {{ t('New entry type') }}
-    </CpLink>
+    </Link>
   </LayoutSlot>
 
   <craft-pane padding="0" appearance="raised">

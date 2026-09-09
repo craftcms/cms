@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -278,6 +279,18 @@ abstract class ElementEditViewModel extends ViewModel
             : null;
     }
 
+    /** Where this editor's activity timeline is loaded on demand. */
+    public function activityTimelineUrl(): ?string
+    {
+        return null;
+    }
+
+    /** Where the full activity page can be viewed. */
+    public function activityPageUrl(): ?string
+    {
+        return null;
+    }
+
     /**
      * The element's and its canonical's last-modified stamps at render time.
      * Activity polling compares these against the server's to notice that
@@ -327,7 +340,7 @@ abstract class ElementEditViewModel extends ViewModel
         );
 
         $previewToken = Str::random(32, extendedChars: true);
-        $siteToken = (! app()->isLive() || ! $element->getSite()->getEnabled())
+        $siteToken = (app()->isDownForMaintenance() || ! $element->getSite()->getEnabled())
             ? Crypt::encrypt((string) $element->siteId)
             : null;
 
@@ -384,7 +397,7 @@ abstract class ElementEditViewModel extends ViewModel
         $hidesView = $this->element->getPreviewTargets() !== [];
 
         return array_values(array_filter(
-            $this->element->actionMenuDescriptors(),
+            $this->element->actionMenuDescriptors(ElementActionContext::Editor),
             fn (array $item): bool => ! (
                 $hidesView && ($item['behavior']['type'] ?? null) === 'link'
             ),

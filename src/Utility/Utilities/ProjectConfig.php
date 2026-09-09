@@ -56,7 +56,7 @@ class ProjectConfig extends Utility
             ':invert' => $invert,
             ':yaml-exists' => ($projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist()) ? 'true' : 'false',
             ':are-changes-pending' => $areChangesPending,
-            'entire-config' => Yaml::dump($projectConfig->get(), 20, 2),
+            'entire-config' => Yaml::dump($projectConfig->get(), 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING),
         ]);
     }
 }

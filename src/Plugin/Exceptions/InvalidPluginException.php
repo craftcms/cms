@@ -13,9 +13,7 @@ class InvalidPluginException extends Exception
         ?string $message = null,
         int $code = 0,
     ) {
-        if ($message === null) {
-            $message = "No plugin exists with the handle \"$handle\".";
-        }
+        $message ??= "No plugin exists with the handle \"$handle\".";
 
         parent::__construct($message, $code);
     }

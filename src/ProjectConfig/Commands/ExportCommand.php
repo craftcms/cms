@@ -93,7 +93,7 @@ class ExportCommand extends Command
             'Exporting the '.($this->option('external') ? 'external' : 'loaded').' project config data ... ',
             function () use ($projectConfig, $path) {
                 $config = $projectConfig->get(null, $this->option('external'));
-                $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($config), 20, 2);
+                $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($config), 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
 
                 File::writeToFile($path, $content);
             }

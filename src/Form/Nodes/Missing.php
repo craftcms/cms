@@ -11,12 +11,15 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
 class Missing implements Node
 {
+    use Conditionable;
+
     private function __construct(
         private readonly string $uid,
         private readonly string $provider,

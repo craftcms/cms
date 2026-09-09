@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
 use function CraftCms\Cms\currentUser;
@@ -51,6 +52,11 @@ trait FieldConditionRuleTrait
         return t('Fields');
     }
 
+    public function getFieldUid(): string
+    {
+        return $this->_fieldUid;
+    }
+
     public function setFieldUid(string $uid): void
     {
         $this->_fieldUid = $uid;
@@ -89,10 +95,15 @@ trait FieldConditionRuleTrait
 
         foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
-                if ($field->uid === $this->_fieldUid) {
+                if ($field->uid === $this->_fieldUid || $field->layoutElement->oldFieldUid === $this->_fieldUid) {
                     // skip if it doesn't have a label
                     $label = $field->layoutElement->label();
                     if ($label === null) {
+                        continue;
+                    }
+
+                    // make sure this is the expected condition rule class for the field
+                    if (! $this->isExpectedType($field)) {
                         continue;
                     }
 
@@ -143,6 +154,21 @@ trait FieldConditionRuleTrait
         return $this->_fieldInstances;
     }
 
+    private function isExpectedType(FieldInterface $field): bool
+    {
+        $expectedType = $field->getElementConditionRuleType();
+
+        if ($expectedType === null) {
+            return false;
+        }
+
+        if (is_array($expectedType)) {
+            $expectedType = $expectedType['class'];
+        }
+
+        return is_a($this, $expectedType);
+    }
+
     /**
      * Returns the first custom field instance associated with this rule.
      *
@@ -182,23 +208,7 @@ trait FieldConditionRuleTrait
         return currentUser()?->getPreference('showFieldHandles') ?? false;
     }
 
-    public function getExclusiveQueryParams(): array
-    {
-        try {
-            $instances = $this->fieldInstances();
-        } catch (RuntimeException) {
-            return [];
-        }
-
-        $params = [];
-        foreach ($instances as $field) {
-            $params[] = $field->handle;
-        }
-
-        return array_values(array_unique($params));
-    }
-
-    public function modifyQuery(Builder $query): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         $value = $this->elementQueryParam();
 
@@ -209,11 +219,7 @@ trait FieldConditionRuleTrait
         $instances = $this->fieldInstances();
         $firstInstance = $instances[0];
 
-        if (! method_exists($firstInstance, 'modifyQuery')) {
-            return;
-        }
-
-        $firstInstance::modifyQuery($query, $instances, $value);
+        $firstInstance::modifyQuery($query, $instances, $value, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

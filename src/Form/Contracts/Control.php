@@ -47,6 +47,13 @@ interface Control
     public function path(): string|array;
 
     /**
+     * Returns a copy bound to a different path, preserving the control's configuration.
+     *
+     * @param  string|list<string>  $path
+     */
+    public function withPath(string|array $path): static;
+
+    /**
      * Returns an optional ancestor path whose complete value must mutate atomically.
      *
      * @return string|list<string>|null
@@ -70,6 +77,10 @@ interface Control
     public function getMode(): ControlMode;
 
     public function mode(ControlMode|string $mode): static;
+
+    public function reactive(bool $reactive = true): static;
+
+    public function isReactive(): bool;
 
     /**
      * Returns control-specific configuration for the resolved value and both renderers.

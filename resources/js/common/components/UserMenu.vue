@@ -12,7 +12,7 @@
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';
 
-  const {currentUser, csrfTokenName, csrfTokenValue} = useCraftData();
+  const {csrfTokenName, csrfTokenValue, currentUser} = useCraftData();
   const logoutForm = useTemplateRef('logoutForm');
 
   const menuItems = computed((): ActionItem[] => {

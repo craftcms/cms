@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form;
 
 use Closure;
+use CraftCms\Cms\Form\Concerns\InsertsNodes;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Tab;
@@ -14,6 +15,7 @@ use Illuminate\Support\Traits\Conditionable;
 class Form
 {
     use Conditionable;
+    use InsertsNodes;
 
     /** @param list<Node> $nodes */
     private function __construct(private array $nodes = []) {}
@@ -60,5 +62,17 @@ class Form
     public function nodes(): array
     {
         return $this->nodes;
+    }
+
+    /** @return list<Node> */
+    protected function nodeList(): array
+    {
+        return $this->nodes;
+    }
+
+    /** @param list<Node> $nodes */
+    protected function setNodeList(array $nodes): void
+    {
+        $this->nodes = $nodes;
     }
 }

@@ -19,18 +19,6 @@ use InvalidArgumentException;
 interface ConditionInterface
 {
     /**
-     * Renders the HTML for the condition builder, including its outer container element.
-     */
-    public function getBuilderHtml(): string;
-
-    /**
-     * Renders the inner HTML for the condition builder, excluding its outer container element.
-     *
-     * @param  bool  $autofocusAddButton  Whether the Add Rule button should be autofocused
-     */
-    public function getBuilderInnerHtml(bool $autofocusAddButton = false): string;
-
-    /**
      * Returns configuration that should be maintained for the builder.
      *
      * @return array<string, mixed>

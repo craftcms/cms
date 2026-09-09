@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
@@ -58,6 +60,23 @@ it('creates a missing filesystem if type is not recognized', function () {
         ->and($filesystem->expectedType)->toBe('some\\missing\\FilesystemType');
 });
 
+it('ignores unsupported legacy filesystem settings', function () {
+    $filesystem = $this->service->createFilesystem([
+        'type' => Local::class,
+        'name' => 'Legacy Filesystem',
+        'handle' => 'legacyFilesystem',
+        'settings' => [
+            'path' => sys_get_temp_dir().'/legacy-filesystem',
+        ],
+        'assetTransform' => [
+            'driver' => 'craft',
+        ],
+    ]);
+
+    expect($filesystem)->toBeInstanceOf(Local::class)
+        ->and($filesystem->handle)->toBe('legacyFilesystem');
+});
+
 it('can save and fetch filesystems by handle through the new service', function () {
     $filesystem = createServiceLocalFilesystem($this->service, 'service-save');
 
@@ -82,6 +101,31 @@ it('dispatches a filesystem renamed event when renaming', function () {
     expect($this->service->saveFilesystem($filesystem, false))->toBeTrue();
 
     Event::assertDispatched(fn (FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
+});
+
+it('rewrites only hard-coded Craft transformer output filesystem references when renaming', function () {
+    $renamed = createServiceLocalFilesystem($this->service, 'output-old');
+
+    foreach ([
+        'hardCoded' => 'output-old',
+        'environment' => '$OUTPUT_FILESYSTEM',
+        'rawDisk' => 'disk:output-old',
+    ] as $handle => $outputFilesystem) {
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+            'name' => $handle,
+            'handle' => $handle,
+            'driver' => 'craft',
+            'settings' => ['filesystem' => $outputFilesystem],
+        ]));
+    }
+
+    $renamed->oldHandle = 'output-old';
+    $renamed->handle = 'output-new';
+    $this->service->saveFilesystem($renamed, false);
+
+    expect(app(AssetTransformers::class)->resolve('hardCoded')->settings['filesystem'])->toBe('output-new')
+        ->and(app(AssetTransformers::class)->resolve('environment')->settings['filesystem'])->toBe('$OUTPUT_FILESYSTEM')
+        ->and(app(AssetTransformers::class)->resolve('rawDisk')->settings['filesystem'])->toBe('disk:output-old');
 });
 
 it('validates local filesystems with laravel path requirements', function () {
@@ -281,16 +325,32 @@ it('omits URL when hasUrls is true but url is empty', function () {
         ->and($diskConfig)->not->toHaveKey('url');
 });
 
-it('skips disk registration for missing filesystem types', function () {
-    app(ProjectConfig::class)->set('fs.missing-type', [
-        'name' => 'Missing Type',
-        'type' => 'some\\nonexistent\\FsClass',
-        'settings' => [],
-    ]);
+it('removes stale disk registrations for missing filesystem types and restores them', function () {
+    createServiceLocalFilesystem($this->service, 'missing-type');
+    $projectConfig = app(ProjectConfig::class);
+    $validConfig = $projectConfig->get('fs.missing-type');
+    $originalDisk = Storage::disk('craft-fs-missing-type');
+    $manualDisk = Storage::disk('local');
+    $manualConfig = config('filesystems.disks.local');
+    $missingConfig = ['name' => 'Missing Type', 'type' => 'some\\nonexistent\\FsClass', 'settings' => []];
 
-    $this->service->handleChangedFilesystem();
+    $this->service->handleChangedFilesystem(new ItemUpdated(
+        path: 'fs.missing-type', newValue: $missingConfig, tokenMatches: ['missing-type'],
+    ));
 
     expect(config('filesystems.disks.craft-fs-missing-type'))->toBeNull();
+    expect(fn () => Storage::disk('craft-fs-missing-type'))->toThrow(InvalidArgumentException::class);
+
+    $incrementalConfig = config('filesystems.disks');
+    $projectConfig->set('fs.missing-type', $missingConfig);
+    $this->service->handleChangedFilesystem();
+    expect(config('filesystems.disks'))->toBe($incrementalConfig)
+        ->and(config('filesystems.disks.local'))->toBe($manualConfig)
+        ->and(Storage::disk('local'))->toBe($manualDisk);
+
+    $projectConfig->set('fs.missing-type', $validConfig);
+    expect(Storage::disk('craft-fs-missing-type'))->not->toBe($originalDisk)
+        ->and(config('filesystems.disks.craft-fs-missing-type.driver'))->toBe('local');
 });
 
 it('syncs stale craft disk registrations when handling delete config changes', function () {
@@ -332,14 +392,18 @@ it('scopes disk operations to an environment-backed prefix', function () {
     }
 });
 
-it('fails when a manual disk uses the generated disk prefix', function () {
+it('fails when a manual disk uses the generated disk prefix', function (bool $incremental) {
     config()->set('filesystems.disks.craft-fs-manual', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/fs-service/collision'),
     ]);
 
-    $this->service->syncDisks();
-})->throws(FilesystemException::class);
+    if ($incremental) {
+        $this->service->registerDisk('manual');
+    } else {
+        $this->service->syncDisks();
+    }
+})->with([false, true])->throws(FilesystemException::class);
 
 it('fails when a filesystem returns an invalid disk configuration', function () {
     $this->service->registerDisk('invalid-disk', [

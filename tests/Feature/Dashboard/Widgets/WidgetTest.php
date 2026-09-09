@@ -8,6 +8,11 @@ it('can instantiate with settings', function () {
     class TestWidget extends Widget
     {
         public string $foo;
+
+        public function component(): string
+        {
+            return 'example:widget';
+        }
     }
 
     $widget = Widget::fromConfig(new CraftCms\Cms\Dashboard\Models\Widget([

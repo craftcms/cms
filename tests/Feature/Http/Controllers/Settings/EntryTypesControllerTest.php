@@ -115,7 +115,7 @@ it('refreshes fields that depend on the entry type settings', function () {
         'values' => $values,
         'scope' => [],
     ])->assertOk();
-    $paths = collect($response->json('form.nodes'))->pluck('control.path')->filter()->values();
+    $paths = collect(flattenFormNodes($response->json('form.nodes')))->pluck('control.path')->filter()->values();
 
     expect($paths)
         ->toContain(['titleTranslationKeyFormat'])
@@ -125,7 +125,7 @@ it('refreshes fields that depend on the entry type settings', function () {
         'values' => [...$values, 'showSlugField' => true],
         'scope' => [],
     ])->assertOk();
-    $paths = collect($response->json('form.nodes'))->pluck('control.path')->filter()->values();
+    $paths = collect(flattenFormNodes($response->json('form.nodes')))->pluck('control.path')->filter()->values();
 
     expect($paths)
         ->toContain(['slugTranslationMethod'])

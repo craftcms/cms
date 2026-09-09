@@ -52,8 +52,6 @@ readonly class ApiController extends GqlController
             ));
         }
 
-        $this->generalConfig->generateTransformsBeforePageLoad = true;
-
         $cacheHeader = $request->headers->get('x-craft-gql-cache');
         $cache = $request->headers->get('x-craft-gql-cache') ? ($cacheHeader === 'cache') : null;
 

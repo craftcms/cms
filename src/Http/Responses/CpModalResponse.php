@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -60,6 +64,11 @@ class CpModalResponse implements Responsable
      * @see contentTemplate()
      */
     public $contentHtml;
+
+    public ?Form $form = null;
+
+    /** @var array<string, mixed> */
+    public array $formValues = [];
 
     /**
      * @var string|Stringable|callable|null The errors summary HTML (DEV-212).
@@ -123,6 +132,19 @@ class CpModalResponse implements Responsable
     }
 
     /**
+     * Sets a Form to render alongside any legacy content HTML.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    public function form(?Form $form, array $values = []): self
+    {
+        $this->form = $form;
+        $this->formValues = $values;
+
+        return $this;
+    }
+
+    /**
      * Sets a template that should be used to render the content HTML.
      */
     /** @param array<string, mixed> $variables */
@@ -165,15 +187,18 @@ class CpModalResponse implements Responsable
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            InputNamespace::set($namespace);
-            call_user_func($this->prepareModal, $this, $containerId);
-            InputNamespace::set(null);
+            InputNamespace::with($namespace, fn () => call_user_func($this->prepareModal, $this, $containerId));
         }
 
         $content = InputNamespace::namespaceInputs(function () {
             $components = [];
             if ($this->contentHtml) {
                 $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
+            }
+            if ($this->form !== null) {
+                $components[] = app(FormHtmlRenderer::class)->render(
+                    app(FormResolver::class)->resolve($this->form, new FormContext(values: $this->formValues)),
+                );
             }
             if ($this->action) {
                 $components[] = Html::actionInput($this->action, [

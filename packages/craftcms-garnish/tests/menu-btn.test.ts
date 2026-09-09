@@ -2,9 +2,10 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {MenuBtn} from '../src/menu-btn';
 
-function buildMenuBtn(
-  labels = ['Apple', 'Banana', 'Cherry']
-): {btn: HTMLButtonElement; wrapper: HTMLElement} {
+function buildMenuBtn(labels = ['Apple', 'Banana', 'Cherry']): {
+  btn: HTMLButtonElement;
+  wrapper: HTMLElement;
+} {
   const wrapper = document.createElement('div');
   const btn = document.createElement('button');
   btn.type = 'button';

@@ -1,5 +1,10 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles} from '../../styles/form.styles';
+import {
+  baseFieldStyles,
+  baseFormControlStyles,
+  baseInputWrapperStyles,
+  baseComboboxStyles,
+} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -9,14 +14,7 @@ export default css`
   }
 
   ::slotted(.form-control) {
-    width: 100%;
-    height: 100%;
-    appearance: none;
-    border: 0;
-    min-height: none;
-    padding-inline: var(--c-input-spacing-inline)
-      calc(var(--c-input-spacing-inline) * 1.5 + 1em);
-    border-radius: var(--c-input-radius);
+    ${baseComboboxStyles}
   }
 
   ::slotted([slot='listbox']) {
@@ -30,10 +28,7 @@ export default css`
   }
 
   .input-group__input {
-    ${baseInputStyles}
-    padding-inline: 0;
-    position: relative;
-    min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
+    ${baseInputWrapperStyles}
   }
 
   .input-group__container {
@@ -54,6 +49,81 @@ export default css`
     inset-block-start: 50%;
     inset-inline-end: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
     transform: translateY(-50%);
+  }
+
+  .prefix {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: var(--c-input-spacing-inline);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  :host([has-prefix-icon]) ::slotted(.form-control) {
+    padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
+  }
+
+  :host([multiple-choice]) .input-group__input {
+    ${baseFormControlStyles}
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-xs);
+  }
+
+  :host([multiple-choice]) .input-group__input:focus-within {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
+  :host([multiple-choice][has-feedback-for='error']) .input-group__input {
+    border-color: var(--c-color-danger-border-loud);
+  }
+
+  .combobox__textbox {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  :host([multiple-choice]) .combobox__textbox {
+    min-width: 8rem;
+  }
+
+  :host([multiple-choice]) ::slotted(.form-control) {
+    height: calc(
+      var(--c-input-height, var(--c-size-control-md)) - 2 *
+        (var(--c-spacing-xs) + var(--_input-border-width))
+    );
+    min-height: 0;
+    padding-inline-start: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .token {
+    box-sizing: border-box;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-xs);
+    border-radius: var(--c-radius-sm);
+    background: var(--c-color-neutral-fill-quiet);
+    overflow-wrap: anywhere;
+  }
+
+  .token button {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
   }
 
   .combobox__option {

@@ -108,6 +108,11 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__syncHasErrors();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
+    void this.updateComplete.then(() => {
+      // Nested controls initialize their ARIA references after the field connects.
+      this.addToAriaLabelledBy(this._labelNode);
+      this.__wireDescribedBy();
+    });
   }
 
   /**
@@ -391,6 +396,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
         class="field-notice"
         variant=${isTip ? 'info' : 'warning'}
         appearance="plain"
+        padding="none"
       >
         <craft-visually-hidden>
           ${isTip ? t('Tip:') : t('Warning:')}

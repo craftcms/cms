@@ -132,9 +132,7 @@ class SearchQuery
 
             // Now apply the default options
             foreach ($this->defaultTermOptions as $name => $value) {
-                if (! isset($term->$name)) {
-                    $term->$name = $value;
-                }
+                $term->$name ??= $value;
             }
 
             $term->term = $token;

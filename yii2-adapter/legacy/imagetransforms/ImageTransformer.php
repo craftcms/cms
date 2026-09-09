@@ -203,7 +203,8 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
             $legacyEvent = new ImageTransformerOperationEvent([
                 'asset' => $event->asset,
                 'imageTransformIndex' => $event->imageTransformIndex,
-                'path' => '',
+                'path' => $event->path,
+                'image' => $event->image,
                 'tempPath' => $event->tempPath,
             ]);
             $legacyTransformer->trigger(self::EVENT_TRANSFORM_IMAGE, $legacyEvent);
@@ -219,6 +220,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
 
             $legacyTransformer->trigger(self::EVENT_DELETE_TRANSFORMED_IMAGE, new ImageTransformerOperationEvent([
                 'asset' => $event->asset,
+                'imageTransformIndex' => $event->imageTransformIndex,
                 'path' => $event->path,
             ]));
         });

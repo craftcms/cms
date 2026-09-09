@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\RouteToken\RouteTokens;
@@ -134,21 +133,51 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function removeParam(string $url, string $param): string
     {
+        return static::removeParams($url, [$param]);
+    }
+
+    /**
+     * Removes query string params from a URL.
+     *
+     * @param  string[]  $params
+     */
+    public static function removeParams(string $url, array $params): string
+    {
+        // Extract any params/fragment from the base URL
+        [$url, $urlParams, $fragment] = self::_extractParams($url);
+
+        // Remove the params
+        foreach ($params as $param) {
+            unset($urlParams[$param]);
+        }
+
+        // Rebuild
+        return self::_buildUrl($url, $urlParams, $fragment);
+    }
+
+    /**
+     * Removes all query string params from a URL.
+     *
+     * @param  string[]  $except  Any params that should be left alone
+     */
+    public static function removeAllParams(string $url, array $except = []): string
+    {
         // Extract any params/fragment from the base URL
         [$url, $params, $fragment] = self::_extractParams($url);
 
-        // Remove the param
-        unset($params[$param]);
+        // Remove the params
+        if (! empty($except)) {
+            foreach (array_keys($params) as $param) {
+                if (! in_array($param, $except)) {
+                    unset($params[$param]);
+                }
+            }
+        } else {
+            $params = [];
+        }
 
         // Rebuild
-        if (($query = static::buildQuery($params)) !== '') {
-            $url .= '?'.$query;
-        }
-        if ($fragment !== null) {
-            $url .= '#'.$fragment;
-        }
-
-        return $url;
+        return self::_buildUrl($url, $params, $fragment);
     }
 
     /**
@@ -244,14 +273,18 @@ class Url extends \Illuminate\Support\Facades\URL
 
     /**
      * Returns either a control panel or a site URL, depending on the request type.
+     *
+     * @param  array|string|false|null  $params  The query params to add to the URL. If `false`, any existing params will be removed.
      */
-    /** @param array<string, mixed>|string|null $params */
-    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
+    /** @param array<string, mixed>|string|false|null $params */
+    public static function url(string $path = '', array|string|false|null $params = null, ?string $scheme = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
                 $path = static::urlWithParams($path, $params);
+            } elseif ($params === false) {
+                $path = static::removeAllParams($path);
             }
 
             if ($scheme !== null) {
@@ -276,7 +309,7 @@ class Url extends \Illuminate\Support\Facades\URL
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl);
+        return self::_createUrl($path, $params ?: null, $scheme, $cpUrl);
     }
 
     /**
@@ -317,6 +350,8 @@ class Url extends \Illuminate\Support\Facades\URL
             return $path;
         }
 
+        $baseUrl = null;
+
         // Does this URL point to a different site?
         if ($siteId !== null && $siteId != Sites::getCurrentSite()->id) {
             // Get the site
@@ -326,20 +361,12 @@ class Url extends \Illuminate\Support\Facades\URL
                 throw new Exception('Invalid site ID: '.$siteId);
             }
 
-            // Swap the current site
-            $currentSite = Sites::getCurrentSite();
-            Sites::setCurrentSite($site);
+            $baseUrl = $site->getBaseUrl() ?? url('/');
         }
 
         $path = trim($path, '/');
-        $url = self::_createUrl($path, $params, $scheme, false);
 
-        if (isset($currentSite)) {
-            // Restore the original current site
-            Sites::setCurrentSite($currentSite);
-        }
-
-        return $url;
+        return self::_createUrl($path, $params, $scheme, false, baseUrl: $baseUrl);
     }
 
     /**
@@ -452,8 +479,7 @@ class Url extends \Illuminate\Support\Facades\URL
             }
         }
 
-        // Use @web as a fallback
-        return Aliases::get('@web');
+        return url('/');
     }
 
     /**
@@ -472,11 +498,9 @@ class Url extends \Illuminate\Support\Facades\URL
 
     private static function fallbackBaseUrl(): string
     {
-        // Use @web as a fallback, unless it's a console request and @web was defined dynamically,
-        // in which case it's totally unreliable so go with the base site URL
         return app()->runningInConsole()
             ? static::baseSiteUrl()
-            : Aliases::get('@web');
+            : url('/');
     }
 
     /**
@@ -555,6 +579,7 @@ class Url extends \Illuminate\Support\Facades\URL
         bool $cpUrl,
         bool $useRequestHostInfo = false,
         bool $addToken = true,
+        ?string $baseUrl = null,
     ): string {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -607,7 +632,7 @@ class Url extends \Illuminate\Support\Facades\URL
             $baseUrl = self::fallbackBaseUrl();
         } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
-        } else {
+        } elseif ($baseUrl === null) {
             $baseUrl = static::baseSiteUrl();
         }
 

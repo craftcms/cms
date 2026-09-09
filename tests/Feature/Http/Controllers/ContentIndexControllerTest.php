@@ -3,19 +3,28 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Structure\Models\Structure;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
+use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -24,6 +33,28 @@ beforeEach(function () {
     actingAs(User::find()->one());
     $this->cpTrigger = Cms::config()->cpTrigger;
 });
+
+it('selects fit for index tiles and crop for inline cards', function (string $viewMode, string $key, string $mode, int $size) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $mode)
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get("/{$this->cpTrigger}/content/entries?viewMode={$viewMode}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where("data.0.{$key}", function (string $html) use ($mode, $size) {
+                expect($html)->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
+
+                return true;
+            })
+        );
+})->with([
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
+    'inline cards' => ['cards', 'cardContentHtml', 'crop', 120],
+]);
 
 it('returns an Inertia response with elements and pagination', function () {
     EntryModel::factory()->count(3)->create();
@@ -51,6 +82,61 @@ it('paginates elements via query params', function () {
             ->where('pagination.current_page', 1)
         );
 });
+
+it('does not render element chips when only pagination is requested', function () {
+    EntryModel::factory()->count(3)->create();
+
+    $this->partialMock(ElementHtml::class, fn (MockInterface $mock) => $mock
+        ->shouldReceive('elementChipHtml')->never());
+
+    get("/{$this->cpTrigger}/content/entries", [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'content/Index',
+        'X-Inertia-Partial-Data' => 'pagination',
+    ])
+        ->assertOk()
+        ->assertJsonPath('props.pagination.total', 3)
+        ->assertJsonMissingPath('props.data');
+});
+
+it('selects identity presence with users without separate lookups when rendering entry pages', function (bool $showAuthors) {
+    $section = Section::factory()->create();
+    $type = EntryType::factory()->create();
+    $authors = UserModel::factory()->count(4)->active()->create();
+
+    foreach ([0, 1, 2, 0, 3] as $index => $authorIndex) {
+        EntryModel::factory()->forSection($section)->forEntryType($type)
+            ->title("Article $index")
+            ->create()
+            ->authors()->attach($authors[$authorIndex]->id, ['sortOrder' => 1]);
+    }
+
+    DB::enableQueryLog();
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'columns' => [$showAuthors ? 'authors' : 'id'],
+        'sort' => [['field' => 'title', 'direction' => 'asc']],
+        'per_page' => 4,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'content/Index',
+        'X-Inertia-Partial-Data' => 'data,pagination',
+    ])
+        ->assertOk()
+        ->assertJsonCount(4, 'props.data');
+
+    $queries = array_values(array_filter(DB::getQueryLog(), fn (array $query): bool => str_contains($query['query'], Table::SSO_IDENTITIES)));
+    DB::disableQueryLog();
+
+    expect($queries)->toHaveCount(1)
+        ->and($queries[0]['query'])->toContain('hasSsoIdentity');
+
+    if ($showAuthors) {
+        expect($queries[0]['bindings'])->toEqualCanonicalizing($authors->take(3)->modelKeys());
+    }
+})->with(['visible authors' => true, 'hidden authors' => false]);
 
 it('accepts sort parameters', function () {
     EntryModel::factory()->createElement(['title' => 'Zebra']);
@@ -88,22 +174,35 @@ it('clamps per_page to minimum of 1', function () {
         );
 });
 
-it('scopes the list to the selected section source', function () {
+it('scopes the list to the current page or explicitly selected source', function (string $indexPage, ?string $source, int $total) {
     $a = Section::factory()->create(['type' => SectionType::Channel]);
     $b = Section::factory()->create(['type' => SectionType::Channel]);
 
     EntryModel::factory()->forSection($a)->create();
     EntryModel::factory()->forSection($b)->count(3)->create();
 
-    get("/{$this->cpTrigger}/content/entries?".http_build_query([
-        'source' => "section:{$a->uid}",
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'First'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$a->uid", 'page' => 'First'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$b->uid", 'page' => 'Second'],
+    ]);
+
+    get("/{$this->cpTrigger}/content/$indexPage?".http_build_query([
+        'source' => $source === 'first' ? "section:$a->uid" : $source,
         'viewMode' => 'cards',
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('pagination.total', 1)
+            ->where('pagination.total', $total)
+            ->has('data', $total)
+            ->where('source.key', $source === 'first' ? "section:$a->uid" : "section:$b->uid")
         );
-});
+})->with([
+    'explicit' => ['first', 'first', 1],
+    'second page default' => ['second', null, 3],
+    'second page fallback' => ['second', 'missing', 3],
+    'explicit outside page' => ['second', 'first', 1],
+]);
 
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);

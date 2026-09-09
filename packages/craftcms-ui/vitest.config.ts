@@ -30,6 +30,18 @@ export default defineConfig({
           tsconfigPaths: true,
         },
         test: {
+          name: 'core',
+          root: './src/core',
+          // `node`, not happy-dom: the core must not touch the DOM, and running
+          // it without one is what keeps that true.
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
           name: 'services',
           root: './src/services',
           environment: 'happy-dom',
@@ -41,6 +53,7 @@ export default defineConfig({
         },
         test: {
           name: 'components',
+          exclude: ['**/*.browser.test.ts'],
           root: './src/components',
           environment: 'happy-dom',
         },
@@ -73,6 +86,20 @@ export default defineConfig({
           name: 'styles',
           root: './src/styles',
           environment: 'happy-dom',
+        },
+      },
+      {
+        resolve: {tsconfigPaths: true},
+        test: {
+          name: 'components-browser',
+          root: './src/components',
+          include: ['**/*.browser.test.ts'],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{browser: 'chromium'}],
+          },
         },
       },
       {

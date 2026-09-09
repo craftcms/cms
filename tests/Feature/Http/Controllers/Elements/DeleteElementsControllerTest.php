@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -141,14 +143,15 @@ describe('destroy', function () {
             ->all();
 
         app()->bind(ElementsService::class, function () use (&$deletedIds) {
-            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), $deletedIds) extends ElementsService
+            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $deletedIds) extends ElementsService
             {
                 public function __construct(
                     ElementPlaceholders $placeholders,
                     ElementTypes $elementTypes,
+                    ElementCaches $elementCaches,
                     private array &$deletedIds,
                 ) {
-                    parent::__construct($placeholders, $elementTypes);
+                    parent::__construct($placeholders, $elementTypes, $elementCaches);
                 }
 
                 public function deleteElement(ElementInterface $element, bool $hard = false): bool
@@ -274,6 +277,45 @@ describe('replaceReferencesModal', function () {
     });
 });
 
+it('preserves replacement Form settings and hidden values', function (string $method, string $action, bool $hardDelete) {
+    $first = EntryModel::factory()->createElement();
+    $second = EntryModel::factory()->createElement();
+    $response = postJson(action([DeleteElementsController::class, $method]), [
+        'elementType' => Entry::class,
+        'elementIds' => [$first->id, $second->id],
+        'hardDelete' => $hardDelete,
+        'sourceElementType' => Entry::class,
+    ])->assertOk();
+
+    $namespace = $response->json('namespace');
+    $crawler = new Crawler('<form>'.$response->json('content').'</form>', 'http://localhost');
+    $settings = json_decode($crawler->filter('craft-entry-select-input')->attr('settings'), true);
+
+    expect($settings['name'])->toBe("{$namespace}[newTargetId]")
+        ->and($settings['single'])->toBeTrue()
+        ->and($settings['limit'])->toBe(1)
+        ->and($settings['criteria']['id'])->toEqualCanonicalizing(['not', $first->id, $second->id]);
+
+    $values = [
+        'newTargetId' => '',
+        'elementType' => Entry::class,
+        'elementIds' => [(string) $first->id, (string) $second->id],
+        'hardDelete' => $hardDelete ? '1' : '0',
+    ];
+    if ($method === 'replaceRelationsModal') {
+        $values['sourceElementType'] = Entry::class;
+    }
+    $values['action'] = $action;
+
+    $submitted = $crawler->filter('form')->form()->getPhpValues();
+    sort($submitted[$namespace]['elementIds']);
+
+    expect($submitted)->toBe([$namespace => $values]);
+})->with([
+    ['replaceRelationsModal', 'delete-elements/replace-relations'],
+    ['replaceReferencesModal', 'delete-elements/replace-references'],
+])->with([false, true]);
+
 describe('replaceRelations', function () {
     it('requires a source element type and new target id', function () {
         $entry = EntryModel::factory()->createElement();
@@ -293,7 +335,7 @@ describe('replaceRelations', function () {
             'elementIds' => [$entry->id],
             'sourceElementType' => Entry::class,
             'newTargetId' => 0,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', 'No new entry selected.');
     });
 
@@ -356,7 +398,7 @@ describe('replaceReferences', function () {
             'elementType' => Entry::class,
             'elementIds' => [$entry->id],
             'newTargetId' => 999999,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', 'The selected entry could not be found.');
     });
 });

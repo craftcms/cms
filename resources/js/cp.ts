@@ -2,9 +2,11 @@ import '@craftcms/ui';
 import '../../packages/craftcms-legacy/cp/src/js/UI.js';
 import Cp from './bootstrap/cp.js';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
+import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
+import './modules/notifications/components/cp-notification-center.js';
 
 /**
  * Legacy ports, assigns window.Craft.* so PHP-emitted code still works
@@ -24,6 +26,7 @@ import './modules/field-toggle';
 import './modules/grouped-entry-type-manager';
 import './modules/queue';
 import './modules/slideout';
+import './modules/fields';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
 import './modules/element-label';
@@ -45,7 +48,6 @@ import './modules/element-selector-modal';
 import './modules/element-select-input';
 import './modules/preview-file-modal';
 import './modules/asset-select-input';
-import './modules/customize-sources-modal';
 import './modules/element-deletion-manager';
 import './modules/uploader';
 import './modules/nested-element-manager';
@@ -53,4 +55,5 @@ import './modules/ui';
 
 window.Cp = Cp;
 defineEntryFieldLayoutFormHost(Cp.$components);
+defineInlineAttributeFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);

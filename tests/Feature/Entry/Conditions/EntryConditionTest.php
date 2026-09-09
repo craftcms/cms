@@ -133,6 +133,7 @@ describe('modifyQuery', function () {
         EntryModel::factory()->forSection($section)->create();
 
         $condition = new EntryCondition(Entry::class);
+        $condition->forQuery = true;
         $rule = $condition->createConditionRule(SectionConditionRule::class);
         $rule->operator = 'notempty';
         $condition->addConditionRule($rule);
@@ -155,6 +156,7 @@ describe('modifyQuery', function () {
         ]);
 
         $condition = new EntryCondition(Entry::class);
+        $condition->forQuery = true;
 
         $sectionRule = $condition->createConditionRule(SectionConditionRule::class);
         $sectionRule->operator = 'notempty';

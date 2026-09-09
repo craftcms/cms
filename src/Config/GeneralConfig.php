@@ -88,6 +88,28 @@ class GeneralConfig extends BaseConfig
     public string $actionTrigger = 'actions';
 
     /**
+     * @var mixed The maximum age of activity events before garbage collection deletes them.
+     *
+     * Set to `0` to retain activity indefinitely.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->activityRetentionDuration('P90D')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ACTIVITY_RETENTION_DURATION=P90D
+     * ```
+     * :::
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt Unlimited
+     */
+    public mixed $activityRetentionDuration = 0;
+
+    /**
      * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
@@ -629,6 +651,22 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public ?string $cpTrigger = 'admin';
+
+    /**
+     * @var string The Asset Transformer to use when none is selected explicitly.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultAssetTransformer('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public string $defaultAssetTransformer = 'craft';
 
     /**
      * @var string The two-letter country code that addresses will be set to by default.
@@ -1204,22 +1242,6 @@ class GeneralConfig extends BaseConfig
     public string|false $filenameWordSeparator = '-';
 
     /**
-     * @var bool Whether image transforms should be generated before page load.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $generateTransformsBeforePageLoad = false;
-
-    /**
      * @var string Prefix to use for all type names returned by GraphQL.
      *
      * ::: code
@@ -1475,23 +1497,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public ?array $ipHeaders = null;
-
-    /**
-     * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     *                in Settings → General.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->isSystemLive(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_IS_SYSTEM_LIVE=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?bool $isSystemLive = null;
 
     /**
      * @var bool Whether GraphQL types should be generated lazily.
@@ -2223,38 +2228,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 1 year
      */
     public mixed $rememberUsernameDuration = 31536000;
-
-    /**
-     * @var string The path to the root directory that should store published control panel resources.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBasePath = '@webroot/cpresources';
-
-    /**
-     * @var string The URL to the root directory where control panel resources are published.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBaseUrl = '@web/cpresources';
 
     /**
      * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
@@ -3106,6 +3079,7 @@ class GeneralConfig extends BaseConfig
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
             // durations
+            ->activityRetentionDuration($this->activityRetentionDuration)
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
@@ -3168,6 +3142,36 @@ class GeneralConfig extends BaseConfig
     public function actionTrigger(string $value): self
     {
         $this->actionTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The maximum age of activity events before garbage collection deletes them.
+     *
+     * Set to `0` to retain activity indefinitely.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ```php
+     * ->activityRetentionDuration('P90D')
+     * ```
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt Unlimited
+     *
+     * @see $activityRetentionDuration
+     */
+    public function activityRetentionDuration(mixed $value): self
+    {
+        $duration = ConfigHelper::durationInSeconds($value);
+
+        if ($duration < 0) {
+            throw new InvalidArgumentException('Activity retention duration must be zero or greater.');
+        }
+
+        $this->activityRetentionDuration = $duration;
 
         return $this;
     }
@@ -3705,6 +3709,24 @@ class GeneralConfig extends BaseConfig
     public function cpTrigger(?string $value): self
     {
         $this->cpTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Asset Transformer to use when none is selected explicitly.
+     *
+     * @group Assets
+     *
+     * @see $defaultAssetTransformer
+     */
+    public function defaultAssetTransformer(string $value): self
+    {
+        if ($value === '') {
+            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
+        }
+
+        $this->defaultAssetTransformer = $value;
 
         return $this;
     }
@@ -4369,24 +4391,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether image transforms should be generated before page load.
-     *
-     * ```php
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $generateTransformsBeforePageLoad
-     */
-    public function generateTransformsBeforePageLoad(bool $value = true): self
-    {
-        $this->generateTransformsBeforePageLoad = $value;
-
-        return $this;
-    }
-
-    /**
      * Prefix to use for all type names returned by GraphQL.
      *
      * ```php
@@ -4658,25 +4662,6 @@ class GeneralConfig extends BaseConfig
     public function ipHeaders(?array $value): self
     {
         $this->ipHeaders = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     * in Settings → General.
-     *
-     * ```php
-     * ->isSystemLive(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $isSystemLive
-     */
-    public function isSystemLive(?bool $value): self
-    {
-        $this->isSystemLive = $value;
 
         return $this;
     }
@@ -5445,42 +5430,6 @@ class GeneralConfig extends BaseConfig
     public function rememberUsernameDuration(mixed $value): self
     {
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The path to the root directory that should store published control panel resources.
-     *
-     * ```php
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBasePath
-     */
-    public function resourceBasePath(string $value): self
-    {
-        $this->resourceBasePath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URL to the root directory where control panel resources are published.
-     *
-     * ```php
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBaseUrl
-     */
-    public function resourceBaseUrl(string $value): self
-    {
-        $this->resourceBaseUrl = $value;
 
         return $this;
     }

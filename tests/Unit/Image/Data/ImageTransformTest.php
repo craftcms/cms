@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\ImageTransformer;
 
 describe('defaults', function () {
     test('has sensible defaults', function () {
@@ -41,7 +40,7 @@ describe('defaults', function () {
 });
 
 describe('getIsNamedTransform', function () {
-    test('returns true when id is set and transformer is default', function () {
+    test('returns true when id is set', function () {
         $transform = new ImageTransform(['id' => 1]);
 
         expect($transform->getIsNamedTransform())->toBeTrue();
@@ -52,36 +51,18 @@ describe('getIsNamedTransform', function () {
 
         expect($transform->getIsNamedTransform())->toBeFalse();
     });
-
-    test('returns false when transformer is not default', function () {
-        $transform = new ImageTransform(['id' => 1]);
-        $transform->setTransformer('SomeOther\Transformer');
-
-        expect($transform->getIsNamedTransform())->toBeFalse();
-    });
 });
 
-describe('transformer', function () {
-    test('defaults to ImageTransformer', function () {
-        $transform = new ImageTransform;
+test('constructs inline parameters without inferring their shape from the keys', function () {
+    $parameter = '00000000-0000-4000-8000-000000000000';
+    $transform = ImageTransform::fromParameters([
+        'width' => 200,
+        $parameter => ['amount' => 2],
+    ]);
 
-        expect($transform->getTransformer())->toBe(ImageTransformer::class);
-    });
-
-    test('can set a custom transformer', function () {
-        $transform = new ImageTransform;
-        $transform->setTransformer('Custom\Transformer');
-
-        expect($transform->getTransformer())->toBe('Custom\Transformer');
-    });
-
-    test('falls back to default when set to null', function () {
-        $transform = new ImageTransform;
-        $transform->setTransformer('Custom\Transformer');
-        $transform->setTransformer(null);
-
-        expect($transform->getTransformer())->toBe(ImageTransformer::class);
-    });
+    expect($transform->width)->toBe(200)
+        ->and($transform->getParameters()[$parameter])->toBe(['amount' => 2])
+        ->and($transform->getCustomParameters())->toBe([]);
 });
 
 describe('getConfig', function () {
@@ -101,17 +82,18 @@ describe('getConfig', function () {
         ]);
 
         expect($transform->getConfig())->toBe([
+            'name' => 'Thumbnail',
+            'handle' => 'thumb',
             'fill' => '#ff0000',
             'format' => 'webp',
-            'handle' => 'thumb',
             'height' => 200,
             'interlace' => 'none',
             'mode' => 'crop',
-            'name' => 'Thumbnail',
             'position' => 'center-center',
             'quality' => 80,
             'upscale' => true,
             'width' => 200,
+            'parameters' => [],
         ]);
     });
 
@@ -140,11 +122,5 @@ describe('getConfig', function () {
         expect($config)->not->toHaveKey('id')
             ->and($config)->not->toHaveKey('uid')
             ->and($config)->not->toHaveKey('parameterChangeTime');
-    });
-});
-
-describe('DEFAULT_TRANSFORMER constant', function () {
-    test('points to ImageTransformer class', function () {
-        expect(ImageTransform::DEFAULT_TRANSFORMER)->toBe(ImageTransformer::class);
     });
 });

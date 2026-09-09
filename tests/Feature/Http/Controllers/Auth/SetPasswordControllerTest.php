@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\MessageBag;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -20,7 +22,7 @@ test('show validates required uid and code parameters', function () {
 });
 
 test('show returns invalid token response for invalid user uid', function () {
-    get(action([SetPasswordController::class, 'show'], [
+    get(cp_url(CpAuthPath::SetPassword->value, [
         'uid' => 'invalid-uuid',
         'code' => 'some-code',
     ]))->assertRedirect();
@@ -29,7 +31,7 @@ test('show returns invalid token response for invalid user uid', function () {
 test('show returns invalid token response for invalid code', function () {
     $user = User::findOne();
 
-    get(action([SetPasswordController::class, 'show'], [
+    get(cp_url(CpAuthPath::SetPassword->value, [
         'uid' => $user->uid,
         'code' => 'invalid-code',
     ]))->assertRedirect();
@@ -54,10 +56,12 @@ test('fallback template renders set-password web component', function () {
         'uid' => 'user-uid',
         'code' => 'token-code',
         'newUser' => false,
+        'passwordRules' => Password::defaults()->toPasswordRulesString(),
         'errors' => new MessageBag,
     ])->render());
 
-    expect($html)->toContain('craft-set-password-form');
+    expect($html)->toContain('craft-set-password-form')
+        ->and($html)->toContain('password-rules=');
 });
 
 test('store validates required fields', function () {
@@ -81,7 +85,7 @@ test('store aborts for invalid user uid', function () {
         'uid' => 'invalid-uuid',
         'code' => 'some-code',
         'newPassword' => 'validpassword123!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('store returns invalid token response for invalid code', function () {
@@ -91,7 +95,7 @@ test('store returns invalid token response for invalid code', function () {
         'uid' => $user->uid,
         'code' => 'invalid-code',
         'newPassword' => 'validpassword123!',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 test('store successfully sets password with valid token', function () {

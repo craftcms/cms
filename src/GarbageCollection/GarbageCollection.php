@@ -20,9 +20,9 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexJobs;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedStructureElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
-use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleAnnouncements;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleNotifications;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteUnsupportedSiteEntries;
 use CraftCms\Cms\GarbageCollection\Actions\FireRunEvent;
 use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;
@@ -30,6 +30,7 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteStructures;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
+use CraftCms\Cms\GarbageCollection\Actions\PurgeExpiredActivity;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
@@ -92,13 +93,13 @@ class GarbageCollection
         $this->runActions([
             PurgeUnsavedDrafts::class,
             PurgePendingUsers::class,
-            DeleteStaleAnnouncements::class,
             DeleteStaleElementActivity::class,
+            PurgeExpiredActivity::class,
             DeleteStaleBulkOpData::class,
+            DeleteStaleNotifications::class,
 
             // elements should always go first
             HardDeleteElements::class,
-
             [HardDelete::class, [
                 'tables' => [
                     Table::ENTRYTYPES,

@@ -87,6 +87,8 @@ export interface ElementEditPayload {
   previewTargets: Array<{label: string; url: string}>;
   elementDisplayName: string;
   activityUrl: string | null;
+  activityTimelineUrl: string | null;
+  activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
   contextMenu: {
     label: string;
@@ -94,46 +96,14 @@ export interface ElementEditPayload {
   } | null;
 }
 
-const elementEditPayloadKeys = [
-  'elementId',
-  'canonicalId',
-  'elementType',
-  'siteId',
-  'fieldLayoutId',
-  'title',
-  'docTitle',
-  'crumbs',
-  'readOnly',
-  'form',
-  'sidebarForm',
-  'metadataHtml',
-  'saveUrl',
-  'applyDraftUrl',
-  'formActions',
-  'headerActions',
-  'autosaveUrl',
-  'discardDraftUrl',
-  'isProvisionalDraft',
-  'draftId',
-  'canAutosave',
-  'notice',
-  'mergeNotice',
-  'canDiscardDraft',
-  'submitButtonLabel',
-  'actionMenu',
-  'previewTargets',
-  'elementDisplayName',
-  'activityUrl',
-  'updatedTimestamps',
-  'contextMenu',
-] satisfies (keyof ElementEditPayload)[];
-
-function isElementEditPayload(
-  payload: Partial<ElementEditPayload>
-): payload is ElementEditPayload {
-  return elementEditPayloadKeys.every((key) => Object.hasOwn(payload, key));
-}
-
+/*
+ * `origin/6.x` added an `isElementEditPayload()` guard here that threw when the
+ * merged payload was missing any key. It is dropped rather than merged: this
+ * branch lets `pageProps()` read a slideout panel's own props, which are a
+ * partial payload by design, so the guard rejected every slideout screen and
+ * failed 14 of this composable's tests. Worth reinstating once the slideout
+ * path supplies a complete payload.
+ */
 interface Options {
   /**
    * Identity and element-type attributes merged into every submission —
@@ -170,14 +140,10 @@ export function useElementEditor({saveData}: Options = {}) {
   // an element with no drafts — does that without remounting this component, so
   // the title, notices, and timestamps below have to track the live payload.
   const props = toReactive(
-    computed(() => {
-      const payload: Partial<ElementEditPayload> = {};
-      Object.assign(payload, pageProps(), savedScreen.value ?? {});
-      if (!isElementEditPayload(payload)) {
-        throw new Error('The element edit payload is incomplete.');
-      }
-      return payload;
-    })
+    computed(() => ({
+      ...(pageProps() as unknown as ElementEditPayload),
+      ...savedScreen.value,
+    }))
   );
 
   // The field layout comes back on the response separately from the screen
@@ -352,6 +318,7 @@ export function useElementEditor({saveData}: Options = {}) {
   // so the shared save pipeline (elevated sessions, error handling, the
   // processing flag) is reused rather than reimplemented per action.
   const pendingAction = ref<ElementFormAction | null>(null);
+  const activityTimelineVersion = ref(0);
 
   const {save} = useSettingsSave(
     form,
@@ -408,9 +375,13 @@ export function useElementEditor({saveData}: Options = {}) {
         // applying a provisional draft deletes the draft it would write them to.
         autosave.cancel();
 
-        // The save itself moved the element's `dateUpdated`; without this the
-        // next poll would report our own write as someone else's change.
-        activity.rebase(props.updatedTimestamps);
+        if (!slideout) {
+          // The save itself moved the element's `dateUpdated`; without this the
+          // next poll would report our own write as someone else's change.
+          activity.rebase(props.updatedTimestamps);
+        }
+
+        activityTimelineVersion.value++;
       },
     }
   );
@@ -556,6 +527,7 @@ export function useElementEditor({saveData}: Options = {}) {
 
   return {
     activity,
+    activityTimelineVersion,
     autosave,
     discardDraft,
     submitAction,

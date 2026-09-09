@@ -594,7 +594,7 @@ describe('store', function () {
             'elementType' => Entry::class,
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', t('Couldn’t save {type}.', ['type' => t('draft')]));
     });
 
@@ -949,7 +949,7 @@ describe('destroy', function () {
             'elementType' => Entry::class,
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
-        ])->assertStatus(400)
+        ])->assertBadRequest()
             ->assertJsonPath('message', t('Couldn’t delete {type}.', ['type' => t('draft')]));
 
         expect(Entry::find()->draftId($draft->draftId)->status(null)->one())->not->toBeNull();

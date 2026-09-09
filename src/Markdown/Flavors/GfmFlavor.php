@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Markdown\Flavors;
 
+use CraftCms\Cms\Markdown\CommonMark\Extensions\UserMentionExtension;
 use CraftCms\Cms\Markdown\MarkdownOptions;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\Autolink\AutolinkExtension;
@@ -21,6 +22,7 @@ class GfmFlavor extends Flavor
     public function __invoke(MarkdownOptions $options): MarkdownConverter
     {
         $environment = $this->environment($options, $this->softBreak);
+        $environment->addExtension(new UserMentionExtension);
 
         if ($options->inlineOnly) {
             $environment

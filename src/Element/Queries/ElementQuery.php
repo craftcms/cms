@@ -180,7 +180,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * The callbacks that should be invoked after retrieving data from the database.
      */
-    /** @var array<int, callable(mixed): mixed> */
+    /** @var array<int, callable(mixed, self<TElement>): mixed> */
     protected array $afterQueryCallbacks = [];
 
     /**
@@ -284,9 +284,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
 
             foreach ($columnListing as $column) {
-                if (! isset($this->columnMap[$column])) {
-                    $this->columnMap[$column] = "$this->table.$column";
-                }
+                $this->columnMap[$column] ??= "$this->table.$column";
             }
         }
 
@@ -531,7 +529,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     {
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
-                app(Elements::class)->eagerLoadElements($this->elementType, $result, $this->with);
+                Elements::eagerLoadElements($this->elementType, $result, $this->with);
             }
 
             return $result;
@@ -768,7 +766,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Register a closure to be invoked after the query is executed.
+     * Register a closure to be invoked with the result and executing query after execution.
      */
     /** @return self<TElement> */
     public function afterQuery(Closure $callback): self
@@ -784,7 +782,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     public function applyAfterQueryCallbacks(mixed $result): mixed
     {
         foreach ($this->afterQueryCallbacks as $afterQueryCallback) {
-            $result = $afterQueryCallback($result) ?: $result;
+            $result = $afterQueryCallback($result, $this) ?: $result;
         }
 
         return $result;
@@ -805,6 +803,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         return $this->query->cursor()->map(function ($record) {
             $model = $this->createElement((array) $record);
+
+            if ($this->with) {
+                Elements::eagerLoadElements($this->elementType, [$model], $this->with);
+            }
 
             return $this->applyAfterQueryCallbacks(new ElementCollection([$model]))->first();
         })->reject(fn ($model) => is_null($model));
@@ -1036,6 +1038,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         throw new Exception("Property [{$name}] does not exist on the Element query instance.");
+    }
+
+    #[Override]
+    public function canSetProperty(string $name): bool
+    {
+        return parent::canSetProperty($name)
+            || $this->isCustomFieldHandle($name)
+            || method_exists($this, $name)
+            || in_array($name, $this->propertyPassthru);
     }
 
     /**
@@ -1271,7 +1282,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         foreach ($this->query->columns as $column) {
             if ($column instanceof Expression) {
-                $column = $column->getValue($this->query->getGrammar());
+                $select[] = $column;
+
+                continue;
             }
 
             [$column, $alias] = explode(' as ', $column, 2) + [1 => null];

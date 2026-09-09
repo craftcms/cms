@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\OAuth\OAuth;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -14,12 +13,12 @@ use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Config;
+use Laravel\Socialite\Contracts\Factory;
 
 use function Pest\Laravel\startSession;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
-    Cms::config()->isSystemLive = true;
     ProjectConfig::set('users.allowPublicRegistration', true);
 
     FakeOAuthProvider::reset();
@@ -141,6 +140,39 @@ describe('provider configuration', function () {
         'listed shorthand' => [['github']],
     ]);
 });
+
+test('named aliases keep credentials scopes and cached drivers isolated', function (bool $reverse) {
+    $baseline = ['client_id' => 'base-id', 'client_secret' => 'base-secret', 'redirect' => 'https://example.test/callback'];
+    Config::set('services.github', $baseline);
+    $socialite = app(Factory::class);
+    $cached = $socialite->driver('github');
+    $providers = [
+        'first' => ['driver' => 'github', 'clientId' => 'first-id', 'scopes' => ['repo']],
+        'second' => ['driver' => 'github', 'clientSecret' => 'second-secret', 'scopes' => []],
+    ];
+    app(GeneralConfig::class)->oauthProviders($reverse ? array_reverse($providers, true) : $providers);
+    $oauth = app(OAuth::class);
+
+    foreach ([false, true, false] as $cp) {
+        $oauth->getLoginButtons($cp);
+
+        foreach ($oauth->getProviderDefinitions() as $definition) {
+            $driver = $oauth->buildProvider($definition, $cp);
+
+            expect(new ReflectionProperty($driver, 'clientId')->getValue($driver))->toBe($definition->handle === 'first' ? 'first-id' : 'base-id')
+                ->and(new ReflectionProperty($driver, 'clientSecret')->getValue($driver))->toBe($definition->handle === 'first' ? 'base-secret' : 'second-secret')
+                ->and(new ReflectionProperty($driver, 'redirectUrl')->getValue($driver))->toBe($oauth->callbackPath($definition, $cp))
+                ->and(in_array('repo', $driver->getScopes(), true))->toBe($definition->handle === 'first')
+                ->and(Config::get('services.github'))->toBe($baseline)
+                ->and($socialite->driver('github'))->toBe($cached);
+        }
+    }
+
+    $socialite->extend('github', fn () => throw new RuntimeException('Construction failed'));
+    expect(fn () => $oauth->buildProvider($oauth->getProviderDefinition('first')))
+        ->toThrow(RuntimeException::class, 'Construction failed');
+    expect(Config::get('services.github'))->toBe($baseline);
+})->with([false, true]);
 
 describe('button rendering', function () {
     test('default login button uses a single cp trigger', function () {

@@ -96,7 +96,7 @@ it('uses the control panel route for saving settings', function () {
         '/%s/%s/user-settings/save-user-settings',
         Cms::config()->cpTrigger,
         Cms::config()->actionTrigger,
-    ))->assertMethodNotAllowed();
+    ))->assertNotFound();
 });
 
 it('exposes all user photo volumes', function () {
@@ -152,8 +152,8 @@ it('refreshes public registration fields without losing their current values', f
         ->assertJsonPath('form.values.allowPublicRegistration', false)
         ->assertJsonPath('form.values.validateOnPublicRegistration', true);
 
-    $shownNode = collect($shown->json('form.nodes'))->firstWhere('control.path', ['validateOnPublicRegistration']);
-    $hiddenNode = collect($hidden->json('form.nodes'))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $shownNode = collect(flattenFormNodes($shown->json('form.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $hiddenNode = collect(flattenFormNodes($hidden->json('form.nodes')))->firstWhere('control.path', ['validateOnPublicRegistration']);
 
     expect($shownNode['component'])->toBe('craft:field')
         ->and($hiddenNode['component'])->toBe('craft:hidden-field');

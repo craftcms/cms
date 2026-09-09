@@ -80,16 +80,15 @@ trait HydratesElements
 
                 ElementHelper::setNextPrevOnElements($elements);
 
-                // Should we eager-load some elements onto these?
-                if ($this->with) {
-                    Elements::eagerLoadElements($this->elementType, $elements->all(), $this->with);
-                }
-
                 return $elements;
             })->all();
 
         if ($this->withProvisionalDrafts) {
             $elements = app(Drafts::class)->withProvisionalDrafts($elements);
+        }
+
+        if ($this->with) {
+            Elements::eagerLoadElements($this->elementType, $elements, $this->with);
         }
 
         event($event = new ElementsHydrated($elements, $items));

@@ -18,16 +18,17 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Mutations\Mutation;
 use CraftCms\Cms\Gql\Queries\Query;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
 use CraftCms\Cms\Utility\Utility;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Override;
@@ -323,7 +324,7 @@ class TestPlugin extends Plugin
     }
 
     #[Override]
-    protected function createSettingsModel(): ?Validatable
+    protected static function createSettings(): ?PluginSettings
     {
         if (! self::$useSettings) {
             return null;
@@ -340,8 +341,12 @@ class TestPlugin extends Plugin
         }
 
         return Form::make([
-            Field::make('Foo', Text::make('foo')),
-        ]);
+            Field::make('Foo', Text::make('foo')->reactive()),
+        ])->when($this->getSettings()?->foo === 'show-bar', fn (Form $form) => $form->add(
+            Group::make('test-plugin-bar', [
+                Field::make('Bar', Text::make('bar')),
+            ])->dependsOn('settings.foo'),
+        ));
     }
 
     #[Override]

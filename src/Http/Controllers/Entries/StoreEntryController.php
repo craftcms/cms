@@ -54,11 +54,14 @@ readonly class StoreEntryController
         $forceDisabled = false;
 
         if ($duplicate) {
-            $response = $this->swapEntryWithDuplicate($entry, $forceDisabled);
+            $result = $this->duplicateEntry($entry);
 
-            if (! is_null($response)) {
-                return $response;
+            if ($result instanceof Response) {
+                return $result;
             }
+
+            $forceDisabled = $entry->enabled && ! $result->enabled;
+            $entry = $result;
         }
 
         $this->populateEntry($entry, $currentUser);
@@ -189,16 +192,13 @@ readonly class StoreEntryController
         return $entry;
     }
 
-    private function swapEntryWithDuplicate(Entry $entry, bool &$forceDisabled): ?Response
+    private function duplicateEntry(Entry $entry): Entry|Response
     {
         try {
-            $wasEnabled = $entry->enabled;
             $entry->draftId = null;
             $entry->isProvisionalDraft = false;
-            $entry = $this->elements->duplicateElement($entry);
-            if ($wasEnabled && ! $entry->enabled) {
-                $forceDisabled = true;
-            }
+
+            return $this->elements->duplicateElement($entry);
         } catch (InvalidElementException $e) {
             /** @var Entry $clone */
             $clone = $e->element;
@@ -218,8 +218,6 @@ readonly class StoreEntryController
         } catch (Throwable $e) {
             throw new Exception(t('An error occurred when duplicating the entry.'), 0, $e);
         }
-
-        return null;
     }
 
     private function populateEntry(Entry $entry, CraftUser $currentUser): void

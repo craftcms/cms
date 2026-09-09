@@ -390,14 +390,14 @@ class UserPermissions
         $generalPermissions = collect([
             new Permission(
                 key: 'accessSiteWhenSystemIsOff',
-                label: t('Access the site when the system is off'),
+                label: t('Access the site when maintenance mode is enabled'),
             ),
         ]);
 
         $cpPermissions = collect([
             new Permission(
                 key: 'accessCpWhenSystemIsOff',
-                label: t('Access the control panel when the system is offline'),
+                label: t('Access the control panel when maintenance mode is enabled'),
             ),
             new Permission(
                 key: 'performUpdates',

@@ -165,6 +165,8 @@ class Gql
             $this->setActiveSchema($schema);
         }
         if (! $this->_schemaDef || $prebuildSchema) {
+            $this->resetGeneratedState();
+
             $registeredTypes = $this->_registerGqlTypes();
             $this->_registerGqlQueries();
             $this->_registerGqlMutations();
@@ -182,9 +184,7 @@ class Gql
                 $this->_schemaDef = new Schema($schemaConfig);
                 // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
                 // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
-                if ($this->_schemaDef->description === null) {
-                    $this->_schemaDef->description = $schema?->name;
-                }
+                $this->_schemaDef->description ??= $schema?->name;
 
                 // but we always have to add the InputObjectType mutation args
                 /** @var ObjectType $mutation */
@@ -219,9 +219,7 @@ class Gql
                 $this->_schemaDef->getTypeMap();
                 // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
                 // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
-                if ($this->_schemaDef->description === null) {
-                    $this->_schemaDef->description = $schema?->name;
-                }
+                $this->_schemaDef->description ??= $schema?->name;
             } catch (Throwable $exception) {
                 throw new GqlException('Failed to validate the GQL Schema - '.$exception->getMessage(),
                     previous: $exception);
@@ -375,7 +373,21 @@ class Gql
     /** @return array<string, mixed>|null */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return DependencyCache::get($cacheKey) ?: null;
+        $data = DependencyCache::get($cacheKey);
+
+        if (! isset($data['result'], $data['cacheInfo']['tags'])) {
+            return null;
+        }
+
+        // If we're actively collecting cache info, register this cache's tags and duration
+        if ($this->elementCaches->isCollectingCacheInfo()) {
+            $this->elementCaches->collectCacheTags($data['cacheInfo']['tags']);
+            if (isset($data['cacheInfo']['expiryDate'])) {
+                $this->elementCaches->setCacheExpiryDate($data['cacheInfo']['expiryDate']);
+            }
+        }
+
+        return $data['result'];
     }
 
     /** @param array<array-key, mixed> $result */
@@ -405,14 +417,23 @@ class Gql
         ?TagDependency $dependency = null,
         ?int $duration = null,
     ): void {
-        if ($dependency === null) {
-            $dependency = new TagDependency;
-        }
+        $dependency ??= new TagDependency;
 
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        DependencyCache::put($cacheKey, $result, $duration, $dependency);
+        $cacheInfo = [
+            'tags' => $dependency->tags,
+        ];
+
+        if ($duration) {
+            $cacheInfo['expiryDate'] = now()->addSeconds($duration);
+        }
+
+        DependencyCache::put($cacheKey, [
+            'result' => $result,
+            'cacheInfo' => $cacheInfo,
+        ], $duration, $dependency);
     }
 
     /**
@@ -432,6 +453,7 @@ class Gql
      */
     public function setActiveSchema(?GqlSchema $schema = null): void
     {
+        $this->resetGeneratedState();
         $this->_schema = $schema;
     }
 
@@ -509,13 +531,18 @@ class Gql
 
     public function flushCaches(): void
     {
-        $this->_schema = null;
+        $this->setActiveSchema();
+        $this->invalidateCaches();
+    }
+
+    private function resetGeneratedState(): void
+    {
         $this->_schemaDef = null;
         $this->_contentArguments = [];
+        $this->_fieldArguments = [];
         $this->_typeDefinitions = [];
         TypeLoader::flush();
         GqlEntityRegistry::flush();
-        $this->invalidateCaches();
     }
 
     public function getTokenById(int $id): ?GqlToken
@@ -828,9 +855,7 @@ class Gql
      */
     public function getOrSetContentArguments(string $elementType, callable $setter): array
     {
-        if (! isset($this->_contentArguments[$elementType])) {
-            $this->_contentArguments[$elementType] = $setter();
-        }
+        $this->_contentArguments[$elementType] ??= $setter();
 
         return $this->_contentArguments[$elementType];
     }
@@ -842,11 +867,8 @@ class Gql
             throw new InvalidArgumentException('Field layout is missing its element type.');
         }
 
-        if (! isset($this->_fieldArguments[$fieldLayout->uid])) {
-            $this->_fieldArguments[$fieldLayout->uid] =
-                $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
-                $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
-        }
+        $this->_fieldArguments[$fieldLayout->uid] ??= $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
+        $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
 
         return $this->_fieldArguments[$fieldLayout->uid];
     }
@@ -1000,9 +1022,7 @@ class Gql
     public function prepareFieldDefinitions(array $fields, string $typeName): array
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
-            if ($this->_typeManager === null) {
-                $this->_typeManager = new TypeManager;
-            }
+            $this->_typeManager ??= new TypeManager;
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
         }

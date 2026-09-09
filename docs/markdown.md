@@ -227,7 +227,7 @@ Relevant tests live in:
 Run the focused tests with:
 
 ```bash
-./vendor/bin/pest --compact tests/Unit/Markdown/MarkdownTest.php
-./vendor/bin/pest --compact tests/Unit/Markdown/CommonMark/PreEncodedExtensionTest.php
-./vendor/bin/pest --compact tests/Unit/Markdown/CommonMark/PreEncodedRenderersTest.php
+./vendor/bin/pest --parallel --compact tests/Unit/Markdown/MarkdownTest.php
+./vendor/bin/pest --parallel --compact tests/Unit/Markdown/CommonMark/PreEncodedExtensionTest.php
+./vendor/bin/pest --parallel --compact tests/Unit/Markdown/CommonMark/PreEncodedRenderersTest.php
 ```

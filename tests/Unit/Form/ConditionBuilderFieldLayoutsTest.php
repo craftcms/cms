@@ -61,3 +61,15 @@ it('renders a builder for a condition seeded with field layouts', function () {
 
     expect($html)->toContain('elementCondition');
 });
+
+it('applies a custom add-rule label to the builder', function () {
+    $control = ConditionBuilder::make('condition')
+        ->conditionClass(ElementCondition::class)
+        ->addRuleLabel('Add a filter');
+
+    expect($control->props()['addRuleLabel'])->toBe('Add a filter')
+        ->and(ConditionBuilder::make('condition')->conditionClass(ElementCondition::class)->props())
+        ->not->toHaveKey('addRuleLabel')
+        ->and(ConditionBuilder::builderHtml([], ElementCondition::class, [], true, 'condition', false, [], 'Add a filter'))
+        ->toContain('Add a filter');
+});
