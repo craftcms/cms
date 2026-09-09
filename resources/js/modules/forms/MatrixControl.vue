@@ -742,7 +742,7 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="flex gap-1 items-center mt-3">
+      <div v-if="canAdd" class="flex flex-wrap gap-1 items-center mt-3">
         <craft-button
           v-for="type in control.props.entryTypes"
           :key="type.value"

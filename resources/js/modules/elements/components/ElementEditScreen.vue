@@ -6,7 +6,8 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, ref, watch} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -97,6 +98,44 @@
     ...viewButtons.value,
     ...headerButtons.value,
   ]);
+
+  /**
+   * The details column stops being worth its track once the editor body gets
+   * narrow, so it folds down to its rail and hands the width back.
+   *
+   * `collapsed` on `craft-tabs` is reflected output, not an input — selection is
+   * what drives it, so this sets `selectedIndex`. Measured on the body rather
+   * than the viewport because the global sidebar and a slideout both take from
+   * the same space.
+   */
+  const DETAILS_COLLAPSE_WIDTH = 880;
+  const editorBody = ref<HTMLElement | null>(null);
+  const detailsTabs = ref<(HTMLElement & {selectedIndex: number}) | null>(null);
+  const {width: bodyWidth} = useElementSize(editorBody);
+  /** Whether the last collapse was ours, so a deliberate one is left alone. */
+  let collapsedByWidth = false;
+
+  watch([bodyWidth, detailsTabs], ([width, tabs]) => {
+    // 0 while the element is still being measured — not a real narrow body.
+    if (!tabs || width === 0) {
+      return;
+    }
+
+    if (width < DETAILS_COLLAPSE_WIDTH) {
+      if (tabs.selectedIndex >= 0) {
+        tabs.selectedIndex = -1;
+        collapsedByWidth = true;
+      }
+
+      return;
+    }
+
+    if (collapsedByWidth && tabs.selectedIndex < 0) {
+      tabs.selectedIndex = 0;
+    }
+
+    collapsedByWidth = false;
+  });
 
   const hasDetails = computed(
     () => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml)
@@ -254,6 +293,7 @@
           </div>
 
           <div
+            ref="editorBody"
             class="element-editor__body"
             :class="{'element-editor__body--details': hasDetails}"
           >
@@ -280,7 +320,12 @@
               v-if="hasDetails || $slots['details-header']"
               class="element-editor__details"
             >
-              <craft-tabs size="small" placement="inline-end" collapsible>
+              <craft-tabs
+                ref="detailsTabs"
+                size="small"
+                placement="inline-end"
+                collapsible
+              >
                 <craft-tab slot="tab">
                   <craft-icon
                     name="circle-info"
