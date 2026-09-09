@@ -1,22 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\base\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * BaseCondition provides a base implementation for conditions.
-     *
-     * @property ConditionRuleInterface[] $conditionRules The rules this condition is configured with
-     * @property-read array $config The condition’s portable config
-     * @property-read string $builderHtml The HTML for the condition builder, including its outer container element
-     * @property-read string $builderInnerHtml The inner HTML for the condition builder, excluding its outer container element
-     * @property-read string[]|array{class: string}[] $conditionRuleTypes The available rule types for this condition
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Condition\BaseCondition} instead.
-     */
-    abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
+use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Yii2Adapter\Form\LegacyConditionClasses;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Condition\BaseCondition instead. */
+abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
+{
+    public function getBuilderHtml(): string
     {
+        return new ConditionBuilderRenderer($this)->render();
+    }
+
+    public function getBuilderInnerHtml(bool $autofocusAddButton = false): string
+    {
+        return new ConditionBuilderRenderer($this)->renderInner($autofocusAddButton);
+    }
+
+    protected function validateConditionRule(ConditionRuleInterface $rule): bool
+    {
+        if (isset(LegacyConditionClasses::CORE_CLASSES[$rule::class])) {
+            $rule = app(Conditions::class)->createConditionRule($rule->getConfig() + ['condition' => $this]);
+        }
+
+        return parent::validateConditionRule($rule);
+    }
+
+    public function getConfig(): array
+    {
+        $config = parent::getConfig();
+
+        if (static::class === self::class) {
+            $config['class'] = \CraftCms\Cms\Condition\BaseCondition::class;
+        }
+
+        return $config;
     }
 }

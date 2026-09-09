@@ -53,6 +53,7 @@ export default defineConfig({
         },
         test: {
           name: 'components',
+          exclude: ['**/*.browser.test.ts'],
           root: './src/components',
           environment: 'happy-dom',
         },
@@ -85,6 +86,20 @@ export default defineConfig({
           name: 'styles',
           root: './src/styles',
           environment: 'happy-dom',
+        },
+      },
+      {
+        resolve: {tsconfigPaths: true},
+        test: {
+          name: 'components-browser',
+          root: './src/components',
+          include: ['**/*.browser.test.ts'],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{browser: 'chromium'}],
+          },
         },
       },
       {

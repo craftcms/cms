@@ -41,7 +41,6 @@ uses(UnitTestCase::class)->in('Unit');
 - Test observable behavior and application contracts. Cover each changed decision and applicable high-value failure path, but leave framework behavior to framework tests.
 - Run the narrowest relevant test file or filter. Rerun a test after changing it.
 - Do not delete tests or test files without approval.
-- Do not add comments in test files — no section separators (e.g., `// -- section --`), no inline explanations, no docblocks. Test names should be descriptive enough on their own. Use `describe()` blocks to group related tests instead of comments.
 - Keep test-local abstractions proportional to the repetition they remove. Small one-off helpers such as route wrapper closures or tiny passthrough methods usually shouldn’t exist; inline the setup or request unless the extraction materially improves readability or reuse.
 - Use `CraftCms\Cms\Cms::config()->cpTrigger` when asserting CP URLs; never hard-code `/admin`.
 - Do not instantiate element classes directly with `new` in tests; use factories to ensure database state.

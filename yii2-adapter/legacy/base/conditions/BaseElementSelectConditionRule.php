@@ -1,18 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\base\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
-     *
-     * @property int|null $elementId
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Condition\BaseElementSelectConditionRule} instead.
-     */
-    abstract class BaseElementSelectConditionRule extends \CraftCms\Cms\Condition\BaseElementSelectConditionRule
+use CraftCms\Cms\Form\Form;
+use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Condition\BaseElementSelectConditionRule instead. */
+abstract class BaseElementSelectConditionRule extends \CraftCms\Cms\Condition\BaseElementSelectConditionRule
+{
+    public function getForm(): Form
     {
+        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
+    }
+
+    public function getHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
+    }
+
+    protected function inputHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->elementInput($this, Form::make($this->inputNodes()), $this->elementSelectConfig());
+    }
+
+    /** @return array<string, mixed> */
+    protected function elementSelectConfig(): array
+    {
+        return app(LegacyConditionRuleForm::class)->elementOptions($this->elementSelect());
+    }
+
+    public function getConfig(): array
+    {
+        $config = parent::getConfig();
+
+        if (static::class === self::class) {
+            $config['class'] = \CraftCms\Cms\Condition\BaseElementSelectConditionRule::class;
+        }
+
+        return $config;
     }
 }

@@ -1,17 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions\addresses;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Address sorting code condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule} instead.
-     */
-    class SortingCodeConditionRule extends \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule
+use CraftCms\Cms\Form\Form;
+use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule instead. */
+class SortingCodeConditionRule extends \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule
+{
+    public function getForm(): Form
     {
+        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
+    }
+
+    public function getHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
+    }
+
+    protected function inputHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->textInput($this, Form::make($this->inputNodes()), $this->inputOptions());
+    }
+
+    /** @return array<string, mixed> */
+    protected function inputOptions(): array
+    {
+        return app(LegacyConditionRuleForm::class)->textOptions($this, $this->inputType());
+    }
+
+    public function getConfig(): array
+    {
+        $config = parent::getConfig();
+
+        if (static::class === self::class) {
+            $config['class'] = \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule::class;
+        }
+
+        return $config;
     }
 }

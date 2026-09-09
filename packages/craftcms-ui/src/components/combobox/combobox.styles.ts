@@ -62,6 +62,45 @@ export default css`
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
+  :host([multiple-choice]) .input-group__input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+  }
+
+  .combobox__textbox {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  :host([multiple-choice]) .combobox__textbox {
+    min-width: 8rem;
+  }
+
+  :host([multiple-choice]) ::slotted(.form-control) {
+    height: var(--c-input-height, var(--c-size-control-md));
+  }
+
+  .token {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-xs);
+    border-radius: var(--c-radius-sm);
+    background: var(--c-color-neutral-fill-quiet);
+    overflow-wrap: anywhere;
+  }
+
+  .token button {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
   .combobox__option {
     display: inline-flex;
     align-items: center;

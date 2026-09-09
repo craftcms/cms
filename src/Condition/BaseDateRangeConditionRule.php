@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\DateTime;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Support\Facades\Date;
@@ -43,7 +44,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
     public ?string $startDate {
         get => $this->getStartDate();
-        set {
+        set(mixed $value) {
             $this->setStartDate($value);
         }
     }
@@ -52,7 +53,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
     public ?string $endDate {
         get => $this->getEndDate();
-        set {
+        set(mixed $value) {
             $this->setEndDate($value);
         }
     }
@@ -86,6 +87,10 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
     public function setStartDate(mixed $value): void
     {
+        if (is_array($value) && empty($value['date'])) {
+            $value = null;
+        }
+
         $this->_startDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
@@ -96,6 +101,10 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
     public function setEndDate(mixed $value): void
     {
+        if (is_array($value) && empty($value['date'])) {
+            $value = null;
+        }
+
         $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
@@ -114,133 +123,47 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
     /**
      * @noinspection PhpNamedArgumentsWithChangedOrderInspection
+     *
+     * @return list<Node>
      */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        $groupedOptions = [];
-
-        foreach ($this->rangeTypeOptions() as $value => $label) {
-            if (in_array($value, [
-                DateRangeType::Before->value,
-                DateRangeType::After->value,
-                DateRangeType::Range->value,
-            ])) {
-                $index = 1;
-            } elseif (in_array($value, [self::OPERATOR_NOT_EMPTY, self::OPERATOR_EMPTY])) {
-                $index = 2;
-            } else {
-                $index = 0;
-            }
-
-            $groupedOptions[$index][] = Html::beginTag('li').
-                Html::a($label, options: [
-                    'class' => $value === $this->rangeType ? 'sel' : false,
-                    'data' => ['value' => $value],
-                ]).
-                Html::endTag('li');
-        }
-
-        $optionLists = [];
-
-        foreach ($groupedOptions as $options) {
-            $optionLists[] = Html::tag('ul', implode('', $options), ['class' => 'padded']);
-        }
-
-        $rangeTypeOptionsHtml = implode(Html::tag('hr', attributes: ['class' => 'padded']), $optionLists);
-
-        $buttonId = 'date-range-btn';
-        $inputId = 'date-range-input';
-        $menuId = 'date-range-menu';
-
-        HtmlStack::jsWithVars(
-            fn ($buttonId, $inputId) => <<<JS
-Garnish.requestAnimationFrame(() => {
-  const \$button = $('#' + $buttonId);
-  \$button.menubtn().data('menubtn').on('optionSelect', event => {
-    const \$option = $(event.option);
-    \$button.text(\$option.text()).removeClass('add');
-    // Don't use data('value') here because it could result in an object if data-value is JSON
-    const \$input = $('#' + $inputId).val(\$option.attr('data-value'));
-    htmx.trigger(\$input[0], 'change');
-  });
-});
-JS,
-            [
-                InputNamespace::namespaceId($buttonId),
-                InputNamespace::namespaceId($inputId),
-            ]
-        );
-
-        $html = Html::button($this->rangeTypeOptions()[$this->rangeType], [
-            'id' => $buttonId,
-            'class' => ['btn', 'menubtn'],
-            'autofocus' => false,
-            'aria' => [
-                'label' => t('Date Range'),
-            ],
-        ]).
-            Html::tag('div', $rangeTypeOptionsHtml, [
-                'id' => $menuId,
-                'class' => 'menu',
-            ]).
-            Html::hiddenInput('rangeType', $this->rangeType, [
-                'id' => $inputId,
-                'hx' => [
-                    'post' => Url::actionUrl('conditions/render'),
-                ],
-            ]);
+        $nodes = [
+            Field::make(t('Date Range'), Choice::make('rangeType')
+                ->options($this->formOptions($this->rangeTypeOptions()))
+                ->withoutPlaceholder()
+                ->value($this->rangeType)
+                ->reactive()),
+        ];
 
         if ($this->rangeType === DateRangeType::Range->value) {
-            $html .= Html::tag(
-                'div',
-                attributes: ['class' => ['flex', 'flex-nowrap']],
-                content: Html::label(t('From'), 'start-date-date').
-                Html::tag('div',
-                    FormFields::dateHtml([
-                        'id' => 'start-date',
-                        'name' => 'startDate',
-                        'value' => $this->getStartDate(),
-                    ])
-                )
-            ).
-                Html::tag(
-                    'div',
-                    attributes: ['class' => ['flex', 'flex-nowrap']],
-                    content: Html::label(t('To'), 'end-date-date').
-                    Html::tag('div',
-                        FormFields::dateHtml([
-                            'id' => 'end-date',
-                            'name' => 'endDate',
-                            'value' => $this->getEndDate(),
-                        ])
-                    )
-                );
-        } elseif (in_array($this->rangeType, [DateRangeType::Before->value, DateRangeType::After->value])) {
-            $periodValueId = 'period-value';
-            $periodTypeId = 'period-type';
-
-            $html .= Html::hiddenLabel(t('Period Value'), $periodValueId).
-                Html::tag(
-                    'div',
-                    attributes: ['class' => ['flex', 'flex-nowrap']],
-                    content: FormFields::textHtml([
-                        'id' => $periodValueId,
-                        'name' => 'periodValue',
-                        'value' => $this->periodValue,
-                        'size' => '5',
-                    ]).
-                    Html::hiddenLabel(t('Period Type'), $periodTypeId).
-                    FormFields::selectHtml([
-                        'id' => $periodTypeId,
-                        'name' => 'periodType',
-                        'value' => $this->periodType,
-                        'options' => $this->periodTypeOptions(),
-                    ])
-                );
+            array_push($nodes,
+                Field::make(t('From'), DateTime::make('startDate')->value($this->dateControlValue($this->getStartDate()))),
+                Field::make(t('To'), DateTime::make('endDate')->value($this->dateControlValue($this->getEndDate()))),
+            );
+        } elseif (in_array($this->rangeType, [DateRangeType::Before->value, DateRangeType::After->value], true)) {
+            array_push($nodes,
+                Field::make(t('Period Value'), Text::make('periodValue')->size(5)->value($this->periodValue)),
+                Field::make(t('Period Type'), Choice::make('periodType')
+                    ->options($this->formOptions($this->periodTypeOptions()))
+                    ->withoutPlaceholder()
+                    ->value($this->periodType)),
+            );
         }
 
-        return Html::tag('div', $html, ['class' => ['flex']]);
+        return $nodes;
+    }
+
+    /** @return array{date: string, timezone: string} */
+    private function dateControlValue(?string $value): array
+    {
+        $date = $value !== null ? DateTimeHelper::toDateTime($value) : null;
+
+        return [
+            'date' => $date ? $date->format('Y-m-d') : '',
+            'timezone' => $date ? $date->getTimezone()->getName() : Cms::timezone(),
+        ];
     }
 
     /**

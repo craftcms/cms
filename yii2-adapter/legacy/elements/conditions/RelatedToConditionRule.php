@@ -1,19 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Relation condition rule.
-     *
-     * @property int[] $elementIds
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\RelatedToConditionRule} instead.
-     */
-    class RelatedToConditionRule extends \CraftCms\Cms\Element\Conditions\RelatedToConditionRule
+use CraftCms\Cms\Form\Form;
+use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Element\Conditions\RelatedToConditionRule instead. */
+class RelatedToConditionRule extends \CraftCms\Cms\Element\Conditions\RelatedToConditionRule
+{
+    public function getForm(): Form
     {
+        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
+    }
+
+    public function getHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
+    }
+
+    protected function inputHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->elementInput($this, Form::make($this->inputNodes()), $this->elementSelectConfig());
+    }
+
+    /** @return array<string, mixed> */
+    protected function elementSelectConfig(): array
+    {
+        return app(LegacyConditionRuleForm::class)->elementOptions($this->elementSelect());
+    }
+
+    public function getConfig(): array
+    {
+        $config = parent::getConfig();
+
+        if (static::class === self::class) {
+            $config['class'] = \CraftCms\Cms\Element\Conditions\RelatedToConditionRule::class;
+        }
+
+        return $config;
     }
 }

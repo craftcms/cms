@@ -217,6 +217,7 @@ trait HasControlPanelUI
         if (
             ! $this->getIsRevision() &&
             ! request()->headers->has('X-Craft-Container-Id') &&
+            app()->resolved(ElementRequest::class) &&
             app(ElementRequest::class)->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());

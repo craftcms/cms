@@ -1,17 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions\addresses;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Address Administrative Area condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule} instead.
-     */
-    class AdministrativeAreaConditionRule extends \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule
+use CraftCms\Cms\Condition\ConditionRuleRenderer;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule instead. */
+class AdministrativeAreaConditionRule extends \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule
+{
+    public function getForm(): Form
     {
+        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
+    }
+
+    public function getHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
+    }
+
+    protected function inputHtml(): string
+    {
+        return app(ConditionRuleRenderer::class)->renderForm(Form::make($this->inputNodes()));
+    }
+
+    public function getConfig(): array
+    {
+        $config = parent::getConfig();
+
+        if (static::class === self::class) {
+            $config['class'] = \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule::class;
+        }
+
+        return $config;
     }
 }

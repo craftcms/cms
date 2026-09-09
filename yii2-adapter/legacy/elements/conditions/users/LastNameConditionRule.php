@@ -1,17 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions\users;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Last name condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\LastNameConditionRule} instead.
-     */
-    class LastNameConditionRule extends \CraftCms\Cms\User\Conditions\LastNameConditionRule
+use CraftCms\Cms\Form\Form;
+use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\User\Conditions\LastNameConditionRule instead. */
+class LastNameConditionRule extends \CraftCms\Cms\User\Conditions\LastNameConditionRule
+{
+    public function getForm(): Form
     {
+        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
+    }
+
+    public function getHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
+    }
+
+    protected function inputHtml(): string
+    {
+        return app(LegacyConditionRuleForm::class)->textInput($this, Form::make($this->inputNodes()), $this->inputOptions());
+    }
+
+    /** @return array<string, mixed> */
+    protected function inputOptions(): array
+    {
+        return app(LegacyConditionRuleForm::class)->textOptions($this, $this->inputType());
+    }
+
+    public function getConfig(): array
+    {
+        $config = parent::getConfig();
+
+        if (static::class === self::class) {
+            $config['class'] = \CraftCms\Cms\User\Conditions\LastNameConditionRule::class;
+        }
+
+        return $config;
     }
 }

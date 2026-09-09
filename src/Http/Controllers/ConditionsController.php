@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
@@ -98,7 +99,7 @@ readonly class ConditionsController
 
     public function show(): string
     {
-        return $this->condition->getBuilderInnerHtml();
+        return new ConditionBuilderRenderer($this->condition)->renderInner();
     }
 
     public function store(): string
@@ -113,7 +114,7 @@ readonly class ConditionsController
             $this->condition->addConditionRule($rule);
         }
 
-        return $this->condition->getBuilderInnerHtml();
+        return new ConditionBuilderRenderer($this->condition)->renderInner();
     }
 
     public function destroy(): string
@@ -129,6 +130,6 @@ readonly class ConditionsController
 
         $this->condition->setConditionRules($conditionRules);
 
-        return $this->condition->getBuilderInnerHtml(true);
+        return new ConditionBuilderRenderer($this->condition)->renderInner(true);
     }
 }
