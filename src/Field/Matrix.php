@@ -592,6 +592,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 // everything in it takes the entry type's color for free.
                 'color' => $entryType->color?->value,
                 'actions' => $this->blockActions($entry, $uid),
+                'data' => $this->blockData($entry, $entryType),
             ];
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
@@ -609,6 +610,31 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * The block's identity, as `data-*` attributes on `.matrixblock`.
+     *
+     * Craft 5's `block.twig` wrote the same set. The CP's element clipboard reads
+     * it back off the DOM — copy, paste and duplicate all need an element to
+     * point at, and a block is keyed by its UID everywhere else.
+     *
+     * @return array<string, int|string>
+     */
+    private function blockData(Entry $entry, EntryType $entryType): array
+    {
+        return array_filter([
+            // Not `id`: `data-id` is the block's UID, which is what both
+            // renderers, the sort order and the posted value are all keyed by.
+            'element-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+            'draft-id' => $entry->isProvisionalDraft ? null : $entry->draftId,
+            'revision-id' => $entry->revisionId,
+            'owner-id' => $entry->getOwnerId(),
+            'site-id' => $entry->siteId,
+            'field-id' => $entry->fieldId,
+            'type-id' => $entryType->id,
+            'type-name' => t($entryType->name, category: 'site'),
+        ], fn (mixed $value): bool => $value !== null);
     }
 
     /**

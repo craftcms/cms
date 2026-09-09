@@ -408,6 +408,107 @@ describe('MatrixControl', () => {
     expect(emitted).toHaveLength(0);
   });
 
+  describe('expand/collapse all', () => {
+    /**
+     * The field menu's items are scoped by `craft-field`, not by the Matrix host
+     * the way block actions are — the invoking item sits in the field's header,
+     * outside the input.
+     */
+    function inField(): HTMLElement {
+      const field = document.createElement('craft-field');
+      container!.replaceWith(field);
+      field.append(container!);
+
+      return field;
+    }
+
+    function toggleAll(trigger: Element | null, collapse: boolean): void {
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-toggle-all', {
+          detail: {collapse, trigger},
+        })
+      );
+    }
+
+    async function mountTwo(): Promise<void> {
+      mount({
+        entries: {
+          'block-a': {type: 'newType', enabled: true},
+          'block-b': {type: 'newType', enabled: true},
+        },
+        sortOrder: ['block-a', 'block-b'],
+      });
+      await nextTick();
+      inField();
+    }
+
+    it('folds and unfolds every block in the field', async () => {
+      await mountTwo();
+
+      toggleAll(container!.querySelector('.matrixblock'), true);
+      await nextTick();
+
+      expect(
+        [...container!.querySelectorAll('.matrixblock')].map((block) =>
+          block.classList.contains('collapsed')
+        )
+      ).toEqual([true, true]);
+
+      toggleAll(container!.querySelector('.matrixblock'), false);
+      await nextTick();
+
+      expect(
+        [...container!.querySelectorAll('.matrixblock')].map((block) =>
+          block.classList.contains('collapsed')
+        )
+      ).toEqual([false, false]);
+    });
+
+    it('ignores the item when it belongs to another field', async () => {
+      await mountTwo();
+      const other = document.createElement('craft-field');
+      document.body.append(other);
+
+      toggleAll(other, true);
+      await nextTick();
+
+      expect(
+        container!
+          .querySelector('.matrixblock')!
+          .classList.contains('collapsed')
+      ).toBe(false);
+      other.remove();
+    });
+  });
+
+  it('carries the block identity the clipboard reads off the DOM', async () => {
+    mount(
+      {
+        entries: {'block-a': {type: 'newType', enabled: true}},
+        sortOrder: ['block-a'],
+      },
+      {
+        blocks: {
+          'block-a': {
+            label: 'Entry 12',
+            data: {'element-id': 12, 'owner-id': 5, 'site-id': 1},
+          },
+        },
+      }
+    );
+    await nextTick();
+
+    const block = container!.querySelector<HTMLElement>('.matrixblock')!;
+
+    // `data-id` stays the UID — the identity the sort order and the posted value
+    // are keyed by — so the element id rides alongside it.
+    expect(block.dataset.id).toBe('block-a');
+    expect(block.dataset.elementId).toBe('12');
+    expect(block.dataset.ownerId).toBe('5');
+    expect(block.dataset.siteId).toBe('1');
+    expect(block.dataset.uiLabel).toBe('Entry 12');
+  });
+
   it('reorders through the reorder button', async () => {
     mount({
       entries: {

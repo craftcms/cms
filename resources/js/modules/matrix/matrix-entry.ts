@@ -330,18 +330,9 @@ export class MatrixEntry extends Base {
     // Remember that?
     if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.rememberCollapsedEntryId(this.id!);
-    } else if (!this.matrix.settings!.formControl) {
-      if (!this.collapsedInput) {
-        this.collapsedInput = document.createElement('input');
-        this.collapsedInput.type = 'hidden';
-        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
-        this.collapsedInput.value = '1';
-        this.container.append(this.collapsedInput);
-      } else {
-        this.collapsedInput.value = '1';
-      }
     }
 
+    this.setCollapsedInput('1');
     this.collapsed = true;
   }
 
@@ -489,11 +480,39 @@ export class MatrixEntry extends Base {
     // Remember that?
     if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.forgetCollapsedEntryId(this.id!);
-    } else if (!this.matrix.settings!.formControl && this.collapsedInput) {
-      this.collapsedInput.value = '';
     }
 
+    this.setCollapsedInput('');
     this.collapsed = false;
+  }
+
+  /**
+   * Posts the collapsed state, so a block folded up before saving comes back
+   * folded up.
+   *
+   * The Form Control renderers write the input themselves, so this only updates
+   * what it finds. The legacy Twig stack writes one for a saved block but not for
+   * a new one — whose id isn't stable enough to remember in storage — so that one
+   * is created on demand, the way Craft 5 did it.
+   */
+  private setCollapsedInput(value: string): void {
+    this.collapsedInput ??= blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[collapsed]"]'
+    );
+
+    if (!this.collapsedInput) {
+      if (!this.matrix.settings!.formControl) {
+        this.collapsedInput = document.createElement('input');
+        this.collapsedInput.type = 'hidden';
+        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
+        this.container.append(this.collapsedInput);
+      } else {
+        return;
+      }
+    }
+
+    this.collapsedInput.value = value;
   }
 
   override disable(): void {

@@ -203,6 +203,41 @@ describe('field input action listeners', () => {
     ]);
   });
 
+  it('copies a Matrix block by its element id, not its UID', () => {
+    document.body.innerHTML = `
+      <craft-field>
+        <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
+        <div class="matrixblock" data-id="uid-a" data-element-id="12" data-owner-id="9" data-site-id="1"></div>
+        <div class="matrixblock" data-id="uid:new"></div>
+      </craft-field>
+    `;
+
+    window.dispatchEvent(
+      new CustomEvent('craft:copy-nested-elements', {
+        detail: {
+          selector: '.matrixblock',
+          elementType: 'craft\\elements\\Entry',
+          fieldId: 4,
+          trigger: document.querySelector('#trigger'),
+        },
+      })
+    );
+
+    // The second block was minted in the browser and has no element behind it
+    // yet, so there is nothing for the clipboard to point at.
+    expect(copyElements).toHaveBeenCalledWith([
+      {
+        type: 'craft\\elements\\Entry',
+        fieldId: 4,
+        id: '12',
+        draftId: null,
+        revisionId: null,
+        ownerId: 9,
+        siteId: 1,
+      },
+    ]);
+  });
+
   it('does not touch the clipboard when there is nothing to copy', () => {
     document.body.innerHTML = `
       <craft-field>

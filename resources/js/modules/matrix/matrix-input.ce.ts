@@ -143,6 +143,11 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     entry.append(
       this.hiddenInput(`${name}[sortOrder][]`, uid),
       this.hiddenInput(`${name}[entries][${uid}][type]`, type),
+      this.hiddenInput(`${name}[entries][${uid}][enabled]`, '1'),
+      this.hiddenInput(`${name}[entries][${uid}][collapsed]`, ''),
+      // A block the browser just minted has nothing behind it yet, so the save
+      // has to propagate it to every site rather than treat it as an edit.
+      this.hiddenInput(`${name}[entries][${uid}][fresh]`, '1'),
       this.titlebar(label),
       this.actions(label),
       this.fields()

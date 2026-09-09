@@ -111,6 +111,42 @@ it('frames server-rendered Matrix blocks the same way the browser control does',
         ->and($crawler->filter('[data-matrix-blocks][role="list"]'))->toHaveCount(1);
 });
 
+it('posts the per-block state the browser stack carries in its value', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+
+    // Serialized from the DOM here, so enabled and collapsed need inputs of their
+    // own — Craft 5's block.twig wrote both.
+    expect($crawler->filter('input[name="settings[matrix][entries][block-a][enabled]"][value="1"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[matrix][entries][block-a][collapsed]"]'))->toHaveCount(1);
+});
+
+it('writes the block identity the element clipboard reads off the DOM', function () {
+    $form = Form::make([
+        Field::make('Content',
+            Matrix::make('matrix')
+                ->entryTypes(['text' => 'Text'])
+                ->blocks(['block-a' => [
+                    'label' => 'Entry 12',
+                    'actions' => [],
+                    'data' => ['element-id' => 12, 'owner-id' => 5, 'site-id' => 1],
+                ]])
+                ->forms(['block-a' => Form::make([Field::make('Heading', Text::make('heading'))])]),
+        ),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, nestedControlsContext());
+    $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');
+    $block = $crawler->filter('.matrixblock')->first();
+
+    // `data-id` stays the UID — what the sort order and the posted value are
+    // keyed by — so the element id rides alongside it.
+    expect($block->attr('data-id'))->toBe('block-a')
+        ->and($block->attr('data-element-id'))->toBe('12')
+        ->and($block->attr('data-owner-id'))->toBe('5')
+        ->and($block->attr('data-site-id'))->toBe('1')
+        ->and($block->attr('data-ui-label'))->toBe('Entry 12');
+});
+
 it('uses explicit empty canonical values', function () {
     $form = Form::make([
         Field::make()->control(Matrix::make('matrix')->entryTypes(['text' => 'Text'])),

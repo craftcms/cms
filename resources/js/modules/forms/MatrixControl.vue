@@ -57,6 +57,8 @@
         icon?: {name: string; family: string} | null;
         color?: string | null;
         actions?: ActionItems;
+        /** The block's identity, as `data-*` attributes. See `Matrix::blockData()`. */
+        data?: Record<string, number | string>;
       }
     >;
     /**
@@ -198,19 +200,34 @@
   }
 
   function setCollapsed(uid: string, collapsed: boolean): void {
-    setBlockCollapsed(uid, collapsed);
+    setCollapsedMany([uid], collapsed);
+  }
+
+  /**
+   * Folds several blocks at once. One emit for the lot: a per-block emit would
+   * have each one overwrite the last, since the Control's value is written back
+   * whole at its own path.
+   */
+  function setCollapsedMany(uids: readonly string[], collapsed: boolean): void {
+    const next = structuredClone(toRaw(model.value));
+    let posts = false;
+
+    for (const uid of uids) {
+      setBlockCollapsed(uid, collapsed);
+
+      // A block the browser minted isn't in storage under an identity the server
+      // knows yet, so its state also rides along in the posted value — the same
+      // job Craft 5's hidden `[collapsed]` input did for new blocks.
+      if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX) && next.entries[uid]) {
+        next.entries[uid].collapsed = collapsed;
+        posts = true;
+      }
+    }
+
     collapsedTick.value++;
 
-    // A block the browser minted isn't in storage under an identity the server
-    // knows yet, so its state also rides along in the posted value — the same
-    // job Craft 5's hidden `[collapsed]` input did for new blocks.
-    if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX)) {
-      const next = structuredClone(toRaw(model.value));
-
-      if (next.entries[uid]) {
-        next.entries[uid].collapsed = collapsed;
-        emit('update:value', next, 'discrete');
-      }
+    if (posts) {
+      emit('update:value', next, 'discrete');
     }
   }
 
@@ -386,12 +403,17 @@
    * the identity back off `data-id`.
    */
   function blockAttrs(uid: string): Record<string, unknown> {
+    const block = props.control.props.blocks?.[uid];
+
     return {
+      ...blockData(uid),
       'data-id': uid,
       'data-type': model.value.entries[uid]?.type ?? '',
       // The CP's generated colorable rules turn this into the whole `--c-color-*`
       // alias set, which the card and everything in it paints from.
-      'data-color': props.control.props.blocks?.[uid]?.color ?? undefined,
+      'data-color': block?.color ?? undefined,
+      'data-ui-label': uiLabel(uid) || undefined,
+      'data-collapsed': isCollapsed(uid) ? '' : undefined,
       'data-matrix-block': '',
       role: 'listitem',
       class: {
@@ -399,6 +421,19 @@
         'disabled-entry': model.value.entries[uid]?.enabled === false,
       },
     };
+  }
+
+  /**
+   * The block's identity as `data-*` attributes. The CP's element clipboard reads
+   * it back off the DOM, so copy and paste need it there rather than only in the
+   * payload. Absent for a block the browser minted — there's no element yet.
+   */
+  function blockData(uid: string): Record<string, number | string> {
+    return Object.fromEntries(
+      Object.entries(props.control.props.blocks?.[uid]?.data ?? {}).map(
+        ([name, value]) => [`data-${name}`, value]
+      )
+    );
   }
 
   /**
@@ -563,9 +598,7 @@
     switch (detail.action) {
       case 'collapse':
       case 'expand':
-        for (const uid of targets) {
-          setCollapsed(uid, detail.action === 'collapse');
-        }
+        setCollapsedMany(targets, detail.action === 'collapse');
 
         return;
 
@@ -624,12 +657,40 @@
     emit('update:value', next, 'discrete');
   }
 
-  onMounted(() =>
-    window.addEventListener('craft:matrix-block-action', onBlockAction)
-  );
-  onBeforeUnmount(() =>
-    window.removeEventListener('craft:matrix-block-action', onBlockAction)
-  );
+  /**
+   * The field's own "Expand/Collapse all blocks" items. `modules/fields` handles
+   * these through each block's MatrixEntry controller, which only server-rendered
+   * blocks have — the ones here are Vue's, so this control applies them itself.
+   *
+   * Scoped by field rather than by the Matrix host the way block actions are: the
+   * invoking item lives in the field's header, outside the input. Comparing the
+   * fields also keeps a nested Matrix out of its parent's reach.
+   */
+  function onToggleAll(event: Event): void {
+    const detail = (
+      event as CustomEvent<{collapse?: boolean; trigger?: unknown}>
+    ).detail;
+    const field = matrixHost.value?.closest('craft-field');
+
+    if (
+      !field ||
+      !(detail?.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field
+    ) {
+      return;
+    }
+
+    setCollapsedMany(model.value.sortOrder, detail.collapse === true);
+  }
+
+  onMounted(() => {
+    window.addEventListener('craft:matrix-block-action', onBlockAction);
+    window.addEventListener('craft:matrix-toggle-all', onToggleAll);
+  });
+  onBeforeUnmount(() => {
+    window.removeEventListener('craft:matrix-block-action', onBlockAction);
+    window.removeEventListener('craft:matrix-toggle-all', onToggleAll);
+  });
 
   function entryType(uid: string): EntryType | undefined {
     const handle = model.value.entries[uid]?.type;

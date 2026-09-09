@@ -165,22 +165,28 @@ window.addEventListener('craft:copy-nested-elements', ((ev: CustomEvent) => {
   }
 
   // `dataset` reads are strings; the legacy `$.data()` calls these replace
-  // returned numbers. `id` stays as-is — an unsaved Matrix block is keyed by
-  // its uid, which the legacy code also passed through untouched.
+  // returned numbers.
   const numeric = (value: string | undefined): number | null =>
     value === undefined || value === '' || Number.isNaN(Number(value))
       ? null
       : Number(value);
 
-  const elements = ownElements(field, selector).map((el) => ({
-    type: String(elementType),
-    fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
-    id: el.dataset.id!,
-    draftId: numeric(el.dataset.draftId),
-    revisionId: numeric(el.dataset.revisionId),
-    ownerId: numeric(el.dataset.ownerId),
-    siteId: numeric(el.dataset.siteId),
-  }));
+  const elements = ownElements(field, selector)
+    // A Matrix block's `data-id` is its UID — the identity everything else in
+    // the field is keyed by — so its element id rides on `data-element-id`.
+    // Cards elsewhere put the element id on `data-id` and have no `element-id`.
+    .map((el) => ({
+      type: String(elementType),
+      fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
+      id: el.dataset.elementId ?? el.dataset.id!,
+      draftId: numeric(el.dataset.draftId),
+      revisionId: numeric(el.dataset.revisionId),
+      ownerId: numeric(el.dataset.ownerId),
+      siteId: numeric(el.dataset.siteId),
+    }))
+    // A block the browser minted has no element behind it yet, so there's
+    // nothing for the clipboard to point at — its `data-id` is still a UID.
+    .filter((element) => numeric(element.id) !== null);
 
   if (!elements.length) {
     return;

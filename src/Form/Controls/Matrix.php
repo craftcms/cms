@@ -53,7 +53,7 @@ class Matrix extends Control
     /** @var array<string, Form> */
     private array $forms = [];
 
-    /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>}> */
+    /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>}> */
     private array $blocks = [];
 
     /** @var array<string, mixed>|null */
@@ -115,9 +115,15 @@ class Matrix extends Control
                         ->toHtml();
             }
 
+            // `enabled` and `collapsed` post the way Craft 5's block.twig posted
+            // them. The browser stack carries both in the Control's value instead;
+            // here the form is serialized from the DOM, so they need inputs of
+            // their own or the state is lost on save.
             $hidden = $editable
                 ? Html::hiddenInput("{$attributes['name']}[sortOrder][]", $uid)
                     .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][type]", $type)
+                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][enabled]", $enabled ? '1' : '')
+                    .Html::hiddenInput("{$attributes['name']}[entries][{$uid}][collapsed]", $collapsed ? '1' : '')
                 : '';
             $content = $form instanceof NestedFormPayload
                 ? $renderer->renderNestedForm($form)
@@ -157,7 +163,10 @@ class Matrix extends Control
                     // The CP's generated colorable rules turn this into the whole
                     // `--c-color-*` alias set, which the card paints from.
                     'data-color' => $blocks[$uid]['color'] ?? null,
+                    'data-ui-label' => $blocks[$uid]['label'] ?? null,
+                    'data-collapsed' => $collapsed ?: null,
                     'role' => 'listitem',
+                    ...self::dataAttributes($blocks[$uid]['data'] ?? null),
                 ]);
         }
 
@@ -214,6 +223,27 @@ class Matrix extends Control
         ]);
     }
 
+    /**
+     * The block's identity as `data-*` attributes. See `Field\Matrix::blockData()`.
+     *
+     * @param  array<string, int|string>|null  $data
+     * @return array<string, int|string>
+     */
+    private static function dataAttributes(?array $data): array
+    {
+        if ($data === null) {
+            return [];
+        }
+
+        $attributes = [];
+
+        foreach ($data as $name => $value) {
+            $attributes["data-{$name}"] = $value;
+        }
+
+        return $attributes;
+    }
+
     public function component(): string
     {
         return 'craft:matrix';
@@ -253,7 +283,7 @@ class Matrix extends Control
      * Kept out of the value so it never posts back; blocks the browser minted
      * itself simply have no entry here until the next save materializes them.
      *
-     * @param  array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>}>  $blocks
+     * @param  array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>}>  $blocks
      */
     public function blocks(array $blocks): static
     {
