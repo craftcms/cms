@@ -269,19 +269,13 @@ class ImportConfigController
             ))
             ->when(
                 $editable,
-                callback: function (CpScreenResponse $response) {
+                callback: function (CpScreenResponse $response) use ($importer) {
                     $response
                         ->action('import/configs/saveFieldLayoutProvider')
                         ->redirectUrl('import/configs')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'import/configs/{handle}/field-layout-provider',
-                            'shortcut' => false,
-                            'retainScroll' => true,
-                        ])
-                        ->addAltAction(t('Save and configure mapping'), [
-                            'redirect' => 'import/configs/{handle}/map',
-                            'shortcut' => true,
-                            'retainScroll' => false,
+                        // TODO (iwona): ideally we want to use save+redirect action and not "just" a link to the next step
+                        ->addAltAction(t('Go to mapping configuration'), [
+                            'href' => action([self::class, 'editMap'], ['handle' => $importer->handle]),
                         ]);
                 },
             );
@@ -703,29 +697,26 @@ class ImportConfigController
                         ]);
 
                     if ($importer?->isElementImport()) {
-                        // TODO (iwona): neither of those work, but I don't know why
-                        $response->addAltAction(t('Save and go to field layout provider'), [
-                            'action' => [
-                                'type' => 'http',
-                                'method' => 'POST',
-                                'url' => action([self::class, 'store']),
-                                'body' => [
-                                    'redirect' => Crypt::encrypt(action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle])),
-                                ],
-                            ],
-                        ]);
+                        // TODO (iwona): this doesn't work, but I don't fully know why;
+                        //      ideally we want to use this action and not "just" a link to the next step
+                        //                        $response->addAltAction(t('Save and go to field layout provider'), [
+                        //                            'action' => [
+                        //                                'type' => 'http',
+                        //                                'method' => 'POST',
+                        //                                'url' => action([self::class, 'store']),
+                        //                                'body' => [
+                        //                                    'redirect' => Crypt::encrypt(action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle])),
+                        //                                ],
+                        //                            ],
+                        //                        ]);
                         $response->addAltAction(t('Go to field layout provider'), [
-                            'action' => [
-                                'type' => 'http',
-                                'method' => 'GET',
-                                'url' => action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle]),
-                            ],
+                            'href' => action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle]),
                         ]);
                     }
                     if ($importer?->isElementImport() === false) {
-                        $response->addAltAction(t('Save and configure mapping'), [
-                            'redirect' => 'import/configs/{handle}/map',
-                            'retainScroll' => false,
+                        // TODO (iwona): ideally we want to use save+redirect action and not "just" a link to the next step
+                        $response->addAltAction(t('Go to mapping configuration'), [
+                            'href' => action([self::class, 'editMap'], ['handle' => $importer->handle]),
                         ]);
                     }
                 },

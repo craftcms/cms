@@ -17,6 +17,7 @@ use CraftCms\Cms\Import\ImportRun;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -207,9 +208,18 @@ class ImportRunController
 
                     if ($run->uid) {
                         $response->addAltAction(t('Start this run'), [
-                            'action' => 'import/run',
-                            'redirect' => 'import/runs',
-                            'confirm' => t('Are you sure you want to start this import?'),
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'POST',
+                                'url' => action([self::class, 'run']),
+                                'body' => [
+                                    'uid' => $run->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to start “{name}” import run?', [
+                                    'name' => $run->name,
+                                ]),
+                            ],
                         ]);
                     }
                 },
