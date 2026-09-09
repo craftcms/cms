@@ -158,3 +158,25 @@ it('resolves JSON-safe props for every element type', function (Closure $createE
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);
+
+it('renders a scalar element selection without changing list selection semantics', function (bool $single) {
+    $entry = Entry::factory()->createElement();
+    $control = ElementSelect::make('replacement')->elementType(EntryElement::class)->limit(1);
+    if ($single) {
+        $control->single();
+    }
+
+    $value = $single ? $entry->id : [$entry->id];
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Field::make('Replacement', $control),
+    ]), new FormContext(values: ['replacement' => $value]));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $settings = json_decode($crawler->filter('craft-entry-select-input')->attr('settings'), true);
+    $name = $single ? 'replacement' : 'replacement[]';
+
+    expect($payload->values['replacement'])->toBe($value)
+        ->and($settings['single'])->toBe($single)
+        ->and($settings['limit'])->toBe(1)
+        ->and($crawler->filter('craft-field > [slot="input"] craft-entry-select-input'))->toHaveCount(1)
+        ->and($crawler->filter("craft-chip input[name=\"{$name}\"]")->attr('value'))->toBe((string) $entry->id);
+})->with([false, true]);

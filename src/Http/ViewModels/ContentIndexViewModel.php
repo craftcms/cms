@@ -558,6 +558,7 @@ abstract class ContentIndexViewModel extends ViewModel
             elementType: $this->elementType,
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
+            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
         )['query'];
 
         $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
