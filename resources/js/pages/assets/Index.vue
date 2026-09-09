@@ -21,6 +21,7 @@
   import {useAssetUploadRefresh} from '@/modules/uploader/useAssetUploadRefresh';
 
   const page = usePage<CraftCms.Cms.Http.ViewModels.AssetIndexViewModel>();
+  const dropZone = document.body;
 
   // Breadcrumb clicks navigate the same way folder rows do, so the current view
   // (mode, columns, sort) carries across when moving up the folder tree.
@@ -106,6 +107,7 @@
       <AssetUploadButton
         v-bind="uploadSource"
         :destination="uploadDestination"
+        :drop-zone="dropZone"
       />
     </template>
   </ElementIndexPage>

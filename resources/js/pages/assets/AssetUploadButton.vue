@@ -24,12 +24,7 @@
       fsType?: string;
       /** Assets index uploads belong to the application queue when a destination is supplied. */
       destination?: AssetUploadDestination;
-      /**
-       * An element that also accepts dropped files. The asset index doesn't
-       * set one — its drop target is the whole page, handled elsewhere — but
-       * a relation field passes its own container so files can be dropped
-       * onto it.
-       */
+      /** The Assets page or relation-field container that accepts dropped files. */
       dropZone?: HTMLElement | null;
       /**
        * Whether finishing an upload should reload the page's index props.
@@ -68,8 +63,6 @@
 
     uploader = Craft.createUploader(props.fsType!, input, {
       fileInput: input,
-      // Files dropped on the caller's container upload as if picked, which is
-      // what makes a relation field a drop target.
       ...(props.dropZone ? {dropZone: $(props.dropZone)} : {}),
       url: store.url(),
       ...(destination
