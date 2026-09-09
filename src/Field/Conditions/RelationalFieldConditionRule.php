@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Contracts\Node;
 use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
@@ -94,16 +95,17 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         };
     }
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof BaseRelationField) {
             throw new RuntimeException;
         }
 
         return match ($this->operator) {
-            self::OPERATOR_RELATED_TO => parent::inputHtml(),
-            default => '',
+            self::OPERATOR_RELATED_TO => parent::inputNodes(),
+            default => [],
         };
     }
 

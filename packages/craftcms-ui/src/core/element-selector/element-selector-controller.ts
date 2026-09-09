@@ -299,6 +299,7 @@ export class ElementSelectorController<
       elementType: this.elementType,
       sources: options.sources,
       condition: options.condition,
+      criteria: {...options.criteria},
     };
 
     // `null` and `'auto'` both mean "server decides", so the key is omitted.

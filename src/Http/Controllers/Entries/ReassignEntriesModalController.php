@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,17 +35,13 @@ readonly class ReassignEntriesModalController
 
         return new CpModalResponse()
             ->action('entries/reassign')
-            ->contentHtml(fn () => FormFields::elementSelectFieldHtml([
-                'label' => t('Choose a new author'),
-                'name' => 'newUserId',
-                'elementType' => User::class,
-                'criteria' => [
-                    'id' => array_map(fn ($id) => "not $id", $oldUserIds),
-                ],
-                'single' => true,
-            ]).
-                implode('', array_map(fn ($id) => Html::hiddenInput('oldUserIds[]', $id), $oldUserIds)),
-            )
+            ->form(Form::make([
+                Field::make(t('Choose a new author'), ElementSelect::make('newUserId')
+                    ->elementType(User::class)
+                    ->criteria(['id' => ['not', ...$oldUserIds]])
+                    ->single()),
+                ...array_map(fn ($index) => HiddenField::make(['oldUserIds', (string) $index]), array_keys($oldUserIds)),
+            ]), ['oldUserIds' => $oldUserIds])
             ->submitButtonLabel(t('Reassign'));
     }
 

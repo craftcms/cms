@@ -23,5 +23,6 @@ readonly class FieldContext
         public ?ElementInterface $element = null,
         public FormContext $form = new FormContext,
         public ControlMode $mode = ControlMode::Editable,
+        public bool $inline = false,
     ) {}
 }

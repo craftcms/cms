@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Form\Contracts\Node;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
@@ -41,14 +42,15 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
             ->all();
     }
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof BaseOptionsField) {
             throw new RuntimeException;
         }
 
-        return parent::inputHtml();
+        return parent::inputNodes();
     }
 
     /** @return list<string>|string|null */

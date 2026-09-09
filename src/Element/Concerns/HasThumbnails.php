@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -27,20 +28,20 @@ trait HasThumbnails
      *
      * @param  int  $size  The maximum width and height the thumbnail should have.
      */
-    public function getThumbHtml(int $size): ?string
+    public function getThumbHtml(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayout?->thumbFieldKey) {
-            $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size);
+            $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size, $mode);
 
             if ($thumbHtml) {
                 return $thumbHtml;
             }
         }
 
-        if ($thumbUrl = $this->thumbUrl($size)) {
-            return $this->renderImageThumb($size, $thumbUrl);
+        if ($thumbUrl = $this->thumbUrl($size, $mode)) {
+            return $this->renderImageThumb($size, $thumbUrl, $mode);
         }
 
         if ($thumbSvg = $this->thumbSvg()) {
@@ -50,15 +51,16 @@ trait HasThumbnails
         return null;
     }
 
-    private function renderImageThumb(int $size, string $thumbUrl): string
+    private function renderImageThumb(int $size, string $thumbUrl, ImageTransformMode $mode): string
     {
         return Html::tag('craft-thumbnail', '', [
             'slot' => 'thumbnail',
             'src' => $thumbUrl,
+            'mode' => $mode->value,
             'checkered' => $this->hasCheckeredThumb(),
             'rounded' => $this->hasRoundedThumb(),
             'sizes' => "calc({$size}rem/16)",
-            'srcset' => "{$thumbUrl} {$size}w, {$this->thumbUrl($size * 2)} ".($size * 2).'w',
+            'srcset' => "{$thumbUrl} {$size}w, {$this->thumbUrl($size * 2, $mode)} ".($size * 2).'w',
             'alt' => $this->thumbAlt(),
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
         ]);
@@ -88,7 +90,7 @@ trait HasThumbnails
      *
      * @param  int  $size  The maximum width and height the thumbnail should have.
      */
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return null;
     }

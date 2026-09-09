@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Condition\BaseCondition;
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
@@ -82,7 +83,7 @@ class ConditionBuilder extends Control
             $condition->queryParams = array_values(array_unique([...$condition->queryParams, ...$queryParams]));
         }
         $namespace = $name === null ? null : self::parentInputName($name);
-        $html = InputNamespace::namespaceInputs($condition->getBuilderHtml(...), $namespace);
+        $html = InputNamespace::namespaceInputs(new ConditionBuilderRenderer($condition)->render(...), $namespace);
 
         return $disabled ? (string) Html::disableInputs($html) : $html;
     }

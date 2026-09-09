@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,11 +17,14 @@ use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\FieldReferences;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Html;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -143,22 +145,23 @@ readonly class DeleteElementsController
 
         return new CpModalResponse()
             ->action('delete-elements/replace-relations')
-            ->contentHtml(fn () => FormFields::elementSelectFieldHtml([
-                'label' => t('Choose a new {type}', [
+            ->form(Form::make([
+                Field::make(t('Choose a new {type}', [
                     'type' => $this->elementType::lowerDisplayName(),
-                ]),
-                'name' => 'newTargetId',
+                ]), ElementSelect::make('newTargetId')
+                    ->elementType($this->elementType)
+                    ->criteria(['id' => ['not', ...$targetElementIds->all()]])
+                    ->single()),
+                HiddenField::make('elementType'),
+                ...$targetElementIds->keys()->map(fn (int $index) => HiddenField::make(['elementIds', (string) $index]))->all(),
+                HiddenField::make('hardDelete'),
+                HiddenField::make('sourceElementType'),
+            ]), [
                 'elementType' => $this->elementType,
-                'criteria' => [
-                    'id' => $targetElementIds->map(fn (int $id) => "not $id")->all(),
-                ],
-                'single' => true,
-            ]).
-                Html::hiddenInput('elementType', $this->elementType).
-                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
-                Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0').
-                Html::hiddenInput('sourceElementType', $sourceElementType)
-            )
+                'elementIds' => $targetElementIds->all(),
+                'hardDelete' => $this->hardDelete ? '1' : '0',
+                'sourceElementType' => $sourceElementType,
+            ])
             ->submitButtonLabel(t('Replace'));
     }
 
@@ -209,21 +212,21 @@ readonly class DeleteElementsController
 
         return new CpModalResponse()
             ->action('delete-elements/replace-references')
-            ->contentHtml(fn () => FormFields::elementSelectFieldHtml([
-                'label' => t('Choose a new {type}', [
+            ->form(Form::make([
+                Field::make(t('Choose a new {type}', [
                     'type' => $this->elementType::lowerDisplayName(),
-                ]),
-                'name' => 'newTargetId',
+                ]), ElementSelect::make('newTargetId')
+                    ->elementType($this->elementType)
+                    ->criteria(['id' => ['not', ...$targetElementIds->all()]])
+                    ->single()),
+                HiddenField::make('elementType'),
+                ...$targetElementIds->keys()->map(fn (int $index) => HiddenField::make(['elementIds', (string) $index]))->all(),
+                HiddenField::make('hardDelete'),
+            ]), [
                 'elementType' => $this->elementType,
-                'criteria' => [
-                    'id' => $targetElementIds->map(fn (int $id) => "not $id")->all(),
-                ],
-                'single' => true,
-            ]).
-                Html::hiddenInput('elementType', $this->elementType).
-                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
-                Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0')
-            )
+                'elementIds' => $targetElementIds->all(),
+                'hardDelete' => $this->hardDelete ? '1' : '0',
+            ])
             ->submitButtonLabel(t('Replace'));
     }
 
