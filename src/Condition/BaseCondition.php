@@ -65,6 +65,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * @var ConditionGroupInterface The rules this condition is configured with.
      */
     public ConditionGroupInterface $conditionRules {
+        /** @param ConditionGroupInterface|array{operator: string, rules: array{class: string}|array{type: string}}|array<ConditionRuleInterface|array{class: string}|array{type: string}|string> $value */
         set(ConditionGroupInterface|array $value) {
             $this->conditionRules = $this->normalizeConditionRules($value);
         }
