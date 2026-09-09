@@ -80,7 +80,7 @@
 <template>
     <tr>
         <th scope="row">
-            {{ col.label }}
+            {{ col.label }}<br />
             <code>{{ col.handle }}</code>
         </th>
         <td>
