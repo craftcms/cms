@@ -24,11 +24,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
 {
     use LegacyConstants;
 
-    public static function supportsGroups(): bool
-    {
-        return true;
-    }
-
     /**
      * @var string The condition builder container tag name
      */

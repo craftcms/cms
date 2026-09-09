@@ -19,11 +19,6 @@ use InvalidArgumentException;
 interface ConditionInterface
 {
     /**
-     * Determines whether the condition supports condition rule groups.
-     */
-    public static function supportsGroups(): bool;
-
-    /**
      * Creates new condition groups.
      */
     public static function createGroup(): ConditionGroupInterface;
