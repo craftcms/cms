@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition\Contracts;
 
 use CraftCms\Cms\Condition\BaseCondition;
+use CraftCms\Cms\Condition\ConditionRuleGroup;
 use InvalidArgumentException;
 
 /**
@@ -18,6 +19,11 @@ use InvalidArgumentException;
  */
 interface ConditionInterface
 {
+    /**
+     * Determines whether the condition supports condition rule groups.
+     */
+    public static function supportsGroups(): bool;
+
     /**
      * Renders the HTML for the condition builder, including its outer container element.
      */
@@ -67,7 +73,7 @@ interface ConditionInterface
     /**
      * Returns the rules this condition is configured with.
      *
-     * @return ConditionRuleInterface[]
+     * @return ConditionRuleInterface[]|ConditionRuleGroup[]
      */
     public function getConditionRules(): array;
 
@@ -85,5 +91,5 @@ interface ConditionInterface
      *
      * @throws InvalidArgumentException if the rule is not selectable
      */
-    public function addConditionRule(ConditionRuleInterface $rule): void;
+    public function addConditionRule(ConditionRuleInterface $rule, int $group = 0): void;
 }

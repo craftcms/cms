@@ -32,6 +32,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
 {
     use LegacyConstants;
 
+    public static function supportsGroups(): bool
+    {
+        return false;
+    }
+
     /**
      * @var string The condition builder container tag name
      */
@@ -73,12 +78,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * @see getConditionRules()
      * @see setConditionRules()
      *
-     * @var Collection<int, ConditionRuleInterface>
+     * @var Collection<int, ConditionRuleInterface>|Collection<int, ConditionRuleGroup>
      */
     private Collection $_conditionRules;
 
     /**
-     * @var ConditionRuleInterface[] The rules this condition is configured with
+     * @var ConditionRuleInterface[]|ConditionRuleGroup[] The rules this condition is configured with, or condition groups if {@see supportsGroups()} is `true`.
      */
     public array $conditionRules {
         get => $this->getConditionRules();
@@ -191,28 +196,40 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return $this->_conditionRules->all();
     }
 
-    /** @param  array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules */
+    /** @param  array<ConditionRuleInterface|ConditionRuleGroup|array{class: string}|array{type: string}|array{conditionRules: array{class: string}|array{type: string}}|string>  $rules */
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
-        $projectConfig = app(ProjectConfig::class);
+        app(ProjectConfig::class);
+
+        $group = -1;
 
         foreach ($rules as $rule) {
-            if (! $rule instanceof ConditionRuleInterface) {
-                try {
-                    $rule = $this->createConditionRule($rule);
-                } catch (InvalidArgumentException $e) {
-                    Log::warning("Invalid condition rule: {$e->getMessage()}");
+            $isGroup = static::supportsGroups() && (
+                $rule instanceof ConditionRuleGroup ||
+                (is_array($rule) && isset($rule['conditionRules']))
+            );
 
-                    continue;
-                }
+            // starting a new group?
+            if ($group === -1 || $isGroup) {
+                $group++;
             }
 
-            // Don't validate the rule when we're applying project config changes.
-            // The rule type might depend on something that hasn't been added yet.
-            if ($projectConfig->isApplyingExternalChanges || $this->validateConditionRule($rule)) {
-                $this->_conditionRules->add($rule);
-                $rule->setCondition($this);
+            if ($isGroup) {
+                $groupRules = $rule instanceof ConditionRuleGroup ? $rule->conditionRules->all() : $rule['conditionRules'];
+                foreach ($groupRules as $r) {
+                    $r = $this->normalizeConditionRule($r);
+
+                    if ($r !== null) {
+                        $this->addConditionRule($r, $group);
+                    }
+                }
+            } else {
+                $rule = $this->normalizeConditionRule($rule);
+
+                if ($rule !== null) {
+                    $this->addConditionRule($rule, $group);
+                }
             }
         }
 
@@ -221,14 +238,39 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $this->_selectableConditionRules = null;
     }
 
-    public function addConditionRule(ConditionRuleInterface $rule): void
+    /** @param ConditionRuleInterface|array{class: string}|array{type: string}|string $rule */
+    private function normalizeConditionRule(ConditionRuleInterface|array|string $rule): ?ConditionRuleInterface
     {
-        if (! $this->validateConditionRule($rule)) {
+        if ($rule instanceof ConditionRuleInterface) {
+            return $rule;
+        }
+
+        try {
+            return $this->createConditionRule($rule);
+        } catch (InvalidArgumentException $e) {
+            Log::warning("Invalid condition rule: {$e->getMessage()}");
+
+            return null;
+        }
+    }
+
+    public function addConditionRule(ConditionRuleInterface $rule, int $group = 0): void
+    {
+        // Don't validate the rule when we're applying project config changes.
+        // The rule type might depend on something that hasn't been added yet.
+        if (! app(ProjectConfig::class)->isApplyingExternalChanges && ! $this->validateConditionRule($rule)) {
             throw new InvalidArgumentException('Invalid condition rule');
         }
 
         $rule->setCondition($this);
-        $this->_conditionRules->add($rule);
+
+        if (static::supportsGroups()) {
+            /** @var ConditionRuleGroup $group */
+            $conditionGroup = $this->_conditionRules->getOrPut($group, fn () => new ConditionRuleGroup);
+            $conditionGroup->conditionRules->add($rule);
+        } else {
+            $this->_conditionRules->add($rule);
+        }
 
         // Clear caches
         $this->_selectableConditionRules = null;
@@ -298,96 +340,20 @@ JS, [InputNamespace::namespaceId($this->id)]);
             $html .= Html::hiddenInput('class', static::class);
             $html .= Html::hiddenInput('config', Json::encode($this->getBuilderConfig()));
 
-            foreach ($this->getConditionRules() as $rule) {
-                try {
-                    $allRulesHtml .= InputNamespace::namespaceInputs(function () use ($rule, $ruleNum, $selectableRules) {
-                        $ruleHtml =
-                            Html::tag('legend', t('Condition {num, number}', [
-                                'num' => $ruleNum,
-                            ]), [
-                                'class' => 'visually-hidden',
-                            ]).
-                            Html::hiddenInput('uid', $rule->uid).
-                            Html::hiddenInput('class', $rule::class);
+            if (static::supportsGroups()) {
+                /** @var ConditionRuleGroup[] $groups */
+                $groups = $this->getConditionRules();
+                foreach ($groups as $i => $group) {
+                    /** @var ConditionRuleGroup $group */
+                    $html .= $this->getConditionRuleGroupHtml($group->conditionRules->all());
 
-                        if ($this->sortable) {
-                            $ruleHtml .= Html::tag('div',
-                                Html::tag('a', '', [
-                                    'class' => ['move', 'icon', 'draggable-handle'],
-                                ]),
-                                [
-                                    'class' => ['rule-move'],
-                                ]
-                            );
-                        }
-
-                        $ruleValue = Json::encode($rule->getConfig());
-                        $labelId = "$this->id-type-label";
-
-                        $ruleHtml .=
-                            // Rule type selector
-                            Html::beginTag('div', ['class' => 'rule-switcher']).
-                            Html::hiddenLabel(t('Rule Type'), 'type', [
-                                'id' => $labelId,
-                            ]).
-                            $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue, [
-                                'icon' => 'chevron-down',
-                                'icon-position' => 'suffix',
-                                'aria' => [
-                                    'labelledby' => $labelId,
-                                ],
-                            ]).
-                            Html::endTag('div').
-                            // Rule HTML
-                            Html::tag('div', $rule->getHtml(), [
-                                'class' => ['rule-body', 'flex items-center gap-1 flex-grow'],
-                            ]).
-                            // Remove button
-                            Html::beginTag('div', [
-                                'class' => ['rule-actions'],
-                            ]).
-                            Html::tag('craft-button', '', [
-                                'type' => 'button',
-                                'icon' => 'x',
-                                'aria-label' => t('Remove'),
-                                'variant' => 'danger-plain',
-                                'size' => 'small',
-                                'hx' => [
-                                    'vals' => ['uid' => $rule->uid],
-                                    'post' => Url::actionUrl('conditions/remove-rule'),
-                                ],
-                            ]).
-                            Html::endTag('div');
-
-                        return Html::tag('fieldset', $ruleHtml, [
-                            'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
-                        ]);
-                    }, 'conditionRules['.$ruleNum.']');
-                } catch (Throwable) {
-                    // The rule is misconfigured
-                    continue;
+                    if ($i < count($groups) - 1) {
+                        $html .= '<div>--OR--</div>';
+                    }
                 }
-
-                $ruleNum++;
+            } else {
+                $html .= $this->getConditionRuleGroupHtml($this->getConditionRules());
             }
-
-            $rulesJs = HtmlStack::clearJsBuffer(false);
-
-            if ($rulesJs) {
-                HtmlStack::js($rulesJs);
-            }
-
-            // Sortable rules div
-            $html .= Html::tag('div', $allRulesHtml, [
-                'class' => array_filter([
-                    'condition',
-                    $this->sortable ? 'sortable' : null,
-                ]),
-                'hx' => [
-                    'post' => Url::actionUrl('conditions/render'),
-                    'trigger' => 'end', // sortable library triggers this event
-                ],
-            ]);
 
             $html .=
                 Html::beginTag('div', [
@@ -435,6 +401,103 @@ JS,
 
             return $html.Html::endTag('div');
         }, $this->name);
+    }
+
+    /** @param ConditionRuleInterface[] $rules */
+    private function getConditionRuleGroupHtml(array $rules): string
+    {
+        $allRulesHtml = '';
+
+        foreach ($rules as $rule) {
+            try {
+                $allRulesHtml .= InputNamespace::namespaceInputs(function () use ($rule, $ruleNum, $selectableRules) {
+                    $ruleHtml =
+                        Html::tag('legend', t('Condition {num, number}', [
+                            'num' => $ruleNum,
+                        ]), [
+                            'class' => 'visually-hidden',
+                        ]).
+                        Html::hiddenInput('uid', $rule->uid).
+                        Html::hiddenInput('class', $rule::class);
+
+                    if ($this->sortable) {
+                        $ruleHtml .= Html::tag('div',
+                            Html::tag('a', '', [
+                                'class' => ['move', 'icon', 'draggable-handle'],
+                            ]),
+                            [
+                                'class' => ['rule-move'],
+                            ]
+                        );
+                    }
+
+                    $ruleValue = Json::encode($rule->getConfig());
+                    $labelId = "$this->id-type-label";
+
+                    $ruleHtml .=
+                        // Rule type selector
+                        Html::beginTag('div', ['class' => 'rule-switcher']).
+                        Html::hiddenLabel(t('Rule Type'), 'type', [
+                            'id' => $labelId,
+                        ]).
+                        $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue, [
+                            'icon' => 'chevron-down',
+                            'icon-position' => 'suffix',
+                            'aria' => [
+                                'labelledby' => $labelId,
+                            ],
+                        ]).
+                        Html::endTag('div').
+                        // Rule HTML
+                        Html::tag('div', $rule->getHtml(), [
+                            'class' => ['rule-body', 'flex items-center gap-1 flex-grow'],
+                        ]).
+                        // Remove button
+                        Html::beginTag('div', [
+                            'class' => ['rule-actions'],
+                        ]).
+                        Html::tag('craft-button', '', [
+                            'type' => 'button',
+                            'icon' => 'x',
+                            'aria-label' => t('Remove'),
+                            'variant' => 'danger-plain',
+                            'size' => 'small',
+                            'hx' => [
+                                'vals' => ['uid' => $rule->uid],
+                                'post' => Url::actionUrl('conditions/remove-rule'),
+                            ],
+                        ]).
+                        Html::endTag('div');
+
+                    return Html::tag('fieldset', $ruleHtml, [
+                        'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
+                    ]);
+                }, 'conditionRules['.$ruleNum.']');
+            } catch (Throwable) {
+                // The rule is misconfigured
+                continue;
+            }
+
+            $ruleNum++;
+        }
+
+        $rulesJs = HtmlStack::clearJsBuffer(false);
+
+        if ($rulesJs) {
+            HtmlStack::js($rulesJs);
+        }
+
+        // Sortable rules div
+        return Html::tag('div', $allRulesHtml, [
+            'class' => array_filter([
+                'condition',
+                $this->sortable ? 'sortable' : null,
+            ]),
+            'hx' => [
+                'post' => Url::actionUrl('conditions/render'),
+                'trigger' => 'end', // sortable library triggers this event
+            ],
+        ]);
     }
 
     /**
@@ -575,7 +638,7 @@ JS,
         return array_merge($this->config(), [
             'class' => static::class,
             'conditionRules' => $this->_conditionRules
-                ->map(function (ConditionRuleInterface $rule) {
+                ->map(function (ConditionRuleInterface|ConditionRuleGroup $rule) {
                     try {
                         return $rule->getConfig();
                     } catch (RuntimeException) {

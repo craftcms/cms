@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Condition\ConditionRuleGroup;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
@@ -123,11 +124,23 @@ readonly class ConditionsController
         ]);
 
         $ruleUid = $this->request->input('uid');
-        $conditionRules = collect($this->condition->getConditionRules())
-            ->filter(fn (ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
-            ->all();
 
-        $this->condition->setConditionRules($conditionRules);
+        if ($this->condition::supportsGroups()) {
+            /** @var ConditionRuleGroup[] $groups */
+            $groups = $this->condition->getConditionRules();
+
+            foreach ($groups as $group) {
+                $group->conditionRules = $group->conditionRules
+                    ->filter(fn (ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
+                    ->all();
+            }
+        } else {
+            $conditionRules = collect($this->condition->getConditionRules())
+                ->filter(fn (ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
+                ->all();
+
+            $this->condition->setConditionRules($conditionRules);
+        }
 
         return $this->condition->getBuilderInnerHtml(true);
     }

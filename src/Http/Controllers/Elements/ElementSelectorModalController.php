@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Condition\ConditionRuleGroup;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\ModalIndexViewModel;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
@@ -37,18 +39,25 @@ readonly class ElementSelectorModalController
             $statuses = $elementType::statuses();
 
             if ($condition) {
-                /** @var StatusConditionRule|null $statusRule */
-                $statusRule = collect($condition->getConditionRules())
-                    ->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
+                /** @var Collection<ConditionRuleGroup> $groups */
+                $groups = collect($condition->getConditionRules());
 
-                if ($statusRule) {
-                    $statusValues = $statusRule->getValues();
-                    $statuses = collect($statuses)
-                        ->filter(function ($info, string $status) use ($statusRule, $statusValues) {
-                            $inValues = in_array($status, $statusValues);
+                if ($groups->count() === 1) {
+                    /** @var ConditionRuleGroup $group */
+                    $group = $groups->first();
+                    /** @var StatusConditionRule|null $statusRule */
+                    $statusRule = $group->conditionRules
+                        ->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
 
-                            return $statusRule->operator === 'in' ? $inValues : ! $inValues;
-                        });
+                    if ($statusRule) {
+                        $statusValues = $statusRule->getValues();
+                        $statuses = collect($statuses)
+                            ->filter(function ($info, string $status) use ($statusRule, $statusValues) {
+                                $inValues = in_array($status, $statusValues);
+
+                                return $statusRule->operator === 'in' ? $inValues : ! $inValues;
+                            });
+                    }
                 }
             }
         }

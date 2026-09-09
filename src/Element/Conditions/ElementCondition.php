@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseCondition;
+use CraftCms\Cms\Condition\ConditionRuleGroup;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
@@ -25,6 +26,11 @@ use RuntimeException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
+    public static function supportsGroups(): bool
+    {
+        return true;
+    }
+
     #[Override]
     public bool $sortable = false;
 
@@ -252,13 +258,23 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     {
         $elementQuery->beforeQuery(function (ElementQueryInterface $elementQuery) {
             $elementQuery->where(function (Builder $query) use ($elementQuery) {
-                foreach ($this->getConditionRules() as $rule) {
-                    try {
-                        /** @var ElementQueryConditionRuleInterface $rule */
-                        $rule->modifyQuery($query, $elementQuery);
-                    } catch (RuntimeException) {
-                        // The rule is misconfigured
-                    }
+                /** @var ConditionRuleGroup[] $groups */
+                $groups = $this->getConditionRules();
+
+                foreach ($groups as $group) {
+                    /** @var ElementConditionRuleInterface[] $rules */
+                    $rules = $group->conditionRules;
+
+                    $query->orWhere(function (Builder $query) use ($elementQuery, $rules) {
+                        foreach ($rules as $rule) {
+                            try {
+                                /** @var ElementQueryConditionRuleInterface $rule */
+                                $rule->modifyQuery($query, $elementQuery);
+                            } catch (RuntimeException) {
+                                // The rule is misconfigured
+                            }
+                        }
+                    });
                 }
             });
         });
@@ -266,9 +282,18 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var ElementConditionRuleInterface[] $rules */
-        $rules = $this->getConditionRules();
+        /** @var ConditionRuleGroup[] $groups */
+        $groups = $this->getConditionRules();
 
-        return array_all($rules, fn (ElementConditionRuleInterface $rule) => $rule->matchElement($element));
+        foreach ($groups as $group) {
+            /** @var ElementConditionRuleInterface[] $rules */
+            $rules = $group->conditionRules;
+
+            if (array_all($rules, fn (ElementConditionRuleInterface $rule) => $rule->matchElement($element))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
