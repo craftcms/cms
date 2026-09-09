@@ -6,6 +6,7 @@ use CraftCms\Cms\User\Conditions\AdminConditionRule;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Database\Query\Builder;
 
 it('matchElement returns expected result', function (Closure $createUser, bool $ruleValue, bool $expected) {
     $condition = new UserCondition(User::class);
@@ -49,7 +50,7 @@ it('modifyQuery filters by admin value', function (bool $ruleValue, bool $expect
     $rule->value = $ruleValue;
 
     $query = User::find();
-    $rule->modifyQuery($query, $query);
+    $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
     $results = $query->all();
 

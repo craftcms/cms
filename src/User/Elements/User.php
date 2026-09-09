@@ -33,6 +33,7 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -1265,10 +1266,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         };
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($photo = $this->getPhoto()) {
-            return AssetsService::getThumbUrl($photo, $size, iconFallback: false);
+            return AssetsService::getThumbUrl($photo, $size, iconFallback: false, mode: ImageTransformMode::Crop);
         }
 
         return null;

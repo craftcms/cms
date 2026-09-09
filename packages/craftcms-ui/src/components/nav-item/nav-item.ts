@@ -13,6 +13,7 @@ import {
   flyoutHoverIntent,
   type HoverIntentMember,
 } from '@src/utilities/hover-intent.js';
+import {dispatchNavigateEvent} from '@src/utilities/navigate-event.js';
 
 /**
  *
@@ -260,6 +261,13 @@ export default class CraftNavItem extends LitElement {
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
+  #handleLinkClick = (event: MouseEvent) => {
+    if (!this.href) {
+      return;
+    }
+    dispatchNavigateEvent(this, this.href, event);
+  };
+
   renderIconItem(hasSubnav: boolean) {
     const itemId = `item-${this.id}`;
     // Without an href there's nothing to link to, so render a plain span.
@@ -276,6 +284,7 @@ export default class CraftNavItem extends LitElement {
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
         aria-expanded="${hasSubnav ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
+        @click="${this.#handleLinkClick}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
@@ -401,11 +410,8 @@ export default class CraftNavItem extends LitElement {
     hasPrefix: boolean = false,
     showFlyoutIndicator = false
   ) {
-    // Without an href there's nothing to link to, so render a plain span.
-    const tag = this.href ? literal`a` : literal`span`;
-
     return staticHtml`
-      <${tag}
+      <div
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
@@ -413,15 +419,28 @@ export default class CraftNavItem extends LitElement {
           'nav-item--static': !this.href,
         })}"
         id="item-${this.id}"
-        href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
         ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
+        ${this.renderInteractiveItem()}
+        ${this.renderSuffix(showToggle, showFlyoutIndicator)}
+      </div>
+    `;
+  }
+
+  renderInteractiveItem() {
+    // Without an href there's nothing to link to, so render a plain span.
+    const tag = this.href ? literal`a` : literal`span`;
+    return staticHtml`
+      <${tag}
+        class="nav-item__action-item"
+        href="${ifDefined(this.href || undefined)}"
+        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
+        @click="${this.#handleLinkClick}"
+      >
         <slot
           id="${this.id}-label"
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
-        ${this.renderSuffix(showToggle, showFlyoutIndicator)}
       </${tag}>
     `;
   }

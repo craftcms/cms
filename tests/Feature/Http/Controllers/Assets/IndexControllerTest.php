@@ -10,6 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -90,7 +91,7 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
             $imageTransformer->getTransformIndex($asset, new ImageTransform([
                 'width' => $width,
                 'height' => $height,
-                'mode' => 'crop',
+                'mode' => 'fit',
             ]));
         }
     }
@@ -121,8 +122,8 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
 })->with([
-    'landscape' => [800, 400, [[30, 15], [60, 30]]],
-    'portrait' => [400, 600, [[20, 30], [40, 60]]],
+    'landscape' => [800, 400, [[30, 30], [60, 60]]],
+    'portrait' => [400, 600, [[30, 30], [60, 60]]],
     'square' => [600, 600, [[30, 30], [60, 60]]],
 ]);
 
@@ -147,7 +148,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         ->assertOk()
         ->assertJsonPath('props.data.0.title', fn (string $html): bool => str_contains($html, 'https://example.test/custom-thumb.jpg'));
 
-    expect($requests)->toBe([[$asset->id, 30, 15], [$asset->id, 60, 30]]);
+    expect($requests)->toBe([[$asset->id, 30, 30], [$asset->id, 60, 60]]);
 });
 
 it('preserves thumbnail overrides on asset subclasses', function () {
@@ -295,7 +296,7 @@ it('passes the route path segment through as defaultSource', function () {
 
 class CustomThumbnailIndexAsset extends AssetElement
 {
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return 'https://example.test/subclass-thumbnail.jpg';
     }

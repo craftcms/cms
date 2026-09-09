@@ -38,7 +38,7 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Modifies a given query based on the configured condition rules.
      */
-    public function modifyQuery(ElementQueryInterface $query): void;
+    public function modifyQuery(ElementQueryInterface $elementQuery): void;
 
     /**
      * Returns whether the given element matches the condition.

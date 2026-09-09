@@ -163,9 +163,6 @@ class FieldsController
         if (! $this->readOnly) {
             $response->addAltAction(t('Delete'), [
                 'variant' => 'danger',
-                'confirm' => t('Are you sure you want to delete “{name}”?', [
-                    'name' => $field->name,
-                ]),
                 'action' => [
                     'type' => 'http',
                     'method' => 'DELETE',
@@ -173,6 +170,9 @@ class FieldsController
                     'body' => [
                         'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                     ],
+                    'confirm' => t('Are you sure you want to delete “{name}”?', [
+                        'name' => $field->name,
+                    ]),
                 ],
             ]);
         }

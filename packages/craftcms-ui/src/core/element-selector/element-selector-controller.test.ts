@@ -74,13 +74,18 @@ describe('options', () => {
 
 describe('indexParams', () => {
   it('identifies the index', () => {
-    const controller = create({sources: ['section:a'], condition: {x: 1}});
+    const controller = create({
+      sources: ['section:a'],
+      condition: {x: 1},
+      criteria: {id: ['not', 12, 34]},
+    });
 
     expect(controller.indexParams()).toEqual({
       context: 'modal',
       elementType: ENTRY,
       sources: ['section:a'],
       condition: {x: 1},
+      criteria: {id: ['not', 12, 34]},
     });
   });
 
@@ -437,6 +442,7 @@ describe('open and close', () => {
       loadIndexBody,
       bodyAction: 'custom/body',
       sources: ['section:a'],
+      criteria: {id: ['not', 12, 34]},
     });
 
     await controller.open();
@@ -446,6 +452,7 @@ describe('open and close', () => {
       elementType: ENTRY,
       sources: ['section:a'],
       condition: undefined,
+      criteria: {id: ['not', 12, 34]},
     });
   });
 

@@ -7,14 +7,15 @@ namespace CraftCms\Cms\Asset\Conditions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Support\Html;
-use Illuminate\Contracts\Database\Query\Builder;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Nodes\Field;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Override;
 use UnexpectedValueException;
@@ -52,32 +53,23 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         return t('File Size');
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        $unitId = 'unit';
-
-        return Html::tag('div',
-            parent::inputHtml().
-            Html::hiddenLabel(t('Unit'), $unitId).
-            FormFields::selectHtml([
-                'name' => 'unit',
-                'id' => $unitId,
-                'options' => [
-                    ['value' => self::UNIT_B, 'label' => self::UNIT_B],
-                    ['value' => self::UNIT_KB, 'label' => self::UNIT_KB],
-                    ['value' => self::UNIT_MB, 'label' => self::UNIT_MB],
-                    ['value' => self::UNIT_GB, 'label' => self::UNIT_GB],
-                ],
-                'value' => $this->unit,
-            ]),
-            [
-                'class' => ['flex', 'flex-nowrap'],
-            ]
-        );
+        return [
+            ...parent::inputNodes(),
+            Field::make(t('Unit'), Choice::make('unit')
+                ->options(array_map(
+                    fn (string $unit): array => ['value' => $unit, 'label' => $unit],
+                    [self::UNIT_B, self::UNIT_KB, self::UNIT_MB, self::UNIT_GB],
+                ))
+                ->withoutPlaceholder()
+                ->value($this->unit)),
+        ];
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         if ($this->unit === self::UNIT_B) {
             AssetQuery::applySize($query, $this->paramValue());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -105,7 +106,7 @@ class ElementIndexController
         $currentElementIndex->activate();
 
         return new JsonResponse([
-            'hudHtml' => $condition->getBuilderHtml(),
+            'hudHtml' => new ConditionBuilderRenderer($condition)->render(),
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);

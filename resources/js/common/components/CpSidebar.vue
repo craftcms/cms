@@ -67,7 +67,11 @@
 
 <style scoped lang="scss">
   .cp-sidebar {
-    z-index: 10;
+    /* Above page content and its sticky headers — the element editor's is 1000
+     — but below modals (10001+). The sidebar is chrome: a floating drawer
+     overlays the page, and a collapsed rail's label tooltips overflow across
+     it. Both get sliced by a sticky header otherwise. */
+    z-index: var(--global-sidebar-z-index);
     height: 100dvh;
     width: var(--global-sidebar-width);
     display: flex;

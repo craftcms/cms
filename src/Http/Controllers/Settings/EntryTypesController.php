@@ -138,6 +138,9 @@ class EntryTypesController
                         'body' => [
                             'redirect' => Crypt::encrypt(action([EntryTypesController::class, 'index'])),
                         ],
+                        'confirm' => t('Are you sure you want to delete “{name}”?', [
+                            'name' => $entryTypeData->name,
+                        ]),
                     ],
                 ]);
             }

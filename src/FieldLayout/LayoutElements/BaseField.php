@@ -24,6 +24,7 @@ use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\ActionMenu;
 use CraftCms\Cms\Form\Nodes\CopyAttribute;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -534,8 +535,9 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface  $element  The element the field is associated with
      * @param  int  $size  The maximum width and height the thumbnail should have.
+     * @param  ImageTransformMode  $mode  How the image should fit within the thumbnail bounds.
      */
-    public function thumbHtml(ElementInterface $element, int $size): ?string
+    public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return null;
     }

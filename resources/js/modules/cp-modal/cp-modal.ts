@@ -1,5 +1,6 @@
 import {Modal, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
 import {uiLayerManager} from '@/modules/slideout/slideout';
+import {inputName} from '@/modules/forms/runtime';
 import type {FormValues} from '@/modules/forms/types';
 import type {AxiosRequestConfig} from 'axios';
 
@@ -354,7 +355,7 @@ export class CpModal extends Modal {
     if (
       !error.isAxiosError ||
       !error.response ||
-      error.response.status !== 400
+      ![400, 422].includes(error.response.status ?? 0)
     ) {
       Craft.cp.displayError();
       throw error;
@@ -371,9 +372,25 @@ export class CpModal extends Modal {
     this.clearErrors();
 
     Object.entries(errors).forEach(([name, fieldErrors]) => {
-      const $field = this.#$container.find(`[data-attribute="${name}"]`);
+      const path = [
+        ...(this.namespace ? [this.namespace] : []),
+        ...name.split('.'),
+      ];
+      const $field = this.#$container
+        .find(
+          `[data-attribute="${CSS.escape(name)}"], [data-error-key="${CSS.escape(name)}"]`
+        )
+        .add(
+          this.#$container
+            .find(`[name="${CSS.escape(inputName(path))}"]`)
+            .closest('craft-field')
+        );
       if ($field.length) {
         Craft.ui.addErrorsToField($field, fieldErrors);
+        $field
+          .filter('craft-field')
+          .children('ul.errors')
+          .attr('slot', 'feedback');
         this.#fieldsWithErrors.push($field);
       }
     });

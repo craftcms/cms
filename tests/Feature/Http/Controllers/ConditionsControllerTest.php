@@ -112,7 +112,6 @@ describe('show', function () {
         $response->assertOk();
 
         expect($response->getContent())
-            ->toContain('condition-main')
             ->toContain('value="Hello World"')
             ->toContain(TitleConditionRule::class);
     });
@@ -143,7 +142,6 @@ describe('store', function () {
 
         expect($expectedRule)->toBeInstanceOf(ConditionRuleInterface::class)
             ->and($response->getContent())
-            ->toContain('condition-rule')
             ->toContain($expectedRule::class);
     });
 });

@@ -12,8 +12,8 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\ElementQuery;
-use Illuminate\Contracts\Database\Query\Builder;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -53,7 +53,7 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
         return $options;
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         AssetQuery::applyKind($query, $this->paramValue());
     }

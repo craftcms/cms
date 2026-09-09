@@ -286,12 +286,12 @@ it('passes the reference element context into element conditions', function () {
                     parent::__construct(Entry::class);
                 }
 
-                public function modifyQuery(ElementQueryInterface $query): void
+                public function modifyQuery(ElementQueryInterface $elementQuery): void
                 {
                     $this->state->modifyQueryCalled = true;
                     $this->state->referenceElementId = $this->referenceElement?->id;
 
-                    $query->id($this->referenceElement?->id ?? 0);
+                    $elementQuery->id($this->referenceElement?->id ?? 0);
                 }
             };
         }
