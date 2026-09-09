@@ -96,3 +96,12 @@
         </craft-pane>
     </form>
 </template>
+
+<style scoped>
+    /* The pane is a grid item in the content layout; with the default
+   `min-width: auto` it grows to fit a wide table and overflows the container.
+   Letting it shrink lets the table's own `overflow-x: auto` scroll instead. */
+    craft-pane {
+        min-width: 0;
+    }
+</style>

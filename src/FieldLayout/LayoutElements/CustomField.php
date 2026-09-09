@@ -1027,7 +1027,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             'prefixedHandle' => $prefixedHandle,
             'prefixedHandleAsArray' => $prefixedHandleAsArray,
             'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
-            'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
+            'canBeMatchCriteria' => $this->canBeMatchCriteria(),
             'canBeCleared' => $this->canBeCleared(),
             'canKeepMissingNestedElements' => $this->canKeepMissingNestedElements(),
         ];
@@ -1043,15 +1043,15 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
 
     public function canBeMatchCriteria(): bool
     {
-        if ($this instanceof ImportableElementContainerFieldInterface) {
-            return false;
-        }
-
         try {
             // getField() needs to be called before label() or we won't always get the label.
             $field = $this->getField();
         } catch (FieldNotFoundException) {
             // skip silently
+            return false;
+        }
+
+        if ($field instanceof ImportableElementContainerFieldInterface) {
             return false;
         }
 
@@ -1068,15 +1068,15 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
 
     public function canBeCleared(): bool
     {
-        if ($this instanceof ImportableElementContainerFieldInterface) {
-            return false;
-        }
-
         try {
             // getField() needs to be called before label() or we won't always get the label.
             $field = $this->getField();
         } catch (FieldNotFoundException) {
             // skip silently
+            return false;
+        }
+
+        if ($field instanceof ImportableElementContainerFieldInterface) {
             return false;
         }
 

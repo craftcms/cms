@@ -62,6 +62,33 @@ it('marks ImportableElementContainerFieldInterface fields as containers with a f
     expect($col)->not()->toBeNull();
     expect($col['isContainer'])->toBeTrue();
     expect($col['fieldUid'])->toBe($matrixFieldModel->uid);
+
+    // a container holds nested elements rather than a value of its own, so neither
+    // option applies to it — each of its nested columns carries its own decision
+    expect($col['canBeMatchCriteria'])->toBeFalse();
+    expect($col['canBeCleared'])->toBeFalse();
+});
+
+it('offers match criteria and clearing on an ordinary field', function () {
+    $plainTextField = Field::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+        'type' => PlainText::class,
+    ]);
+    Fields::refreshFields();
+
+    $fieldLayoutModel = FieldLayout::factory()
+        ->withContentTab([
+            CustomField::make($plainTextField->handle),
+        ])
+        ->create();
+
+    $fieldLayout = app(FieldsService::class)->getLayoutByUid($fieldLayoutModel->uid);
+    $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
+    $col = collect($cols)->firstWhere('handle', 'plainText');
+
+    expect($col['canBeMatchCriteria'])->toBeTrue();
+    expect($col['canBeCleared'])->toBeTrue();
 });
 
 it('uses map[attr] as the prefixedHandleForMap for top-level fields without an owner field', function () {

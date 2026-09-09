@@ -35,6 +35,21 @@
         return value === null || value === undefined ? '' : String(value);
     });
 
+    /**
+     * A container has no value of its own to match on or clear — each of its nested
+     * columns carries its own decision, inside the panel. The server currently reports
+     * `canBeMatchCriteria`/`canBeCleared` as true for containers anyway
+     * (`CustomField::canBeMatchCriteria()` tests `$this` where it means `$field`), so
+     * `isContainer` is the flag to trust here.
+     */
+    const canMatch = computed(
+        () => !props.col.isContainer && props.col.canBeMatchCriteria
+    );
+
+    const canClear = computed(
+        () => !props.col.isContainer && props.col.canBeCleared
+    );
+
     const matchCriteriaChecked = computed(() =>
         isChecked(getAt(context.values.matchCriteria, path.value))
     );
@@ -94,49 +109,60 @@
             >
                 {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
             </craft-button>
-            <template v-else>
-                <craft-select :disabled="!context.editable">
-                    <select
-                        slot="input"
-                        :disabled="!context.editable"
-                        :aria-label="col.label"
-                        @change="onMapChanged"
+            <craft-select v-else :disabled="!context.editable">
+                <select
+                    slot="input"
+                    :disabled="!context.editable"
+                    :aria-label="col.label"
+                    @change="onMapChanged"
+                >
+                    <option
+                        v-for="option in context.sourceDataCols"
+                        :key="option.value"
+                        :value="option.value"
+                        :selected="option.value === mapValue"
                     >
-                        <option
-                            v-for="option in context.sourceDataCols"
-                            :key="option.value"
-                            :value="option.value"
-                            :selected="option.value === mapValue"
-                        >
-                            {{ option.label }}
-                        </option>
-                    </select>
-                </craft-select>
+                        {{ option.label }}
+                    </option>
+                </select>
+            </craft-select>
+        </td>
 
-                <craft-checkbox
-                    v-if="col.canBeMatchCriteria"
-                    :label="
-                        t(
-                            'Use this field’s value to match against an existing element.'
-                        )
-                    "
-                    .checked="matchCriteriaChecked"
-                    :disabled="!context.editable"
-                    @model-value-changed="onMatchCriteriaChanged"
-                ></craft-checkbox>
+        <!-- The column header names these; the row is named by its `th`. An empty
+         cell means the option can never apply to this field, which is why it isn't
+         a disabled checkbox. `label-sr-only` + a slotted label is the only way to
+         name a `craft-checkbox` — Lion overwrites `aria-labelledby` on the inner
+         input with its own generated label. -->
+        <td>
+            <craft-checkbox
+                v-if="canMatch"
+                label-sr-only
+                .checked="matchCriteriaChecked"
+                :disabled="!context.editable"
+                @model-value-changed="onMatchCriteriaChanged"
+            >
+                <label slot="label">{{
+                    t(
+                        'Use this field’s value to match against an existing element.'
+                    )
+                }}</label>
+            </craft-checkbox>
+        </td>
 
-                <craft-checkbox
-                    v-if="col.canBeCleared"
-                    :label="
-                        t(
-                            'Clear existing value if no data provided or provided value is empty.'
-                        )
-                    "
-                    .checked="clearChecked"
-                    :disabled="!context.editable"
-                    @model-value-changed="onClearChanged"
-                ></craft-checkbox>
-            </template>
+        <td>
+            <craft-checkbox
+                v-if="canClear"
+                label-sr-only
+                .checked="clearChecked"
+                :disabled="!context.editable"
+                @model-value-changed="onClearChanged"
+            >
+                <label slot="label">{{
+                    t(
+                        'Clear existing value if no data provided or provided value is empty.'
+                    )
+                }}</label>
+            </craft-checkbox>
         </td>
     </tr>
 </template>

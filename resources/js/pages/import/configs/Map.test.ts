@@ -47,11 +47,21 @@ function col(
 }
 
 const title = col({prefixedHandle: 'title', canBeMatchCriteria: true});
+const body = col({
+    prefixedHandle: 'body',
+    canBeMatchCriteria: true,
+    canBeCleared: true,
+});
+const relation = col({prefixedHandle: 'author'});
+// The server reports both flags as true for a container — `CustomField` tests `$this`
+// where it means `$field` — so the fixture mirrors that rather than the ideal.
 const outerMatrix = col({
     prefixedHandle: 'outerMatrix',
     isContainer: true,
     fieldUid: 'field-uid',
     canKeepMissingNestedElements: true,
+    canBeMatchCriteria: true,
+    canBeCleared: true,
 });
 
 function emptyValues(): MappingValues {
@@ -95,12 +105,20 @@ function posted(): MappingValues & {importUid: string} {
     return state.save.mock.calls[0]![2].transform();
 }
 
+/** The `td`s of the first body row, in column order. */
+function cells(): HTMLTableCellElement[] {
+    return [...container.querySelectorAll<HTMLTableCellElement>('tbody td')];
+}
+
 /**
- * Toggles the row's checkbox the way `craft-checkbox` reports one: the host carries
- * the state, and `model-value-changed` announces it.
+ * Toggles the checkbox in the named column of the first row, the way
+ * `craft-checkbox` reports one: the host carries the state, and
+ * `model-value-changed` announces it.
  */
-function toggleCheckbox(checked = true): void {
-    const checkbox = container.querySelector<HTMLElement & {checked: boolean}>(
+function toggleCheckbox(column: 'match' | 'clear', checked = true): void {
+    // Destination is a `th`, so the `td`s are Incoming data, Match, Clear.
+    const cell = cells()[column === 'match' ? 1 : 2]!;
+    const checkbox = cell.querySelector<HTMLElement & {checked: boolean}>(
         'craft-checkbox'
     )!;
     checkbox.checked = checked;
@@ -148,9 +166,41 @@ it('keeps edits to trees the server sent as empty arrays', () => {
         keepMissingNestedElements: [],
     } as unknown as MappingValues);
 
-    toggleCheckbox();
+    toggleCheckbox('match');
 
     expect(posted().matchCriteria).toEqual({title: '1'});
+});
+
+it('keeps the Match and Clear columns on their own trees', () => {
+    mount([body]);
+
+    toggleCheckbox('match');
+    toggleCheckbox('clear');
+
+    expect(posted().matchCriteria).toEqual({body: '1'});
+    expect(posted().clearableItems).toEqual({body: '1'});
+});
+
+it('offers no Match or Clear on a container row', () => {
+    // The container's nested columns each carry their own decision, in the panel.
+    mount([outerMatrix]);
+
+    const [incoming, match, clear] = cells();
+
+    expect(incoming!.querySelector('craft-button')).not.toBeNull();
+    expect(match!.querySelector('craft-checkbox')).toBeNull();
+    expect(clear!.querySelector('craft-checkbox')).toBeNull();
+});
+
+it('leaves the option cells empty when neither applies', () => {
+    mount([relation]);
+
+    const [, match, clear] = cells();
+
+    expect(match!.querySelector('craft-checkbox')).toBeNull();
+    expect(clear!.querySelector('craft-checkbox')).toBeNull();
+    expect(match!.textContent!.trim()).toBe('');
+    expect(clear!.textContent!.trim()).toBe('');
 });
 
 it('posts the mapping trees alongside the config UID', () => {
