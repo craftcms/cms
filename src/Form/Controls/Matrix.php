@@ -53,7 +53,7 @@ class Matrix extends Control
     /** @var array<string, Form> */
     private array $forms = [];
 
-    /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>}> */
+    /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>, error?: bool}> */
     private array $blocks = [];
 
     /** @var array<string, mixed>|null */
@@ -135,12 +135,21 @@ class Matrix extends Control
                     Html::tag(
                         'div',
                         (is_array($icon) ? Html::tag('craft-icon', '', $icon) : '').Html::encode($label)
+                        .($blocks[$uid]['error'] ?? false
+                            ? Html::tag('craft-icon', '', [
+                                'name' => 'triangle-exclamation',
+                                'aria-label' => t('Error'),
+                            ])
+                            : '')
                         // Folded up, the block's own fields aren't there to
                         // identify it, so its UI label stands in for them.
                         .($collapsed
                             ? Html::tag('div', Html::encode((string) ($blocks[$uid]['label'] ?? '')), ['class' => 'preview'])
                             : ''),
-                        ['class' => ['blocktype', 'flex', 'flex-nowrap', 'gap-1', 'items-center']],
+                        ['class' => array_filter([
+                            'blocktype', 'flex', 'flex-nowrap', 'gap-1', 'items-center',
+                            ($blocks[$uid]['error'] ?? false) ? 'error' : null,
+                        ])],
                     ),
                     ['class' => ['titlebar', 'flex', 'gap-2', 'items-center']],
                 ).Html::tag('div', $actions, ['class' => ['actions', 'flex', 'gap-1', 'items-center']]),
@@ -285,7 +294,7 @@ class Matrix extends Control
      * Kept out of the value so it never posts back; blocks the browser minted
      * itself simply have no entry here until the next save materializes them.
      *
-     * @param  array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>}>  $blocks
+     * @param  array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>, error?: bool}>  $blocks
      */
     public function blocks(array $blocks): static
     {

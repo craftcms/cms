@@ -671,6 +671,62 @@ describe('MatrixControl', () => {
     });
   });
 
+  it('summarises a folded-up block from its fields when it has no label', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    // Stand in for the nested form FormNodeList would have rendered.
+    const fields = container!.querySelector('.matrixblock .fields')!;
+    fields.innerHTML =
+      '<craft-field><input type="text" value="Hello"></craft-field>' +
+      '<craft-field><input type="text" value="World"></craft-field>';
+
+    invoke('block-a', 'Collapse');
+    await nextTick();
+
+    expect(
+      container!.querySelector('.matrixblock .preview')!.textContent!.trim()
+    ).toBe('Hello | World');
+  });
+
+  it('owns up to a block whose fields have errors', async () => {
+    emitted = [];
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      setup: () => () =>
+        h(MatrixControl, {
+          control: control(),
+          value: {
+            entries: {'block-a': {type: 'newType', enabled: true}},
+            sortOrder: ['block-a'],
+          },
+          values: {},
+          errors: [
+            {
+              path: ['fields', 'pageBuilder', 'entries', 'block-a', 'heading'],
+              messages: ['Heading is required.'],
+            },
+          ],
+          touchedPaths: new Set<string>(),
+          editable: true,
+          'onUpdate:value': () => {},
+        } as never),
+    });
+    app.mount(container);
+    await nextTick();
+
+    const blocktype = container!.querySelector('.blocktype')!;
+
+    expect(blocktype.className).toContain('error');
+    expect(
+      blocktype.querySelector('craft-icon[name="triangle-exclamation"]')
+    ).not.toBeNull();
+  });
+
   it('carries the block identity the clipboard reads off the DOM', async () => {
     mount(
       {

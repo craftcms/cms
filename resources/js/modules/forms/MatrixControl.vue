@@ -26,6 +26,7 @@
     setBlockCollapsed,
   } from '@/modules/matrix/collapsed-blocks';
   import {useCopiedElements} from '@/modules/matrix/copied-elements';
+  import {blockPreviewParts} from '@/modules/matrix/preview-text';
   import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useSelectable} from '@/common/composables/useSelectable';
@@ -61,6 +62,8 @@
         actions?: ActionItems;
         /** The block's identity, as `data-*` attributes. See `Matrix::blockData()`. */
         data?: Record<string, number | string>;
+        /** Whether the last save left validation errors on the block. */
+        error?: boolean;
       }
     >;
     /**
@@ -246,6 +249,12 @@
    * write, since a plain module read isn't reactive.
    */
   const collapsedTick = ref(0);
+  /**
+   * What each folded-up block says about itself when it has no UI label, taken
+   * off its inputs as it folds — the same moment Craft 5 took it, and the only
+   * one where the fields are still on screen to read.
+   */
+  const previews = ref(new Map<string, string[]>());
 
   function isCollapsed(uid: string): boolean {
     void collapsedTick.value;
@@ -268,6 +277,7 @@
 
     for (const uid of uids) {
       setBlockCollapsed(uid, collapsed);
+      capturePreview(uid, collapsed);
 
       // A block the browser minted isn't in storage under an identity the server
       // knows yet, so its state also rides along in the posted value — the same
@@ -307,6 +317,23 @@
     }
   );
 
+  /** Reads (or drops) a block's summary as it folds up or opens out. */
+  function capturePreview(uid: string, collapsed: boolean): void {
+    if (!collapsed) {
+      previews.value.delete(uid);
+
+      return;
+    }
+
+    // The first `.fields` under the block is its own; the ones after it belong
+    // to whatever the block nests.
+    const fields = matrixHost.value
+      ?.querySelector(`[data-id="${CSS.escape(uid)}"]`)
+      ?.querySelector<HTMLElement>('.fields');
+
+    previews.value.set(uid, fields ? blockPreviewParts(fields) : []);
+  }
+
   function isDisabled(uid: string): boolean {
     return model.value.entries[uid]?.enabled === false;
   }
@@ -323,6 +350,17 @@
       }
     }
     collapsedTick.value++;
+
+    // A block that opens folded up still needs its summary, and its fields are
+    // rendered but hidden — so they're there to read once Vue has laid them out.
+    void nextTick(() => {
+      for (const uid of model.value.sortOrder) {
+        if (isBlockCollapsed(uid)) {
+          capturePreview(uid, true);
+        }
+      }
+      collapsedTick.value++;
+    });
   });
 
   /**
@@ -731,6 +769,30 @@
   }
 
   /**
+   * What a folded-up block shows in its header: its UI label, or — for an entry
+   * type that has none — a summary of its own field values, the way Craft 5
+   * fell back.
+   */
+  function previewText(uid: string): string {
+    void collapsedTick.value;
+
+    return uiLabel(uid) || (previews.value.get(uid) ?? []).join(' | ');
+  }
+
+  /** Whether the block has errors the header should own up to. */
+  function hasErrors(uid: string): boolean {
+    if (props.control.props.blocks?.[uid]?.error) {
+      return true;
+    }
+
+    const scope = [...props.control.path, 'entries', uid];
+
+    return props.errors.some((error) =>
+      scope.every((segment, index) => error.path[index] === segment)
+    );
+  }
+
+  /**
    * The label an action takes when it applies to a whole selection rather than
    * one block. Craft 5 swapped these in as the menu opened.
    */
@@ -1003,12 +1065,20 @@
         @item-click="(uid, event) => selection.handleClick(uid, event)"
       >
         <template #label="{id: uid}">
-          <div class="blocktype flex flex-nowrap gap-1 items-center">
+          <div
+            class="blocktype flex flex-nowrap gap-1 items-center"
+            :class="{error: hasErrors(uid)}"
+          >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
             {{ entryType(uid)?.label ?? uid }}
+            <craft-icon
+              v-if="hasErrors(uid)"
+              name="triangle-exclamation"
+              :aria-label="t('Error')"
+            />
 
             <div class="preview" v-if="isCollapsed(uid)">
-              {{ uiLabel(uid) }}
+              {{ previewText(uid) }}
             </div>
           </div>
         </template>

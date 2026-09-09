@@ -6,11 +6,12 @@
  * move/duplicate/copy/paste/delete.
  */
 
-import {Base, getInputPostVal, hasAttr} from '@craftcms/garnish';
+import {Base, hasAttr} from '@craftcms/garnish';
 import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
 import {animationDuration, MatrixInput} from './matrix-input';
+import {blockPreviewParts} from './preview-text';
 import {containerMatrixEntries} from './support';
 import {
   type LegacyDisclosureMenu,
@@ -341,100 +342,13 @@ export class MatrixEntry extends Base {
       return escapeHtml(this.uiLabel);
     }
 
-    let previewHtml = '';
-    const fields = Array.from(
-      this.fieldsContainer?.querySelectorAll<HTMLElement>(':scope > * > *') ??
-        []
-    );
-
-    for (const field of fields) {
-      const inputs = Array.from(
-        field.querySelectorAll<HTMLElement>(
-          ':scope > .input select, :scope > .input input:not([type="hidden"]), :scope > .input textarea, :scope > .input .label'
-        )
-      );
-      let inputPreviewText = '';
-
-      for (const input of inputs) {
-        let value: unknown;
-
-        if (input.classList.contains('label')) {
-          const lightswitch = input.closest('.lightswitch');
-          if (
-            lightswitch &&
-            ((lightswitch.classList.contains('on') &&
-              input.classList.contains('off')) ||
-              (!lightswitch.classList.contains('on') &&
-                input.classList.contains('on')))
-          ) {
-            continue;
-          }
-
-          if (input.closest('button[aria-pressed=false]')) {
-            continue;
-          }
-
-          value = input.textContent;
-        } else {
-          const previewText = this.inputPreviewText(input);
-          value = Array.isArray(previewText)
-            ? previewText.map((text) => craft().getText(text))
-            : previewText
-              ? craft().getText(previewText)
-              : null;
-        }
-
-        if (Array.isArray(value)) {
-          value = value.join(', ');
-        }
-
-        if (value) {
-          const escaped = escapeHtml(String(value)).trim();
-          if (escaped) {
-            if (inputPreviewText) {
-              inputPreviewText += ', ';
-            }
-            inputPreviewText += escaped;
-          }
-        }
-      }
-
-      if (inputPreviewText) {
-        previewHtml +=
-          (previewHtml ? ' <span>|</span> ' : '') + inputPreviewText;
-      }
+    if (!this.fieldsContainer) {
+      return '';
     }
 
-    return previewHtml;
-  }
-
-  private inputPreviewText(input: HTMLElement): string | string[] | null {
-    if (input instanceof HTMLSelectElement) {
-      return Array.from(input.selectedOptions).map((option) => option.text);
-    }
-
-    if (
-      input instanceof HTMLInputElement &&
-      (input.type === 'checkbox' || input.type === 'radio') &&
-      input.checked
-    ) {
-      const label = input.id
-        ? document.querySelector(`label[for="${input.id}"]`)
-        : null;
-      if (label) {
-        return label.textContent;
-      }
-    }
-
-    if (!(input instanceof HTMLInputElement)) {
-      return null;
-    }
-    const value = getInputPostVal(input);
-    return Array.isArray(value)
-      ? value.map(String)
-      : value == null
-        ? null
-        : String(value);
+    return blockPreviewParts(this.fieldsContainer)
+      .map((part) => escapeHtml(part))
+      .join(' <span>|</span> ');
   }
 
   expand(): void {

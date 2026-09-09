@@ -594,6 +594,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'color' => $entryType->color?->value,
                 'actions' => $this->blockActions($entry, $uid),
                 'data' => $this->blockData($entry, $entryType),
+                // Folded up, a block hides the fields its errors are attached
+                // to, so the header says there are some. Craft 5 put an alert
+                // icon on the block type for the same reason.
+                'error' => $entry->errors()->isNotEmpty(),
             ];
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
