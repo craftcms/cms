@@ -8,8 +8,8 @@ use CraftCms\Cms\Condition\Contracts\ConditionComponentInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -17,18 +17,6 @@ use RuntimeException;
  */
 abstract class BaseConditionGroup implements ConditionGroupInterface
 {
-    public string $operator {
-        set(string $value) {
-            $value = strtolower($value);
-
-            if (! in_array($value, ['and', 'or'])) {
-                throw new InvalidArgumentException("Invalid condition group operator: $value");
-            }
-
-            $this->operator = $value;
-        }
-    }
-
     /**
      * @var Collection<int, ConditionComponentInterface> The rules/groups this condition is configured with
      */
@@ -39,9 +27,8 @@ abstract class BaseConditionGroup implements ConditionGroupInterface
     /**
      * @param  ConditionComponentInterface[]  $rules
      */
-    public function __construct(string $operator = 'and', array $rules = [])
+    public function __construct(public GroupOperator $operator = GroupOperator::And, array $rules = [])
     {
-        $this->operator = $operator;
         $this->rules = Collection::make($rules);
     }
 
@@ -53,22 +40,27 @@ abstract class BaseConditionGroup implements ConditionGroupInterface
     public function setCondition(ConditionInterface $condition): void
     {
         $this->_condition = $condition;
+
+        foreach ($this->rules as $rule) {
+            $rule->setCondition($condition);
+        }
     }
 
     public function getConfig(): array
     {
         return [
-            'operator' => $this->operator,
+            'operator' => $this->operator->value,
             'rules' => $this->rules
                 ->map(function (ConditionComponentInterface $rule) {
                     try {
                         return $rule->getConfig();
                     } catch (RuntimeException) {
-                        // The rule is misconfigured
+                        // The rule is misconfigured.
                         return null;
                     }
                 })
                 ->filter(fn (?array $config) => $config !== null)
+                ->reject(fn (array $config) => isset($config['rules']) && $config['rules'] === [])
                 ->values()
                 ->all(),
         ];

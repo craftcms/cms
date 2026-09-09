@@ -4,129 +4,88 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Condition\ConditionBuilderRenderer;
+use CraftCms\Cms\Condition\ConditionBuilder;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
 readonly class ConditionsController
 {
-    private ConditionInterface $condition;
+    public function __construct(private ConditionBuilder $builder) {}
 
-    public function __construct(
-        private Request $request,
-        private Conditions $conditions,
-    ) {
-        $this->request->validate([
-            'config' => ['required', 'json'],
+    public function show(Request $request): JsonResponse
+    {
+        $condition = $this->condition($request);
+
+        return new JsonResponse([
+            'builder' => $this->builder->resolve($condition, $request->boolean('editable', true)),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+        ]);
+    }
+
+    public function rule(Request $request): JsonResponse
+    {
+        $condition = $this->condition($request);
+
+        $request->validate([
+            'rule' => ['required', 'array'],
+            'rule.class' => ['nullable', 'string'],
+            'rule.type' => ['required_without:rule.class', 'string'],
+            'rule.uid' => ['nullable', 'uuid'],
         ]);
 
-        $baseConfig = Json::decode($this->request->input('config'));
-
-        Validator::make($baseConfig, [
-            'name' => ['required', 'string'],
-            'class' => ['required', 'string'],
-            'id' => ['nullable', 'string'],
-            'mainTag' => ['nullable', 'string'],
-            'sortable' => ['nullable', 'boolean'],
-            'forProjectConfig' => ['nullable', 'boolean'],
-            'addRuleLabel' => ['nullable', 'string'],
-        ])->validate();
-
-        if (! is_subclass_of($baseConfig['class'], ConditionInterface::class)) {
-            throw ValidationException::withMessages([
-                'config' => [t('The posted condition config is invalid.')],
-            ]);
+        try {
+            $rule = $condition->createConditionRule($request->array('rule'));
+            $condition->addConditionRule($rule);
+        } catch (InvalidArgumentException) {
+            throw ValidationException::withMessages(['rule' => t('The selected condition rule is invalid.')]);
         }
 
-        $name = Arr::dotifyKey($baseConfig['name']);
-        $config = $this->request->input($name);
-
-        Validator::make($this->request->all(), [
-            $name => ['required', 'array'],
-            "$name.class" => ['required', 'string'],
-            "$name.config" => ['nullable', 'json'],
-            "$name.conditionRules" => ['nullable', 'array'],
-            "$name.new-rule-type" => ['nullable'],
-        ])->validate();
-
-        if (($config['class'] ?? null) !== $baseConfig['class']) {
-            throw ValidationException::withMessages([
-                "$name.class" => [t('The selected condition class is invalid.')],
-            ]);
-        }
-
-        $conditionClass = $config['class'];
-
-        if (! is_subclass_of($conditionClass, ConditionInterface::class)) {
-            throw ValidationException::withMessages([
-                "$name.class" => [t('The selected condition class is invalid.')],
-            ]);
-        }
-
-        $config['class'] = $conditionClass;
-
-        $newRuleType = Arr::pull($config, 'new-rule-type');
-
-        $this->condition = $this->createCondition($conditionClass, $config);
-
-        Typecast::configure($this->condition, Arr::except($baseConfig, 'class'));
-
-        if ($newRuleType) {
-            $newRuleType = Json::decodeIfJson($newRuleType);
-            $rule = $this->condition->createConditionRule($newRuleType);
-            $rule->setAutofocus();
-            $this->condition->addConditionRule($rule);
-        }
+        return new JsonResponse([
+            'rule' => $this->builder->resolveRule($rule, $request->boolean('editable', true)),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+        ]);
     }
 
-    /**
-     * @param  class-string<ConditionInterface>  $conditionClass
-     * @param  array<string, mixed>  $config
-     */
-    private function createCondition(string $conditionClass, array $config): ConditionInterface
+    public function validate(Request $request, Conditions $conditions): JsonResponse
     {
-        return $this->conditions->createCondition(['class' => $conditionClass] + $config);
-    }
+        $condition = $this->condition($request);
+        $errors = $conditions->validate($condition);
 
-    public function show(): string
-    {
-        return new ConditionBuilderRenderer($this->condition)->renderInner();
-    }
-
-    public function store(): string
-    {
-        /** @var ConditionRuleInterface|null $rule */
-        $rule = collect($this->condition->getSelectableConditionRules())
-            ->sortBy(fn (ConditionRuleInterface $rule) => $rule->getLabel())
-            ->first();
-
-        if ($rule) {
-            $rule->setAutofocus();
-            $this->condition->addConditionRule($rule);
+        if ($errors !== []) {
+            throw ValidationException::withMessages(
+                collect($errors)->mapWithKeys(fn (array $messages, string $path) => ["_conditionRules.$path" => $messages])->all(),
+            );
         }
 
-        return new ConditionBuilderRenderer($this->condition)->renderInner();
+        return new JsonResponse(['valid' => true]);
     }
 
-    public function destroy(): string
+    private function condition(Request $request): ConditionInterface
     {
-        $this->request->validate([
-            'uid' => ['required', 'uuid'],
+        $request->validate([
+            'config' => ['required', 'array'],
+            'config.class' => ['required', 'string'],
+            'config.forProjectConfig' => ['sometimes', 'boolean'],
+            'config.forQuery' => ['sometimes', 'boolean'],
+            'value' => ['present', 'array'],
+            'value.class' => ['sometimes', 'string', 'same:config.class'],
+            'value.conditionRules' => ['sometimes', 'array'],
+            'editable' => ['sometimes', 'boolean'],
         ]);
 
-        $ruleUid = $this->request->input('uid');
-
-        $this->condition->getConditionRules()->removeRule($ruleUid);
-
-        return new ConditionBuilderRenderer($this->condition)->renderInner(true);
+        try {
+            return $this->builder->createCondition($request->array('value'), $request->array('config'));
+        } catch (InvalidArgumentException) {
+            throw ValidationException::withMessages(['config' => t('The posted condition config is invalid.')]);
+        }
     }
 }

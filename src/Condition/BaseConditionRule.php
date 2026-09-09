@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Hidden;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Str;
@@ -205,7 +206,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             ->all();
     }
 
-    public function getForm(): Form
+    public function getForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
             ...$this->operatorNodes(),

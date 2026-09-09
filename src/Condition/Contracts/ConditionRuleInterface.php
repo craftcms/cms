@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Condition\Contracts;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 
 /**
  * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
@@ -54,7 +55,7 @@ interface ConditionRuleInterface extends ComponentInterface, ConditionComponentI
     /**
      * Returns the rule’s Form schema for a condition builder.
      */
-    public function getForm(): Form;
+    public function getForm(FormContext $context = new FormContext): Form;
 
     /**
      * Sets the condition associated with this rule.

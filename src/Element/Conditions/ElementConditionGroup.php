@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseConditionGroup;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -20,7 +21,7 @@ class ElementConditionGroup extends BaseConditionGroup
 {
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        $method = $this->operator === 'and' ? 'where' : 'orWhere';
+        $method = $this->operator === GroupOperator::And ? 'where' : 'orWhere';
 
         foreach ($this->getRules() as $rule) {
             $query->$method(function (Builder $query) use ($elementQuery, $rule) {
@@ -36,7 +37,7 @@ class ElementConditionGroup extends BaseConditionGroup
 
     public function matchElement(ElementInterface $element): bool
     {
-        $method = $this->operator === 'and' ? 'array_all' : 'array_any';
+        $method = $this->operator === GroupOperator::And ? 'array_all' : 'array_any';
 
         return $method($this->getRules(), fn (self|ElementConditionRuleInterface $rule) => $rule->matchElement($element));
     }

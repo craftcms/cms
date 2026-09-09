@@ -621,7 +621,7 @@ export default class CraftCombobox extends LionCombobox {
       this.inputs.setAttribute('data-combobox-inputs', '');
       this.append(this.inputs);
     }
-    // HTMX also serializes condition builders that are not inside a form.
+    // Detached controls can still be serialized by their host.
     render(
       !this.name || this.disabled || this.fieldsetDisabled
         ? nothing

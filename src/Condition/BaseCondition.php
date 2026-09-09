@@ -9,6 +9,7 @@ use CraftCms\Cms\Condition\Concerns\LegacyConstants;
 use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
 use CraftCms\Cms\Condition\Events\ConditionRulesResolving;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -87,7 +88,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $this->addRuleLabel ??= t('Add a rule');
 
-        if (! isset($this->_conditionRules)) {
+        if (! isset($this->conditionRules)) {
             $this->setConditionRules([]);
         }
     }
@@ -170,25 +171,26 @@ abstract class BaseCondition extends Component implements ConditionInterface
     protected function normalizeConditionRules(ConditionGroupInterface|array $rules): ConditionGroupInterface
     {
         if ($rules instanceof ConditionGroupInterface) {
+            $rules->setCondition($this);
+
             return $rules;
         }
 
-        if (isset($rules['rules'])) {
-            $group = $this->normalizeConditionRules($rules['rules']);
-
-            if (isset($rules['operator'])) {
-                $group->operator = $rules['operator'];
-            }
-
-            return $group;
-        }
-
         $group = static::createGroup();
+        $operator = strtolower($rules['operator'] ?? 'and');
+        $group->operator = GroupOperator::tryFrom($operator)
+            ?? throw new InvalidArgumentException("Invalid condition group operator: $operator");
         $group->setCondition($this);
 
         $projectConfig = app(ProjectConfig::class);
 
-        foreach ($rules as $rule) {
+        foreach ($rules['rules'] ?? (isset($rules['operator']) ? [] : $rules) as $rule) {
+            if ($rule instanceof ConditionGroupInterface || (is_array($rule) && ! isset($rule['class']) && ! isset($rule['type']) && isset($rule['rules']))) {
+                $group->addRule($this->normalizeConditionRules($rule));
+
+                continue;
+            }
+
             if (! $rule instanceof ConditionRuleInterface) {
                 try {
                     $rule = $this->createConditionRule($rule);
@@ -246,6 +248,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     {
         return [
             'conditionRules' => ['nullable'],
+            'forProjectConfig' => ['boolean'],
         ];
     }
 

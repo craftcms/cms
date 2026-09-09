@@ -786,6 +786,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function afterValidate(?Validator $validator = null): void
     {
         $this->validateSources();
+
+        if ($condition = $this->getSelectionCondition()) {
+            foreach (Conditions::validate($condition) as $path => $messages) {
+                $this->errors()->merge(["selectionCondition.$path" => $messages]);
+            }
+        }
     }
 
     /**

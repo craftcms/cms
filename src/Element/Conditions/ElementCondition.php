@@ -229,6 +229,8 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             'elementType' => ['string'],
             'fieldLayouts' => ['array'],
             'fieldContext' => ['string'],
+            'forQuery' => ['boolean'],
+            'sourceKey' => ['nullable', 'string'],
         ]);
     }
 
@@ -236,6 +238,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public function getBuilderConfig(): array
     {
         $config = parent::getBuilderConfig();
+        $config['sourceKey'] = $this->sourceKey;
 
         if (isset($this->_fieldLayouts)) {
             $config['fieldLayouts'] = array_map(fn (FieldLayout $layout) => $layout->getConfig(), $this->_fieldLayouts);

@@ -7,7 +7,6 @@ namespace craft\elements\conditions\addresses;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Yii2Adapter\Form\Concerns\LegacyMultiSelectConditionRule;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule instead. */
@@ -22,11 +21,6 @@ class AdministrativeAreaConditionRule extends \CraftCms\Cms\Address\Conditions\A
             'name' => 'countryCode',
             'options' => Addresses::getCountryList(),
             'value' => $this->countryCode,
-            'inputAttributes' => [
-                'hx' => [
-                    'post' => Url::actionUrl('conditions/render'),
-                ],
-            ],
         ]);
 
         $multiSelectId = 'multiselect';
