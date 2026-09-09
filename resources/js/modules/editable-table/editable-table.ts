@@ -1,5 +1,6 @@
 import {Base} from '@craftcms/garnish';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
+import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
 import type CraftTextExpander from '@craftcms/ui/components/text-expander/text-expander';
 import '@craftcms/ui/components/text-expander/text-expander';
 import {editableTableData, editableTableRowData} from './support';
@@ -7,6 +8,7 @@ import type {
   EditableTableColumn,
   EditableTableColumns,
   EditableTableOption,
+  EditableTableOptionGroup,
   EditableTableOptions,
   EditableTableRow,
   EditableTableValue,
@@ -23,6 +25,12 @@ declare const Garnish: any;
 declare const $: any;
 
 const noop = (): void => {};
+
+function isOptionGroup(
+  option: EditableTableOption | EditableTableOptionGroup
+): option is EditableTableOptionGroup {
+  return Array.isArray((option as EditableTableOptionGroup).options);
+}
 
 function defaultOptionValue(
   options: EditableTableOptions | EditableTableOption[] | undefined
@@ -724,10 +732,28 @@ export class EditableTable extends Base<EditableTableSettings> {
             combobox.name = name;
             combobox.label = col.heading ?? colId;
             combobox.options = Array.isArray(col.options)
-              ? col.options.map((option) => ({
-                  label: option.label ?? String(option.value ?? ''),
-                  value: String(option.value ?? ''),
-                }))
+              ? col.options.map(
+                  (option): ComboboxItem =>
+                    // An <optgroup>-style entry (e.g. SelectOptions::getTemplateSuggestions())
+                    // nests its real options one level deeper — craft-combobox has native
+                    // optgroup support (ComboboxOptGroup), so pass the grouping through rather
+                    // than flattening it away.
+                    isOptionGroup(option)
+                      ? {
+                          type: 'optgroup',
+                          label: option.label ?? '',
+                          options: option.options.map((groupedOption) => ({
+                            label:
+                              groupedOption.label ??
+                              String(groupedOption.value ?? ''),
+                            value: String(groupedOption.value ?? ''),
+                          })),
+                        }
+                      : {
+                          label: option.label ?? String(option.value ?? ''),
+                          value: String(option.value ?? ''),
+                        }
+                )
               : [];
             combobox.modelValue = String(value ?? '');
             combobox.showAllOnEmpty = true;

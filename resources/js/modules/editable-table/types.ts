@@ -16,7 +16,10 @@ export interface EditableTableColumn {
   rows?: number;
   code?: boolean;
   value?: string | number;
-  options?: EditableTableOptions | EditableTableOption[];
+  options?:
+    | EditableTableOptions
+    | EditableTableOption[]
+    | EditableTableOptionGroup[];
   textExpanderTriggers?: TextExpanderTriggers;
   /** Checkbox: only one in the column may be checked at a time. */
   radioMode?: boolean;
@@ -51,6 +54,17 @@ export interface EditableTableOptions {
   [key: string]: EditableTableOption;
 }
 
+/**
+ * An `<optgroup>`-style options entry, e.g. what
+ * `CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions()` returns — a leaf
+ * option's own shape is {@link EditableTableOption}, not this.
+ */
+export interface EditableTableOptionGroup {
+  label?: string;
+  type?: 'optgroup';
+  options: EditableTableOption[];
+}
+
 type EditableTableColumnValue =
   | string
   | number
@@ -59,6 +73,7 @@ type EditableTableColumnValue =
   | string[]
   | EditableTableOptions
   | EditableTableOption[]
+  | EditableTableOptionGroup[]
   | TextExpanderTriggers;
 
 /** Map of column ID → column definition. */

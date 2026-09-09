@@ -36,6 +36,7 @@ import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import PermissionTreeControl from './PermissionTreeControl.vue';
 import SeparatorNode from './SeparatorNode.vue';
+import AdminTableNode from './AdminTableNode.vue';
 import './content-block-input';
 
 export function registerFormComponents(
@@ -73,6 +74,7 @@ export function registerFormComponents(
   components.register('craft:permission-tree', PermissionTreeControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
+  components.register('craft:admin-table', AdminTableNode);
   components.register('craft:link', LinkControl);
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);

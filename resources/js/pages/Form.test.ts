@@ -158,6 +158,20 @@ it('submits complete current values after a partial mutation', async () => {
   );
 });
 
+it('renders as a plain element with no save flow when there is nothing to submit to', async () => {
+  app = createApp(FormPage, {form: payload});
+  app.mount(container);
+  await nextTick();
+
+  const layoutCall = state.layout.mock.calls[0];
+  if (!layoutCall) throw new Error('Expected the layout registration.');
+  expect(layoutCall[0].onSave).toBeUndefined();
+
+  // No `submit` means nothing to post to, so there's no `<form>` at all —
+  // just its contents, in a plain wrapper.
+  expect(container.querySelector('form')).toBeNull();
+});
+
 it('passes screen layout options through to the app layout', () => {
   app = createApp(FormPage, {
     form: payload,

@@ -20,7 +20,15 @@
 
   const props = defineProps<{
     form: FormPayload;
-    submit: UrlMethodPair;
+    /**
+     * Omit for a screen with nothing to save as a whole — a listing, say,
+     * that may still hold ordinary Field controls (row-selection checkboxes
+     * and the like) driven by the same value tracking below. Those just need
+     * their own action button reading `currentValues()`/`setValue()` off
+     * this component's exposed API, rather than a single generic save. When
+     * omitted, no `<form>` element is rendered at all — see the template.
+     */
+    submit?: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
@@ -35,40 +43,49 @@
   const elevatedFields = props.elevatedFields;
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
-  const {save} = useSettingsSave(inertiaForm, () => props.submit, {
-    transform: () => renderer.value?.currentValues() ?? props.form.values,
-    onSuccess: () => {
-      elevatedBaseline.value = structuredClone(
-        toRaw(renderer.value?.currentValues() ?? props.form.values)
-      );
-      advanceBaseline();
-    },
-    passwordConfirmation: elevatedFields
-      ? {
-          required: () => {
-            const values = renderer.value?.currentValues() ?? props.form.values;
-            const fields =
-              elevatedFields === '*'
-                ? [
-                    ...new Set([
-                      ...Object.keys(elevatedBaseline.value),
-                      ...Object.keys(values),
-                    ]),
-                  ]
-                : elevatedFields;
 
-            return fields.some(
-              (field) =>
-                normalize(values[field]) !==
-                normalize(elevatedBaseline.value[field])
-            );
-          },
-        }
-      : undefined,
-  });
+  // Only wire up a save flow (and its cmd/ctrl + s shortcut) when there's
+  // somewhere to submit to — otherwise there's nothing for `save()` to post.
+  const save = props.submit
+    ? useSettingsSave(inertiaForm, () => props.submit!, {
+        transform: () => renderer.value?.currentValues() ?? props.form.values,
+        onSuccess: () => {
+          elevatedBaseline.value = structuredClone(
+            toRaw(renderer.value?.currentValues() ?? props.form.values)
+          );
+          advanceBaseline();
+        },
+        passwordConfirmation: elevatedFields
+          ? {
+              required: () => {
+                const values =
+                  renderer.value?.currentValues() ?? props.form.values;
+                const fields =
+                  elevatedFields === '*'
+                    ? [
+                        ...new Set([
+                          ...Object.keys(elevatedBaseline.value),
+                          ...Object.keys(values),
+                        ]),
+                      ]
+                    : elevatedFields;
 
+                return fields.some(
+                  (field) =>
+                    normalize(values[field]) !==
+                    normalize(elevatedBaseline.value[field])
+                );
+              },
+            }
+          : undefined,
+      }).save
+    : undefined;
+
+  // `PageScreen` shows the Save button purely on `form` being truthy (`v-if="form"`) —
+  // it doesn't look at `onSave`/`submit`. Passing `inertiaForm` unconditionally would
+  // show a Save button with nothing to save on a node-only screen (a listing, say).
   useAppLayout({
-    form: inertiaForm,
+    form: props.submit ? inertiaForm : null,
     defaultFormActions: props.defaultFormActions,
     onSave: save,
   });
@@ -108,7 +125,13 @@
 </script>
 
 <template>
-  <form @submit.prevent="save()">
+  <!--
+    A node-only screen (no `submit`) renders as a plain `<div>` — there's
+    nothing to submit, so there's no reason to imply otherwise with a `<form>`
+    element. Value tracking below is all Vue-side state; it doesn't depend on
+    an actual `<form>` tag existing in the DOM either way.
+  -->
+  <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
     <craft-pane appearance="raised">
       <craft-field-group>
         <FormRenderer
@@ -129,5 +152,5 @@
         </FormRenderer>
       </craft-field-group>
     </craft-pane>
-  </form>
+  </component>
 </template>
