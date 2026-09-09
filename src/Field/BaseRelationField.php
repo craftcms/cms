@@ -63,7 +63,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder as BuilderInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -144,7 +143,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public static function modifyQuery(BuilderInterface $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -188,7 +187,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (! empty($value)) {
-            $siteId = ElementQuery::$activeQuery?->siteId;
+            $siteId = $elementQuery instanceof ElementQuery ? $elementQuery->siteId : null;
 
             $filter = new ElementRelationParamFilter(fields: [
                 $field->handle => $field,
@@ -199,19 +198,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'field' => $field->handle,
             ];
 
-            if ($query instanceof ElementQuery) {
-                $filter->apply($query->getQuery(), $relationCriteria, $siteId !== '*' ? $siteId : null);
-
-                return;
-            }
-
-            if ($query instanceof Builder) {
-                $filter->apply($query, $relationCriteria);
-
-                return;
-            }
-
-            $query->where(fn (Builder $query) => $filter->apply($query, $relationCriteria));
+            $filter->apply($query, $relationCriteria, $siteId !== '*' ? $siteId : null);
         }
     }
 

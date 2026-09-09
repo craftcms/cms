@@ -62,8 +62,8 @@ use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -352,7 +352,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return Query::TYPE_TEXT;
     }
 
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         $valueSql = static::valueSql($instances);
 

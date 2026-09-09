@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Nodes\Field;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
@@ -78,9 +77,8 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         ];
     }
 
-    /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */
     #[\Override]
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         if ($this->operator !== self::OPERATOR_TYPE) {
             parent::modifyQuery($query, $elementQuery);

@@ -15,7 +15,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -46,11 +46,7 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
             ->all();
     }
 
-    /**
-     * @param  ElementQueryInterface  $query
-     * @param  ElementQuery<ElementInterface>  $elementQuery  The element query
-     */
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         $siteIds = Collection::make((array) $this->paramValue())
             ->map(fn (string $uid) => SiteGroups::getGroupByUid($uid))

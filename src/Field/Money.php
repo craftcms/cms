@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -28,7 +29,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Exception\ParserException;
@@ -197,7 +198,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         $valueSql = self::valueSql($instances);
 
