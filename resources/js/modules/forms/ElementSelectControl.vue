@@ -81,6 +81,7 @@
     elements: ElementPresentation[];
     sources: string[] | null;
     criteria: FormProperties;
+    selectionCondition?: FormProperties;
     selectionLabel: string;
     limit: number | null;
     single?: boolean;
@@ -314,6 +315,7 @@
       {
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
+        condition: props.control.props.selectionCondition,
         showSiteMenu: props.control.props.showSiteMenu,
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being

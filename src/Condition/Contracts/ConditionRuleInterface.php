@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Condition\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
+use CraftCms\Cms\Form\Form;
 use RuntimeException;
 
 /**
@@ -63,9 +64,9 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getConfig(): array;
 
     /**
-     * Returns the rule’s HTML for a condition builder.
+     * Returns the rule’s Form schema for a condition builder.
      */
-    public function getHtml(): string;
+    public function getForm(): Form;
 
     /**
      * Sets the condition associated with this rule.

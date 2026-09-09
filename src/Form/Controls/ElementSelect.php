@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -46,6 +49,9 @@ class ElementSelect extends Control
 
     private bool $showSiteMenu = false;
 
+    /** @var array<string, mixed>|null */
+    private ?array $selectionCondition = null;
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -77,6 +83,9 @@ class ElementSelect extends Control
             'elementType' => $control->props['elementType'],
             'sources' => $control->props['sources'],
             'criteria' => $control->props['criteria'],
+            'condition' => isset($control->props['selectionCondition'])
+                ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
+                : null,
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
@@ -163,6 +172,13 @@ class ElementSelect extends Control
         return $this;
     }
 
+    public function selectionCondition(?ElementConditionInterface $condition): static
+    {
+        $this->selectionCondition = $condition?->getConfig();
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -210,6 +226,7 @@ class ElementSelect extends Control
             'single' => $this->single,
             'showSiteMenu' => $this->showSiteMenu,
             'viewMode' => $this->viewMode,
+            ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
         ];
     }
 
@@ -353,7 +370,14 @@ class ElementSelect extends Control
             return [];
         }
 
-        return $elementType::find()->id(array_values($value))->fixedOrder()->all();
+        return $elementType::find()
+            ->site('*')
+            ->preferSites(array_filter([app(RequestedSite::class)->get()?->id]))
+            ->unique()
+            ->status(null)
+            ->id(array_values($value))
+            ->fixedOrder()
+            ->all();
     }
 
     /** @param class-string<ElementInterface> $elementType */

@@ -6,12 +6,15 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -228,4 +231,23 @@ it('preserves the legacy action route contract for get-elements', function () {
         ->assertJsonStructure([
             'html',
         ]);
+});
+
+it('reopens an author filter with its selected user', function () {
+    $author = UserModel::factory()->createElement();
+
+    $response = ($this->postIndexAction)('filter-hud', [
+        'id' => 'filters',
+        'conditionConfig' => [
+            'class' => EntryCondition::class,
+            'elementType' => Entry::class,
+            'conditionRules' => [[
+                'class' => AuthorConditionRule::class,
+                'elementIds' => [$author->id],
+            ]],
+        ],
+    ])->assertOk();
+
+    $crawler = new Crawler($response->json('hudHtml'));
+    expect($crawler->filter('input[name="condition[conditionRules][1][elementIds][]"]')->attr('value'))->toBe((string) $author->id);
 });

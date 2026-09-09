@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Nodes\Field;
 use Illuminate\Contracts\Database\Query\Builder;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
@@ -53,11 +55,12 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         };
     }
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if ($this->operator !== self::OPERATOR_TYPE) {
-            return parent::inputHtml();
+            return parent::inputNodes();
         }
 
         /** @var Link $field */
@@ -67,11 +70,12 @@ class LinkFieldConditionRule extends TextFieldConditionRule
             $field->getLinkTypes(),
         );
 
-        return FormFields::selectHtml([
-            'name' => 'linkType',
-            'options' => $linkTypeOptions,
-            'value' => $this->linkType,
-        ]);
+        return [
+            Field::make(t('Link Type'), Choice::make('linkType')
+                ->options(array_values($linkTypeOptions))
+                ->withoutPlaceholder()
+                ->value($this->linkType)),
+        ];
     }
 
     /** @param  ElementQuery<ElementInterface>  $elementQuery  The element query */

@@ -9,20 +9,22 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Cms\Form\Contracts\Node;
 use RuntimeException;
 
 class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof Lightswitch) {
             throw new RuntimeException;
         }
 
-        return parent::inputHtml();
+        return parent::inputNodes();
     }
 
     protected function elementQueryParam(): ?bool
