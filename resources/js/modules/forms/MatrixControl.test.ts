@@ -232,6 +232,11 @@ describe('MatrixControl', () => {
     expect(block.className).toContain('disabled-entry');
     expect(block.className).toContain('collapsed');
     expect(isBlockCollapsed('block-a')).toBe(true);
+    // The card folds its own body and footer away; the class is only a hook.
+    expect(
+      (block.querySelector('craft-card') as {collapsed?: boolean} | null)
+        ?.collapsed
+    ).toBe(true);
     // `status` isn't reflected, so Vue sets it as a property on the element.
     expect(
       (block.querySelector('craft-status') as {status?: string} | null)?.status
@@ -257,6 +262,10 @@ describe('MatrixControl', () => {
 
     expect(block.className).not.toContain('disabled-entry');
     expect(block.className).not.toContain('collapsed');
+    expect(
+      (block.querySelector('craft-card') as {collapsed?: boolean} | null)
+        ?.collapsed
+    ).toBe(false);
     expect(block.querySelector('craft-status')).toBeNull();
   });
 

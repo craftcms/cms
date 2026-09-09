@@ -367,6 +367,11 @@
    * `craft-matrix-input` still finds its entries through it, and `sync()` reads
    * the identity back off `data-id`.
    */
+  /** Collapsing is the card's own state, so it can fold away body and footer. */
+  function blockCardAttrs(id: string | number): Record<string, unknown> {
+    return {collapsed: isCollapsed(String(id))};
+  }
+
   function blockAttrs(id: string | number): Record<string, unknown> {
     const uid = String(id);
 
@@ -645,6 +650,7 @@
         list-class="grid gap-1"
         :item-class="() => 'matrixblock js-deletable'"
         :item-attrs="blockAttrs"
+        :card-attrs="blockCardAttrs"
         @reorder="move"
         @item-click="(uid, event) => selection.handleClick(String(uid), event)"
       >
@@ -685,7 +691,7 @@
               :value="String(model.entries[String(id)]?.type ?? '')"
             />
           </template>
-          <div v-show="!isCollapsed(String(id))" class="fields">
+          <div class="fields">
             <template v-if="forms.get(String(id))">
               <FormNodeList
                 :nodes="forms.get(String(id))!.nodes"

@@ -545,8 +545,8 @@ describe('data-driven item props', () => {
     ] as unknown as ActionMenuItem[];
     await menu.updateComplete;
 
-    const labels = [...menu.querySelectorAll('craft-action-item')].map(
-      (item) => item.textContent?.trim()
+    const labels = [...menu.querySelectorAll('craft-action-item')].map((item) =>
+      item.textContent?.trim()
     );
 
     expect(labels).toEqual(['First', 'Second']);
@@ -557,7 +557,12 @@ describe('data-driven item props', () => {
       '<craft-action-menu><button slot="invoker" type="button">Open</button></craft-action-menu>'
     );
     menu.actions = [
-      {type: 'link', label: 'Open in a new tab', href: '/admin', target: '_blank'},
+      {
+        type: 'link',
+        label: 'Open in a new tab',
+        href: '/admin',
+        target: '_blank',
+      },
     ] as unknown as ActionMenuItem[];
     await menu.updateComplete;
 
