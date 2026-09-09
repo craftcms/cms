@@ -172,7 +172,7 @@ export function useEditableTable<T extends object>(
       value = disabled(row);
     }
 
-    return readOnly ? true : Boolean(value);
+    return readOnly.value ? true : Boolean(value);
   }
 
   function textInputCell(

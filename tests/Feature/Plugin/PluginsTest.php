@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Config\BaseConfig;
+use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginInstalling;
@@ -14,16 +17,21 @@ use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\FluentTestPlugin;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettings;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Fluent;
 
 beforeEach(function () {
     TestPlugin::$useSettings = true;
@@ -324,45 +332,254 @@ it('can save settings', function () {
     Event::assertDispatched(PluginSettingsSaved::class);
 });
 
-it('prefers plugin config values over stored settings', function () {
+it('applies array and object configuration over stored settings without changing the input object', function (string $kind, ?string $expectedBar) {
     app()->offsetUnset(TestPlugin::class);
+    $craftConfig = Config::get('craft', []);
+    unset($craftConfig['test-plugin']);
+    Config::set('craft', $craftConfig);
+    $input = match ($kind) {
+        'missing' => null,
+        'array' => ['foo' => 'File'],
+        'object' => new TestPluginSettings()->foo('File'),
+        'explicit null' => new TestPluginSettings()->foo(null)->bar(null),
+    };
+    if ($kind !== 'missing') {
+        Config::set('craft.test-plugin', $input);
+    }
+    new ConfigServiceProvider(app())->register();
 
-    Config::set('craft.test-plugin', [
-        'foo' => 'from-config',
-    ]);
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => ['foo' => 'Stored', 'bar' => 'Stored bar']]);
+    $settings = $plugin->getSettings();
 
-    $plugin = $this->plugins->createPlugin('test-plugin', [
-        ...$this->plugins->getStoredPluginInfo('test-plugin'),
-        'settings' => [
-            'foo' => 'from-settings',
-        ],
-    ]);
+    expect($settings)->toBeInstanceOf(TestPluginSettings::class)->toBe($plugin->getSettings())->not->toBe($input)
+        ->and($settings->foo)->toBe(match ($kind) {
+            'missing' => 'Stored',
+            'explicit null' => null,
+            default => 'File',
+        })
+        ->and($settings->bar)->toBe($expectedBar);
 
-    expect($plugin)->toBeInstanceOf(TestPlugin::class);
-    expect($plugin->getSettings()?->foo)->toBe('from-config');
+    $settings->foo = 'Runtime';
+    if ($input instanceof PluginSettings) {
+        expect(Config::get('craft.test-plugin'))->toBe($input->validationData())
+            ->and($input->foo)->toBe($kind === 'explicit null' ? null : 'File');
+    }
+})->with([
+    'missing' => ['missing', 'Stored bar'],
+    'sparse array' => ['array', 'Stored bar'],
+    'full object' => ['object', null],
+    'explicit null' => ['explicit null', null],
+]);
+
+it('hydrates plugin-static configuration before register and boot while keeping static calls fresh', function () {
+    $composerInfo = $this->plugins->getComposerPluginInfo('test-plugin');
+    $composerInfo['class'] = FluentTestPlugin::class;
+    new ReflectionProperty(Plugins::class, 'composerPluginInfo')->setValue($this->plugins, ['test-plugin' => $composerInfo]);
+    $input = FluentTestPlugin::config()->foo('File');
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => ['foo' => 'Stored', 'bar' => 'Stored bar']]);
+    $runtime = $plugin->getSettings();
+    app()->register($plugin);
+
+    expect($plugin)->toBeInstanceOf(FluentTestPlugin::class)
+        ->and($plugin->registeredSettings)->toBe(['foo' => 'File', 'bar' => null])
+        ->and($plugin->bootedSettings)->toBe(['foo' => 'File', 'bar' => null])
+        ->and(FluentTestPlugin::getInstance()->getSettings())->toBe($runtime)
+        ->and($runtime)->not->toBe($input);
+
+    $runtime->foo = 'Runtime';
+    $fresh = FluentTestPlugin::config()->foo('Fresh');
+    $another = FluentTestPlugin::config();
+
+    expect($fresh)->not->toBe($input)->not->toBe($runtime)->not->toBe($another)
+        ->and($another->configData())->toBe(['foo' => null, 'bar' => null])
+        ->and($plugin->getSettings())->toBe($runtime)
+        ->and($runtime->foo)->toBe('Runtime')
+        ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File', 'bar' => null])
+        ->and($input->foo)->toBe('File');
 });
 
-it('can cancel saving with a before event', function () {
-    $plugin = $this->plugins->getPlugin('test-plugin');
-
-    expect($plugin->getSettings()->foo)->toBeNull();
-
-    Event::listen(SavingPluginSettings::class, function (SavingPluginSettings $event) {
-        $event->isValid = false;
+it('uses full defaults and shallow nested replacement without replaying fluent setters', function (bool $object) {
+    app()->offsetUnset(TestPlugin::class);
+    app()->bind(TestPlugin::class, fn () => new class(app()) extends TestPlugin
+    {
+        protected static function createSettings(): SnapshotPluginSettings
+        {
+            return new SnapshotPluginSettings;
+        }
     });
+    $input = new SnapshotPluginSettings;
+    $input->title = '  File  ';
+    $input->enabled = false;
+    $input->nested = ['file' => true];
+    Config::set('craft.test-plugin', $object ? $input : ['title' => '  File  ', 'nested' => ['file' => true], 'unknown' => 'ignored']);
+    new ConfigServiceProvider(app())->register();
 
-    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => [
+        'title' => 'Stored', 'enabled' => true, 'nested' => ['stored' => true],
+    ]]);
+
+    expect($plugin->getSettings()->title)->toBe('  File  ')
+        ->and($plugin->getSettings()->enabled)->toBe(! $object)
+        ->and($plugin->getSettings()->nested)->toBe(['file' => true]);
+})->with(['array' => false, 'object' => true]);
+
+it('hydrates the factory model with typecasting rather than adopting the input class', function () {
+    app()->offsetUnset(TestPlugin::class);
+    $input = new class extends PluginSettings
+    {
+        public int $foo = 42;
+
+        public string $bar = '';
+
+        public string $unknown = 'ignored';
+    };
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+
+    $settings = $this->plugins->createPlugin('test-plugin', [])->getSettings();
+
+    expect($settings)->toBeInstanceOf(TestPluginSettings::class)
+        ->and($settings->validationData())->toBe(['foo' => '42', 'bar' => null])
+        ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 42, 'bar' => '', 'unknown' => 'ignored']);
 });
 
-it('can cancel saving with beforeSaveSettings', function () {
-    TestPlugin::$beforeSaveSettings = false;
+it('retains later pluginConfigs precedence for object input', function () {
+    app()->offsetUnset(TestPlugin::class);
+    $input = new TestPluginSettings()->foo('File');
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+    $this->plugins->pluginConfigs = ['test-plugin' => ['settings' => ['foo' => 'Custom']]];
 
-    $plugin = $this->plugins->getPlugin('test-plugin');
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => ['foo' => 'Stored']]);
 
-    expect($plugin->getSettings()->foo)->toBeNull();
-
-    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
+    expect($plugin->getSettings()->foo)->toBe('Custom')
+        ->and($input->foo)->toBe('File');
 });
+
+it('rejects unsupported configuration with its key and actual type', function (Closure $makeInput) {
+    $input = $makeInput();
+    Config::set('craft.test-plugin', $input);
+
+    expect(fn () => $this->plugins->createPlugin('test-plugin', []))
+        ->toThrow(InvalidArgumentException::class, 'Configuration [craft.test-plugin] must be an array; got '.get_debug_type($input).'.');
+})->with([
+    'null' => [fn () => null],
+    'string' => [fn () => 'invalid'],
+    'integer' => [fn () => 42],
+    'float' => [fn () => 1.5],
+    'boolean' => [fn () => false],
+    'closure' => [fn () => fn () => []],
+    'base config' => [fn () => new class extends BaseConfig {}],
+    'arrayable' => [fn () => new Fluent(['foo' => 'File'])],
+    'validatable' => [fn () => new class extends Component {}],
+    'late settings object' => [fn () => new TestPluginSettings],
+]);
+
+it('keeps configuration compatible with plugins without settings', function (Closure $makeInput) {
+    app()->offsetUnset(TestPlugin::class);
+    TestPlugin::$useSettings = false;
+    Config::set('craft.test-plugin', $makeInput());
+    new ConfigServiceProvider(app())->register();
+
+    expect($this->plugins->createPlugin('test-plugin', [])->getSettings())->toBeNull();
+})->with([
+    'empty snapshot' => [fn () => new class extends PluginSettings {}],
+    'populated snapshot' => [fn () => new TestPluginSettings()->foo('File')],
+    'sparse array' => [fn () => ['foo' => 'File']],
+]);
+
+it('accepts an empty snapshot when the plugin has a model', function () {
+    app()->offsetUnset(TestPlugin::class);
+    Config::set('craft.test-plugin', new class extends PluginSettings {});
+    new ConfigServiceProvider(app())->register();
+
+    expect($this->plugins->createPlugin('test-plugin', [])->getSettings())->toBeInstanceOf(TestPluginSettings::class);
+});
+
+it('does not read file overrides without installed information', function () {
+    app()->offsetUnset(TestPlugin::class);
+    Config::set('craft.test-plugin', fn () => throw new RuntimeException('Not evaluated'));
+
+    expect($this->plugins->createPlugin('test-plugin')->getSettings()->foo)->toBeNull();
+});
+
+it('saves submitted overrides and omitted file values without mutating configuration input', function () {
+    app()->offsetUnset(TestPlugin::class);
+    $input = new TestPluginSettings()->foo('File foo')->bar('File bar');
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+    $plugin = $this->plugins->createPlugin('test-plugin', []);
+    $settings = $plugin->getSettings();
+
+    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'Submitted']))->toBeTrue();
+
+    expect($plugin->getSettings())->toBe($settings)
+        ->and($settings->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'File bar'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'File bar', 'foo' => 'Submitted'])
+        ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File foo', 'bar' => 'File bar'])
+        ->and($input->validationData())->toBe(['foo' => 'File foo', 'bar' => 'File bar']);
+});
+
+it('saves full validation data even when configuration data is customized', function () {
+    app()->offsetUnset(TestPlugin::class);
+    $plugin = new class(app()) extends TestPlugin
+    {
+        protected static function createSettings(): TestPluginSettings
+        {
+            $settings = new class extends TestPluginSettings
+            {
+                public function configData(): array
+                {
+                    return ['foo' => 'Config foo'];
+                }
+            };
+
+            return $settings->bar('Input bar');
+        }
+    };
+    app()->bind(TestPlugin::class, fn () => $plugin);
+    $input = $plugin::config()->foo('Input foo')->bar('Input bar');
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+    $plugin = $this->plugins->createPlugin('test-plugin', []);
+
+    expect($plugin->getSettings()->validationData())->toBe(['foo' => 'Config foo', 'bar' => 'Input bar']);
+    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'Submitted', 'bar' => 'Saved bar']))->toBeTrue();
+
+    expect($plugin->getSettings()->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'Saved bar'])
+        ->and($plugin->getSettings()->configData())->toBe(['foo' => 'Config foo'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'Saved bar', 'foo' => 'Submitted'])
+        ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'Config foo'])
+        ->and($input->validationData())->toBe(['foo' => 'Input foo', 'bar' => 'Input bar']);
+});
+
+it('retains live mutations but does not stage failed or canceled settings saves', function (string $failure) {
+    app()->offsetUnset(TestPlugin::class);
+    $input = new TestPluginSettings()->foo('File')->bar('File bar');
+    Config::set('craft.test-plugin', $input);
+    new ConfigServiceProvider(app())->register();
+    $plugin = $this->plugins->createPlugin('test-plugin', []);
+    $previous = app(ProjectConfig::class)->get('plugins.test-plugin.settings');
+    if ($failure === 'hook') {
+        TestPlugin::$beforeSaveSettings = false;
+    }
+    if ($failure === 'event') {
+        Event::listen(SavingPluginSettings::class, function (SavingPluginSettings $event) {
+            $event->isValid = false;
+        });
+    }
+    $submitted = $failure === 'validation' ? null : 'Submitted';
+
+    expect($this->plugins->savePluginSettings($plugin, ['foo' => $submitted]))->toBeFalse();
+
+    expect($plugin->getSettings()->foo)->toBe($submitted)
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe($previous)
+        ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File', 'bar' => 'File bar'])
+        ->and($input->validationData())->toBe(['foo' => 'File', 'bar' => 'File bar']);
+})->with(['validation', 'hook', 'event']);
 
 it('can run a hook on afterSaveSettings', function () {
     $triggered = false;

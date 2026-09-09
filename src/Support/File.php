@@ -213,13 +213,13 @@ class File extends \Illuminate\Support\Facades\File
                 continue;
             }
 
-            if ($item->isDir() && ! $item->isLink()) {
-                app(Filesystem::class)->deleteDirectory($item->getPathname());
+            $deleted = $item->isDir() && ! $item->isLink()
+                ? app(Filesystem::class)->deleteDirectory($item->getPathname())
+                : app(Filesystem::class)->delete($item->getPathname());
 
-                continue;
+            if (! $deleted) {
+                return false;
             }
-
-            app(Filesystem::class)->delete($item->getPathname());
         }
 
         return true;

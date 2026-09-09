@@ -34,6 +34,7 @@ use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -1262,10 +1263,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         };
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($photo = $this->getPhoto()) {
-            return AssetsService::getThumbUrl($photo, $size, iconFallback: false);
+            return AssetsService::getThumbUrl($photo, $size, iconFallback: false, mode: ImageTransformMode::Crop);
         }
 
         return null;

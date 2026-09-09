@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -249,17 +252,6 @@ class Plugins extends Component
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
-        if (is_null($pluginSettings = $plugin->getSettings())) {
-            return false;
-        }
-
-        /**
-         * We override this as the legacy service needs
-         * to save with setting safeOnly to `false`.
-         * @var \craft\base\Model $pluginSettings
-         */
-        $pluginSettings->setAttributes($settings, false);
-
         return app(PluginsService::class)->savePluginSettings($plugin, $settings);
     }
 

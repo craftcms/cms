@@ -38,6 +38,31 @@ export default css`
     object-fit: contain;
   }
 
+  .thumbnail--crop .thumbnail__image,
+  .thumbnail--stretch .thumbnail__image {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Shadow-important sizing takes precedence over light-DOM image resets. */
+  .thumbnail--crop ::slotted(img),
+  .thumbnail--crop ::slotted(svg),
+  .thumbnail--stretch ::slotted(img),
+  .thumbnail--stretch ::slotted(svg) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .thumbnail--crop .thumbnail__image,
+  .thumbnail--crop ::slotted(img) {
+    object-fit: cover;
+  }
+
+  .thumbnail--stretch .thumbnail__image,
+  .thumbnail--stretch ::slotted(img) {
+    object-fit: fill;
+  }
+
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
   .thumbnail--checkered {
     background-image:

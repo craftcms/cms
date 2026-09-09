@@ -13,6 +13,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -212,11 +213,11 @@ class ElementSelect extends Control
         }
 
         if ($viewMode === self::VIEW_MODE_THUMBS) {
-            return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE)];
+            return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit)];
         }
 
         if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
-            return ['thumbHtml' => $element->getThumbHtml(30)];
+            return ['thumbHtml' => $element->getThumbHtml(30, ImageTransformMode::Fit)];
         }
 
         return [];
