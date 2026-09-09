@@ -2009,6 +2009,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $field = $params['field'];
 
+        if (! is_array($value)) {
+            $value = [];
+        }
+
         // validate that the provider types are allowed
         $providers = $field->getFieldLayoutProviders();
         $providerHandles = array_map(fn ($provider) => $provider->getHandle(), $providers);

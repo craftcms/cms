@@ -18,6 +18,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
+use CraftCms\Cms\Import\Transformers\ElementTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -91,7 +92,7 @@ class ElementImporter extends BaseImporter
             ->all();
 
         return Form::make([
-            FormField::make(t('Data File'), Text::make('file')->value($this->file))
+            FormField::make(t('Data File'), Text::make('file')->value($this->file)->placeholder('@root/resources/my-data.json'))
                 ->instructions(t('The absolute path to the file containing the data you want to import.'))
                 ->required(),
             FormField::make(t('Site'), Choice::make('site')
@@ -104,7 +105,8 @@ class ElementImporter extends BaseImporter
                 ->options($availableElementTypes->all()))
                 ->instructions(t('The element type this import is for.')),
             FormField::make(t('Transformer'), Text::make('transformer')
-                ->value($this->usesDefaultTransformer() ? null : $this->transformerAsString()))
+                ->value($this->usesDefaultTransformer() ? null : $this->transformerAsString())
+                ->placeholder(ElementTransformer::class))
                 ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
         ]);
     }

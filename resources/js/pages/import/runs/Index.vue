@@ -82,7 +82,9 @@
                         ) {
                             return;
                         }
-                        router.post(destroy().url, {uid: row.original.uid});
+                        router.delete(destroy().url, {
+                            data: {uid: row.original.uid},
+                        });
                     },
                 });
             }

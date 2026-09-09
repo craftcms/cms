@@ -124,12 +124,12 @@ abstract class BaseImporter
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make(t('Data File'), Text::make('file')->value($this->file))
+            FormField::make(t('Data File'), Text::make('file')->value($this->file)->placeholder('@root/resources/my-data.json'))
                 ->instructions(t('The absolute path to the file containing the data you want to import.'))
                 ->required(),
-            FormField::make(t('Model Class'), Text::make('className')->value($this->className))
+            FormField::make(t('Model Class'), Text::make('className')->value($this->className)->placeholder('my\\namespace\\Model'))
                 ->instructions(t('The fully qualified class of the model you’d like to import the data into.')),
-            FormField::make(t('Transformer'), Text::make('transformer')->value($this->transformerAsString()))
+            FormField::make(t('Transformer'), Text::make('transformer')->value($this->transformerAsString())->placeholder('App\\Import\\Transformers\\MyCustomTransformer'))
                 ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
         ]);
     }
