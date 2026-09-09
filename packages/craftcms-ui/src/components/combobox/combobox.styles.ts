@@ -1,6 +1,7 @@
 import {css} from 'lit';
 import {
   baseFieldStyles,
+  baseFormControlStyles,
   baseInputWrapperStyles,
   baseComboboxStyles,
 } from '../../styles/form.styles';
@@ -63,10 +64,23 @@ export default css`
   }
 
   :host([multiple-choice]) .input-group__input {
+    ${baseFormControlStyles}
+    box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-xs);
+  }
+
+  :host([multiple-choice]) .input-group__input:focus-within {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
+  :host([multiple-choice][has-feedback-for='error']) .input-group__input {
+    border-color: var(--c-color-danger-border-loud);
   }
 
   .combobox__textbox {
@@ -80,10 +94,21 @@ export default css`
   }
 
   :host([multiple-choice]) ::slotted(.form-control) {
-    height: var(--c-input-height, var(--c-size-control-md));
+    height: calc(
+      var(--c-input-height, var(--c-size-control-md)) - 2 *
+        (var(--c-spacing-xs) + var(--_input-border-width))
+    );
+    min-height: 0;
+    padding-inline-start: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
   }
 
   .token {
+    box-sizing: border-box;
+    max-width: 100%;
     display: inline-flex;
     align-items: center;
     gap: var(--c-spacing-xs);
