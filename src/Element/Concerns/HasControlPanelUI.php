@@ -728,7 +728,22 @@ JS,
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        return app(ElementAttributeRenderer::class)->renderInlineInput($this, $attribute);
+        $renderer = app(ElementAttributeRenderer::class);
+        $form = $this->inlineAttributeInputForm($attribute);
+
+        return $form === null
+            ? $renderer->renderInlineInput($this, $attribute)
+            : $renderer->renderInlineForm($form, $this->errors()->getMessages());
+    }
+
+    /**
+     * Defines a native attribute's inline controls. Custom fields are resolved by
+     * ElementAttributeRenderer. HTML overrides and the resolving event still run
+     * through getInlineAttributeInputHtml() before this default implementation.
+     */
+    protected function inlineAttributeInputForm(string $attribute): ?Form
+    {
+        return null;
     }
 
     public function getSidebarHtml(bool $static): string|Stringable

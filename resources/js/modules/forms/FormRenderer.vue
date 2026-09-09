@@ -375,7 +375,13 @@
     recordChange({kind, path});
   }
 
-  defineExpose({advanceBaseline, currentValues, resetValues, setValue});
+  defineExpose({
+    advanceBaseline,
+    currentValues,
+    resetValues,
+    setValue,
+    canSubmit: () => !renderError.value,
+  });
 
   function rememberControlPaths(nodes: FormNodePayload[]): void {
     visitControls(nodes, (control) =>

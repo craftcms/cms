@@ -24,6 +24,7 @@
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Remove `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. Plugins must now declare `createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
+- Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
 - Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
 - Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
 - Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
