@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Concerns\LegacyConstants;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Condition\Events\ConditionRulesResolving;
@@ -16,7 +17,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
-use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -26,7 +26,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
     public static function supportsGroups(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -67,20 +67,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * @see getConditionRules()
-     * @see setConditionRules()
-     *
-     * @var Collection<int, ConditionRuleInterface>|Collection<int, ConditionRuleGroup>
+     * @var ConditionGroupInterface The rules this condition is configured with.
      */
-    private Collection $_conditionRules;
-
-    /**
-     * @var ConditionRuleInterface[]|ConditionRuleGroup[] The rules this condition is configured with, or condition groups if {@see supportsGroups()} is `true`.
-     */
-    public array $conditionRules {
-        get => $this->getConditionRules();
+    public ConditionGroupInterface $conditionRules {
         set {
-            $this->setConditionRules($value);
+            $this->conditionRules = $this->normalizeConditionRules($value);
         }
     }
 
@@ -169,70 +160,64 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return true;
     }
 
-    public function getConditionRules(): array
+    public function getConditionRules(): ConditionGroupInterface
     {
-        return $this->_conditionRules->all();
+        return $this->conditionRules;
     }
 
-    /** @param  array<ConditionRuleInterface|ConditionRuleGroup|array{class: string}|array{type: string}|array{conditionRules: array{class: string}|array{type: string}}|string>  $rules */
-    public function setConditionRules(array $rules): void
+    public function setConditionRules(ConditionGroupInterface|array $rules): void
     {
-        $this->_conditionRules = Collection::make();
-        app(ProjectConfig::class);
+        $this->conditionRules = $rules;
+    }
 
-        $group = -1;
+    /** @param ConditionGroupInterface|array{operator: string, rules: array{class: string}|array{type: string}}|array<ConditionRuleInterface|array{class: string}|array{type: string}|string> $rules */
+    protected function normalizeConditionRules(ConditionGroupInterface|array $rules): ConditionGroupInterface
+    {
+        if ($rules instanceof ConditionGroupInterface) {
+            return $rules;
+        }
+
+        if (isset($rules['rules'])) {
+            $group = $this->normalizeConditionRules($rules['rules']);
+
+            if (isset($rules['operator'])) {
+                $group->operator = $rules['operator'];
+            }
+
+            return $group;
+        }
+
+        $group = static::createGroup();
+        $group->setCondition($this);
+
+        $projectConfig = app(ProjectConfig::class);
 
         foreach ($rules as $rule) {
-            $isGroup = static::supportsGroups() && (
-                $rule instanceof ConditionRuleGroup ||
-                (is_array($rule) && isset($rule['conditionRules']))
-            );
+            if (! $rule instanceof ConditionRuleInterface) {
+                try {
+                    $rule = $this->createConditionRule($rule);
+                } catch (InvalidArgumentException $e) {
+                    Log::warning("Invalid condition rule: {$e->getMessage()}");
 
-            // starting a new group?
-            if ($group === -1 || $isGroup) {
-                $group++;
-            }
-
-            if ($isGroup) {
-                $groupRules = $rule instanceof ConditionRuleGroup ? $rule->conditionRules->all() : $rule['conditionRules'];
-                foreach ($groupRules as $r) {
-                    $r = $this->normalizeConditionRule($r);
-
-                    if ($r !== null) {
-                        $this->addConditionRule($r, $group);
-                    }
-                }
-            } else {
-                $rule = $this->normalizeConditionRule($rule);
-
-                if ($rule !== null) {
-                    $this->addConditionRule($rule, $group);
+                    continue;
                 }
             }
+
+            if (! $projectConfig->isApplyingExternalChanges && ! $this->validateConditionRule($rule)) {
+                throw new InvalidArgumentException('Invalid condition rule');
+            }
+
+            $group->addRule($rule);
         }
 
         // Clear out our cache of selectable condition rules, in case any additional rules will depend on which
         // rules are already configured.
         $this->_selectableConditionRules = null;
+
+        return $group;
     }
 
-    /** @param ConditionRuleInterface|array{class: string}|array{type: string}|string $rule */
-    private function normalizeConditionRule(ConditionRuleInterface|array|string $rule): ?ConditionRuleInterface
-    {
-        if ($rule instanceof ConditionRuleInterface) {
-            return $rule;
-        }
-
-        try {
-            return $this->createConditionRule($rule);
-        } catch (InvalidArgumentException $e) {
-            Log::warning("Invalid condition rule: {$e->getMessage()}");
-
-            return null;
-        }
-    }
-
-    public function addConditionRule(ConditionRuleInterface $rule, int $group = 0): void
+    public function addConditionRule(ConditionRuleInterface $rule): void
     {
         // Don't validate the rule when we're applying project config changes.
         // The rule type might depend on something that hasn't been added yet.
@@ -240,15 +225,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             throw new InvalidArgumentException('Invalid condition rule');
         }
 
-        $rule->setCondition($this);
-
-        if (static::supportsGroups()) {
-            /** @var ConditionRuleGroup $group */
-            $conditionGroup = $this->_conditionRules->getOrPut($group, fn () => new ConditionRuleGroup);
-            $conditionGroup->conditionRules->add($rule);
-        } else {
-            $this->_conditionRules->add($rule);
-        }
+        $this->conditionRules->addRule($rule);
 
         // Clear caches
         $this->_selectableConditionRules = null;
@@ -287,18 +264,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     {
         return array_merge($this->config(), [
             'class' => static::class,
-            'conditionRules' => $this->_conditionRules
-                ->map(function (ConditionRuleInterface|ConditionRuleGroup $rule) {
-                    try {
-                        return $rule->getConfig();
-                    } catch (RuntimeException) {
-                        // The rule is misconfigured
-                        return null;
-                    }
-                })
-                ->filter(fn (?array $config) => $config !== null)
-                ->values()
-                ->all(),
+            'conditionRules' => $this->conditionRules->getConfig(),
         ]);
     }
 

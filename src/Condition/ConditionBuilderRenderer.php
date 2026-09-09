@@ -73,7 +73,12 @@ JS, [InputNamespace::namespaceId($this->condition->id)]);
             $html .= Html::hiddenInput('class', $this->condition::class);
             $html .= Html::hiddenInput('config', Json::encode($this->condition->getBuilderConfig()));
 
-            foreach ($this->condition->getConditionRules() as $rule) {
+            foreach ($this->condition->getConditionRules()->getRules() as $rule) {
+                // todo: support for nested groups
+                if (! $rule instanceof ConditionRuleInterface) {
+                    continue;
+                }
+
                 $allRulesHtml .= InputNamespace::namespaceInputs(function () use ($rule, $ruleNum, $selectableRules) {
                     $ruleHtml =
                         Html::tag('legend', t('Condition {num, number}', [

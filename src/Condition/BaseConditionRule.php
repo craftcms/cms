@@ -136,7 +136,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return null;
     }
 
-    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [

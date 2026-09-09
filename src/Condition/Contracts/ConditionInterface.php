@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition\Contracts;
 
 use CraftCms\Cms\Condition\BaseCondition;
-use CraftCms\Cms\Condition\ConditionRuleGroup;
 use InvalidArgumentException;
 
 /**
@@ -23,6 +22,11 @@ interface ConditionInterface
      * Determines whether the condition supports condition rule groups.
      */
     public static function supportsGroups(): bool;
+
+    /**
+     * Creates new condition groups.
+     */
+    public static function createGroup(): ConditionGroupInterface;
 
     /**
      * Returns configuration that should be maintained for the builder.
@@ -60,24 +64,22 @@ interface ConditionInterface
 
     /**
      * Returns the rules this condition is configured with.
-     *
-     * @return ConditionRuleInterface[]|ConditionRuleGroup[]
      */
-    public function getConditionRules(): array;
+    public function getConditionRules(): ConditionGroupInterface;
 
     /**
      * Sets the rules this condition should be configured with.
      *
-     * @param  array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules
+     * @param  ConditionGroupInterface|array{operator: string, rules: array{class: string}|array{type: string}}|array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules
      *
      * @throws InvalidArgumentException if any of the rules are not selectable
      */
-    public function setConditionRules(array $rules): void;
+    public function setConditionRules(ConditionGroupInterface|array $rules): void;
 
     /**
      * Adds a rule to the condition.
      *
      * @throws InvalidArgumentException if the rule is not selectable
      */
-    public function addConditionRule(ConditionRuleInterface $rule, int $group = 0): void;
+    public function addConditionRule(ConditionRuleInterface $rule): void;
 }

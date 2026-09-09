@@ -1793,7 +1793,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if ($this->_selectionCondition !== null && ! $this->_selectionCondition instanceof ConditionInterface) {
             /** @var ElementConditionInterface $condition */
             $condition = Conditions::createCondition($this->_selectionCondition);
-            if (! empty($condition->getConditionRules())) {
+            if (! empty($condition->getConditionRules()->getRules())) {
                 $this->_selectionCondition = $condition;
             } else {
                 $this->_selectionCondition = null;
@@ -1812,7 +1812,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      */
     public function setSelectionCondition(mixed $condition): void
     {
-        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()) {
+        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
             $condition = null;
         }
 

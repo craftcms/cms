@@ -7,22 +7,19 @@ namespace CraftCms\Cms\Condition\Contracts;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
 use CraftCms\Cms\Form\Form;
-use RuntimeException;
 
 /**
  * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
  *
- * A base implementation is provided by [[BaseConditionRule]].
+ * A base implementation is provided by {@see BaseConditionRule}.
  *
- * @property ConditionInterface $condition The condition associated with this rule
- * @property-read array<string, mixed> $config The rule’s portable config
  * @property-read string $label The rule’s option label
  *
  * @mixin BaseConditionRule
  *
  * @phpstan-require-extends BaseConditionRule
  */
-interface ConditionRuleInterface extends ComponentInterface
+interface ConditionRuleInterface extends ComponentInterface, ConditionComponentInterface
 {
     /**
      * Returns whether the rule is safe to include in conditions that are stored in the project config.
@@ -55,15 +52,6 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getGroupLabel(): ?string;
 
     /**
-     * Returns the rule’s portable config.
-     *
-     * @return array<string, mixed>
-     *
-     * @throws RuntimeException if the rule is misconfigured
-     */
-    public function getConfig(): array;
-
-    /**
      * Returns the rule’s Form schema for a condition builder.
      */
     public function getForm(): Form;
@@ -72,16 +60,6 @@ interface ConditionRuleInterface extends ComponentInterface
      * Sets the condition associated with this rule.
      */
     public function setCondition(ConditionInterface $condition): void;
-
-    /**
-     * Returns the condition associated with this rule.
-     */
-    public function getCondition(): ConditionInterface;
-
-    /**
-     * Returns whether the rule’s type selector should be autofocused.
-     */
-    public function getAutofocus(): bool;
 
     /**
      * Sets whether the rule’s type selector should be autofocused.

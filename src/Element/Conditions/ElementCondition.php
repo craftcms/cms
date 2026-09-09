@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseCondition;
-use CraftCms\Cms\Condition\ConditionRuleGroup;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
@@ -26,9 +26,9 @@ use RuntimeException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
-    public static function supportsGroups(): bool
+    public static function createGroup(): ConditionGroupInterface
     {
-        return true;
+        return new ElementConditionGroup;
     }
 
     #[Override]
@@ -258,42 +258,18 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     {
         $elementQuery->beforeQuery(function (ElementQueryInterface $elementQuery) {
             $elementQuery->where(function (Builder $query) use ($elementQuery) {
-                /** @var ConditionRuleGroup[] $groups */
-                $groups = $this->getConditionRules();
-
-                foreach ($groups as $group) {
-                    /** @var ElementConditionRuleInterface[] $rules */
-                    $rules = $group->conditionRules;
-
-                    $query->orWhere(function (Builder $query) use ($elementQuery, $rules) {
-                        foreach ($rules as $rule) {
-                            try {
-                                /** @var ElementQueryConditionRuleInterface $rule */
-                                $rule->modifyQuery($query, $elementQuery);
-                            } catch (RuntimeException) {
-                                // The rule is misconfigured
-                            }
-                        }
-                    });
-                }
+                /** @var ElementConditionGroup $group */
+                $group = $this->getConditionRules();
+                $group->modifyQuery($query, $elementQuery);
             });
         });
     }
 
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var ConditionRuleGroup[] $groups */
-        $groups = $this->getConditionRules();
+        /** @var ElementConditionGroup $group */
+        $group = $this->getConditionRules();
 
-        foreach ($groups as $group) {
-            /** @var ElementConditionRuleInterface[] $rules */
-            $rules = $group->conditionRules;
-
-            if (array_all($rules, fn (ElementConditionRuleInterface $rule) => $rule->matchElement($element))) {
-                return true;
-            }
-        }
-
-        return false;
+        return $group->matchElement($element);
     }
 }

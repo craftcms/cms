@@ -196,7 +196,7 @@ abstract class FieldLayoutComponent extends Component
             $condition = Conditions::createCondition($condition);
         }
 
-        if (! $condition->getConditionRules()) {
+        if (! $condition->getConditionRules()->getRules()) {
             return null;
         }
 

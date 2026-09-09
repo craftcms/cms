@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
-use CraftCms\Cms\Condition\ConditionRuleGroup;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\ModalIndexViewModel;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
@@ -39,15 +38,11 @@ readonly class ElementSelectorModalController
             $statuses = $elementType::statuses();
 
             if ($condition) {
-                /** @var Collection<ConditionRuleGroup> $groups */
-                $groups = collect($condition->getConditionRules());
+                $rules = collect($condition->getConditionRules()->getRules());
 
-                if ($groups->count() === 1) {
-                    /** @var ConditionRuleGroup $group */
-                    $group = $groups->first();
+                if ($rules->doesntContain(fn ($rule) => $rule instanceof ConditionGroupInterface)) {
                     /** @var StatusConditionRule|null $statusRule */
-                    $statusRule = $group->conditionRules
-                        ->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
+                    $statusRule = $rules->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
 
                     if ($statusRule) {
                         $statusValues = $statusRule->getValues();
@@ -59,6 +54,7 @@ readonly class ElementSelectorModalController
                             });
                     }
                 }
+
             }
         }
 

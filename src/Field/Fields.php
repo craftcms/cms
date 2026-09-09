@@ -9,8 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Condition\ConditionRuleGroup;
-use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Migrator;
@@ -1231,25 +1230,19 @@ class Fields
             return;
         }
 
-        if ($condition::supportsGroups()) {
-            /** @var ConditionRuleGroup[] $groups */
-            $groups = $condition->getConditionRules();
-
-            foreach ($groups as $group) {
-                $this->updateFieldUidInRules($group->conditionRules, $replacedFields);
-            }
-        } else {
-            $this->updateFieldUidInRules($condition->getConditionRules(), $replacedFields);
-        }
+        $this->updateFieldUidInRules($condition->getConditionRules(), $replacedFields);
     }
 
-    /**
-     * @param  ConditionRuleInterface[]  $rules
-     * @param  array<string, array{string, string}>  $replacedFields
-     */
-    private function updateFieldUidInRules(array $rules, array &$replacedFields): void
+    /** @param array<string, array{string, string}> $replacedFields */
+    private function updateFieldUidInRules(ConditionGroupInterface $group, array &$replacedFields): void
     {
-        foreach ($rules as $rule) {
+        foreach ($group->getRules() as $rule) {
+            if ($rule instanceof ConditionGroupInterface) {
+                $this->updateFieldUidInRules($rule, $replacedFields);
+
+                continue;
+            }
+
             if (! $rule instanceof FieldConditionRuleInterface) {
                 continue;
             }
