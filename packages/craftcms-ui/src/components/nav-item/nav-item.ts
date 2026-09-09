@@ -9,6 +9,7 @@ import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
+import {dispatchNavigateEvent} from '@src/utilities/navigate-event.js';
 
 /**
  *
@@ -148,6 +149,13 @@ export default class CraftNavItem extends LitElement {
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
+  #handleLinkClick = (event: MouseEvent) => {
+    if (!this.href) {
+      return;
+    }
+    dispatchNavigateEvent(this, this.href, event);
+  };
+
   renderIconItem(hasSubnav: boolean) {
     const itemId = `item-${this.id}`;
     // Without an href there's nothing to link to, so render a plain span.
@@ -164,6 +172,7 @@ export default class CraftNavItem extends LitElement {
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
         aria-expanded="${hasSubnav ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
+        @click="${this.#handleLinkClick}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
@@ -253,26 +262,36 @@ export default class CraftNavItem extends LitElement {
   }
 
   renderItem(showToggle: boolean, hasPrefix: boolean = false) {
-    // Without an href there's nothing to link to, so render a plain span.
-    const tag = this.href ? literal`a` : literal`span`;
-
     return staticHtml`
-      <${tag}
+      <div
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
           'nav-item--static': !this.href,
         })}"
-        href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
         ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
+        ${this.renderInteractiveItem()}
+        ${this.renderSuffix(showToggle)}
+      </div>
+    `;
+  }
+
+  renderInteractiveItem() {
+    // Without an href there's nothing to link to, so render a plain span.
+    const tag = this.href ? literal`a` : literal`span`;
+    return staticHtml`
+      <${tag}
+        class="nav-item__action-item"
+        href="${ifDefined(this.href || undefined)}"
+        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
+        @click="${this.#handleLinkClick}"
+      >
         <slot
           id="${this.id}-label"
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
-        ${this.renderSuffix(showToggle)}
       </${tag}>
     `;
   }
