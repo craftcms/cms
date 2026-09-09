@@ -1,5 +1,5 @@
-import {expect, it, vi} from 'vite-plus/test';
-import {computed, createApp, nextTick, reactive} from 'vue';
+import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {computed, createApp, nextTick, reactive, type App} from 'vue';
 
 const state = vi.hoisted(() => ({
   page: null as any,
@@ -27,6 +27,21 @@ vi.mock('@/common/composables/useGlobalSidebar', () => ({
     icon: computed(() => 'arrow-left-to-line'),
   }),
 }));
+
+let app: App | null = null;
+const extraElements: HTMLElement[] = [];
+
+afterEach(() => {
+  app?.unmount();
+  app = null;
+  extraElements.splice(0).forEach((el) => el.remove());
+});
+
+function appendElement<T extends HTMLElement>(el: T): T {
+  document.body.append(el);
+  extraElements.push(el);
+  return el;
+}
 
 async function mountSidebar(
   mode: 'docked' | 'floating',
@@ -56,62 +71,50 @@ async function mountSidebar(
   });
 
   const {default: CpSidebar} = await import('./CpSidebar.vue');
-  const container = document.createElement('div');
-  document.body.append(container);
-  const app = createApp(CpSidebar);
+  const container = appendElement(document.createElement('div'));
+  app = createApp(CpSidebar);
 
   app.mount(container);
   await nextTick();
 
-  return {
-    container,
-    unmount: () => {
-      app.unmount();
-      container.remove();
-    },
-  };
+  return container;
 }
 
 it('returns focus to the relocated toggle when the docked sidebar expands', async () => {
-  const {container, unmount} = await mountSidebar('docked', 'hidden');
+  const container = await mountSidebar('docked', 'hidden');
 
   container.querySelector<HTMLElement>('#sidebar-toggle')!.click();
-  await nextTick();
-  await nextTick();
 
   expect(state.sidebar.visibility).toBe('visible');
-  expect(document.activeElement).toBe(
-    container.querySelector('#sidebar-toggle')
+  await vi.waitFor(() =>
+    expect(document.activeElement).toBe(
+      container.querySelector('#sidebar-toggle')
+    )
   );
-
-  unmount();
 });
 
 it('moves focus to the nav body instead of the toggle when the docked sidebar collapses', async () => {
-  const {container, unmount} = await mountSidebar('docked', 'visible');
+  const container = await mountSidebar('docked', 'visible');
 
   container.querySelector<HTMLElement>('#sidebar-toggle')!.click();
-  await nextTick();
-  await nextTick();
 
   expect(state.sidebar.visibility).toBe('hidden');
-  expect(document.activeElement).toBe(
-    container.querySelector('.cp-sidebar__body')
+  await vi.waitFor(() =>
+    expect(document.activeElement).toBe(
+      container.querySelector('.cp-sidebar__body')
+    )
   );
-
-  unmount();
 });
 
-it('leaves focus on the toggle when a floating sidebar opens or closes', async () => {
-  const {container, unmount} = await mountSidebar('floating', 'hidden');
-  const toggleButton = container.querySelector<HTMLElement>('#sidebar-toggle')!;
+it('moves focus into the sidebar when it becomes visible while focus was on an external control', async () => {
+  const container = await mountSidebar('floating', 'hidden');
+  const externalControl = appendElement(document.createElement('button'));
+  externalControl.focus();
 
-  toggleButton.click();
-  await nextTick();
-  await nextTick();
-
-  expect(state.sidebar.visibility).toBe('visible');
-  expect(document.activeElement).toBe(toggleButton);
-
-  unmount();
+  state.sidebar.visibility = 'visible';
+  await vi.waitFor(() =>
+    expect(document.activeElement).toBe(
+      container.querySelector('#sidebar-toggle')
+    )
+  );
 });
