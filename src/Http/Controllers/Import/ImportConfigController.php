@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Import;
 
 use Closure;
+use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Form\FormResolver;
@@ -14,11 +16,11 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ImportConfigEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportFieldLayoutProviderViewModel;
+use CraftCms\Cms\Http\ViewModels\ImportMapViewModel;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
@@ -323,32 +325,24 @@ class ImportConfigController
         $importer ??= $found;
 
         $currentUser = $this->request->craftUser();
-
-        $templateVars = [
-            'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('saveImportConfigs'),
-            'import' => $importer,
-            'destinationCols' => $importer->getDestinationCols(),
-            'sourceDataCols' => $importer->getSourceDataCols(),
-        ];
+        $canSave = (bool) $currentUser?->can('saveImportConfigs');
 
         $response = new CpScreenResponse()
             ->title(t('Edit map', ['name' => $importer->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
             ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
-            ->contentTemplate('import/configs/_map.twig', $templateVars)
+            ->inertiaPage('import/configs/Map', new ImportMapViewModel(
+                importer: $importer,
+                readOnly: $this->readOnly,
+                canSave: $canSave,
+            ))
             ->unless(
-                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
+                $this->readOnly || ! $canSave,
                 callback: function (CpScreenResponse $response) {
                     $response
                         ->action('import/configs/saveMap')
-                        ->redirectUrl('import/configs')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'import/configs/{handle}/map',
-                            'shortcut' => true,
-                            'retainScroll' => true,
-                        ]);
+                        ->redirectUrl('import/configs');
                 },
                 default: function (CpScreenResponse $response) {
                     if ($this->readOnly) {
@@ -401,10 +395,13 @@ class ImportConfigController
             $import->fieldLayoutId($this->request->input('fieldLayoutId', $import->fieldLayoutId));
         }
 
-        $import->map($this->request->input('map', $import->map));
-        $import->matchCriteria($this->request->input('matchCriteria', $import->matchCriteria));
-        $import->clearableItems($this->request->input('clearableItems', $import->clearableItems ?? []));
-        $import->keepMissingNestedElements($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? []));
+        // container branches used to arrive as JSON strings from the Twig form's hidden
+        // inputs; the Vue page posts real nested objects, but plugins and file-based
+        // configs can still send the encoded shape
+        $import->map(ImportHelper::ensureCleanArray($this->request->input('map', $import->map)));
+        $import->matchCriteria(ImportHelper::ensureCleanArray($this->request->input('matchCriteria', $import->matchCriteria)));
+        $import->clearableItems(ImportHelper::ensureCleanArray($this->request->input('clearableItems', $import->clearableItems ?? [])));
+        $import->keepMissingNestedElements(ImportHelper::ensureCleanArray($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? [])));
 
         if (! $this->importConfigService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -418,179 +415,50 @@ class ImportConfigController
         );
     }
 
-    public function editNestedFieldMapping(): CpScreenResponse
+    /**
+     * Returns the destination columns for a container field or property, for the nested
+     * mapping panel.
+     *
+     * Only the structure: the panel is opened around client state the map page already
+     * holds, so there is nothing to relay back and forth.
+     */
+    public function nestedMappingCols(): JsonResponse
     {
-        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
+        [, $field, , $import] = $this->fieldImportUids();
 
         $fieldHandle = $this->request->input('fieldHandle');
-        $fieldIsProperty = $this->request->input('fieldIsProperty');
-        $currentPartialMap = $this->request->input('currentMap');
-        $currentPartialMatchCriteria = $this->request->input('currentMatchCriteria');
-        $currentPartialClearableItems = $this->request->input('currentClearableItems');
-        $currentPartialKeepMissingNestedElements = $this->request->input('currentKeepMissingNestedElements');
+        $fieldIsProperty = $this->request->boolean('fieldIsProperty');
 
-        // a container field's own keep decision lives under a reserved `__keep__` leaf, since
-        // the field's own handle also needs to hold any of its nested containers' own decisions
-        $fieldHandleForKeep = $fieldHandle.'[__keep__]';
-
-        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMap, 'map');
-        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMatchCriteria, 'matchCriteria');
-        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialClearableItems, 'clearableItems');
-        // the relayed value is the field's whole branch (its own __keep__ plus any nested
-        // containers' own branches), so it's applied at the bare handle, not the __keep__ leaf
-        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialKeepMissingNestedElements, 'keepMissingNestedElements');
-
-        $keepMissingNestedElementsChecked = $import->keepMissingNestedElements ? array_reduce(
-            Arr::bracketsToArray($fieldHandleForKeep),
-            static fn ($value, $part) => $value && is_iterable($value) ? $value[$part] ?? null : null,
-            $import->keepMissingNestedElements
-        ) : null;
-
-        $cols = [];
+        $fieldName = $field instanceof FieldInterface ? $field->name : $fieldHandle;
+        $groups = [];
 
         if ($field instanceof ImportableElementContainerFieldInterface) {
-            $providers = $field->getFieldLayoutProviders();
-            foreach ($providers as $provider) {
-                $fieldLayout = $provider->getFieldLayout();
-                $cols[$provider->getHandle()] = [
-                    'provider' => $provider,
-                    'destinationCols' => ImportHelper::getDestinationColsForFieldLayout($fieldLayout, $field, $provider, $fieldHandle),
+            foreach ($field->getFieldLayoutProviders() as $provider) {
+                $groups[] = [
+                    'providerName' => $provider instanceof Chippable ? $provider->getUiLabel() : $provider->getHandle(),
+                    'destinationCols' => ImportHelper::getDestinationColsForFieldLayout(
+                        $provider->getFieldLayout(),
+                        $field,
+                        $provider,
+                        $fieldHandle,
+                    ),
                 ];
             }
         }
 
         // if it's a property, and we have the method that takes care of importing into that property, use that method
         if (! $field && $fieldIsProperty && method_exists($import->className, 'getDestinationColsForProperty')) {
-            $cols[$fieldHandle] = [
-                'provider' => null,
+            $groups[] = [
+                'providerName' => null,
                 'destinationCols' => $import->className::getDestinationColsForProperty($import, $fieldHandle),
             ];
         }
 
-        $currentUser = $this->request->craftUser();
-
-        $templateVars = [
-            'readOnly' => $this->readOnly,
-            'static' => ! $currentUser?->can('saveImportConfigs'),
-            'import' => $import,
-            'field' => $field,
-            'destinationCols' => $cols,
-            'sourceDataCols' => $import->getSourceDataCols(),
-            'nested' => true,
-            'fieldHandle' => $fieldHandle,
-            'canKeepMissingNestedElements' => $this->request->boolean('fieldCanKeepMissing'),
-            'prefixedHandleForKeepFlag' => $this->request->input('fieldKeepName'),
-            'keepMissingNestedElementsChecked' => $keepMissingNestedElementsChecked,
-        ];
-
-        return new CpScreenResponse()
-            ->title(t('Edit map for {fieldName}', ['fieldName' => $field?->name ?? $fieldHandle]))
-//            ->addCrumb(t('Import'), 'import')
-//            ->addCrumb(t('Configs'), 'import/configs')
-//            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
-            ->contentTemplate('import/configs/_map.twig', $templateVars)
-            ->submitButtonLabel(t('Apply'))
-            ->unless(
-                $this->readOnly || ! $currentUser?->can('saveImportConfigs'),
-                callback: function (CpScreenResponse $response) {
-                    $response
-                        ->action('import/configs/saveNestedFieldMapping')
-                        ->redirectUrl('import/configs/{handle}/map');
-                },
-                default: function (CpScreenResponse $response) {
-                    if ($this->readOnly) {
-                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
-                    }
-                },
-            );
-    }
-
-    private function applyCurrentPartialValue(BaseImporter $importer, string $fieldHandle, mixed $currentPartialValue, string $type): void
-    {
-        if (is_string($currentPartialValue)) {
-            $currentPartialValue = Json::decodeIfJson($currentPartialValue);
-
-            // if you added this via a slideout, closed that slideout by clicking "apply" and you then open that slideout again,
-            // if the config we have in the hidden field is different to the one coming from the server,
-            // use the one coming from the hidden field
-            $fieldHandleArray = Arr::bracketsToArray($fieldHandle);
-            $savedPartialValue = $importer->$type ? array_reduce(
-                $fieldHandleArray,
-                static fn ($value, $part) => $value && is_iterable($value)
-                    ? $value[$part] ?? null
-                    : null,
-                $importer->$type
-            ) : null;
-
-            if ($currentPartialValue != $savedPartialValue) {
-                $value = $importer->$type;
-                $ref = &$value;
-                foreach ($fieldHandleArray as $part) {
-                    if (! is_array($ref[$part] ?? null)) {
-                        $ref[$part] = [];
-                    }
-                    $ref = &$ref[$part];
-                }
-                $ref = $currentPartialValue;
-                unset($ref);
-                $importer->$type($value);
-            }
-        }
-    }
-
-    public function storeNestedFieldMapping(): Response
-    {
-        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
-
-        $fieldHandle = Arr::dotifyKey($this->request->input('fieldHandle', $field?->handle));
-
-        // validate the map fragment;
-        // if it errors, a toast notification will show with the error
-        $this->request->validate([
-            'fieldHandle' => ['required', 'string', 'max:255'],
-            "map.$fieldHandle" => [
-                'required',
-                'array',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
-            ],
-            "matchCriteria.$fieldHandle" => [
-                'nullable',
-                'array',
-                // we're intentionally using validateMap() here as we basically want to check the same thing for map and matchCriteria
-                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
-            ],
-            "clearableItems.$fieldHandle" => [
-                'nullable',
-                'array',
-                // we're intentionally using validateMap() here as we basically want to check the same thing for map and clearableItems
-                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
-            ],
-            //            "keepMissingNestedElements.$fieldHandle" => [
-            //                'nullable',
-            //                'array',
-            //                // we're intentionally using validateMap() here as we basically want to check the same thing for map and keepMissingNestedElements
-            //                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
-            //            ],
-        ]);
-
-        $map = $this->request->input("map.$fieldHandle") ?? [];
-        $matchCriteria = $this->request->input("matchCriteria.$fieldHandle") ?? [];
-        $clearableItems = $this->request->input("clearableItems.$fieldHandle") ?? [];
-        $keepMissingNestedElements = $this->request->input("keepMissingNestedElements.$fieldHandle") ?? [];
-
-        $map = array_map(ImportHelper::ensureCleanArray(...), $map);
-        $matchCriteria = array_map(ImportHelper::ensureCleanArray(...), $matchCriteria);
-        $clearableItems = array_map(ImportHelper::ensureCleanArray(...), $clearableItems);
-        $keepMissingNestedElements = array_map(ImportHelper::ensureCleanArray(...), $keepMissingNestedElements);
-
-        // and return it
         return $this->asJsonSuccess(null, [
-            'fieldHandle' => $fieldHandle,
-            'map' => $map,
-            'matchCriteria' => $matchCriteria,
-            'clearableItems' => $clearableItems,
-            'keepMissingNestedElements' => $keepMissingNestedElements,
-            'namespace' => $this->request->header('X-Craft-Namespace'),
+            'title' => t('Edit map for {fieldName}', ['fieldName' => $fieldName]),
+            'fieldName' => $fieldName,
+            'groups' => $groups,
+            'sourceDataCols' => $import->getSourceDataCols(),
         ]);
     }
 

@@ -76,58 +76,52 @@ beforeEach(function () {
     $this->importer = $importer;
 });
 
-it('returns a container field’s whole keepMissingNestedElements branch, not just its own leaf', function () {
-    $response = $this->postJson(action([ImportConfigController::class, 'storeNestedFieldMapping']), [
-        'fieldUid' => $this->outerMatrixField->uid,
-        'importUid' => $this->importer->uid,
-        'fieldHandle' => 'outerMatrix',
-        'map' => ['outerMatrix' => ['outerEt' => []]],
-        'keepMissingNestedElements' => [
-            'outerMatrix' => [
-                '__keep__' => '1',
-                'outerEt' => [
-                    'fields' => [
-                        'innerMatrix' => ['__keep__' => '1'],
-                    ],
-                ],
-            ],
-        ],
-    ]);
-
-    $response->assertOk();
-    expect($response->json('keepMissingNestedElements'))->toBe([
-        '__keep__' => 1,
-        'outerEt' => [
-            'fields' => [
-                'innerMatrix' => ['__keep__' => 1],
-            ],
-        ],
-    ]);
+it('renders the map screen as a Vue page', function () {
+    $this->get(action([ImportConfigController::class, 'editMap'], ['handle' => $this->importer->handle]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('import/configs/Map')
+            ->where('config.uid', $this->importer->uid)
+            ->where('config.handle', $this->importer->handle)
+            ->where('values.map', [])
+            ->where('canSave', true)
+            ->has('destinationCols')
+            ->has('nestedColsUrl')
+        );
 });
 
-it('persists both levels’ keepMissingNestedElements decisions after saving the outer map', function () {
-    $nested = $this->postJson(action([ImportConfigController::class, 'storeNestedFieldMapping']), [
+it('returns a container field’s destination columns for the nested mapping panel', function () {
+    $response = $this->getJson(action([ImportConfigController::class, 'nestedMappingCols'], [
         'fieldUid' => $this->outerMatrixField->uid,
         'importUid' => $this->importer->uid,
         'fieldHandle' => 'outerMatrix',
-        'map' => ['outerMatrix' => ['outerEt' => []]],
-        'keepMissingNestedElements' => [
-            'outerMatrix' => [
-                '__keep__' => '1',
-                'outerEt' => [
-                    'fields' => [
-                        'innerMatrix' => ['__keep__' => '1'],
-                    ],
-                ],
-            ],
-        ],
-    ])->json('keepMissingNestedElements');
+    ]));
 
+    $response->assertOk();
+    expect($response->json('fieldName'))->toBe('Outer Matrix');
+    expect($response->json('groups.0.providerName'))->toBe('Outer ET');
+
+    // The columns are addressed from the root of the mapping trees, prefixed with the
+    // container's own handle — that's what lets the panel edit the page's state in place.
+    $handles = array_column($response->json('groups.0.destinationCols'), 'prefixedHandle');
+    expect($handles)->toContain('outerMatrix[outerEt][fields][innerMatrix]');
+});
+
+it('persists both levels’ keepMissingNestedElements decisions when the map is saved', function () {
+    // The nested panel writes into the page's trees client-side, so the whole nested
+    // shape arrives in one storeMap post — there's no per-container round trip.
     $this->postJson(action([ImportConfigController::class, 'storeMap']), [
         'importUid' => $this->importer->uid,
         'map' => ['outerMatrix' => ['outerEt' => []]],
         'keepMissingNestedElements' => [
-            'outerMatrix' => $nested,
+            'outerMatrix' => [
+                '__keep__' => '1',
+                'outerEt' => [
+                    'fields' => [
+                        'innerMatrix' => ['__keep__' => '1'],
+                    ],
+                ],
+            ],
         ],
     ])->assertOk();
 
@@ -142,5 +136,34 @@ it('persists both levels’ keepMissingNestedElements decisions after saving the
                 ],
             ],
         ],
+    ]);
+});
+
+it('persists match criteria and clearable items alongside the map', function () {
+    $this->postJson(action([ImportConfigController::class, 'storeMap']), [
+        'importUid' => $this->importer->uid,
+        'map' => ['title' => 'Name'],
+        'matchCriteria' => ['title' => '1'],
+        'clearableItems' => ['title' => '1'],
+    ])->assertOk();
+
+    $saved = app(ImportConfig::class)->getConfigByUid($this->importer->uid);
+
+    expect($saved->matchCriteria)->toBe(['title' => 1]);
+    expect($saved->clearableItems)->toBe(['title' => 1]);
+});
+
+it('still decodes JSON-encoded container branches on save', function () {
+    // File-based configs and plugins can still post the shape the Twig screen's hidden
+    // inputs produced.
+    $this->postJson(action([ImportConfigController::class, 'storeMap']), [
+        'importUid' => $this->importer->uid,
+        'map' => ['outerMatrix' => json_encode(['outerEt' => ['title' => 'Title']])],
+    ])->assertOk();
+
+    $saved = app(ImportConfig::class)->getConfigByUid($this->importer->uid);
+
+    expect($saved->map)->toBe([
+        'outerMatrix' => ['outerEt' => ['title' => 'Title']],
     ]);
 });

@@ -159,6 +159,11 @@ class ModelImporter extends BaseImporter
     {
         $filePath = BaseImporter::resolvedFilePath($this->file);
 
+        // a config can be saved before its file is chosen, and the map screen still renders
+        if ($filePath === null) {
+            return [];
+        }
+
         return Import::getDataHeadings($filePath);
     }
 
