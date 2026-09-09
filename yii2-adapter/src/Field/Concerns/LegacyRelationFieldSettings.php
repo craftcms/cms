@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Field\Concerns;
 
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -192,7 +193,7 @@ JS, [
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
 
-            $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
+            $selectionConditionHtml = FormFields::fieldHtml(new ConditionBuilderRenderer($selectionCondition)->render(), [
                 'label' => t('Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),
