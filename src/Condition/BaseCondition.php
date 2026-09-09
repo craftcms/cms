@@ -241,7 +241,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /** @return array<string, mixed> */
-    final public function getConfig(): array
+    public function getConfig(): array
     {
         return array_merge($this->config(), [
             'class' => static::class,
