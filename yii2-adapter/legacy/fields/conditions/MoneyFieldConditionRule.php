@@ -6,28 +6,18 @@ namespace craft\fields\conditions;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Money;
-use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Money as MoneyHelper;
-use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyNumberConditionRule;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
-
 use RuntimeException;
 use function CraftCms\Cms\t;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule instead. */
 class MoneyFieldConditionRule extends \CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule
 {
-    public function getForm(): Form
-    {
-        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
-    }
-
-    public function getHtml(): string
-    {
-        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
-    }
+    use LegacyNumberConditionRule;
 
     protected function inputHtml(): string
     {
@@ -91,16 +81,5 @@ class MoneyFieldConditionRule extends \CraftCms\Cms\Field\Conditions\MoneyFieldC
             'field' => $field,
             'showClear' => false,
         ];
-    }
-
-    public function getConfig(): array
-    {
-        $config = parent::getConfig();
-
-        if (static::class === self::class) {
-            $config['class'] = \CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule::class;
-        }
-
-        return $config;
     }
 }

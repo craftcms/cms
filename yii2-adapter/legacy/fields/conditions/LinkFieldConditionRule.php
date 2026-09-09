@@ -4,41 +4,37 @@ declare(strict_types=1);
 
 namespace craft\fields\conditions;
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Yii2Adapter\Form\LegacyConditionRuleForm;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyTextConditionRule;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\LinkFieldConditionRule instead. */
 class LinkFieldConditionRule extends \CraftCms\Cms\Field\Conditions\LinkFieldConditionRule
 {
-    public function getForm(): Form
-    {
-        return app(LegacyConditionRuleForm::class)->capture($this, $this->getHtml(...));
+    use LegacyTextConditionRule {
+        inputHtml as private baseInputHtml;
     }
 
-    public function getHtml(): string
-    {
-        return app(LegacyConditionRuleForm::class)->render(Form::make($this->operatorNodes()), $this->inputHtml());
-    }
+    private const string OPERATOR_TYPE = 'type';
 
     protected function inputHtml(): string
     {
-        return app(LegacyConditionRuleForm::class)->textInput($this, Form::make($this->inputNodes()), $this->inputOptions());
-    }
-
-    /** @return array<string, mixed> */
-    protected function inputOptions(): array
-    {
-        return app(LegacyConditionRuleForm::class)->textOptions($this, $this->inputType());
-    }
-
-    public function getConfig(): array
-    {
-        $config = parent::getConfig();
-
-        if (static::class === self::class) {
-            $config['class'] = \CraftCms\Cms\Field\Conditions\LinkFieldConditionRule::class;
+        if ($this->operator !== self::OPERATOR_TYPE) {
+            return $this->baseInputHtml();
         }
 
-        return $config;
+        /** @var Link $field */
+        $field = $this->field();
+        $linkTypeOptions = array_map(
+            fn(BaseLinkType $linkType) => ['value' => $linkType::id(), 'label' => $linkType::displayName()],
+            $field->getLinkTypes(),
+        );
+
+        return FormFields::selectHtml([
+            'name' => 'linkType',
+            'options' => $linkTypeOptions,
+            'value' => $this->linkType,
+        ]);
     }
 }

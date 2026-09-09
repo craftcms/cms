@@ -96,3 +96,22 @@ it('bridges plugins extending the legacy base rule without invoking modern value
 
     expect(app(ConditionRuleRenderer::class)->render($rule))->toContain('custom-base-input');
 });
+
+it('preserves the submitted input names for legacy rule families', function(string $class, array $config, array $names) {
+    $rule = new $class($config);
+    $rule->condition = new ElementCondition(Entry::class);
+
+    $crawler = new \Symfony\Component\DomCrawler\Crawler(app(ConditionRuleRenderer::class)->render($rule));
+
+    expect($crawler->filter('[name]')->extract(['name']))->toContain(...$names);
+})->with([
+    'text' => [TitleConditionRule::class, ['value' => 'example'], ['operator', 'value']],
+    'number range' => [\craft\elements\conditions\IdConditionRule::class, ['operator' => 'between', 'value' => '10', 'maxValue' => '20'], ['value', 'maxValue']],
+    'lightswitch' => [\craft\elements\conditions\HasUrlConditionRule::class, [], ['value']],
+    'membership' => [\craft\elements\conditions\StatusConditionRule::class, [], ['values[]']],
+    'date range' => [\craft\elements\conditions\DateCreatedConditionRule::class, ['rangeType' => 'range'], ['startDate[date]', 'endDate[date]']],
+    'author' => [\craft\elements\conditions\entries\AuthorConditionRule::class, [], ['elementIds']],
+    'related element' => [\craft\elements\conditions\RelatedToConditionRule::class, [], ['elementType', 'elementIds']],
+    'file size' => [\craft\elements\conditions\assets\FileSizeConditionRule::class, [], ['value', 'unit']],
+    'administrative area' => [\craft\elements\conditions\addresses\AdministrativeAreaConditionRule::class, ['countryCode' => 'US'], ['countryCode', 'values[]']],
+]);
