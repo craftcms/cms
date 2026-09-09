@@ -48,7 +48,7 @@ describe('createCondition', function () {
     it('creates a condition with empty conditionRules by default', function () {
         $condition = $this->service->createCondition(ElementCondition::class);
 
-        expect($condition->getConditionRules())->toBeEmpty();
+        expect($condition->getConditionRules()->getRules())->toBeEmpty();
     });
 });
 

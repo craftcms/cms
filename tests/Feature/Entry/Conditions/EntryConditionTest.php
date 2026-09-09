@@ -107,12 +107,12 @@ describe('config round-trip', function () {
         $postDateRule->endDate = '2025-12-31';
         $condition->addConditionRule($postDateRule);
 
-        $ruleConfigs = array_map(fn ($rule) => $rule->getConfig(), $condition->getConditionRules());
+        $ruleConfigs = array_map(fn ($rule) => $rule->getConfig(), $condition->getConditionRules()->getRules());
 
         $restored = new EntryCondition(Entry::class);
         $restored->setConditionRules($ruleConfigs);
 
-        $restoredRules = $restored->getConditionRules();
+        $restoredRules = $restored->getConditionRules()->getRules();
         expect($restoredRules)->toHaveCount(2);
 
         expect($restoredRules[0])->toBeInstanceOf(SectionConditionRule::class);
