@@ -2,19 +2,34 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import type CraftThumbnail from './thumbnail.js';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+import {expect} from 'storybook/test';
 const {events, args, argTypes, template} =
   getStorybookHelpers('craft-thumbnail');
 import './thumbnail.js';
+import '../chip/chip.js';
+import '../card/card.js';
 
 // An opaque sample image.
-const opaqueImage = 'https://picsum.photos/seed/craft/300/300';
+const opaqueImage = imageFixture(300, 300);
+
+function imageFixture(width: number, height: number, transparent = false) {
+  return (
+    'data:image/svg+xml;utf8,' +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <rect width="${width}" height="${height}" fill="#305ce7" opacity="${transparent ? 0.3 : 1}" />
+      <rect x="${width / 3}" width="${width / 3}" height="${height}" fill="#ffffff" />
+    </svg>`
+    )
+  );
+}
 
 // A semi-transparent image so the checkered backing is visible behind it.
 const transparentImage =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="38" fill="%234a7cff" opacity="0.85" />
+      <circle cx="50" cy="50" r="38" fill="#4a7cff" opacity="0.85" />
     </svg>`
   );
 
@@ -108,4 +123,261 @@ export const SlottedContent: Story = {
       <img src="${transparentImage}" alt="Slotted" />
     </craft-thumbnail>
   `,
+};
+
+const modes = ['fit', 'crop', 'stretch', 'letterbox'] as const;
+const fixtures = [
+  {
+    name: 'Landscape override URL',
+    width: 300,
+    height: 150,
+    fittedWidth: 120,
+    fittedHeight: 60,
+  },
+  {
+    name: 'Portrait',
+    width: 150,
+    height: 300,
+    fittedWidth: 60,
+    fittedHeight: 120,
+  },
+  {
+    name: 'Square',
+    width: 300,
+    height: 300,
+    fittedWidth: 120,
+    fittedHeight: 120,
+  },
+  {
+    name: 'Small source',
+    width: 12,
+    height: 8,
+    fittedWidth: 12,
+    fittedHeight: 8,
+  },
+  {
+    name: 'Transparent',
+    width: 300,
+    height: 150,
+    fittedWidth: 120,
+    fittedHeight: 60,
+    transparent: true,
+  },
+];
+
+export const Modes: Story = {
+  render: () => html`
+    ${modes.map(
+      (mode) => html`
+        <section aria-label=${mode}>
+          <h2>${mode}</h2>
+          ${fixtures.map(
+            (fixture, index) => html`
+              <craft-thumbnail
+                mode=${mode}
+                src=${imageFixture(
+                  fixture.width,
+                  fixture.height,
+                  fixture.transparent
+                )}
+                alt=${fixture.name}
+                loading="eager"
+                data-fixture=${index}
+                style="--c-thumbnail-size: 120px;"
+              ></craft-thumbnail>
+              <craft-thumbnail
+                mode=${mode}
+                data-fixture=${index}
+                style="--c-thumbnail-size: 120px;"
+                rounded
+              >
+                <img
+                  src=${imageFixture(
+                    fixture.width,
+                    fixture.height,
+                    fixture.transparent
+                  )}
+                  alt=${`Slotted ${fixture.name}`}
+                />
+              </craft-thumbnail>
+            `
+          )}
+        </section>
+      `
+    )}
+  `,
+  play: async ({canvasElement}) => {
+    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
+      await thumbnail.updateComplete;
+      const image =
+        thumbnail.shadowRoot!.querySelector('img') ??
+        thumbnail.querySelector('img')!;
+      await image.decode();
+      const fixture = fixtures[Number(thumbnail.dataset.fixture)]!;
+      const sized = thumbnail.mode === 'crop' || thumbnail.mode === 'stretch';
+      const wrapper = thumbnail
+        .shadowRoot!.querySelector('[part="thumbnail"]')!
+        .getBoundingClientRect();
+      const box = image.getBoundingClientRect();
+      await expect(wrapper.width).toBe(120);
+      await expect(wrapper.height).toBe(120);
+      await expect(box.width).toBe(sized ? 120 : fixture.fittedWidth);
+      await expect(box.height).toBe(sized ? 120 : fixture.fittedHeight);
+      await expect(getComputedStyle(image).objectFit).toBe(
+        thumbnail.mode === 'crop'
+          ? 'cover'
+          : thumbnail.mode === 'stretch'
+            ? 'fill'
+            : 'contain'
+      );
+      await expect(box.x + box.width / 2).toBeCloseTo(wrapper.x + 60);
+      await expect(box.y + box.height / 2).toBeCloseTo(wrapper.y + 60);
+    }
+  },
+};
+
+export const InlineSvgModes: Story = {
+  render: () => html`
+    ${modes.map(
+      (mode) => html`
+        <craft-thumbnail mode=${mode} style="--c-thumbnail-size: 120px;">
+          <svg
+            width="300"
+            height="150"
+            viewBox="0 0 300 150"
+            role="img"
+            aria-label=${`Inline SVG ${mode}`}
+          >
+            <rect width="300" height="150" fill="#305ce7" />
+            <rect
+              class="marker"
+              x="100"
+              width="100"
+              height="150"
+              fill="#ffffff"
+            />
+          </svg>
+        </craft-thumbnail>
+      `
+    )}
+  `,
+  play: async ({canvasElement}) => {
+    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
+      await thumbnail.updateComplete;
+      const svg = thumbnail.querySelector('svg')!;
+      const marker = svg.querySelector('.marker')!.getBoundingClientRect();
+      const wrapper = thumbnail
+        .shadowRoot!.querySelector('[part="thumbnail"]')!
+        .getBoundingClientRect();
+      await expect(wrapper.width).toBe(120);
+      await expect(wrapper.height).toBe(120);
+      await expect(marker.width).toBe(thumbnail.mode === 'crop' ? 80 : 40);
+      await expect(marker.height).toBe(
+        thumbnail.mode === 'crop' || thumbnail.mode === 'stretch' ? 120 : 60
+      );
+      await expect(marker.x + marker.width / 2).toBeCloseTo(wrapper.x + 60);
+      await expect(marker.y + marker.height / 2).toBeCloseTo(wrapper.y + 60);
+
+      const mode = thumbnail.mode;
+      thumbnail.mode = 'fit';
+      await thumbnail.updateComplete;
+      await expect(svg.hasAttribute('preserveAspectRatio')).toBe(false);
+      await expect(
+        svg.querySelector('.marker')!.getBoundingClientRect().height
+      ).toBe(60);
+      thumbnail.mode = mode;
+      await thumbnail.updateComplete;
+    }
+  },
+};
+
+export const Presentations: Story = {
+  render: () => html`
+    ${fixtures.map((fixture, index) => {
+      const thumbnail = (mode: 'fit' | 'crop', size: number) => html`
+        <craft-thumbnail
+          mode=${mode}
+          src=${imageFixture(
+            fixture.width,
+            fixture.height,
+            fixture.transparent
+          )}
+          alt=${fixture.name}
+          loading="eager"
+          data-fixture=${index}
+          data-size=${size}
+          style=${`--c-thumbnail-size: ${size}px;`}
+        ></craft-thumbnail>
+      `;
+
+      return html`
+        <section aria-label=${fixture.name}>
+          <h2>${fixture.name}</h2>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: var(--c-spacing-md); align-items: start;"
+          >
+            <craft-chip show-thumb size="small">
+              <div slot="thumbnail">${thumbnail('fit', 30)}</div>
+              Small chip
+            </craft-chip>
+            <craft-chip size="small">
+              <div slot="prefix">${thumbnail('fit', 30)}</div>
+              Selector chip
+            </craft-chip>
+            <craft-chip show-thumb size="large">
+              <div slot="thumbnail">${thumbnail('fit', 120)}</div>
+              Large chip
+            </craft-chip>
+            <craft-card style="width: 280px;" thumb-alignment="end">
+              <span slot="label">Separate card thumbnail</span>
+              <div slot="thumbnail">${thumbnail('crop', 120)}</div>
+              Card content
+            </craft-card>
+            <craft-card style="width: 280px;">
+              <span slot="label">Inline card thumbnail</span>
+              <div class="card-main">
+                <div class="card-content">Card content</div>
+                ${thumbnail('crop', 120)}
+              </div>
+            </craft-card>
+            <div style="width: 180px; text-align: center;">
+              <div style="display: grid; place-items: center; height: 128px;">
+                ${thumbnail('fit', 120)}
+              </div>
+              Selector / index tile
+            </div>
+          </div>
+        </section>
+      `;
+    })}
+  `,
+  play: async ({canvasElement}) => {
+    for (const card of canvasElement.querySelectorAll('craft-card')) {
+      await card.updateComplete;
+    }
+    for (const chip of canvasElement.querySelectorAll('craft-chip')) {
+      await chip.updateComplete;
+    }
+    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
+      await thumbnail.updateComplete;
+      const image = thumbnail.shadowRoot!.querySelector('img')!;
+      await image.decode();
+      const size = Number(thumbnail.dataset.size);
+      const fixture = fixtures[Number(thumbnail.dataset.fixture)]!;
+      const wrapper = thumbnail
+        .shadowRoot!.querySelector('[part="thumbnail"]')!
+        .getBoundingClientRect();
+      const box = image.getBoundingClientRect();
+      const crop = thumbnail.mode === 'crop';
+      const scale = fixture.name === 'Small source' ? 1 : size / 120;
+
+      await expect(wrapper.width).toBe(size);
+      await expect(wrapper.height).toBe(size);
+      await expect(box.width).toBe(crop ? size : fixture.fittedWidth * scale);
+      await expect(box.height).toBe(crop ? size : fixture.fittedHeight * scale);
+      await expect(getComputedStyle(image).objectFit).toBe(
+        crop ? 'cover' : 'contain'
+      );
+    }
+  },
 };

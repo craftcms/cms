@@ -49,6 +49,7 @@ use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -81,6 +82,32 @@ class LegacyHookField extends LegacyField
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return '<span data-static>static</span>';
+    }
+}
+
+class LegacyInlineHookField extends PlainText
+{
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        HtmlStack::js('window.inlineHookLoaded = true;');
+
+        return '<input name="body" value="' . ($inline ? 'Inline editor' : 'Full editor') . '">';
+    }
+}
+
+class InlineHtmlOverrideField extends PlainText
+{
+    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
+    {
+        return '<input name="body" value="Plugin inline">';
+    }
+}
+
+class InlineProtectedHtmlOverrideField extends PlainText
+{
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return '<input name="body" value="' . ($inline ? 'Plugin inline' : 'Full editor') . '">';
     }
 }
 
@@ -135,6 +162,47 @@ it('registers its private Form types', function() {
     expect(app(FormNodeTypes::class)->types()->contains(LegacyHtmlField::class))->toBeTrue()
         ->and(app(FormControlTypes::class)->types()->contains(LegacyHtmlControl::class))->toBeTrue();
 });
+
+it('captures inline field hooks with their namespace and assets', function() {
+    $field = new LegacyInlineHookField(['handle' => 'body']);
+    $control = $field->formControl(new FieldContext(
+        path: 'body',
+        form: new FormContext(namespace: ['index', 'element-42', 'fields']),
+        inline: true,
+    ));
+    $props = $control->props();
+    $input = new Crawler($props['fragment']['html'])->filter('input');
+
+    expect($control)->toBeInstanceOf(LegacyHtmlControl::class)
+        ->and($input->attr('name'))->toBe('index[element-42][fields][body]')
+        ->and($input->attr('value'))->toBe('Inline editor')
+        ->and($props['fragment']['bodyHtml'])->toContain('window.inlineHookLoaded = true;');
+});
+
+it('preserves public and protected custom field HTML hooks through inline Form rendering', function(string $type) {
+    $field = new $type(['handle' => 'body', 'uid' => 'inline-field']);
+    $layoutElement = Mockery::mock(CustomField::class);
+    $layoutElement->shouldReceive('showInForm', 'editable')->andReturn(true);
+    $field->layoutElement = $layoutElement;
+    $layout = Mockery::mock(FieldLayout::class);
+    $layout->shouldReceive('getFieldByUid')->with('inline-field')->andReturn($field);
+    $entry = Mockery::mock(Entry::class)->makePartial();
+    $entry->shouldReceive('getFieldLayout')->andReturn($layout);
+    $entry->shouldReceive('getFieldValue')->with('body')->andReturn('Original');
+
+    $html = InputNamespace::namespaceInputs(
+        fn() => $entry->getInlineAttributeInputHtml('field:inline-field'),
+        'index[element-42][fields]',
+    );
+    $payload = json_decode(new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    $input = new Crawler($payload['nodes'][0]['control']['props']['fragment']['html'])->filter('input');
+
+    expect($input->attr('name'))->toBe('index[element-42][fields][body]')
+        ->and($input->attr('value'))->toBe('Plugin inline');
+})->with([
+    'public hook' => [InlineHtmlOverrideField::class],
+    'protected hook' => [InlineProtectedHtmlOverrideField::class],
+]);
 
 it('eagerly captures namespaced HTML and assets into a JSON-safe payload', function() {
     $component = Mockery::mock(LegacySettingsContract::class);

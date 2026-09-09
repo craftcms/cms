@@ -118,7 +118,7 @@ describe('createConditionRule', function () {
         // TitleConditionRule inherits `value` (string) from BaseTextConditionRule
         // HasUrlConditionRule inherits `value` (bool) from BaseLightswitchConditionRule
         // The declaring classes differ, so `value` should be filtered out from config
-        // `operator` is from BaseConditionRule (shared) — would be kept
+        // The lightswitch has no operators, so the text operator is discarded too.
         $config = [
             'class' => TitleConditionRule::class,
             'operator' => 'bw',
@@ -128,10 +128,11 @@ describe('createConditionRule', function () {
 
         // After type switching, the config filtering runs via ReflectionProperty.
         // `value` has different declaring classes, so it's removed from config.
-        // `operator` shares the same declaring class, so it stays in config.
         $rule = $this->service->createConditionRule($config);
 
         expect($rule)->toBeInstanceOf(HasUrlConditionRule::class);
+        expect($rule->getConfig()['value'])->toBeTrue();
+        expect($rule->getConfig())->not->toHaveKey('operator');
     });
 
     it('does not filter attributes when switching between rules in the same hierarchy', function () {
@@ -149,6 +150,8 @@ describe('createConditionRule', function () {
         // The type changes to SlugConditionRule
         expect($rule)->toBeInstanceOf(SlugConditionRule::class);
         // operator and value remain in config (not filtered out) since they share declaring classes
+        expect($rule->getConfig()['value'])->toBe('Keep');
+        expect($rule->operator)->toBe('bw');
     });
 
     it('assigns a uid to the created rule', function () {
@@ -156,4 +159,26 @@ describe('createConditionRule', function () {
 
         expect($rule->uid)->toBeString()->not->toBeEmpty();
     });
+});
+
+it('round trips submitted text membership values through the saved JSON config', function () {
+    $rule = $this->service->createConditionRule([
+        'class' => TitleConditionRule::class,
+        'operator' => 'in',
+        'value' => ['Alpha', 'Beta'],
+    ]);
+
+    expect($rule->getConfig()['value'])->toBe('["Alpha","Beta"]');
+    $restored = $this->service->createConditionRule($rule->getConfig());
+    expect($restored->getConfig())->toBe($rule->getConfig());
+});
+
+it('accepts clearing a membership control', function () {
+    $rule = $this->service->createConditionRule([
+        'class' => TitleConditionRule::class,
+        'operator' => 'in',
+        'value' => '',
+    ]);
+
+    expect($rule->getConfig()['value'])->toBe('');
 });

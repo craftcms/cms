@@ -69,7 +69,7 @@
   }
 
   function updatePhotoVolume(
-    value: string | number | boolean | undefined,
+    value: unknown,
     setValue: FormControlOverrideProps['setValue']
   ): void {
     if (value === createVolumeOptionValue) {

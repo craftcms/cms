@@ -81,8 +81,10 @@
     elements: ElementPresentation[];
     sources: string[] | null;
     criteria: FormProperties;
+    selectionCondition?: FormProperties;
     selectionLabel: string;
     limit: number | null;
+    single?: boolean;
     showSiteMenu: boolean;
     viewMode: ElementSelectViewMode;
     /** Lower-cased, for "Edit entry" / "Copy entry". */
@@ -94,11 +96,15 @@
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
-    value: Array<number | string>;
+    value: Array<number | string> | number | string | null;
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: number[], kind: FormChangeKind): void;
+    (
+      event: 'update:value',
+      value: number[] | number | null,
+      kind: FormChangeKind
+    ): void;
   }>();
 
   const presentations = reactive(new Map<number, ElementPresentation>());
@@ -120,7 +126,22 @@
     () => props.editable && props.control.props.canUpload === true
   );
 
-  const ids = computed(() => props.value.map(elementId));
+  const ids = computed(() =>
+    (Array.isArray(props.value)
+      ? props.value
+      : props.value === null || props.value === ''
+        ? []
+        : [props.value]
+    ).map(elementId)
+  );
+
+  function updateValue(ids: number[]): void {
+    emit(
+      'update:value',
+      props.control.props.single ? (ids[0] ?? null) : ids,
+      'discrete'
+    );
+  }
 
   /** One relation can't be reordered, and a read-only field can't be either. */
   const sortable = computed(() => props.editable && ids.value.length > 1);
@@ -180,7 +201,7 @@
    * next round-trip.
    */
   const listData = computed(() =>
-    props.value.map((selectedValue) => ({
+    ids.value.map((selectedValue) => ({
       ...presentation(selectedValue),
       id: elementId(selectedValue),
     }))
@@ -238,7 +259,7 @@
     }
 
     next.splice(finishIndex, 0, moved);
-    emit('update:value', next, 'discrete');
+    updateValue(next);
   }
 
   // ───────────────────────────── selection modal ─────────────────────────────
@@ -294,6 +315,7 @@
       {
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
+        condition: props.control.props.selectionCondition,
         showSiteMenu: props.control.props.showSiteMenu,
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
@@ -316,12 +338,10 @@
               ? [...ids.value, ...chosen]
               : ids.value.flatMap((id) => (id === replacing ? chosen : [id]));
 
-          emit(
-            'update:value',
+          updateValue(
             limit.value === null
               ? next
-              : next.slice(0, Math.max(limit.value, 1)),
-            'discrete'
+              : next.slice(0, Math.max(limit.value, 1))
           );
         },
       }
@@ -336,7 +356,7 @@
   function removeIds(remove: Set<number>): void {
     const next = ids.value.filter((id) => !remove.has(id));
     pruneSelection(next);
-    emit('update:value', next, 'discrete');
+    updateValue(next);
   }
 
   /** One dispatcher for every chip's menu, rather than one per element. */
@@ -565,11 +585,7 @@
     const limit = props.control.props.limit;
     const next = [...ids.value, asset.id];
 
-    emit(
-      'update:value',
-      limit === null ? next : next.slice(-Math.max(limit, 1)),
-      'discrete'
-    );
+    updateValue(limit === null ? next : next.slice(-Math.max(limit, 1)));
   }
 
   /**
@@ -627,7 +643,7 @@
 
       <div
         class="border border-(--c-color-neutral-border-quiet) rounded-sm inset-shadow-sm bg-(--c-color-neutral-fill-quiet) relative"
-        v-if="value.length > 0"
+        v-if="ids.length > 0"
       >
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
@@ -688,7 +704,7 @@
               <input
                 v-if="editable"
                 type="hidden"
-                :name="`${inputName(control.path)}[]`"
+                :name="`${inputName(control.path)}${control.props.single ? '' : '[]'}`"
                 :value="String(element.id)"
               />
             </template>
@@ -715,7 +731,7 @@
         </div>
         <div class="absolute inset-e-1 inset-be-1" v-if="limit && limit > 1">
           <craft-badge size="small" no-prefix
-            >{{ value.length }}/{{ limit }}</craft-badge
+            >{{ ids.length }}/{{ limit }}</craft-badge
           >
         </div>
       </div>

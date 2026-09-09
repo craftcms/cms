@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -15,8 +14,10 @@ use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Nodes\Field;
 use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
@@ -53,11 +54,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     #[\Override]
-    protected function elementSelectConfig(): array
+    protected function elementSelect(): ElementSelect
     {
-        return array_merge(parent::elementSelectConfig(), [
-            'showSiteMenu' => true,
-        ]);
+        return parent::elementSelect()->showSiteMenu();
     }
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
@@ -65,29 +64,18 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         ElementQuery::applyRelatedTo($query, $this->getElementIds(), $elementQuery);
     }
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        $id = 'element-type';
-
-        return Html::hiddenLabel($this->getLabel(), $id).
-            Html::tag('div',
-                FormFields::selectHtml([
-                    'id' => $id,
-                    'name' => 'elementType',
-                    'options' => $this->_elementTypeOptions(),
-                    'value' => $this->elementType,
-                    'inputAttributes' => [
-                        'hx' => [
-                            'post' => Url::actionUrl('conditions/render'),
-                        ],
-                    ],
-                ]).
-                parent::inputHtml(),
-                [
-                    'class' => ['flex', 'flex-start'],
-                ]
-            );
+        return [
+            Field::make(t('Element Type'), Choice::make('elementType')
+                ->options($this->_elementTypeOptions())
+                ->withoutPlaceholder()
+                ->value($this->elementType)
+                ->reactive()),
+            ...parent::inputNodes(),
+        ];
     }
 
     /** @return array<int, array{value: class-string<ElementInterface>, label: string}> */
