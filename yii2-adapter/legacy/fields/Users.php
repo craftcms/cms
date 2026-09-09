@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace craft\fields;
 
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
+use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldSettings;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 
 /**
@@ -21,4 +22,7 @@ use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 class Users extends \CraftCms\Cms\Field\Users implements LegacyField
 {
     use LegacyBuiltInField;
+    use LegacyRelationFieldSettings {
+        LegacyRelationFieldSettings::getSettingsHtml insteadof LegacyBuiltInField;
+    }
 }
