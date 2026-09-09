@@ -25,6 +25,8 @@
     isBlockCollapsed,
     setBlockCollapsed,
   } from '@/modules/matrix/collapsed-blocks';
+  import {useCopiedElements} from '@/modules/matrix/copied-elements';
+  import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
@@ -65,6 +67,8 @@
      * What `matrix/create-entry` needs to mint a block, or absent when the server
      * can't — an unsaved owner, or a nested element field that isn't Matrix-backed.
      */
+    /** The blocks' element class, for the CP's element clipboard. */
+    elementType?: string | null;
     create?: {
       fieldId: number;
       ownerId: number;
@@ -81,7 +85,16 @@
   };
   /** The instance-local half of a block's menu. See `Matrix::blockActions()`. */
   type BlockActionDetail = {
-    action: 'collapse' | 'expand' | 'disable' | 'enable' | 'delete' | 'add';
+    action:
+      | 'collapse'
+      | 'expand'
+      | 'disable'
+      | 'enable'
+      | 'delete'
+      | 'add'
+      | 'duplicate'
+      | 'copy'
+      | 'paste';
     uid: string;
     entryType?: string;
     trigger?: unknown;
@@ -116,6 +129,10 @@
   const created = ref(new Map<string, NestedFormPayload>());
   const {flash} = useFlashMessages();
   const adding = ref<string | null>(null);
+  const pasting = ref(false);
+  /** Whether the server is mid-flight on a block, so nothing else starts one. */
+  const busy = computed(() => adding.value !== null || pasting.value);
+  const copiedElements = useCopiedElements();
 
   const forms = computed(() => {
     const map = new Map<string, NestedFormPayload>();
@@ -135,12 +152,49 @@
 
     return map;
   });
-  const canAdd = computed(
-    () =>
+  const canAdd = computed(() => hasRoomFor(1));
+
+  function hasRoomFor(count: number): boolean {
+    const maximum = props.control.props.maxEntries;
+
+    return (
       props.editable &&
-      (!props.control.props.maxEntries ||
-        model.value.sortOrder.length < props.control.props.maxEntries)
-  );
+      (!maximum || model.value.sortOrder.length + count <= maximum)
+    );
+  }
+
+  /**
+   * The clipboard, when all of it could land in this field — Craft 5's
+   * `canPaste()`. Empty otherwise, which is what hides every paste target.
+   *
+   * `entryTypeId` arrives with the chip `Craft.cp` renders for each copied
+   * element, so the check waits for that rather than offering a paste the server
+   * would then refuse.
+   */
+  const pasteable = computed<CopiedElementInfo[]>(() => {
+    const create = props.control.props.create;
+    const elementType = props.control.props.elementType;
+    const elements = copiedElements.value as CopiedElementInfo[];
+
+    if (
+      !create ||
+      !elementType ||
+      !elements.length ||
+      !hasRoomFor(elements.length)
+    ) {
+      return [];
+    }
+
+    const typeIds = new Set(Object.values(create.entryTypeIds));
+    const fits = elements.every(
+      (element) =>
+        element.type === elementType &&
+        typeof element.data?.entryTypeId === 'number' &&
+        typeIds.has(element.data.entryTypeId)
+    );
+
+    return fits ? elements : [];
+  });
   const entryTypes = computed(() =>
     (props.control.props.entryTypes ?? []).map((type, index) => ({
       id: index + 1,
@@ -287,27 +341,32 @@
    * any other form. The identity is the server's, so nothing has to be
    * reconciled when the next save comes around.
    *
+   * `duplicate` names an existing element to copy the new block from — the same
+   * endpoint, the same response, so Duplicate is Add with a source.
+   *
    * Without a `create` config (an unsaved owner, or an Addresses field on this
    * same Control) the browser mints the block and the next save materializes it.
    */
   async function addBlock(
     entryType: string,
-    beforeUid?: string
+    beforeUid?: string,
+    duplicate?: number | string
   ): Promise<void> {
-    if (!canAdd.value || adding.value !== null) {
+    if (!canAdd.value || busy.value) {
       return;
     }
 
     const create = props.control.props.create;
-    const at = beforeUid
-      ? model.value.sortOrder.indexOf(beforeUid)
-      : model.value.sortOrder.length;
-    const index = at < 0 ? model.value.sortOrder.length : at;
+    const index = insertionIndex(beforeUid);
 
     if (!create) {
-      await insertBlock(
-        `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`,
-        entryType,
+      await insertBlocks(
+        [
+          {
+            uid: `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`,
+            type: entryType,
+          },
+        ],
         index
       );
 
@@ -326,28 +385,140 @@
           ownerElementType: create.ownerElementType,
           siteId: create.siteId,
           path: props.control.path,
+          ...(duplicate === undefined ? {} : {duplicate}),
         }
       );
 
-      created.value = new Map(created.value).set(data.uid, data.form);
-
-      // The block's own field values ride along in the same emit. Writing them
-      // straight into `values` wouldn't survive: the Control's value is written
-      // back wholesale at its own path, which would drop anything under the
-      // block that wasn't part of it.
-      const blockValues = valueAt(data.values as FormValue, data.form.scope);
-      await insertBlock(
-        data.uid,
-        data.type,
-        index,
-        isRecord(blockValues) ? blockValues : {}
-      );
+      await insertBlocks([data], index);
     } catch (error) {
-      flash('error', t('Couldn’t create {type}.', {type: t('entry')}));
+      flash(
+        'error',
+        duplicate === undefined
+          ? t('Couldn’t create {type}.', {type: t('entry')})
+          : t('Couldn’t duplicate {type}.', {type: t('entry')})
+      );
       throw error;
     } finally {
       adding.value = null;
     }
+  }
+
+  /**
+   * Duplicates a block — or the whole selection, when the invoking block is part
+   * of one. Each copy lands directly after its source, the way Craft 5 placed it.
+   */
+  async function duplicateBlocks(uid: string): Promise<void> {
+    for (const target of actionTargets(uid)) {
+      const id = elementId(target);
+      const type = model.value.entries[target]?.type;
+
+      if (id === undefined || type === undefined || !canAdd.value) {
+        continue;
+      }
+
+      const order = model.value.sortOrder;
+      const after = order[order.indexOf(target) + 1];
+      await addBlock(type, after, id);
+    }
+  }
+
+  /**
+   * Hands the blocks to the CP's element clipboard, which is shared with the
+   * legacy stack and with other tabs. `Craft.cp` owns the confirmation toast.
+   */
+  function copyBlocks(uid: string): void {
+    const elementType = props.control.props.elementType;
+    const elements = actionTargets(uid)
+      .map((target) => {
+        const data = props.control.props.blocks?.[target]?.data;
+
+        // The attributes are strings once they've been through the DOM, and
+        // numbers here; the clipboard wants them numeric either way.
+        const numeric = (value: number | string | undefined): number | null =>
+          value === undefined || value === '' || Number.isNaN(Number(value))
+            ? null
+            : Number(value);
+
+        const id = numeric(data?.['element-id']);
+
+        return id === null || !elementType
+          ? null
+          : {
+              type: elementType,
+              id,
+              draftId: numeric(data?.['draft-id']),
+              revisionId: numeric(data?.['revision-id']),
+              fieldId: numeric(data?.['field-id']),
+              ownerId: numeric(data?.['owner-id']),
+              siteId: numeric(data?.['site-id']),
+            };
+      })
+      .filter((element) => element !== null);
+
+    if (elements.length) {
+      craft().cp.copyElements(elements);
+    }
+  }
+
+  /**
+   * Pastes the clipboard in above `beforeUid`, or at the end.
+   *
+   * `Craft.cp` duplicates the copied elements onto this field and owner and hands
+   * back the new ones; `matrix/render-blocks` then returns their form nodes, the
+   * same shape a newly minted block comes back in.
+   */
+  async function pasteBlocks(beforeUid?: string): Promise<void> {
+    const create = props.control.props.create;
+
+    if (!create || !pasteable.value.length || busy.value) {
+      return;
+    }
+
+    const index = insertionIndex(beforeUid);
+    pasting.value = true;
+
+    try {
+      const pasted = await craft().cp.pasteElements({
+        primaryOwnerId: create.ownerId,
+        ownerId: create.ownerId,
+        fieldId: create.fieldId,
+        siteId: create.siteId,
+      });
+
+      if (!pasted.length) {
+        return;
+      }
+
+      const {data} = await actionClient.post<{blocks: CreatedBlock[]}>(
+        'matrix/render-blocks',
+        {
+          entryIds: pasted.map((element) => element.id),
+          siteId: create.siteId,
+          path: props.control.path,
+        }
+      );
+
+      await insertBlocks(data.blocks, index);
+    } catch (error) {
+      flash('error', t('Couldn’t paste {type}.', {type: t('entries')}));
+      throw error;
+    } finally {
+      pasting.value = false;
+    }
+  }
+
+  /** Where a block goes when it's added above `beforeUid`, or at the end. */
+  function insertionIndex(beforeUid?: string): number {
+    const at = beforeUid
+      ? model.value.sortOrder.indexOf(beforeUid)
+      : model.value.sortOrder.length;
+
+    return at < 0 ? model.value.sortOrder.length : at;
+  }
+
+  /** The element behind a block, absent for one the browser minted. */
+  function elementId(uid: string): number | string | undefined {
+    return props.control.props.blocks?.[uid]?.data?.['element-id'];
   }
 
   /**
@@ -357,17 +528,36 @@
    * leaves Vue patching against DOM a Lion overlay inside a block has already
    * moved, which throws `insertBefore` on null and takes the form down with it.
    */
-  async function insertBlock(
-    uid: string,
-    entryType: string,
-    index: number,
-    values: FormValues = {}
+  async function insertBlocks(
+    blocks: ReadonlyArray<CreatedBlock | {uid: string; type: string}>,
+    index: number
   ): Promise<void> {
     await nextTick();
 
+    const forms = new Map(created.value);
     const next = structuredClone(toRaw(model.value));
-    next.entries[uid] = {...values, type: entryType, enabled: true};
-    next.sortOrder.splice(index, 0, uid);
+
+    blocks.forEach((block, offset) => {
+      let values: FormValues = {};
+
+      if ('form' in block) {
+        forms.set(block.uid, block.form);
+        // The block's own field values ride along in the same emit. Writing them
+        // straight into `values` wouldn't survive: the Control's value is written
+        // back wholesale at its own path, which would drop anything under the
+        // block that wasn't part of it.
+        const blockValues = valueAt(
+          block.values as FormValue,
+          block.form.scope
+        );
+        values = isRecord(blockValues) ? blockValues : {};
+      }
+
+      next.entries[block.uid] = {...values, type: block.type, enabled: true};
+      next.sortOrder.splice(index + offset, 0, block.uid);
+    });
+
+    created.value = forms;
     emit('update:value', next, 'discrete');
   }
 
@@ -449,9 +639,6 @@
       : [uid];
   }
 
-  /** Actions whose label depends on live state, so the server's copy goes stale. */
-  const STATEFUL = new Set(['collapse', 'expand', 'disable', 'enable']);
-
   function blockEvent(
     uid: string,
     action: string,
@@ -496,7 +683,8 @@
 
   /**
    * A block the browser minted has no server-built menu until the next save
-   * materializes it, so compose the half that needs no server data.
+   * materializes it, so compose the half that needs no server data. Duplicate,
+   * Copy and Paste are all absent — each of them needs an element to point at.
    */
   function localActions(uid: string): ActionItems {
     return [
@@ -512,19 +700,18 @@
       ...(props.control.props.entryTypes ?? []).map((type) => ({
         label: t('Add {type} above', {type: type.label}),
         icon: 'plus',
-        disabled: adding.value !== null,
+        hidden: !canAdd.value,
+        disabled: busy.value,
         action: blockEvent(uid, 'add', {entryType: type.value}),
       })),
     ];
   }
 
   /**
-   * Announced while the server mints a block. The add buttons show a spinner,
-   * but "Add {type} above" is a menu item with nowhere to put one.
+   * Announced while the server mints or pastes a block. The add buttons show a
+   * spinner, but "Add {type} above" is a menu item with nowhere to put one.
    */
-  const statusMessage = computed(() =>
-    adding.value === null ? '' : t('Loading')
-  );
+  const statusMessage = computed(() => (busy.value ? t('Loading') : ''));
 
   /**
    * What a folded-up block is called. Its own fields aren't on screen to
@@ -543,6 +730,28 @@
     return props.control.props.blocks?.[uid]?.label ?? '';
   }
 
+  /**
+   * The label an action takes when it applies to a whole selection rather than
+   * one block. Craft 5 swapped these in as the menu opened.
+   */
+  const BULK_LABEL: Record<string, () => string> = {
+    collapse: () => t('Collapse selected blocks'),
+    expand: () => t('Expand selected blocks'),
+    disable: () => t('Disable selected {type}', {type: t('blocks')}),
+    enable: () => t('Enable selected {type}', {type: t('blocks')}),
+    duplicate: () => t('Duplicate selected {type}', {type: t('blocks')}),
+    copy: () => t('Copy selected {type}', {type: t('blocks')}),
+    delete: () => t('Delete selected {type}', {type: t('blocks')}),
+  };
+
+  /**
+   * The block's menu, resolved against the state the server couldn't know: what
+   * the block is doing right now, how much of the field is selected, whether
+   * there's room for another block, and what's on the clipboard.
+   *
+   * Resolved in place rather than rebuilt so the server keeps ownership of which
+   * items exist and in what order — its list already reflects the permissions.
+   */
   function blockActions(uid: string): ActionItems {
     const server = props.control.props.blocks?.[uid]?.actions;
 
@@ -550,25 +759,57 @@
       return localActions(uid);
     }
 
-    // Drop the server's stateful pair — including the ones it marked hidden —
-    // and lead with a freshly resolved one.
-    return [
-      ...stateActions(uid),
-      ...server.filter((item) => {
-        const action = 'action' in item ? item.action : undefined;
-        const name =
-          action?.type === 'event'
-            ? (action.detail?.action as string | undefined)
-            : undefined;
+    const bulk = actionTargets(uid).length > 1;
 
-        if (name === 'add') {
-          // Server-built, so it can't know a create is already in flight.
-          Object.assign(item, {disabled: adding.value !== null});
-        }
+    return server.map((item) => {
+      const action = 'action' in item ? item.action : undefined;
+      const name =
+        action?.type === 'event' && action.name === 'craft:matrix-block-action'
+          ? (action.detail?.action as string | undefined)
+          : undefined;
 
-        return !(name && STATEFUL.has(name)) && !('hidden' in item);
-      }),
-    ];
+      if (name === undefined) {
+        return item;
+      }
+
+      return {
+        ...item,
+        ...(bulk && BULK_LABEL[name] ? {label: BULK_LABEL[name]()} : {}),
+        // Craft 5 relabelled paste with what was actually on the clipboard.
+        ...(name === 'paste' && pasteable.value.length
+          ? {
+              label: t('Paste {type} above', {
+                type: pasteable.value.length === 1 ? t('block') : t('blocks'),
+              }),
+            }
+          : {}),
+        ...actionState(name, uid),
+      };
+    });
+  }
+
+  /** Whether one of the server's items is shown, and whether it can be used. */
+  function actionState(
+    name: string,
+    uid: string
+  ): {hidden?: boolean; disabled?: boolean} {
+    switch (name) {
+      case 'collapse':
+        return {hidden: isCollapsed(uid)};
+      case 'expand':
+        return {hidden: !isCollapsed(uid)};
+      case 'disable':
+        return {hidden: isDisabled(uid)};
+      case 'enable':
+        return {hidden: !isDisabled(uid)};
+      case 'add':
+      case 'duplicate':
+        return {hidden: !canAdd.value, disabled: busy.value};
+      case 'paste':
+        return {hidden: pasteable.value.length === 0, disabled: busy.value};
+      default:
+        return {};
+    }
   }
 
   /**
@@ -647,6 +888,21 @@
 
       case 'add':
         void addBlock(detail.entryType ?? '', detail.uid);
+
+        return;
+
+      case 'duplicate':
+        void duplicateBlocks(detail.uid);
+
+        return;
+
+      case 'copy':
+        copyBlocks(detail.uid);
+
+        return;
+
+      case 'paste':
+        void pasteBlocks(detail.uid);
 
         return;
 
@@ -811,7 +1067,7 @@
           variant="dashed"
           icon="plus"
           :loading="adding === type.value"
-          :disabled="adding !== null"
+          :disabled="busy"
           :data-form-matrix-add="type.value"
           @click.stop.prevent="addBlock(type.value)"
         >

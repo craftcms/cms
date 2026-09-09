@@ -408,6 +408,196 @@ describe('MatrixControl', () => {
     expect(emitted).toHaveLength(0);
   });
 
+  describe('the server-built menu, resolved against live state', () => {
+    /** A block action item the way `Matrix::blockActions()` ships it. */
+    function serverItem(
+      uid: string,
+      action: string,
+      label: string,
+      extra: Record<string, unknown> = {}
+    ) {
+      return {
+        label,
+        ...extra,
+        action: {
+          type: 'event',
+          name: 'craft:matrix-block-action',
+          detail: {action, uid},
+        },
+      };
+    }
+
+    const serverActions = (uid: string) => [
+      serverItem(uid, 'collapse', 'Collapse'),
+      serverItem(uid, 'expand', 'Expand', {hidden: true}),
+      serverItem(uid, 'delete', 'Delete'),
+      serverItem(uid, 'duplicate', 'Duplicate'),
+      serverItem(uid, 'copy', 'Copy'),
+      serverItem(uid, 'paste', 'Paste entry above', {hidden: true}),
+      serverItem(uid, 'add', 'Add New Type above'),
+    ];
+
+    function item(uid: string, action: string) {
+      const menu = menus.find((instance) =>
+        instance.actions.some(
+          (candidate) =>
+            'action' in candidate &&
+            (candidate.action as {detail?: {uid?: string}})?.detail?.uid === uid
+        )
+      );
+
+      return menu?.actions.find(
+        (candidate) =>
+          'action' in candidate &&
+          (candidate.action as {detail?: {action?: string}})?.detail?.action ===
+            action
+      ) as {label?: string; hidden?: boolean; disabled?: boolean} | undefined;
+    }
+
+    function mountWithMenu(
+      props: Record<string, unknown> = {},
+      value?: unknown
+    ) {
+      return mount(
+        value ?? {
+          entries: {
+            'block-a': {type: 'newType', enabled: true},
+            'block-b': {type: 'newType', enabled: true},
+          },
+          sortOrder: ['block-a', 'block-b'],
+        },
+        {
+          elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          create: {
+            fieldId: 3,
+            ownerId: 7,
+            ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            siteId: 1,
+            entryTypeIds: {newType: 9},
+          },
+          blocks: {
+            'block-a': {
+              actions: serverActions('block-a'),
+              data: {'element-id': 12, 'owner-id': 7, 'site-id': 1},
+            },
+            'block-b': {
+              actions: serverActions('block-b'),
+              data: {'element-id': 13, 'owner-id': 7, 'site-id': 1},
+            },
+          },
+          ...props,
+        }
+      );
+    }
+
+    it('resolves the stateful pair against the block, not the last save', async () => {
+      mountWithMenu();
+      await nextTick();
+
+      // The server shipped Expand hidden and Collapse shown. Folding the block
+      // has to swap them without waiting for a save.
+      expect(item('block-a', 'collapse')?.hidden).toBe(false);
+      expect(item('block-a', 'expand')?.hidden).toBe(true);
+
+      invoke('block-a', 'Collapse');
+      await nextTick();
+
+      expect(item('block-a', 'collapse')?.hidden).toBe(true);
+      expect(item('block-a', 'expand')?.hidden).toBe(false);
+    });
+
+    it('speaks in the plural once a selection is what the action applies to', async () => {
+      mountWithMenu();
+      await nextTick();
+
+      expect(item('block-a', 'delete')?.label).toBe('Delete');
+
+      for (const box of container!.querySelectorAll('craft-checkbox')) {
+        box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+        Object.assign(box, {checked: true});
+        box.dispatchEvent(
+          new CustomEvent('model-value-changed', {bubbles: true})
+        );
+      }
+      await nextTick();
+
+      expect(item('block-a', 'delete')?.label).toBe('Delete selected blocks');
+      expect(item('block-a', 'duplicate')?.label).toBe(
+        'Duplicate selected blocks'
+      );
+      expect(item('block-a', 'copy')?.label).toBe('Copy selected blocks');
+    });
+
+    it('hides what there is no room for', async () => {
+      mountWithMenu({maxEntries: 2});
+      await nextTick();
+
+      expect(item('block-a', 'add')?.hidden).toBe(true);
+      expect(item('block-a', 'duplicate')?.hidden).toBe(true);
+      // Delete is still on: it is what makes room.
+      expect(item('block-a', 'delete')?.hidden).toBeUndefined();
+    });
+
+    it('keeps paste hidden while the clipboard has nothing that fits', async () => {
+      mountWithMenu();
+      await nextTick();
+
+      expect(item('block-a', 'paste')?.hidden).toBe(true);
+    });
+
+    it('duplicates through the create endpoint, naming the source', async () => {
+      action.post.mockResolvedValue({
+        data: {
+          uid: 'block-c',
+          type: 'newType',
+          form: {
+            scope: ['fields', 'pageBuilder', 'entries', 'block-c'],
+            nodes: [],
+          },
+          values: {},
+        },
+      });
+      mountWithMenu();
+      await nextTick();
+
+      invoke('block-a', 'Duplicate');
+      await nextTick();
+      await nextTick();
+
+      expect(action.post).toHaveBeenCalledWith(
+        'matrix/create-entry',
+        expect.objectContaining({duplicate: 12, entryTypeId: 9})
+      );
+    });
+
+    it('hands the block to the CP clipboard by its element id', async () => {
+      const copyElements = vi.fn();
+      Object.assign(window, {
+        Craft: {
+          ...window.Craft,
+          cp: {...window.Craft?.cp, copyElements},
+        },
+      });
+      mountWithMenu();
+      await nextTick();
+
+      invoke('block-a', 'Copy');
+      await nextTick();
+
+      expect(copyElements).toHaveBeenCalledWith([
+        {
+          type: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          id: 12,
+          draftId: null,
+          revisionId: null,
+          fieldId: null,
+          ownerId: 7,
+          siteId: 1,
+        },
+      ]);
+    });
+  });
+
   describe('expand/collapse all', () => {
     /**
      * The field menu's items are scoped by `craft-field`, not by the Matrix host

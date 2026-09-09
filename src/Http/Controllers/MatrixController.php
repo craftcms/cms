@@ -242,7 +242,12 @@ readonly class MatrixController
         $validated = $request->validate([
             'entryIds' => ['required', 'array', 'min:1'],
             'siteId' => ['required'],
-            'namespace' => ['required', 'string'],
+            // Same split as `createEntry()`: the legacy stack asks for rendered
+            // HTML under an input namespace, a Form Control asks for form nodes
+            // under its own path.
+            'namespace' => ['required_without:path', 'string'],
+            'path' => ['required_without:namespace', 'array'],
+            'path.*' => ['string'],
         ]);
 
         /** @var Entry[] $entries */
@@ -254,16 +259,20 @@ readonly class MatrixController
             ->all();
 
         if (empty($entries)) {
-            return new JsonResponse([
-                'blockHtml' => '',
-                'headHtml' => HtmlStack::headHtml(),
-                'bodyHtml' => HtmlStack::bodyHtml(),
-            ]);
+            return isset($validated['path'])
+                ? new JsonResponse(['blocks' => []])
+                : new JsonResponse([
+                    'blockHtml' => '',
+                    'headHtml' => HtmlStack::headHtml(),
+                    'bodyHtml' => HtmlStack::bodyHtml(),
+                ]);
         }
 
         $field = null;
         $entryTypes = null;
         $html = '';
+
+        $blocks = [];
 
         foreach ($entries as $entry) {
             $field ??= $entry->getField();
@@ -274,9 +283,24 @@ readonly class MatrixController
                 'Entry must belong to a Matrix field.',
             );
 
+            // An entry of a type the field doesn't offer would render here and
+            // then take the edit screen down on the next load, where the Matrix
+            // Control rejects it. Same guard `createEntry()` applies.
+            abort_if(
+                ! in_array($entry->getType()->id, array_column($field->getEntryTypes(), 'id'), true),
+                400,
+                "Entry type {$entry->getType()->id} is not available to Matrix field {$field->id}.",
+            );
+
             $entryTypes ??= $field->getEntryTypesForField($entries, $entry->getOwner());
 
             Gate::authorize('view', $entry);
+
+            if (isset($validated['path'])) {
+                $blocks[] = $this->blockFormResponse($entry, $validated['path']);
+
+                continue;
+            }
 
             $html .= InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
                 'name' => $field->handle,
@@ -284,6 +308,10 @@ readonly class MatrixController
                 'entry' => $entry,
                 ...$field->blockFormVariables($entry, false),
             ]), $validated['namespace']);
+        }
+
+        if (isset($validated['path'])) {
+            return new JsonResponse(['blocks' => $blocks]);
         }
 
         return new JsonResponse([

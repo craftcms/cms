@@ -83,6 +83,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -604,6 +605,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return MatrixControl::make($context->path)
             ->entryTypes($entryTypes)
+            ->elementType(Entry::class)
             ->blocks($blocks)
             ->create($this->createConfig($context->element))
             ->forms($forms)
@@ -736,6 +738,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'label' => t('Delete'),
             'destructive' => true,
             'action' => $blockAction('delete'),
+        ];
+
+        if ($entry->id !== null) {
+            $items[] = ['hr' => true];
+
+            if (Gate::allows('duplicateAsDraft', $entry)) {
+                $items[] = [
+                    'icon' => 'clone',
+                    'label' => t('Duplicate'),
+                    'action' => $blockAction('duplicate'),
+                ];
+            }
+
+            $items[] = [
+                'icon' => 'clone-dashed',
+                'color' => Color::Fuchsia,
+                'label' => t('Copy'),
+                'action' => $blockAction('copy'),
+            ];
+        }
+
+        // Shown only once there's something on the clipboard that fits, which
+        // only the browser knows — see `MatrixControl.vue`.
+        $items[] = [
+            'icon' => 'duplicate',
+            'color' => Color::Fuchsia,
+            'label' => t('Paste {type} above', ['type' => Entry::lowerDisplayName()]),
+            'action' => $blockAction('paste'),
+            'hidden' => true,
         ];
         $items[] = ['hr' => true];
 

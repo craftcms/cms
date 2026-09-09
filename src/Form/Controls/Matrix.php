@@ -59,6 +59,8 @@ class Matrix extends Control
     /** @var array<string, mixed>|null */
     private ?array $create = null;
 
+    private ?string $elementType = null;
+
     private ?string $addLabel = null;
 
     private ?int $minEntries = null;
@@ -307,6 +309,18 @@ class Matrix extends Control
         return $this;
     }
 
+    /**
+     * The element class the blocks are, for the CP's element clipboard — copy and
+     * paste both address elements by type. Null for a nested element field that
+     * doesn't know or doesn't offer them.
+     */
+    public function elementType(?string $elementType): static
+    {
+        $this->elementType = $elementType;
+
+        return $this;
+    }
+
     public function addLabel(string $addLabel): static
     {
         $this->addLabel = $addLabel;
@@ -359,6 +373,7 @@ class Matrix extends Control
             'maxEntries' => $this->maxEntries,
             'blocks' => $this->blocks,
             'create' => $this->create,
+            'elementType' => $this->elementType,
         ];
     }
 
