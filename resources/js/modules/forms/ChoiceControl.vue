@@ -7,12 +7,12 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
-  import {computed, ref, watch} from 'vue';
+  import {computed, inject, ref, watch} from 'vue';
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FormControlPayload, FormValue} from './types';
   import type {Slots} from 'vue';
-  import {inputName, serverErrorValidators} from './runtime';
+  import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Form.Enums.ChoicePresentation;
@@ -62,6 +62,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: string | string[]): void;
   }>();
+  const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
   /**
    * A single select needs somewhere to represent "nothing chosen".
@@ -296,6 +297,7 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
+    :label-sr-only="fieldLabelSrOnly || undefined"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`

@@ -487,13 +487,16 @@ describe('FormRenderer', () => {
       globalErrors: [],
     });
 
-    const labelSrOnly = (name: string) =>
+    // The select's own label chrome follows the field's.
+    const labelSrOnly = (name: string, selector: string) =>
       container
         .querySelector(`select[name="settings[${name}]"]`)!
-        .closest('craft-field')!
+        .closest(selector)!
         .hasAttribute('label-sr-only');
-    expect(labelSrOnly('hidden')).toBe(true);
-    expect(labelSrOnly('visible')).toBe(false);
+    expect(labelSrOnly('hidden', 'craft-field')).toBe(true);
+    expect(labelSrOnly('hidden', 'craft-select')).toBe(true);
+    expect(labelSrOnly('visible', 'craft-field')).toBe(false);
+    expect(labelSrOnly('visible', 'craft-select')).toBe(false);
   });
 
   it('displays a combobox option label for its initial value', async () => {
@@ -2559,11 +2562,11 @@ describe('FormRenderer', () => {
         'select[name="settings[choice]"]'
       )?.value
     ).toBe('1');
-    expect(
-      container
-        .querySelector('select[name="settings[choice]"]')
-        ?.closest('craft-select')
-    ).not.toBeNull();
+    const choiceSelect = container
+      .querySelector('select[name="settings[choice]"]')
+      ?.closest('craft-select');
+    expect(choiceSelect).not.toBeNull();
+    expect(choiceSelect!.hasAttribute('label-sr-only')).toBe(false);
     expect(
       container.querySelectorAll(
         'input[type="checkbox"][name="settings[tags][]"]'
