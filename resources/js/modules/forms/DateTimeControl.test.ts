@@ -1,7 +1,27 @@
-import {createApp, h, nextTick} from 'vue';
+import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import DateTimeControl from './DateTimeControl.vue';
 import type {FormControlPayload} from './types';
+import {controlValue} from './runtime';
+
+describe('controlValue', () => {
+  it('stands in the empty value until the real one arrives', () => {
+    const value = ref<{date?: string} | undefined>(undefined);
+    const model = controlValue<{date?: string}>(() => value.value, {});
+
+    expect(model.value).toEqual({});
+
+    value.value = {date: '2026-08-07'};
+
+    expect(model.value).toEqual({date: '2026-08-07'});
+  });
+
+  it('freezes the stand-in, so no control can write through it', () => {
+    const model = controlValue<{rows: string[]}>(() => undefined, {rows: []});
+
+    expect(Object.isFrozen(model.value)).toBe(true);
+  });
+});
 
 describe('DateTimeControl', () => {
   let app: ReturnType<typeof createApp> | undefined;

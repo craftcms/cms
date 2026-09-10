@@ -2,7 +2,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient} from '@craftcms/ui';
   import type {FormControlPayload, FormValue, FormValues} from './types';
-  import {inputName} from './runtime';
+  import {controlValue, inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
   type FieldLayoutDesignerProps = {
@@ -14,20 +14,22 @@
 
   const props = defineProps<{
     control: FormControlPayload<FieldLayoutDesignerProps>;
-    value: FormValues;
+    /** Read {@link model} rather than this. See {@link controlValue}. */
+    value: FormValues | undefined;
     editable: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: FormValues, kind: 'discrete'): void;
   }>();
+  const model = controlValue<FormValues>(() => props.value, {});
   const {host, html} = useServerRenderedControl({
-    value: () => props.value,
+    value: () => model.value,
     dependencies: [() => props.control.props, () => props.editable],
     async render() {
       const response = await actionClient.post<{html: string}>(
         'fields/render-field-layout-designer',
         {
-          value: props.value,
+          value: model.value,
           elementType: props.control.props.elementType,
           name: inputName(props.control.path),
           disabled: !props.editable,

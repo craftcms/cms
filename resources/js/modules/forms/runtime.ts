@@ -1,5 +1,11 @@
 import {Validator} from '@lion/ui/form-core.js';
-import type {InjectionKey, Ref, Slots} from 'vue';
+import {
+  computed,
+  type ComputedRef,
+  type InjectionKey,
+  type Ref,
+  type Slots,
+} from 'vue';
 import type {
   CanonicalFormValue,
   FormChange,
@@ -28,6 +34,34 @@ class ServerError extends Validator {
   override execute(): boolean {
     return true;
   }
+}
+
+/**
+ * A control's value, with an empty stand-in for the beat before it arrives.
+ *
+ * A control renders as soon as the form describing it does, and inside a nested
+ * form that can be one emit ahead of the values filling it — a block the server
+ * has just minted, a repeater whose identity the server has just rewritten. A
+ * control that reaches into its value throws in that gap, and a throw during
+ * render is what "Failed to render Form Control" is: the renderer swaps the
+ * control for the error, and the field is gone until the page is reloaded.
+ *
+ * Controls whose value is a scalar don't need this — they coerce `undefined`
+ * on their own. It's for the ones that reach into a shape.
+ *
+ * The stand-in is frozen and shared across every render, so a control can't
+ * write through it by accident.
+ *
+ * @param  value  Getter for the control's own `value` prop.
+ * @param  empty  What to read while the real value is missing.
+ */
+export function controlValue<T extends object>(
+  value: () => T | undefined,
+  empty: T
+): ComputedRef<T> {
+  const fallback = Object.freeze(empty);
+
+  return computed(() => value() ?? fallback);
 }
 
 export function serverErrorValidators(invalid: boolean): Validator[] {

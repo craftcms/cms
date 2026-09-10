@@ -49,7 +49,7 @@
     type NestedElementValue,
     type NestedFormPayload,
   } from './types';
-  import {inputName, isRecord, valueAt} from './runtime';
+  import {controlValue, inputName, isRecord, valueAt} from './runtime';
 
   /** What a block is called, what it looks like, and what can be done to it. */
   type BlockPresentation = {
@@ -117,11 +117,7 @@
 
   const props = defineProps<{
     control: FormControlPayload<MatrixProps>;
-    /**
-     * Undefined for a beat whenever this control's path isn't in the values tree
-     * yet — a nested repeater inside a block whose identity the server has just
-     * rewritten, say. Read {@link model} rather than this.
-     */
+    /** Read {@link model} rather than this. See {@link controlValue}. */
     value: MatrixValue | undefined;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
@@ -132,8 +128,10 @@
     (event: 'update:value', value: MatrixValue, kind: 'discrete'): void;
     (event: 'change', change: FormChange): void;
   }>();
-  const EMPTY: MatrixValue = {entries: {}, sortOrder: []};
-  const model = computed<MatrixValue>(() => props.value ?? EMPTY);
+  const model = controlValue<MatrixValue>(() => props.value, {
+    entries: {},
+    sortOrder: [],
+  });
   const matrixHost = ref<HTMLElement>();
   const matrixId = useId();
   /**

@@ -15,7 +15,7 @@
     FormControlPayload,
     FormProperties,
   } from './types';
-  import {inputName} from './runtime';
+  import {controlValue, inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
 
   /**
@@ -95,11 +95,8 @@
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
     /**
-     * Undefined for a beat whenever this Control's path isn't in the values tree
-     * yet — a relation nested in a Matrix block whose identity the server has
-     * just minted, say. Read {@link model}, never this: reading `.length` off
-     * undefined here throws, and FormRenderer swaps the whole form for a render
-     * error rather than showing an empty field for one frame.
+     * Read {@link model}, never this: reading `.length` off undefined here
+     * throws. See {@link controlValue}.
      */
     value: Array<number | string> | undefined;
     editable: boolean;
@@ -127,7 +124,7 @@
     () => props.editable && props.control.props.canUpload === true
   );
 
-  const model = computed<Array<number | string>>(() => props.value ?? []);
+  const model = controlValue<Array<number | string>>(() => props.value, []);
 
   const ids = computed(() => model.value.map(elementId));
 

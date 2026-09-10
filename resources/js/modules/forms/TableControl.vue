@@ -9,7 +9,7 @@
     EditableTableValue,
   } from '../editable-table/types';
   import type {FormControlPayload, FormValue} from './types';
-  import {inputName} from './runtime';
+  import {controlValue, inputName} from './runtime';
 
   type TableControlProps = {
     columns: EditableTableColumns;
@@ -29,7 +29,8 @@
 
   const props = defineProps<{
     control: FormControlPayload<TableControlProps>;
-    value: TableValue;
+    /** Read {@link model} rather than this. See {@link controlValue}. */
+    value: TableValue | undefined;
     editable: boolean;
   }>();
   const emit = defineEmits<{
@@ -43,7 +44,8 @@
   const table = ref<HTMLTableElement>();
   const tableBody = computed(() => table.value?.tBodies[0]);
   const id = `form-table-${crypto.randomUUID()}`;
-  let rows = props.value;
+  const model = controlValue<TableValue>(() => props.value, []);
+  let rows: TableValue = model.value;
   let instance: EditableTable | undefined;
 
   useEventListener(host, 'input', () => emitRows('typing'));
@@ -61,7 +63,7 @@
   onBeforeUnmount(() => instance?.destroy());
 
   watch(
-    () => props.value,
+    model,
     (current) => {
       if (sameRows(current, rows)) {
         return;

@@ -4,7 +4,11 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
   import type {FormControlPayload} from './types';
-  import {ignoreModelValueInitialization, inputName} from './runtime';
+  import {
+    controlValue,
+    ignoreModelValueInitialization,
+    inputName,
+  } from './runtime';
 
   type DateTimeValue = {
     date?: string;
@@ -23,12 +27,9 @@
       minuteIncrement: number;
     }>;
     /**
-     * Undefined for a beat whenever this control's path isn't in the values
-     * tree yet — inside a block the server has just minted, say, whose values
-     * reach the tree one emit behind the form that describes them. Read
-     * {@link model} rather than this: every part of a date is dereferenced on
-     * the way to the input, so an absent value would throw and take the whole
-     * form down with it.
+     * Read {@link model} rather than this: every part of a date is
+     * dereferenced on the way to the input, so an absent value would throw.
+     * See {@link controlValue}.
      */
     value: DateTimeValue | undefined;
     editable: boolean;
@@ -37,8 +38,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: DateTimeValue, kind: 'discrete'): void;
   }>();
-  const EMPTY: DateTimeValue = {};
-  const model = computed<DateTimeValue>(() => props.value ?? EMPTY);
+  const model = controlValue<DateTimeValue>(() => props.value, {});
   const hasValue = computed(
     () =>
       (props.control.props.showDate && Boolean(model.value.date)) ||
