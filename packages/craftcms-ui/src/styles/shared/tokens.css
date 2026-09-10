@@ -1,5 +1,14 @@
+/*
+  [data-theme] is here for the same reason as in colorable.css: these tokens are
+  built out of the raw palette with var(), and a custom property carrying a
+  var() is substituted where it is declared. Resolved only at :root they carry
+  the root's palette wherever they inherit, so re-declaring the palette on a
+  subtree cannot reach them. Repeating the block on a themed element re-resolves
+  it against that element's palette.
+*/
 :root,
-:host {
+:host,
+[data-theme] {
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(12rem / 16);

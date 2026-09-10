@@ -130,3 +130,36 @@ export const Scrolling: Story = {
 export const ClosesOnOutsideClick: Story = {
   args: {'close-on-outside-click': true},
 };
+
+/**
+ * A dialog can carry its own theme. `[data-theme]` re-resolves the semantic
+ * tokens against the palette it names, so everything slotted in follows —
+ * including each component's shadow root, since custom properties inherit past
+ * the boundary.
+ */
+export const Themed: Story = {
+  args: {label: 'Dark dialog', open: true},
+  render: (args) =>
+    template({...args, 'data-theme': 'dark'}, html`${body}${footerClose}`),
+  async play({canvasElement}) {
+    const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
+    await dialog.updateComplete;
+
+    const inside = getComputedStyle(dialog);
+    const outside = getComputedStyle(canvasElement);
+
+    // The raw palette and the semantic tokens built out of it both follow the
+    // theme. The semantic half is the one that used to stay light: a custom
+    // property carrying a `var()` is substituted where it's declared, so
+    // resolving these only at `:root` baked in the root's palette.
+    await expect(inside.getPropertyValue('--color-base-50').trim()).not.toBe(
+      outside.getPropertyValue('--color-base-50').trim()
+    );
+    await expect(inside.getPropertyValue('--c-surface-raised').trim()).not.toBe(
+      outside.getPropertyValue('--c-surface-raised').trim()
+    );
+    await expect(
+      inside.getPropertyValue('--c-color-neutral-fill-quiet').trim()
+    ).not.toBe(outside.getPropertyValue('--c-color-neutral-fill-quiet').trim());
+  },
+};
