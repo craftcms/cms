@@ -324,6 +324,18 @@
       maxEntries: props.control.props.maxEntries,
     })
   );
+  /**
+   * Rebuilds `craft-matrix-input` whenever the block list changes.
+   *
+   * Heavy-handed, and deliberately so: a block can hold a control that
+   * relocates its own light DOM — a Lion overlay behind an action menu, say —
+   * and patching the list around one of those throws `insertBefore` on null,
+   * which takes the whole form down. Tearing the field down and building it
+   * again is the way past that until those controls can survive a patch.
+   *
+   * The cost is that the field leaves the document for a frame, so
+   * {@link holdScroll} puts the page back where it was.
+   */
   const key = computed(() =>
     JSON.stringify([
       model.value.sortOrder,
@@ -331,6 +343,58 @@
       props.editable,
     ])
   );
+
+  /**
+   * Set when the render that's coming is one we'll scroll somewhere specific
+   * for anyway, so holding the old position would only fight it.
+   */
+  let scrollingToBlock = false;
+
+  /**
+   * Holds the page still across that rebuild.
+   *
+   * The document loses the field's height while it's gone, and the browser
+   * answers by scrolling to the top — which is what deleting a block used to
+   * look like. Take down where everything was on the way in, and put it back
+   * once the new field is in place.
+   */
+  watch(key, () => {
+    if (scrollingToBlock) {
+      return;
+    }
+
+    const anchors = scrollAnchors();
+
+    void nextTick(() => {
+      for (const [node, top] of anchors) {
+        if (node.scrollTop !== top) {
+          node.scrollTop = top;
+        }
+      }
+    });
+  });
+
+  /** Everything that scrolls around the field, and how far it's scrolled. */
+  function scrollAnchors(): Array<[Element, number]> {
+    const anchors: Array<[Element, number]> = [];
+    const root = document.scrollingElement;
+
+    if (root) {
+      anchors.push([root, root.scrollTop]);
+    }
+
+    for (
+      let node = matrixHost.value?.parentElement;
+      node;
+      node = node.parentElement
+    ) {
+      if (node.scrollHeight > node.clientHeight) {
+        anchors.push([node, node.scrollTop]);
+      }
+    }
+
+    return anchors;
+  }
 
   function sync(event?: Event): void {
     const value = structuredClone(toRaw(model.value));
@@ -712,6 +776,9 @@
 
     created.value = forms;
     createdBlocks.value = presentations;
+    // The rebuild this sets off would otherwise be held in place; `revealBlock`
+    // is about to scroll somewhere better.
+    scrollingToBlock = true;
     emit('update:value', next, 'discrete');
 
     for (const added of blocks) {
@@ -722,6 +789,8 @@
     if (blocks[0]) {
       await revealBlock(blocks[0].uid);
     }
+
+    scrollingToBlock = false;
   }
 
   /**
