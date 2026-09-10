@@ -23,6 +23,7 @@ import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
 import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
+import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
 import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
@@ -79,6 +80,7 @@ Cp.init();
 
 defineDashboardWidgetSettingsFormHost(Cp.$components);
 defineEntryFieldLayoutFormHost(Cp.$components);
+defineConditionBuilderHost(Cp.$components);
 defineInlineAttributeFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);
 

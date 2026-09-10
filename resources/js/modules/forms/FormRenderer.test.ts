@@ -892,101 +892,46 @@ describe('FormRenderer', () => {
     ).not.toBeNull();
   });
 
-  it('initializes and reads server-rendered condition builder updates', async () => {
+  it('keeps nested condition changes in the surrounding Form values', async () => {
     const condition = clonePayload();
-    condition.nodes = [
-      required(condition.nodes[0], 'Expected the first field node.'),
-    ];
-    required(condition.nodes[0], 'Expected the condition field node.').control =
-      {
-        type: 'CraftCms\\Cms\\Form\\Controls\\ConditionBuilder',
-        component: 'craft:condition-builder',
-        props: {
-          conditionClass: 'CraftCms\\Cms\\Entry\\Conditions\\EntryCondition',
-          queryParams: ['site'],
-          forProjectConfig: true,
-        },
-        path: ['settings', 'selectionCondition'],
-        mode: 'editable',
-        deltaGroup: ['settings', 'selectionCondition'],
-      };
-    condition.values = {
-      settings: {selectionCondition: {conditionRules: []}},
+    condition.nodes = [required(condition.nodes[0], 'Expected a field.')];
+    const value = {
+      class: 'EntryCondition',
+      conditionRules: {operator: 'and', rules: []},
     };
-    let finishFirstRead!: () => void;
-    const firstRead = new Promise<void>((resolve) => {
-      finishFirstRead = resolve;
-    });
-    let reads = 0;
-    const request = vi
-      .spyOn(actionClient, 'post')
-      .mockImplementation(async (url) => {
-        if (url === 'fields/render-condition-builder') {
-          return {
-            data: {
-              html: '<div class="condition-container"><span class="legacy-vue-template">{{ suggestion.item.name }}</span><input name="settings[selectionCondition][conditionRules][1][class]" value="Title"></div>',
-              headHtml: '<style data-condition-builder></style>',
-              bodyHtml: '<script data-condition-builder></script>',
-            },
-          };
-        }
-
-        reads++;
-        if (reads === 1) {
-          await firstRead;
-        }
-
-        return {
-          data: {
-            value:
-              reads === 1
-                ? {conditionRules: []}
-                : {conditionRules: [{class: 'Title'}]},
-          },
-        };
-      });
+    condition.nodes[0]!.control = {
+      type: 'CraftCms\\Cms\\Form\\Controls\\ConditionBuilder',
+      component: 'craft:condition-builder',
+      props: {
+        builder: {
+          config: {class: 'EntryCondition'},
+          value,
+          rules: {},
+          ruleTypes: [],
+          addRuleLabel: 'Add a rule',
+        },
+      },
+      path: ['settings', 'selectionCondition'],
+      mode: 'editable',
+      deltaGroup: ['settings', 'selectionCondition'],
+    };
+    condition.values = {settings: {selectionCondition: value}};
     app.unmount();
     await mount(condition);
 
-    await vi.waitFor(() =>
-      expect(
-        document.head.querySelector('[data-condition-builder]')
-      ).not.toBeNull()
-    );
-    expect(
-      document.body.querySelector('script[data-condition-builder]')
-    ).not.toBeNull();
+    const operator = [
+      ...container.querySelectorAll<HTMLElement>(
+        '.condition-group craft-button'
+      ),
+    ].find((button) => button.textContent?.trim() === 'Any')!;
+    operator.click();
+    await nextTick();
 
-    const builder = required(
-      container.querySelector('.condition-container'),
-      'Expected the condition builder fixture.'
-    );
-    builder.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    await new Promise(requestAnimationFrame);
-    expect(reads).toBe(0);
-    expect(
-      builder.querySelector('.legacy-vue-template')?.textContent
-    ).toContain('{{ suggestion.item.name }}');
-    builder.dispatchEvent(new InputEvent('input', {bubbles: true}));
-    await vi.waitFor(() => expect(reads).toBe(1));
-    builder.dispatchEvent(new CustomEvent('htmx:afterSwap', {bubbles: true}));
-    await new Promise(requestAnimationFrame);
-    finishFirstRead();
-    await vi.waitFor(() =>
-      expect(renderer.currentValues()).toMatchObject({
-        settings: {
-          selectionCondition: {conditionRules: [{class: 'Title'}]},
-        },
-      })
-    );
-    expect(request).toHaveBeenCalledWith(
-      'fields/normalize-condition-builder',
-      expect.any(Object)
-    );
-    request.mockRestore();
-    document
-      .querySelectorAll('[data-condition-builder]')
-      .forEach((element) => element.remove());
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        selectionCondition: {conditionRules: {operator: 'or', rules: []}},
+      },
+    });
   });
 
   it('renders a reactive payload', async () => {
@@ -3590,6 +3535,28 @@ describe('FormRenderer', () => {
     });
   });
 
+  it('disables controls and preserves edits when re-enabled', async () => {
+    const disabled = ref(false);
+    app.unmount();
+    await mount(clonePayload(), {disabled});
+    renderer.setValue(['settings', 'placeholder'], 'Unsaved edit');
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[placeholder]"]'
+    )!;
+
+    disabled.value = true;
+    await nextTick();
+    expect(input.disabled).toBe(true);
+    expect(Array.from(new FormData(form))).toEqual([]);
+
+    disabled.value = false;
+    await nextTick();
+    expect(input.disabled).toBe(false);
+    expect(new FormData(form).get('settings[placeholder]')).toBe(
+      'Unsaved edit'
+    );
+  });
+
   it.each(['readOnly', 'disabled'] as const)(
     'displays values without names in %s mode',
     async (mode) => {
@@ -3617,6 +3584,7 @@ describe('FormRenderer', () => {
       onMutation?: (mutation: FormPayload['values']) => void;
       onChange?: (change: FormChange, values: FormPayload['values']) => void;
       modified?: string[];
+      disabled?: Ref<boolean>;
       components?: Record<string, CpComponentRegistration>;
       registerComponents?: (
         components: Pick<
@@ -3640,6 +3608,7 @@ describe('FormRenderer', () => {
             ref: rendererRef,
             payload: currentPayload.value,
             modified: options.modified,
+            disabled: options.disabled?.value,
             refresh: options.refresh,
             'onUpdate:mutation': options.onMutation,
             onChange: options.onChange,

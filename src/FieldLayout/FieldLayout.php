@@ -282,6 +282,24 @@ class FieldLayout extends Component
         ]);
     }
 
+    #[Override]
+    public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
+    {
+        foreach ($this->getTabs() as $tabIndex => $tab) {
+            $components = ["tabs.$tabIndex" => $tab];
+
+            foreach ($tab->getElements() as $elementIndex => $element) {
+                $components["tabs.$tabIndex.elements.$elementIndex"] = $element;
+            }
+
+            foreach ($components as $path => $component) {
+                foreach ($component->validateConditions() as $attribute => $messages) {
+                    $this->errors()->merge(["$path.$attribute" => $messages]);
+                }
+            }
+        }
+    }
+
     /** @param list<FieldInterface> $customFields */
     public function validateFields(array $customFields, Closure $fail): void
     {

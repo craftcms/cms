@@ -9,7 +9,6 @@ use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
 use function CraftCms\Cms\t;
 
 /** @phpstan-require-extends \CraftCms\Cms\Condition\BaseDateRangeConditionRule */
@@ -66,7 +65,7 @@ trait LegacyDateRangeConditionRule
     \$button.text(\$option.text()).removeClass('add');
     // Don't use data('value') here because it could result in an object if data-value is JSON
     const \$input = $('#' + $inputId).val(\$option.attr('data-value'));
-    htmx.trigger(\$input[0], 'change');
+    \$input[0].dispatchEvent(new Event('change', {bubbles: true}));
       });
     });
     JS,
@@ -90,9 +89,6 @@ trait LegacyDateRangeConditionRule
             ]) .
             Html::hiddenInput('rangeType', $this->rangeType, [
                 'id' => $inputId,
-                'hx' => [
-                    'post' => Url::actionUrl('conditions/render'),
-                ],
             ]);
 
         if ($this->rangeType === DateRangeType::Range->value) {

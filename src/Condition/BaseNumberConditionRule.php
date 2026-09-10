@@ -8,6 +8,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -75,7 +76,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'maxValue' => ['nullable', 'numeric'],
+            'maxValue' => [Rule::excludeIf($this->operator !== self::OPERATOR_BETWEEN), 'nullable', 'numeric'],
             'step' => ['nullable', 'numeric'],
         ]);
     }
