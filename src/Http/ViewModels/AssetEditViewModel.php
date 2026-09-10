@@ -96,6 +96,17 @@ class AssetEditViewModel extends ElementEditViewModel
     }
 
     /**
+     * Whether to open the image editor as the screen loads, from `?editing`.
+     *
+     * Lets a link land straight in the editor. Guarded on `imageEditor()` so
+     * the parameter can't ask for an editor this asset doesn't get.
+     */
+    public function editingImage(): bool
+    {
+        return $this->request->boolean('editing') && $this->imageEditor() !== null;
+    }
+
+    /**
      * The file preview — a thumbnail, or a player for audio and video — shown
      * above the meta fields.
      *

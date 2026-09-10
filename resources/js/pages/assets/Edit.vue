@@ -34,9 +34,11 @@
     previewFragment: CraftCms.Cms.View.HtmlFragment | null;
     /** Null when the asset isn't an editable image. */
     imageEditor: ImageEditorProps | null;
+    /** Whether `?editing` asked for the image editor to open on load. */
+    editingImage: boolean;
   }>();
 
-  const imageEditorOpen = ref(false);
+  const imageEditorOpen = ref(props.editingImage);
 
   /**
    * The preview is server-rendered HTML, so its Edit Image button is wired by
