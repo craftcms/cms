@@ -10,11 +10,13 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Validation\ValidationException;
 use Override;
 
+use function CraftCms\Cms\t;
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
@@ -26,9 +28,9 @@ class Element extends Command implements PromptsForMissingInput
     #[Override]
     protected $signature = 'craft:import:element
         {elementType : The fully qualified class name of the element type you want to import into.}
-        {fieldLayoutProvider : The UID of the field layout provider you want to use.}
         {file : `@root`-relative path to the file containing data you want to import.}
         {--site= : The handle of the site you want to import into.}
+        {--fieldLayoutProvider= : The UID of the field layout provider you want to use.}
         {--transformer= : The fully qualified class name of the transformer you want to use to manipulate the data on import.}
         {--matchCriteria= : An array of key-value pairs that will be used to match existing elements when importing.}
     ';
@@ -44,6 +46,10 @@ class Element extends Command implements PromptsForMissingInput
      */
     public function handle(): int
     {
+        $fieldLayoutProviderOptions = ImportHelper::flattenLabelValueArray(
+            ImportHelper::getAvailableFieldLayoutProviders($this->argument('elementType'))
+        );
+        $fieldLayoutProviderOptions = array_merge(['' => t('None - specified in the data file')], $fieldLayoutProviderOptions);
         $responses = form()
             ->addIf(! $this->option('site') && Sites::isMultiSite(), fn ($form) => select(
                 label: 'Which site you want to import into?',
@@ -52,6 +58,10 @@ class Element extends Command implements PromptsForMissingInput
                     ->all(),
                 default: Sites::getPrimarySite()->handle,
             ), 'site')
+            ->addIf(! $this->option('fieldLayoutProvider'), fn () => select(
+                label: 'Provide UID, ID, or type of the field layout provider you want to use.',
+                options: $fieldLayoutProviderOptions,
+            ), 'fieldLayoutProvider')
             // todo (iwona): maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
             ->addIf(! $this->option('transformer'), fn () => text(
                 label: 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)',
@@ -80,9 +90,9 @@ class Element extends Command implements PromptsForMissingInput
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $importConfig = (new ElementImporter)
             ->className($this->argument('elementType'))
-            ->fieldLayout($this->argument('fieldLayoutProvider'))
             ->file($this->argument('file'))
             ->site($this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle)
+            ->fieldLayout($this->option('fieldLayoutProvider') ?: $responses['fieldLayoutProvider'] ?: null)
             ->transformer($this->option('transformer') ?: $responses['transformer'] ?: null);
 
         if ($matchCriteria) {
@@ -93,9 +103,9 @@ class Element extends Command implements PromptsForMissingInput
 
         $list = [
             "Element Type: `{$importConfig->className}`",
-            "Field Layout Provider: `$importConfig->fieldLayout`",
             "File: `$importConfig->file`",
             "Site: `{$importConfig->site->name}`",
+            'Field Layout Provider: '.($importConfig->fieldLayout ? "`$importConfig->fieldLayout`" : 'NULL'),
             'Transformer: '.($importConfig->transformer ? "`{$importConfig->transformerAsString()}`" : 'NULL'),
             'Match Criteria: '.($importConfig->matchCriteria ? json_encode($importConfig->matchCriteria) : 'NULL'),
         ];
@@ -130,12 +140,14 @@ class Element extends Command implements PromptsForMissingInput
     private static function normalizeMatchCriteria(string $matchCriteria): ?array
     {
         if (str_starts_with($matchCriteria, '=')) {
-            $json = substr($matchCriteria, 1);
-
-            return json_decode($json, true);
+            $matchCriteria = substr($matchCriteria, 1);
         }
 
-        return null;
+        try {
+            return Json::decode($matchCriteria);
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
     }
 
     /**
@@ -150,12 +162,6 @@ class Element extends Command implements PromptsForMissingInput
                 label: 'Provide class name of the element type you want to import into, e.g. CraftCms\Cms\Entry\Elements\Entry',
                 options: ImportHelper::flattenLabelValueArray(
                     ImportHelper::getImportableElementTypes()->all()
-                ),
-            ),
-            'fieldLayoutProvider' => fn () => select(
-                label: 'Provide UID, ID, or type of the field layout provider you want to use.',
-                options: ImportHelper::flattenLabelValueArray(
-                    ImportHelper::getAvailableFieldLayoutProviders($this->argument('elementType'))
                 ),
             ),
             // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?

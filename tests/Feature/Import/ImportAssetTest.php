@@ -175,7 +175,7 @@ it('throws for a local temp file path that resolves outside of all allowed roots
         $asset = new Asset;
         $asset->setVolumeId($this->volume->id);
 
-        expect(fn () => $asset->setAttributesForImport(['tempFilePath' => $outsidePath]))
+        expect(fn () => $asset->setAttributesForImport($this->importer, ['tempFilePath' => $outsidePath]))
             ->toThrow(FileException::class);
     } finally {
         @unlink($outsidePath);
@@ -186,7 +186,7 @@ it('throws for a local temp file path that does not exist on disk', function () 
     $asset = new Asset;
     $asset->setVolumeId($this->volume->id);
 
-    expect(fn () => $asset->setAttributesForImport([
+    expect(fn () => $asset->setAttributesForImport($this->importer, [
         'tempFilePath' => Path::temp('does-not-exist-'.bin2hex(random_bytes(4)).'.txt'),
     ]))->toThrow(FileException::class);
 });

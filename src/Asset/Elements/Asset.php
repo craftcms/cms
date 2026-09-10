@@ -3620,7 +3620,7 @@ JS;
     }
 
     #[Override]
-    public function setAttributesForImport(array $attributes): void
+    public function setAttributesForImport(BaseImporter $importer, array $attributes): void
     {
         // ensure we're not changing volume ID compared to what we chose in the field layout provider step
         unset($attributes['volumeId']);
@@ -3698,6 +3698,6 @@ JS;
             }
         }
 
-        parent::setAttributesForImport($attributes);
+        parent::setAttributesForImport($importer, $attributes);
     }
 }

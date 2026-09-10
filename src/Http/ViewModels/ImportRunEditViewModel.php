@@ -54,10 +54,6 @@ class ImportRunEditViewModel extends ViewModel
                         'heading' => t('Config'),
                         'options' => $this->configOptions(),
                     ],
-                    'file' => [
-                        'type' => 'singleline',
-                        'heading' => t('File'),
-                    ],
                     'batchSize' => [
                         'type' => 'number',
                         'heading' => t('Custom batch size'),

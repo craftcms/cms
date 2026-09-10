@@ -46,7 +46,7 @@ trait Importable
     }
 
     #[Override]
-    public function setAttributesForImport(array $attributes): void
+    public function setAttributesForImport(BaseImporter $importer, array $attributes): void
     {
         // the ID and UID can only be used to match on, we cannot have them be set via the import
         unset($attributes['id'], $attributes['uid']);

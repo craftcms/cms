@@ -144,7 +144,6 @@ class Import
         }
 
         $data = $event->data;
-
         // if we have a map here, hook it up; if we have both the map and the transformer,
         // then the map is used first and then transformer can do further manipulation;
         // if there's no map, the transformer acts as one on its own;

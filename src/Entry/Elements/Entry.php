@@ -197,7 +197,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
      */
-    #[Importable('status', 'Status')]
     private string $status;
 
     /**
@@ -3060,11 +3059,13 @@ JS;
     }
 
     #[Override]
-    public function setAttributesForImport(array $attributes): void
+    public function setAttributesForImport(BaseImporter $importer, array $attributes): void
     {
-        // ensure we're not changing type ID compared to what we chose in the field layout provider step
-        unset($attributes['typeId']);
+        // for UI-based import, ensure we're not changing type ID compared to what we chose in the field layout provider step
+        if ($importer->isEditable()) {
+            unset($attributes['typeId']);
+        }
 
-        parent::setAttributesForImport($attributes);
+        parent::setAttributesForImport($importer, $attributes);
     }
 }

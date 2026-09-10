@@ -547,8 +547,10 @@ class ImportConfigController
                 callback: function (CpScreenResponse $response) use ($importer) {
                     $response
                         ->action('import/configs/save')
-                        ->redirectUrl('import/configs')
-                        ->addAltAction(t('Delete'), [
+                        ->redirectUrl('import/configs');
+
+                    if ($importer?->isEditable()) {
+                        $response->addAltAction(t('Delete'), [
                             'variant' => 'danger',
                             'action' => [
                                 'type' => 'http',
@@ -559,10 +561,11 @@ class ImportConfigController
                                     'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                                 ],
                                 'confirm' => t('Are you sure you want to delete “{name}”?', [
-                                    'name' => $importer?->name,
+                                    'name' => $importer->name,
                                 ]),
                             ],
                         ]);
+                    }
 
                     if ($importer?->isElementImport()) {
                         // TODO (iwona): this doesn't work, but I don't fully know why;

@@ -70,6 +70,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -1897,6 +1898,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $i = 0;
 
         foreach ($entries as $entry) {
+            // skip this node if everything other than the reserved keys (matchCriteria, type) is empty
+            if (ImportHelper::isEmptyImportEntryData(Arr::except($entry, ['matchCriteria', 'type']))) {
+                continue;
+            }
+
             $entryElement = null;
             $newKey = null;
 

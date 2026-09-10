@@ -45,9 +45,10 @@ class EntryTransformer extends ElementTransformer
             return $element->getTypeId();
         }
 
-        if (is_int($value)) {
-            // $section = Sections::getSectionById($value);
-            return $value;
+        if (is_int($value) || is_numeric($value)) {
+            $type = EntryTypes::getEntryTypeById((int) $value);
+
+            return $type?->id;
         }
 
         if (is_string($value)) {

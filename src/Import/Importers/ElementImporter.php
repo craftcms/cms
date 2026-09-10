@@ -208,6 +208,11 @@ class ElementImporter extends BaseImporter
 
     public static function validateFieldLayout(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
+        // if we don't have a UID, then the config is coming from the CLI or file-based and won't have a fieldLayout
+        if (! isset($validator->getData()['uid'])) {
+            return true;
+        }
+
         // can't be empty
         if (empty($value)) {
             $fail($attribute, t('Field layout must be provided.'));
@@ -541,7 +546,7 @@ class ElementImporter extends BaseImporter
         $oldFieldValues = $skipChangeDetection ? [] : $this->snapshotFieldValues($element, array_keys($fields));
 
         if (! empty($attributes)) {
-            $element->setAttributesForImport($attributes);
+            $element->setAttributesForImport($this, $attributes);
         }
 
         if (! empty($fields)) {

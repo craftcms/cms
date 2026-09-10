@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Import\Data;
 use Closure;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
-use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Facades\ImportRun as ImportRunFacade;
 use CraftCms\Cms\Support\Json;
@@ -51,7 +50,7 @@ class ImportRun extends Component implements CpEditable, Validatable
     }
 
     /**
-     * Defines validation rules for name/handle/description/steps (uniqueness of handle, file requiredness per step, batch size bounds).
+     * Defines validation rules for the run.
      */
     #[\Override]
     public function getRules(): array
@@ -87,24 +86,6 @@ class ImportRun extends Component implements CpEditable, Validatable
             'steps.*.config' => [
                 Rule::in(array_merge(ImportConfig::getEditableConfigs()->pluck('uid')->toArray(), ImportConfig::getNonEditableConfigs()->keys()->all())),
             ],
-            'steps.*.file' => [
-                function ($attribute, $value, Closure $fail, Validator $validator) {
-                    $key = preg_match('/\d+/', $attribute, $matches) ? (int) $matches[0] : null;
-                    $config = ImportConfig::getConfigByHandle($this->steps[$key]['config']) ?? ImportConfig::getConfigByUid($this->steps[$key]['config']);
-                    if ($config && ! $config->isEditable()) {
-                        // if the config is not editable (file-based),
-                        // then the file is required and has to be valid
-                        return BaseImporter::validateFile($value, $attribute, $fail, $validator, 'steps');
-                    }
-
-                    // if config is editable, clear out the file value, just in case
-                    if ($config && $config->isEditable()) {
-                        $this->steps[$key]['file'] = null;
-                    }
-
-                    return true;
-                },
-            ],
             'steps.*.batchSize' => [
                 'nullable',
                 'integer',
@@ -130,13 +111,6 @@ class ImportRun extends Component implements CpEditable, Validatable
         }
     }
 
-    //    public function getMessages(): array
-    //    {
-    //        return [
-    //            //'steps.*.file' => 'test234', // works
-    //            //'steps.*.file.closure_validation_rule' => 'test567', // works
-    //        ];
-    //    }
     /**
      * Returns a plain array snapshot of the run's properties.
      */

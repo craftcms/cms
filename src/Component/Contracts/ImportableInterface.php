@@ -36,7 +36,7 @@ interface ImportableInterface
     /**
      * Sets element's importable attributes.
      */
-    public function setAttributesForImport(array $attributes): void;
+    public function setAttributesForImport(BaseImporter $importer, array $attributes): void;
 
     /**
      * Marks the component as currently being imported.

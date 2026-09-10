@@ -62,6 +62,7 @@ it('validateFieldLayout fails and creates no field layout row when given a nonex
     $countBefore = FieldLayout::query()->count();
 
     $errors = Validator::make([
+        'uid' => 'some-config-uid',
         'settings' => ['fieldLayout' => 'not-a-real-uid-or-type'],
     ], ['settings.fieldLayout' => ElementImporter::getSettingsRules()['settings.fieldLayout']])->errors();
 
@@ -74,6 +75,7 @@ it('validateFieldLayout fails when the layout belongs to a different element typ
     Fields::refreshFields();
 
     $errors = Validator::make([
+        'uid' => 'some-config-uid',
         'settings' => ['className' => EntryElement::class, 'fieldLayout' => $fieldLayout->uid],
     ], [
         'settings.className' => ElementImporter::getSettingsRules()['settings.className'],

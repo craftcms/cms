@@ -69,7 +69,10 @@ beforeEach(function () {
 
 it('uses the entry type selected via the field layout provider, ignoring a typeId in the incoming data', function () {
     // typeId passed as an already-resolved int, to avoid the separate bug documented below.
-    $this->import->importItem($this->importer, [
+    $importerWithUid = clone ($this->importer, [
+        'uid' => 'i-have-a-uid',
+    ]);
+    $this->import->importItem($importerWithUid, [
         'title' => 'imported entry',
         'sectionId' => $this->section->handle,
         'typeId' => $this->typeB->id,

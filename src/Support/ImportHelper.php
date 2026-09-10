@@ -119,6 +119,13 @@ class ImportHelper
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
         $class = new \ReflectionClass($importer->className);
         $properties = $class->getProperties();
+
+        // now walk up and getParentClass() so that we can get all the props for classes that this one extends (e.g. Element class for Entry)
+        // todo (iwona): review again once entry parent works
+        //        while ($class = $class->getParentClass()) {
+        //            $properties = array_merge($properties, $class->getProperties());
+        //        }
+
         $properties = array_values(array_filter($properties, fn ($property) => ! empty($property->getAttributes(Importable::class))));
 
         return array_map(function ($property) {
@@ -218,6 +225,29 @@ class ImportHelper
         $decoded = json_decode($value, true);
 
         return json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
+    }
+
+    /**
+     * Recursively checks whether every value in the given array is empty (null or an empty string),
+     * treating a nested array as empty only if all of its own values are empty too.
+     */
+    public static function isEmptyImportEntryData(array $data): bool
+    {
+        foreach ($data as $value) {
+            if (is_array($value)) {
+                if (! self::isEmptyImportEntryData($value)) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if ($value !== null && $value !== '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static function getPrefixedHandlesForMapping(
