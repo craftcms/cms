@@ -1,4 +1,4 @@
-import {computed, onBeforeUnmount, ref, watch} from 'vue';
+import {computed, nextTick, onBeforeUnmount, ref, watch} from 'vue';
 import {useEventListener, useResizeObserver} from '@vueuse/core';
 import {t} from '@craftcms/ui';
 import {useHelpers} from '@/common/composables/useCraftData';
@@ -170,17 +170,14 @@ export function useImageEditor(options: ImageEditorOptions) {
     canvas.measureEditor();
     canvas.resizeCanvases();
 
-    if (state.currentView.value === 'crop') {
+    const cropping = state.currentView.value === 'crop';
+
+    if (cropping) {
       state.zoomRatio.value = geometry.getZoomToFitRatio(
         geometry.getScaledImageDimensions()
       );
 
-      const previouslyOccupied = geometry.getOccupiedArea();
       geometry.setFittedImageVerticeCoordinates();
-
-      if (previouslyOccupied) {
-        cropper.reposition(previouslyOccupied);
-      }
     } else {
       state.zoomRatio.value =
         geometry.getZoomToCoverRatio(geometry.getScaledImageDimensions()) *
@@ -189,8 +186,19 @@ export function useImageEditor(options: ImageEditorOptions) {
 
     canvas.repositionImage(previous);
     canvas.repositionViewport();
-    focalPoint.reposition(previous);
     canvas.zoomImage();
+
+    // Only now that the image has taken its new position and size: both of
+    // these hold their place relative to the image, so they read it rather than
+    // being shifted by how much the editor changed. Nudging them beforehand
+    // measured them against where the image used to be, which is why they
+    // drifted away from it on every resize.
+    if (cropping) {
+      cropper.reposition();
+    }
+
+    focalPoint.positionFromState();
+
     canvas.renderImage();
 
     if (geometry.needsHigherResolution()) {
@@ -347,15 +355,28 @@ export function useImageEditor(options: ImageEditorOptions) {
 
     const previousView = state.currentView.value;
 
-    updateSizeAndPosition();
-
-    if (previousView === 'crop' && view !== 'crop') {
-      enqueue(disableCropMode);
-    } else if (previousView !== 'crop' && view === 'crop') {
-      enqueue(enableCropMode);
-    }
-
+    // Flip first, so the host can show or hide whatever this view owns — the
+    // crop sidebar — and settle at its new width before anything is measured.
     state.currentView.value = view;
+
+    void nextTick().then(() => {
+      // One measurement, taken once the sidebar is in place. Laying out against
+      // the old width and letting the resize correct it afterwards is what made
+      // the image lurch: it moved for the old width, animated towards a target
+      // computed for the old width, then moved again when the sidebar landed.
+      //
+      // Safe to measure without preserving the previous dimensions: both
+      // transitions set the image's position outright rather than shifting it
+      // by how much the editor changed.
+      canvas.measureEditor();
+      canvas.resizeCanvases();
+
+      if (previousView === 'crop' && view !== 'crop') {
+        enqueue(disableCropMode);
+      } else if (previousView !== 'crop' && view === 'crop') {
+        enqueue(enableCropMode);
+      }
+    });
   }
 
   /** Parses the move icon out of the DOM so the cropper can draw it on canvas. */
@@ -387,6 +408,12 @@ export function useImageEditor(options: ImageEditorOptions) {
     }
   }
 
+  /**
+   * The focal point's offsets as the asset arrived, expressed as fractions of
+   * the image so a later editor resize doesn't read as a change.
+   */
+  let seededFocalOffset: {x: number; y: number} | null = null;
+
   /** Seeds the focal point state from the asset's stored relative position. */
   function seedFocalPoint(): void {
     const dimensions = geometry.getScaledImageDimensions();
@@ -406,9 +433,143 @@ export function useImageEditor(options: ImageEditorOptions) {
 
     focalPoint.storeFocalPointState(focalState);
 
+    seededFocalOffset = {
+      x: focalState.offsetX / dimensions.width,
+      y: focalState.offsetY / dimensions.height,
+    };
+
     if (options.focalPoint) {
       focalPoint.create();
     }
+  }
+
+  /**
+   * Whether anything has been changed since the image loaded.
+   *
+   * Derived from the state rather than a flag the mutating operations have to
+   * remember to set — one missed call site and a user loses work to a
+   * confirmation that never appeared.
+   */
+  const isDirty = computed(() => {
+    if (!isReady.value) {
+      return false;
+    }
+
+    if (
+      state.viewportRotation.value !== 0 ||
+      state.imageStraightenAngle.value !== 0 ||
+      state.flipData.value.x !== 0 ||
+      state.flipData.value.y !== 0
+    ) {
+      return true;
+    }
+
+    // Sub-pixel wobble from repeated zoom maths isn't an edit.
+    const tolerance = 1;
+    const crop = state.cropperState.value;
+
+    if (
+      crop &&
+      (Math.abs(crop.offsetX) > tolerance ||
+        Math.abs(crop.offsetY) > tolerance ||
+        crop.imageDimensions.width - crop.width > tolerance ||
+        crop.imageDimensions.height - crop.height > tolerance)
+    ) {
+      return true;
+    }
+
+    if (Boolean(state.focalPoint.value) !== Boolean(options.focalPoint)) {
+      return true;
+    }
+
+    const focalState = state.focalPointState.value;
+
+    if (state.focalPoint.value && focalState && seededFocalOffset) {
+      const moved =
+        Math.abs(
+          focalState.offsetX / focalState.imageDimensions.width -
+            seededFocalOffset.x
+        ) > 0.001 ||
+        Math.abs(
+          focalState.offsetY / focalState.imageDimensions.height -
+            seededFocalOffset.y
+        ) > 0.001;
+
+      if (moved) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  /**
+   * Puts the image back the way it loaded, discarding every edit.
+   *
+   * Deliberately doesn't refetch: the source image is already on the canvas,
+   * and everything the editor does to it lives in state that can simply be
+   * wound back. The view is left alone — resetting while cropping should show
+   * the crop reset, not drop you somewhere else.
+   */
+  function reset(): void {
+    const image = state.image.value;
+
+    if (!image || state.animationInProgress.value) {
+      return;
+    }
+
+    state.imageStraightenAngle.value = 0;
+    state.viewportRotation.value = 0;
+    state.scaleFactor.value = 1;
+    state.flipData.value = {x: 0, y: 0};
+
+    // `flipX`/`flipY` are fabric's own normalization of a negative scale, so
+    // both halves have to be cleared or the image stays mirrored.
+    image.flipX = false;
+    image.flipY = false;
+    image.set({
+      angle: 0,
+      scaleX: 1,
+      scaleY: 1,
+      left: state.editorWidth.value / 2,
+      top: state.editorHeight.value / 2,
+    });
+
+    if (state.focalPoint.value) {
+      state.canvas.value?.remove(state.focalPoint.value);
+      state.focalPoint.value = null;
+    }
+
+    state.previousFocalPoint.value = null;
+
+    const dimensions = geometry.getScaledImageDimensions();
+    const cropping = state.currentView.value === 'crop';
+
+    state.zoomRatio.value = cropping
+      ? geometry.getZoomToFitRatio(dimensions)
+      : geometry.getZoomToCoverRatio(dimensions);
+
+    canvas.zoomImage();
+    geometry.setFittedImageVerticeCoordinates();
+
+    seedFocalPoint();
+
+    cropper.storeCropperState({
+      offsetX: 0,
+      offsetY: 0,
+      width: dimensions.width,
+      height: dimensions.height,
+      imageDimensions: dimensions,
+    });
+
+    canvas.repositionViewport();
+
+    if (cropping) {
+      cropper.restoreFromState();
+      canvas.renderCropper();
+    }
+
+    canvas.renderImage();
   }
 
   async function load(): Promise<void> {
@@ -578,16 +739,10 @@ export function useImageEditor(options: ImageEditorOptions) {
     (busy) => {
       if (!busy && resizePending) {
         resizePending = false;
+        // `updateSizeAndPosition` re-derives the rectangle and the focal
+        // point from their stored state, which is what a transition placed
+        // against a since-moved image needs.
         updateSizeAndPosition();
-
-        // The transition placed the rectangle against wherever the image was
-        // when the animation started; the resize we just applied has since
-        // moved the image. Re-derive rather than translate, or the two stay
-        // out of step and every containment test fails.
-        if (state.currentView.value === 'crop') {
-          cropper.restoreFromState();
-          canvas.renderCropper();
-        }
       }
     }
   );
@@ -640,6 +795,8 @@ export function useImageEditor(options: ImageEditorOptions) {
   return {
     state,
     start,
+    reset,
+    isDirty,
     isReady,
     isSaving,
     savingAs,
