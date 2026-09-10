@@ -369,7 +369,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
         title=${ifDefined(this.statusLabel)}
         aria-hidden="true"
       >
-        <span class="cp-visually-hidden">${this.statusLabel}</span>
+        <craft-visually-hidden>${this.statusLabel}</craft-visually-hidden>
       </div>
     `;
   }
@@ -523,8 +523,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     }
 
     if (this.required) {
-      const srLabel = document.createElement('span');
-      srLabel.className = 'visually-hidden';
+      const srLabel = document.createElement('craft-visually-hidden');
       srLabel.textContent = t('Required');
       srLabel.setAttribute('data-craft-field-decoration', '');
 
