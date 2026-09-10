@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+import {expect} from 'storybook/test';
 
 import {html} from 'lit';
 
@@ -160,4 +161,32 @@ export const WithActions: Story = {
       </craft-action-menu>
     </craft-button-group>
   `,
+};
+
+/**
+ * A group handed its selection in markup keeps it: with no `value` of its own,
+ * the group adopts the one from whichever child is marked `active`.
+ *
+ * Without that it would clear `active` from every child on its first sync —
+ * and a consumer setting `active` itself would find it stripped back off,
+ * with nothing to say why. Drive the selection through `value` where you can;
+ * this is for markup that states its own.
+ */
+export const SelectionFromMarkup: Story = {
+  name: 'Selection from markup',
+  render: () => html`
+    <craft-button-group name="orientation">
+      <craft-button value="landscape" active>Landscape</craft-button>
+      <craft-button value="portrait">Portrait</craft-button>
+    </craft-button-group>
+  `,
+  async play({canvasElement}) {
+    const group = canvasElement.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    const landscape = canvasElement.querySelector('craft-button')!;
+
+    await expect(group.value).toBe('landscape');
+    await expect(landscape.getAttribute('aria-pressed')).toBe('true');
+  },
 };

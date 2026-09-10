@@ -56,4 +56,84 @@ describe('craft-button-group', () => {
     expect(values).toEqual(['news']);
     expect(setFormValue).toHaveBeenCalled();
   });
+
+  it('adopts its value from a child marked active in markup', async () => {
+    // A group given its selection in markup used to have it stripped: with no
+    // `value`, the first sync cleared `active` from every child.
+    document.body.innerHTML = `
+      <craft-button-group name="orientation">
+        <craft-button value="landscape" active></craft-button>
+        <craft-button value="portrait"></craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    const [landscape, portrait] =
+      document.querySelectorAll<CraftButton>('craft-button');
+
+    expect(group.value).toBe('landscape');
+    expect(landscape.hasAttribute('active')).toBe(true);
+    expect(landscape.getAttribute('aria-pressed')).toBe('true');
+    expect(portrait.hasAttribute('active')).toBe(false);
+  });
+
+  it('lets an explicit value win over a child marked active', async () => {
+    document.body.innerHTML = `
+      <craft-button-group name="orientation" value="portrait">
+        <craft-button value="landscape" active></craft-button>
+        <craft-button value="portrait"></craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    const [landscape, portrait] =
+      document.querySelectorAll<CraftButton>('craft-button');
+
+    expect(group.value).toBe('portrait');
+    expect(landscape.hasAttribute('active')).toBe(false);
+    expect(portrait.hasAttribute('active')).toBe(true);
+  });
+
+  it('adopts only once, so a later sync cannot resurrect the old value', async () => {
+    document.body.innerHTML = `
+      <craft-button-group name="orientation">
+        <craft-button value="landscape" active></craft-button>
+        <craft-button value="portrait"></craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    group.value = 'portrait';
+    await group.updateComplete;
+
+    const [landscape, portrait] =
+      document.querySelectorAll<CraftButton>('craft-button');
+
+    expect(group.value).toBe('portrait');
+    expect(landscape.hasAttribute('active')).toBe(false);
+    expect(portrait.hasAttribute('active')).toBe(true);
+  });
+
+  it('leaves multi-select alone, which already reads active off its children', async () => {
+    document.body.innerHTML = `
+      <craft-button-group name="topics" multiple>
+        <craft-button value="news" active></craft-button>
+        <craft-button value="sport" active></craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    const buttons = document.querySelectorAll<CraftButton>('craft-button');
+
+    expect(group.value).toBeUndefined();
+    expect([...buttons].every((b) => b.hasAttribute('active'))).toBe(true);
+  });
 });
