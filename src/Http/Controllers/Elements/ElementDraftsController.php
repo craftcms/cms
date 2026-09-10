@@ -415,7 +415,7 @@ class ElementDraftsController
 
         Gate::authorize('delete', $element);
 
-        if (! $this->elements->deleteElement($element, true)) {
+        if (! $this->drafts->discardDraft($element)) {
             return new ElementResponse()->failure($element, t('Couldn’t delete {type}.', [
                 'type' => t('draft'),
             ]));

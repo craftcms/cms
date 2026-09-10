@@ -47,6 +47,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -72,8 +73,7 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -142,7 +142,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -161,7 +161,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         if ($value === ':empty:') {
-            return $query->whereNotExists($exists);
+            $query->whereNotExists($exists);
+
+            return;
         }
 
         if ($value !== ':notempty:') {
@@ -175,7 +177,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $exists->whereIn("entries_$ns.id", $ids);
         }
 
-        return $query->whereExists($exists);
+        $query->whereExists($exists);
     }
 
     /**
@@ -383,7 +385,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             FormField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(GroupedEntryTypeManager::make('entryTypes')
-                    ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))),
+                    ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))
+                    ->reactive()),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -438,9 +441,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ], array_filter(Entry::indexViewModes(), fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false))));
 
         return $form->add(
-            FormField::make(t('Site Settings'))
-                ->instructions(t('Choose the site-specific settings for nested entries.'))
-                ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
+            Group::make('matrix-site-settings', [
+                FormField::make(t('Site Settings'))
+                    ->instructions(t('Choose the site-specific settings for nested entries.'))
+                    ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
+            ])->dependsOn('settings.entryTypes'),
             FormField::make(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->control(Number::make('minEntries')->min(0)->value($this->minEntries)),
@@ -1333,16 +1338,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = DB::table(Table::ENTRIES, 'entries')
+        $map = DB::table(Table::ELEMENTS_OWNERS, 'elements_owners')
             ->select([
                 'elements_owners.ownerId as source',
-                'entries.id as target',
+                'elements_owners.elementId as target',
             ])
-            ->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->whereColumn('elements_owners.elementId', 'entries.id')
-                    ->whereIn('elements_owners.ownerId', $sourceElementIds);
-            })
-            ->where('entries.fieldId', $this->id)
+            ->whereIn('elements_owners.ownerId', $sourceElementIds)
+            ->whereExists(fn (Builder $query) => $query
+                ->selectRaw('1')
+                ->from(Table::ENTRIES, 'entries')
+                ->whereColumn('entries.id', 'elements_owners.elementId')
+                ->where('entries.fieldId', $this->id))
             ->orderBy('elements_owners.sortOrder')
             ->get()
             ->map(fn (object $row) => (array) $row)

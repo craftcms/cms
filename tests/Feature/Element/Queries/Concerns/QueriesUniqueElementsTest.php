@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
@@ -11,7 +15,8 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 
-test('unique', function () {
+test('unique', function (bool $generic) {
+    $query = fn () => $generic ? new ElementQuery(EntryElement::class) : entryQuery();
     $site1 = Site::firstOrFail();
     $site2 = Site::factory()->create();
 
@@ -25,17 +30,33 @@ test('unique', function () {
         'siteId' => $site2->id,
     ]);
 
-    expect(entryQuery()->site('*')->count())->toBe(2);
-    expect(entryQuery()->site('*')->unique()->count())->toBe(1);
-    expect(entryQuery()->site('*')->unique()->first()->siteId)->toBe($site1->id);
+    $otherEntry = Entry::factory()->create();
+    $otherEntry->element->siteSettings()->create(['siteId' => $site2->id]);
+
+    $fallbackEntry = Entry::factory()->create();
+    $fallbackEntry->element->siteSettings()->update(['siteId' => $site2->id]);
+
+    expect($query()->site('*')->count())->toBe(5);
+    expect($query()->site('*')->unique()->count())->toBe(3);
+    expect($query()->site('*')->unique()->pluck('elements.id')->all())
+        ->toEqualCanonicalizing([$entry->id, $otherEntry->id, $fallbackEntry->id]);
+    expect($query()->site('*')->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())
+        ->toBe([$entry->id => $site1->id, $otherEntry->id => $site1->id, $fallbackEntry->id => $site2->id]);
 
     Sites::setCurrentSite($site2->handle);
 
-    expect(entryQuery()->site('*')->unique()->first()->siteId)->toBe($site2->id);
+    $preferredSites = [$entry->id => $site2->id, $otherEntry->id => $site2->id, $fallbackEntry->id => $site2->id];
 
-    expect(entryQuery()->site('*')->preferSites([$site2->id, $site1->id])->unique()->first()->siteId)->toBe($site2->id);
-    expect(entryQuery()->site('*')->preferSites([$site2->handle, $site1->handle])->unique()->first()->siteId)->toBe($site2->id);
-});
+    expect($query()->site('*')->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
+    expect($query()->site('*')->preferSites([$site2->id, $site1->id])->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
+    expect($query()->site('*')->preferSites([$site2->handle, $site1->handle])->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
+    expect($query()->site('*')->unique()->orderBy('elements.id')->offset(1)->limit(1)->pluck('elements.id')->all())->toBe([$otherEntry->id]);
+
+    $entry->element->siteSettings()->where('siteId', $site1->id)->update(['title' => 'Only matching site']);
+
+    expect($query()->site('*')->unique()->where('elements_sites.title', 'Only matching site')->pluck('elements_sites.siteId', 'elements.id')->all())
+        ->toBe([$entry->id => $site1->id]);
+})->with(['entry table' => false, 'element table' => true]);
 
 test('unique still deduplicates when siteId changes after the site filter is applied', function () {
     $site1 = Site::firstOrFail();

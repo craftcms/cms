@@ -1,17 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\fields\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Text field condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\TextFieldConditionRule} instead.
-     */
-    class TextFieldConditionRule extends \CraftCms\Cms\Field\Conditions\TextFieldConditionRule
-    {
-    }
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyTextConditionRule;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\TextFieldConditionRule instead. */
+class TextFieldConditionRule extends \CraftCms\Cms\Field\Conditions\TextFieldConditionRule
+{
+    use LegacyTextConditionRule;
 }

@@ -5,12 +5,19 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
+use CraftCms\Cms\Http\Middleware\RequireEdition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
+use CraftCms\Cms\User\Events\UserGroupSaved;
+use CraftCms\Cms\User\Events\UserGroupSaving;
 use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -108,6 +115,8 @@ test('edit renders user group page when edition is pro or higher', function () {
 
 test('store validates on unique handle and name', function () {
     Edition::set(Edition::Pro);
+    config()->set('auth.password_timeout', 300);
+    $this->withSession(['auth.password_confirmed_at' => now()->subMinutes(10)->unix()]);
 
     $group = UserGroup::factory()->create([
         'name' => 'A new group',
@@ -117,6 +126,7 @@ test('store validates on unique handle and name', function () {
     post(action([UserGroupsController::class, 'store']), [
         'name' => 'A new group',
         'handle' => 'anewgroup',
+        'permissions' => ['accessCp'],
     ])
         ->assertSessionHasErrors(['name', 'handle']);
 
@@ -126,6 +136,15 @@ test('store validates on unique handle and name', function () {
         'name' => 'A new group',
         'handle' => 'anewgroup',
     ])->assertOk();
+
+    postJson(action([UserGroupsController::class, 'store']), [
+        'name' => 'Another group',
+        'handle' => 'anotherGroup',
+        'permissions' => ['viewUsers', 'editUsers', 'assignNewUserGroup'],
+    ])->assertOk();
+
+    $newGroup = UserGroup::where('handle', 'anotherGroup')->firstOrFail();
+    expect(UserPermissions::getPermissionsByGroupId($newGroup->id)->all())->toEqualCanonicalizing(['viewUsers', 'editUsers', "assignUserGroup:$newGroup->uid"]);
 });
 
 it('can delete a group', function () {
@@ -142,3 +161,68 @@ it('can delete a group', function () {
 
     expect(UserGroup::count())->toBe(0);
 });
+
+it('checks permission elevation before saving group metadata', function (array $initialPermissions, array $permissions, bool $confirmed, bool $allowed, bool $team = false) {
+    Edition::set($team ? Edition::Team : Edition::Pro);
+    if ($team) {
+        $this->withoutMiddleware(RequireEdition::class);
+    }
+
+    config()->set('auth.password_timeout', 300);
+    $this->withSession(['auth.password_confirmed_at' => $confirmed ? now()->unix() : now()->subMinutes(10)->unix()]);
+
+    $group = $team
+        ? UserGroup::findOrFail(UserGroups::getTeamGroup()->id)
+        : UserGroup::factory()->create()->refresh();
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->rebuild();
+    UserPermissions::saveGroupPermissions($group->id, $initialPermissions);
+
+    $resolvedGroup = UserGroups::getGroupById($group->id);
+    $originalGroup = $resolvedGroup->getConfig();
+    $originalConfig = $projectConfig->get();
+    Event::fake([UserGroupSaving::class, UserGroupSaved::class, UserGroupPermissionsSaved::class]);
+
+    $response = postJson(action([UserGroupsController::class, 'store']), [
+        'id' => $group->id,
+        'name' => 'Updated group',
+        'handle' => 'updatedGroup',
+        'description' => 'Updated description',
+        'permissions' => $permissions,
+    ]);
+
+    if (! $allowed) {
+        $response->assertStatus(423);
+        expect($group->fresh()->getAttributes())->toBe($group->getAttributes());
+        expect($resolvedGroup->getConfig())->toBe($originalGroup);
+        expect($projectConfig->get())->toBe($originalConfig);
+        Event::assertNothingDispatched();
+
+        return;
+    }
+
+    $response->assertOk();
+    expect($group->fresh()->only(['name', 'handle', 'description']))->toBe($team
+        ? $group->only(['name', 'handle', 'description'])
+        : ['name' => 'Updated group', 'handle' => 'updatedGroup', 'description' => 'Updated description']);
+
+    $expectedPermissions = $team ? array_diff($permissions, ['accessCp']) : $permissions;
+    expect(UserPermissions::getPermissionsByGroupId($group->id)->all())->toEqualCanonicalizing($expectedPermissions);
+    expect($projectConfig->get(ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid.'.permissions'))->toEqualCanonicalizing($expectedPermissions);
+    Event::assertDispatchedOnce(UserGroupSaving::class);
+    Event::assertDispatchedOnce(UserGroupSaved::class);
+    Event::assertDispatchedOnce(UserGroupPermissionsSaved::class);
+
+    if ($team) {
+        expect(UserPermissions::doesUserHavePermission(Auth::id(), 'accessCp'))->toBeTrue();
+    }
+})->with([
+    'expired addition' => [['accessCp'], ['accessCp', 'accessSiteWhenSystemIsOff'], false, false],
+    'confirmed addition' => [['accessCp'], ['accessCp', 'accessSiteWhenSystemIsOff'], true, true],
+    'metadata only' => [[], [], false, true],
+    'permission removal' => [['accessCp', 'accessSiteWhenSystemIsOff'], ['accessCp'], false, true],
+    'unchanged permissions' => [['accessCp'], ['accessCp'], false, true],
+    'Team expired addition' => [[], ['accessSiteWhenSystemIsOff'], false, false, true],
+    'Team confirmed addition' => [[], ['accessSiteWhenSystemIsOff'], true, true, true],
+    'Team retains CP access' => [[], [], false, true, true],
+]);

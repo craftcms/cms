@@ -12,6 +12,7 @@ use craft\events\DefineEditUserScreensEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
+use craft\services\Announcements;
 use craft\web\Controller;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
@@ -40,6 +41,16 @@ use yii\web\Response;
  */
 class UsersController extends Controller
 {
+    /**
+     * @deprecated 6.0.0
+     */
+    public function actionMarkAnnouncementsAsRead(): Response
+    {
+        app(Announcements::class)->markAsRead($this->request->getBodyParam('ids', []));
+
+        return $this->asSuccess();
+    }
+
     /**
      * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
      *

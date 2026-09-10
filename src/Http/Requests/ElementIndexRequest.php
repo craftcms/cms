@@ -82,6 +82,8 @@ class ElementIndexRequest extends FormRequest
         $condition = Conditions::createCondition($conditionConfig);
 
         if ($condition instanceof ElementCondition) {
+            $condition->forQuery = true;
+
             $referenceElementId = $this->input('referenceElementId');
 
             if ($referenceElementId) {

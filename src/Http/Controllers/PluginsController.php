@@ -9,10 +9,12 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Plugin\PluginSettingsForm;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -25,6 +27,7 @@ readonly class PluginsController
     public function __construct(
         private Plugins $plugins,
         private GeneralConfig $generalConfig,
+        private PluginSettingsForm $settingsForm,
     ) {}
 
     public function index(): CpScreenResponse
@@ -144,5 +147,22 @@ readonly class PluginsController
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))
             : $this->editSettings($handle, $plugin);
+    }
+
+    public function renderSettingsForm(Request $request, string $handle): JsonResponse
+    {
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'scope' => ['required', 'array', 'min:1'],
+            'scope.0' => ['required', 'in:settings'],
+            'scope.*' => ['string'],
+        ]);
+        $plugin = $this->plugins->getPlugin($handle);
+
+        abort_if(is_null($plugin), 404, 'Plugin not found.');
+
+        return new JsonResponse([
+            'form' => $this->settingsForm->refresh($plugin, $data['values'], $data['scope']),
+        ]);
     }
 }

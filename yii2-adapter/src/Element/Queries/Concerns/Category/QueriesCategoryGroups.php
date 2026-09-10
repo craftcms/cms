@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -48,7 +49,20 @@ trait QueriesCategoryGroups
                 throw new QueryAbortedException();
             }
 
-            $this->applyGroupIdParam($categoryQuery);
+            static::applyGroupId($categoryQuery, $categoryQuery->groupId);
+
+            // Should we set the structureId param?
+            if (
+                $categoryQuery->withStructure !== false &&
+                !isset($categoryQuery->structureId) &&
+                is_array($categoryQuery->groupId) &&
+                count($categoryQuery->groupId) === 1
+            ) {
+                $group = Craft::$app->getCategories()->getGroupById(reset($categoryQuery->groupId));
+                if ($group) {
+                    $categoryQuery->structureId = $group->structureId;
+                }
+            }
         });
     }
 
@@ -156,25 +170,13 @@ trait QueriesCategoryGroups
     /**
      * Applies the 'groupId' param to the query being prepared.
      */
-    private function applyGroupIdParam(CategoryQuery $categoryQuery): void
+    public static function applyGroupId(Builder $query, mixed $value): void
     {
-        if (!$categoryQuery->groupId) {
+        if (!$value) {
             return;
         }
 
-        $categoryQuery->whereIn('categories.groupId', $categoryQuery->groupId);
-
-        // Should we set the structureId param?
-        if (
-            $categoryQuery->withStructure !== false &&
-            !isset($categoryQuery->structureId) &&
-            count($categoryQuery->groupId) === 1
-        ) {
-            $group = Craft::$app->getCategories()->getGroupById(reset($categoryQuery->groupId));
-            if ($group) {
-                $categoryQuery->structureId = $group->structureId;
-            }
-        }
+        $query->whereIn('categories.groupId', Arr::wrap($value));
     }
 
     /**

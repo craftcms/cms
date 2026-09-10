@@ -165,6 +165,8 @@ class Gql
             $this->setActiveSchema($schema);
         }
         if (! $this->_schemaDef || $prebuildSchema) {
+            $this->resetGeneratedState();
+
             $registeredTypes = $this->_registerGqlTypes();
             $this->_registerGqlQueries();
             $this->_registerGqlMutations();
@@ -451,6 +453,7 @@ class Gql
      */
     public function setActiveSchema(?GqlSchema $schema = null): void
     {
+        $this->resetGeneratedState();
         $this->_schema = $schema;
     }
 
@@ -528,13 +531,18 @@ class Gql
 
     public function flushCaches(): void
     {
-        $this->_schema = null;
+        $this->setActiveSchema();
+        $this->invalidateCaches();
+    }
+
+    private function resetGeneratedState(): void
+    {
         $this->_schemaDef = null;
         $this->_contentArguments = [];
+        $this->_fieldArguments = [];
         $this->_typeDefinitions = [];
         TypeLoader::flush();
         GqlEntityRegistry::flush();
-        $this->invalidateCaches();
     }
 
     public function getTokenById(int $id): ?GqlToken

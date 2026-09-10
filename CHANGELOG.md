@@ -2,14 +2,113 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
+
+- Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
+- Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
+- Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
+- Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
+- Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
+- Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
+- Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Replaced the project config implementation with separate change handling, storage, and rebuild components.
+- Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
+- Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
+- Added `crop`, `fit`, `stretch`, and `letterbox` modes to `craft-thumbnail`, and removed size-dependent asset thumbnail cropping.
+- Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getForm()`, which replaces `getHtml()`. ([#19588](https://github.com/craftcms/cms/pull/19588))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::isSelectableForCondition()`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Added `CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface`, which element condition rules that modify element queries should now implement. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
+- Removed `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getHtml()`. `getForm()` must be implemented instead. ([#19588](https://github.com/craftcms/cms/pull/19588))
+- Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
+- Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
+- Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where structure repair previews could differ from the repairs that would be applied. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed database errors and incorrect ordering when repairing structures. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element queries could select the wrong site variant when requesting unique results across sites. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where deleting a site could transfer its content despite selecting the delete option. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where user group metadata could be saved before permission elevation was checked. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where concurrent image downloads could delete each other's temporary files, and failed downloads could leave temporary files behind. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where loading an image transform index could lose its output format. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where duplicating an entry could apply submitted changes to the original entry. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where bulk duplication could save partial results after a validation failure. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where JSON fields could misinterpret valid objects containing `__ERROR__` or `__VALUE__` keys. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where Link fields could lose labels and attributes during normalization or localization. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where component overrides could affect other instances of the same component. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where support request emails could omit errors encountered while preparing their attachments. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where the first access to lazily loaded entry authors could return no authors. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where entries deleted with their entry type or section could fail to be restored with it. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where nested GraphQL mutation inputs could affect how sibling inputs were normalized. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where switching GraphQL schemas could reuse types, arguments, or loaders from the previous schema. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where resetting generated GraphQL state could unnecessarily invalidate cached query results. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where generating a URL for another site could leave that site selected after an exception. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where preparing Composer changes could leave `composer.json` partially modified after a failure. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed inconsistent plugin license statuses, issues, and trial information when reading cached metadata. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where preparing a Control Panel response could discard or leak an input namespace. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where rejected user permission changes could leave some permissions updated. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where verification email delivery addresses could alter account identity or be lost when notifications were queued. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where orphan cleanup could delete the wrong rows for composite foreign keys. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where worker events or progress updates could reactivate cancelled queue jobs. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where named OAuth providers could overwrite each other's configuration. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cached template resolution could ignore the current site, registered template roots, or lookup options. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where saving project config repeatedly could persist the same changes more than once. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where repairing a field layout UID could undo repairs to its tab and element UIDs. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where removing supported sites from a section could leave obsolete entry site data. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed inconsistent account eligibility checks when signing into the Control Panel with OAuth. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cached search term normalization could use the wrong language. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where splitting relation criteria could discard field and source site restrictions. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where field usage metadata could lose field layout UIDs and produce incorrect links or empty groups. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cached field layouts could retain outdated custom field handles or identities. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where screen rendering could generate action menu items twice, producing duplicate events or inconsistent action IDs. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where nested cache collection could extend expiration deadlines or ignore expired dependencies. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where creating a section from the command line could ignore a selected existing entry type. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed an error that occurred when deeply duplicating descendants. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where failed filesystem resolution could leave a previously generated disk available with outdated configuration. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where indexing large asset volumes could exceed memory or database parameter limits. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where asset factories could create assets and their folders in different volumes. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where parallel test cleanup could delete another worker's files. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where object templates could render through an outdated Twig environment or behave differently after caching. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where project config path processing state could leak between application instances. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element query results could eager-load relations twice. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where cloned element queries could use callbacks that still read criteria from the original query. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where asset folder lookups could return stale or inconsistent results after folders were saved or deleted. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where generated field propagation could retain old element state and run during later element operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where queued resaves could handle null field defaults differently from inline resaves. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where failed account updates could leave in-memory account state inconsistent with persisted data. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where validation errors could replace generated field handles and cause subsequent validation failures. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element indexes could select automatic sources outside their available source collection. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where element indexes could discard the selected source's status criteria. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where nested Twig namespace tags or exceptions could leave the wrong input namespace active. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed decimal rounding errors involving high-precision values, scientific notation, and negative numbers. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where percentage formatting could lose decimal precision during multiplication. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where Money field conditions could compare incorrect units or lose precision. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where numeric conditions could ignore zero-valued bounds. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where failed plugin installation or uninstallation could leave project config writable. ([#19566](https://github.com/craftcms/cms/pull/19566))
+- Fixed a bug where save errors using shortened field paths could fail to appear on Controls within nested Forms. ([#19565](https://github.com/craftcms/cms/pull/19565))
+- Fixed a bug where authenticated Control Panel requests to Yii2 adapter controller actions were treated as unauthenticated. ([#19556](https://github.com/craftcms/cms/pull/19556))
 - Fixed a bug where validating filesystem attributes could resolve `CraftCms\Cms\Filesystem\Filesystems\Filesystem::getRootUrl()`. ([#19535](https://github.com/craftcms/cms/pull/19535))
 - Fixed `CraftCms\Cms\Support\Env::parse()` to preserve unknown aliases rather than throw an exception. ([#19535](https://github.com/craftcms/cms/pull/19535))
+- Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
+- Fixed a bug where visiting the logout path while signed out would store it as the post-login redirect, so signing in would immediately sign the user back out. ([#19551](https://github.com/craftcms/cms/pull/19551))
+- Fixed a bug where no confirmation dialog was shown when deleting entry types and custom fields. ([#19582](https://github.com/craftcms/cms/pull/19582))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
 - Added `CraftCms\Cms\Asset\AssetTransformers` and `CraftCms\Cms\Asset\AssetTransformDrivers`.
 - Added `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`.
+- Added a Control Panel notification center and `CraftCms\Cms\Cp\Notifications\CpNotification`, backed by Laravel database notifications. Deprecated announcement service compatibility remains available through `craftcms/yii2-adapter`.
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
 - Removed `CraftCms\Cms\Config\GeneralConfig::$isSystemLive`, `app()->isLive()`, and the core `craft:on` and `craft:off` commands. Deprecated compatibility remains available through `craftcms/yii2-adapter`.
 - Moved the `generateTransformsBeforePageLoad` setting to Craft Asset Transformer profiles.

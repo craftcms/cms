@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use craft\base\Plugin;
+use craft\controllers\UsersController;
+use craft\services\Announcements;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Twig\Events\PageEnded;
@@ -66,6 +68,26 @@ it('does not resolve a second legacy app while loading legacy plugins', function
         ->and(app('Craft'))->toBe(Craft::$app)
         ->and(LegacyAppTestPlugin::$resolvedCraftApp)->toBe(Craft::$app)
         ->and($event->headHtml)->toContain('window.legacyAppTest = true;');
+});
+
+it('exposes the announcement service through the legacy application', function() {
+    expect(Craft::$app->getAnnouncements())->toBeInstanceOf(Announcements::class)
+        ->and(Craft::$app->announcements)->toBe(Craft::$app->getAnnouncements());
+});
+
+it('retains the legacy mark announcements action', function() {
+    $announcements = Mockery::mock(Announcements::class);
+    $announcements->shouldReceive('markAsRead')
+        ->once()
+        ->with(['4ca5a942-8851-4d43-9d08-0ebc6273445f']);
+    app()->instance(Announcements::class, $announcements);
+    Craft::$app->request->setBodyParams([
+        'ids' => ['4ca5a942-8851-4d43-9d08-0ebc6273445f'],
+    ]);
+
+    $response = new UsersController('users', Craft::$app)->actionMarkAnnouncementsAsRead();
+
+    expect($response->statusCode)->toBe(302);
 });
 
 class LegacyAppTestPlugin extends Plugin

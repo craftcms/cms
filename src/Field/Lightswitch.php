@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -24,7 +25,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -66,7 +67,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         $valueSql = self::valueSql($instances);
         $strict = false;
@@ -78,7 +79,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
 
         $defaultValue = $strict ? null : $instances[0]->default;
 
-        return $query->whereBooleanParam($valueSql, $value, $defaultValue, Query::TYPE_JSON);
+        $query->whereBooleanParam($valueSql, $value, $defaultValue, Query::TYPE_JSON);
     }
 
     /**

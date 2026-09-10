@@ -1,17 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\base\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * BaseSelectConditionRule provides a base implementation for condition rules that are composed of a select input.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Condition\BaseSelectConditionRule} instead.
-     */
-    abstract class BaseSelectConditionRule extends \CraftCms\Cms\Condition\BaseSelectConditionRule
-    {
-    }
+use CraftCms\Yii2Adapter\Form\Concerns\LegacySelectConditionRule;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Condition\BaseSelectConditionRule instead. */
+abstract class BaseSelectConditionRule extends \CraftCms\Cms\Condition\BaseSelectConditionRule
+{
+    use LegacySelectConditionRule;
 }

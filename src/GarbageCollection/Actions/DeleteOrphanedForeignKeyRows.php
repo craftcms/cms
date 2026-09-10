@@ -22,30 +22,34 @@ class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
                     $disabledFkChecks = false;
                 }
 
-                foreach (Schema::getTables() as $table) {
-                    $tableName = $table['name'];
+                foreach (Schema::getTables(Schema::getCurrentSchemaListing()) as $table) {
+                    $tableName = $table['schema_qualified_name'];
 
                     foreach (Schema::getForeignKeys($tableName) as $foreignKey) {
                         if (strtoupper((string) $foreignKey['on_delete']) !== 'CASCADE') {
                             continue;
                         }
 
-                        $referencedTable = $foreignKey['foreign_table'];
+                        $referencedTable = isset($foreignKey['foreign_schema'])
+                            ? $foreignKey['foreign_schema'].'.'.$foreignKey['foreign_table']
+                            : $foreignKey['foreign_table'];
                         $localColumns = $foreignKey['columns'];
                         $foreignColumns = $foreignKey['foreign_columns'];
 
-                        foreach (array_combine($localColumns, $foreignColumns) as $localCol => $foreignCol) {
-                            // Build a subquery for missing parents
-                            $orphans = DB::table($tableName.' as child')
-                                ->leftJoin($referencedTable.' as parent', "child.$localCol", '=', "parent.$foreignCol")
-                                ->whereNotNull("child.$localCol")
-                                ->whereNull("parent.$foreignCol")
-                                ->pluck("child.$localCol");
+                        $children = DB::table($tableName);
+                        $parent = DB::table($referencedTable.' as parent')->selectRaw('1');
 
-                            DB::table($tableName)
-                                ->whereIn('id', $orphans)
-                                ->delete();
+                        if ($tableName === $referencedTable) {
+                            // Materialize self-referencing keys so MySQL can delete from the same table.
+                            $parent->fromSub(DB::table($referencedTable)->select($foreignColumns)->distinct(), 'parent');
                         }
+
+                        foreach (array_combine($localColumns, $foreignColumns) as $localCol => $foreignCol) {
+                            $children->whereNotNull("$tableName.$localCol");
+                            $parent->whereColumn("parent.$foreignCol", "$tableName.$localCol");
+                        }
+
+                        $children->whereNotExists($parent)->delete();
                     }
                 }
 

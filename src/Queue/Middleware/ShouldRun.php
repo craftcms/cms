@@ -10,7 +10,7 @@ use CraftCms\Cms\Queue\Job;
 /**
  * Laravel queue middleware that checks if a job should still run.
  *
- * If the job's progress entry has been deleted (canceled), the job
+ * If the job's progress entry is missing or cancelled, the job
  * will be deleted from the queue without executing.
  */
 class ShouldRun

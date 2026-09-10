@@ -1,11 +1,12 @@
 <script setup lang="ts">
   import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
   import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
-  import type {FormControlPayload} from './types';
+  import type {FormChangeKind, FormControlPayload} from './types';
   import {inputName, serverErrorValidators} from './runtime';
 
   type ComboboxControlProps = {
     options: ComboboxItem[];
+    multiple?: boolean;
     placeholder?: string;
     limit?: number;
     clearable?: boolean;
@@ -24,18 +25,32 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind: 'typing'): void;
+    (
+      event: 'update:value',
+      value: string | string[],
+      kind: FormChangeKind
+    ): void;
   }>();
 
-  function onValueChanged(value: string | number | boolean | undefined): void {
-    emit('update:value', String(value ?? ''), 'typing');
+  function onModelValueChanged(event: CustomEvent): void {
+    if (event.detail?.initialize) {
+      return;
+    }
+
+    const value = (event.target as HTMLElement & {modelValue?: unknown})
+      .modelValue;
+    emit(
+      'update:value',
+      Array.isArray(value) ? value.map(String) : String(value ?? ''),
+      event.detail?.changeSource === 'input' ? 'typing' : 'discrete'
+    );
   }
 </script>
 
 <template>
   <CraftCombobox
     :name="editable ? inputName(control.path) : ''"
-    :model-value="String(value ?? '')"
+    :label="label"
     :options="control.props.options"
     :placeholder="control.props.placeholder"
     :limit="control.props.limit"
@@ -48,6 +63,14 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :validators="serverErrorValidators(invalid)"
-    @update:model-value="onValueChanged"
+    :multiple-choice="control.props.multiple ?? false"
+    :model-value="
+      control.props.multiple
+        ? Array.isArray(value)
+          ? value.map(String)
+          : []
+        : String(value ?? '')
+    "
+    @model-value-changed="onModelValueChanged"
   />
 </template>

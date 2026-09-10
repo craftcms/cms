@@ -1,3 +1,5 @@
+import {computed, type Ref} from 'vue';
+import {toRefs} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
 
 export interface CpUser {
@@ -9,8 +11,8 @@ export interface CpUser {
 }
 
 export interface CraftData {
-  csrfTokenValue?: string | null;
-  csrfTokenName?: string | null;
+  csrfTokenValue: string | null;
+  csrfTokenName: string | null;
   system: {
     name: string;
     icon: string | null;
@@ -41,6 +43,7 @@ export interface CraftData {
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
+    notifications: CraftCms.Cms.Cp.Data.NotificationData[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
   actionUrl: string;
@@ -59,28 +62,29 @@ function getUrl(baseUrl: string, path: string) {
  * @TODO move to NPM package
  */
 export function useHelpers() {
-  const craftData = useCraftData();
+  const {actionUrl, cpUrl, baseApiUrl} = useCraftData();
 
   return {
     // @TODO move to NPM package
     getActionUrl(action: string) {
-      //return `${craftData.actionUrl}${action}`;
-      return getUrl(craftData.actionUrl, action);
+      return getUrl(actionUrl.value, action);
     },
     // @TODO move to NPM package
     getCpUrl(action: string) {
-      return `${craftData.cpUrl}${action}`;
+      return `${cpUrl.value}${action}`;
     },
     getApiUrl(path: string) {
-      return getUrl(craftData.baseApiUrl, path);
+      return getUrl(baseApiUrl.value, path);
     },
   };
 }
 
-export default function useCraftData(): CraftData {
+export default function useCraftData(): {
+  [Key in keyof CraftData]-?: Readonly<Ref<CraftData[Key]>>;
+} {
   const page = usePage<{
     craft: CraftData;
   }>();
 
-  return page.props.craft;
+  return toRefs(computed(() => page.props.craft));
 }

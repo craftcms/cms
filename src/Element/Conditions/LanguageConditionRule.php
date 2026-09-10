@@ -6,23 +6,21 @@ namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class LanguageConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class LanguageConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Language');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['site', 'siteId'];
     }
 
     protected function options(): array
@@ -33,9 +31,9 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
             ->all();
     }
 
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        $query->language($this->paramValue());
+        ElementQuery::applySiteId($query, ElementQuery::siteIdsFromLanguage($this->paramValue()));
     }
 
     public function matchElement(ElementInterface $element): bool

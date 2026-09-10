@@ -58,12 +58,15 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
@@ -463,13 +466,15 @@ class Asset extends Element
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'uploader') {
-            /** @var User|null $uploader */
-            $uploader = $elements[0] ?? null;
-            $this->setUploader($uploader);
+        switch ($plan->handle) {
+            case 'uploader':
+                /** @var User|null $uploader */
+                $uploader = $elements[0] ?? null;
+                $this->setUploader($uploader);
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
-
-        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
@@ -2059,21 +2064,13 @@ JS, [
         return Html::encodeSpaces(AssetsHelper::generateUrl($this));
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($this->isFolder) {
             return null;
         }
 
-        $forCard = $size % 128 === 0;
-
-        if (! $forCard && $this->getWidth() && $this->getHeight()) {
-            [$width, $height] = AssetsHelper::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $size, $size);
-        } else {
-            $width = $height = $size;
-        }
-
-        return AssetsService::getThumbUrl($this, $width, $height, false);
+        return AssetsService::getThumbUrl($this, $size, $size, false, $mode);
     }
 
     protected function thumbSvg(): string
@@ -2574,15 +2571,11 @@ JS, [
     }
 
     #[Override]
-    protected function inlineAttributeInputHtml(string $attribute): string
+    protected function inlineAttributeInputForm(string $attribute): ?Form
     {
-        return match ($attribute) {
-            'alt' => FormFields::textareaHtml([
-                'name' => 'alt',
-                'value' => $this->alt,
-            ]),
-            default => parent::inlineAttributeInputHtml($attribute),
-        };
+        return $attribute === 'alt'
+            ? Form::make([Field::make(control: Textarea::make('alt')->value($this->alt))])
+            : parent::inlineAttributeInputForm($attribute);
     }
 
     /**

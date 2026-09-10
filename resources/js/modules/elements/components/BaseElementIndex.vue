@@ -74,6 +74,7 @@
   });
   const showPagination = computed(() => props.table.getPageCount() > 1);
   const showPageSize = computed(() => props.enableAdjustPageSize);
+  const pageSizeLabel = t('Items per page');
   const showDisplayedRows = computed(
     () => props.from && props.to && props.total
   );
@@ -189,9 +190,11 @@
         </div>
         <div class="flex gap-2 items-center">
           <template v-if="showPageSize && !bulkActionsActive">
-            {{ t('Items per page:') }}
+            <span aria-hidden="true">{{ pageSizeLabel }}</span>
             <Select
               small
+              :label="pageSizeLabel"
+              label-sr-only
               :options="pageSizeOptions!"
               v-model="pageSizeProxy"
               class="w-auto"

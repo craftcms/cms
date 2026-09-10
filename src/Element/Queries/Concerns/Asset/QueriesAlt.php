@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -21,23 +22,28 @@ trait QueriesAlt
 
     protected function initQueriesAlt(): void
     {
-        $this->beforeQuery(function (AssetQuery $assetQuery) {
-            if ($assetQuery->hasAlt === null) {
-                return;
-            }
-
-            if ($this->hasAlt) {
-                $assetQuery->where(function (Builder $query) {
-                    $query->where('assets_sites.alt', '!=', '')
-                        ->whereNotNull('assets_sites.alt');
-                });
-            } else {
-                $assetQuery->where(function (Builder $query) {
-                    $query->where('assets_sites.alt', '=', '')
-                        ->orWhereNull('assets_sites.alt');
-                });
-            }
+        $this->beforeQuery(static function (AssetQuery $assetQuery) {
+            static::applyHasAlt($assetQuery, $assetQuery->hasAlt);
         });
+    }
+
+    public static function applyHasAlt(BuilderContract $query, ?bool $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        if ($value) {
+            $query->where(function (Builder $query) {
+                $query->where('assets_sites.alt', '!=', '')
+                    ->whereNotNull('assets_sites.alt');
+            });
+        } else {
+            $query->where(function (Builder $query) {
+                $query->where('assets_sites.alt', '=', '')
+                    ->orWhereNull('assets_sites.alt');
+            });
+        }
     }
 
     /**

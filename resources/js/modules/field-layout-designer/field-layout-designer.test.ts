@@ -118,6 +118,48 @@ it('adds a field returned by the field editor slideout', () => {
   );
 });
 
+it('opens the field editor from the library HUD trigger and closes the HUD', () => {
+  // `HUD.show()` re-parents the HUD to <body>, so the “New field” button is no
+  // longer inside the slideout panel. Opening from it makes the slideout store
+  // read the click as base-page chrome and close the panel the designer is in,
+  // prompting about unsaved changes on the way out. The HUD's trigger is the
+  // button in the tab, which stays inside the panel — and stays visible once
+  // the HUD closes, so focus has somewhere to return to.
+  // SAFETY: This test deliberately creates a FieldLayoutDesigner without running its DOM-heavy constructor.
+  const designer = Object.create(
+    FieldLayoutDesigner.prototype
+  ) as FieldLayoutDesigner;
+  const panel = document.createElement('div');
+  panel.dataset.slideoutId = 'slideout-1';
+  const $trigger = document.createElement('button');
+  panel.appendChild($trigger);
+  document.body.appendChild(panel);
+
+  const hide = vi.fn();
+  designer.$createFieldBtn = document.createElement('button');
+  designer.$fieldGroups = [document.createElement('div')];
+  designer.refreshLibraryFields = vi.fn();
+  designer.initLibraryElements = vi.fn();
+  designer.addLibraryElementToActiveTab = vi.fn();
+  designer.getActiveHud = vi.fn(() => ({$trigger, hide}));
+  window.Craft = Object.assign(Object.create(null), {
+    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
+  });
+
+  designer.createField();
+
+  expect(openSlideout).toHaveBeenCalledWith(
+    '/admin/settings/fields/edit',
+    expect.objectContaining({opener: $trigger})
+  );
+  // The trigger resolves to the panel; the “New field” button would not.
+  expect($trigger.closest('[data-slideout-id]')).toBe(panel);
+  expect(designer.$createFieldBtn.closest('[data-slideout-id]')).toBeNull();
+  expect(hide).toHaveBeenCalledOnce();
+
+  panel.remove();
+});
+
 it('leaves sortable checkbox teardown to its custom element', () => {
   const baseDestroy = vi
     .spyOn(Base.prototype, 'destroy')

@@ -10,9 +10,12 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Traits\Conditionable;
 
 class LineBreak implements Node
 {
+    use Conditionable;
+
     public function __construct(private readonly string $uid) {}
 
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string

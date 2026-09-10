@@ -137,7 +137,7 @@ function sectionFormValues(array $overrides = []): array
 it('refreshes the fields that depend on the section type', function () {
     Site::factory()->create();
     app(SitesService::class)->refreshSites();
-    $paths = fn (array $nodes) => collect($nodes)->pluck('control.path')->filter()->values();
+    $paths = fn (array $nodes) => collect(flattenFormNodes($nodes))->pluck('control.path')->filter()->values();
 
     $channel = postJson(action([SectionsController::class, 'renderForm']), [
         'values' => sectionFormValues(),

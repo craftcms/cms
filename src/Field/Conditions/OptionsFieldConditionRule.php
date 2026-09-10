@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Form\Contracts\Node;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
-class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
+class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
@@ -39,14 +42,15 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
             ->all();
     }
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof BaseOptionsField) {
             throw new RuntimeException;
         }
 
-        return parent::inputHtml();
+        return parent::inputNodes();
     }
 
     /** @return list<string>|string|null */

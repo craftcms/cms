@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
@@ -617,6 +618,39 @@ it('eager-loads matrix entries for the requested source owner', function () {
     expect($eagerLoaded)->toHaveCount(1)
         ->and($eagerLoaded[0]->id)->toBe($firstNested->id)
         ->and($eagerLoaded[0]->getPrimaryOwnerId())->toBe($owner->id);
+});
+
+it('maps Matrix entries by owner while preserving field boundaries and sort order', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'ownerType' => $ownerType, 'section' => $section] = createMatrixOwnerFixture();
+
+    $last = createMatrixNestedEntry($owner, $field, $entryType, 2, 'Last block');
+    $first = createMatrixNestedEntry($owner, $field, $entryType, 1, 'First block');
+    $otherField = Field::factory()->create(['type' => Matrix::class, 'settings' => ['entryTypes' => [$entryType->id]]]);
+    Fields::refreshFields();
+    createMatrixNestedEntry($owner, Fields::getFieldById($otherField->id), $entryType, 3, 'Other field block');
+    $otherOwner = EntryModel::factory()->forSection($section)->forEntryType($ownerType)->createElement();
+    createMatrixNestedEntry($otherOwner, $field, $entryType, 1, 'Other owner block');
+    $emptyOwners = EntryModel::factory()->forSection($section)->forEntryType($ownerType)->count(49)->create();
+    $sourceElements = EntryElement::find()->id([$owner->id, ...$emptyOwners->modelKeys()])->all();
+
+    DB::enableQueryLog();
+    DB::flushQueryLog();
+
+    $map = $field->getEagerLoadingMap($sourceElements);
+    $query = DB::getQueryLog()[0];
+
+    DB::disableQueryLog();
+
+    expect($map['map'])->toBe([
+        ['source' => $owner->id, 'target' => $first->id],
+        ['source' => $owner->id, 'target' => $last->id],
+    ])->and($field->getEagerLoadingMap([])['map'])->toBe([]);
+
+    if (DB::isSqlite()) {
+        $plan = DB::select('EXPLAIN QUERY PLAN '.$query['query'], $query['bindings']);
+
+        expect($plan[0]->detail)->toContain(Schema::indexName(Table::ELEMENTS_OWNERS, ['ownerId']));
+    }
 });
 
 it('creates eager-loaded field addresses with the requested source owner', function () {

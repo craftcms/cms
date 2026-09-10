@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use Illuminate\Support\Traits\Conditionable;
 
 /**
  * A Control rendered without the surrounding field chrome, for use in a
@@ -22,6 +23,8 @@ use CraftCms\Cms\Form\NodePayload;
  */
 class Action implements Node
 {
+    use Conditionable;
+
     private function __construct(private readonly Control $control) {}
 
     public static function make(Control $control): self

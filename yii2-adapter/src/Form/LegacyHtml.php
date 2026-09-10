@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Form;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\InputNamespace;
@@ -56,17 +57,22 @@ class LegacyHtml
         ?string $namespace = null,
         LegacyHtmlMode $mode = LegacyHtmlMode::Editable,
         string|array|null $deltaGroup = null,
+        bool $inline = false,
     ): ?LegacyHtmlField {
+        $input = $inline
+            ? ($field instanceof InlineEditableFieldInterface
+                ? fn(): string => $field->getInlineInputHtml($value, $element)
+                : throw new InvalidArgumentException('Inline legacy fields must support inline editing.'))
+            : fn(): string => $field->getInputHtml($value, $element);
+
         return $this->capture(
             $path,
             match ($mode) {
-                LegacyHtmlMode::Editable => fn(): string => $field->getInputHtml($value, $element),
+                LegacyHtmlMode::Editable => $input,
                 LegacyHtmlMode::Static => fn(): string => $element === null
                     ? throw new InvalidArgumentException('Static legacy fields require an element.')
                     : $field->getStaticHtml($value, $element),
-                LegacyHtmlMode::ReadOnly, LegacyHtmlMode::Disabled => fn(): string => Html::disableInputs(
-                    fn(): string => $field->getInputHtml($value, $element),
-                ),
+                LegacyHtmlMode::ReadOnly, LegacyHtmlMode::Disabled => fn(): string => Html::disableInputs($input),
             },
             $namespace,
             $mode,

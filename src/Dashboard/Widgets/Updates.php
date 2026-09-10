@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Update\Updates as UpdatesService;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\UpdatesWidgetAsset;
 use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class Updates extends Widget
 {
@@ -49,27 +45,17 @@ class Updates extends Widget
         return 'certificate';
     }
 
-    #[Override]
-    public function getBodyHtml(): ?string
+    public function component(): ?string
     {
-        // Make sure the user actually has permission to perform updates
-        if (! currentUser()->can('performUpdates')) {
-            return null;
-        }
+        return currentUser()->can('performUpdates') ? 'craft:widget-updates' : null;
+    }
 
-        $cached = $this->updates->isUpdateInfoCached();
-
-        if (! $cached || ! $this->updates->totalAvailableUpdates()) {
-            app(InternalAssetRegistry::class)->register(UpdatesWidgetAsset::class);
-            HtmlStack::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
-        }
-
-        if ($cached) {
-            return template('_components/widgets/Updates/body', [
-                'total' => $this->updates->totalAvailableUpdates(),
-            ]);
-        }
-
-        return '<p class="centeralign">'.t('Checking for updates…').'</p>';
+    /** @return array{cached: bool, total: int} */
+    public function props(): array
+    {
+        return [
+            'cached' => $this->updates->isUpdateInfoCached(),
+            'total' => $this->updates->totalAvailableUpdates(),
+        ];
     }
 }

@@ -96,14 +96,15 @@ class ElementHelper
      * Normalizes a slug.
      *
      * @param string $slug
+     * @param string|null $language The slug’s language
      *
      * @return string
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::normalizeSlug()} instead.
      */
-    public static function normalizeSlug(string $slug): string
+    public static function normalizeSlug(string $slug, ?string $language = null): string
     {
-        return LaravelElementHelper::normalizeSlug($slug);
+        return LaravelElementHelper::normalizeSlug($slug, $language);
     }
 
     /**

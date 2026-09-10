@@ -21,12 +21,27 @@ use Traversable;
 /** @implements IteratorAggregate<mixed, mixed> */
 class JsonData extends Component implements AllowableInSandbox, IteratorAggregate, Serializable, Stringable
 {
+    private ?string $invalidInput = null;
+
     /** @param array<string, mixed>|object $config */
     public function __construct(
         private mixed $value,
         public array|object $config = [],
     ) {
         parent::__construct($config);
+    }
+
+    public static function fromInvalidInput(string $input): self
+    {
+        $data = new self(null);
+        $data->invalidInput = $input;
+
+        return $data;
+    }
+
+    public function getInvalidInput(): ?string
+    {
+        return $this->invalidInput;
     }
 
     public function __toString(): string
@@ -80,8 +95,8 @@ class JsonData extends Component implements AllowableInSandbox, IteratorAggregat
     #[AllowedInSandbox]
     public function getJson(bool $pretty = false, string $indent = '  '): string
     {
-        if (isset($this->value['__ERROR__'], $this->value['__VALUE__'])) {
-            return $this->value['__VALUE__'];
+        if ($this->invalidInput !== null) {
+            return $this->invalidInput;
         }
 
         $options = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;

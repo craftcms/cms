@@ -54,7 +54,7 @@ trait QueriesCustomFields
 
     protected function initQueriesCustomFields(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             // Gather custom fields and generated field handles
             $elementQuery->customFields = [];
             $elementQuery->generatedFields = [];
@@ -71,11 +71,11 @@ trait QueriesCustomFields
             }
 
             // Map custom field handles to their content values
-            $this->addCustomFieldsToColumnMap();
-            $this->addGeneratedFieldsToColumnMap();
+            $elementQuery->addCustomFieldsToColumnMap();
+            $elementQuery->addGeneratedFieldsToColumnMap();
 
-            $this->applyCustomFieldParams($elementQuery);
-            $this->applyGeneratedFieldParams($elementQuery);
+            $elementQuery->applyCustomFieldParams($elementQuery);
+            $elementQuery->applyGeneratedFieldParams($elementQuery);
         });
     }
 
@@ -224,12 +224,12 @@ trait QueriesCustomFields
                 ? QueryParam::AND
                 : QueryParam::OR;
 
-            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $value) {
+            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $value, $elementQuery) {
                 foreach ($fieldsByHandle[$handle] as $instances) {
-                    $query->where(function (Builder $query) use ($instances, $value) {
+                    $query->where(function (Builder $query) use ($instances, $value, $elementQuery) {
                         static::$activeQuery = $this;
                         try {
-                            $instances[0]::modifyQuery($query, $instances, $value);
+                            $instances[0]::modifyQuery($query, $instances, $value, $elementQuery);
                         } finally {
                             static::$activeQuery = null;
                         }

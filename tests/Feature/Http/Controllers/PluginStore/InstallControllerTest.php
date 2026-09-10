@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -91,6 +92,11 @@ test('index', function () {
 });
 
 test('craftInstall', function () {
+    $plugins = $this->partialMock(Plugins::class);
+    $plugins->shouldReceive('installPlugin')->once()->with('test-plugin', 'standard')
+        ->andThrow(new RuntimeException('Installation failed.'));
+    $plugins->shouldReceive('getComposerPluginInfo')->with('test-plugin')->andReturnNull();
+
     postJson(action([InstallController::class, 'craftInstall']), [
         'data' => $this->hashedData,
     ])

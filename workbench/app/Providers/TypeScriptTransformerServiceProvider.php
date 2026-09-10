@@ -6,6 +6,10 @@ namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Data\NotificationButtonData;
+use CraftCms\Cms\Cp\Data\NotificationData;
+use CraftCms\Cms\Dashboard\Data\WidgetData;
+use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Form\ControlPayload;
@@ -63,9 +67,13 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ControlMode::class,
                     ControlPayload::class,
                     FormPayload::class,
+                    WidgetData::class,
+                    WidgetTypeData::class,
                     NodePayload::class,
                     FilesystemsEditViewModel::class,
                     NavItem::class,
+                    NotificationButtonData::class,
+                    NotificationData::class,
                     Permission::class,
                     PermissionGroup::class,
                     Route::class,

@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: '24'
           cache: true
+          run-install: false
 
       - name: Install frontend dependencies
         # pnpm won't expand env vars in credentials coming from the project

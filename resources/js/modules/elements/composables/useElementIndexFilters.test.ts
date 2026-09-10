@@ -1,11 +1,13 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {shallowRef} from 'vue';
+import {reactive, shallowRef} from 'vue';
 import {useElementIndexFilters} from './useElementIndexFilters';
 import type {ConditionConfig} from './useConditionBuilder';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {IndexQueryParams} from './useElementIndexVisits';
+import type {SourceItem} from '@/modules/elements/types/sources';
 
 interface FilterData {
+  source?: string;
   search?: string;
   status?: string | null;
   condition?: ConditionConfig;
@@ -61,6 +63,31 @@ function makeViewState(): ViewState {
 describe('useElementIndexFilters', () => {
   beforeEach(() => {
     submitSpy.mockClear();
+  });
+
+  it('applies condition rules to the currently selected source', () => {
+    const props = reactive<{status: null; source: SourceItem}>({
+      status: null,
+      source: {type: 'native', key: '*', label: 'All entries'},
+    });
+    const condition: ConditionConfig = {
+      class: 'EntryCondition',
+      conditionRules: [{class: 'TitleConditionRule', value: 'foo'}],
+    };
+    const {submit} = useElementIndexFilters(
+      props,
+      shallowRef<ViewState>(makeViewState()),
+      stubRoute,
+      shallowRef(condition)
+    );
+
+    props.source = {type: 'native', key: 'section:news', label: 'News'};
+    submit();
+
+    expect(transformState.callback({search: '', status: ''})).toMatchObject({
+      source: 'section:news',
+      condition,
+    });
   });
 
   it('submits the filter condition intact alongside the other filters', () => {

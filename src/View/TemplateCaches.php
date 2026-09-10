@@ -117,7 +117,11 @@ class TemplateCaches
         $duration = $this->normalizeDuration($duration, $expiration);
         $maxDuration = $this->durationFromCacheInfo($cacheInfo);
 
-        if ($maxDuration) {
+        if ($maxDuration === 0) {
+            return;
+        }
+
+        if ($maxDuration !== null) {
             $duration = $duration ? min($duration, $maxDuration) : $maxDuration;
         }
 
@@ -315,6 +319,6 @@ class TemplateCaches
 
         $duration = DateTimeHelper::toDateTime($cacheInfo['expiryDate'])->getTimestamp() - now()->getTimestamp();
 
-        return $duration > 0 ? $duration : null;
+        return max(0, $duration);
     }
 }

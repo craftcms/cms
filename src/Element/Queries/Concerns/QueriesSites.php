@@ -13,6 +13,7 @@ use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -34,14 +35,21 @@ trait QueriesSites
 
     protected function initQueriesSites(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             // Make sure the siteId param is set
             try {
                 if (! $elementQuery->elementType::isLocalized()) {
                     // The criteria *must* be set to the primary site ID
                     $elementQuery->siteId = Sites::getPrimarySite()->id;
                 } else {
-                    $elementQuery->siteId = $this->normalizeSiteId($elementQuery);
+                    try {
+                        $siteId = self::normalizeSiteId($elementQuery->siteId);
+                    } catch (InvalidArgumentException $e) {
+                        throw new QueryAbortedException(previous: $e);
+                    }
+
+                    // Default to the current site
+                    $elementQuery->siteId = $siteId ?? Sites::getCurrentSite()->id;
                 }
             } catch (SiteNotFoundException $e) {
                 // Fail silently if Craft isn't installed yet or is in the middle of updating
@@ -54,10 +62,31 @@ trait QueriesSites
 
             $elementQuery->appliedSiteId = $elementQuery->siteId;
 
-            if (Sites::isMultiSite(false, true)) {
-                $elementQuery->whereIn('elements_sites.siteId', Arr::wrap($elementQuery->siteId));
-            }
+            static::applySiteId($elementQuery, $elementQuery->siteId);
         });
+    }
+
+    public static function applySiteId(Builder $query, mixed $value): void
+    {
+        try {
+            $siteId = self::normalizeSiteId($value);
+        } catch (InvalidArgumentException) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        if (is_null($siteId)) {
+            return;
+        }
+
+        // Skip the (potentially costly) filter if there's only one site, unless the given value
+        // didn't actually match any sites, in which case the query must still return no results.
+        if ($siteId !== [] && ! Sites::isMultiSite(false, true)) {
+            return;
+        }
+
+        $query->whereIn('elements_sites.siteId', Arr::wrap($siteId));
     }
 
     /**
@@ -165,21 +194,7 @@ trait QueriesSites
      */
     public function siteId($value): static
     {
-        if (is_array($value) && strtolower((string) reset($value)) === 'not') {
-            array_shift($value);
-
-            $this->siteId = [];
-
-            foreach (Sites::getAllSites() as $site) {
-                if (! in_array($site->id, $value)) {
-                    $this->siteId[] = $site->id;
-                }
-            }
-
-            return $this;
-        }
-
-        $this->siteId = $value;
+        $this->siteId = self::normalizeSiteId($value);
 
         return $this;
     }
@@ -218,6 +233,14 @@ trait QueriesSites
      */
     public function language(mixed $value): static
     {
+        $this->siteId = self::siteIdsFromLanguage($value);
+
+        return $this;
+    }
+
+    /** @return int[] */
+    public static function siteIdsFromLanguage(mixed $value): array
+    {
         if (is_string($value)) {
             $sites = Sites::getSitesByLanguage($value);
 
@@ -225,70 +248,86 @@ trait QueriesSites
                 throw new InvalidArgumentException("Invalid language: $value");
             }
 
-            $this->siteId = $sites->pluck('id')->all();
-
-            return $this;
+            return $sites->pluck('id')->all();
         }
 
         if ($not = (strtolower((string) reset($value)) === 'not')) {
             array_shift($value);
         }
 
-        $this->siteId = [];
+        $siteIds = [];
 
         foreach (Sites::getAllSites() as $site) {
             if (in_array($site->language, $value, true) === ! $not) {
-                $this->siteId[] = $site->id;
+                $siteIds[] = $site->id;
             }
         }
 
-        if (empty($this->siteId)) {
-            throw new InvalidArgumentException('Invalid language param: ['.($not ? 'not, ' : '').implode(', ',
-                $value).']');
+        if (empty($siteIds)) {
+            throw new InvalidArgumentException('Invalid language param: ['.($not ? 'not, ' : '').implode(', ', $value).']');
         }
 
-        return $this;
+        return $siteIds;
     }
 
     /**
      * Normalizes the siteId param value.
+     *
+     * @return int[]|int|null
      */
-    /** @param ElementQuery<*> $query */
-    private function normalizeSiteId(ElementQuery $query): mixed
+    private static function normalizeSiteId(mixed $siteId): array|int|null
     {
-        if (is_null($query->siteId) || $query->siteId === '') {
-            // Default to the current site
-            return Sites::getCurrentSite()->id;
+        if (is_null($siteId) || $siteId === '') {
+            return null;
         }
 
-        if ($query->siteId === '*') {
+        if ($siteId === '*') {
             return Sites::getAllSiteIds()->all();
         }
 
-        if ($query->siteId instanceof Collection) {
-            $query->siteId = $query->siteId->all();
+        if ($siteId instanceof Collection) {
+            $siteId = $siteId->all();
         }
 
-        if (is_string($query->siteId)) {
-            $query->siteId = str($query->siteId)
+        if (is_string($siteId)) {
+            $siteId = str($siteId)
                 ->explode(',')
                 ->map(fn ($id) => trim($id))
                 ->all();
         }
 
-        if (is_numeric($query->siteId) || Arr::isNumeric($query->siteId)) {
-            // Filter out any invalid site IDs
-            $siteIds = Collection::make((array) $query->siteId)
-                ->filter(fn ($siteId) => Sites::getSiteById($siteId, true) !== null)
-                ->all();
-
-            if (empty($siteIds)) {
-                throw new QueryAbortedException;
-            }
-
-            return is_array($query->siteId) ? $siteIds : reset($siteIds);
+        if (is_array($siteId) && empty($siteId)) {
+            return [];
         }
 
-        return $query->siteId;
+        if (is_array($siteId) && strtolower((string) reset($siteId)) === 'not') {
+            array_shift($siteId);
+
+            $otherSiteIds = [];
+
+            foreach (Sites::getAllSites() as $site) {
+                if (! in_array($site->id, $siteId)) {
+                    $otherSiteIds[] = $site->id;
+                }
+            }
+
+            return $otherSiteIds;
+        }
+
+        if (! is_numeric($siteId) && ! Arr::isNumeric($siteId)) {
+            throw new InvalidArgumentException('Invalid siteId value');
+        }
+
+        // Filter out any invalid site IDs
+        $filteredSiteIds = Collection::make((array) $siteId)
+            ->filter(fn ($siteId) => Sites::getSiteById($siteId, true) !== null)
+            ->all();
+
+        if (empty($filteredSiteIds)) {
+            // None of the given site IDs are valid, so the query should return no results
+            return [];
+        }
+
+        return is_array($siteId) ? $filteredSiteIds : reset($filteredSiteIds);
     }
 }

@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
@@ -28,6 +29,7 @@ use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\NotificationsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
@@ -102,6 +104,7 @@ Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(func
 Route::allowDuringMaintenance()->middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
     Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
+    Route::match(['get', 'post'], CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
@@ -116,7 +119,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::allowDuringMaintenance()->any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
+    Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -182,6 +185,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('content/{page}/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
+    Route::get('entries/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
@@ -352,6 +360,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);
                 Route::post('{handle}/disable', [PluginsController::class, 'disable']);
                 Route::post('{handle}/switch-edition', [PluginsController::class, 'switchEdition']);
+                Route::post('{handle}/render-form', [PluginsController::class, 'renderSettingsForm']);
                 Route::post('{handle}', [PluginsController::class, 'saveSettings']);
             });
 

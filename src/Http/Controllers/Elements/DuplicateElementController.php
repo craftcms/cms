@@ -104,10 +104,10 @@ readonly class DuplicateElementController
             abort(400, 'Setting an element’s ID is not allowed.');
         }
 
-        $newElementInfo = [];
+        try {
+            $newElementInfo = DB::transaction(fn () => BulkOps::ensure(function () use ($elementInfo, $newAttributes): array {
+                $newElementInfo = [];
 
-        $result = DB::transaction(function () use ($elementInfo, $newAttributes, &$newElementInfo) {
-            return BulkOps::ensure(function () use ($elementInfo, $newAttributes, &$newElementInfo) {
                 foreach ($elementInfo as $info) {
                     $element = $this->request->element($info);
 
@@ -133,28 +133,22 @@ readonly class DuplicateElementController
                         }
                     }
 
-                    try {
-                        $newElement = $this->elements->duplicateElement(
-                            $element,
-                            $safeNewAttributes + $element::baseBulkDuplicateAttributes(),
-                            false,
-                            checkAuthorization: true,
-                        );
-                    } catch (InvalidElementException $e) {
-                        return new ElementResponse()->failure($e->element, t('Couldn’t duplicate {type}.', [
-                            'type' => $element::lowerDisplayName(),
-                        ]));
-                    }
+                    $newElement = $this->elements->duplicateElement(
+                        $element,
+                        $safeNewAttributes + $element::baseBulkDuplicateAttributes(),
+                        false,
+                        checkAuthorization: true,
+                    );
 
                     $newElementInfo[] = $newElement->toArray($newElement->attributes());
                 }
 
-                return null;
-            });
-        });
-
-        if ($result !== null) {
-            return $result;
+                return $newElementInfo;
+            }));
+        } catch (InvalidElementException $e) {
+            return new ElementResponse()->failure($e->element, t('Couldn’t duplicate {type}.', [
+                'type' => $e->element::lowerDisplayName(),
+            ]));
         }
 
         /** @var class-string<ElementInterface> $elementType */

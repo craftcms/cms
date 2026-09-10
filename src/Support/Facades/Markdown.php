@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array flavors()
  * @method static string parse(string $markdown, string|null $flavor = null, bool $allowUnsafeLinks = false)
  * @method static string parseParagraph(string $markdown, string|null $flavor = null, bool $allowUnsafeLinks = false)
+ * @method static string transform(string $markdown, callable $transform, string|null $flavor = null)
  * @method static string convert(string $markdown, \CraftCms\Cms\Markdown\MarkdownOptions $options)
  *
  * @see \CraftCms\Cms\Markdown\Markdown

@@ -8,10 +8,12 @@ use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Database\Query\Builder;
 use Override;
 use RuntimeException;
 
@@ -26,7 +28,7 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-import-type GeneratedField from FieldLayout
  */
-class GeneratedFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class GeneratedFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public string $fieldUid;
 
@@ -58,25 +60,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         return t('Fields');
     }
 
-    public function getExclusiveQueryParams(): array
-    {
-        $field = $this->getFieldConfig();
-        if (! $field) {
-            return [];
-        }
-
-        $handle = $field['handle'];
-        if (is_array($handle)) {
-            if (! isset($handle['value'])) {
-                return [];
-            }
-            $handle = $handle['value'];
-        }
-
-        return [$handle];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         $field = $this->getFieldConfig();
         if (! $field) {

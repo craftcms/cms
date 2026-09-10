@@ -27,12 +27,12 @@ async function createFixture(
 }
 
 function optionEls(combobox: CraftCombobox): HTMLElement[] {
-  const node = combobox._listboxNode as HTMLElement;
+  const node = combobox.querySelector('[role=listbox]')!;
   return Array.from(node.querySelectorAll('craft-option'));
 }
 
 async function typeQuery(combobox: CraftCombobox, value: string) {
-  const input = combobox._inputNode as HTMLInputElement;
+  const input = combobox.querySelector('input')!;
   input.value = value;
   input.dispatchEvent(new Event('input', {bubbles: true}));
   await combobox.updateComplete;
@@ -49,7 +49,7 @@ describe('craft-combobox', () => {
       c.placeholder = 'Choose an option';
     });
 
-    expect((combobox._inputNode as HTMLInputElement).placeholder).toBe(
+    expect(combobox.querySelector('input')!.placeholder).toBe(
       'Choose an option'
     );
   });
@@ -121,7 +121,7 @@ describe('craft-combobox', () => {
         },
       ];
     });
-    const node = combobox._listboxNode as HTMLElement;
+    const node = combobox.querySelector('[role=listbox]')!;
     expect(node.querySelector('.combobox__optgroup')?.textContent?.trim()).toBe(
       'North America'
     );
@@ -208,9 +208,12 @@ describe('craft-combobox', () => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    expect(combobox.parser('$MY_ENV_VAR')).toBe('$MY_ENV_VAR');
+    await typeQuery(combobox, '$MY_ENV_VAR');
+    expect(combobox.modelValue).toBe('$MY_ENV_VAR');
+
     // A matching label still maps to its value.
-    expect(combobox.parser('Online')).toBe('1');
+    await typeQuery(combobox, 'Online');
+    expect(combobox.modelValue).toBe('1');
   });
 
   it('clears the value via the clear button', async () => {
@@ -296,12 +299,15 @@ describe('craft-combobox', () => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    const fired: unknown[] = [];
-    combobox.addEventListener('model-value-changed', () => {
-      fired.push(combobox.modelValue);
+    const fired: Array<{value: unknown; changeSource?: string}> = [];
+    combobox.addEventListener('model-value-changed', (event) => {
+      fired.push({
+        value: combobox.modelValue,
+        changeSource: (event as CustomEvent).detail?.changeSource,
+      });
     });
 
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = combobox.querySelector('input')!;
     input.focus();
     input.value = '$MY_ENV';
     input.dispatchEvent(new Event('input', {bubbles: true}));
@@ -309,7 +315,10 @@ describe('craft-combobox', () => {
     await new Promise((resolve) => setTimeout(resolve));
 
     expect(combobox.modelValue).toBe('$MY_ENV');
-    expect(fired).toContain('$MY_ENV');
+    expect(fired).toContainEqual({
+      value: '$MY_ENV',
+      changeSource: 'input',
+    });
   });
 
   it('keeps updating the model past the first keystroke, even with a v-model write-back', async () => {
@@ -320,7 +329,7 @@ describe('craft-combobox', () => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = combobox.querySelector('input')!;
     // Simulate the Vue two-way binding writing the value back on each event.
     combobox.addEventListener('model-value-changed', () => {
       const v = combobox.modelValue;
@@ -346,7 +355,7 @@ describe('craft-combobox', () => {
         {label: 'Canada', value: 'ca'},
       ];
     });
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = combobox.querySelector('input')!;
     input.focus();
     expect(combobox.opened).toBe(false);
 
@@ -375,7 +384,7 @@ describe('craft-combobox', () => {
         'Select a filesystem'
       );
     });
-    (combobox._inputNode as HTMLInputElement).click();
+    combobox.querySelector('input')!.click();
     await vi.waitFor(() => expect(combobox.opened).toBe(true));
 
     expect(
@@ -394,7 +403,7 @@ describe('craft-combobox', () => {
       c.modelValue = 'disk:s3';
     });
 
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = combobox.querySelector('input')!;
     input.click();
     await vi.waitFor(() => expect(combobox.opened).toBe(true));
 
@@ -425,7 +434,44 @@ describe('craft-combobox', () => {
       c.limit = 10;
       c.options = makeOptions(50);
     });
-    const node = combobox._listboxNode as HTMLElement;
+    const node = combobox.querySelector('[role=listbox]')!;
     expect(node.querySelector('.combobox__footer')).not.toBeNull();
   });
+});
+
+it('adopts a model value naming an option from a replaced option set', async () => {
+  // The field editor swaps the whole option set when the field type changes and
+  // writes the new value in the same tick. Lit patches the option elements in
+  // place, so without keying they never disconnect, Lion never re-registers
+  // them, and the combobox silently keeps — and keeps announcing — the previous
+  // value. The next form refresh then posts the old field type.
+  const combobox = await createFixture((c) => {
+    c.options = [
+      {label: 'Plain Text', value: 'plain'},
+      {label: 'Dropdown', value: 'dropdown'},
+    ];
+    c.modelValue = 'plain';
+  });
+
+  const announced: Array<string | string[]> = [];
+  combobox.addEventListener('model-value-changed', () => {
+    announced.push(combobox.modelValue);
+  });
+
+  combobox.options = [
+    {label: 'Matrix', value: 'matrix'},
+    {label: 'Money', value: 'money'},
+  ];
+  combobox.modelValue = 'matrix';
+
+  await combobox.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  await combobox.updateComplete;
+
+  expect(combobox.modelValue).toBe('matrix');
+  // Nothing stale escapes: the bound v-model is written on every announcement,
+  // so an interim one carrying the previous value lands in the form's values
+  // and marks it changed before being corrected.
+  expect(announced).toEqual(['matrix']);
+  expect(combobox.querySelector('input')?.value).toBe('Matrix');
 });
