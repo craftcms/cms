@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {type InertiaLinkProps, Link, router} from '@inertiajs/vue3';
+  import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
   import {type Component, computed, defineComponent, h} from 'vue';
 
   defineOptions({inheritAttrs: false});
@@ -16,8 +16,6 @@
       return () => h(props.tag, attrs, slots.default?.());
     },
   });
-
-  const customElementTagsWithNavigateEvent = new Set(['craft-nav-item']);
 
   const props = withDefaults(
     defineProps<
@@ -67,13 +65,6 @@
       : undefined
   );
 
-  const customElementUsesNavigateEvent = computed(
-    () =>
-      props.inertia &&
-      !!customElement.value &&
-      customElementTagsWithNavigateEvent.has(customElement.value)
-  );
-
   const linkComponent = computed(() =>
     customElement.value ? CustomElementLink : props.as
   );
@@ -86,51 +77,10 @@
         }
       : {}
   );
-
-  function withoutUndefinedValues<T extends Record<string, unknown>>(
-    valuesByKey: T
-  ): Partial<T> {
-    return Object.fromEntries(
-      Object.entries(valuesByKey).filter(([, value]) => value !== undefined)
-    ) as Partial<T>;
-  }
-
-  function visitFromNavigateEvent(navigateEvent: CustomEvent<{href: string}>) {
-    navigateEvent.preventDefault();
-    router.visit(
-      navigateEvent.detail.href,
-      withoutUndefinedValues({
-        method: props.method,
-        data: props.data,
-        replace: props.replace,
-        preserveScroll: props.preserveScroll,
-        preserveState: props.preserveState,
-        only: props.only,
-        except: props.except,
-        headers: props.headers,
-        onBefore: props.onBefore,
-        onStart: props.onStart,
-        onProgress: props.onProgress,
-        onFinish: props.onFinish,
-        onCancel: props.onCancel,
-        onSuccess: props.onSuccess,
-        onError: props.onError,
-      })
-    );
-  }
 </script>
 
 <template>
-  <component
-    v-if="customElementUsesNavigateEvent"
-    v-bind="{...$attrs, ...customElementAttributes}"
-    :is="customElement"
-    :href="hrefString"
-    @craft-navigate="visitFromNavigateEvent"
-  >
-    <slot></slot>
-  </component>
-  <template v-else-if="inertia">
+  <template v-if="inertia">
     <Link
       v-bind="{...$attrs, ...customElementAttributes}"
       :as="linkComponent"

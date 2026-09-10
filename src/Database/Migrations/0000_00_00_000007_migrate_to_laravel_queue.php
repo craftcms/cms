@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -19,8 +20,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('jobprogress')) {
-            Schema::create('jobprogress', function (Blueprint $table) {
+        if (! Schema::hasTable(Table::JOBPROGRESS)) {
+            Schema::create(Table::JOBPROGRESS, function (Blueprint $table) {
                 $table->string('uid')->primary();
                 $table->string('description')->nullable();
                 $table->unsignedTinyInteger('status')->default(1); // JobStatus::Pending
@@ -35,13 +36,13 @@ return new class extends Migration
             });
         }
 
-        Schema::dropIfExists('queue');
+        Schema::dropIfExists(Table::QUEUE);
     }
 
     public function down(): void
     {
-        if (! Schema::hasTable('queue')) {
-            Schema::create('queue', function (Blueprint $table) {
+        if (! Schema::hasTable(Table::QUEUE)) {
+            Schema::create(Table::QUEUE, function (Blueprint $table) {
                 $table->integer('id', true);
                 $table->string('channel')->default('queue');
                 $table->binary('job');
@@ -60,10 +61,10 @@ return new class extends Migration
                 $table->text('error')->nullable();
             });
 
-            Schema::createIndex('queue', ['channel', 'fail', 'timeUpdated', 'timePushed']);
-            Schema::createIndex('queue', ['channel', 'fail', 'timeUpdated', 'delay']);
+            Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
+            Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
         }
 
-        Schema::dropIfExists('jobprogress');
+        Schema::dropIfExists(Table::JOBPROGRESS);
     }
 };
