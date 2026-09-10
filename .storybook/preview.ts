@@ -1,5 +1,5 @@
-import type {Preview} from '@storybook/vue3';
-import {setup} from '@storybook/vue3';
+import type {Preview} from '@storybook/vue3-vite';
+import {setup} from '@storybook/vue3-vite';
 import {withThemeByDataAttribute} from '@storybook/addon-themes';
 import '@craftcms/ui';
 import '../resources/css/cp.css';
@@ -12,7 +12,7 @@ setup((app) => {
 });
 
 // Declare module augmentation for Storybook parameters
-declare module '@storybook/vue3' {
+declare module '@storybook/vue3-vite' {
   interface Parameters {
     inertia?: Partial<Record<string, unknown>>;
   }
