@@ -646,6 +646,59 @@ describe('MatrixControl', () => {
     expect(block.querySelector('craft-icon')).not.toBeNull();
   });
 
+  it('highlights a block that has just appeared, then lets it settle', async () => {
+    vi.useFakeTimers();
+
+    try {
+      action.post.mockResolvedValue({
+        data: {
+          uid: 'block-b',
+          type: 'newType',
+          form: {
+            scope: ['fields', 'pageBuilder', 'entries', 'block-b'],
+            nodes: [],
+          },
+          values: {},
+          block: {},
+        },
+      });
+      mount(
+        {entries: {}, sortOrder: []},
+        {
+          create: {
+            fieldId: 3,
+            ownerId: 7,
+            ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            siteId: 1,
+            entryTypeIds: {newType: 9},
+          },
+        }
+      );
+      await nextTick();
+
+      container!
+        .querySelector<HTMLElement>('[data-form-matrix-add]')!
+        .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+
+      for (let tick = 0; tick < 5; tick++) {
+        await nextTick();
+      }
+
+      const block = container!.querySelector('.matrixblock')!;
+
+      expect(block.classList.contains('is-new')).toBe(true);
+
+      vi.advanceTimersByTime(1200);
+      await nextTick();
+
+      expect(
+        container!.querySelector('.matrixblock')!.classList.contains('is-new')
+      ).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   describe('the add buttons', () => {
     const types = (count: number, group?: (index: number) => string) =>
       Array.from({length: count}, (_, index) => ({

@@ -26,6 +26,10 @@
     setBlockCollapsed,
   } from '@/modules/matrix/collapsed-blocks';
   import {useCopiedElements} from '@/modules/matrix/copied-elements';
+  import {
+    NEW_BLOCK_CLASS,
+    NEW_BLOCK_HIGHLIGHT_MS,
+  } from '@/modules/matrix/new-block';
   import {blockPreviewParts} from '@/modules/matrix/preview-text';
   import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -143,6 +147,36 @@
    * until the next save brings the field's own copy round.
    */
   const createdBlocks = ref(new Map<string, BlockPresentation>());
+
+  /**
+   * Blocks that have just appeared, for as long as their highlight runs.
+   *
+   * Held as state rather than put on the element the way the other stacks do
+   * it: Vue owns these blocks' classes and would patch a stray one away on the
+   * next render.
+   */
+  const justAdded = ref(new Set<string>());
+  const highlights = new Set<ReturnType<typeof setTimeout>>();
+
+  function highlightBlock(uid: string): void {
+    justAdded.value = new Set(justAdded.value).add(uid);
+
+    const timer = setTimeout(() => {
+      highlights.delete(timer);
+      const next = new Set(justAdded.value);
+      next.delete(uid);
+      justAdded.value = next;
+    }, NEW_BLOCK_HIGHLIGHT_MS);
+
+    highlights.add(timer);
+  }
+
+  onBeforeUnmount(() => {
+    for (const timer of highlights) {
+      clearTimeout(timer);
+    }
+    highlights.clear();
+  });
 
   /** A block's presentation, whether it arrived with the field or was just minted. */
   function block(uid: string): BlockPresentation | undefined {
@@ -680,6 +714,11 @@
     createdBlocks.value = presentations;
     emit('update:value', next, 'discrete');
 
+    for (const added of blocks) {
+      highlightBlock(added.uid);
+    }
+
+    // A paste lands several at once; the first is where the group starts.
     if (blocks[0]) {
       await revealBlock(blocks[0].uid);
     }
@@ -785,6 +824,7 @@
       class: {
         collapsed: isCollapsed(uid),
         'disabled-entry': model.value.entries[uid]?.enabled === false,
+        [NEW_BLOCK_CLASS]: justAdded.value.has(uid),
       },
     };
   }

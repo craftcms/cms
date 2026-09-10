@@ -24,6 +24,7 @@ import {
 } from '@craftcms/garnish';
 import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
+import {flashNewBlock} from './new-block';
 import {containerMatrixInputs} from './support';
 import {
   collapsedBlockIds,
@@ -353,6 +354,21 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
   }
 
+  /**
+   * Puts a new entry in place and gives it a brief highlight, so it's obvious
+   * which block just appeared. The Vue control does the same through its own
+   * state, since it owns its blocks' classes.
+   */
+  private placeEntry(entry: HTMLElement, before?: HTMLElement | null): void {
+    if (before?.isConnected) {
+      before.before(entry);
+    } else {
+      this.entriesContainer?.append(entry);
+    }
+
+    flashNewBlock(entry);
+  }
+
   /** The field's current top-level `.matrixblock` elements. */
   entryElements(): HTMLElement[] {
     return Array.from(
@@ -460,11 +476,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       const newEntries = parseBlockHtml(data.blockHtml);
 
       for (const entry of newEntries) {
-        if (before) {
-          before.before(entry);
-        } else {
-          this.entriesContainer?.append(entry);
-        }
+        this.placeEntry(entry, before);
       }
 
       await craft().appendHeadHtml(data.headHtml);
@@ -563,11 +575,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     if (this.entryFactory) {
       const entry = this.entryFactory(type);
 
-      if (insertBefore?.isConnected) {
-        insertBefore.before(entry);
-      } else {
-        this.entriesContainer?.append(entry);
-      }
+      this.placeEntry(entry, insertBefore);
 
       new MatrixEntry(this, entry);
       this.entrySort?.addItems(entry);
@@ -632,11 +640,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         // Pause the element editor
         await this.elementEditor?.pause();
 
-        if (insertBefore?.isConnected) {
-          insertBefore.before(entry);
-        } else {
-          this.entriesContainer?.append(entry);
-        }
+        this.placeEntry(entry, insertBefore);
 
         this.trigger('entryAdded', {$entry: entry});
 
