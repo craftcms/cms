@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
@@ -32,12 +31,10 @@ class ConditionRuleRenderer
 
         foreach ($payload->nodes as $node) {
             $html .= Html::tag('div', $this->renderer->renderNodes([$node], $payload), [
-                'class' => array_filter([
+                'class' => [
                     'condition-rule-field',
                     $node->control?->type === Choice::class ? 'shrink-0' : 'min-w-0',
-                    $node->control?->type !== DateTime::class ? '[&>craft-field>[slot=label]]:sr-only' : null,
-                ]),
-
+                ],
             ]);
         }
 
