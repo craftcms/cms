@@ -143,6 +143,17 @@ abstract class Control implements ControlContract
     }
 
     /**
+     * What the control reads when its value is missing. See the contract.
+     *
+     * Controls whose value is a shape override this; the rest inherit null and
+     * ship nothing.
+     */
+    public function emptyValue(): mixed
+    {
+        return null;
+    }
+
+    /**
      * Returns type-specific, JSON-safe configuration for both renderers.
      *
      * Concrete Controls should override this method for their typed properties

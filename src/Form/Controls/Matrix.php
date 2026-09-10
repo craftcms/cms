@@ -377,6 +377,13 @@ class Matrix extends Control
         return $this;
     }
 
+    /** @return array{entries: array<string, mixed>, sortOrder: list<string>} */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return ['entries' => [], 'sortOrder' => []];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {

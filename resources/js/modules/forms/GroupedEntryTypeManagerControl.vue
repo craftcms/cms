@@ -2,27 +2,25 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient} from '@craftcms/ui';
   import type {FormControlPayload, FormValues} from './types';
-  import {controlValue, inputName} from './runtime';
+  import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
   const props = defineProps<{
     control: FormControlPayload;
-    /** Read {@link model} rather than this. See {@link controlValue}. */
-    value: FormValues[] | undefined;
+    value: FormValues[];
     editable: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: FormValues[], kind: 'discrete'): void;
   }>();
-  const model = controlValue<FormValues[]>(() => props.value, []);
   const {host, html} = useServerRenderedControl({
-    value: () => model.value,
+    value: () => props.value,
     dependencies: [() => props.editable],
     async render() {
       const response = await actionClient.post<{html: string}>(
         'fields/render-grouped-entry-type-manager',
         {
-          value: model.value,
+          value: props.value,
           name: inputName(props.control.path),
           disabled: !props.editable,
         }

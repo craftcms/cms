@@ -55,6 +55,13 @@ class GroupedEntryTypeManager extends Control
         ), $namespace);
     }
 
+    /** @return list<array<string, mixed>> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     public function component(): string
     {
         return 'craft:grouped-entry-type-manager';

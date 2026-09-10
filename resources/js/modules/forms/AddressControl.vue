@@ -7,7 +7,7 @@
   import {ref, watch} from 'vue';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import type {FormChangeKind, FormControlPayload} from './types';
-  import {controlValue, inputName} from './runtime';
+  import {inputName} from './runtime';
 
   type AddressFieldName =
     | 'addressLine1'
@@ -39,8 +39,7 @@
 
   const props = defineProps<{
     control: FormControlPayload<AddressControlProps>;
-    /** Read {@link model} rather than this. See {@link controlValue}. */
-    value: AddressValue | undefined;
+    value: AddressValue;
     editable: boolean;
   }>();
   const emit = defineEmits<{
@@ -50,10 +49,12 @@
   const refreshing = ref<AddressFieldName>();
   const {flash} = useFlashMessages();
   let latestRequest = 0;
-  const model = controlValue<AddressValue>(() => props.value, {});
-  const value = ref(model.value);
+  const value = ref(props.value);
 
-  watch(model, (current) => (value.value = current));
+  watch(
+    () => props.value,
+    (current) => (value.value = current)
+  );
 
   watch(
     () => props.control.props,

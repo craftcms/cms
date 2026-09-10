@@ -4,11 +4,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
   import type {FormControlPayload} from './types';
-  import {
-    controlValue,
-    ignoreModelValueInitialization,
-    inputName,
-  } from './runtime';
+  import {ignoreModelValueInitialization, inputName} from './runtime';
 
   type DateTimeValue = {
     date?: string;
@@ -26,28 +22,22 @@
       max?: string;
       minuteIncrement: number;
     }>;
-    /**
-     * Read {@link model} rather than this: every part of a date is
-     * dereferenced on the way to the input, so an absent value would throw.
-     * See {@link controlValue}.
-     */
-    value: DateTimeValue | undefined;
+    value: DateTimeValue;
     editable: boolean;
     required: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: DateTimeValue, kind: 'discrete'): void;
   }>();
-  const model = controlValue<DateTimeValue>(() => props.value, {});
   const hasValue = computed(
     () =>
-      (props.control.props.showDate && Boolean(model.value.date)) ||
-      (props.control.props.showTime && Boolean(model.value.time)) ||
-      (props.control.props.showTimeZone && Boolean(model.value.timezone))
+      (props.control.props.showDate && Boolean(props.value.date)) ||
+      (props.control.props.showTime && Boolean(props.value.time)) ||
+      (props.control.props.showTimeZone && Boolean(props.value.timezone))
   );
 
   function clear(): void {
-    const value = {...model.value};
+    const value = {...props.value};
 
     if (props.control.props.showDate) value.date = '';
     if (props.control.props.showTime) value.time = '';
@@ -71,7 +61,7 @@
     emit(
       'update:value',
       {
-        ...model.value,
+        ...props.value,
         [part]: String(input.modelValue ?? ''),
       },
       'discrete'
@@ -83,9 +73,9 @@
   <craft-input-date-time
     :name="editable ? inputName(control.path) : undefined"
     :locale="control.props.locale"
-    :timezone="model.timezone"
-    .dateValue="model.date ?? ''"
-    .timeValue="model.time ?? ''"
+    :timezone="value.timezone"
+    .dateValue="value.date ?? ''"
+    .timeValue="value.time ?? ''"
     .showDate="control.props.showDate"
     .showTime="control.props.showTime"
     .showTimezone="control.props.showTimeZone"

@@ -5,7 +5,7 @@
     LinkTypeConfig,
   } from '../link-field/craft-link-field';
   import type {FormControlPayload} from './types';
-  import {controlValue, inputName} from './runtime';
+  import {inputName} from './runtime';
 
   type LinkControlProps = {
     types: LinkTypeConfig[];
@@ -15,16 +15,14 @@
   type LinkValue = Pick<LinkFieldValue, 'type' | 'value'> &
     Partial<Pick<LinkFieldValue, 'label' | 'title' | 'urlSuffix'>>;
 
-  const props = defineProps<{
+  defineProps<{
     control: FormControlPayload<LinkControlProps>;
-    /** Read {@link model} rather than this. See {@link controlValue}. */
-    value: LinkValue | undefined;
+    value: LinkValue;
     editable: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: LinkValue, kind: 'discrete'): void;
   }>();
-  const model = controlValue<LinkValue>(() => props.value, {} as LinkValue);
 
   function apply(event: Event): void {
     if (!(event instanceof CustomEvent)) {
@@ -41,7 +39,7 @@
   <div>
     <craft-link-field
       :types="control.props.types"
-      .modelValue="model"
+      .modelValue="value"
       :name="editable ? inputName(control.path) : ''"
       :show-label-field="control.props.showLabelField"
       .advancedFields="control.props.advancedFields"

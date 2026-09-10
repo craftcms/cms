@@ -1,25 +1,42 @@
-import {createApp, h, nextTick, ref} from 'vue';
+import {createApp, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import DateTimeControl from './DateTimeControl.vue';
 import type {FormControlPayload} from './types';
-import {controlValue} from './runtime';
+import {controlValueAt} from './runtime';
 
-describe('controlValue', () => {
-  it('stands in the empty value until the real one arrives', () => {
-    const value = ref<{date?: string} | undefined>(undefined);
-    const model = controlValue<{date?: string}>(() => value.value, {});
+describe('controlValueAt', () => {
+  const control = {path: ['fields', 'date']};
 
-    expect(model.value).toEqual({});
+  it('reads the value at the control’s path', () => {
+    const values = {fields: {date: {date: '2026-08-07'}}};
 
-    value.value = {date: '2026-08-07'};
-
-    expect(model.value).toEqual({date: '2026-08-07'});
+    expect(controlValueAt(values, control)).toEqual({date: '2026-08-07'});
   });
 
-  it('freezes the stand-in, so no control can write through it', () => {
-    const model = controlValue<{rows: string[]}>(() => undefined, {rows: []});
+  /**
+   * The payload describing a control can arrive an emit ahead of the values
+   * filling it — a Matrix block the server has just minted. Without a stand-in,
+   * a control whose value is a shape reaches into nothing and throws, and a
+   * throw during render takes the whole field down.
+   */
+  it('stands in the control’s empty value when the path is missing', () => {
+    expect(controlValueAt({}, {...control, emptyValue: {}})).toEqual({});
+    expect(
+      controlValueAt({}, {...control, emptyValue: {entries: {}, sortOrder: []}})
+    ).toEqual({entries: {}, sortOrder: []});
+  });
 
-    expect(Object.isFrozen(model.value)).toBe(true);
+  it('leaves a stored null alone', () => {
+    // Null is a value a control chose — a content block with no content — not
+    // an absent one.
+    expect(
+      controlValueAt({fields: {date: null}}, {...control, emptyValue: {}})
+    ).toBeNull();
+  });
+
+  it('reads undefined for a control that declares no empty value', () => {
+    // A scalar control coerces undefined on its own, so it ships nothing.
+    expect(controlValueAt({}, control)).toBeUndefined();
   });
 });
 
@@ -66,14 +83,10 @@ describe('DateTimeControl', () => {
     app.mount(container);
   }
 
-  /**
-   * A control inside a block the server has just minted renders a beat before
-   * its values reach the tree. Every part of a date is dereferenced on the way
-   * to the input, so an absent value used to throw — and a throw here takes the
-   * whole form down, which is what "Failed to render Form Control" is.
-   */
-  it('renders empty when its value is missing from the values tree', async () => {
-    expect(() => mount(undefined)).not.toThrow();
+  it('renders empty when it is handed its empty value', async () => {
+    // `controlValueAt()` stands that in at the render boundary, so the control
+    // never sees undefined.
+    mount({});
     await nextTick();
 
     const input = container!.querySelector('craft-input-date-time') as {
@@ -84,7 +97,6 @@ describe('DateTimeControl', () => {
     expect(input).not.toBeNull();
     expect(input!.dateValue).toBe('');
     expect(input!.timeValue).toBe('');
-    // Nothing to clear, so no clear button.
     expect(container!.querySelector('.clear-btn')).toBeNull();
   });
 

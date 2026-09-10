@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import type {FormControlPayload, FormValues} from './types';
-  import {controlValue, inputName} from './runtime';
+  import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
   type ConditionBuilderProps = {
@@ -12,18 +12,16 @@
 
   const props = defineProps<{
     control: FormControlPayload<ConditionBuilderProps>;
-    /** Read {@link model} rather than this. See {@link controlValue}. */
-    value: FormValues | undefined;
+    value: FormValues;
     editable: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: FormValues, kind: 'discrete'): void;
   }>();
-  const model = controlValue<FormValues>(() => props.value, {});
   let headHtml = '';
   let bodyHtml = '';
   const {host, html} = useServerRenderedControl({
-    value: () => model.value,
+    value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
     events: ['input', 'change', 'drop', 'htmx:afterSwap'],
     async render() {
@@ -32,7 +30,7 @@
         headHtml: string;
         bodyHtml: string;
       }>('fields/render-condition-builder', {
-        value: model.value,
+        value: props.value,
         ...props.control.props,
         name: inputName(props.control.path),
         disabled: !props.editable,

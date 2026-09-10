@@ -15,7 +15,7 @@
     FormControlPayload,
     FormProperties,
   } from './types';
-  import {controlValue, inputName} from './runtime';
+  import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
 
   /**
@@ -94,11 +94,7 @@
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
-    /**
-     * Read {@link model}, never this: reading `.length` off undefined here
-     * throws. See {@link controlValue}.
-     */
-    value: Array<number | string> | undefined;
+    value: Array<number | string>;
     editable: boolean;
   }>();
   const emit = defineEmits<{
@@ -124,9 +120,7 @@
     () => props.editable && props.control.props.canUpload === true
   );
 
-  const model = controlValue<Array<number | string>>(() => props.value, []);
-
-  const ids = computed(() => model.value.map(elementId));
+  const ids = computed(() => props.value.map(elementId));
 
   /** One relation can't be reordered, and a read-only field can't be either. */
   const sortable = computed(() => props.editable && ids.value.length > 1);
@@ -186,7 +180,7 @@
    * next round-trip.
    */
   const listData = computed(() =>
-    model.value.map((selectedValue) => ({
+    props.value.map((selectedValue) => ({
       ...presentation(selectedValue),
       id: elementId(selectedValue),
     }))
@@ -633,7 +627,7 @@
 
       <div
         class="border border-(--c-color-neutral-border-quiet) rounded-sm inset-shadow-sm bg-(--c-color-neutral-fill-quiet) relative"
-        v-if="model.length > 0"
+        v-if="value.length > 0"
       >
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
@@ -721,7 +715,7 @@
         </div>
         <div class="absolute inset-e-1 inset-be-1" v-if="limit && limit > 1">
           <craft-badge size="small" no-prefix
-            >{{ model.length }}/{{ limit }}</craft-badge
+            >{{ value.length }}/{{ limit }}</craft-badge
           >
         </div>
       </div>

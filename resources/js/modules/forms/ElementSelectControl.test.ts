@@ -139,18 +139,18 @@ describe('ElementSelectControl', () => {
     ];
   }
 
-  it('renders empty when its value is missing from the values tree', async () => {
+  it('renders empty when it is handed its empty value', async () => {
     // A relation nested in a Matrix block resolves its path to undefined for a
-    // beat after the server mints that block. Reading `.length` off undefined
-    // threw, and FormRenderer swapped the whole form for a render error rather
-    // than showing an empty field for one frame.
+    // beat after the server mints that block. `controlValueAt()` stands the
+    // Control's own empty value in at the render boundary, so what arrives here
+    // is an empty list rather than nothing — see `Control::emptyValue()`.
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
       render: () =>
         h(ElementSelectControl, {
           control: control(),
-          value: undefined,
+          value: [],
           editable: true,
         } as never),
     });

@@ -98,6 +98,13 @@ class FieldLayoutDesigner extends Control
         return $this;
     }
 
+    /** @return array<string, mixed> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {

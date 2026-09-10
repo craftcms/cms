@@ -173,6 +173,13 @@ class ElementSelect extends Control
         ];
     }
 
+    /** @return list<int|string> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {

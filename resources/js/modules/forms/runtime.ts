@@ -37,31 +37,37 @@ class ServerError extends Validator {
 }
 
 /**
- * A control's value, with an empty stand-in for the beat before it arrives.
+ * The value a control should render with.
  *
- * A control renders as soon as the form describing it does, and inside a nested
- * form that can be one emit ahead of the values filling it — a block the server
- * has just minted, a repeater whose identity the server has just rewritten. A
- * control that reaches into its value throws in that gap, and a throw during
- * render is what "Failed to render Form Control" is: the renderer swaps the
- * control for the error, and the field is gone until the page is reloaded.
+ * {@link valueAt} returns undefined when the path isn't in the tree, which
+ * happens for a beat inside a nested form: the payload describing a control can
+ * arrive an emit ahead of the values filling it — a Matrix block the server has
+ * just minted, a repeater whose identity the server has just rewritten. A
+ * control whose value is a shape would reach into nothing and throw, and a
+ * throw during render takes the whole field down with it.
  *
- * Controls whose value is a scalar don't need this — they coerce `undefined`
- * on their own. It's for the ones that reach into a shape.
+ * So the control's own declared empty value stands in until the real one lands.
+ * `Control::emptyValue()` decides what empty means for each control, and ships
+ * it in the payload; a control whose value is a scalar declares nothing and
+ * still reads undefined, which is what those coerce anyway.
  *
- * The stand-in is frozen and shared across every render, so a control can't
- * write through it by accident.
- *
- * @param  value  Getter for the control's own `value` prop.
- * @param  empty  What to read while the real value is missing.
+ * Every path that hands a value to a control goes through here, so no control
+ * has to remember to guard itself.
  */
-export function controlValue<T extends object>(
-  value: () => T | undefined,
-  empty: T
-): ComputedRef<T> {
-  const fallback = Object.freeze(empty);
+export function controlValueAt(
+  values: FormValue,
+  // `emptyValue` is typed here and nowhere else: `FormControlPayload` omits it
+  // on purpose — see the note there — and this is the only thing that reads it.
+  control: {path: string[]; emptyValue?: unknown}
+): FormValue {
+  const value = valueAt(values, control.path);
 
-  return computed(() => value() ?? fallback);
+  if (value !== undefined) {
+    return value;
+  }
+
+  // SAFETY: what a Control ships as its empty value is a form value.
+  return control.emptyValue as FormValue;
 }
 
 export function serverErrorValidators(invalid: boolean): Validator[] {

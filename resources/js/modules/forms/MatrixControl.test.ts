@@ -134,13 +134,14 @@ describe('MatrixControl', () => {
     );
   }
 
-  it('renders empty when its value is missing from the values tree', async () => {
+  it('renders empty when it is handed its empty value', async () => {
     // A block minted in the browser is keyed `uid:<uuid>` in the values tree,
     // but the server strips that prefix and scopes the block's nested Form to
     // the bare UUID. Between those two renders a repeater nested inside the
-    // block resolves its path to `undefined` — it has to render empty rather
-    // than throw, or FormRenderer swaps the whole form for a render error.
-    expect(() => mount(undefined)).not.toThrow();
+    // block resolves its path to `undefined`; `controlValueAt()` stands this
+    // Control's own empty value in at the render boundary — see
+    // `Control::emptyValue()`.
+    expect(() => mount({entries: {}, sortOrder: []})).not.toThrow();
     await nextTick();
 
     expect(container!.querySelectorAll('.matrixblock').length).toBe(0);

@@ -15,6 +15,7 @@
     nextTick,
     onMounted,
     ref,
+    shallowRef,
     toRaw,
     useId,
     watch,
@@ -49,7 +50,7 @@
     type NestedElementValue,
     type NestedFormPayload,
   } from './types';
-  import {controlValue, inputName, isRecord, valueAt} from './runtime';
+  import {inputName, isRecord, valueAt} from './runtime';
 
   /** What a block is called, what it looks like, and what can be done to it. */
   type BlockPresentation = {
@@ -117,8 +118,7 @@
 
   const props = defineProps<{
     control: FormControlPayload<MatrixProps>;
-    /** Read {@link model} rather than this. See {@link controlValue}. */
-    value: MatrixValue | undefined;
+    value: MatrixValue;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
@@ -128,23 +128,22 @@
     (event: 'update:value', value: MatrixValue, kind: 'discrete'): void;
     (event: 'change', change: FormChange): void;
   }>();
-  const model = controlValue<MatrixValue>(() => props.value, {
-    entries: {},
-    sortOrder: [],
-  });
   const matrixHost = ref<HTMLElement>();
   const matrixId = useId();
   /**
    * Forms for blocks the server minted since the last full payload. They're
    * dropped as soon as that payload catches up and carries them itself.
    */
-  const created = ref(new Map<string, NestedFormPayload>());
+  // `shallowRef`, not `ref`: a form payload's values are a recursive type that
+  // Vue can't unwrap for deep reactivity, and both maps are replaced wholesale
+  // rather than written into.
+  const created = shallowRef(new Map<string, NestedFormPayload>());
   /**
    * Presentation for those same blocks. Without it a block the server has just
    * minted renders as a blank card — no entry type colour, no icon, no menu —
    * until the next save brings the field's own copy round.
    */
-  const createdBlocks = ref(new Map<string, BlockPresentation>());
+  const createdBlocks = shallowRef(new Map<string, BlockPresentation>());
 
   /**
    * Blocks that have just appeared, for as long as their highlight runs.
@@ -212,7 +211,7 @@
 
     return (
       props.editable &&
-      (!maximum || model.value.sortOrder.length + count <= maximum)
+      (!maximum || props.value.sortOrder.length + count <= maximum)
     );
   }
 
@@ -336,7 +335,7 @@
    */
   const key = computed(() =>
     JSON.stringify([
-      model.value.sortOrder,
+      props.value.sortOrder,
       props.control.forms?.map((form) => form.scope),
       props.editable,
     ])
@@ -395,7 +394,7 @@
   }
 
   function sync(event?: Event): void {
-    const value = structuredClone(toRaw(model.value));
+    const value = structuredClone(toRaw(props.value));
     const source =
       event?.currentTarget instanceof HTMLElement
         ? event.currentTarget
@@ -447,7 +446,7 @@
    * whole at its own path.
    */
   function setCollapsedMany(uids: readonly string[], collapsed: boolean): void {
-    const next = structuredClone(toRaw(model.value));
+    const next = structuredClone(toRaw(props.value));
     let posts = false;
 
     for (const uid of uids) {
@@ -510,15 +509,15 @@
   }
 
   function isDisabled(uid: string): boolean {
-    return model.value.entries[uid]?.enabled === false;
+    return props.value.entries[uid]?.enabled === false;
   }
 
   onMounted(() => {
-    for (const uid of model.value.sortOrder) {
+    for (const uid of props.value.sortOrder) {
       // A disabled block isn't being edited, so it opens out of the way. It can
       // still be expanded from its menu — this only decides where it starts.
       const startsCollapsed =
-        model.value.entries[uid]?.collapsed || isDisabled(uid);
+        props.value.entries[uid]?.collapsed || isDisabled(uid);
 
       if (startsCollapsed && !isBlockCollapsed(uid)) {
         setBlockCollapsed(uid, true);
@@ -529,7 +528,7 @@
     // A block that opens folded up still needs its summary, and its fields are
     // rendered but hidden — so they're there to read once Vue has laid them out.
     void nextTick(() => {
-      for (const uid of model.value.sortOrder) {
+      for (const uid of props.value.sortOrder) {
         if (isBlockCollapsed(uid)) {
           capturePreview(uid, true);
         }
@@ -543,7 +542,7 @@
    * handle — comes from SelectableCardList, shared with the element index.
    */
   const selection = useSelectable<string>({
-    ids: () => model.value.sortOrder,
+    ids: () => props.value.sortOrder,
     enabled: () => props.editable,
   });
 
@@ -623,13 +622,13 @@
   async function duplicateBlocks(uid: string): Promise<void> {
     for (const target of actionTargets(uid)) {
       const id = elementId(target);
-      const type = model.value.entries[target]?.type;
+      const type = props.value.entries[target]?.type;
 
       if (id === undefined || type === undefined || !canAdd.value) {
         continue;
       }
 
-      const order = model.value.sortOrder;
+      const order = props.value.sortOrder;
       const after = order[order.indexOf(target) + 1];
       await addBlock(type, after, id);
     }
@@ -723,10 +722,10 @@
   /** Where a block goes when it's added above `beforeUid`, or at the end. */
   function insertionIndex(beforeUid?: string): number {
     const at = beforeUid
-      ? model.value.sortOrder.indexOf(beforeUid)
-      : model.value.sortOrder.length;
+      ? props.value.sortOrder.indexOf(beforeUid)
+      : props.value.sortOrder.length;
 
-    return at < 0 ? model.value.sortOrder.length : at;
+    return at < 0 ? props.value.sortOrder.length : at;
   }
 
   /** The element behind a block, absent for one the browser minted. */
@@ -749,7 +748,7 @@
 
     const forms = new Map(created.value);
     const presentations = new Map(createdBlocks.value);
-    const next = structuredClone(toRaw(model.value));
+    const next = structuredClone(toRaw(props.value));
 
     blocks.forEach((added, offset) => {
       let values: FormValues = {};
@@ -831,7 +830,7 @@
       return;
     }
 
-    const next = structuredClone(toRaw(model.value));
+    const next = structuredClone(toRaw(props.value));
     const [uid] = next.sortOrder.splice(from, 1);
 
     if (uid === undefined) {
@@ -880,7 +879,7 @@
     return {
       ...blockData(uid),
       'data-id': uid,
-      'data-type': model.value.entries[uid]?.type ?? '',
+      'data-type': props.value.entries[uid]?.type ?? '',
       // The CP's generated colorable rules turn this into the whole `--c-color-*`
       // alias set, which the card and everything in it paints from.
       'data-color': presentation?.color ?? undefined,
@@ -890,7 +889,7 @@
       role: 'listitem',
       class: {
         collapsed: isCollapsed(uid),
-        'disabled-entry': model.value.entries[uid]?.enabled === false,
+        'disabled-entry': props.value.entries[uid]?.enabled === false,
         [NEW_BLOCK_CLASS]: justAdded.value.has(uid),
       },
     };
@@ -919,7 +918,7 @@
     const selected = selection.selectedIds.value;
 
     return selected.length > 1 && selection.isSelected(uid)
-      ? model.value.sortOrder.filter((id) => selected.includes(id))
+      ? props.value.sortOrder.filter((id) => selected.includes(id))
       : [uid];
   }
 
@@ -937,7 +936,7 @@
 
   /** Collapse/Expand and Disable/Enable, resolved against the block right now. */
   function stateActions(uid: string): ActionItems {
-    const block = model.value.entries[uid];
+    const block = props.value.entries[uid];
 
     return [
       isCollapsed(uid)
@@ -1005,7 +1004,7 @@
    * live title wins while it's being typed.
    */
   function uiLabel(uid: string): string {
-    const title = model.value.entries[uid]?.title;
+    const title = props.value.entries[uid]?.title;
 
     if (typeof title === 'string' && title.trim() !== '') {
       return title;
@@ -1142,7 +1141,7 @@
     }
 
     const targets = actionTargets(detail.uid);
-    const next = structuredClone(toRaw(model.value));
+    const next = structuredClone(toRaw(props.value));
 
     switch (detail.action) {
       case 'collapse':
@@ -1244,7 +1243,7 @@
       return;
     }
 
-    setCollapsedMany(model.value.sortOrder, detail.collapse === true);
+    setCollapsedMany(props.value.sortOrder, detail.collapse === true);
   }
 
   onMounted(() => {
@@ -1257,7 +1256,7 @@
   });
 
   function entryType(uid: string): EntryType | undefined {
-    const handle = model.value.entries[uid]?.type;
+    const handle = props.value.entries[uid]?.type;
 
     return props.control.props.entryTypes?.find(
       (type) => type.value === handle
@@ -1295,7 +1294,7 @@
       <SelectableCardList
         role="list"
         data-matrix-blocks
-        :ids="model.sortOrder"
+        :ids="value.sortOrder"
         :selection="selection"
         :selectable="editable"
         :sortable="editable"
@@ -1356,7 +1355,7 @@
             <input
               type="hidden"
               :name="`${inputName(control.path)}[entries][${id}][type]`"
-              :value="model.entries[id]?.type ?? ''"
+              :value="value.entries[id]?.type ?? ''"
             />
           </template>
           <div class="fields">

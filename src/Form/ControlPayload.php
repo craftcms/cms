@@ -28,6 +28,7 @@ readonly class ControlPayload implements JsonSerializable
         public array $deltaGroup,
         public array $forms = [],
         public bool $reactive = false,
+        public mixed $emptyValue = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -40,9 +41,11 @@ readonly class ControlPayload implements JsonSerializable
             'path' => $this->path,
             'mode' => $this->mode->value,
             'deltaGroup' => $this->deltaGroup,
-        ] + ($this->reactive ? ['reactive' => true] : []) + ($this->forms === [] ? [] : ['forms' => array_map(
-            fn (NestedFormPayload $form): array => $form->jsonSerialize(),
-            $this->forms,
-        )]);
+        ] + ($this->reactive ? ['reactive' => true] : [])
+            + ($this->emptyValue === null ? [] : ['emptyValue' => $this->emptyValue])
+            + ($this->forms === [] ? [] : ['forms' => array_map(
+                fn (NestedFormPayload $form): array => $form->jsonSerialize(),
+                $this->forms,
+            )]);
     }
 }

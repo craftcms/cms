@@ -94,6 +94,13 @@ class DateTime extends Control
         return $this;
     }
 
+    /** @return array<string, string> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
