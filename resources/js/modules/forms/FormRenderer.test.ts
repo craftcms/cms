@@ -1610,6 +1610,38 @@ describe('FormRenderer', () => {
     }
   );
 
+  it('renders a Hidden control nested in an Action node', async () => {
+    app.unmount();
+    const withHiddenAction = clonePayload();
+    const field = required(
+      withHiddenAction.nodes[0],
+      'Expected the UI mode field node.'
+    );
+    field.children = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Action',
+        component: 'craft:action',
+        props: {},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Hidden',
+          component: 'craft:hidden',
+          props: {},
+          path: ['settings', 'operator'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'operator'],
+        },
+      },
+    ];
+    Object.assign(withHiddenAction.values.settings as FormValues, {
+      operator: 'in',
+    });
+    await mount(withHiddenAction);
+
+    expect(
+      container.querySelector('input[type="hidden"][name="settings[operator]"]')
+    ).toHaveProperty('value', 'in');
+  });
+
   it('shows a loading state on the group linked to the refreshing field', async () => {
     vi.useFakeTimers();
     let completeRefresh: (payload: FormPayload) => void = () => {};
