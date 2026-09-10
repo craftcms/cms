@@ -47,7 +47,7 @@
     <span slot="invoker" style="display: inline-flex" v-once>
       <craft-button
         type="button"
-        :variant="adding ? 'plain' : 'fill'"
+        :variant="adding ? 'dashed' : 'fill'"
         icon="chevron-down"
         icon-position="suffix"
       >

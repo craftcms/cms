@@ -61,6 +61,14 @@
 
     editor.changed();
   }
+
+  function onOperatorChange(event: Event): void {
+    if (!(event.target instanceof HTMLSelectElement)) {
+      throw new TypeError('Expected a select event target.');
+    }
+
+    operator(event.target.value as GroupDraft['operator']);
+  }
 </script>
 
 <template>
@@ -69,32 +77,26 @@
       :inert="isLoading"
       class="condition-group min-w-0"
       appearance="outline"
-      padding="md"
+      padding="lg"
       role="group"
       :aria-label="t('Condition group')"
     >
-      <div slot="title" class="flex items-center gap-2 font-normal">
+      <div
+        slot="title"
+        class="condition-group__operator flex items-center gap-2 font-normal"
+      >
         <span>{{ t('Where') }}</span>
-        <craft-button-group role="group" :aria-label="t('Group operator')">
-          <craft-button
-            type="button"
-            variant="fill"
-            :active="group.operator === 'and'"
-            :aria-pressed="group.operator === 'and'"
+        <craft-select :label="t('Group operator')" label-sr-only small>
+          <select
+            slot="input"
             :disabled="!editor.editable()"
-            @click="operator('and')"
-            >{{ t('All') }}</craft-button
+            :value="group.operator"
+            @change="onOperatorChange"
           >
-          <craft-button
-            type="button"
-            variant="fill"
-            :active="group.operator === 'or'"
-            :aria-pressed="group.operator === 'or'"
-            :disabled="!editor.editable()"
-            @click="operator('or')"
-            >{{ t('Any') }}</craft-button
-          >
-        </craft-button-group>
+            <option value="and">{{ t('All') }}</option>
+            <option value="or">{{ t('Any') }}</option>
+          </select>
+        </craft-select>
       </div>
 
       <craft-button
@@ -129,7 +131,7 @@
           <craft-button
             type="button"
             icon="plus"
-            variant="plain"
+            variant="dashed"
             @click="addGroup"
             >{{ t('Add a group') }}</craft-button
           >
@@ -151,3 +153,9 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+  .condition-group__operator :deep(craft-select) {
+    width: auto;
+  }
+</style>
