@@ -23,6 +23,8 @@
 
   type FieldNodeProps = {
     label?: string | null;
+    /** Visually hides the label, keeping it available to screen readers. */
+    labelSrOnly?: boolean;
     instructions?: string | null;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
@@ -130,6 +132,7 @@
 <template>
   <craft-field
     :label="node.props.label ?? undefined"
+    :label-sr-only="node.props.labelSrOnly || undefined"
     :help-text="node.props.instructions ?? undefined"
     :instructions-position="node.props.instructionsPosition"
     :required="Boolean(node.props.required)"

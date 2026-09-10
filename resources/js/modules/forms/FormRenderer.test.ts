@@ -456,6 +456,46 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('visually hides field labels the server marks screen-reader-only', async () => {
+    const field = (
+      name: string,
+      props: FormPayload['nodes'][number]['props']
+    ): FormPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: name, ...props},
+      control: {
+        type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+        component: 'craft:choice',
+        props: {
+          options: [{label: 'is one of', value: 'in'}],
+          multiple: false,
+          presentation: 'select',
+        },
+        path: ['settings', name],
+        mode: 'editable',
+        deltaGroup: ['settings', name],
+      },
+    });
+    app.unmount();
+    await mount({
+      scope: ['settings'],
+      refreshable: false,
+      nodes: [field('hidden', {labelSrOnly: true}), field('visible', {})],
+      values: {settings: {hidden: 'in', visible: 'in'}},
+      errors: [],
+      globalErrors: [],
+    });
+
+    const labelSrOnly = (name: string) =>
+      container
+        .querySelector(`select[name="settings[${name}]"]`)!
+        .closest('craft-field')!
+        .hasAttribute('label-sr-only');
+    expect(labelSrOnly('hidden')).toBe(true);
+    expect(labelSrOnly('visible')).toBe(false);
+  });
+
   it('displays a combobox option label for its initial value', async () => {
     const status: FormPayload = {
       scope: ['settings'],
