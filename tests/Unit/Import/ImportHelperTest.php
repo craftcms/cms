@@ -203,6 +203,109 @@ it('dispatches each row of a nested inline-typed container to only its matching 
     ]);
 });
 
+it('keeps a nested container field keyed under fields when the block type maps no other field', function () {
+    $map = [
+        'matrixOuter' => [
+            'withMatrix' => [
+                'title' => 'matrixOuter.title',
+                'fields' => [
+                    'matrixInner' => [
+                        'withPlainText' => [
+                            'title' => 'matrixOuter.fields.matrixInner.title',
+                            'fields' => [
+                                'plainText' => 'matrixOuter.fields.matrixInner.fields.plainText',
+                                'plainText2' => 'matrixOuter.fields.matrixInner.fields.plainText2',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+    $data = [
+        'matrixOuter' => [
+            [
+                'type' => 'withMatrix',
+                'matchCriteria' => ['title' => 'title'],
+                'title' => 'outer matrix 1',
+                'fields' => [
+                    'matrixInner' => [
+                        [
+                            'type' => 'withPlainText',
+                            'matchCriteria' => ['title' => 'title'],
+                            'title' => 'inner matrix entry',
+                            'fields' => ['plainText' => 'foo', 'plainText2' => 'bar'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['matrixOuter'])->toBe([
+        [
+            'type' => 'withMatrix',
+            'title' => 'outer matrix 1',
+            'fields' => [
+                'matrixInner' => [
+                    [
+                        'type' => 'withPlainText',
+                        'title' => 'inner matrix entry',
+                        'fields' => ['plainText' => 'foo', 'plainText2' => 'bar'],
+                        'matchCriteria' => ['title' => 'title'],
+                    ],
+                ],
+            ],
+            'matchCriteria' => ['title' => 'title'],
+        ],
+    ]);
+});
+
+it('still flattens a grouped-by-type nested container inside a block\'s fields', function () {
+    $map = [
+        'matrixOuter' => [
+            'withMatrix' => [
+                'title' => 'matrixOuter.title',
+                'fields' => [
+                    'matrixInner' => [
+                        'withPlainText' => [
+                            'title' => 'matrixOuter.fields.matrixInner.withPlainText.title',
+                            'fields' => ['plainText' => 'matrixOuter.fields.matrixInner.withPlainText.plainText'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+    $data = [
+        'matrixOuter' => [
+            [
+                'type' => 'withMatrix',
+                'title' => 'outer matrix 1',
+                'fields' => [
+                    'matrixInner' => [
+                        'withPlainText' => [
+                            ['title' => 'inner matrix entry', 'plainText' => 'foo'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['matrixOuter'][0]['fields']['matrixInner'])->toBe([
+        [
+            'type' => 'withPlainText',
+            'title' => 'inner matrix entry',
+            'fields' => ['plainText' => 'foo'],
+        ],
+    ]);
+});
+
 // remapData – path resolution
 
 it('resolves a rule path relative to the current base path', function () {

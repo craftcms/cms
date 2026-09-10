@@ -605,7 +605,22 @@ class ImportHelper
             return false;
         }
 
-        return array_any($rule, fn ($_, $childKey) => array_key_exists((string) $childKey, $sourceValue) && is_array($sourceValue[$childKey]) && array_is_list($sourceValue[$childKey]));
+        return array_any($rule, fn ($_, $childKey) => self::sourceIsRowListForType((string) $childKey, $sourceValue[$childKey] ?? null));
+    }
+
+    /**
+     * Checks whether a source value is a list of rows belonging to the given block type,
+     * rather than a nested container field's own list of inline-typed rows.
+     */
+    protected static function sourceIsRowListForType(string $type, mixed $sourceValue): bool
+    {
+        if (! is_array($sourceValue) || ! array_is_list($sourceValue)) {
+            return false;
+        }
+
+        // Rows in a genuine type group either carry no type of their own or repeat the group's;
+        // a row declaring a different type means the key is a nested container field handle.
+        return ! array_any($sourceValue, fn ($row) => is_array($row) && is_string($row['type'] ?? null) && $row['type'] !== $type);
     }
 
     /**
