@@ -1,7 +1,6 @@
 import {fabric, type FabricGroup, type FabricObject} from './fabric';
 import {
   arePointsInsideRectangle,
-  getBoundingRectangle,
   getFarthestAllowedDeltas,
   getHandlePosition,
   getRectangleVertices,
@@ -11,7 +10,6 @@ import {
 import type {
   CropHandle,
   CropperState,
-  Dimensions,
   FabricElementHandle,
   Point,
   Rectangle,
@@ -496,34 +494,27 @@ export function useCropper(
     redrawElements();
   }
 
-  /** Scales the cropper along with the image as the editor resizes. */
-  function reposition(previousImageArea: Dimensions): void {
+  /**
+   * Resizes the cropping layer to the editor and puts the rectangle back where
+   * it belongs on the image.
+   *
+   * The rectangle is re-derived rather than shifted by how much the editor
+   * changed — the stored state holds it relative to the image at a zoom of 1,
+   * so it lands on the same part of the picture whatever the editor did. Must
+   * run after the image has taken its new position and size.
+   */
+  function reposition(): void {
     const croppingCanvas = state.croppingCanvas.value;
-    const clipper = state.clipper.value;
     const shade = state.croppingShade.value;
-    const coords = state.imageVerticeCoords.value;
 
-    if (!croppingCanvas || !clipper || !shade || !coords) {
+    if (!croppingCanvas || !shade) {
       return;
     }
-
-    const offset = {
-      x: clipper.left - croppingCanvas.width / 2,
-      y: clipper.top - croppingCanvas.height / 2,
-    };
 
     croppingCanvas.setDimensions({
       width: state.editorWidth.value,
       height: state.editorHeight.value,
     });
-
-    const areaFactor =
-      getBoundingRectangle(coords).width / previousImageArea.width;
-
-    clipper.width = Math.round(clipper.width * areaFactor);
-    clipper.height = Math.round(clipper.height * areaFactor);
-    clipper.left = state.editorWidth.value / 2 + offset.x * areaFactor;
-    clipper.top = state.editorHeight.value / 2 + offset.y * areaFactor;
 
     shade.set({
       width: state.editorWidth.value,
@@ -532,7 +523,7 @@ export function useCropper(
       top: state.editorHeight.value / 2,
     });
 
-    redrawElements();
+    restoreFromState();
     canvas.renderCropper();
   }
 

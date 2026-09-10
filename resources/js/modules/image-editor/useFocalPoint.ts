@@ -4,7 +4,7 @@ import {
   isCenterInside,
   rotatePoint,
 } from './geometry';
-import type {Dimensions, FocalPointState, Point} from './types';
+import type {FocalPointState, Point} from './types';
 import type {EditorAnnouncements} from './useEditorAnnouncements';
 import type {EditorGeometry, EditorState} from './useEditorState';
 import type {ImageCanvas} from './useImageCanvas';
@@ -162,36 +162,6 @@ export function useFocalPoint(
     canvas.renderImage();
   }
 
-  /** Keeps the marker's relative position as the editor resizes. */
-  function reposition(previous: Dimensions): void {
-    const focalPoint = state.focalPoint.value;
-    const image = state.image.value;
-
-    if (!focalPoint || !image) {
-      return;
-    }
-
-    const newWidth =
-      geometry.getScaledImageDimensions().width * state.zoomRatio.value;
-    const ratio = newWidth / image.width / state.scaleFactor.value;
-
-    const offsetX =
-      (focalPoint.left -
-        state.editorWidth.value / 2 -
-        (previous.width - state.editorWidth.value) / 2) *
-      ratio;
-    const offsetY =
-      (focalPoint.top -
-        state.editorHeight.value / 2 -
-        (previous.height - state.editorHeight.value) / 2) *
-      ratio;
-
-    focalPoint.set({
-      left: state.editorWidth.value / 2 + offsetX,
-      top: state.editorHeight.value / 2 + offsetY,
-    });
-  }
-
   /**
    * Swings the marker around the image center by an angle, so it stays on the
    * same part of the picture when the image rotates.
@@ -225,8 +195,15 @@ export function useFocalPoint(
     });
   }
 
-  /** Repositions the marker onto the image after a mode change or resize. */
-  function restoreFromState(): void {
+  /**
+   * Puts the marker back on the part of the image it belongs to.
+   *
+   * Derived from the stored offset rather than shifted by how much the editor
+   * changed: the offset is held relative to the image at a zoom of 1, so this
+   * lands on the same spot in the picture whatever the editor did. Must run
+   * after the image has taken its new position and size, since it reads both.
+   */
+  function positionFromState(): void {
     const focalState = state.focalPointState.value;
     const focalPoint = state.focalPoint.value;
     const image = state.image.value;
@@ -243,8 +220,20 @@ export function useFocalPoint(
       image.left + focalState.offsetX * sizeFactor * state.zoomRatio.value;
     focalPoint.top =
       image.top + focalState.offsetY * sizeFactor * state.zoomRatio.value;
+  }
 
-    state.canvas.value?.add(focalPoint);
+  /**
+   * Positions the marker and puts it back on the canvas, for a transition that
+   * lifted it off. Only for that case — `add()` appends unconditionally, so
+   * calling this on every resize would stack up duplicates.
+   */
+  function restoreFromState(): void {
+    if (!state.focalPoint.value) {
+      return;
+    }
+
+    positionFromState();
+    state.canvas.value?.add(state.focalPoint.value);
   }
 
   /** Whether a point falls within the unclipped region. */
@@ -351,7 +340,7 @@ export function useFocalPoint(
     resetPosition,
     create,
     toggle,
-    reposition,
+    positionFromState,
     adjustByAngle,
     restoreFromState,
     isPointInsideViewport,
