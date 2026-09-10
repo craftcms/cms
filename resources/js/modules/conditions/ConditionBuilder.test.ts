@@ -99,7 +99,7 @@ const attachInternals = Object.getOwnPropertyDescriptor(
 );
 
 let app: App | undefined;
-let editor: InstanceType<typeof ConditionBuilder>;
+let editor: {validate: () => Promise<boolean>};
 let form: HTMLFormElement;
 let container: HTMLElement;
 
@@ -147,7 +147,7 @@ afterEach(async () => {
 async function mount(payload = builder(), editable = true): Promise<void> {
   app = createApp(ConditionBuilder, {payload, name: 'condition', editable});
   components.install(app);
-  editor = app.mount(container) as InstanceType<typeof ConditionBuilder>;
+  editor = app.mount(container) as unknown as typeof editor;
   await nextTick();
 }
 
