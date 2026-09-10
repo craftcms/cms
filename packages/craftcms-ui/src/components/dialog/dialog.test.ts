@@ -360,3 +360,56 @@ describe('craft-dialog', () => {
     });
   });
 });
+
+describe('craft-dialog before-hide', () => {
+  it('stays open when a listener cancels the dismissal', async () => {
+    const dialog = document.createElement('craft-dialog');
+    dialog.opened = true;
+    document.body.append(dialog);
+    await dialog.updateComplete;
+
+    dialog.addEventListener('craft-before-hide', (event) => {
+      event.preventDefault();
+    });
+
+    dialog.shadowRoot!.querySelector<HTMLButtonElement>('.close')!.click();
+    await dialog.updateComplete;
+
+    expect(dialog.opened).toBe(true);
+  });
+
+  it('closes when nothing objects', async () => {
+    const dialog = document.createElement('craft-dialog');
+    dialog.opened = true;
+    document.body.append(dialog);
+    await dialog.updateComplete;
+
+    let asked = false;
+    dialog.addEventListener('craft-before-hide', () => {
+      asked = true;
+    });
+
+    dialog.shadowRoot!.querySelector<HTMLButtonElement>('.close')!.click();
+    await dialog.updateComplete;
+
+    expect(asked).toBe(true);
+    expect(dialog.opened).toBe(false);
+  });
+
+  it('does not ask when opened is set to false directly', async () => {
+    const dialog = document.createElement('craft-dialog');
+    dialog.opened = true;
+    document.body.append(dialog);
+    await dialog.updateComplete;
+
+    let asked = false;
+    dialog.addEventListener('craft-before-hide', () => {
+      asked = true;
+    });
+
+    dialog.opened = false;
+    await dialog.updateComplete;
+
+    expect(asked).toBe(false);
+  });
+});
