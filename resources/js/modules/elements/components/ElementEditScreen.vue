@@ -171,7 +171,7 @@
         tab in the details column is that list now. -->
 
         <form method="post" @submit.prevent="save()">
-          <div class="sticky top-0 z-1000 pb-2">
+          <div class="sticky top-0 z-10 pb-2">
             <header
               class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
             >
