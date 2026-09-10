@@ -12,6 +12,8 @@
     assetId: number;
     filename: string;
     focalPoint: RelativeFocalPoint | null;
+    imageWidth: number | null;
+    imageHeight: number | null;
     imageEditorRatios: Record<string, string | number>;
     allowDegreeFractions: boolean;
     orientation: 'ltr' | 'rtl';

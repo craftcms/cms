@@ -86,6 +86,11 @@ class AssetEditViewModel extends ElementEditViewModel
             'focalPoint' => $this->asset->getHasFocalPoint()
                 ? $this->asset->getFocalPoint()
                 : null,
+            // The image's own dimensions, so the crop orientation can start on
+            // whichever way round the picture already is. Named apart from
+            // `orientation` below, which is the locale's text direction.
+            'imageWidth' => $this->asset->getWidth(),
+            'imageHeight' => $this->asset->getHeight(),
             'imageEditorRatios' => Cms::config()->imageEditorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),

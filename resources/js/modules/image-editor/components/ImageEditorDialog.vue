@@ -16,6 +16,8 @@
     assetId: number;
     filename: string;
     focalPoint: RelativeFocalPoint | null;
+    imageWidth: number | null;
+    imageHeight: number | null;
     imageEditorRatios: Record<string, string | number>;
     allowDegreeFractions: boolean;
     orientation: 'ltr' | 'rtl';
@@ -53,7 +55,22 @@
 
   const rtl = computed(() => props.orientation === 'rtl');
 
-  const cropOrientation = ref<'landscape' | 'portrait'>('landscape');
+  /**
+   * Which way round the picture already is — where the crop starts, and what
+   * resetting returns to. Square images and ones with no dimensions on record
+   * read as landscape, matching the button that's selected for them.
+   */
+  const naturalOrientation = computed<'landscape' | 'portrait'>(() =>
+    props.imageWidth !== null &&
+    props.imageHeight !== null &&
+    props.imageHeight > props.imageWidth
+      ? 'portrait'
+      : 'landscape'
+  );
+
+  const cropOrientation = ref<'landscape' | 'portrait'>(
+    naturalOrientation.value
+  );
 
   /**
    * The selected constraint, held as its key from `imageEditorRatios` rather
@@ -161,7 +178,7 @@
     // The controls hold their own copy of what they last applied, so they follow
     // the editor back rather than showing settings that no longer apply.
     straightenValue.value = 0;
-    cropOrientation.value = 'landscape';
+    cropOrientation.value = naturalOrientation.value;
     constraintKey.value = defaultConstraintKey(props.imageEditorRatios);
     customWidth.value = 1;
     customHeight.value = 1;
