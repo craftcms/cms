@@ -260,7 +260,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineSources(string $context): array
     {
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $sections = Craft::$app->getEntries()->getEditableSections();
             $editable = true;
         } else {

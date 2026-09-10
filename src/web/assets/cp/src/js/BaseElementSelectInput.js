@@ -597,7 +597,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 siteId: this.settings.criteria.siteId,
                 instances: [
                   {
-                    context: 'field',
+                    context: this.settings.context,
                     ui: ['list', 'list-inline', 'thumbs', 'large'].includes(
                       this.settings.viewMode
                     )
@@ -812,6 +812,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         {
           closeOtherModals: false,
           storageKey: this.modalStorageKey,
+          context: this.settings.context,
           sources: this.settings.sources,
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId
@@ -924,7 +925,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 siteId: elements[0].siteId,
                 instances: [
                   {
-                    context: 'field',
+                    context: this.settings.context,
                     ui: inputUiType,
                     size: inputUiSize,
                     showActionMenu: this.settings.showActionMenu,
@@ -1517,6 +1518,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       name: null,
       fieldId: null,
       elementType: null,
+      context: 'field',
       sources: null,
       condition: null,
       referenceElementId: null,
