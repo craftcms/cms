@@ -1,7 +1,11 @@
 <script setup lang="ts">
   import {computed, ref, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
-  import {useImageEditor, type SaveMode} from '../useImageEditor';
+  import {
+    useImageEditor,
+    type SaveMode,
+    type SaveResult,
+  } from '../useImageEditor';
   import {
     constraintOptions as buildConstraintOptions,
     defaultConstraintKey,
@@ -27,8 +31,8 @@
   const opened = defineModel<boolean>('open', {default: false});
 
   const emit = defineEmits<{
-    /** A save landed; `newAssetId` is set when it was saved as a copy. */
-    (e: 'saved', result: {newAssetId?: number}): void;
+    /** A save landed; the `newAsset*` fields are set when it was saved as a copy. */
+    (e: 'saved', result: SaveResult): void;
   }>();
 
   const editorEl = useTemplateRef<HTMLElement>('editorEl');
@@ -300,8 +304,10 @@
     const result = await editor.save(mode);
 
     if (result) {
-      emit('saved', result);
+      // Close before handing the result up, so a consumer that navigates on
+      // the way out isn't doing it while we still read as open.
       opened.value = false;
+      emit('saved', result);
     }
   }
 

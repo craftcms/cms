@@ -34,6 +34,7 @@ export interface ImageEditorOptions {
 
 export interface SaveResult {
   newAssetId?: number;
+  newAssetUrl?: string;
 }
 
 /** `replace` overwrites the asset's file; `copy` saves the result alongside it. */

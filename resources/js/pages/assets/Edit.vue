@@ -6,6 +6,7 @@
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import ImageEditorDialog from '@/modules/image-editor/components/ImageEditorDialog.vue';
   import {useIsSlideout} from '@/common/composables/screen';
+  import type {SaveResult} from '@/modules/image-editor/useImageEditor';
   import type {RelativeFocalPoint} from '@/modules/image-editor/types';
 
   interface ImageEditorProps {
@@ -85,12 +86,27 @@
   /**
    * Saving in place changes the file behind the same asset, so the screen has
    * to refetch to pick up the new thumbnail; saving a copy leaves this asset
-   * untouched and needs nothing.
+   * alone and sends us off to the copy instead. The URL comes from the server
+   * so we don't have to rebuild the `{id}{slug}` path here.
    */
-  function onImageSaved(result: {newAssetId?: number}): void {
-    if (!result.newAssetId) {
-      router.reload();
+  function onImageSaved(result: SaveResult): void {
+    if (result.newAssetUrl) {
+      router.visit(result.newAssetUrl);
+      return;
     }
+
+    // Drop `editing` here rather than leaving it to the watcher above, which
+    // doesn't flush until after this handler returns. A `reload()` refetches
+    // whatever the URL says right now, so it would come back with the editor
+    // asked to open again — and reinstate the parameter in history on the way.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('editing');
+
+    router.visit(url.href, {
+      replace: true,
+      preserveScroll: true,
+      preserveState: true,
+    });
   }
 
   const editor = useIsSlideout() ? ElementEditor : ElementEditScreen;
