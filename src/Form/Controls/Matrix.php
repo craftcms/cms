@@ -36,6 +36,7 @@ use function CraftCms\Cms\t;
  * on `entries` keys but not `sortOrder` values. Fields normalize both halves through
  * {@see ElementHelper::nestedElementDelta()} on the way in.
  *
+ * @phpstan-type EntryTypeDescriptor array{label: string, icon?: array<string, string>|null, color?: string|null, group?: string|null}
  * @phpstan-type MatrixControlValue array{
  *     entries: array<string, array<string, mixed>>,
  *     sortOrder: list<string>,
@@ -47,7 +48,7 @@ class Matrix extends Control
     #[\Override]
     protected mixed $value = ['entries' => [], 'sortOrder' => []];
 
-    /** @var array<string, string> */
+    /** @var array<string, EntryTypeDescriptor> */
     private array $entryTypes = [];
 
     /** @var array<string, Form> */
@@ -189,10 +190,11 @@ class Matrix extends Control
                     ->label(count($entryTypes) === 1
                         ? $control->props['addLabel']
                         : t('Add {type}', ['type' => $type['label']]))
-                    ->icon('plus')
+                    ->icon($type['icon']['name'] ?? 'plus')
                     ->attributes([
                         'class' => ['btn', 'add', 'icon', 'dashed', 'wrap'],
                         'data-form-matrix-add' => $type['value'],
+                        'data-color' => $type['color'],
                     ])
                     ->toHtml();
             }
@@ -260,16 +262,32 @@ class Matrix extends Control
         return 'craft:matrix';
     }
 
-    /** @param array<string, string> $entryTypes */
+    /**
+     * The types a block may be, keyed by handle.
+     *
+     * A bare label is enough for a field with one kind of block (Addresses). A
+     * Matrix passes the descriptor, so the add buttons and menu can show each
+     * type's own icon and colour and file it under its group.
+     *
+     * @param  array<string, string|EntryTypeDescriptor>  $entryTypes
+     */
     public function entryTypes(array $entryTypes): static
     {
-        foreach ($entryTypes as $handle => $label) {
+        $resolved = [];
+
+        foreach ($entryTypes as $handle => $entryType) {
+            $label = is_array($entryType) ? ($entryType['label'] ?? null) : $entryType;
+
             if (! is_string($handle) || $handle === '' || ! is_string($label) || $label === '') {
                 throw new InvalidArgumentException('Matrix entry types require non-empty string handles and labels.');
             }
+
+            $resolved[$handle] = is_array($entryType)
+                ? ['label' => $label] + $entryType
+                : ['label' => $label];
         }
 
-        $this->entryTypes = $entryTypes;
+        $this->entryTypes = $resolved;
 
         return $this;
     }
@@ -374,7 +392,7 @@ class Matrix extends Control
 
         return [
             'entryTypes' => collect($this->entryTypes)
-                ->map(fn (string $label, string $value): array => compact('value', 'label'))
+                ->map(fn (array $entryType, string $value): array => ['value' => $value] + $entryType)
                 ->values()
                 ->all(),
             'addLabel' => $this->addLabel ?? t('Add an entry'),
@@ -429,7 +447,7 @@ class Matrix extends Control
         return $value;
     }
 
-    /** @return list<array{value: string, label: string}> */
+    /** @return list<array{value: string, label: string, icon: array<string, string>|null, color: string|null}> */
     private static function resolvedEntryTypes(mixed $entryTypes): array
     {
         if (! is_array($entryTypes)) {
@@ -441,7 +459,12 @@ class Matrix extends Control
                 throw new InvalidArgumentException('Resolved Matrix entry types require string values and labels.');
             }
 
-            return ['value' => $entryType['value'], 'label' => $entryType['label']];
+            return [
+                'value' => $entryType['value'],
+                'label' => $entryType['label'],
+                'icon' => is_array($entryType['icon'] ?? null) ? $entryType['icon'] : null,
+                'color' => is_string($entryType['color'] ?? null) ? $entryType['color'] : null,
+            ];
         }, array_values($entryTypes));
     }
 }

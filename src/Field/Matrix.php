@@ -552,7 +552,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function formControl(FieldContext $context): Control
     {
         $entryTypes = collect($this->getEntryTypes())
-            ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->name])
+            ->mapWithKeys(fn (EntryType $type): array => [$type->handle => [
+                'label' => t($type->name, category: 'site'),
+                'icon' => $type->icon !== null ? Icons::resolveIconData($type->icon) : null,
+                'color' => $type->color?->value,
+                'group' => $type->group,
+            ]])
             ->all() ?: ['entry' => Entry::displayName()];
         // Disabled blocks still have to reach the editor, or disabling one makes it
         // disappear from the Form. Matches how `blockInputHtml()` resolves the value.

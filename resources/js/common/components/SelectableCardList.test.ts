@@ -117,6 +117,64 @@ describe('SelectableCardList', () => {
     expect(selection.selectedIds.value).toEqual([]);
   });
 
+  describe('keyboard', () => {
+    function press(item: Element, key: string, init: KeyboardEventInit = {}) {
+      item.dispatchEvent(
+        // Cancelable, the way a real key press is — `preventDefault()` is how a
+        // consumer takes the key.
+        new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          cancelable: true,
+          ...init,
+        })
+      );
+    }
+
+    it('selects with Space and extends with a shifted arrow', async () => {
+      const {selection} = mount(['a', 'b', 'c']);
+      await nextTick();
+
+      const items = container!.querySelectorAll('li');
+      press(items[0]!, ' ');
+      await nextTick();
+
+      expect(selection.isSelected('a')).toBe(true);
+
+      press(items[0]!, 'ArrowDown', {shiftKey: true});
+      await nextTick();
+
+      expect([...selection.selectedIds.value].sort()).toEqual(['a', 'b']);
+    });
+
+    it('leaves a key pressed inside the card alone', async () => {
+      const {selection} = mount(['a']);
+      await nextTick();
+
+      // A Matrix block holds a whole form; Space in a text field is the
+      // field's, not the list's.
+      const input = document.createElement('input');
+      container!.querySelector('li')!.append(input);
+      press(input, ' ');
+      await nextTick();
+
+      expect(selection.selectedIds.value).toEqual([]);
+    });
+
+    it('stands down when the consumer takes the key', async () => {
+      const {selection} = mount(['a'], {
+        onItemKeydown: (_id: string, _index: number, event: KeyboardEvent) =>
+          event.preventDefault(),
+      });
+      await nextTick();
+
+      press(container!.querySelector('li')!, ' ');
+      await nextTick();
+
+      expect(selection.selectedIds.value).toEqual([]);
+    });
+  });
+
   it('passes per-item classes and attributes through', async () => {
     mount(['a'], {
       itemTag: 'div',

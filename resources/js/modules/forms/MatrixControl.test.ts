@@ -598,6 +598,58 @@ describe('MatrixControl', () => {
     });
   });
 
+  describe('the add buttons', () => {
+    const types = (count: number, group?: (index: number) => string) =>
+      Array.from({length: count}, (_, index) => ({
+        value: `type-${index}`,
+        label: `Type ${index}`,
+        icon: {name: 'gear', family: 'solid'},
+        color: 'red',
+        ...(group ? {group: group(index)} : {}),
+      }));
+
+    it('carries each entry type’s own icon and colour', async () => {
+      mount({entries: {}, sortOrder: []}, {entryTypes: types(2)});
+      await nextTick();
+
+      const buttons = container!.querySelectorAll('[data-form-matrix-add]');
+
+      expect(buttons).toHaveLength(2);
+      // `craft-button` takes its icon as a property once it's defined.
+      expect(
+        (buttons[0] as {icon?: string}).icon ?? buttons[0]!.getAttribute('icon')
+      ).toBe('gear');
+      expect(buttons[0]!.getAttribute('data-color')).toBe('red');
+    });
+
+    it('files the types under their groups once there is more than one', async () => {
+      mount(
+        {entries: {}, sortOrder: []},
+        {entryTypes: types(4, (index) => (index < 2 ? 'Layout' : 'Content'))}
+      );
+      await nextTick();
+
+      // One button per type gives no room for the group names, so they move
+      // into a menu — the way Craft 5 offered them.
+      expect(
+        container!.querySelectorAll('[data-form-matrix-add]')
+      ).toHaveLength(0);
+
+      const menu = menus.at(-1)!;
+      const groups = menu.actions as Array<{
+        type: string;
+        heading?: string;
+        items: unknown[];
+      }>;
+
+      expect(groups.map((group) => group.heading)).toEqual([
+        'Layout',
+        'Content',
+      ]);
+      expect(groups[0]!.items).toHaveLength(2);
+    });
+  });
+
   describe('expand/collapse all', () => {
     /**
      * The field menu's items are scoped by `craft-field`, not by the Matrix host
@@ -753,6 +805,43 @@ describe('MatrixControl', () => {
     expect(block.dataset.ownerId).toBe('5');
     expect(block.dataset.siteId).toBe('1');
     expect(block.dataset.uiLabel).toBe('Entry 12');
+  });
+
+  it('moves the whole selection when one of it is dragged', async () => {
+    mount({
+      entries: {
+        'block-a': {type: 'newType', enabled: true},
+        'block-b': {type: 'newType', enabled: true},
+        'block-c': {type: 'newType', enabled: true},
+      },
+      sortOrder: ['block-a', 'block-b', 'block-c'],
+    });
+    await nextTick();
+
+    const boxes = container!.querySelectorAll('craft-checkbox');
+    for (const box of [boxes[0]!, boxes[2]!]) {
+      box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      Object.assign(box, {checked: true});
+      box.dispatchEvent(
+        new CustomEvent('model-value-changed', {bubbles: true})
+      );
+    }
+    await nextTick();
+
+    // Grab the first of the two selected blocks and drop it at the end. Craft 5
+    // took the whole selection along; the drag engine only reports the one.
+    container!
+      .querySelectorAll('craft-reorder-button')[0]!
+      .dispatchEvent(
+        new CustomEvent('reorder', {bubbles: true, detail: {direction: 'down'}})
+      );
+    await nextTick();
+
+    expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder).toEqual([
+      'block-b',
+      'block-a',
+      'block-c',
+    ]);
   });
 
   it('reorders through the reorder button', async () => {

@@ -136,6 +136,67 @@
     });
   }
 
+  /**
+   * Space and Enter select; the arrows walk the list, extending the selection
+   * when shifted.
+   *
+   * The consumer hears the key first and can take it — `preventDefault()` on a
+   * card that navigates somewhere of its own, say. Only a key pressed on the
+   * item itself counts: a card can hold a whole form, and Space in a text field
+   * belongs to the field.
+   */
+  function onItemKeydown(id: Id, index: number, event: KeyboardEvent): void {
+    emit('item-keydown', id, index, event);
+
+    if (
+      !props.selectable ||
+      event.defaultPrevented ||
+      event.target !== event.currentTarget ||
+      !(event.currentTarget instanceof HTMLElement)
+    ) {
+      return;
+    }
+
+    const target = event.currentTarget;
+
+    switch (event.key) {
+      case ' ':
+      case 'Enter':
+        event.preventDefault();
+        props.selection.toggle(id);
+
+        return;
+
+      case 'ArrowRight':
+      case 'ArrowDown':
+        event.preventDefault();
+        stepTo(Math.min(index + 1, props.ids.length - 1), target, event);
+
+        return;
+
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        event.preventDefault();
+        stepTo(Math.max(index - 1, 0), target, event);
+    }
+  }
+
+  function stepTo(
+    index: number,
+    from: HTMLElement,
+    event: KeyboardEvent
+  ): void {
+    const id = props.ids[index];
+
+    if (event.shiftKey && id !== undefined) {
+      props.selection.extendTo(id);
+    }
+
+    from.parentElement
+      ?.querySelectorAll<HTMLElement>(':scope > [tabindex]')
+      ?.[index]?.focus();
+  }
+
   defineExpose({setItemRef, setHandleRef, getDragState, getRowPosition});
 </script>
 
@@ -158,7 +219,7 @@
       ]"
       :tabindex="selectable ? 0 : undefined"
       @click="emit('item-click', id, $event)"
-      @keydown="emit('item-keydown', id, index, $event)"
+      @keydown="onItemKeydown(id, index, $event)"
     >
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'top'"

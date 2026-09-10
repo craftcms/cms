@@ -110,51 +110,25 @@
     navigateToFolder(element.folderUrl);
   }
 
-  function focusCardByIndex(index: number, el: HTMLElement) {
-    const list = el.closest('ul.card-grid');
-    const items = list?.querySelectorAll<HTMLElement>(':scope > li[tabindex]');
-    items?.[index]?.focus();
-  }
-
+  /**
+   * Only the folder case: a folder card opens the folder rather than selecting
+   * it. Everything else — select, arrow-key navigation, shift-extend — is the
+   * list's, and taking the key here is what tells it to stand down.
+   */
   function onCardKeydown(
     id: number | string,
     index: number,
     event: KeyboardEvent
   ) {
-    if (!props.selectable) return;
-    if (!(event.currentTarget instanceof HTMLElement)) return;
-    const target = event.currentTarget;
-    const last = props.data.length - 1;
-    switch (event.key) {
-      case ' ':
-      case 'Enter': {
-        event.preventDefault();
-        const element = props.data.find((el) => el.id === id);
-        if (element && isFolderRow(element)) {
-          navigateToFolder(element.folderUrl);
-          break;
-        }
-        props.selection.toggle(id);
-        break;
-      }
-      case 'ArrowRight':
-      case 'ArrowDown': {
-        event.preventDefault();
-        const nextIndex = Math.min(index + 1, last);
-        const nextEl = props.data[nextIndex];
-        if (event.shiftKey && nextEl) props.selection.extendTo(nextEl.id);
-        focusCardByIndex(nextIndex, target);
-        break;
-      }
-      case 'ArrowLeft':
-      case 'ArrowUp': {
-        event.preventDefault();
-        const prevIndex = Math.max(index - 1, 0);
-        const prevEl = props.data[prevIndex];
-        if (event.shiftKey && prevEl) props.selection.extendTo(prevEl.id);
-        focusCardByIndex(prevIndex, target);
-        break;
-      }
+    if (!props.selectable || (event.key !== ' ' && event.key !== 'Enter')) {
+      return;
+    }
+
+    const element = props.data.find((el) => el.id === id);
+
+    if (element && isFolderRow(element)) {
+      event.preventDefault();
+      navigateToFolder(element.folderUrl);
     }
   }
 

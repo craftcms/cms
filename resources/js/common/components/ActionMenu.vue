@@ -22,10 +22,13 @@
       icon?: string;
       label?: string | null;
       actions: ActionItems;
+      /** Puts a filter box at the top — worth it once the list is long. */
+      searchable?: boolean;
     }>(),
     {
       icon: 'ellipsis',
       label: t('Actions'),
+      searchable: false,
     }
   );
 
@@ -74,7 +77,9 @@
         };
       }
 
-      return {...action};
+      // A group's members need no conversion — `display` items are only
+      // allowed at the top level, where they've already been handled.
+      return {...action} as ActionMenuItem;
     });
   });
 
@@ -102,6 +107,7 @@
     :actions="wcActions"
     :icon="icon"
     :label="label ?? undefined"
+    :searchable="searchable"
   >
     <span slot="invoker" style="display: inline-flex" v-once>
       <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">

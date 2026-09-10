@@ -29,6 +29,7 @@
   import {blockPreviewParts} from '@/modules/matrix/preview-text';
   import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {useElementSize} from '@vueuse/core';
   import {useSelectable} from '@/common/composables/useSelectable';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import FormNodeList from './FormNodeList.vue';
@@ -46,7 +47,13 @@
   } from './types';
   import {inputName, isRecord, valueAt} from './runtime';
 
-  type EntryType = {value: string; label: string};
+  type EntryType = {
+    value: string;
+    label: string;
+    icon?: {name: string; family: string} | null;
+    color?: string | null;
+    group?: string | null;
+  };
   type MatrixProps = {
     entryTypes?: EntryType[];
     addLabel: string;
@@ -205,6 +212,67 @@
       name: type.label,
     }))
   );
+  /**
+   * How to offer the entry types. One button each while they fit; a menu once
+   * they don't, or once there are groups to file them under. Craft 5 collapsed
+   * the row the same way.
+   *
+   * The row's natural width is measured while it's shown and remembered, so the
+   * two states can't chase each other: what's compared is always the width the
+   * buttons would take, not the width they're taking now.
+   */
+  const addArea = ref<HTMLElement>();
+  const addButtons = ref<HTMLElement>();
+  const {width: addAreaWidth} = useElementSize(addArea);
+  const buttonsWidth = ref(0);
+  const entryTypeGroups = computed(() => {
+    const groups = new Map<string, EntryType[]>();
+
+    for (const type of props.control.props.entryTypes ?? []) {
+      const group = type.group ?? '';
+      groups.set(group, [...(groups.get(group) ?? []), type]);
+    }
+
+    return [...groups];
+  });
+  const addFromMenu = computed(
+    () =>
+      entryTypeGroups.value.length > 1 ||
+      (buttonsWidth.value > 0 &&
+        addAreaWidth.value > 0 &&
+        addAreaWidth.value < buttonsWidth.value)
+  );
+  /** Craft 5's threshold: past this many, the menu is worth searching. */
+  const addMenuSearchable = computed(
+    () => (props.control.props.entryTypes?.length ?? 0) > 5
+  );
+
+  watch(
+    [addButtons, () => props.control.props.entryTypes],
+    async () => {
+      await nextTick();
+
+      if (addButtons.value) {
+        buttonsWidth.value = addButtons.value.scrollWidth;
+      }
+    },
+    {immediate: true}
+  );
+
+  const addMenuActions = computed<ActionItems>(() =>
+    entryTypeGroups.value.map(([group, types]) => ({
+      type: 'group' as const,
+      ...(group === '' ? {} : {heading: group}),
+      items: types.map((type) => ({
+        label: t('Add {type}', {type: type.label}),
+        icon: type.icon?.name ?? 'plus',
+        iconColor: type.color ?? undefined,
+        disabled: busy.value,
+        onClick: () => void addBlock(type.value),
+      })),
+    }))
+  );
+
   const settings = computed(() =>
     JSON.stringify({
       formControl: true,
@@ -599,7 +667,14 @@
     emit('update:value', next, 'discrete');
   }
 
-  /** Moves the block at `from` to `to`, keeping `entries` untouched. */
+  /**
+   * Moves the block at `from` to `to`, keeping `entries` untouched.
+   *
+   * The whole selection travels when the block being moved is part of one, the
+   * way Craft 5's drag-sort did — the drag engine only ever reports the one
+   * block, so the rest are gathered here and land together, in the order they
+   * were already in.
+   */
   function move(from: number, to: number): void {
     if (from === to || from < 0 || to < 0) {
       return;
@@ -612,7 +687,25 @@
       return;
     }
 
-    next.sortOrder.splice(to, 0, uid);
+    const group = actionTargets(uid);
+    let index = to;
+
+    // Each block pulled out from before the landing point drags it back one.
+    for (const id of group) {
+      const at = next.sortOrder.indexOf(id);
+
+      if (at === -1) {
+        continue;
+      }
+
+      next.sortOrder.splice(at, 1);
+
+      if (at < index) {
+        index--;
+      }
+    }
+
+    next.sortOrder.splice(index, 0, ...group);
     emit('update:value', next, 'discrete');
   }
 
@@ -1129,22 +1222,59 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="flex flex-wrap gap-1 items-center mt-3">
+      <div v-if="canAdd" ref="addArea" class="mt-3">
+        <ActionMenu
+          v-if="addFromMenu"
+          :actions="addMenuActions"
+          :searchable="addMenuSearchable"
+          :label="control.props.addLabel"
+        >
+          <template #invoker="{attributes}">
+            <craft-button
+              v-bind="attributes"
+              type="button"
+              variant="dashed"
+              icon="plus"
+              :disabled="busy"
+            >
+              {{ control.props.addLabel }}
+            </craft-button>
+          </template>
+        </ActionMenu>
+        <div v-else ref="addButtons" class="flex flex-wrap gap-1 items-center">
+          <craft-button
+            v-for="type in control.props.entryTypes"
+            :key="type.value"
+            type="button"
+            variant="dashed"
+            :icon="type.icon?.name ?? 'plus'"
+            :data-color="type.color ?? undefined"
+            :loading="adding === type.value"
+            :disabled="busy"
+            :data-form-matrix-add="type.value"
+            @click.stop.prevent="addBlock(type.value)"
+          >
+            {{
+              control.props.entryTypes?.length === 1
+                ? control.props.addLabel
+                : t('Add {type}', {type: type.label})
+            }}
+          </craft-button>
+        </div>
         <craft-button
-          v-for="type in control.props.entryTypes"
-          :key="type.value"
+          v-if="pasteable.length"
           type="button"
           variant="dashed"
-          icon="plus"
-          :loading="adding === type.value"
+          icon="duplicate"
+          class="mt-1"
+          :loading="pasting"
           :disabled="busy"
-          :data-form-matrix-add="type.value"
-          @click.stop.prevent="addBlock(type.value)"
+          @click.stop.prevent="pasteBlocks()"
         >
           {{
-            control.props.entryTypes?.length === 1
-              ? control.props.addLabel
-              : t('Add {type}', {type: type.label})
+            t('Paste {type}', {
+              type: pasteable.length === 1 ? t('block') : t('blocks'),
+            })
           }}
         </craft-button>
       </div>
