@@ -83,6 +83,7 @@
             :aria-pressed="group.operator === 'and'"
             :disabled="!editor.editable()"
             @click="operator('and')"
+            size="small"
             >{{ t('All') }}</craft-button
           >
           <craft-button
@@ -92,6 +93,7 @@
             :aria-pressed="group.operator === 'or'"
             :disabled="!editor.editable()"
             @click="operator('or')"
+            size="small"
             >{{ t('Any') }}</craft-button
           >
         </craft-button-group>
@@ -129,7 +131,7 @@
           <craft-button
             type="button"
             icon="plus"
-            variant="plain"
+            variant="dashed"
             @click="addGroup"
             >{{ t('Add a group') }}</craft-button
           >
