@@ -136,6 +136,52 @@
 
   defineExpose({directionalButtons});
 
+  /**
+   * Whether the editor is in crop mode.
+   *
+   * Read off the editor rather than tracked here: `showView` owns the canvas side
+   * of the switch — building and tearing down the cropping layer — so a second
+   * copy of this would be one more thing to keep in step.
+   */
+  const cropping = computed(() => editor.state.currentView.value === 'crop');
+
+  /** The Crop button is a toggle, so it moves back to the rotate view too. */
+  function onCropToggle(): void {
+    editor.showView(cropping.value ? 'rotate' : 'crop');
+  }
+
+  /** Discards every edit, after asking. The dialog stays open. */
+  function onReset(): void {
+    if (!window.confirm(t('Discard all changes to this image?'))) {
+      return;
+    }
+
+    editor.reset();
+
+    // The controls hold their own copy of what they last applied, so they follow
+    // the editor back rather than showing settings that no longer apply.
+    straightenValue.value = 0;
+    cropOrientation.value = 'landscape';
+    constraintKey.value = defaultConstraintKey(props.imageEditorRatios);
+    customWidth.value = 1;
+    customHeight.value = 1;
+  }
+
+  /**
+   * Guards the way out. `craft-before-hide` covers every dismissal — the close
+   * button, Escape and the backdrop — so this asks once for all of them.
+   */
+  function onBeforeHide(event: Event): void {
+    if (
+      editor.isDirty.value &&
+      !window.confirm(
+        t('Any changes will be lost if you close the image editor.')
+      )
+    ) {
+      event.preventDefault();
+    }
+  }
+
   /** `craft-tabs` owns the selection; the editor follows it. */
   function onTabChanged(event: Event): void {
     const index = (event.target as {selectedIndex?: number} | null)
@@ -200,13 +246,24 @@
     return `constraint-${key.replace(/[^\w-]+/g, '-')}`;
   }
 
+  /**
+   * Whether the asset has a focal point at all.
+   *
+   * Distinct from `focalPickedUp`, which is the transient "grabbed for moving"
+   * state and flips when the marker is clicked on the canvas. The button is a
+   * toggle for the focal point itself, so it tracks existence.
+   */
+  const focalPointActive = computed(
+    () => editor.state.focalPoint.value !== null
+  );
+
   function isPressed(handle: FabricElementHandle): boolean {
     if (handle === 'rectangle') {
       return editor.editing.rectanglePickedUp.value;
     }
 
     if (handle === 'focalpoint') {
-      return editor.editing.focalPickedUp.value;
+      return focalPointActive.value;
     }
 
     return editor.editing.pickedHandle.value === handle;
@@ -240,217 +297,220 @@
 <template>
   <!-- A native <dialog> via `showModal()`, so focus containment, the Escape
     key and the backdrop are the platform's job rather than ours. -->
+  <!-- The editor is always dark, whatever the CP is set to: judging an image
+    against a light chrome skews how it reads. `[data-theme='dark']` is a plain
+    attribute selector, so it redefines the colour tokens from here down —
+    custom properties inherit through the slot and into each component's shadow
+    root, so everything inside follows. -->
   <craft-dialog
+    data-theme="dark"
     fullscreen
     :open="opened"
     :label="t('Edit Image')"
     @craft-after-show="editor.start"
+    @craft-before-hide="onBeforeHide"
     @craft-hide="onDialogHide"
   >
-    <div class="image-editor">
-      <div class="image-editor__tools">
-        <h1 class="sr-only">{{ t('Edit Image') }}</h1>
+    <div class="flex flex-col h-full">
+      <div
+        id="image-editor-toolbar"
+        class="image-editor__toolbar flex gap-6 p-2"
+      >
+        <div id="rotate-buttons" class="flex gap-1">
+          <craft-button
+            type="button"
+            icon="arrow-rotate-left"
+            align="start"
+            @click="editor.rotate(-90)"
+          >
+            {{ t('Rotate Left') }}
+          </craft-button>
+          <craft-button
+            type="button"
+            icon="arrow-rotate-right"
+            align="start"
+            @click="editor.rotate(90)"
+          >
+            {{ t('Rotate Right') }}
+          </craft-button>
+        </div>
 
-        <!-- `craft-tabs` owns the tablist: it assigns each tab its id, role,
-      `aria-controls`/`aria-selected` and roving tabindex, pairs tabs with
-      panels by document order, and drives panel visibility. -->
-        <craft-tabs @selected-changed="onTabChanged">
-          <craft-tab slot="tab">
-            <div class="flex items-center gap-1">
-              <craft-icon name="rotate" />
-              {{ t('Rotate') }}
-            </div>
-          </craft-tab>
-          <div slot="panel" class="rotate">
-            <craft-button-group class="rotate-buttons">
-              <craft-button
-                type="button"
-                icon="arrow-rotate-left"
-                align="start"
-                @click="editor.rotate(-90)"
-              >
-                {{ t('Rotate Left') }}
-              </craft-button>
-              <craft-button
-                type="button"
-                icon="arrow-rotate-right"
-                align="start"
-                @click="editor.rotate(90)"
-              >
-                {{ t('Rotate Right') }}
-              </craft-button>
-            </craft-button-group>
+        <div id="flip-buttons" class="flex gap-1">
+          <craft-button
+            type="button"
+            icon="arrows-up-down"
+            align="start"
+            @click="editor.flip('y')"
+          >
+            {{ t('Flip Vertical') }}
+          </craft-button>
+          <craft-button
+            type="button"
+            icon="arrows-left-right"
+            align="start"
+            @click="editor.flip('x')"
+          >
+            {{ t('Flip Horizontal') }}
+          </craft-button>
+        </div>
 
-            <craft-button-group class="flip-buttons">
-              <craft-button
-                type="button"
-                icon="arrows-up-down"
-                align="start"
-                @click="editor.flip('y')"
+        <div id="focal-point" class="flex gap-1">
+          <craft-button
+            type="button"
+            icon="crosshairs"
+            align="start"
+            toggle
+            :active="focalPointActive"
+            data-fabric-element="focalpoint"
+            @click="
+              editor.onEditButtonClick(
+                'focalpoint',
+                isPressed('focalpoint'),
+                t('Focal Point')
+              )
+            "
+            @keydown="editor.onEditButtonKeydown"
+            @focus="editor.onEditButtonFocus('focalpoint')"
+            @blur="editor.onEditButtonBlur"
+          >
+            {{ t('Focal Point') }}
+          </craft-button>
+        </div>
+        <div id="crop" class="flex gap-1">
+          <craft-button
+            type="button"
+            icon="crop-simple"
+            toggle
+            :active="cropping"
+            @click="onCropToggle"
+          >
+            {{ t('Crop') }}
+          </craft-button>
+        </div>
+        <!-- `ms-auto` pushes it to the far end of the toolbar, away from the
+        tools, since it undoes rather than does. -->
+        <div id="reset" class="flex gap-1 ms-auto">
+          <craft-button
+            type="button"
+            icon="arrow-rotate-left"
+            :disabled="!editor.isDirty.value || undefined"
+            @click="onReset"
+          >
+            {{ t('Reset to original') }}
+          </craft-button>
+        </div>
+      </div>
+      <div
+        :class="{
+          'image-editor': true,
+          'image-editor--has-sidebar': cropping,
+        }"
+      >
+        <div class="image-editor__sidebar">
+          <div class="crop-tools">
+            <craft-field-group>
+              <craft-field
+                v-if="!showingCustomConstraint"
+                :label="t('Orientation')"
+                fieldset
               >
-                {{ t('Flip Vertical') }}
-              </craft-button>
-              <craft-button
-                type="button"
-                icon="arrows-left-right"
-                align="start"
-                @click="editor.flip('x')"
-              >
-                {{ t('Flip Horizontal') }}
-              </craft-button>
-            </craft-button-group>
+                <!-- The group owns the selection: with `name` set it toggles
+              `active` and `aria-pressed` on its children from its own
+              `value`, so the buttons must not set `active` themselves — the
+              group strips it again on its next sync. -->
+                <craft-button-group
+                  slot="input"
+                  id="orientation"
+                  name="orientation"
+                  :value="cropOrientation"
+                  @change="onOrientationChanged"
+                >
+                  <craft-button
+                    type="button"
+                    value="landscape"
+                    icon="image-landscape"
+                    :aria-label="t('Landscape')"
+                  ></craft-button>
+                  <craft-button
+                    type="button"
+                    value="portrait"
+                    icon="image-portrait"
+                    :aria-label="t('Portrait')"
+                  ></craft-button>
+                </craft-button-group>
+              </craft-field>
 
-            <craft-button-group>
-              <craft-button
-                type="button"
-                icon="crosshairs"
-                align="start"
-                :aria-pressed="isPressed('focalpoint') ? 'true' : 'false'"
-                data-fabric-element="focalpoint"
-                @click="
-                  editor.onEditButtonClick(
-                    'focalpoint',
-                    isPressed('focalpoint'),
-                    t('Focal Point')
-                  )
-                "
-                @keydown="editor.onEditButtonKeydown"
-                @focus="editor.onEditButtonFocus('focalpoint')"
-                @blur="editor.onEditButtonBlur"
-              >
-                {{ t('Focal Point') }}
-              </craft-button>
-            </craft-button-group>
-          </div>
+              <craft-field :label="t('Constraints')" fieldset>
+                <div slot="input">
+                  <craft-radio-group name="constraint" class="constraint-group">
+                    <craft-radio
+                      v-for="option in constraintOptions"
+                      :key="option.key"
+                      .choiceValue="option.value"
+                      .checked="constraintKey === option.key"
+                    >
+                      <input
+                        slot="input"
+                        :id="constraintId(option.key)"
+                        type="radio"
+                        name="constraint"
+                        :value="option.value"
+                        :checked="constraintKey === option.key"
+                        @change="onConstraintChange(option.key)"
+                      />
+                      <label slot="label" :for="constraintId(option.key)">
+                        {{ option.label }}
+                      </label>
+                    </craft-radio>
+                  </craft-radio-group>
 
-          <craft-tab slot="tab">
-            <div class="flex items-center gap-1">
-              <craft-icon name="crop-simple" />
-              {{ t('Crop') }}
-            </div>
-          </craft-tab>
-          <div slot="panel" class="crop">
-            <craft-field
-              v-if="!showingCustomConstraint"
-              :label="t('Orientation')"
-              fieldset
-            >
-              <!-- The group owns the selection: with `name` set it toggles
-                `active` and `aria-pressed` on its children from its own
-                `value`, so the buttons must not set `active` themselves — the
-                group strips it again on its next sync. -->
-              <craft-button-group
-                slot="input"
-                id="orientation"
-                name="orientation"
-                :value="cropOrientation"
-                @change="onOrientationChanged"
-              >
-                <craft-button
-                  type="button"
-                  value="landscape"
-                  icon="image-landscape"
-                  :aria-label="t('Landscape')"
-                ></craft-button>
-                <craft-button
-                  type="button"
-                  value="portrait"
-                  icon="image-portrait"
-                  :aria-label="t('Portrait')"
-                ></craft-button>
-              </craft-button-group>
-            </craft-field>
-
-            <craft-field :label="t('Constraints')" fieldset>
-              <div slot="input">
-                <craft-radio-group name="constraint" class="constraint-group">
-                  <craft-radio
-                    v-for="option in constraintOptions"
-                    :key="option.key"
-                    .choiceValue="option.value"
-                    .checked="constraintKey === option.key"
+                  <!-- The legacy editor injected these inputs into the constraint
+              fieldset from JS; they belong in the template. -->
+                  <div
+                    v-if="showingCustomConstraint"
+                    class="constraint custom"
+                    role="group"
+                    :aria-label="t('Custom')"
                   >
                     <input
-                      slot="input"
-                      :id="constraintId(option.key)"
-                      type="radio"
-                      name="constraint"
-                      :value="option.value"
-                      :checked="constraintKey === option.key"
-                      @change="onConstraintChange(option.key)"
+                      v-model.number="customWidth"
+                      type="text"
+                      class="custom-constraint-w"
+                      size="3"
+                      :aria-label="t('Width unit')"
+                      @input="onCustomConstraintInput"
                     />
-                    <label slot="label" :for="constraintId(option.key)">
-                      {{ option.label }}
-                    </label>
-                  </craft-radio>
-                </craft-radio-group>
-
-                <!-- The legacy editor injected these inputs into the constraint
-                fieldset from JS; they belong in the template. -->
-                <div
-                  v-if="showingCustomConstraint"
-                  class="constraint custom"
-                  role="group"
-                  :aria-label="t('Custom')"
-                >
-                  <input
-                    v-model.number="customWidth"
-                    type="text"
-                    class="custom-constraint-w"
-                    size="3"
-                    :aria-label="t('Width unit')"
-                    @input="onCustomConstraintInput"
-                  />
-                  <span class="custom-constraint-spacer" aria-hidden="true">
-                    x
-                  </span>
-                  <input
-                    v-model.number="customHeight"
-                    type="text"
-                    class="custom-constraint-h"
-                    size="3"
-                    :aria-label="t('Height unit')"
-                    @input="onCustomConstraintInput"
-                  />
+                    <span class="custom-constraint-spacer" aria-hidden="true">
+                      x
+                    </span>
+                    <input
+                      v-model.number="customHeight"
+                      type="text"
+                      class="custom-constraint-h"
+                      size="3"
+                      :aria-label="t('Height unit')"
+                      @input="onCustomConstraintInput"
+                    />
+                  </div>
                 </div>
-              </div>
-            </craft-field>
+              </craft-field>
+            </craft-field-group>
 
             <div role="application">
-              <craft-button-group>
-                <craft-button
-                  type="button"
-                  icon="crosshairs"
-                  align="start"
-                  :aria-pressed="isPressed('focalpoint') ? 'true' : 'false'"
-                  data-fabric-element="focalpoint"
-                  @click="
-                    editor.onEditButtonClick(
-                      'focalpoint',
-                      isPressed('focalpoint'),
-                      t('Focal Point')
-                    )
-                  "
-                  @keydown="editor.onEditButtonKeydown"
-                  @focus="editor.onEditButtonFocus('focalpoint')"
-                  @blur="editor.onEditButtonBlur"
-                >
-                  {{ t('Focal Point') }}
-                </craft-button>
-              </craft-button-group>
+              <craft-button-group> </craft-button-group>
 
               <!-- Keyboard-only, and visually hidden as it was in Craft 5:
-                these buttons exist to pick up the rectangle and its handles
-                without a pointer. What they're doing is drawn on the canvas —
-                the focus ring and the move icon — so showing the controls
-                themselves would only duplicate it. -->
+            these buttons exist to pick up the rectangle and its handles
+            without a pointer. What they're doing is drawn on the canvas —
+            the focus ring and the move icon — so showing the controls
+            themselves would only duplicate it. -->
               <fieldset data-cropper-edit class="sr-only">
                 <legend>
                   {{ t('Edit {type}', {type: t('Cropping Rectangle')}) }}
                 </legend>
 
                 <!-- Parsed onto the fabric canvas as the drag affordance, not
-              rendered in place. -->
+          rendered in place. -->
                 <div id="move-icon-wrapper" hidden>
                   <craft-icon name="up-down-left-right" />
                 </div>
@@ -515,40 +575,47 @@
               </fieldset>
             </div>
           </div>
-        </craft-tabs>
-      </div>
-
-      <div class="image-container">
-        <div
-          ref="editorEl"
-          class="image"
-          :style="{cursor: editor.cursor.value}"
-          @pointerdown="editor.onPointerDown"
-          @pointermove="editor.onPointerMove"
-          @pointerup="editor.onPointerUp"
-          @pointerleave="editor.onPointerLeave"
-        >
-          <canvas ref="imageCanvasEl" id="image-canvas"></canvas>
-          <canvas ref="croppingCanvasEl" id="cropping-canvas"></canvas>
-          <craft-spinner v-if="!editor.isReady.value" class="editor-spinner" />
         </div>
+        <div class="image-editor__image">
+          <div class="image-container">
+            <div
+              ref="editorEl"
+              class="image"
+              :style="{cursor: editor.cursor.value}"
+              @pointerdown="editor.onPointerDown"
+              @pointermove="editor.onPointerMove"
+              @pointerup="editor.onPointerUp"
+              @pointerleave="editor.onPointerLeave"
+            >
+              <canvas ref="imageCanvasEl" id="image-canvas"></canvas>
+              <canvas ref="croppingCanvasEl" id="cropping-canvas"></canvas>
+              <craft-spinner
+                v-if="!editor.isReady.value"
+                class="editor-spinner"
+              />
+            </div>
 
-        <div v-show="state.currentView.value === 'rotate'" class="image-tools">
-          <div class="straightening">
-            <craft-slide-rule
-              id="slide-rule"
-              :label="t('Rotate')"
-              :value="straightenValue"
-              @start="editor.showGrid"
-              @change="onStraightenChange"
-              @end="onStraightenEnd"
-            />
+            <div
+              v-show="state.currentView.value === 'rotate'"
+              class="image-tools"
+            >
+              <div class="straightening">
+                <craft-slide-rule
+                  id="slide-rule"
+                  :label="t('Rotate')"
+                  :value="straightenValue"
+                  @start="editor.showGrid"
+                  @change="onStraightenChange"
+                  @end="onStraightenEnd"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div slot="footer" class="image-editor__actions">
+    <div slot="footer" class="flex gap-2">
       <craft-button
         type="button"
         :loading="editor.savingAs.value === 'copy'"
@@ -578,15 +645,46 @@
   // The chain down to `.image` is load-bearing, not cosmetic: the editor
   // measures that element to decide how big to draw, so every ancestor needs a
   // definite height or it measures zero and draws nothing.
+  // The editor fills the body edge to edge — the image sits on its own dark
+  // surround, and padding would frame it in the dialog's colour instead. Header
+  // and footer keep theirs, so only this part is reached for.
+  craft-dialog::part(body) {
+    padding: 0;
+  }
+
   .image-editor {
-    display: grid;
+    flex: 1;
     // The fullscreen dialog's surface is a header/body/footer grid whose body
     // row takes the remaining height, so `100%` resolves against a real number
     // here — no viewport arithmetic needed.
     block-size: 100%;
     min-block-size: 0;
-    grid-template-columns: 260px 1fr;
     gap: var(--c-spacing-lg);
+    display: flex;
+  }
+
+  // Both tracks need stating. The sidebar holds `craft-field-group` and
+  // `craft-field`, which are block-level and so fill their parent rather than
+  // asking for a width of their own — left to `flex-basis: auto` it has nothing
+  // to size itself from and collapses.
+  .image-editor__sidebar {
+    padding: var(--c-spacing-lg);
+    flex: 0 0 clamp(260px, 25%, 320px);
+  }
+
+  // `display: none` rather than hiding it visually: the sidebar holds the
+  // cropper's keyboard controls, and leaving those tab-reachable while there is
+  // no cropper to drive would be worse than not showing them.
+  .image-editor:not(.image-editor--has-sidebar) .image-editor__sidebar {
+    display: none;
+  }
+
+  .image-editor__image {
+    display: flex;
+    flex: 1;
+    // A flex item won't shrink past its min-content without this, and the
+    // canvas side would push the sidebar out instead of giving way.
+    min-inline-size: 0;
   }
 
   .image-editor__actions {
@@ -603,7 +701,6 @@
     position: relative;
     overflow: hidden;
     min-inline-size: 0;
-    background-color: var(--c-color-black-fill-loud);
   }
 
   .image {
