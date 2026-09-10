@@ -54,7 +54,7 @@ export default css`
     gap: 5px;
     align-items: center;
     font-weight: bold;
-    margin-block-end: var(--c-spacing-xs, 0.25rem);
+    margin-block-end: var(--c-spacing-sm, 0.25rem);
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
@@ -67,6 +67,10 @@ export default css`
     flex-wrap: nowrap;
     gap: var(--c-spacing-2xs, 0.125rem);
     align-items: center;
+
+    /* Absolutely position so the label doesn't take up the height of the button */
+    position: absolute;
+    inset-inline-end: 0;
   }
 
   ::slotted([slot='label']) {
@@ -131,6 +135,11 @@ export default css`
 
   .input-group__container > .input-group__input ::slotted(.form-control) {
     flex: 1 1 auto;
+    /* A flex item's automatic minimum size is its content, so a control wider
+       than the column — a Matrix field's row of add buttons, say — would push
+       out of the field instead of shrinking. The input-group__input wrapper
+       needs the same escape hatch one level up. */
+    min-width: 0;
     margin: 0;
     font-size: 100%;
   }

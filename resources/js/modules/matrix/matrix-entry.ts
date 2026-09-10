@@ -6,11 +6,12 @@
  * move/duplicate/copy/paste/delete.
  */
 
-import {Base, getInputPostVal, hasAttr} from '@craftcms/garnish';
+import {Base, hasAttr} from '@craftcms/garnish';
 import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
 import {animationDuration, MatrixInput} from './matrix-input';
+import {blockPreviewParts} from './preview-text';
 import {containerMatrixEntries} from './support';
 import {
   type LegacyDisclosureMenu,
@@ -27,6 +28,21 @@ type JsonValue =
   | null
   | JsonValue[]
   | {[key: string]: JsonValue};
+
+/**
+ * A part of a block, whether it sits directly under `.matrixblock` or inside the
+ * `craft-card` frame both Matrix renderers now wrap their blocks in. Scoped to
+ * that one level either way, so a nested Matrix inside the block keeps its own
+ * titlebar, fields and inputs to itself.
+ */
+function blockPart<T extends Element = HTMLElement>(
+  container: HTMLElement,
+  selector: string
+): T | null {
+  return container.querySelector<T>(
+    `:scope > ${selector}, :scope > craft-card > ${selector}`
+  );
+}
 
 export class MatrixEntry extends Base {
   /** The entry controller for a `.matrixblock` container, if one was booted. */
@@ -55,10 +71,9 @@ export class MatrixEntry extends Base {
 
     this.matrix = matrix;
     this.container = container;
-    this.titlebar = container.querySelector(':scope > .titlebar');
-    this.previewContainer =
-      this.titlebar?.querySelector(':scope > .preview') ?? null;
-    this.fieldsContainer = container.querySelector(':scope > .fields');
+    this.titlebar = blockPart(container, '.titlebar');
+    this.previewContainer = this.titlebar?.querySelector('.preview') ?? null;
+    this.fieldsContainer = blockPart(container, '.fields');
     const formHost =
       this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
         'craft-entry-field-layout-form'
@@ -93,8 +108,9 @@ export class MatrixEntry extends Base {
     this.id = container.dataset.id ?? null;
     this.isNew = !this.id || this.id.startsWith('new');
 
-    const actionMenuBtn = this.container.querySelector<HTMLElement>(
-      ':scope > .actions > .action-btn'
+    const actionMenuBtn = blockPart<HTMLElement>(
+      this.container,
+      '.actions > .action-btn'
     );
     if (actionMenuBtn) {
       this.actionDisclosure =
@@ -315,18 +331,9 @@ export class MatrixEntry extends Base {
     // Remember that?
     if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.rememberCollapsedEntryId(this.id!);
-    } else if (!this.matrix.settings!.formControl) {
-      if (!this.collapsedInput) {
-        this.collapsedInput = document.createElement('input');
-        this.collapsedInput.type = 'hidden';
-        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
-        this.collapsedInput.value = '1';
-        this.container.append(this.collapsedInput);
-      } else {
-        this.collapsedInput.value = '1';
-      }
     }
 
+    this.setCollapsedInput('1');
     this.collapsed = true;
   }
 
@@ -335,100 +342,13 @@ export class MatrixEntry extends Base {
       return escapeHtml(this.uiLabel);
     }
 
-    let previewHtml = '';
-    const fields = Array.from(
-      this.fieldsContainer?.querySelectorAll<HTMLElement>(':scope > * > *') ??
-        []
-    );
-
-    for (const field of fields) {
-      const inputs = Array.from(
-        field.querySelectorAll<HTMLElement>(
-          ':scope > .input select, :scope > .input input:not([type="hidden"]), :scope > .input textarea, :scope > .input .label'
-        )
-      );
-      let inputPreviewText = '';
-
-      for (const input of inputs) {
-        let value: unknown;
-
-        if (input.classList.contains('label')) {
-          const lightswitch = input.closest('.lightswitch');
-          if (
-            lightswitch &&
-            ((lightswitch.classList.contains('on') &&
-              input.classList.contains('off')) ||
-              (!lightswitch.classList.contains('on') &&
-                input.classList.contains('on')))
-          ) {
-            continue;
-          }
-
-          if (input.closest('button[aria-pressed=false]')) {
-            continue;
-          }
-
-          value = input.textContent;
-        } else {
-          const previewText = this.inputPreviewText(input);
-          value = Array.isArray(previewText)
-            ? previewText.map((text) => craft().getText(text))
-            : previewText
-              ? craft().getText(previewText)
-              : null;
-        }
-
-        if (Array.isArray(value)) {
-          value = value.join(', ');
-        }
-
-        if (value) {
-          const escaped = escapeHtml(String(value)).trim();
-          if (escaped) {
-            if (inputPreviewText) {
-              inputPreviewText += ', ';
-            }
-            inputPreviewText += escaped;
-          }
-        }
-      }
-
-      if (inputPreviewText) {
-        previewHtml +=
-          (previewHtml ? ' <span>|</span> ' : '') + inputPreviewText;
-      }
+    if (!this.fieldsContainer) {
+      return '';
     }
 
-    return previewHtml;
-  }
-
-  private inputPreviewText(input: HTMLElement): string | string[] | null {
-    if (input instanceof HTMLSelectElement) {
-      return Array.from(input.selectedOptions).map((option) => option.text);
-    }
-
-    if (
-      input instanceof HTMLInputElement &&
-      (input.type === 'checkbox' || input.type === 'radio') &&
-      input.checked
-    ) {
-      const label = input.id
-        ? document.querySelector(`label[for="${input.id}"]`)
-        : null;
-      if (label) {
-        return label.textContent;
-      }
-    }
-
-    if (!(input instanceof HTMLInputElement)) {
-      return null;
-    }
-    const value = getInputPostVal(input);
-    return Array.isArray(value)
-      ? value.map(String)
-      : value == null
-        ? null
-        : String(value);
+    return blockPreviewParts(this.fieldsContainer)
+      .map((part) => escapeHtml(part))
+      .join(' <span>|</span> ');
   }
 
   expand(): void {
@@ -474,16 +394,45 @@ export class MatrixEntry extends Base {
     // Remember that?
     if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.forgetCollapsedEntryId(this.id!);
-    } else if (!this.matrix.settings!.formControl && this.collapsedInput) {
-      this.collapsedInput.value = '';
     }
 
+    this.setCollapsedInput('');
     this.collapsed = false;
   }
 
+  /**
+   * Posts the collapsed state, so a block folded up before saving comes back
+   * folded up.
+   *
+   * The Form Control renderers write the input themselves, so this only updates
+   * what it finds. The legacy Twig stack writes one for a saved block but not for
+   * a new one — whose id isn't stable enough to remember in storage — so that one
+   * is created on demand, the way Craft 5 did it.
+   */
+  private setCollapsedInput(value: string): void {
+    this.collapsedInput ??= blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[collapsed]"]'
+    );
+
+    if (!this.collapsedInput) {
+      if (!this.matrix.settings!.formControl) {
+        this.collapsedInput = document.createElement('input');
+        this.collapsedInput.type = 'hidden';
+        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
+        this.container.append(this.collapsedInput);
+      } else {
+        return;
+      }
+    }
+
+    this.collapsedInput.value = value;
+  }
+
   override disable(): void {
-    const enabledInput = this.container.querySelector<HTMLInputElement>(
-      ':scope > input[name$="[enabled]"]'
+    const enabledInput = blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[enabled]"]'
     );
     if (enabledInput) {
       enabledInput.value = '';
@@ -493,8 +442,9 @@ export class MatrixEntry extends Base {
   }
 
   override enable(): void {
-    const enabledInput = this.container.querySelector<HTMLInputElement>(
-      ':scope > input[name$="[enabled]"]'
+    const enabledInput = blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[enabled]"]'
     );
     if (enabledInput) {
       enabledInput.value = '1';

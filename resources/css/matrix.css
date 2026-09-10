@@ -1,0 +1,79 @@
+/**
+ * Matrix block chrome shared by both stacks.
+ *
+ * The blocks themselves come from two renderers — `MatrixControl.vue` and
+ * `Form\Controls\Matrix::renderHtml()` — that emit the same `craft-card`
+ * frame, so their styling lives here rather than scoped to the Vue component.
+ */
+
+/* A disabled block reads as a problem to fix rather than a neutral off state,
+   so its dot is red. Set through the status component's own custom properties —
+   they inherit into its shadow DOM — rather than repainting the shared
+   `--c-status-disabled-*` tokens, which every other disabled thing uses. */
+.matrixblock.disabled-entry craft-status {
+  --c-status-disabled-fill: var(--c-status-expired-fill);
+  --c-status-disabled-border: var(--c-status-expired-border);
+}
+
+/* The UI label a folded-up block shows in place of its fields, set off from the
+   entry type name by a hairline. */
+.matrixblock .preview {
+  position: relative;
+  padding-inline-start: var(--c-spacing-sm);
+  margin-inline-start: var(--c-spacing-sm);
+
+  &::before {
+    content: '';
+    height: 60%;
+    inset-block-start: 15%;
+    border-inline-start: 1px solid color-mix(transparent, currentcolor);
+    position: absolute;
+    inset-inline-start: 0;
+  }
+}
+
+/**
+ * A block that has just appeared gets one pass of a highlight, so it's obvious
+ * which one is new when it lands among others — and which one the page just
+ * scrolled to.
+ *
+ * Painted by an overlay rather than the block's own background: the card paints
+ * that inside its own shadow root, where this can't reach. At rest the overlay
+ * is invisible, so the class is harmless if it outlives the animation.
+ */
+.matrixblock {
+  position: relative;
+}
+
+.matrixblock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--c-card-radius, var(--c-radius-md));
+  pointer-events: none;
+  opacity: 0;
+}
+
+.matrixblock.is-new::after {
+  animation: matrix-block-added 1200ms ease-out;
+}
+
+@keyframes matrix-block-added {
+  from {
+    opacity: 1;
+
+    /* The entry type's own colour, by way of `data-color` on the block. */
+    background-color: color-mix(
+      var(--c-color-fill-loud, var(--c-color-accent-fill-loud)),
+      transparent 85%
+    );
+    box-shadow: 0 0 0 2px
+      var(--c-color-border-loud, var(--c-color-accent-border-loud));
+  }
+
+  to {
+    opacity: 0;
+    background-color: transparent;
+    box-shadow: 0 0 0 2px transparent;
+  }
+}

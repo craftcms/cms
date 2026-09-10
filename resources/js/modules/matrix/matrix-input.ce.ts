@@ -2,6 +2,7 @@ import {MatrixInput, type MatrixEntryType} from './matrix-input';
 import {MatrixEntry} from './matrix-entry';
 import {ControllerElement} from '@/common/web-components';
 import {t} from '@craftcms/ui';
+import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/forms/types';
 
 /**
  * `<craft-matrix-input>` — boots a {@link MatrixInput} around the
@@ -24,6 +25,11 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    // `craft-field` only stretches a slotted control carrying this class
+    // (`::slotted(.form-control)`); without it the field sizes to its own
+    // content, so a nested Matrix ends up narrower than the field it sits in.
+    // Applied here rather than in each renderer so both stacks get it.
+    this.classList.add('form-control');
     this.listener?.abort();
     this.listener = new AbortController();
     const {signal} = this.listener;
@@ -125,7 +131,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     type: string,
     entryTypes: MatrixEntryType[]
   ): HTMLElement {
-    const uid = `uid:${crypto.randomUUID()}`;
+    const uid = `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`;
     const name = this.getAttribute('input-name-prefix')!;
     const label =
       entryTypes.find((entryType) => entryType.handle === type)?.name ?? type;
@@ -137,6 +143,11 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     entry.append(
       this.hiddenInput(`${name}[sortOrder][]`, uid),
       this.hiddenInput(`${name}[entries][${uid}][type]`, type),
+      this.hiddenInput(`${name}[entries][${uid}][enabled]`, '1'),
+      this.hiddenInput(`${name}[entries][${uid}][collapsed]`, ''),
+      // A block the browser just minted has nothing behind it yet, so the save
+      // has to propagate it to every site rather than treat it as an edit.
+      this.hiddenInput(`${name}[entries][${uid}][fresh]`, '1'),
       this.titlebar(label),
       this.actions(label),
       this.fields()

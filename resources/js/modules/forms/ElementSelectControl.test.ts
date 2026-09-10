@@ -140,6 +140,28 @@ describe('ElementSelectControl', () => {
     ];
   }
 
+  it('renders empty when it is handed its empty value', async () => {
+    // A relation nested in a Matrix block resolves its path to undefined for a
+    // beat after the server mints that block. `controlValueAt()` stands the
+    // Control's own empty value in at the render boundary, so what arrives here
+    // is an empty list rather than nothing — see `Control::emptyValue()`.
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: control(),
+          value: [],
+          editable: true,
+        } as never),
+    });
+
+    expect(() => app!.mount(container!)).not.toThrow();
+    await nextTick();
+
+    expect(container.querySelectorAll('craft-chip')).toHaveLength(0);
+  });
+
   it('renders scalar values with a scalar input name', async () => {
     const root = await mount({props: {single: true, limit: 1}, value: 5});
 

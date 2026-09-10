@@ -28,6 +28,20 @@ interface Control
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string;
 
     /**
+     * Returns what the control should read when its value is missing.
+     *
+     * A control renders as soon as the payload describing it does, and inside a
+     * nested form that can be a beat ahead of the values filling it — a Matrix
+     * block the server has just minted, say. A control whose value is a shape
+     * would otherwise reach into nothing and throw, which takes the whole field
+     * down; the renderer stands this in for that beat instead.
+     *
+     * Null for a control whose value is a scalar: those coerce on their own, and
+     * null keeps it out of the payload.
+     */
+    public function emptyValue(): mixed;
+
+    /**
      * Returns the Vue component registry name used to render this control.
      *
      * The component must be registered before the form is mounted and accept

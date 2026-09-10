@@ -24,7 +24,14 @@ import {
 } from '@craftcms/garnish';
 import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
+import {flashNewBlock} from './new-block';
 import {containerMatrixInputs} from './support';
+import {
+  collapsedBlockIds,
+  forgetCollapsedBlock,
+  rememberCollapsedBlock,
+  setCollapsedBlockIds,
+} from './collapsed-blocks';
 import type {FormValues} from '@/modules/forms/types';
 import {
   type CopiedElementInfo,
@@ -85,41 +92,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
   entryFactory: ((type: string) => HTMLElement) | null = null;
 
-  static get collapsedEntryStorageKey(): string {
-    return `Craft-${craft().systemUid}.MatrixInput.collapsedEntries`;
-  }
+  // The legacy statics PHP-emitted flash JS still calls. The storage itself
+  // lives in ./collapsed-blocks, shared with the Form control.
+  static getCollapsedEntryIds = collapsedBlockIds;
 
-  static getCollapsedEntryIds(): string[] {
-    const value = localStorage.getItem(MatrixInput.collapsedEntryStorageKey);
-    return value ? craft().filterArray(value.split(',')) : [];
-  }
+  static setCollapsedEntryIds = setCollapsedBlockIds;
 
-  static setCollapsedEntryIds(ids: Array<string | number>): void {
-    localStorage[MatrixInput.collapsedEntryStorageKey] = ids.join(',');
-  }
+  static rememberCollapsedEntryId = rememberCollapsedBlock;
 
-  static rememberCollapsedEntryId(id: string | number): void {
-    if (!('Storage' in globalThis)) {
-      return;
-    }
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
-    if (!collapsedEntries.includes(`${id}`)) {
-      collapsedEntries.push(`${id}`);
-      MatrixInput.setCollapsedEntryIds(collapsedEntries);
-    }
-  }
-
-  static forgetCollapsedEntryId(id: string | number): void {
-    if (!('Storage' in globalThis)) {
-      return;
-    }
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
-    const index = collapsedEntries.indexOf(`${id}`);
-    if (index !== -1) {
-      collapsedEntries.splice(index, 1);
-      MatrixInput.setCollapsedEntryIds(collapsedEntries);
-    }
-  }
+  static forgetCollapsedEntryId = forgetCollapsedBlock;
 
   id: string;
   entryTypes: MatrixEntryType[];
@@ -196,7 +177,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       : MatrixInput.getCollapsedEntryIds();
 
     // only initialise drag-sort if the device has mouse events
-    if (this.settings!.formControl || craft().hasMousePointerEvents()) {
+    // In form-control mode the Vue control owns drag-sort through
+    // `useReorderableItems`, over blocks it renders and re-renders. A second
+    // engine mutating the same nodes just fights it.
+    if (!this.settings!.formControl && craft().hasMousePointerEvents()) {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
@@ -251,10 +235,12 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       );
     }
 
-    for (const container of entries) {
-      const entry = new MatrixEntry(this, container);
-      if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
-        entry.collapse();
+    if (!this.settings!.formControl) {
+      for (const container of entries) {
+        const entry = new MatrixEntry(this, container);
+        if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
+          entry.collapse();
+        }
       }
     }
 
@@ -368,6 +354,21 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
   }
 
+  /**
+   * Puts a new entry in place and gives it a brief highlight, so it's obvious
+   * which block just appeared. The Vue control does the same through its own
+   * state, since it owns its blocks' classes.
+   */
+  private placeEntry(entry: HTMLElement, before?: HTMLElement | null): void {
+    if (before?.isConnected) {
+      before.before(entry);
+    } else {
+      this.entriesContainer?.append(entry);
+    }
+
+    flashNewBlock(entry);
+  }
+
   /** The field's current top-level `.matrixblock` elements. */
   entryElements(): HTMLElement[] {
     return Array.from(
@@ -475,11 +476,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       const newEntries = parseBlockHtml(data.blockHtml);
 
       for (const entry of newEntries) {
-        if (before) {
-          before.before(entry);
-        } else {
-          this.entriesContainer?.append(entry);
-        }
+        this.placeEntry(entry, before);
       }
 
       await craft().appendHeadHtml(data.headHtml);
@@ -578,11 +575,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     if (this.entryFactory) {
       const entry = this.entryFactory(type);
 
-      if (insertBefore?.isConnected) {
-        insertBefore.before(entry);
-      } else {
-        this.entriesContainer?.append(entry);
-      }
+      this.placeEntry(entry, insertBefore);
 
       new MatrixEntry(this, entry);
       this.entrySort?.addItems(entry);
@@ -647,11 +640,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         // Pause the element editor
         await this.elementEditor?.pause();
 
-        if (insertBefore?.isConnected) {
-          insertBefore.before(entry);
-        } else {
-          this.entriesContainer?.append(entry);
-        }
+        this.placeEntry(entry, insertBefore);
 
         this.trigger('entryAdded', {$entry: entry});
 

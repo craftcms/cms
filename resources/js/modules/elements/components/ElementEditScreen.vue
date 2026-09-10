@@ -6,7 +6,8 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -99,6 +100,10 @@
     ...headerButtons.value,
   ]);
 
+  /** Measured here because this component owns the body; see ElementDetailsTabs. */
+  const editorBody = ref<HTMLElement | null>(null);
+  const {width: bodyWidth} = useElementSize(editorBody);
+
   const hasDetails = computed(
     () =>
       Boolean(sidebarPayload.value) ||
@@ -136,7 +141,7 @@
         tab in the details column is that list now. -->
 
         <form method="post" @submit.prevent="save()">
-          <div class="sticky top-0 z-1000 pb-2">
+          <div class="sticky top-0 z-10 pb-2">
             <header
               class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
             >
@@ -258,6 +263,7 @@
           </div>
 
           <div
+            ref="editorBody"
             class="element-editor__body"
             :class="{'element-editor__body--details': hasDetails}"
           >
@@ -287,6 +293,7 @@
               <ElementDetailsTabs
                 :payload="payload"
                 :activity-timeline-version="activityTimelineVersion"
+                :available-width="bodyWidth"
                 pane
               >
                 <template #info>

@@ -33,6 +33,12 @@ class ElementHelper
     private const int URI_MAX_LENGTH = 255;
 
     /**
+     * The prefix the browser puts on nested element identities it minted itself, so the
+     * server can tell a client-side UUID from a persisted element ID.
+     */
+    public const string NESTED_ELEMENT_UID_PREFIX = 'uid:';
+
+    /**
      * Generates a new temporary slug.
      */
     public static function tempSlug(): string
@@ -494,6 +500,70 @@ class ElementHelper
             ) ?? $element->uid ?? (string) $element->id,
             $elements,
         );
+    }
+
+    /**
+     * Normalizes the delta envelope that a nested element field was posted with.
+     *
+     * Both halves of the envelope may or may not carry the `uid:` prefix, depending on
+     * which stack rendered the inputs: `block.twig` writes prefixed `entries` keys but
+     * bare `sortOrder` values, while the Form controls prefix both. The prefix only ever
+     * meant "this identity is a UUID, not an element ID", so it's stripped here and
+     * callers get one shape to work with.
+     *
+     * @param  array<array-key, mixed>  $value  The raw posted field value
+     * @return array{delta: bool, uids: bool, entries: array<array-key, mixed>, sortOrder: list<string>|null}
+     *
+     * @see nestedElementIdentities() for the identities these are posted back with
+     */
+    public static function nestedElementDelta(array $value): array
+    {
+        if (! isset($value['entries']) && ! isset($value['blocks']) && ! isset($value['sortOrder'])) {
+            // Pre-delta format: the whole value is the entry data, keyed by identity
+            return ['delta' => false, 'uids' => false, 'entries' => $value, 'sortOrder' => null];
+        }
+
+        $entries = $value['entries'] ?? $value['blocks'] ?? [];
+        $entries = is_array($entries) ? $entries : [];
+        $sortOrder = isset($value['sortOrder']) && is_array($value['sortOrder'])
+            ? array_values($value['sortOrder'])
+            : null;
+        $uids = (
+            self::isNestedElementUid(array_key_first($entries)) ||
+            self::isNestedElementUid($sortOrder[0] ?? null)
+        );
+
+        if ($uids) {
+            $entries = array_combine(
+                array_map(self::nestedElementIdentity(...), array_keys($entries)),
+                array_values($entries),
+            );
+            $sortOrder = $sortOrder === null
+                ? null
+                : array_map(self::nestedElementIdentity(...), $sortOrder);
+        }
+
+        return ['delta' => true, 'uids' => $uids, 'entries' => $entries, 'sortOrder' => $sortOrder];
+    }
+
+    /**
+     * Returns whether a posted nested element identity is a UUID rather than an element ID.
+     */
+    private static function isNestedElementUid(mixed $identity): bool
+    {
+        if (! is_string($identity)) {
+            return false;
+        }
+
+        return str_starts_with($identity, self::NESTED_ELEMENT_UID_PREFIX) || Str::isUuid($identity);
+    }
+
+    /**
+     * Strips the `uid:` prefix the browser puts on nested element identities it minted itself.
+     */
+    private static function nestedElementIdentity(mixed $identity): string
+    {
+        return Str::chopStart((string) $identity, self::NESTED_ELEMENT_UID_PREFIX);
     }
 
     /**

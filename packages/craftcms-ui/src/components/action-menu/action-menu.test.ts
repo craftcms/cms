@@ -530,3 +530,47 @@ describe('groups', () => {
     expect(visibleLabels(element)).toEqual([]);
   });
 });
+
+describe('data-driven item props', () => {
+  it('renders the rest of the menu when an item carries an unsettable key', async () => {
+    // Server-built descriptors carry an `attributes` key, which is read-only on
+    // Element. Assigning it used to throw mid-render and leave the menu blank.
+    const menu = await createFromMarkup(
+      '<craft-action-menu><button slot="invoker" type="button">Open</button></craft-action-menu>'
+    );
+    menu.actions = [
+      {label: 'First', attributes: {'data-x': '1'}},
+      {type: 'hr'},
+      {label: 'Second'},
+    ] as unknown as ActionMenuItem[];
+    await menu.updateComplete;
+
+    const labels = [...menu.querySelectorAll('craft-action-item')].map((item) =>
+      item.textContent?.trim()
+    );
+
+    expect(labels).toEqual(['First', 'Second']);
+  });
+
+  it('carries target and rel onto a link item’s anchor', async () => {
+    const menu = await createFromMarkup(
+      '<craft-action-menu><button slot="invoker" type="button">Open</button></craft-action-menu>'
+    );
+    menu.actions = [
+      {
+        type: 'link',
+        label: 'Open in a new tab',
+        href: '/admin',
+        target: '_blank',
+      },
+    ] as unknown as ActionMenuItem[];
+    await menu.updateComplete;
+
+    const item = menu.querySelector('craft-action-item') as CraftActionItem;
+    await item.updateComplete;
+    const anchor = item.shadowRoot!.querySelector('a')!;
+
+    expect(anchor.getAttribute('target')).toBe('_blank');
+    expect(anchor.getAttribute('rel')).toBe('noopener');
+  });
+});

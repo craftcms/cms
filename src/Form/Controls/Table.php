@@ -118,6 +118,13 @@ class Table extends Control
         return $this;
     }
 
+    /** @return list<mixed> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {

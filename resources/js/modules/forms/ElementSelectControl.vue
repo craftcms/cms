@@ -96,7 +96,7 @@
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
-    value: Array<number | string> | number | string | null;
+    value: Array<number | string> | number | string | null | undefined;
     editable: boolean;
   }>();
   const emit = defineEmits<{
@@ -129,7 +129,10 @@
   const ids = computed(() =>
     (Array.isArray(props.value)
       ? props.value
-      : props.value === null || props.value === ''
+      : // Loose on purpose: absent means the same as empty here — a relation
+        // nested in a block the server has just minted resolves its path to
+        // undefined for a beat.
+        props.value == null || props.value === ''
         ? []
         : [props.value]
     ).map(elementId)

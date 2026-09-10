@@ -3283,19 +3283,24 @@ describe('FormRenderer', () => {
       },
     });
 
-    while (
-      container.querySelector<HTMLElement>(
-        '.matrixblock craft-button[data-form-matrix-remove]'
-      )
-    ) {
-      required(
-        container.querySelector<HTMLElement>(
-          '.matrixblock craft-button[data-form-matrix-remove]'
-        ),
-        'Expected a Matrix remove button while entries remain.'
-      ).click();
+    // Delete lives in the block's "⋮" menu, which dispatches on window and is
+    // scoped by the invoking element.
+    for (let guard = 0; guard < 10; guard++) {
+      const block = container.querySelector<HTMLElement>('.matrixblock');
+
+      if (!block) {
+        break;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {action: 'delete', uid: block.dataset.id, trigger: block},
+        })
+      );
       await nextTick();
     }
+
+    expect(container.querySelector('.matrixblock')).toBeNull();
 
     expect(mutation).toEqual({
       settings: {matrix: {entries: {}, sortOrder: []}},
@@ -3606,6 +3611,50 @@ describe('FormRenderer', () => {
       expect(Array.from(new FormData(form))).toEqual([]);
     }
   );
+
+  /**
+   * The guarantee that replaced every control guarding itself: a control whose
+   * path isn't in the values tree is handed the empty value its Control
+   * declared, so it renders empty instead of reaching into nothing.
+   *
+   * A throw during render is what "Failed to render Form Control" is — the
+   * renderer swaps the control for the error and the field is gone until the
+   * page is reloaded.
+   */
+  it('hands a control its empty value when the values have no path for it', async () => {
+    const missing = clonePayload();
+    missing.values = {};
+    missing.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'When', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\DateTime',
+          component: 'craft:date-time',
+          props: {
+            showDate: true,
+            showTime: true,
+            showTimeZone: true,
+            locale: 'en-US',
+            minuteIncrement: 15,
+          },
+          path: ['settings', 'when'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'when'],
+          // What `Control::emptyValue()` ships for a control whose value is a
+          // shape. Every part of a date is dereferenced on the way to the input.
+          emptyValue: {},
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(missing);
+
+    expect(container.textContent).not.toContain('Failed to render');
+    expect(container.querySelector('craft-input-date-time')).not.toBeNull();
+  });
 
   async function mount(
     formPayload: FormPayload,
