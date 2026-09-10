@@ -22,22 +22,32 @@
       max?: string;
       minuteIncrement: number;
     }>;
-    value: DateTimeValue;
+    /**
+     * Undefined for a beat whenever this control's path isn't in the values
+     * tree yet — inside a block the server has just minted, say, whose values
+     * reach the tree one emit behind the form that describes them. Read
+     * {@link model} rather than this: every part of a date is dereferenced on
+     * the way to the input, so an absent value would throw and take the whole
+     * form down with it.
+     */
+    value: DateTimeValue | undefined;
     editable: boolean;
     required: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: DateTimeValue, kind: 'discrete'): void;
   }>();
+  const EMPTY: DateTimeValue = {};
+  const model = computed<DateTimeValue>(() => props.value ?? EMPTY);
   const hasValue = computed(
     () =>
-      (props.control.props.showDate && Boolean(props.value.date)) ||
-      (props.control.props.showTime && Boolean(props.value.time)) ||
-      (props.control.props.showTimeZone && Boolean(props.value.timezone))
+      (props.control.props.showDate && Boolean(model.value.date)) ||
+      (props.control.props.showTime && Boolean(model.value.time)) ||
+      (props.control.props.showTimeZone && Boolean(model.value.timezone))
   );
 
   function clear(): void {
-    const value = {...props.value};
+    const value = {...model.value};
 
     if (props.control.props.showDate) value.date = '';
     if (props.control.props.showTime) value.time = '';
@@ -61,7 +71,7 @@
     emit(
       'update:value',
       {
-        ...props.value,
+        ...model.value,
         [part]: String(input.modelValue ?? ''),
       },
       'discrete'
@@ -73,9 +83,9 @@
   <craft-input-date-time
     :name="editable ? inputName(control.path) : undefined"
     :locale="control.props.locale"
-    :timezone="value.timezone"
-    .dateValue="value.date ?? ''"
-    .timeValue="value.time ?? ''"
+    :timezone="model.timezone"
+    .dateValue="model.date ?? ''"
+    .timeValue="model.time ?? ''"
     .showDate="control.props.showDate"
     .showTime="control.props.showTime"
     .showTimezone="control.props.showTimeZone"
