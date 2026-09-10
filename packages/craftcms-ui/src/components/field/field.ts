@@ -8,6 +8,7 @@ import '../callout/callout.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
+import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 
 type FormControlTarget = HTMLElement & {
@@ -97,6 +98,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
    * shrinks without one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
+
+  private readonly __hasSlot = new HasSlotController(
+    this,
+    'heading-prefix',
+    'label-extra',
+    'actions',
+    'heading-suffix',
+    'tip',
+    'warning'
+  );
 
   private __lightDomObserver = new MutationObserver(() =>
     this.__onLightDomChanged()
@@ -306,19 +317,33 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   /**
    * The field heading: label, read-only badge, flex-grow spacer, label extras
-   * and actions, mirroring `.field > .heading` in the Blade wrapper.
+   * and actions, mirroring `.field > .heading` in the Blade wrapper. Skipped
+   * entirely when there's nothing to put in it.
    */
   protected override _labelTemplate() {
-    const hasActions = this.__hasLightChild('actions');
+    const hasLabel = this.__hasLabel;
+    const hasLabelExtra = this.__hasSlot.test('label-extra');
+    const hasActions = this.__hasSlot.test('actions');
+    const hasOtherContent =
+      hasLabelExtra ||
+      hasActions ||
+      this.readOnly ||
+      this.__hasSlot.test('heading-prefix') ||
+      this.__hasSlot.test('heading-suffix');
+
+    if (!hasLabel && !hasOtherContent) {
+      // Lion types this override as returning a TemplateResult.
+      return html``;
+    }
 
     return html`
       <div class="form-field__label">
         <slot name="heading-prefix"></slot>
-        <slot name="label"></slot>
+        ${hasLabel ? html`<slot name="label"></slot>` : nothing}
         ${this.readOnly
           ? html`<span class="read-only-badge">${t('Read Only')}</span>`
           : nothing}
-        ${this.__hasLightChild('label-extra') || hasActions
+        ${hasLabelExtra || hasActions
           ? html`<div class="flex-grow"></div>`
           : nothing}
         <slot name="label-extra"></slot>
@@ -337,6 +362,11 @@ export default class CraftField extends FormControlMixin(LitElement) {
         <slot name="heading-suffix"></slot>
       </div>
     `;
+  }
+
+  /** The instructions, skipped entirely when there are none. */
+  protected override _helpTextTemplate() {
+    return this.__hasHelpText ? super._helpTextTemplate() : html``;
   }
 
   /**
@@ -385,7 +415,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
    * for warnings, each with a visually hidden prefix.
    */
   protected _noticeTemplate(kind: 'tip' | 'warning') {
-    if (!this.__hasLightChild(kind)) {
+    if (!this.__hasSlot.test(kind)) {
       return nothing;
     }
 
@@ -406,8 +436,19 @@ export default class CraftField extends FormControlMixin(LitElement) {
     `;
   }
 
-  private __hasLightChild(slotName: string): boolean {
-    return this.__lightChild(slotName) !== undefined;
+  /**
+   * Whether there's a label to show. Lion's `SlotMixin` always generates a
+   * light-DOM label node (empty when there's no `label`), so the node's
+   * presence says nothing — its text does. `label` reads that text back when
+   * a consumer slots their own label instead of setting the attribute.
+   */
+  private get __hasLabel(): boolean {
+    return this.label.trim() !== '';
+  }
+
+  /** Whether there are instructions to show. See `__hasLabel`. */
+  private get __hasHelpText(): boolean {
+    return this.helpText.trim() !== '';
   }
 
   private __lightChild(slotName: string): HTMLElement | undefined {
@@ -423,8 +464,8 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
-    // Conditional templates (tip/warning callouts, heading spacer, action
-    // group) depend on light DOM children.
+    // Conditional templates (label, instructions, tip/warning callouts,
+    // heading spacer, action group) depend on light DOM children.
     this.requestUpdate();
   }
 

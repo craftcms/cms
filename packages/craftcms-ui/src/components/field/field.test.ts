@@ -471,6 +471,93 @@ describe('craft-field instructions position', () => {
   });
 });
 
+describe('craft-field empty label and instructions', () => {
+  function heading(element: CraftField): Element | null {
+    return element.shadowRoot!.querySelector('.form-field__label');
+  }
+
+  function helpText(element: CraftField): Element | null {
+    return element.shadowRoot!.querySelector('.form-field__help-text');
+  }
+
+  it('renders no heading without a label', async () => {
+    const element = await createField();
+    expect(heading(element)).toBeNull();
+  });
+
+  it('renders no instructions without help text', async () => {
+    const element = await createField({label: 'My field'});
+    expect(helpText(element)).toBeNull();
+  });
+
+  it('renders a slotted label and instructions', async () => {
+    const element = await createField(
+      {},
+      '<label slot="label">Custom label</label><div slot="help-text">Custom instructions</div><input slot="input" type="text">'
+    );
+
+    expect(
+      heading(element)!.querySelector('slot[name="label"]')
+    ).not.toBeNull();
+    expect(helpText(element)).not.toBeNull();
+  });
+
+  it('renders the heading and instructions once they are set', async () => {
+    const element = await createField();
+
+    element.label = 'My field';
+    element.helpText = 'Some instructions';
+    await element.updateComplete;
+
+    expect(heading(element)).not.toBeNull();
+    expect(helpText(element)).not.toBeNull();
+  });
+
+  it('drops the heading and instructions once they are cleared', async () => {
+    const element = await createField({
+      label: 'My field',
+      'help-text': 'Some instructions',
+    });
+
+    element.label = '';
+    element.helpText = '';
+    await element.updateComplete;
+
+    expect(heading(element)).toBeNull();
+    expect(helpText(element)).toBeNull();
+  });
+
+  it('keeps the heading for other heading content without a label', async () => {
+    const element = await createField(
+      {},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    expect(heading(element)).not.toBeNull();
+    expect(heading(element)!.querySelector('slot[name="label"]')).toBeNull();
+    expect(
+      heading(element)!.querySelector('slot[name="actions"]')
+    ).not.toBeNull();
+  });
+
+  it('keeps the heading for the read-only badge without a label', async () => {
+    const element = await createField({readonly: ''});
+    expect(heading(element)!.querySelector('.read-only-badge')).not.toBeNull();
+  });
+
+  it('renders the heading once heading content is slotted later', async () => {
+    const element = await createField();
+
+    const action = document.createElement('button');
+    action.slot = 'actions';
+    element.append(action);
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(heading(element)).not.toBeNull();
+  });
+});
+
 describe('craft-field heading prefix/suffix', () => {
   it('renders heading-prefix and heading-suffix slots around the label', async () => {
     const element = document.createElement('craft-field') as CraftField;
