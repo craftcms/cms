@@ -58,6 +58,9 @@ function releasePageScroll(): void {
  * @slot footer - Footer content, typically buttons.
  * @csspart dialog - The native `<dialog>` element.
  * @csspart surface - The visible panel inside it.
+ *
+ * @cssproperty --c-dialog-block-size - The surface's height. Defaults to
+ *   `auto`, and to `100dvh` under `fullscreen`.
  * @csspart header - The header row.
  * @csspart title - The heading.
  * @csspart close - The header close button.

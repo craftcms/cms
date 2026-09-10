@@ -91,8 +91,25 @@ export const NonModal: Story = {
   },
 };
 
+/**
+ * Fills the viewport, so the body row can hand a definite height down to
+ * whatever it slots — a canvas, say, that measures its container to decide how
+ * big to draw.
+ */
 export const Fullscreen: Story = {
-  args: {fullscreen: true},
+  args: {fullscreen: true, open: true},
+  async play({canvasElement}) {
+    const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
+    await dialog.updateComplete;
+
+    const surface = dialog.shadowRoot!.querySelector('.surface')!;
+    const {width, height} = surface.getBoundingClientRect();
+
+    // The height is the half worth pinning: the surface used to carry only a
+    // `max-block-size`, which left it full-width but as short as its content.
+    await expect(Math.round(width)).toBe(window.innerWidth);
+    await expect(Math.round(height)).toBe(window.innerHeight);
+  },
 };
 
 /** Long content scrolls inside the body rather than growing the surface. */
