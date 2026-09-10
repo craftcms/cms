@@ -37,6 +37,7 @@ readonly class ConditionBuilder
         }
 
         $types = [];
+        $seenLabelsByGroup = [];
         foreach ($condition->getSelectableConditionRules() as $value => $rule) {
             try {
                 $label = $rule->getLabel();
@@ -44,12 +45,23 @@ readonly class ConditionBuilder
                 continue;
             }
 
+            $hint = $rule->getLabelHint();
+            $group = $rule->getGroupLabel();
+            $groupKey = $group ?? '';
+            $key = $label.($hint !== null ? " - $hint" : '');
+
+            // Skip rule types that are indistinguishable from one another within the same group.
+            if (isset($seenLabelsByGroup[$groupKey][$key])) {
+                continue;
+            }
+            $seenLabelsByGroup[$groupKey][$key] = true;
+
             $types[] = [
                 'value' => (string) $value,
                 'label' => $label,
-                'hint' => $rule->getLabelHint(),
+                'hint' => $hint,
                 'showHint' => $rule->showLabelHint(),
-                'group' => $rule->getGroupLabel(),
+                'group' => $group,
             ];
         }
 
