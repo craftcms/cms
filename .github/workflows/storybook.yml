@@ -162,18 +162,15 @@ jobs:
       - name: Build Storybook
         run: vp run @craftcms/ui#build:storybook
 
-      - name: Setup pnpm for Wrangler
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
+          workingDirectory: ${{ runner.temp }}
+          packageManager: npm
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy packages/craftcms-ui/storybook-static --project-name=craftcms-ui-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
+          command: pages deploy ${{ github.workspace }}/packages/craftcms-ui/storybook-static --project-name=craftcms-ui-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
 
   deploy-resources:
     name: 'Deploy / resources'
@@ -217,18 +214,15 @@ jobs:
           CRAFT_SKIP_PHP_CODEGEN: '1'
         run: vp run build:storybook
 
-      - name: Setup pnpm for Wrangler
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
+          workingDirectory: ${{ runner.temp }}
+          packageManager: npm
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy storybook-static --project-name=craftcms-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
+          command: pages deploy ${{ github.workspace }}/storybook-static --project-name=craftcms-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
 
   # Single writer for the PR comment. Runs after both deploys (regardless of
   # their result) and renders one comment covering both previews, so the two
