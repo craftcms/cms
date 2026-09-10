@@ -108,7 +108,7 @@
         @click="removeGroup"
       />
 
-      <div class="min-w-0 flex flex-col gap-3">
+      <div class="min-w-0 flex flex-col gap-2">
         <template v-for="(child, index) in group.rules" :key="child.id">
           <ConditionGroup
             v-if="child.kind === 'group'"

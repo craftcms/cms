@@ -96,7 +96,7 @@
 
 <template>
   <div class="relative" :aria-busy="isLoading">
-    <craft-card
+    <div
       :inert="isLoading"
       class="condition-rule min-w-0"
       role="group"
@@ -141,7 +141,7 @@
       <craft-callout v-if="error" role="alert" variant="danger" class="mt-2">
         {{ error }}
       </craft-callout>
-    </craft-card>
+    </div>
     <div
       v-if="isLoading"
       class="absolute inset-0 z-20 flex items-center justify-center rounded-md cursor-wait"
@@ -157,8 +157,6 @@
 <style scoped>
   .condition-rule {
     container-type: inline-size;
-    --c-card-border-width: 0;
-    --c-card-shadow: none;
   }
 
   .condition-rule-fields :deep(craft-field) {
