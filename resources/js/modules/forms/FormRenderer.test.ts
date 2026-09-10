@@ -962,12 +962,11 @@ describe('FormRenderer', () => {
     app.unmount();
     await mount(condition);
 
-    const operator = [
-      ...container.querySelectorAll<HTMLElement>(
-        '.condition-group craft-button'
-      ),
-    ].find((button) => button.textContent?.trim() === 'Any')!;
-    operator.click();
+    const operator = container.querySelector<HTMLSelectElement>(
+      '.condition-group__operator select'
+    )!;
+    operator.value = 'or';
+    operator.dispatchEvent(new Event('change', {bubbles: true}));
     await nextTick();
 
     expect(renderer.currentValues()).toMatchObject({
