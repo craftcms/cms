@@ -50,6 +50,9 @@ export default class CraftSwitchButton extends LionSwitchButton {
 
         .switch-button__track {
           ${baseFormControlStyles}
+          /* The track's size excludes its border; the host's negative margin
+             makes room for it. */
+          box-sizing: content-box;
           --tw-inset-shadow-color: var(--color-slate-300);
           margin-inline: -1px;
           background-color: var(--c-color-neutral-fill-quiet);

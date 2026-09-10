@@ -10,6 +10,10 @@ import {css} from 'lit';
  * min-height, so the control's `:focus-visible` outline traces its own shape
  * rather than an ancestor's. Pair it with {@link baseInputWrapperStyles} on
  * the surrounding `.input-group__input`/`.input-group__container` div.
+ *
+ * The control is sized border-box, so `--c-input-height` is its full outer
+ * height — matching buttons — whether or not the page applies a global
+ * border-box reset.
  */
 export const baseFormControlStyles = css`
   --_input-border-width: var(
@@ -27,10 +31,8 @@ export const baseFormControlStyles = css`
     var(--_input-end-end-radius) var(--_input-end-start-radius);
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
-  min-height: calc(
-    var(--c-input-height, var(--c-size-control-md)) - 2 *
-      var(--_input-border-width)
-  );
+  box-sizing: border-box;
+  min-height: var(--c-input-height, var(--c-size-control-md));
 `;
 
 /**
@@ -77,7 +79,6 @@ export const baseComboboxStyles = css`
   ${baseFormControlStyles}
   width: 100%;
   height: 100%;
-  min-height: none;
   appearance: none;
   padding-inline: var(--c-input-spacing-inline)
     calc(var(--c-input-spacing-inline) * 1.5 + 1em);
