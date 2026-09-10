@@ -1,5 +1,6 @@
-import {beforeEach, expect, it, vi} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {computeAccessibleName} from 'dom-accessibility-api';
+import type CraftField from './field.js';
 import './field.js';
 import '../input/input.js';
 import '../select/select.js';
@@ -19,4 +20,36 @@ it('labels nested native controls', async () => {
   expect(computeAccessibleName(document.querySelector('select')!)).toBe(
     'Operator'
   );
+});
+
+describe('spacing', () => {
+  async function renderField(attrs: string): Promise<CraftField> {
+    document.body.innerHTML = `<craft-field ${attrs}><input slot="input"></craft-field>`;
+    const field = document.querySelector('craft-field')!;
+    await field.updateComplete;
+    return field;
+  }
+
+  /** Distance from the top of the field to the top of the input group. */
+  function inputOffset(field: CraftField): number {
+    const inputGroup = field.shadowRoot!.querySelector(
+      '.form-field__group-two'
+    )!;
+    return (
+      inputGroup.getBoundingClientRect().top - field.getBoundingClientRect().top
+    );
+  }
+
+  it('leaves no space above the input without a label', async () => {
+    expect(inputOffset(await renderField(''))).toBe(0);
+  });
+
+  it('spaces a visible label from the input', async () => {
+    const field = await renderField('label="Title"');
+    const heading = field.shadowRoot!.querySelector('.form-field__label')!;
+
+    expect(inputOffset(field)).toBeGreaterThan(
+      heading.getBoundingClientRect().height
+    );
+  });
 });

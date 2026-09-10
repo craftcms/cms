@@ -25,6 +25,22 @@ export default css`
     display: none;
   }
 
+  /* Spacing comes from gap rather than margins on the children: gap only
+     separates boxes in the flow, so a label or instructions that aren't
+     rendered, or are visually hidden (absolutely positioned), leave no
+     space behind. */
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--c-spacing-xs, 0.25rem);
+  }
+
+  /* Puts the heading and instructions directly into .form-field's gap, so a
+     group with nothing visible in it doesn't leave a gap behind either. */
+  .form-field__group-one {
+    display: contents;
+  }
+
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
@@ -51,10 +67,8 @@ export default css`
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
     align-items: center;
     font-weight: bold;
-    margin-block-end: var(--c-spacing-xs, 0.25rem);
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
@@ -91,7 +105,6 @@ export default css`
   /* Instructions (.field > .instructions in the CP) */
   .form-field__help-text {
     display: block;
-    margin-block-end: var(--c-spacing-xs, 0.3125rem);
   }
 
   .form-field__group-two .form-field__help-text {
