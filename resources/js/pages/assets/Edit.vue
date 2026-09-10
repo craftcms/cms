@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {ref} from 'vue';
+  import {ref, watch} from 'vue';
   import {router} from '@inertiajs/vue3';
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
   import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
@@ -54,6 +54,31 @@
       }
     });
   }
+
+  /**
+   * Mirrors the editor in the URL, so it can be linked to and survives a
+   * refresh. Driven by a watcher rather than the open/close handlers, so it
+   * covers every way out — Escape, the close button, a save — not just the
+   * ones that go through a function here.
+   *
+   * `history.replaceState` rather than an Inertia visit: this is UI state, and
+   * a round-trip to re-render the page behind an open dialog to toggle a query
+   * parameter would be a lot of work for nothing. Inertia's own history entry
+   * is handed straight back so only the URL changes.
+   */
+  watch(imageEditorOpen, (editing) => {
+    const url = new URL(window.location.href);
+
+    if (editing) {
+      url.searchParams.set('editing', 'true');
+    } else {
+      url.searchParams.delete('editing');
+    }
+
+    if (url.href !== window.location.href) {
+      window.history.replaceState(window.history.state, '', url.href);
+    }
+  });
 
   /**
    * Saving in place changes the file behind the same asset, so the screen has
