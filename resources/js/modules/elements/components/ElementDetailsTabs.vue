@@ -1,17 +1,59 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {ref} from 'vue';
+  import {ref, watch} from 'vue';
   import ActivityTimeline from '@/modules/activity/components/ActivityTimeline.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
 
-  defineProps<{
+  const props = defineProps<{
     payload: ElementEditPayload;
     activityTimelineVersion: number;
     pane?: boolean;
+    /**
+     * How much room the editor body has. The column folds itself away when
+     * that runs short — see {@link COLLAPSE_WIDTH}.
+     */
+    availableWidth?: number;
   }>();
 
   const activityTabOpen = ref(false);
+
+  /**
+   * The details column stops being worth its track once the editor body gets
+   * narrow, so it folds down to its rail and hands the width back.
+   *
+   * `collapsed` on `craft-tabs` is reflected output, not an input — selection
+   * is what drives it, so this sets `selectedIndex`. The width is measured on
+   * the body rather than the viewport, because the global sidebar and a
+   * slideout both take from the same space; the parent owns that element, so
+   * it does the measuring and passes the number down.
+   */
+  const COLLAPSE_WIDTH = 880;
+  const tabs = ref<(HTMLElement & {selectedIndex: number}) | null>(null);
+  /** Whether the last collapse was ours, so a deliberate one is left alone. */
+  let collapsedByWidth = false;
+
+  watch([() => props.availableWidth, tabs], ([width, element]) => {
+    // 0 while the element is still being measured — not a real narrow body.
+    if (!element || !width) {
+      return;
+    }
+
+    if (width < COLLAPSE_WIDTH) {
+      if (element.selectedIndex >= 0) {
+        element.selectedIndex = -1;
+        collapsedByWidth = true;
+      }
+
+      return;
+    }
+
+    if (collapsedByWidth && element.selectedIndex < 0) {
+      element.selectedIndex = 0;
+    }
+
+    collapsedByWidth = false;
+  });
 
   function onSelectedChanged(event: Event): void {
     activityTabOpen.value =
@@ -21,6 +63,7 @@
 
 <template>
   <craft-tabs
+    ref="tabs"
     size="small"
     placement="inline-end"
     collapsible
