@@ -105,3 +105,23 @@ describe('craft-slide-rule', () => {
     expect(r.getAttribute('aria-valuetext')).toContain('12');
   });
 });
+
+describe('craft-slide-rule positioning', () => {
+  it('waits for a measurable window rather than centring against zero', async () => {
+    // Rendered inside something with no layout — a closed dialog — the window
+    // measures 0, and centring against that lands the strip half its own
+    // length out: 20 degrees for the default range.
+    const host = document.createElement('div');
+    host.style.display = 'none';
+    document.body.append(host);
+
+    const rule = document.createElement('craft-slide-rule');
+    host.append(rule);
+    await rule.updateComplete;
+
+    const list =
+      rule.shadowRoot!.querySelector<HTMLElement>('.graduations ul')!;
+
+    expect(list.style.left).toBe('');
+  });
+});

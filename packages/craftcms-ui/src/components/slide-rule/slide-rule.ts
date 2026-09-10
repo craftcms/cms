@@ -92,9 +92,15 @@ export default class CraftSlideRule extends LitElement {
 
   /** Slides the ruler so the current value lines up under the cursor. */
   #reposition(): void {
-    if (!this._list) {
+    // The strip is centred against the width of its window, so an unmeasurable
+    // window puts it half its own length out — 20 degrees off for the default
+    // range. That happens whenever the rule first renders inside something not
+    // yet laid out, a closed dialog being the usual case. The resize observer
+    // calls back the moment there is a size, so waiting costs nothing.
+    if (!this._list || !this._graduations?.offsetWidth) {
       return;
     }
+
     this._list.style.left = `${this.#valueToPosition(this.value)}px`;
   }
 

@@ -61,6 +61,18 @@ export default css`
     white-space: nowrap;
     height: 40px;
     position: relative;
+    /*
+      This element is the window the strip slides behind, and the positioning
+      maths centres the strip on its width — so it has to be the width of the
+      rule, not of the strip inside it. Without the clip it sizes to its
+      content, and the strip is centred on a box wider than the one the cursor
+      sits in the middle of: about 20 degrees out for the default range.
+
+      The legacy markup got this from a wrapper around the component --
+      .straightening, with a max-width and its own clip -- so the component
+      owns it now rather than depending on where it is placed.
+    */
+    overflow: hidden;
   }
 
   .graduations ul {
@@ -70,6 +82,13 @@ export default css`
     margin: 0;
     padding: 0;
     list-style: none;
+    /*
+      Flex, so the graduations sit flush against each other. As inline-blocks
+      the newlines between them in the template each rendered as a space,
+      making the strip ~3.8px per graduation wider than the 10px apiece the
+      positioning maths assumes -- which put zero nowhere near the cursor.
+    */
+    display: flex;
 
     /* "left" (not a logical property) because that's what the JS sets. */
     transition: 200ms left linear; /* stylelint-disable-line */
@@ -80,7 +99,9 @@ export default css`
   }
 
   .graduations ul li {
-    display: inline-block;
+    /* Never shrink: the strip has to keep 10px a graduation, whatever the
+       width of the window it slides behind. */
+    flex: none;
     font-size: 8px;
     position: relative;
     width: 10px;
