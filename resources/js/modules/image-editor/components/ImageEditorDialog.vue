@@ -325,10 +325,14 @@
     attribute selector, so it redefines the colour tokens from here down —
     custom properties inherit through the slot and into each component's shadow
     root, so everything inside follows. -->
+  <!-- `.opened` binds the property, not the `open` attribute. Vue only strips a
+    false boolean for the seven names in its `isSpecialBooleanAttr` list, and
+    `open` isn't one of them, so `:open="false"` writes `open="false"` — which
+    Lit reads as present, and the dialog opens itself on load. -->
   <craft-dialog
     data-theme="dark"
     fullscreen
-    :open="opened"
+    .opened="opened"
     :label="t('Edit Image')"
     @craft-after-show="editor.start"
     @craft-before-hide="onBeforeHide"
