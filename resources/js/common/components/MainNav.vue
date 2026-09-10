@@ -3,7 +3,6 @@
   import CpLink from '@/common/components/CpLink.vue';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
-  import NavListItem from '@/common/components/NavListItem.vue';
 
   const page = usePage<{
     queue: {
