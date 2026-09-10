@@ -158,3 +158,32 @@ it('never returns a zero or NaN zoom for an unmeasured editor', () => {
   expect(Number.isFinite(geometry.getZoomToCoverRatio(dimensions))).toBe(true);
   expect(Number.isFinite(geometry.getZoomToFitRatio(dimensions))).toBe(true);
 });
+
+it('frames the image the same whether or not the crop controls are open', () => {
+  // The inset that gives the cropper's handles room used to appear only while
+  // cropping, so opening the controls reframed the image on top of the zoom
+  // change — a visible lurch. The content box is the same in both views now.
+  const {state, geometry} = makeEditor(1168, 574);
+
+  state.originalWidth.value = 4032;
+  state.originalHeight.value = 3024;
+
+  const dimensions = geometry.getScaledImageDimensions();
+  const content = geometry.getContentSize();
+
+  // Unstraightened, both zooms are 1, so the drawn size is the base size.
+  expect(geometry.getZoomToCoverRatio(dimensions)).toBeCloseTo(1, 10);
+  expect(geometry.getZoomToFitRatio(dimensions)).toBeCloseTo(1, 10);
+
+  // And that base already sits inside the content box, handles included.
+  expect(dimensions.width).toBeLessThanOrEqual(content.width);
+  expect(dimensions.height).toBeLessThanOrEqual(content.height);
+});
+
+it('keeps the content box inset from the editor on both axes', () => {
+  const {geometry} = makeEditor(1168, 574);
+  const content = geometry.getContentSize();
+
+  expect(1168 - content.width).toBeGreaterThanOrEqual(8);
+  expect(574 - content.height).toBeGreaterThanOrEqual(8);
+});

@@ -7,7 +7,6 @@ import {
   type Ref,
   type ShallowRef,
 } from 'vue';
-import {getBoundingRectangle} from './geometry';
 import type {
   FabricCanvas,
   FabricGroup,
@@ -30,13 +29,17 @@ import type {
 const RELOAD_THRESHOLD = 1.5;
 
 /**
- * Breathing room kept around the image while cropping.
+ * Breathing room kept around the image, in every view.
  *
  * The cropper's handles are drawn a few pixels *outside* the rectangle, and
  * their keyboard focus rings reach ~18px past a corner. With the image zoomed
  * flush to the canvas edge, a full-image crop puts its handles off-canvas —
- * clipped from view, with their grab zones half outside the hit area — so they
- * can't be seen or dragged until something shrinks the rectangle.
+ * clipped from view, with their grab zones half outside the hit area.
+ *
+ * Applied everywhere rather than only while cropping: an inset that appears
+ * with the crop controls reframes the image the moment they open, on top of
+ * the zoom change, which reads as a lurch. Holding the same content box in
+ * every view leaves the switch as one zoom and nothing else.
  */
 const CROP_HANDLE_MARGIN = 20;
 
@@ -183,17 +186,30 @@ export function useEditorGeometry(state: EditorState) {
   }
 
   /**
+   * The area the image is laid out within: the editor, less the room the
+   * cropper's handles need outside the rectangle.
+   *
+   * The same in every view, so moving between them changes the zoom and
+   * nothing else.
+   */
+  function getContentSize(): Dimensions {
+    return {
+      width: Math.max(state.editorWidth.value - CROP_HANDLE_MARGIN * 2, 1),
+      height: Math.max(state.editorHeight.value - CROP_HANDLE_MARGIN * 2, 1),
+    };
+  }
+
+  /**
    * The size the image occupies in the editor with no straightening or rotation
    * applied — the basis every other measurement is expressed against.
    */
   function getScaledImageDimensions(): Dimensions {
     const originalWidth = state.originalWidth.value;
     const originalHeight = state.originalHeight.value;
-    const editorWidth = state.editorWidth.value;
-    const editorHeight = state.editorHeight.value;
+    const {width: availableWidth, height: availableHeight} = getContentSize();
 
-    if (originalHeight / originalWidth > editorHeight / editorWidth) {
-      const height = Math.min(editorHeight, originalHeight);
+    if (originalHeight / originalWidth > availableHeight / availableWidth) {
+      const height = Math.min(availableHeight, originalHeight);
 
       return {
         height,
@@ -201,7 +217,7 @@ export function useEditorGeometry(state: EditorState) {
       };
     }
 
-    const width = Math.min(editorWidth, originalWidth);
+    const width = Math.min(availableWidth, originalWidth);
 
     return {
       width,
@@ -259,18 +275,10 @@ export function useEditorGeometry(state: EditorState) {
       return 1;
     }
 
-    // Fit inside an inset area, not the whole editor, so the cropper's handles
-    // always have somewhere to be drawn. Everything that has to agree on where
-    // the image is — the vertice coords, the cropper's size, the containment
-    // tests — comes back through here, so they inset together.
-    const availableWidth = Math.max(
-      state.editorWidth.value - CROP_HANDLE_MARGIN * 2,
-      1
-    );
-    const availableHeight = Math.max(
-      state.editorHeight.value - CROP_HANDLE_MARGIN * 2,
-      1
-    );
+    // The inset now lives in `getScaledImageDimensions`, so the base size is
+    // already within the content box; this only has to answer whether the
+    // straightened bounding box still fits.
+    const {width: availableWidth, height: availableHeight} = getContentSize();
 
     if (
       boundingBox.height <= availableHeight &&
@@ -369,15 +377,9 @@ export function useEditorGeometry(state: EditorState) {
     );
   }
 
-  /** The area the image currently occupies, as an axis-aligned box. */
-  function getOccupiedArea(): Dimensions | null {
-    return state.imageVerticeCoords.value
-      ? getBoundingRectangle(state.imageVerticeCoords.value)
-      : null;
-  }
-
   return {
     hasOrientationChanged,
+    getContentSize,
     getScaledImageDimensions,
     getZoomToCoverRatio,
     getImageBoundingBox,
@@ -387,7 +389,6 @@ export function useEditorGeometry(state: EditorState) {
     setFittedImageVerticeCoordinates,
     getEditorCenter,
     needsHigherResolution,
-    getOccupiedArea,
   };
 }
 
