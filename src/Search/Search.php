@@ -758,14 +758,12 @@ class Search
     {
         static $terms = [];
 
-        if (! array_key_exists($term, $terms)) {
-            if ($siteId && ! is_array($siteId)) {
-                $site = Sites::getSiteById($siteId);
-            }
-            $terms[$term] = SearchHelper::normalizeKeywords($term, [], true, isset($site) ? $site->getLanguage() : null);
-        }
+        $language = $siteId && ! is_array($siteId)
+            ? Sites::getSiteById($siteId)?->getLanguage()
+            : null;
+        $language ??= app()->getLocale();
 
-        return $terms[$term];
+        return $terms[$language][$term] ??= SearchHelper::normalizeKeywords($term, [], true, $language);
     }
 
     /**

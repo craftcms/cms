@@ -70,7 +70,7 @@
 
   const registry = provideLayoutSlotRegistry();
   provideScreenContext('page');
-  const craftData = useCraftData();
+  const {general} = useCraftData();
 
   // A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
   // second one — it renders transparently instead.
@@ -220,6 +220,16 @@
   <Head :title="pageTitle" />
   <LiveRegion />
   <div class="cp">
+    <!-- Focus lands here on Inertia navigation; see
+            `handleAccessibleRouting` in bootstrap/cp.ts. -->
+    <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
+    <a
+      v-for="link in skipLinks"
+      :key="link.url"
+      :href="link.url"
+      class="skip-link skip-link--global"
+      >{{ link.label }}</a
+    >
     <div class="cp__sidebar">
       <!-- No props: the sidebar reads the shared store directly, and renders
         the toggle that writes to it. -->
@@ -228,16 +238,6 @@
     <div class="cp__main">
       <div class="cp__header">
         <header>
-          <!-- Focus lands here on Inertia navigation; see
-            `handleAccessibleRouting` in bootstrap/cp.ts. -->
-          <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
-          <a
-            v-for="link in skipLinks"
-            :key="link.url"
-            :href="link.url"
-            class="skip-link skip-link--global"
-            >{{ link.label }}</a
-          >
           <div class="container">
             <div class="flex gap-4 py-1 items-center justify-between">
               <craft-button
@@ -281,7 +281,7 @@
                   <craft-icon name="search" :label="t('Search')"></craft-icon>
                 </craft-button>
                 <cp-notification-center
-                  :notifications.prop="craftData.general.notifications"
+                  :notifications.prop="general.notifications"
                 ></cp-notification-center>
                 <UserMenu />
               </div>

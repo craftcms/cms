@@ -12,8 +12,7 @@
       hasWaitingJobs: boolean;
     };
   }>();
-  const craftData = useCraftData();
-  const nav = computed(() => craftData.nav);
+  const {nav} = useCraftData();
 
   // Renders the nav as a rail: labels drop to tooltips, and subnavs move into
   // a flyout on hover or focus, since there's no room to indent them.

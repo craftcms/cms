@@ -17,7 +17,10 @@ class Combobox extends ViewComponent
 
     protected ?string $name = null;
 
-    protected ?string $value = null;
+    /** @var string|list<string>|null */
+    protected string|array|null $value = null;
+
+    protected bool $multiple = false;
 
     /** @var list<array<string, mixed>> */
     protected array $options = [];
@@ -54,7 +57,8 @@ class Combobox extends ViewComponent
         return $this;
     }
 
-    public function value(?string $value): static
+    /** @param string|list<string>|null $value */
+    public function value(string|array|null $value): static
     {
         $this->value = $value;
 
@@ -97,6 +101,13 @@ class Combobox extends ViewComponent
         }
 
         $this->limit = $limit;
+
+        return $this;
+    }
+
+    public function multiple(bool $multiple = true): static
+    {
+        $this->multiple = $multiple;
 
         return $this;
     }
@@ -149,7 +160,8 @@ class Combobox extends ViewComponent
         return [
             'id' => $this->getId(),
             'name' => $this->name,
-            'model-value' => $this->value,
+            'multiple-choice' => $this->multiple,
+            'model-value' => $this->multiple ? Json::encode($this->value ?? []) : $this->value,
             'options' => Json::encode($this->options),
             'placeholder' => $this->placeholder,
             'required' => $this->required,
@@ -158,6 +170,7 @@ class Combobox extends ViewComponent
             'limit' => $this->limit,
             'clearable' => $this->clearable,
             'requireoptionmatch' => $this->requireOptionMatch,
+            'allow-custom-choice' => ! $this->requireOptionMatch,
             'show-all-on-empty' => $this->showAllOnEmpty,
             'show-selected-hint' => $this->showSelectedHint,
             'dir' => $this->orientation,

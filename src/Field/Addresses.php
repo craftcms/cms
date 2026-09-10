@@ -45,7 +45,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -114,7 +114,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -133,7 +133,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         }
 
         if ($value === ':empty:') {
-            return $query->whereNotExists($exists);
+            $query->whereNotExists($exists);
+
+            return;
         }
 
         if ($value !== ':notempty:') {
@@ -147,7 +149,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $exists->whereIn("addresses_$ns.id", $ids);
         }
 
-        return $query->whereExists($exists);
+        $query->whereExists($exists);
     }
 
     /**

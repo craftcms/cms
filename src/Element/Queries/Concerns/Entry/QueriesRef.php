@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -25,44 +26,49 @@ trait QueriesRef
 
     protected function initQueriesRef(): void
     {
-        $this->beforeQuery(function (EntryQuery $query) {
-            if (is_null($query->ref)) {
-                return;
-            }
+        $this->beforeQuery(static function (EntryQuery $query) {
+            static::applyRef($query, $query->ref);
+        });
+    }
 
-            $refs = $query->ref;
-            if (! is_array($refs)) {
-                $refs = is_string($refs) ? str($refs)->explode(',') : [$refs];
-            }
+    public static function applyRef(BuilderContract $query, mixed $value): void
+    {
+        if (is_null($value)) {
+            return;
+        }
 
-            $joinSections = false;
-            $query->where(function (Builder $query) use (&$joinSections, $refs) {
-                foreach ($refs as $ref) {
-                    $parts = array_filter(explode('/', (string) $ref), static fn (string $part) => $part !== '');
+        $refs = $value;
+        if (! is_array($refs)) {
+            $refs = is_string($refs) ? str($refs)->explode(',') : [$refs];
+        }
 
-                    if (empty($parts)) {
-                        continue;
-                    }
+        $joinSections = false;
+        $query->where(function (Builder $q) use (&$joinSections, $refs) {
+            foreach ($refs as $ref) {
+                $parts = array_filter(explode('/', (string) $ref), static fn (string $part) => $part !== '');
 
-                    if (count($parts) === 1) {
-                        $query->orWhereParam('elements_sites.slug', $parts[0]);
-
-                        continue;
-                    }
-
-                    $query->where(function (Builder $query) use ($parts) {
-                        $query->whereParam('sections.handle', $parts[0])
-                            ->whereParam('elements_sites.slug', $parts[1]);
-                    });
-
-                    $joinSections = true;
+                if (empty($parts)) {
+                    continue;
                 }
-            });
 
-            if ($joinSections) {
-                $this->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', '=', 'entries.sectionId');
+                if (count($parts) === 1) {
+                    $q->orWhereParam('elements_sites.slug', $parts[0]);
+
+                    continue;
+                }
+
+                $q->where(function (Builder $q) use ($parts) {
+                    $q->whereParam('sections.handle', $parts[0])
+                        ->whereParam('elements_sites.slug', $parts[1]);
+                });
+
+                $joinSections = true;
             }
         });
+
+        if ($joinSections) {
+            $query->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', '=', 'entries.sectionId');
+        }
     }
 
     /**

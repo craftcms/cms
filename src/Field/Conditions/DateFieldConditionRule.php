@@ -5,23 +5,27 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Date;
+use CraftCms\Cms\Form\Contracts\Node;
 use DateTimeInterface;
 use RuntimeException;
 
-class DateFieldConditionRule extends BaseDateRangeConditionRule implements FieldConditionRuleInterface
+class DateFieldConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof Date) {
             throw new RuntimeException;
         }
 
-        return parent::inputHtml();
+        return parent::inputNodes();
     }
 
     /** @return array<int, string>|string|null */

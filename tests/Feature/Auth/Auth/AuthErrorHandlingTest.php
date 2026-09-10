@@ -70,18 +70,18 @@ test('getAuthError for password reset required', function () {
     expect($result)->toBe(AuthError::PasswordResetRequired);
 });
 
-test('getAuthError for no CP access', function () {
+test('getAuthError uses explicit CP context or defaults to the request', function (bool $cpRequest, ?bool $cpContext, ?AuthError $expected) {
     Edition::set(Edition::Pro);
-
-    // Fake so ->isCpRequest() returns true
-    Cms::config()->cpTrigger = '/';
-
+    Cms::config()->cpTrigger = $cpRequest ? '/' : 'admin';
     $user = UserModel::factory()->createElement(['admin' => false]);
 
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::NoCpAccess);
-});
+    expect($this->auth->getAuthError($user, $cpContext))->toBe($expected);
+})->with([
+    'CP default' => [true, null, AuthError::NoCpAccess],
+    'site default' => [false, null, null],
+    'explicit CP on site' => [false, true, AuthError::NoCpAccess],
+    'explicit site on CP' => [true, false, null],
+]);
 
 test('getAuthError returns null for valid user', function () {
     $user = UserModel::factory()->createElement(['admin' => true]);

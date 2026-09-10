@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -19,6 +21,7 @@ use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -123,6 +126,58 @@ it('saves inline-edited elements in a batch', function () {
 
     expect(Entry::find()->id($firstEntry->id)->status(null)->one()?->title)->toBe('First After Save')
         ->and(Entry::find()->id($secondEntry->id)->status(null)->one()?->title)->toBe('Second After Save');
+});
+
+it('saves structured entry dates author IDs and cleared values', function () {
+    $entry = EntryModel::factory()->createElement();
+    $author = UserModel::factory()->admin()->createElement();
+
+    ($this->postSaveElements)([
+        'siteId' => $entry->siteId,
+        'namespace' => 'elementindex-test',
+        'elementindex-test' => [
+            "element-$entry->id" => [
+                'postDate' => ['date' => '2026-05-03', 'time' => '09:17', 'timezone' => 'Europe/Brussels'],
+                'expiryDate' => ['date' => '', 'time' => '', 'timezone' => 'Europe/Brussels'],
+                'authorIds' => [$author->id],
+            ],
+        ],
+    ])->assertOk()->assertJsonMissingPath('errors');
+
+    $saved = Entry::find()->id($entry->id)->status(null)->one();
+
+    expect($saved->postDate->getTimestamp())->toBe(new DateTimeImmutable('2026-05-03T07:17:00+00:00')->getTimestamp())
+        ->and($saved->expiryDate)->toBeNull()
+        ->and($saved->getAuthorIds())->toBe([$author->id]);
+});
+
+it('saves and clears inline asset alt text', function () {
+    $asset = AssetModel::factory()->createElement();
+
+    foreach (["Description & <text>\nNext line", ''] as $alt) {
+        postJson(action(SaveElementIndexElementsController::class), [
+            'elementType' => Asset::class,
+            'siteId' => $asset->siteId,
+            'namespace' => 'elementindex-test',
+            'elementindex-test' => ["element-$asset->id" => ['alt' => $alt]],
+        ])->assertOk()->assertJsonMissingPath('errors');
+
+        expect(Asset::find()->id($asset->id)->one()->alt)->toBe($alt === '' ? null : $alt);
+    }
+});
+
+it('still authorizes saves before applying structured values', function () {
+    $entry = EntryModel::factory()->createElement();
+    $originalSlug = $entry->slug;
+    Gate::before(fn ($user, $ability) => $ability === 'save' ? false : null);
+
+    ($this->postSaveElements)([
+        'siteId' => $entry->siteId,
+        'namespace' => 'elementindex-test',
+        'elementindex-test' => ["element-$entry->id" => ['slug' => 'changed']],
+    ])->assertForbidden();
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->slug)->toBe($originalSlug);
 });
 
 it('ignores sensitive attributes when saving user elements in a batch', function () {

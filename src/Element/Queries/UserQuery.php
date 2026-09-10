@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 use Override;
 
 /**
@@ -72,7 +73,16 @@ class UserQuery extends ElementQuery
             'users.rememberToken',
         ]);
 
-        $this->beforeQuery(function (self $userQuery) {
+        $identities = DB::table(Table::SSO_IDENTITIES)
+            ->selectRaw('1')
+            ->whereColumn('userId', 'users.id');
+
+        $this->query->selectRaw(
+            sprintf('exists(%s) as %s', $identities->toSql(), $this->query->getGrammar()->wrap('hasSsoIdentity')),
+            $identities->getBindings(),
+        );
+
+        $this->beforeQuery(static function (self $userQuery) {
             $orders = $userQuery->query->orders;
 
             if (is_null($orders)) {

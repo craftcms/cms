@@ -13,7 +13,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 /**
  * ElementConditionInterface defines the common interface to be implemented by element conditions.
  *
- * A base implementation is provided by [[ElementCondition]].
+ * A base implementation is provided by {@see ElementCondition}.
  *
  * @mixin ElementCondition
  *
@@ -38,7 +38,7 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Modifies a given query based on the configured condition rules.
      */
-    public function modifyQuery(ElementQueryInterface $query): void;
+    public function modifyQuery(ElementQueryInterface $elementQuery): void;
 
     /**
      * Returns whether the given element matches the condition.

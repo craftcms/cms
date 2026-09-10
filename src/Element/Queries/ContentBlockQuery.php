@@ -30,12 +30,12 @@ class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterf
         ]);
     }
 
-    public function getFieldIdColumn(): string
+    public static function getFieldIdColumn(): string
     {
         return 'contentblocks.fieldId';
     }
 
-    public function getPrimaryOwnerIdColumn(): string
+    public static function getPrimaryOwnerIdColumn(): string
     {
         return 'contentblocks.primaryOwnerId';
     }

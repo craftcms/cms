@@ -3,19 +3,29 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
+use CraftCms\Cms\Element\Operations\ElementDuplicates;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -34,6 +44,8 @@ class TestSaveElementActionElement extends Element
     public bool $afterSaveCalled = false;
 
     public bool $afterPropagateCalled = false;
+
+    public ?Closure $beforePropagation = null;
 
     public ?FieldLayout $mockFieldLayout = null;
 
@@ -115,6 +127,9 @@ class TestSaveElementActionElement extends Element
     public function afterPropagate(bool $isNew): void
     {
         $this->afterPropagateCalled = true;
+        if ($this->beforePropagation) {
+            ($this->beforePropagation)();
+        }
 
         parent::afterPropagate($isNew);
     }
@@ -379,13 +394,22 @@ it('enables the current site when a single-site element is disabled for that sit
         ->and($element->getEnabledForSite())->toBeTrue();
 });
 
-it('saves a new localized element across all supported sites', function () {
+it('saves a new localized element across all supported sites', function (bool $reentrant) {
     Site::factory()->create();
     Sites::refreshSites();
 
     $element = new TestLocalizedSaveElementActionElement;
     $element->siteId = Sites::getPrimarySite()->id;
     $element->title = 'Localized element';
+    $element->getFieldLayout()->setGeneratedFields([
+        ['uid' => 'generated', 'handle' => 'siteTitle', 'template' => '{{ object.title }} {{ object.siteId }}'],
+    ]);
+    if ($reentrant) {
+        $element->beforePropagation = function () use ($element) {
+            $element->beforePropagation = null;
+            $this->writes->saveElement($element, propagate: false, updateSearchIndex: false);
+        };
+    }
 
     expect($this->writes->saveElement($element, updateSearchIndex: false))->toBeTrue()
         ->and($element->afterSaveCalled)->toBeTrue()
@@ -394,9 +418,14 @@ it('saves a new localized element across all supported sites', function () {
             ->where('elementId', $element->id)
             ->count())->toBe(2)
         ->and($element->newSiteIds)->toBeEmpty();
-});
+
+    foreach (DB::table(Table::ELEMENTS_SITES)->where('elementId', $element->id)->get() as $record) {
+        expect(json_decode($record->content, true)['generated'])->toBe("Localized element $record->siteId");
+    }
+})->with(['ordinary' => false, 'reentrant' => true]);
 
 it('stores generated field values after save', function () {
+    $listeners = count(Event::getListeners(ElementLifecyclePropagated::class));
     $element = new TestSaveElementActionElement;
     $element->siteId = Sites::getPrimarySite()->id;
     $element->title = 'Generated element';
@@ -423,6 +452,71 @@ it('stores generated field values after save', function () {
 
     expect(json_decode((string) $content, true, 512, JSON_THROW_ON_ERROR))
         ->toMatchArray(['generated-field-uid' => 'Generated element']);
+
+    $element->title = 'Rolled back';
+    $element->beforePropagation = fn () => throw new RuntimeException('Propagation failed');
+    expect(fn () => $this->writes->saveElement($element, updateSearchIndex: false))
+        ->toThrow(RuntimeException::class, 'Propagation failed');
+    expect(DB::table(Table::ELEMENTS_SITES)->where('id', $element->siteSettingsId)->value('content'))
+        ->toBe($content);
+
+    $latest = TestSaveElementActionElement::find()->id($element->id)->one();
+    $latest->mockFieldLayout = clone $element->mockFieldLayout;
+    $latest->mockFieldLayout->setGeneratedFields([
+        ['uid' => 'generated-field-uid', 'handle' => 'latestValue', 'template' => 'Updated {{ object.title }}'],
+    ]);
+    Event::listen(ElementLifecyclePropagated::class, function ($event) use ($latest) {
+        expect($event->element)->toBe($latest)
+            ->and($latest->getGeneratedFieldValues())->toBe(['latestValue' => 'Updated Generated element']);
+    });
+
+    expect($this->writes->saveElement($latest, updateSearchIndex: false))->toBeTrue()
+        ->and(count(Event::getListeners(ElementLifecyclePropagated::class)))->toBe($listeners + 1);
+});
+
+it('completes nested generated values across localized saves, duplicates, and merges', function () {
+    $secondary = Site::factory()->create();
+    Sites::refreshSites();
+    $blockType = EntryType::factory()->create(['hasTitleField' => true]);
+    $matrix = Field::factory()->create([
+        'handle' => 'blocks', 'type' => Matrix::class, 'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $type = EntryType::factory()->withFieldLayout(FieldLayoutModel::factory()->forField($matrix))->create();
+    $section = Section::factory()->withEntryTypes($type)->withSites($secondary)->create([
+        'propagationMethod' => PropagationMethod::All, 'enableVersioning' => false,
+    ]);
+    $entry = EntryModel::factory()->forSection($section)->forEntryType($type)->createElement(['title' => 'Original']);
+    $layout = $entry->getFieldLayout();
+    $layout->setGeneratedFields([
+        ['uid' => 'generated', 'handle' => 'summary', 'template' => '{{ object.title }} {{ object.siteId }} {{ object.blocks.count() }}'],
+    ]);
+    Fields::saveLayout($layout);
+    $uid = (string) str()->uuid();
+    $entry->setFieldValueFromRequest('blocks', [
+        'entries' => ["uid:$uid" => ['type' => $blockType->handle, 'title' => 'Block', 'enabled' => true]],
+        'sortOrder' => [$uid],
+    ]);
+    expect($this->writes->saveElement($entry))->toBeTrue();
+    $duplicate = app(ElementDuplicates::class)->duplicateElement($entry);
+
+    foreach ([$entry, $duplicate] as $element) {
+        $records = DB::table(Table::ELEMENTS_SITES)->where('elementId', $element->id)->get();
+        expect($records)->toHaveCount(2);
+        foreach ($records as $record) {
+            expect(json_decode($record->content, true)['generated'])->toBe("Original $record->siteId 1");
+        }
+    }
+
+    $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id);
+    foreach ($entry->getLocalizedQuery()->siteId('*')->all() as $localized) {
+        $localized->title = 'Updated';
+        $this->writes->saveElement($localized, propagate: false);
+    }
+    app(ElementCanonicalChanges::class)->mergeCanonicalChanges($draft);
+
+    foreach (DB::table(Table::ELEMENTS_SITES)->where('elementId', $draft->id)->get() as $record) {
+        expect(json_decode($record->content, true)['generated'])->toBe("Updated $record->siteId 1");
+    }
 });
 
 it('returns false when an afterValidate hook adds errors during save validation', function () {

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -13,6 +15,7 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Override;
 
@@ -25,9 +28,18 @@ use function CraftCms\Cms\t;
  *
  * @since 5.6.0
  */
-class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     use HintableConditionRuleTrait;
+
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof EntryCondition) {
+            return false;
+        }
+
+        return true;
+    }
 
     #[Override]
     protected bool $includeEmptyOperators = true;
@@ -35,11 +47,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     public function getLabel(): string
     {
         return t('Field');
-    }
-
-    public function getExclusiveQueryParams(): array
-    {
-        return ['field', 'fieldId'];
     }
 
     protected function options(): array
@@ -52,17 +59,18 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
             ->all();
     }
 
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $query->field($this->nestedEntryFields()->all());
+            $fieldIds = $this->nestedEntryFields()->all();
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
-            $query->field(false);
+            $fieldIds = false;
         } else {
             $fieldsService = app(Fields::class);
-            $query->fieldId($this->paramValue(fn ($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
+            $fieldIds = $this->paramValue(fn ($uid) => $fieldsService->getFieldByUid($uid)->id ?? null);
         }
+
+        EntryQuery::applyFieldId($query, $fieldIds, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

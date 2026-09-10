@@ -96,9 +96,6 @@ describe('DataTable', () => {
     expect(selected(root)).toHaveLength(rows(root).length);
   });
 
-  // CONFLICT-REVIEW: the focus tests below mount inline rather than through the
-  // `mount()` helper above, because they need `loading` to stay reactive across
-  // the assertions; the helper's props are spread once at render time.
   it('moves focus to the spinner while re-sorting reloads, then back to the same sort button', async () => {
     const table = createSampleTable();
     const loading = ref(false);

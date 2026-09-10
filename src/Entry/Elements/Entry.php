@@ -61,6 +61,7 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -1724,7 +1725,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             // eager-load authors for all queried entries
             Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
-            return [];
+            return $this->_authors ?? [];
         }
 
         $this->setAuthors(User::find()
@@ -2049,49 +2050,40 @@ JS, [
     }
 
     #[Override]
-    protected function inlineAttributeInputHtml(string $attribute): string
+    protected function inlineAttributeInputForm(string $attribute): ?Form
     {
-        switch ($attribute) {
-            case 'postDate':
-                return FormFields::dateTimeFieldHtml([
-                    'name' => 'postDate',
-                    'value' => $this->postDate,
-                ]);
-            case 'expiryDate':
-                return FormFields::dateTimeFieldHtml([
-                    'name' => 'expiryDate',
-                    'value' => $this->expiryDate,
-                ]);
-            case 'slug':
-                return FormFields::textHtml([
-                    'name' => 'slug',
-                    'value' => $this->slug,
-                ]);
-            case 'authors':
-                $authors = $this->getAuthors();
-                $section = $this->getSection();
+        if ($attribute === 'authors') {
+            $section = $this->getSection();
+            $status = $this->getAttributeStatus('authorIds');
 
-                return FormFields::elementSelectHtml([
-                    'status' => $this->getAttributeStatus('authorIds'),
-                    'label' => t('{max, plural, =1{Author} other {Authors}}', [
-                        'max' => $section->maxAuthors ?? PHP_INT_MAX,
-                    ]),
-                    'id' => 'authorIds',
-                    'name' => 'authorIds',
-                    'elementType' => User::class,
-                    'selectionLabel' => t('Choose'),
-                    'criteria' => [
-                        'can' => "viewEntries:$section->uid",
-                    ],
-                    'single' => false,
-                    'elements' => $authors ?: null,
-                    'disabled' => ! $this->canChangeAuthor(),
-                    'errors' => $this->errors()->get('authorIds'),
-                    'limit' => $section->maxAuthors,
-                ]);
-            default:
-                return parent::inlineAttributeInputHtml($attribute);
+            return Form::make([
+                Field::make(t('{max, plural, =1{Author} other {Authors}}', [
+                    'max' => $section->maxAuthors ?? PHP_INT_MAX,
+                ]), ElementSelect::make('authorIds')
+                    ->elementType(User::class)
+                    ->criteria(['can' => "viewEntries:$section->uid"])
+                    ->selectionLabel(t('Choose'))
+                    ->limit($section->maxAuthors)
+                    ->value($this->getAuthorIds())
+                    ->mode($this->canChangeAuthor() ? ControlMode::Editable : ControlMode::Disabled))
+                    ->status($status[0]->value ?? null, $status[1] ?? null),
+            ]);
         }
+
+        $control = match ($attribute) {
+            'postDate', 'expiryDate' => DateTime::make($attribute)
+                ->showTime()
+                ->minuteIncrement(1)
+                ->value(self::dateTimeControlValue($this->$attribute === null
+                    ? null
+                    : Date::instance($this->$attribute)->setTimezone(Cms::timezone()))),
+            'slug' => Text::make('slug')->value($this->slug),
+            default => null,
+        };
+
+        return $control === null
+            ? parent::inlineAttributeInputForm($attribute)
+            : Form::make([Field::make(control: $control)]);
     }
 
     /** @return array<string, array<string, scalar>> */

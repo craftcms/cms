@@ -4,6 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| src/Cp/**, packages/craftcms-ui/**, packages/craftcms-legacy/**, resources/js/**, resources/templates/** | .ai/rules/accessibility.md |
 | src/Cp/Components/** | .ai/rules/components.md |
 | src/Cp/**, src/Cp/FormFields.php | .ai/rules/cp.md |
 | packages/craftcms-legacy/** | .ai/rules/craftcms-legacy.md |

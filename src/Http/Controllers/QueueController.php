@@ -92,7 +92,6 @@ readonly class QueueController
             'id' => $id,
         ]);
 
-        $this->jobProgress->delete($id);
         $this->run();
 
         return $this->asSuccess();
@@ -108,7 +107,6 @@ readonly class QueueController
             'id' => 'all',
         ]);
 
-        $this->jobProgress->clearFailed();
         $this->run();
 
         return $this->asSuccess();

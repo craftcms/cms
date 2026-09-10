@@ -6,8 +6,7 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed, ref, watch} from 'vue';
-  import {useElementSize} from '@vueuse/core';
+  import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -17,8 +16,8 @@
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
-  import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
+  import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
@@ -38,6 +37,7 @@
 
   const {
     activity,
+    activityTimelineVersion,
     autosave,
     discardDraft,
     errors,
@@ -99,46 +99,11 @@
     ...headerButtons.value,
   ]);
 
-  /**
-   * The details column stops being worth its track once the editor body gets
-   * narrow, so it folds down to its rail and hands the width back.
-   *
-   * `collapsed` on `craft-tabs` is reflected output, not an input — selection is
-   * what drives it, so this sets `selectedIndex`. Measured on the body rather
-   * than the viewport because the global sidebar and a slideout both take from
-   * the same space.
-   */
-  const DETAILS_COLLAPSE_WIDTH = 880;
-  const editorBody = ref<HTMLElement | null>(null);
-  const detailsTabs = ref<(HTMLElement & {selectedIndex: number}) | null>(null);
-  const {width: bodyWidth} = useElementSize(editorBody);
-  /** Whether the last collapse was ours, so a deliberate one is left alone. */
-  let collapsedByWidth = false;
-
-  watch([bodyWidth, detailsTabs], ([width, tabs]) => {
-    // 0 while the element is still being measured — not a real narrow body.
-    if (!tabs || width === 0) {
-      return;
-    }
-
-    if (width < DETAILS_COLLAPSE_WIDTH) {
-      if (tabs.selectedIndex >= 0) {
-        tabs.selectedIndex = -1;
-        collapsedByWidth = true;
-      }
-
-      return;
-    }
-
-    if (collapsedByWidth && tabs.selectedIndex < 0) {
-      tabs.selectedIndex = 0;
-    }
-
-    collapsedByWidth = false;
-  });
-
   const hasDetails = computed(
-    () => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml)
+    () =>
+      Boolean(sidebarPayload.value) ||
+      Boolean(payload.metadataHtml) ||
+      Boolean(payload.activityTimelineUrl)
   );
 
   // Mirrors the legacy wording: a changed draft names the draft, anything else
@@ -293,7 +258,6 @@
           </div>
 
           <div
-            ref="editorBody"
             class="element-editor__body"
             :class="{'element-editor__body--details': hasDetails}"
           >
@@ -320,20 +284,13 @@
               v-if="hasDetails || $slots['details-header']"
               class="element-editor__details"
             >
-              <craft-tabs
-                ref="detailsTabs"
-                size="small"
-                placement="inline-end"
-                collapsible
+              <ElementDetailsTabs
+                :payload="payload"
+                :activity-timeline-version="activityTimelineVersion"
+                pane
               >
-                <craft-tab slot="tab">
-                  <craft-icon
-                    name="circle-info"
-                    :label="t('Info')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
+                <template #info>
+                  <craft-pane appearance="plain" padding="none">
                     <div
                       slot="header"
                       class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
@@ -364,48 +321,8 @@
                       </div>
                     </div>
                   </craft-pane>
-                </div>
-
-                <craft-tab slot="tab" id="tab-1">
-                  <craft-icon
-                    name="wave-pulse"
-                    :label="t('Activity')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
-                    <div
-                      slot="header"
-                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-                    >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Activity') }}
-                      </h3>
-                    </div>
-                    @TODO
-                  </craft-pane>
-                </div>
-
-                <craft-tab slot="tab">
-                  <craft-icon
-                    name="clock-rotate-left"
-                    :label="t('Revisions')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
-                    <div
-                      slot="header"
-                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-                    >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Revisions') }}
-                      </h3>
-                    </div>
-                    <RevisionsList :items="payload.contextMenu?.items ?? []" />
-                  </craft-pane>
-                </div>
-              </craft-tabs>
+                </template>
+              </ElementDetailsTabs>
             </div>
           </div>
         </form>
@@ -501,35 +418,6 @@
   @container (width >= 768px) {
     .element-editor__body {
       align-items: start;
-    }
-  }
-
-  craft-tabs::part(base) {
-    gap: var(--c-spacing-sm);
-  }
-
-  craft-tabs::part(strip) {
-    border: 0;
-  }
-
-  craft-tab {
-    padding: 0;
-    width: var(--c-size-touch-target);
-    background-color: white;
-    aspect-ratio: 1;
-    display: grid;
-    place-items: center;
-    border-radius: var(--c-radius-md);
-    border: 1px solid transparent;
-  }
-
-  craft-tab[selected='true'] {
-    background-color: var(--c-color-neutral-fill-normal);
-    border-color: var(--c-color-neutral-border-normal);
-    color: var(--c-color-neutral-on-normal);
-
-    &:after {
-      display: none;
     }
   }
 </style>

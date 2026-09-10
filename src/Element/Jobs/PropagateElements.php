@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Jobs;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Arr;
@@ -76,6 +77,7 @@ class PropagateElements extends BatchedElementJob
         $element->isNewSite = $this->isNewSite;
         $supportedSiteIds = array_map(fn ($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($element));
         $elementSiteIds = $this->siteId !== null ? array_intersect($this->siteId, $supportedSiteIds) : $supportedSiteIds;
+        $siteElements = [];
 
         foreach ($elementSiteIds as $siteId) {
             if ($siteId !== $element->siteId) {
@@ -83,14 +85,14 @@ class PropagateElements extends BatchedElementJob
                 $siteElement = Elements::getElementById($element->id, $element::class, $siteId);
 
                 if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                    Elements::propagateElement($element, $siteId, $siteElement ?? false);
+                    $siteElements[$siteId] = Elements::propagateElement($element, $siteId, $siteElement ?? false);
                 }
             }
         }
 
         // It's now fully duplicated and propagated
         $element->markAsDirty();
-        $element->afterPropagate(false);
+        app(ElementWrites::class)->afterPropagate($element, false, $siteElements);
     }
 
     #[Override]

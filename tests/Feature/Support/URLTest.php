@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 
 beforeEach(function () {
@@ -463,6 +466,24 @@ describe('generated URLs', function () {
         expect(Url::actionUrl('endpoint'))
             ->toBe(buildExpectedUrl('{cpUrl}/actions/endpoint', 'https'));
     });
+
+    it('builds target-site URLs without changing the current site', function (?string $baseUrl, string $expected) {
+        Aliases::set('@urlTestSite', 'https://other.test/');
+        $target = Site::factory()->create(['baseUrl' => $baseUrl, 'enabled' => false]);
+        Sites::refreshSites();
+        $current = Sites::getCurrentSite();
+        $current->setBaseUrl('https://current.test/');
+        $locale = app()->getLocale();
+
+        expect(Url::siteUrl('news', siteId: $target->id))->toBe($expected);
+        expect(fn () => Url::siteUrl('news', ['#' => []], siteId: $target->id))->toThrow(TypeError::class);
+        expect(Sites::getCurrentSite())->toBe($current)
+            ->and(app()->getLocale())->toBe($locale);
+    })->with([
+        'absolute base' => ['https://other.test/', 'https://other.test/news'],
+        'missing base' => [null, 'https://localhost/news'],
+        'alias base' => ['@urlTestSite', 'https://other.test/news'],
+    ]);
 
     it('throws for invalid site IDs', function () {
         expect(fn () => Url::siteUrl('', null, null, 12892))

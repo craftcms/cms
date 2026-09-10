@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -20,22 +23,25 @@ use function CraftCms\Cms\t;
  *
  * @since 4.0.0
  */
-class PostDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class PostDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof EntryCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('Post Date');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        return ['postDate', 'after', 'before'];
-    }
-
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $query->postDate($this->queryParamValue());
+        EntryQuery::applyPostDate($query, $this->queryParamValue());
     }
 
     public function matchElement(ElementInterface $element): bool

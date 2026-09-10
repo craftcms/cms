@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
@@ -70,12 +71,13 @@ it('runs registered collectors', function () {
         ))->toBeTrue();
 });
 
-it('applies cached dependency info on cache hits', function () {
+it('applies cached dependency info on cache hits', function (int $expiry) {
+    $this->freezeSecond();
     Cache::put('template::dependency-cache::1', [
         'body' => 'cached body',
         'cacheInfo' => [
             'tags' => ['cached-tag'],
-            'expiryDate' => null,
+            'expiryDate' => DateTimeHelper::toIso8601(now()->addSeconds($expiry)),
         ],
         'collectors' => [],
     ]);
@@ -88,11 +90,27 @@ it('applies cached dependency info on cache hits', function () {
     ));
 
     $body = app(TemplateCaches::class)->getTemplateCache('dependency-cache', true);
-    [$dependency] = $dependencyCollector->stop();
+    $this->travel(10)->seconds();
+    [$dependency, $duration] = $dependencyCollector->stop();
 
     expect($body)->toBe('cached body')
-        ->and($dependency?->tags)->toContain('cached-tag');
-});
+        ->and($dependency?->tags)->toContain('cached-tag')
+        ->and($duration)->toBe(max(0, $expiry - 10));
+})->with([30, -10]);
+
+it('does not extend dependency deadlines when writing caches', function (int $elapsed) {
+    $this->freezeSecond();
+    $service = app(TemplateCaches::class);
+    $service->startTemplateCache(global: true);
+    app(DependencyCollector::class)->setExpiryDate(now()->addSeconds(30));
+
+    $this->travel($elapsed)->seconds();
+    $service->endTemplateCache('expiry-cache', true, null, null, 'cached body');
+    expect($service->getTemplateCache('expiry-cache', true))->toBe($elapsed < 30 ? 'cached body' : null);
+
+    $this->travel(30)->seconds();
+    expect($service->getTemplateCache('expiry-cache', true))->toBeNull();
+})->with([10, 30, 40]);
 
 it('scopes non-global caches by request type and page number', function () {
     setTemplateCacheConsoleState(false);

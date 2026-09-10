@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use Override;
@@ -23,7 +25,12 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * @var string The input value.
      */
-    public string $value = '';
+    public string $value = '' {
+        /** @param string|list<string|int|float> $value */
+        set(string|array $value) {
+            $this->value = is_array($value) ? Json::encode($value) : $value;
+        }
+    }
 
     #[Override]
     protected bool $reloadOnOperatorChange = true;
@@ -35,21 +42,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         return array_merge(parent::getConfig(), [
             'value' => $this->value,
         ]);
-    }
-
-    #[Override]
-    public function __set(string $name, mixed $value): void
-    {
-        if (
-            $name === 'attributes' &&
-            isset($value['operator'], $value['value']) &&
-            in_array($value['operator'], [self::OPERATOR_IN, self::OPERATOR_NOT_IN]) &&
-            is_array($value['value'])
-        ) {
-            $value['value'] = Json::encode($value['value']);
-        }
-
-        parent::__set($name, $value);
     }
 
     /**
@@ -81,61 +73,22 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         return 'text';
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        // don't show the value input if the condition checks for empty/notempty
-        if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
-            return '';
+        if (in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY], true)) {
+            return [];
         }
 
-        if (in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
-            return FormFields::selectizeHtml($this->inputOptions());
-        }
-
-        return
-            Html::hiddenLabel(Html::encode($this->getLabel()), 'value').
-            FormFields::textHtml($this->inputOptions());
-    }
-
-    /**
-     * Returns the input options that should be used.
-     *
-     * @return array<string, mixed>
-     */
-    protected function inputOptions(): array
-    {
-        $defaults = [
-            'id' => 'value'.mt_rand(),
-            'name' => 'value',
-            'class' => 'flex-grow flex-shrink',
-        ];
-
-        if (in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+        if (in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
             $values = Json::decodeIfJson($this->value);
-            $values = is_array($values) ? array_values($values) : [];
-
-            return [...$defaults, ...[
-                'values' => $values,
-                'options' => array_map(fn ($v) => ['value' => $v, 'label' => $v], $values),
-                'multi' => true,
-                'allowEmptyOption' => true,
-                'selectizeOptions' => [
-                    'create' => true,
-                    'persist' => false,
-                    'createOnBlur' => true,
-                ],
-            ]];
+            $control = Combobox::make('value')->multiple()->value(is_array($values) ? array_map(strval(...), array_values($values)) : []);
+        } else {
+            $control = Text::make('value')->inputType($this->inputType())->value($this->value)->autocomplete(false);
         }
 
-        return [
-            ...$defaults,
-            ...[
-                'type' => $this->inputType(),
-                'value' => $this->value,
-                'autocomplete' => false,
-            ],
-        ];
+        return [Field::make($this->getLabel(), $control)];
     }
 
     #[Override]

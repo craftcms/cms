@@ -50,7 +50,8 @@ readonly class FieldHtml
         /** @var FieldLayout[][] $layoutsByType */
         $layoutsByType = $layouts
             ->keyBy('uid')
-            ->groupBy(fn (FieldLayout $layout) => $layout->type ?? '__UNKNOWN__')
+            ->groupBy(fn (FieldLayout $layout) => $layout->type ?? '__UNKNOWN__', preserveKeys: true)
+            ->map->all()
             ->all();
 
         /** @var FieldLayout[] $unknownLayouts */

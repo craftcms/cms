@@ -22,7 +22,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Illuminate\Support\Facades\Event;
-use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -522,11 +521,7 @@ class ProjectConfig extends Component
      */
     public function getPendingChangeSummary(): array
     {
-        /**
-         * Call the private method to get the pending changes.
-         */
-        $reflectionMethod = new ReflectionClass(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getMethod('_getPendingChanges');
-        $pendingChanges = $reflectionMethod->invoke(app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class));
+        $pendingChanges = app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getPendingChanges();
 
         $summary = [];
 

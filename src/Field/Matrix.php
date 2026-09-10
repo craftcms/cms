@@ -77,8 +77,7 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -149,7 +148,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -168,7 +167,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         if ($value === ':empty:') {
-            return $query->whereNotExists($exists);
+            $query->whereNotExists($exists);
+
+            return;
         }
 
         if ($value !== ':notempty:') {
@@ -182,7 +183,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $exists->whereIn("entries_$ns.id", $ids);
         }
 
-        return $query->whereExists($exists);
+        $query->whereExists($exists);
     }
 
     /**
@@ -1582,16 +1583,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = DB::table(Table::ENTRIES, 'entries')
+        $map = DB::table(Table::ELEMENTS_OWNERS, 'elements_owners')
             ->select([
                 'elements_owners.ownerId as source',
-                'entries.id as target',
+                'elements_owners.elementId as target',
             ])
-            ->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->whereColumn('elements_owners.elementId', 'entries.id')
-                    ->whereIn('elements_owners.ownerId', $sourceElementIds);
-            })
-            ->where('entries.fieldId', $this->id)
+            ->whereIn('elements_owners.ownerId', $sourceElementIds)
+            ->whereExists(fn (Builder $query) => $query
+                ->selectRaw('1')
+                ->from(Table::ENTRIES, 'entries')
+                ->whereColumn('entries.id', 'elements_owners.elementId')
+                ->where('entries.fieldId', $this->id))
             ->orderBy('elements_owners.sortOrder')
             ->get()
             ->map(fn (object $row) => (array) $row)

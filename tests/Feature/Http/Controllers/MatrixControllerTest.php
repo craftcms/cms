@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
@@ -277,7 +278,7 @@ it('refuses an entry type the field does not offer', function () {
 });
 
 it('returns a failure response when saving a new matrix draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class)) extends Drafts
     {
         public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
         {

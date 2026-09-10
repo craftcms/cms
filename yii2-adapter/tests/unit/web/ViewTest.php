@@ -653,7 +653,12 @@ TWIG;
      */
     private function _resolveTemplate(string $basePath, string $name, bool $publicOnly = false): ?string
     {
-        $path = $this->invokeMethod(new TemplateResolver(), 'resolveFromPath', [$basePath, $name, $publicOnly]);
+        $mode = TemplateMode::from($this->view->getTemplateMode());
+        $path = $this->invokeMethod(new TemplateResolver(), 'resolveFromPath', [$basePath, $name, $publicOnly, [
+            'extensions' => $mode->defaultTemplateExtensions(),
+            'indexFilenames' => $mode->indexTemplateFilenames(),
+            'privateTrigger' => $mode->privateTemplateTrigger(),
+        ]]);
         if ($path !== null) {
             $path = CraftTest::normalizePathSeparators($path);
         }

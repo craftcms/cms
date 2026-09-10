@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes as VolumesFacade;
 use CraftCms\Cms\Support\Str;
@@ -91,6 +92,7 @@ it('can save a new volume', function () {
     Event::listen(VolumeSaved::class, fn () => null);
 
     expect(Volume::count())->toBe(0);
+    expect(Folders::getRootFolderByVolumeId(1))->toBeNull();
 
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Test Volume',
@@ -100,6 +102,7 @@ it('can save a new volume', function () {
     ]));
 
     expect(Volume::count())->toBe(1);
+    expect(Folders::getRootFolderByVolumeId(Volume::firstOrFail()->id))->not->toBeNull();
 
     tap(Volume::firstOrFail(), function ($volume) {
         expect($volume->name)->toBe('Test Volume');
@@ -126,6 +129,9 @@ it('can save an existing volume', function () {
     $this->volumes = app(Volumes::class);
 
     $volume = $this->volumes->getVolumeByHandle('originalHandle');
+    $root = Folders::getRootFolderByVolumeId($volume->id);
+    Folders::getFolderById($root->id);
+    Folders::getFolderByUid($root->uid);
     $volume->name = 'Updated Name';
 
     $this->volumes->saveVolume($volume);
@@ -134,6 +140,9 @@ it('can save an existing volume', function () {
     $this->volumes = app(Volumes::class);
 
     expect($this->volumes->getVolumeByHandle('originalHandle')->name)->toBe('Updated Name');
+    expect(Folders::getRootFolderByVolumeId($volume->id)->name)->toBe('Updated Name')
+        ->and(Folders::getFolderById($root->id)->name)->toBe('Updated Name')
+        ->and(Folders::getFolderByUid($root->uid)->name)->toBe('Updated Name');
 });
 
 it('returns false when validation fails on save', function () {
@@ -169,9 +178,11 @@ it('can delete a volume by id', function () {
     expect(Volume::count())->toBe(1);
 
     $volume = $this->volumes->getVolumeByHandle('deleteMe');
+    Folders::getRootFolderByVolumeId($volume->id);
     ProjectConfig::rebuild();
 
     expect($this->volumes->deleteVolumeById($volume->id))->toBeTrue();
+    expect(Folders::getRootFolderByVolumeId($volume->id))->toBeNull();
 
     expect(Volume::count())->toBe(0);
     expect(Volume::withTrashed()->count())->toBe(1);

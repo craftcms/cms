@@ -2,6 +2,7 @@ import {LionCombobox} from '@lion/ui/combobox.js';
 import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import {keyed} from 'lit/directives/keyed.js';
+import {repeat} from 'lit/directives/repeat.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
 import {t} from '@src/utilities/translate';
@@ -44,7 +45,7 @@ interface VisibleEntry {
 }
 
 /**
- * @summary A single-select combobox with type-ahead filtering.
+ * @summary A combobox with type-ahead filtering and optional multiple selection.
  * @since 1.0
  *
  * Unlike Lion's combobox (which expects every option authored as a slotted
@@ -63,6 +64,37 @@ interface VisibleEntry {
  * @slot feedback - Validation feedback.
  */
 export default class CraftCombobox extends LionCombobox {
+  static formAssociated = true;
+
+  static override get properties() {
+    return {modelValue: {attribute: 'model-value'}};
+  }
+
+  @property({type: Boolean, attribute: 'multiple-choice', reflect: true})
+  override multipleChoice = false;
+
+  @property({type: Boolean}) required = false;
+
+  private internals?: ElementInternals;
+  private inputs?: HTMLSpanElement;
+  private initialValues: string[] = [];
+  private fieldsetDisabled = false;
+  private changingValues = false;
+
+  override attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null
+  ) {
+    if (name === 'model-value') {
+      this.modelValue = this.hasAttribute('multiple-choice')
+        ? JSON.parse(value ?? '[]')
+        : (value ?? '');
+      return;
+    }
+    super.attributeChangedCallback(name, old, value);
+  }
+
   static override get styles() {
     return [...super.styles, styles];
   }
@@ -83,13 +115,13 @@ export default class CraftCombobox extends LionCombobox {
   @property({type: Boolean, reflect: true, attribute: 'show-selected-hint'})
   showSelectedHint = false;
 
-  declare private pendingModelValue: string;
+  declare private pendingModelValue: string | string[];
 
-  override get modelValue(): string {
+  override get modelValue(): string | string[] {
     return super.modelValue;
   }
 
-  override set modelValue(value: string) {
+  override set modelValue(value: string | string[]) {
     this.pendingModelValue = value;
     super.modelValue = value;
   }
@@ -109,13 +141,42 @@ export default class CraftCombobox extends LionCombobox {
     // value into the consumer's state and marks it changed. Registered in the
     // constructor so it precedes any listener the consumer attaches.
     this.addEventListener('model-value-changed', (event: Event) => {
+      if (this.changingValues) {
+        event.stopImmediatePropagation();
+        return;
+      }
       if (
         event.target === this &&
         !(event as CustomEvent).detail?.isTriggeredByUser &&
         this.pendingModelValue !== undefined &&
-        this.modelValue !== this.pendingModelValue
+        JSON.stringify(this.modelValue) !==
+          JSON.stringify(this.pendingModelValue)
       ) {
         event.stopImmediatePropagation();
+        return;
+      }
+      if (
+        this.multipleChoice &&
+        event.target === this &&
+        (event as CustomEvent).detail?.isTriggeredByUser
+      ) {
+        this.pendingModelValue = [...this.selectedValues];
+        this.syncInputs();
+        this.dispatchEvent(
+          new Event('change', {bubbles: true, composed: true})
+        );
+      }
+    });
+    this.addEventListener('focusout', (event) => {
+      if (
+        this.multipleChoice &&
+        !this.requireOptionMatch &&
+        !(
+          event.relatedTarget instanceof Node &&
+          this.contains(event.relatedTarget)
+        )
+      ) {
+        this.commitQuery();
       }
     });
   }
@@ -136,10 +197,34 @@ export default class CraftCombobox extends LionCombobox {
     });
     this.#lastNotifiedValue = this.modelValue;
     this.#renderOptions();
+    if (this.multipleChoice) {
+      this.initialValues = [
+        ...(Array.isArray(this.pendingModelValue)
+          ? this.pendingModelValue
+          : []),
+      ];
+    }
   }
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    if (this.multipleChoice) {
+      this.syncInputs();
+      this._inputNode.removeAttribute('name');
+      this._comboboxNode.setAttribute(
+        'aria-labelledby',
+        this._inputNode.getAttribute('aria-labelledby') ?? ''
+      );
+      this._inputNode.disabled = this.disabled || this.fieldsetDisabled;
+      const missing =
+        this.required && !this.inactive && this.selectedValues.length === 0;
+      this.internals ??= this.attachInternals();
+      this.internals.setValidity(
+        missing ? {valueMissing: true} : {},
+        missing ? t('This field is required.') : '',
+        this._inputNode
+      );
+    }
     if (changed.has('opened') && !this.opened) {
       this.#filtering = false;
     }
@@ -151,7 +236,8 @@ export default class CraftCombobox extends LionCombobox {
       changed.has('limit') ||
       changed.has('opened') ||
       changed.has('modelValue') ||
-      changed.has('showSelectedHint')
+      changed.has('showSelectedHint') ||
+      changed.has('multipleChoice')
     ) {
       this.#renderOptions();
     }
@@ -165,9 +251,19 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
-  override addFormElement(option: CraftOption, indexToInsertAt: number) {
-    super.addFormElement(option, indexToInsertAt);
+  override addFormElement(child: unknown, indexToInsertAt?: number) {
+    super.addFormElement(
+      child as Parameters<LionCombobox['addFormElement']>[0],
+      indexToInsertAt
+    );
+    const option = child as CraftOption;
     option.updateComplete.then(() => {
+      if (this.multipleChoice) {
+        option.checked =
+          Array.isArray(this.pendingModelValue) &&
+          this.pendingModelValue.includes(String(option.choiceValue));
+        return;
+      }
       if (String(option.choiceValue) !== String(this.pendingModelValue)) {
         return;
       }
@@ -180,7 +276,9 @@ export default class CraftCombobox extends LionCombobox {
   #onInput = () => {
     this.#filtering = true;
     this.#renderOptions();
-    this.#syncModelFromInput();
+    if (!this.multipleChoice) {
+      this.#syncModelFromInput();
+    }
   };
 
   /**
@@ -210,15 +308,19 @@ export default class CraftCombobox extends LionCombobox {
   }
 
   protected _notifyModelValueChanged(): void {
-    if (this.modelValue !== this.#lastNotifiedValue) {
+    if (
+      JSON.stringify(this.modelValue) !==
+      JSON.stringify(this.#lastNotifiedValue)
+    ) {
       this.#lastNotifiedValue = this.modelValue;
       this.dispatchEvent(
         new CustomEvent('model-value-changed', {
           bubbles: true,
+          composed: true,
           detail: {
             formPath: [this],
             isTriggeredByUser: true,
-            changeSource: 'input',
+            changeSource: this.multipleChoice ? 'selection' : 'input',
           },
         })
       );
@@ -230,8 +332,8 @@ export default class CraftCombobox extends LionCombobox {
    * rendered option is already a match — never let Lion hide one (its default
    * label-substring check would drop keyword-only matches).
    */
-  override matchCondition() {
-    return true;
+  override matchCondition(option: CraftOption) {
+    return !this.multipleChoice || !option.hidden;
   }
 
   /**
@@ -306,11 +408,28 @@ export default class CraftCombobox extends LionCombobox {
     }
 
     const query = this.#filtering ? (this._inputNode?.value ?? '') : '';
-    const matched = this.#matchedOptions(query);
+    const selected = this.multipleChoice
+      ? Array.isArray(this.pendingModelValue)
+        ? this.pendingModelValue
+        : this.selectedValues
+      : [];
+    const matched = this.#matchedOptions(query).filter(
+      (entry) => !selected.includes(entry.option.value)
+    );
     const visible = matched.slice(0, this.limit);
 
+    const options = [...this.#allOptions()];
+    const entries: VisibleEntry[] = [
+      ...selected.map((value) => ({
+        option: options.find((option) => option.value === value) ?? {
+          value,
+          label: value,
+        },
+      })),
+      ...visible,
+    ];
     let lastGroup: string | undefined;
-    const rows = visible.map((entry) => {
+    const rows = entries.map((entry) => {
       const header =
         entry.groupLabel && entry.groupLabel !== lastGroup
           ? html`<div class="combobox__optgroup" aria-hidden="true">
@@ -319,7 +438,13 @@ export default class CraftCombobox extends LionCombobox {
           : nothing;
       lastGroup = entry.groupLabel;
 
-      return html`${header}${this.#optionTemplate(entry.option)}`;
+      return {
+        value: entry.option.value,
+        template: html`${header}${this.#optionTemplate(
+          entry.option,
+          selected.includes(entry.option.value)
+        )}`,
+      };
     });
 
     const footer =
@@ -332,15 +457,22 @@ export default class CraftCombobox extends LionCombobox {
           </div>`
         : nothing;
 
-    // Keyed on the option *set*, not on each row. A changed set has to yield
-    // new `<craft-option>` elements: Lit would otherwise patch the existing
-    // ones in place, and because they never disconnect, Lion's form registry
-    // keeps the previous options — `addFormElement` never runs for the new
-    // values, so a `modelValue` naming one of them can never be adopted and the
-    // combobox keeps announcing the value it already had. Filtering leaves the
-    // set alone, so it still patches in place rather than rebuilding the list
-    // on every keystroke.
-    render(keyed(this.#optionSetKey(), html`${rows}${footer}`), node);
+    // Retain selected option elements while filtering: Lion derives checked
+    // values from registered options, including selections outside the limit.
+    const content = html`${this.multipleChoice
+      ? repeat(
+          rows,
+          (row) => row.value,
+          (row) => row.template
+        )
+      : rows.map((row) => row.template)}${footer}`;
+    // Single selection keys the whole option set so replaced options disconnect
+    // and register with Lion again. Otherwise Lion keeps the old choice values
+    // and can reject the new model value. Filtering keeps the same key.
+    render(
+      this.multipleChoice ? content : keyed(this.#optionSetKey(), content),
+      node
+    );
   }
 
   /** Identifies the current option set, so a changed one rebuilds the list. */
@@ -360,13 +492,15 @@ export default class CraftCombobox extends LionCombobox {
     return values.join('\u0000');
   }
 
-  #optionTemplate(option: ComboboxOption) {
+  #optionTemplate(option: ComboboxOption, selected = false) {
     const data = option.data ?? {};
     const label = option.label;
     const isEnv = label.startsWith('$') || label.startsWith('@');
 
     return html`
       <craft-option
+        ?hidden=${selected}
+        aria-hidden=${selected ? 'true' : nothing}
         .choiceValue=${String(option.value)}
         .hint=${data.hint ?? null}
         ?disabled=${option.disabled ?? false}
@@ -387,10 +521,16 @@ export default class CraftCombobox extends LionCombobox {
   }
 
   #hasValue(): boolean {
-    return this.modelValue !== '' && this.modelValue != null;
+    return this.multipleChoice
+      ? this.selectedValues.length > 0
+      : this.modelValue !== '' && this.modelValue != null;
   }
 
   #clear = () => {
+    if (this.multipleChoice) {
+      this.changeValues([]);
+      return;
+    }
     this.modelValue = '';
     if (this._inputNode) {
       this._inputNode.value = '';
@@ -404,31 +544,209 @@ export default class CraftCombobox extends LionCombobox {
 
     return html`
       <div class="input-group__input">
-        ${icon
-          ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
+        ${this.multipleChoice
+          ? repeat(
+              this.selectedValues,
+              (value) => value,
+              (value) => html`
+                <span class="token">
+                  ${this.valueLabel(value)}
+                  ${!this.inactive
+                    ? html`<button
+                        type="button"
+                        aria-label=${t('Remove {label}', {
+                          label: this.valueLabel(value),
+                        })}
+                        @click=${() =>
+                          this.changeValues(
+                            this.selectedValues.filter((item) => item !== value)
+                          )}
+                      >
+                        ×
+                      </button>`
+                    : nothing}
+                </span>
+              `
+            )
           : nothing}
-        <slot name="input"></slot>
-        ${this.clearable && this.#hasValue()
-          ? html`<craft-button
-              class="clear"
-              type="button"
-              appearance="plain"
-              size="small"
-              icon
-              aria-label=${t('Clear')}
-              @mousedown=${(e: Event) => e.preventDefault()}
-              @click=${this.#clear}
-            >
-              <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
-            </craft-button>`
-          : nothing}
-        <craft-icon
-          class="indicator"
-          name="chevron-down"
-          style="font-size: 0.8em"
-        ></craft-icon>
+        <div class="combobox__textbox">
+          ${icon
+            ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
+            : nothing}
+          <slot name="input"></slot>
+          ${this.clearable && this.#hasValue() && !this.inactive
+            ? html`<craft-button
+                class="clear"
+                type="button"
+                appearance="plain"
+                size="small"
+                icon
+                aria-label=${t('Clear')}
+                @mousedown=${(e: Event) => e.preventDefault()}
+                @click=${this.#clear}
+              >
+                <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
+              </craft-button>`
+            : nothing}
+          <craft-icon
+            class="indicator"
+            name="chevron-down"
+            style="font-size: 0.8em"
+          ></craft-icon>
+        </div>
       </div>
     `;
+  }
+
+  private get selectedValues(): string[] {
+    return Array.isArray(this.modelValue) ? this.modelValue : [];
+  }
+
+  private get inactive(): boolean {
+    return this.disabled || this.readOnly || this.fieldsetDisabled;
+  }
+
+  private valueLabel(value: string): string {
+    return (
+      [...this.#allOptions()].find((option) => option.value === value)?.label ??
+      value
+    );
+  }
+
+  private syncInputs() {
+    if (!this.inputs) {
+      this.inputs = document.createElement('span');
+      this.inputs.hidden = true;
+      this.inputs.slot = 'native-inputs';
+      this.inputs.setAttribute('data-combobox-inputs', '');
+      this.append(this.inputs);
+    }
+    // HTMX also serializes condition builders that are not inside a form.
+    render(
+      !this.name || this.disabled || this.fieldsetDisabled
+        ? nothing
+        : html`
+            <input type="hidden" name=${this.name} value="" />
+            ${this.selectedValues.map(
+              (value) =>
+                html`<input
+                  type="hidden"
+                  name=${`${this.name}[]`}
+                  .value=${value}
+                />`
+            )}
+          `,
+      this.inputs
+    );
+  }
+
+  formResetCallback() {
+    if (this.multipleChoice) {
+      this.modelValue = [...this.initialValues];
+      this.value = '';
+      this.syncInputs();
+    }
+  }
+
+  formDisabledCallback(disabled: boolean) {
+    this.fieldsetDisabled = disabled;
+    this.requestUpdate();
+    if (this.multipleChoice) {
+      this.syncInputs();
+    }
+  }
+
+  private changeValues(values: string[]) {
+    if (this.inactive) {
+      return;
+    }
+    this.changingValues = true;
+    try {
+      this.modelValue = values;
+    } finally {
+      this.changingValues = false;
+    }
+    this.value = '';
+    this.opened = false;
+    this.#renderOptions();
+    this.syncInputs();
+    this._notifyModelValueChanged();
+    this._inputNode.focus();
+  }
+
+  private commitQuery() {
+    const value = this.value;
+    if (this.inactive || value === '') {
+      return;
+    }
+    const option = [...this.#allOptions()].find(
+      (option) => option.value === value
+    );
+    if (option?.disabled || (this.requireOptionMatch && !option)) {
+      return;
+    }
+    this.changeValues([...new Set([...this.selectedValues, value])]);
+  }
+
+  override _listboxOnKeyDown(event: KeyboardEvent) {
+    if (!this.multipleChoice) {
+      super._listboxOnKeyDown(event);
+      return;
+    }
+    if (this.inactive || event.isComposing) {
+      return;
+    }
+    if (event.key === 'Backspace' && this.value === '') {
+      event.preventDefault();
+      this.changeValues(this.selectedValues.slice(0, -1));
+      return;
+    }
+    const option = this.formElements[this.activeIndex];
+    if (
+      event.key === 'Enter' &&
+      (!this.opened ||
+        !option ||
+        option.hidden ||
+        option.hasAttribute('aria-hidden'))
+    ) {
+      event.preventDefault();
+      this.commitQuery();
+      return;
+    }
+    super._listboxOnKeyDown(event);
+  }
+
+  override _syncToTextboxMultiple() {}
+
+  override _resetListboxOptions() {
+    super._resetListboxOptions();
+    this.hideSelectedOptions();
+  }
+
+  override _handleAutocompletion() {
+    super._handleAutocompletion();
+    this.hideSelectedOptions();
+  }
+
+  private hideSelectedOptions() {
+    if (!this.multipleChoice) {
+      return;
+    }
+    // Lion shows every option for an empty query, regardless of matchCondition.
+    for (const option of this.formElements) {
+      if (option.hidden) {
+        option.setAttribute('aria-hidden', 'true');
+        option.removeAttribute('aria-posinset');
+        option.removeAttribute('aria-setsize');
+      }
+    }
+    const visible = this.formElements.filter(
+      (option) => !option.hasAttribute('aria-hidden')
+    );
+    visible.forEach((option, index) => {
+      option.setAttribute('aria-posinset', String(index + 1));
+      option.setAttribute('aria-setsize', String(visible.length));
+    });
   }
 
   /**
@@ -466,7 +784,7 @@ export default class CraftCombobox extends LionCombobox {
    * a half-typed query never shows a stale option's icon.
    */
   #selectedOption(): ComboboxOption | undefined {
-    if (!this.#hasValue()) {
+    if (this.multipleChoice || !this.#hasValue()) {
       return undefined;
     }
 
@@ -525,7 +843,6 @@ export default class CraftCombobox extends LionCombobox {
         : label;
     }
 
-    // @ts-expect-error Lion handles `null` but the types don't account for it
     return super._getTextboxValueFromOption(option);
   }
 

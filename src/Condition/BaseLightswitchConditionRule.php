@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Nodes\Field;
 use Override;
 
 /**
@@ -24,24 +25,11 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
         ]);
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        $lightswitchId = 'lightswitch';
-        $labelId = "$lightswitchId-label";
-
-        return
-            Html::hiddenLabel(Html::encode($this->getLabel()), $lightswitchId, [
-                'id' => $labelId,
-            ]).
-            Html::tag('div',
-                Lightswitch::make()
-                    ->id($lightswitchId)
-                    ->on($this->value)
-                    ->name('value')
-                    ->labelledBy($labelId)
-                    ->toHtml()
-            );
+        return [Field::make($this->getLabel(), Lightswitch::make('value')->value($this->value))];
     }
 
     #[Override]

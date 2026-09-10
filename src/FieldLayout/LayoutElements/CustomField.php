@@ -25,6 +25,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -174,6 +175,8 @@ class CustomField extends BaseField
         if ($this->_field !== null) {
             $this->_field->handle = $handle ?? $this->_originalHandle;
         }
+
+        $this->getLayout()?->reset();
 
         return $this;
     }
@@ -364,7 +367,7 @@ class CustomField extends BaseField
         ];
     }
 
-    public function thumbHtml(ElementInterface $element, int $size): ?string
+    public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         try {
             $field = $this->getField();
@@ -376,7 +379,7 @@ class CustomField extends BaseField
             return null;
         }
 
-        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
+        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size, $mode);
     }
 
     #[Override]
@@ -471,6 +474,8 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+
+        $this->getLayout()?->reset();
     }
 
     /**
@@ -489,6 +494,8 @@ class CustomField extends BaseField
         $this->_fieldUid = $uid;
         $this->_field = null;
         $this->_sourceField = null;
+
+        $this->getLayout()?->reset();
     }
 
     /**
