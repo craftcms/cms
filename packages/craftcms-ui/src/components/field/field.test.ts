@@ -558,6 +558,44 @@ describe('craft-field empty label and instructions', () => {
   });
 });
 
+describe('craft-field label-sr-only', () => {
+  it('visually hides the whole heading when the label is all it has', async () => {
+    const element = await createField({
+      label: 'My field',
+      'label-sr-only': '',
+    });
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    expect(heading.classList.contains('cp-visually-hidden')).toBe(true);
+    expect(heading.querySelector('slot[name="label"]')).not.toBeNull();
+  });
+
+  it('visually hides only the label when the heading has other content', async () => {
+    const element = await createField(
+      {label: 'My field', 'label-sr-only': ''},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    expect(heading.classList.contains('cp-visually-hidden')).toBe(false);
+    expect(
+      heading.querySelector('.cp-visually-hidden > slot[name="label"]')
+    ).not.toBeNull();
+  });
+
+  it('shows the label again when label-sr-only is unset', async () => {
+    const element = await createField({
+      label: 'My field',
+      'label-sr-only': '',
+    });
+
+    element.labelSrOnly = false;
+    await element.updateComplete;
+
+    expect(element.shadowRoot!.querySelector('.cp-visually-hidden')).toBeNull();
+  });
+});
+
 describe('craft-field heading prefix/suffix', () => {
   it('renders heading-prefix and heading-suffix slots around the label', async () => {
     const element = document.createElement('craft-field') as CraftField;

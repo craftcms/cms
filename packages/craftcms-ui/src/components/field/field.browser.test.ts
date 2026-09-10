@@ -44,12 +44,33 @@ describe('spacing', () => {
     expect(inputOffset(await renderField(''))).toBe(0);
   });
 
+  it('leaves no space above the input for a visually hidden label', async () => {
+    const field = await renderField('label="Title" label-sr-only');
+
+    expect(inputOffset(field)).toBe(0);
+    expect(computeAccessibleName(field.querySelector('input')!)).toBe('Title');
+  });
+
   it('spaces a visible label from the input', async () => {
     const field = await renderField('label="Title"');
     const heading = field.shadowRoot!.querySelector('.form-field__label')!;
 
     expect(inputOffset(field)).toBeGreaterThan(
       heading.getBoundingClientRect().height
+    );
+  });
+
+  it('spaces instructions from the input when the label is visually hidden', async () => {
+    const field = await renderField(
+      'label="Title" label-sr-only help-text="Some instructions"'
+    );
+    const helpText = field.shadowRoot!.querySelector('.form-field__help-text')!;
+
+    expect(
+      helpText.getBoundingClientRect().top - field.getBoundingClientRect().top
+    ).toBe(0);
+    expect(inputOffset(field)).toBeGreaterThan(
+      helpText.getBoundingClientRect().height
     );
   });
 });

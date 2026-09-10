@@ -1,4 +1,10 @@
-import {LitElement, html, nothing, type PropertyValues} from 'lit';
+import {
+  LitElement,
+  html,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -98,6 +104,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
    * shrinks without one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
+
+  /**
+   * Visually hides the label, keeping it available to screen readers.
+   * `FormControlMixin` declares this property (`label-sr-only`), but its
+   * types leave it out.
+   */
+  declare labelSrOnly: boolean;
 
   private readonly __hasSlot = new HasSlotController(
     this,
@@ -319,6 +332,11 @@ export default class CraftField extends FormControlMixin(LitElement) {
    * The field heading: label, read-only badge, flex-grow spacer, label extras
    * and actions, mirroring `.field > .heading` in the Blade wrapper. Skipped
    * entirely when there's nothing to put in it.
+   *
+   * With `label-sr-only`, the label stays available to screen readers but is
+   * visually hidden. When it's the only thing in the heading, the whole
+   * heading is hidden rather than just the label, so it leaves the flow and
+   * takes no gap; otherwise only the label is, keeping the rest visible.
    */
   protected override _labelTemplate() {
     const hasLabel = this.__hasLabel;
@@ -336,10 +354,25 @@ export default class CraftField extends FormControlMixin(LitElement) {
       return html``;
     }
 
+    let label: TemplateResult | typeof nothing = nothing;
+    if (hasLabel) {
+      label =
+        this.labelSrOnly && hasOtherContent
+          ? html`<span class="cp-visually-hidden"
+              ><slot name="label"></slot
+            ></span>`
+          : html`<slot name="label"></slot>`;
+    }
+
     return html`
-      <div class="form-field__label">
+      <div
+        class=${classMap({
+          'form-field__label': true,
+          'cp-visually-hidden': this.labelSrOnly && !hasOtherContent,
+        })}
+      >
         <slot name="heading-prefix"></slot>
-        ${hasLabel ? html`<slot name="label"></slot>` : nothing}
+        ${label}
         ${this.readOnly
           ? html`<span class="read-only-badge">${t('Read Only')}</span>`
           : nothing}
