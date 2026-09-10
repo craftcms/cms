@@ -10,18 +10,22 @@ it('returns an empty array when the field layout is null', function () {
     expect($result)->toBe([]);
 });
 
-// ensureCleanArray
+// decodeRecursive
 
 it('decodes a JSON-encoded string into an array', function () {
-    expect(ImportHelper::ensureCleanArray('["a","b"]'))->toBe(['a', 'b']);
+    expect(ImportHelper::decodeRecursive('["a","b"]'))->toBe(['a', 'b']);
 });
 
 it('decodes each JSON-encoded string element inside an array', function () {
-    expect(ImportHelper::ensureCleanArray(['["a","b"]', '["c","d"]']))->toBe([['a', 'b'], ['c', 'd']]);
+    expect(ImportHelper::decodeRecursive(['["a","b"]', '["c","d"]']))->toBe([['a', 'b'], ['c', 'd']]);
 });
 
 it('recursively decodes a JSON-encoded string element inside an array', function () {
-    expect(ImportHelper::ensureCleanArray(['["a","b"]']))->toBe([['a', 'b']]);
+    expect(ImportHelper::decodeRecursive(['["a","b"]']))->toBe([['a', 'b']]);
+});
+
+it('unpacks a JSON-encoded falsy value instead of leaving it as a string', function () {
+    expect(ImportHelper::decodeRecursive(['flag' => 'false', 'count' => '0']))->toBe(['flag' => false, 'count' => 0]);
 });
 
 // getPrefixedHandlesForMapping – fifth return value

@@ -202,19 +202,22 @@ class ImportHelper
     }
 
     /**
-     * Ensures that if the initial value is an array, any json encoded arrays in it are decoded.
+     * Recursively decodes any JSON-encoded strings found inside the given value, leaving
+     * already-decoded values (and strings that aren't valid JSON) untouched.
      */
-    public static function ensureCleanArray(mixed $value): mixed
+    public static function decodeRecursive(mixed $value): mixed
     {
-        if (! empty($value) && is_string($value) &&
-            $decoded = json_decode($value, true)) {
-            return $decoded;
-        }
         if (is_array($value)) {
-            return array_map(self::ensureCleanArray(...), $value);
+            return array_map(self::decodeRecursive(...), $value);
         }
 
-        return $value;
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode($value, true);
+
+        return json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
     }
 
     public static function getPrefixedHandlesForMapping(

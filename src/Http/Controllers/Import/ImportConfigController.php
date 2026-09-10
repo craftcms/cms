@@ -398,10 +398,10 @@ class ImportConfigController
         // container branches used to arrive as JSON strings from the Twig form's hidden
         // inputs; the Vue page posts real nested objects, but plugins and file-based
         // configs can still send the encoded shape
-        $import->map(ImportHelper::ensureCleanArray($this->request->input('map', $import->map)));
-        $import->matchCriteria(ImportHelper::ensureCleanArray($this->request->input('matchCriteria', $import->matchCriteria)));
-        $import->clearableItems(ImportHelper::ensureCleanArray($this->request->input('clearableItems', $import->clearableItems ?? [])));
-        $import->keepMissingNestedElements(ImportHelper::ensureCleanArray($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? [])));
+        $import->map(ImportHelper::decodeRecursive($this->request->input('map', $import->map)));
+        $import->matchCriteria(ImportHelper::decodeRecursive($this->request->input('matchCriteria', $import->matchCriteria)));
+        $import->clearableItems(ImportHelper::decodeRecursive($this->request->input('clearableItems', $import->clearableItems ?? [])));
+        $import->keepMissingNestedElements(ImportHelper::decodeRecursive($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? [])));
 
         if (! $this->importConfigService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
