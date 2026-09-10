@@ -34,7 +34,7 @@
   const columnVisibility = computed(() => {
     return {
       name: true,
-      enabled: isMultiSite.value,
+      enabled: !!isMultiSite.value,
       singleHomepage: props.selectedType === 'single',
       singleUri: props.selectedType === 'single',
       uriFormat: props.selectedType !== 'single',
