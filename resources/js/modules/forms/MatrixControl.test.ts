@@ -598,6 +598,54 @@ describe('MatrixControl', () => {
     });
   });
 
+  it('paints a freshly minted block from the presentation that came with it', async () => {
+    action.post.mockResolvedValue({
+      data: {
+        uid: 'block-b',
+        type: 'newType',
+        form: {
+          scope: ['fields', 'pageBuilder', 'entries', 'block-b'],
+          nodes: [],
+        },
+        values: {},
+        // Without this the new block is a blank card — no colour, no icon, no
+        // menu — until the next save brings the field's own copy round.
+        block: {
+          label: 'Entry 20',
+          color: 'teal',
+          icon: {name: 'gear', family: 'solid'},
+          data: {'element-id': 20},
+        },
+      },
+    });
+    mount(
+      {entries: {}, sortOrder: []},
+      {
+        create: {
+          fieldId: 3,
+          ownerId: 7,
+          ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          siteId: 1,
+          entryTypeIds: {newType: 9},
+        },
+      }
+    );
+    await nextTick();
+
+    container!
+      .querySelector<HTMLElement>('[data-form-matrix-add]')!
+      .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await nextTick();
+    await nextTick();
+    await nextTick();
+
+    const block = container!.querySelector<HTMLElement>('.matrixblock')!;
+
+    expect(block.dataset.color).toBe('teal');
+    expect(block.dataset.elementId).toBe('20');
+    expect(block.querySelector('craft-icon')).not.toBeNull();
+  });
+
   describe('the add buttons', () => {
     const types = (count: number, group?: (index: number) => string) =>
       Array.from({length: count}, (_, index) => ({

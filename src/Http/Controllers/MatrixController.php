@@ -180,7 +180,7 @@ readonly class MatrixController
         $entries = $value->all();
 
         if (isset($validated['path'])) {
-            return new JsonResponse($this->blockFormResponse($entry, $validated['path']));
+            return new JsonResponse($this->blockFormResponse($entry, $validated['path'], $field));
         }
 
         $html = InputNamespace::namespaceInputs(fn () => template('_components/fieldtypes/Matrix/block', [
@@ -205,9 +205,9 @@ readonly class MatrixController
      * rather than splicing in server-rendered HTML.
      *
      * @param  list<string>  $path  The Matrix Control's path, e.g. `['fields', 'pageBuilder']`
-     * @return array{uid: string, type: string, form: array<string, mixed>, values: array<string, mixed>}
+     * @return array{uid: string, type: string, form: array<string, mixed>, values: array<string, mixed>, block: array<string, mixed>}
      */
-    private function blockFormResponse(Entry $entry, array $path): array
+    private function blockFormResponse(Entry $entry, array $path, Matrix $field): array
     {
         $scope = [...$path, 'entries', $entry->uid];
         $payload = app(FieldLayoutCompiler::class)->compile(
@@ -225,6 +225,10 @@ readonly class MatrixController
                 nodes: $payload->nodes,
             )->jsonSerialize(),
             'values' => $payload->values,
+            // What the block is called, what it looks like and what can be done
+            // to it — the same shape the Control ships its other blocks in, so a
+            // new one isn't a blank card until the next save.
+            'block' => $field->blockPresentation($entry, $entry->uid),
         ];
     }
 
@@ -297,7 +301,7 @@ readonly class MatrixController
             Gate::authorize('view', $entry);
 
             if (isset($validated['path'])) {
-                $blocks[] = $this->blockFormResponse($entry, $validated['path']);
+                $blocks[] = $this->blockFormResponse($entry, $validated['path'], $field);
 
                 continue;
             }

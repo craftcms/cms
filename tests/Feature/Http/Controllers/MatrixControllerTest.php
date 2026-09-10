@@ -508,3 +508,31 @@ it('renders matrix blocks in the requested order', function () {
         ->and($firstPosition)->not->toBeFalse()
         ->and($secondPosition)->toBeLessThan($firstPosition);
 });
+
+it('saves a draft owner that holds a block minted before the draft existed', function () {
+    // `matrix/create-entry` persists the new block as a draft of its own, owned
+    // by whichever element the form was compiled against. Edit the owner
+    // afterwards and it becomes a provisional draft — leaving a block that is
+    // already a draft and still primarily owned by the canonical.
+    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture))
+        ->assertOk();
+
+    $block = matrixControllerNestedEntries($this->fixture)->sole();
+
+    expect($block->getIsDraft())->toBeTrue()
+        ->and($block->getPrimaryOwnerId())->toBe($this->fixture['owner']->id);
+
+    $draft = app(Drafts::class)->createDraft($this->fixture['owner'], provisional: true);
+    $draft->setFieldValueFromRequest($this->fixture['field']->handle, [
+        'entries' => ["uid:{$block->uid}" => [
+            'type' => $this->fixture['entryType']->handle,
+            'title' => 'Block title',
+            'enabled' => true,
+            'fields' => ['innerText' => 'Typed after the draft appeared'],
+        ]],
+        'sortOrder' => [$block->uid],
+    ]);
+
+    expect(ElementsFacade::saveElement($draft))->toBeTrue();
+    expect($response->json('blockHtml'))->toBeString();
+});

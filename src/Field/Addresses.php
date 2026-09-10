@@ -524,7 +524,11 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address = $oldAddressesById[$addressId];
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
+                if (
+                    $element->getIsDerivative() &&
+                    ! $address->getIsDraft() &&
+                    $address->getPrimaryOwnerId() === $element->getCanonicalId()
+                ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $address = app(Drafts::class)->createDraft($address, currentUser()?->getCraftUserId(), null, null, [
                         'canonicalId' => $address->id,

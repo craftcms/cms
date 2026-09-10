@@ -47,6 +47,17 @@
   } from './types';
   import {inputName, isRecord, valueAt} from './runtime';
 
+  /** What a block is called, what it looks like, and what can be done to it. */
+  type BlockPresentation = {
+    label?: string;
+    icon?: {name: string; family: string} | null;
+    color?: string | null;
+    actions?: ActionItems;
+    /** The block's identity, as `data-*` attributes. See `Matrix::blockData()`. */
+    data?: Record<string, number | string>;
+    /** Whether the last save left validation errors on the block. */
+    error?: boolean;
+  };
   type EntryType = {
     value: string;
     label: string;
@@ -60,19 +71,7 @@
     minEntries?: number | null;
     maxEntries?: number | null;
     /** Per-block presentation, keyed by identity. Server-built; never posted. */
-    blocks?: Record<
-      string,
-      {
-        label?: string;
-        icon?: {name: string; family: string} | null;
-        color?: string | null;
-        actions?: ActionItems;
-        /** The block's identity, as `data-*` attributes. See `Matrix::blockData()`. */
-        data?: Record<string, number | string>;
-        /** Whether the last save left validation errors on the block. */
-        error?: boolean;
-      }
-    >;
+    blocks?: Record<string, BlockPresentation>;
     /**
      * What `matrix/create-entry` needs to mint a block, or absent when the server
      * can't — an unsaved owner, or a nested element field that isn't Matrix-backed.
@@ -92,6 +91,7 @@
     type: string;
     form: NestedFormPayload;
     values: FormValues;
+    block: BlockPresentation;
   };
   /** The instance-local half of a block's menu. See `Matrix::blockActions()`. */
   type BlockActionDetail = {
@@ -137,6 +137,17 @@
    * dropped as soon as that payload catches up and carries them itself.
    */
   const created = ref(new Map<string, NestedFormPayload>());
+  /**
+   * Presentation for those same blocks. Without it a block the server has just
+   * minted renders as a blank card — no entry type colour, no icon, no menu —
+   * until the next save brings the field's own copy round.
+   */
+  const createdBlocks = ref(new Map<string, BlockPresentation>());
+
+  /** A block's presentation, whether it arrived with the field or was just minted. */
+  function block(uid: string): BlockPresentation | undefined {
+    return props.control.props.blocks?.[uid] ?? createdBlocks.value.get(uid);
+  }
   const {flash} = useFlashMessages();
   const adding = ref<string | null>(null);
   const pasting = ref(false);
@@ -536,7 +547,7 @@
     const elementType = props.control.props.elementType;
     const elements = actionTargets(uid)
       .map((target) => {
-        const data = props.control.props.blocks?.[target]?.data;
+        const data = block(target)?.data;
 
         // The attributes are strings once they've been through the DOM, and
         // numbers here; the clipboard wants them numeric either way.
@@ -624,7 +635,7 @@
 
   /** The element behind a block, absent for one the browser minted. */
   function elementId(uid: string): number | string | undefined {
-    return props.control.props.blocks?.[uid]?.data?.['element-id'];
+    return block(uid)?.data?.['element-id'];
   }
 
   /**
@@ -641,30 +652,64 @@
     await nextTick();
 
     const forms = new Map(created.value);
+    const presentations = new Map(createdBlocks.value);
     const next = structuredClone(toRaw(model.value));
 
-    blocks.forEach((block, offset) => {
+    blocks.forEach((added, offset) => {
       let values: FormValues = {};
 
-      if ('form' in block) {
-        forms.set(block.uid, block.form);
+      if ('form' in added) {
+        forms.set(added.uid, added.form);
+        presentations.set(added.uid, added.block);
         // The block's own field values ride along in the same emit. Writing them
         // straight into `values` wouldn't survive: the Control's value is written
         // back wholesale at its own path, which would drop anything under the
         // block that wasn't part of it.
         const blockValues = valueAt(
-          block.values as FormValue,
-          block.form.scope
+          added.values as FormValue,
+          added.form.scope
         );
         values = isRecord(blockValues) ? blockValues : {};
       }
 
-      next.entries[block.uid] = {...values, type: block.type, enabled: true};
-      next.sortOrder.splice(index + offset, 0, block.uid);
+      next.entries[added.uid] = {...values, type: added.type, enabled: true};
+      next.sortOrder.splice(index + offset, 0, added.uid);
     });
 
     created.value = forms;
+    createdBlocks.value = presentations;
     emit('update:value', next, 'discrete');
+
+    if (blocks[0]) {
+      await revealBlock(blocks[0].uid);
+    }
+  }
+
+  /**
+   * Brings a block that has just appeared into view and puts the cursor in it.
+   *
+   * Deferred past the render that adds it — and past the one that swaps its
+   * spinner for the form, which is what there is to focus.
+   */
+  async function revealBlock(uid: string): Promise<void> {
+    await nextTick();
+
+    const element = matrixHost.value?.querySelector<HTMLElement>(
+      `[data-id="${CSS.escape(uid)}"]`
+    );
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+
+    await nextTick();
+    element
+      .querySelector<HTMLElement>(
+        '.fields input:not([type="hidden"]), .fields textarea, .fields select, .fields [tabindex]:not([tabindex="-1"])'
+      )
+      ?.focus({preventScroll: true});
   }
 
   /**
@@ -715,7 +760,7 @@
   }
 
   function blockIcon(uid: string): {name: string; family: string} | null {
-    return props.control.props.blocks?.[uid]?.icon ?? null;
+    return block(uid)?.icon ?? null;
   }
 
   /**
@@ -724,7 +769,7 @@
    * the identity back off `data-id`.
    */
   function blockAttrs(uid: string): Record<string, unknown> {
-    const block = props.control.props.blocks?.[uid];
+    const presentation = block(uid);
 
     return {
       ...blockData(uid),
@@ -732,7 +777,7 @@
       'data-type': model.value.entries[uid]?.type ?? '',
       // The CP's generated colorable rules turn this into the whole `--c-color-*`
       // alias set, which the card and everything in it paints from.
-      'data-color': block?.color ?? undefined,
+      'data-color': presentation?.color ?? undefined,
       'data-ui-label': uiLabel(uid) || undefined,
       'data-collapsed': isCollapsed(uid) ? '' : undefined,
       'data-matrix-block': '',
@@ -751,9 +796,10 @@
    */
   function blockData(uid: string): Record<string, number | string> {
     return Object.fromEntries(
-      Object.entries(props.control.props.blocks?.[uid]?.data ?? {}).map(
-        ([name, value]) => [`data-${name}`, value]
-      )
+      Object.entries(block(uid)?.data ?? {}).map(([name, value]) => [
+        `data-${name}`,
+        value,
+      ])
     );
   }
 
@@ -858,7 +904,7 @@
       return title;
     }
 
-    return props.control.props.blocks?.[uid]?.label ?? '';
+    return block(uid)?.label ?? '';
   }
 
   /**
@@ -874,7 +920,7 @@
 
   /** Whether the block has errors the header should own up to. */
   function hasErrors(uid: string): boolean {
-    if (props.control.props.blocks?.[uid]?.error) {
+    if (block(uid)?.error) {
       return true;
     }
 
@@ -908,7 +954,7 @@
    * items exist and in what order — its list already reflects the permissions.
    */
   function blockActions(uid: string): ActionItems {
-    const server = props.control.props.blocks?.[uid]?.actions;
+    const server = block(uid)?.actions;
 
     if (!server?.length) {
       return localActions(uid);

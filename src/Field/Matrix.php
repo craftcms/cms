@@ -586,24 +586,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'enabled' => $entry->enabled,
                 'collapsed' => $entry->collapsed,
             ];
-            $entryType = $entry->getType();
-            $blocks[$uid] = [
-                // What the block is called once it's folded up and its fields
-                // aren't there to identify it. Empty for a block type with no
-                // title or UI label format — there'd be nothing to say.
-                'label' => $entry->getUiLabel(),
-                'icon' => $entryType->icon !== null ? Icons::resolveIconData($entryType->icon) : null,
-                // Drives `data-color`, which the CP's generated colorable rules
-                // turn into the whole `--c-color-*` alias set — so the card and
-                // everything in it takes the entry type's color for free.
-                'color' => $entryType->color?->value,
-                'actions' => $this->blockActions($entry, $uid),
-                'data' => $this->blockData($entry, $entryType),
-                // Folded up, a block hides the fields its errors are attached
-                // to, so the header says there are some. Craft 5 put an alert
-                // icon on the block type for the same reason.
-                'error' => $entry->errors()->isNotEmpty(),
-            ];
+            $blocks[$uid] = $this->blockPresentation($entry, $uid);
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
@@ -621,6 +604,39 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * Everything about a block that isn't its value: what it's called, what it
+     * looks like, what can be done to it, and who it is.
+     *
+     * Kept out of the value so it never posts back. `matrix/create-entry` hands
+     * the same shape back for a block it has just minted, so a new block looks
+     * like its neighbours right away rather than waiting for the next save.
+     *
+     * @return array<string, mixed>
+     */
+    public function blockPresentation(Entry $entry, string $uid): array
+    {
+        $entryType = $entry->getType();
+
+        return [
+            // What the block is called once it's folded up and its fields
+            // aren't there to identify it. Empty for a block type with no
+            // title or UI label format — there'd be nothing to say.
+            'label' => $entry->getUiLabel(),
+            'icon' => $entryType->icon !== null ? Icons::resolveIconData($entryType->icon) : null,
+            // Drives `data-color`, which the CP's generated colorable rules
+            // turn into the whole `--c-color-*` alias set — so the card and
+            // everything in it takes the entry type's color for free.
+            'color' => $entryType->color?->value,
+            'actions' => $this->blockActions($entry, $uid),
+            'data' => $this->blockData($entry, $entryType),
+            // Folded up, a block hides the fields its errors are attached
+            // to, so the header says there are some. Craft 5 put an alert
+            // icon on the block type for the same reason.
+            'error' => $entry->errors()->isNotEmpty(),
+        ];
     }
 
     /**
@@ -1924,6 +1940,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
+                    // A block that's already a draft is already the derivative
+                    // copy this would make — a new one, minted against the owner
+                    // before the owner itself became a draft, among them.
+                    ! $entry->getIsDraft() &&
                     ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
