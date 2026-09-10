@@ -1247,19 +1247,28 @@ class Asset extends Element
      */
     protected function cpEditUrl(): ?string
     {
+        $path = $this->cpEditPath();
+
+        return $path ? Url::cpUrl($path) : null;
+    }
+
+    /**
+     * The CP path this asset is edited at, shared by the edit screen and the
+     * image editor nested beneath it.
+     */
+    private function cpEditPath(): ?string
+    {
         if ($this->isFolder) {
             return null;
         }
 
-        $volume = $this->getVolume();
-        if ($volume->isTemporary()) {
+        if ($this->getVolume()->isTemporary()) {
             return null;
         }
 
         $filename = preg_replace('/\s+/', '-', $this->getFilename(false));
-        $path = "assets/edit/$this->id-$filename";
 
-        return Url::cpUrl($path);
+        return "assets/edit/$this->id-$filename";
     }
 
     public function getPostEditUrl(): string
@@ -2667,35 +2676,14 @@ JS;
                     HtmlStack::js($js);
                 }
 
+                // The edit screen delegates on this attribute to open its
+                // image editor dialog; no behavior is wired here.
                 if ($editable) {
                     $imageButtonHtml .= Html::button(t('Edit Image'), [
                         'id' => 'edit-btn',
                         'class' => ['btn', 'edit-btn'],
+                        'data' => ['image-editor' => true],
                     ]);
-
-                    $editBtnId = InputNamespace::namespaceId('edit-btn');
-                    $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
-                    $js = <<<JS
-$('#$editBtnId').on('activate', () => {
-    new Craft.AssetImageEditor($this->id, {
-        allowDegreeFractions: Craft.isImagick,
-        onSave: data => {
-            if (data.newAssetId) {
-                // If this is within an Assets field’s editor slideout, replace the selected asset
-                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                if (slideout && slideout.settings.elementSelectInput) {
-                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                        .catch(() => {});
-                }
-                return;
-            }
-
-            $updatePreviewThumbJs
-        },
-    })
-});
-JS;
-                    HtmlStack::js($js);
                 }
 
                 $imageButtonHtml .= Html::endTag('div'); // .image-actions
