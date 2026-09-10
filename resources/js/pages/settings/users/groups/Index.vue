@@ -58,7 +58,6 @@
 <template>
   <LayoutSlot name="actions">
     <CpLink
-      :inertia="false"
       :href="create().url"
       class="btn submit add icon"
       icon="plus"
@@ -73,7 +72,6 @@
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
           <CpLink
-            :inertia="false"
             :href="create().url"
             class="btn submit add icon"
             icon="plus"

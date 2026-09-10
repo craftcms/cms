@@ -11,18 +11,43 @@ export default css`
     gap: var(--c-spacing-md);
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    text-decoration: none;
     color: inherit;
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
     border-radius: var(--c-radius-md);
     position: relative;
+
+    &:has(.nav-item__action-item:focus-visible) {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: var(--c-focus-outline-offset);
+    }
+  }
+
+  .nav-item__action-item {
+    text-decoration: none;
+    color: inherit;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
   }
 
   craft-badge-indicator {
     position: absolute;
     inset-inline-end: 0;
     inset-block-end: 0;
+  }
+
+  .nav-item__prefix craft-button,
+  .nav-item__suffix craft-button {
+    position: relative;
+    z-index: 1;
   }
 
   .nav-item--prefixed {

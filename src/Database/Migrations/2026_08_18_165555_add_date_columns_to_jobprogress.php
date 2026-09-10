@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('jobprogress', function (Blueprint $table) {
+        Schema::table(Table::JOBPROGRESS, function (Blueprint $table) {
             if (! Schema::hasColumn(Table::JOBPROGRESS, 'dateCompleted')) {
                 $table->dateTime('dateCompleted')->nullable()->after('error');
             }
