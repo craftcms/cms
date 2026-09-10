@@ -162,6 +162,11 @@ jobs:
       - name: Build Storybook
         run: vp run @craftcms/ui#build:storybook
 
+      - name: Setup pnpm for Wrangler
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
@@ -211,6 +216,11 @@ jobs:
         env:
           CRAFT_SKIP_PHP_CODEGEN: '1'
         run: vp run build:storybook
+
+      - name: Setup pnpm for Wrangler
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
 
       - name: Deploy to Cloudflare Pages
         id: deploy
