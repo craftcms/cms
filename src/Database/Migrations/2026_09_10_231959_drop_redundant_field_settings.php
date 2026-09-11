@@ -32,16 +32,16 @@ return new class extends Migration
 
             $rules = [];
 
+            $showUnpermittedFiles = Arr::pull($config['settings'], 'showUnpermittedFiles');
             $restrictFiles = Arr::pull($config['settings'], 'restrictFiles');
             $allowedKinds = Arr::pull($config['settings'], 'allowedKinds');
-            $showUnpermittedFiles = Arr::pull($config['settings'], 'showUnpermittedFiles');
-
-            if ($restrictFiles && $allowedKinds) {
-                $rules[] = new FileTypeConditionRule(['values' => $allowedKinds]);
-            }
 
             if (! is_null($showUnpermittedFiles) && ! $showUnpermittedFiles) {
                 $rules[] = new AssetsViewableConditionRule(['value' => true]);
+            }
+
+            if ($restrictFiles && $allowedKinds) {
+                $rules[] = new FileTypeConditionRule(['values' => $allowedKinds]);
             }
 
             $this->addRulesToFieldConfig($config, $rules);
