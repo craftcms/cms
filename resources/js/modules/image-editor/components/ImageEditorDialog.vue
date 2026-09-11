@@ -757,4 +757,9 @@
     inset-inline-start: 50%;
     translate: -50% -50%;
   }
+
+  .straightening {
+    max-width: 400px;
+    margin: 0 auto;
+  }
 </style>
