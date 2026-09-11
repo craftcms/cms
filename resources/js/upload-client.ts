@@ -118,7 +118,7 @@ export class FileUpload<Result = Record<string, unknown>> {
     this.releaseFile();
 
     if (this.session) {
-      await this.json(this.session.urls.cancel, 'DELETE', undefined, {
+      await this.request(this.session.urls.cancel, 'DELETE', undefined, {
         signal: null,
       });
     }
@@ -135,34 +135,21 @@ export class FileUpload<Result = Record<string, unknown>> {
 
     try {
       if (!this.session) {
-        this.session = await this.json<UploadSession>(
+        this.session = await this.request<UploadSession>(
           this.options.url,
           'POST',
           {
             ...this.options.parameters,
             filename: this.file.name,
             size: this.file.size,
-          },
-          {retry: false}
+          }
         );
-
-        if (
-          !Number.isSafeInteger(this.session.chunkSize) ||
-          this.session.chunkSize < 1 ||
-          this.session.partCount !==
-            Math.max(1, Math.ceil(this.file.size / this.session.chunkSize))
-        ) {
-          throw new UploadError(
-            'The server returned an invalid upload session.',
-            502
-          );
-        }
       }
 
       const session = this.session;
 
       if (!this.transferred) {
-        const {uploaded} = await this.json<{uploaded: boolean}>(
+        const {uploaded} = await this.request<{uploaded: boolean}>(
           session.urls.status,
           'GET'
         );
@@ -178,7 +165,7 @@ export class FileUpload<Result = Record<string, unknown>> {
 
       this.setState('completing');
       this.result = {
-        value: await this.json<Result>(session.urls.complete, 'POST'),
+        value: await this.request<Result>(session.urls.complete, 'POST'),
       };
       this.setState('completed');
 
@@ -209,7 +196,7 @@ export class FileUpload<Result = Record<string, unknown>> {
           this.cleanup = prepare(this.fileId, {
             session,
             headers: this.headers(),
-            request: this.json.bind(this),
+            request: this.request.bind(this),
             beginCompletion: () => this.setState('completing'),
           });
         }
@@ -292,7 +279,7 @@ export class FileUpload<Result = Record<string, unknown>> {
     };
   }
 
-  private json<T>(
+  private request<T>(
     url: string,
     method: string,
     data?: unknown,

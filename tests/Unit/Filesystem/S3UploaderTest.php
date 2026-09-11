@@ -30,8 +30,8 @@ beforeEach(function () {
             return Create::promiseFor(new Result(match ($command->getName()) {
                 'CreateMultipartUpload' => ['UploadId' => 'multipart-id'],
                 'ListParts' => ['Parts' => [
-                    ['PartNumber' => 1, 'Size' => 8388608, 'ETag' => 'first'],
-                    ['PartNumber' => 2, 'Size' => 3, 'ETag' => 'second'],
+                    ['PartNumber' => 1, 'Size' => 5242880, 'ETag' => 'first'],
+                    ['PartNumber' => 2, 'Size' => 3145731, 'ETag' => 'second'],
                 ]],
                 'HeadObject' => ['ContentLength' => 5368709121],
                 'UploadPartCopy' => ['CopyPartResult' => ['ETag' => 'copied']],
@@ -55,7 +55,7 @@ it('signs direct multipart requests and completes using storage-verified parts',
     $request = $uploader->sign($session, 'PUT', 2);
 
     expect($request['url'])->toContain('uploadId=multipart-id', 'partNumber=2', 'X-Amz-Signature=')
-        ->and($session->chunkSize)->toBe(8388608);
+        ->and($session->chunkSize)->toBe(5242880);
 
     $this->disk->shouldReceive('exists')->once()->with($session->path())->andReturnFalse();
     $file = $uploader->complete($session);
@@ -66,6 +66,17 @@ it('signs direct multipart requests and completes using storage-verified parts',
             ['PartNumber' => 1, 'ETag' => 'first'], ['PartNumber' => 2, 'ETag' => 'second'],
         ]);
 });
+
+it('sizes S3 parts to match the default upload transport', function (int $size, int $chunkSize, int $partCount) {
+    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => $size]);
+    app(S3Uploader::class)->start($session);
+
+    expect($session->chunkSize)->toBe($chunkSize)
+        ->and($session->partCount())->toBe($partCount);
+})->with([
+    'small file' => [1, 5242880, 1],
+    'over ten thousand minimum-size parts' => [52428800001, 5242881, 10000],
+]);
 
 it('rejects storage parts that do not match the declared size', function () {
     $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388612]);

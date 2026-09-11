@@ -19,7 +19,8 @@ class S3Uploader implements SignsS3Uploads
 
     public function start(UploadSession $session): void
     {
-        $session->chunkSize = max(8388608, (int) ceil($session->size / 10000));
+        // Match the default chunk sizing in @uppy/aws-s3.
+        $session->chunkSize = max(5242880, (int) ceil($session->size / 10000));
         abort_if($session->chunkSize > 5368709120, 422, 'The file exceeds the S3 multipart upload limit.');
 
         $options = $this->disk($session)->getConfig()['options'] ?? [];

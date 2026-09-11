@@ -16,7 +16,7 @@ return GeneralConfig::create()
 
 - `maxUploadFileSize` limits the complete file, independently of PHP’s per-request limit.
 - `tempAssetUploadFs` selects the shared temporary filesystem for asset and photo sessions by handle or `disk:name`. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP.
-- `uploadChunkSize` defaults to 8 MiB for PHP uploads, capped by `post_max_size`. Lower it if your proxy or web server has a smaller request limit. S3 part sizes are selected separately.
+- `uploadChunkSize` defaults to 8 MiB for PHP uploads, capped by `post_max_size`. Lower it if your proxy or web server has a smaller request limit. S3 uses Uppy’s default part sizes: at least 5 MiB, increasing as needed to stay within 10,000 parts.
 - `uploader` optionally selects a registered transport driver. By default, Craft chooses S3 multipart for Laravel S3 disks and tus for other disks.
 - `uploadSessionDuration` defaults to 24 hours of inactivity. Craft garbage collection removes expired uploads.
 
@@ -53,7 +53,7 @@ Uploads may instead use the existing `fieldId`, `elementId`, and `siteId` destin
 - Call `cancel()` to stop and clean up, including while paused. Cancellation is unavailable during saving.
 - Uppy handles transient transfer failures using its transport defaults. After failure, call `upload()` again to resume from the server’s stored bytes. Reloading the page loses the client session.
 - `onStateChange` receives `ready`, `uploading`, `paused`, `completing`, `completed`, `failed`, or `canceled`.
-- Craft request errors expose `message`, `status`, and response `data` through `UploadError`. Uppy transport errors are also rejected by `upload()`. Craft control requests use a two-minute timeout and up to three retries; session creation is not retried automatically.
+- Craft request errors expose `message`, `status`, and response `data` through `UploadError`. Uppy transport errors are also rejected by `upload()`. Craft control requests use a two-minute timeout and are not retried automatically.
 
 ### Anonymous uploads
 
