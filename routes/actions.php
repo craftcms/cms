@@ -19,7 +19,6 @@ use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
 use CraftCms\Cms\Http\Controllers\Assets\ResolveUploadConflictController;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
-use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadController;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController as AssetUploadSessionController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
@@ -343,8 +342,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
 
         // Assets
-        Route::post('assets/upload', [AssetsUploadController::class, 'upload']);
-        Route::post('assets/replace-file', [AssetsUploadController::class, 'replaceFile']);
         Route::post('assets/resolve-upload-conflict', ResolveUploadConflictController::class);
         Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
         Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
@@ -414,7 +411,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
 
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
-        Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
+        Route::post('users/upload-user-photo', [PhotoController::class, 'upload'])->middleware('throttle:60,1');
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);

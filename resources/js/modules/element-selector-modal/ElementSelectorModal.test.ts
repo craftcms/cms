@@ -22,7 +22,7 @@ const stub = vi.hoisted(() => ({
   emit: null as ((event: string, payload?: unknown) => void) | null,
 }));
 
-/** The upload button reaches for jQuery and `Craft.createUploader`. */
+/** Keep this suite focused on the selector’s upload-button contract. */
 const upload = vi.hoisted(() => ({
   lastProps: null as Record<string, any> | null,
   emit: null as ((event: string, payload?: unknown) => void) | null,

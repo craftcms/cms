@@ -62,25 +62,6 @@ const ASSET_PROPS: Props = {
   selectionLabel: 'Add an asset',
 };
 
-/**
- * Upload wiring reaches for `Craft.createUploader` and jQuery on mount, neither
- * of which exists here. Stubbing them keeps the upload stories rendering; the
- * button is real, the uploader behind it is not.
- */
-function stubCraftUploader(): void {
-  const scope = window as unknown as Record<string, unknown>;
-
-  scope.$ ??= (element: unknown) => element;
-  scope.Craft = {
-    ...(scope.Craft as object),
-    createUploader: () => ({
-      destroy() {},
-      isLastUpload: () => true,
-      setParams() {},
-    }),
-  };
-}
-
 const meta = {
   title: 'Forms/ElementSelectControl',
   component: ElementSelectControl,
@@ -162,19 +143,11 @@ export const AssetsWithoutUpload: Story = {
  * `uploadFolderId` and `fsType`, and the header gains the upload button.
  */
 export const AssetsWithUpload: Story = {
-  decorators: [
-    () => {
-      stubCraftUploader();
-
-      return {template: '<story />'};
-    },
-  ],
   args: {
     ...withElements(['seascape.jpg', 'brochure.pdf'], {
       ...ASSET_PROPS,
       canUpload: true,
       uploadFolderId: 1,
-      fsType: 'CraftCms\\Cms\\Filesystem\\Filesystems\\Local',
     }),
     editable: true,
   },
@@ -182,19 +155,11 @@ export const AssetsWithUpload: Story = {
 
 /** The same field with nothing chosen yet — the emptiest upload target. */
 export const AssetsWithUploadEmpty: Story = {
-  decorators: [
-    () => {
-      stubCraftUploader();
-
-      return {template: '<story />'};
-    },
-  ],
   args: {
     control: control({
       ...ASSET_PROPS,
       canUpload: true,
       uploadFolderId: 1,
-      fsType: 'CraftCms\\Cms\\Filesystem\\Filesystems\\Local',
     }),
     value: [],
     editable: true,

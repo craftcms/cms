@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
+- Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
+- Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
+
 - Added upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API.
 
 > [!IMPORTANT]
