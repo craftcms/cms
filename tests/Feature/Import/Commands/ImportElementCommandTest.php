@@ -15,7 +15,7 @@ use CraftCms\Cms\Tests\Support\ImportFixtures;
 /** The field layout prompt can't be skipped with an option: an empty value is falsy, so the form still asks. */
 const FIELD_LAYOUT_QUESTION = 'Provide UID, ID, or type of the field layout provider you want to use.';
 
-const TRANSFORMER_QUESTION = 'The transformer you want to use to manipulate the data on Import (fully qualified class name for the transformer)';
+const TRANSFORMER_QUESTION = 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)';
 
 const MATCH_CRITERIA_QUESTION = 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, ID will be used for matching.';
 
@@ -43,7 +43,7 @@ beforeEach(function () {
     EntryTypes::refreshEntryTypes();
     Fields::refreshFields();
 
-    $this->command = fn (string $file, array $options = []) => $this->artisan('craft:Import:element', [
+    $this->command = fn (string $file, array $options = []) => $this->artisan('craft:import:element', [
         'elementType' => EntryElement::class,
         'file' => 'tests/Fixtures/Import/'.$file,
         '--site' => Sites::getPrimarySite()->handle,
@@ -147,7 +147,7 @@ it('accepts match criteria entered through the prompt with a leading "="', funct
 });
 
 it('prompts for the transformer when the option is omitted, defaulting it when left empty', function () {
-    $this->artisan('craft:Import:element', [
+    $this->artisan('craft:import:element', [
         'elementType' => EntryElement::class,
         'file' => 'tests/Fixtures/Import/entries-plain-text.json',
         '--site' => Sites::getPrimarySite()->handle,

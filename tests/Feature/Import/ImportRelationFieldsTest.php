@@ -156,9 +156,8 @@ it('leaves existing relations alone when an empty list is provided and the field
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
-// applyClearableItems() turns the empty list into null before the importer sees it (the same path
-// that clears a plain text field in ImportClearableItemsTest), but the relation field keeps its
-// existing targets.
+// applyClearableItems() turns the empty list into null, and BaseRelationField::normalizeValueForImport()
+// turns that into an empty list again - which is the value that actually clears relations.
 it('clears existing relations when an empty list is provided for a clearable field', function () {
     $importer = (clone $this->importer)
         ->matchCriteria(['title' => 'title'])
@@ -170,4 +169,35 @@ it('clears existing relations when an empty list is provided for a clearable fie
     $entry = EntryElement::find()->title('imported entry')->one();
 
     expect($entry->getFieldValue('myEntries')->ids())->toBe([]);
-})->skip('an empty value does not clear a relation field even when it is marked clearable, unlike a plain text field');
+});
+
+// the other trigger in applyClearableItems(): the handle is absent altogether
+it('clears existing relations when a clearable field is absent from a later import', function () {
+    $importer = (clone $this->importer)
+        ->matchCriteria(['title' => 'title'])
+        ->clearableItems(['myEntries']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
+    $this->import->importItem($importer, ($this->entryData)([]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([]);
+});
+
+// the fix lives on BaseRelationField, so it covers every relation field type, not just entries
+it('clears an assets field marked clearable', function () {
+    $importer = (clone $this->importer)
+        ->matchCriteria(['title' => 'title'])
+        ->clearableItems(['myAssets']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myAssets' => [$this->relatedAsset->id]]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myAssets')->ids())->toBe([$this->relatedAsset->id]);
+
+    $this->import->importItem($importer, ($this->entryData)(['myAssets' => []]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myAssets')->ids())->toBe([]);
+});

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
@@ -89,6 +90,30 @@ it('offers match criteria and clearing on an ordinary field', function () {
 
     expect($col['canBeMatchCriteria'])->toBeTrue();
     expect($col['canBeCleared'])->toBeTrue();
+});
+
+// a relation field holds a value of its own (a list of ids), so unlike a container field it can be
+// both matched on and cleared
+it('offers match criteria and clearing on a relation field', function () {
+    $entriesField = Field::factory()->create([
+        'name' => 'My Entries',
+        'handle' => 'myEntries',
+        'type' => EntriesField::class,
+    ]);
+    Fields::refreshFields();
+
+    $fieldLayoutModel = FieldLayout::factory()
+        ->withContentTab([
+            CustomField::make($entriesField->handle),
+        ])
+        ->create();
+
+    $fieldLayout = app(FieldsService::class)->getLayoutByUid($fieldLayoutModel->uid);
+    $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
+    $col = collect($cols)->firstWhere('handle', 'myEntries');
+
+    expect($col['isContainer'])->toBeFalse()
+        ->and($col['canBeCleared'])->toBeTrue();
 });
 
 it('uses map[attr] as the prefixedHandleForMap for top-level fields without an owner field', function () {

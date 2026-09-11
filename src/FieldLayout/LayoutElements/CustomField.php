@@ -1080,10 +1080,6 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             return false;
         }
 
-        if ($field instanceof BaseRelationField) {
-            return false;
-        }
-
         if (method_exists($field, 'canBeImportCleared')) {
             return $field->canBeImportCleared();
         }
