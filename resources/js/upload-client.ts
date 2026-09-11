@@ -1,13 +1,24 @@
-import Uppy from '@uppy/core';
-import {TaskQueue} from '@uppy/core/utils';
-import {configureTus} from './upload-transports/tus';
-import {configureS3} from './upload-transports/s3';
-import {assertSameOrigin, UploadError} from './upload-request';
-import {useFetch} from '@/common/composables/useFetch';
+import type Uppy from '@uppy/core';
+import {
+  transportInstance,
+  type UploadSession,
+} from './upload-transports/registry';
+import {
+  uploadRequest,
+  responseError,
+  requestFailed,
+  UploadError,
+  type UploadRequestOptions,
+} from './upload-request';
 
 export {UploadError} from './upload-request';
-
-export type UploadSession = CraftCms.Cms.Filesystem.Data.UploadSessionData;
+export {registerTransport} from './upload-transports/registry';
+export type {
+  UploadSession,
+  PrepareUpload,
+  UploadTransport,
+  UploadTransportContext,
+} from './upload-transports/registry';
 
 export type UploadState =
   | 'ready'
@@ -27,48 +38,17 @@ export interface UploadOptions {
   onStateChange?: (state: UploadState) => void;
 }
 
-interface UploadRequestOptions {
-  retry?: boolean;
-  signal?: AbortSignal | null;
-}
-
-export interface UploadTransportContext {
-  uppy: Uppy;
-  session: UploadSession;
-  headers: Record<string, string>;
-  request: <T>(
-    url: string,
-    method: string,
-    data?: unknown,
-    options?: UploadRequestOptions
-  ) => Promise<T>;
-  beginCompletion: () => void;
-}
-
-export type UploadTransport = (
-  context: UploadTransportContext
-) => void | Promise<void>;
-
-const transports = new Map<string, UploadTransport>();
-const transferQueues = new Map<string, TaskQueue>();
-
-export function registerTransport(
-  type: string,
-  configure: UploadTransport
-): void {
-  transports.set(type, configure);
-  transferQueues.delete(type);
-}
-
 /** Uploads Craft sessions, retaining completed parts for same-page retries. */
 export class FileUpload<Result = Record<string, unknown>> {
   state: UploadState = 'ready';
+
   private session: UploadSession | null = null;
   private uppy: Uppy | null = null;
   private transferred = false;
   private result: {value: Result} | null = null;
   private running: Promise<Result> | null = null;
-  private transferQueue: TaskQueue | undefined;
+  private fileId: string | null = null;
+  private cleanup: (() => void) | void = undefined;
   private controller = new AbortController();
 
   constructor(
@@ -89,14 +69,13 @@ export class FileUpload<Result = Record<string, unknown>> {
   }
 
   get canPause(): boolean {
+    const file = this.fileId ? this.uppy?.getFile(this.fileId) : undefined;
+
     return (
       this.state === 'uploading' &&
       !!this.uppy?.getState().capabilities.resumableUploads &&
-      this.uppy
-        .getFiles()
-        .some(
-          ({progress}) => progress.uploadStarted && !progress.uploadComplete
-        )
+      !!file?.progress.uploadStarted &&
+      !file.progress.uploadComplete
     );
   }
 
@@ -104,10 +83,12 @@ export class FileUpload<Result = Record<string, unknown>> {
     if (this.state === 'paused') {
       return;
     }
+
     if (!this.canPause) {
       throw new UploadError('This upload cannot be paused.', 409);
     }
-    this.uppy!.pauseAll();
+
+    this.uppy!.pauseResume(this.fileId!);
     this.setState('paused');
   }
 
@@ -115,8 +96,9 @@ export class FileUpload<Result = Record<string, unknown>> {
     if (this.state !== 'paused') {
       return;
     }
+
     this.setState('uploading');
-    this.uppy!.resumeAll();
+    this.uppy!.pauseResume(this.fileId!);
   }
 
   async cancel(): Promise<void> {
@@ -133,8 +115,7 @@ export class FileUpload<Result = Record<string, unknown>> {
 
     this.setState('canceled');
     this.controller.abort();
-    this.uppy?.destroy();
-    this.uppy = null;
+    this.releaseFile();
 
     if (this.session) {
       await this.json(this.session.urls.cancel, 'DELETE', undefined, {
@@ -185,13 +166,14 @@ export class FileUpload<Result = Record<string, unknown>> {
           session.urls.status,
           'GET'
         );
+
         if (!uploaded) {
           await this.transfer(session);
         }
+
         this.controller.signal.throwIfAborted();
         this.transferred = true;
-        this.uppy?.destroy();
-        this.uppy = null;
+        this.releaseFile();
       }
 
       this.setState('completing');
@@ -211,82 +193,94 @@ export class FileUpload<Result = Record<string, unknown>> {
   }
 
   private async transfer(session: UploadSession): Promise<void> {
-    let failure: unknown;
-    const retrying = this.uppy !== null;
-    const uppy = (this.uppy ??= new Uppy({autoProceed: false}));
-    const onError = (
-      _file: unknown,
-      error: Error,
-      response?: {status: number; body?: {xhr?: XMLHttpRequest}}
-    ) => {
-      failure = response?.body?.xhr
-        ? responseError(response.status, response.body.xhr.responseText)
-        : error;
-    };
-    uppy.on('upload-error', onError);
-
-    if (!retrying) {
-      uppy.on('upload-start', () => this.setState('uploading'));
-      uppy.on('upload-progress', (_file, progress) => {
-        this.options.onProgress?.(progress.bytesUploaded ?? 0, this.file.size);
-      });
+    if (!this.uppy) {
+      const {uppy, prepare} = transportInstance(session.transport.type);
+      this.controller.signal.throwIfAborted();
+      this.uppy = uppy;
 
       try {
-        const configure = transports.get(session.transport.type);
-        if (!configure) {
-          throw new UploadError(
-            `No upload transport is registered for "${session.transport.type}".`,
-            400
-          );
-        }
-        await configure({
-          uppy,
-          session,
-          headers: this.headers(),
-          request: this.json.bind(this),
-          beginCompletion: () => this.setState('completing'),
-        });
-        uppy.iteratePlugins((plugin) => {
-          if (plugin.type === 'uploader' && 'limit' in plugin.opts) {
-            if (!transferQueues.has(session.transport.type)) {
-              transferQueues.set(
-                session.transport.type,
-                new TaskQueue({concurrency: plugin.opts.limit as number})
-              );
-            }
-            this.transferQueue = transferQueues.get(session.transport.type);
-          }
-        });
-        this.controller.signal.throwIfAborted();
-        uppy.addFile({
+        this.fileId = uppy.addFile({
           name: this.file.name,
           type: this.file.type,
           data: this.file,
         });
+
+        if (prepare) {
+          this.cleanup = prepare(this.fileId, {
+            session,
+            headers: this.headers(),
+            request: this.json.bind(this),
+            beginCompletion: () => this.setState('completing'),
+          });
+        }
       } catch (error) {
-        this.uppy = null;
-        uppy.destroy();
+        this.releaseFile();
+
         throw error;
       }
     }
 
+    const uppy = this.uppy;
+    const fileId = this.fileId!;
+
+    const onProgress = (
+      file: ReturnType<Uppy['getFile']> | undefined,
+      progress: {bytesUploaded: number | null}
+    ) => {
+      if (file?.id === fileId) {
+        this.options.onProgress?.(progress.bytesUploaded ?? 0, this.file.size);
+      }
+    };
+
+    let failure: unknown;
+    const onError = (
+      file: ReturnType<Uppy['getFile']> | undefined,
+      error: Error,
+      response?: {status: number; body?: {xhr?: XMLHttpRequest}}
+    ) => {
+      if (file?.id === fileId) {
+        failure = response?.body?.xhr
+          ? responseError(response.status, response.body.xhr.responseText)
+          : error;
+      }
+    };
+
+    const {signal} = this.controller;
+    let onAbort = () => {};
+    const canceled = new Promise<never>((_resolve, reject) => {
+      onAbort = () => reject(signal.reason);
+      signal.addEventListener('abort', onAbort, {once: true});
+    });
+
+    uppy.on('upload-progress', onProgress);
+    uppy.on('upload-error', onError);
+
     try {
-      const upload = () => {
-        this.controller.signal.throwIfAborted();
-        this.setState('uploading');
-        return retrying ? uppy.retryAll() : uppy.upload();
-      };
-      this.setState('ready');
-      const result = await (this.transferQueue
-        ? this.transferQueue.add(upload).abortOn(this.controller.signal)
-        : upload());
-      this.controller.signal.throwIfAborted();
+      signal.throwIfAborted();
+
+      // upload() also retries other failed files; retryUpload() starts only this file.
+      const result = await Promise.race([uppy.retryUpload(fileId), canceled]);
+
+      signal.throwIfAborted();
       if (!result?.successful?.length) {
         throw failure ?? new UploadError(requestFailed, 0);
       }
     } finally {
+      signal.removeEventListener('abort', onAbort);
+      uppy.off('upload-progress', onProgress);
       uppy.off('upload-error', onError);
     }
+  }
+
+  private releaseFile(): void {
+    if (this.fileId) {
+      this.uppy?.removeFile(this.fileId);
+      this.cleanup?.();
+    }
+
+    this.cleanup = undefined;
+    this.fileId = null;
+    this.uppy = null;
   }
 
   private headers(): Record<string, string> {
@@ -298,56 +292,17 @@ export class FileUpload<Result = Record<string, unknown>> {
     };
   }
 
-  private async json<T>(
+  private json<T>(
     url: string,
     method: string,
     data?: unknown,
-    {retry = true, signal = this.controller.signal}: UploadRequestOptions = {}
+    {signal = this.controller.signal, ...options}: UploadRequestOptions = {}
   ): Promise<T> {
-    assertSameOrigin(url);
-
-    let failure: UploadError | undefined;
-    const request = useFetch<T>(url, {
-      immediate: false,
-      refetch: false,
-      method,
-      data,
-      signal: signal ?? undefined,
-      timeout: 120_000,
-      headers: {Accept: 'application/json', ...this.headers()},
-      onError: (error) => {
-        failure = responseError(
-          error.response?.status ?? 0,
-          error.response?.data ?? {message: error.message}
-        );
-      },
+    return uploadRequest<T>(url, method, data, {
+      headers: this.headers(),
+      signal,
+      ...options,
     });
-    const retries = retry ? 3 : 0;
-
-    for (let attempt = 0; ; attempt++) {
-      signal?.throwIfAborted();
-      try {
-        failure = undefined;
-        await request.execute();
-        signal?.throwIfAborted();
-        if (request.state.value === 'aborted') {
-          throw new DOMException('Upload canceled.', 'AbortError');
-        }
-        if (request.state.value === 'error') {
-          throw failure ?? new UploadError(String(request.error.value), 0);
-        }
-        return request.data.value as T;
-      } catch (error) {
-        if (
-          attempt >= retries ||
-          !(error instanceof UploadError) ||
-          !retryableStatus(error.status)
-        ) {
-          throw error;
-        }
-        await delay(300 * 2 ** attempt, signal);
-      }
-    }
   }
 
   private setState(state: UploadState): void {
@@ -355,54 +310,3 @@ export class FileUpload<Result = Record<string, unknown>> {
     this.options.onStateChange?.(state);
   }
 }
-
-function retryableStatus(status: number): boolean {
-  return [0, 408, 429].includes(status) || status >= 500;
-}
-
-const requestFailed =
-  'The upload request failed. Check the connection and storage configuration.';
-
-function responseError(status: number, response: unknown): UploadError {
-  if (typeof response === 'string') {
-    try {
-      response = JSON.parse(response);
-    } catch {
-      // Storage errors and proxy failures may return XML or HTML.
-    }
-  }
-  const data =
-    response && typeof response === 'object'
-      ? (response as Record<string, unknown>)
-      : {};
-
-  return new UploadError(
-    typeof data.message === 'string' ? data.message : requestFailed,
-    status,
-    data
-  );
-}
-
-function delay(
-  milliseconds: number,
-  signal: AbortSignal | null
-): Promise<void> {
-  signal?.throwIfAborted();
-
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener('abort', abort);
-      resolve();
-    }, milliseconds);
-
-    function abort() {
-      clearTimeout(timer);
-      reject(signal?.reason);
-    }
-
-    signal?.addEventListener('abort', abort, {once: true});
-  });
-}
-
-registerTransport('tus', configureTus);
-registerTransport('s3', configureS3);

@@ -3,6 +3,7 @@ import {registerCraftGlobals} from '@/common/craft-global';
 
 export {FileUpload, UploadError, registerTransport};
 export type {
+  PrepareUpload,
   UploadOptions,
   UploadState,
   UploadTransport,

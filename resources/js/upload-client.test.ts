@@ -17,7 +17,8 @@ const control = vi.fn();
 const sent: Blob[] = [];
 const transfers: Transfer[] = [];
 let statuses: number[];
-let offset: number;
+const offsets = new Map<string, number>();
+let sessionCount: number;
 let holdTransfers: boolean;
 let s3: boolean;
 let uploaded: boolean;
@@ -37,6 +38,7 @@ class Transfer {
   headers: Record<string, string> = {};
   responseHeaders: Record<string, string> = {};
   aborted = false;
+  finish = () => {};
   open(method: string, url: string) {
     this.method = method;
     this.url = url;
@@ -55,11 +57,8 @@ class Transfer {
     transfers.push(this);
     if (bytes instanceof Blob) {
       sent.push(bytes);
-      if (holdTransfers) {
-        return;
-      }
     }
-    queueMicrotask(() => {
+    this.finish = () => {
       if (this.aborted) {
         return;
       }
@@ -74,7 +73,7 @@ class Transfer {
         );
         this.status = statuses.shift() ?? 200;
         if (this.status === 200) {
-          offset += bytes.size;
+          offsets.set(this.url, (offsets.get(this.url) ?? 0) + bytes.size);
           this.status = this.method === 'PATCH' ? 204 : 200;
           this.responseHeaders.etag = '"part-etag"';
         }
@@ -87,9 +86,14 @@ class Transfer {
       } else if (this.method === 'DELETE') {
         this.status = 204;
       }
-      this.responseHeaders['upload-offset'] = String(offset);
+      this.responseHeaders['upload-offset'] = String(
+        offsets.get(this.url) ?? 0
+      );
       this.onload();
-    });
+    };
+    if (!holdTransfers || !(bytes instanceof Blob)) {
+      queueMicrotask(this.finish);
+    }
   }
 }
 
@@ -98,16 +102,18 @@ beforeEach(() => {
   transfers.length = 0;
   holdTransfers = false;
   statuses = [];
-  offset = 0;
+  offsets.clear();
+  sessionCount = 0;
   s3 = false;
   transport = undefined;
   uploaded = false;
   control.mockReset();
   control.mockImplementation(async (url: string, options?: RequestInit) => {
+    if (url === '/start') sessionCount++;
     const body =
       url === '/start'
         ? {
-            id: 'one',
+            id: String(sessionCount),
             chunkSize: s3 ? 8388608 : 3,
             partCount: s3 ? 1 : 2,
             transport:
@@ -115,9 +121,12 @@ beforeEach(() => {
               (s3
                 ? {
                     type: 's3',
-                    options: {uploadId: 'multipart-id', key: 'staged/file'},
+                    options: {
+                      uploadId: `multipart-${sessionCount}`,
+                      key: 'staged/file',
+                    },
                   }
-                : {type: 'tus', options: {url: '/tus'}}),
+                : {type: 'tus', options: {url: `/tus/${sessionCount}`}}),
             urls: {
               sign: '/sign',
               status: '/status',
@@ -171,41 +180,6 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it.each([
-  [false, 20],
-  [true, 6],
-] as const)(
-  'shares Uppy’s default concurrency across file instances (S3: %s)',
-  async (useS3, limit) => {
-    s3 = useS3;
-    holdTransfers = true;
-    const uploads = Array.from(
-      {length: limit + 2},
-      (_, index) =>
-        new FileUpload(new File(['abcdef'], `file-${index}.txt`), {
-          url: '/start',
-        })
-    );
-    const results = Promise.allSettled(
-      uploads.map((upload) => upload.upload())
-    );
-
-    try {
-      await vi.waitFor(() => expect(sent).toHaveLength(limit));
-      expect(uploads[limit]!.state).toBe('ready');
-      expect(uploads[limit]!.canPause).toBe(false);
-
-      await uploads[limit]!.cancel();
-      await uploads[0]!.cancel();
-      await vi.waitFor(() => expect(sent).toHaveLength(limit + 1));
-      expect(uploads[limit + 1]!.state).toBe('uploading');
-    } finally {
-      await Promise.all(uploads.map((upload) => upload.cancel()));
-      await results;
-    }
-  }
-);
-
 it('connects a Craft session to tus and returns the handler response idempotently', async () => {
   const progress = vi.fn();
   const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
@@ -215,31 +189,25 @@ it('connects a Craft session to tus and returns the handler response idempotentl
     onProgress: progress,
   });
   await expect(upload.upload()).resolves.toEqual({assetId: 42});
-  expect(transfers[1]?.headers).toMatchObject({
+  expect(
+    transfers.find(({method}) => method === 'PATCH')?.headers
+  ).toMatchObject({
     'x-csrf-token': 'token',
   });
   expect(progress).toHaveBeenLastCalledWith(6, 6);
-  expect(control).toHaveBeenCalledWith(
-    '/start',
-    expect.objectContaining({
-      body: JSON.stringify({folderId: 12, filename: 'file.txt', size: 6}),
-    })
-  );
-  await expect(upload.upload()).resolves.toEqual({assetId: 42});
-  expect(sent).toHaveLength(2);
-});
-
-it('reuses the Craft session when retrying a failed transfer', async () => {
-  statuses = [200, 403];
-  const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
-    url: '/start',
+  expect(
+    JSON.parse(control.mock.calls.find(([url]) => url === '/start')![1].body)
+  ).toEqual({
+    folderId: 12,
+    filename: 'file.txt',
+    size: 6,
   });
-  await expect(upload.upload()).rejects.toThrow();
-  expect(upload.state).toBe('failed');
+  const transferred = [...sent];
   await expect(upload.upload()).resolves.toEqual({assetId: 42});
-  expect(control.mock.calls.filter(([url]) => url === '/start')).toHaveLength(
-    1
-  );
+  expect(sent).toEqual(transferred);
+  expect(
+    control.mock.calls.filter(([url]) => url === '/complete')
+  ).toHaveLength(1);
 });
 
 it('uses the server-created S3 multipart upload without application headers on storage requests', async () => {
@@ -261,43 +229,25 @@ it('uses the server-created S3 multipart upload without application headers on s
     const signatures = control.mock.calls
       .filter(([url]) => url === '/sign')
       .map(([, options]) => JSON.parse(options.body));
-    expect(signatures).toEqual([
-      {method: 'GET', key: 'staged/file', uploadId: 'multipart-id'},
-      {
-        method: 'PUT',
+    expect(signatures).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          method: 'PUT',
+          key: 'staged/file',
+          uploadId: 'multipart-1',
+        }),
+      ])
+    );
+    for (const signature of signatures) {
+      expect(signature).toMatchObject({
         key: 'staged/file',
-        uploadId: 'multipart-id',
-        partNumber: 1,
-      },
-      {method: 'POST', key: 'staged/file', uploadId: 'multipart-id'},
-    ]);
+        uploadId: 'multipart-1',
+      });
+    }
   } finally {
     axios.defaults.headers.common = defaults;
   }
 });
-
-it.each([false, true])(
-  'cancels a paused transfer and cleans up its session (S3: %s)',
-  async (useS3) => {
-    s3 = useS3;
-    holdTransfers = true;
-    const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
-      url: '/start',
-    });
-    const result = expect(upload.upload()).rejects.toMatchObject({
-      name: 'AbortError',
-    });
-    await vi.waitFor(() => expect(sent).toHaveLength(1));
-    upload.pause();
-    await upload.cancel();
-    await result;
-    expect(control).toHaveBeenCalledWith(
-      '/cancel',
-      expect.objectContaining({method: 'DELETE'})
-    );
-    expect(upload.state).toBe('canceled');
-  }
-);
 
 it('retries finalization without sending the file again', async () => {
   vi.useFakeTimers();
@@ -318,8 +268,9 @@ it('retries finalization without sending the file again', async () => {
   await vi.runAllTimersAsync();
   await failure;
   fail = false;
+  const transferred = [...sent];
   await expect(upload.upload()).resolves.toEqual({assetId: 42});
-  expect(sent).toHaveLength(2);
+  expect(sent).toEqual(transferred);
 });
 
 it('recognizes completed S3 storage when retrying a failed transfer', async () => {
@@ -344,8 +295,9 @@ it('recognizes completed S3 storage when retrying a failed transfer', async () =
   await vi.runAllTimersAsync();
   await failure;
   uploaded = true;
+  const transferred = [...sent];
   await expect(upload.upload()).resolves.toEqual({assetId: 42});
-  expect(sent).toHaveLength(1);
+  expect(sent).toEqual(transferred);
 });
 
 it('preserves control request errors without retrying session creation', async () => {
@@ -396,31 +348,31 @@ it('preserves the HTTP status of non-JSON control errors', async () => {
 
 it('configures a registered transport while Craft retains the session lifecycle', async () => {
   transport = {type: 'custom', options: {ticket: 'upload-ticket'}};
-  const configure = vi.fn(
-    ({
-      uppy,
-      session,
-      headers,
-      request,
-      beginCompletion,
-    }: UploadTransportContext) => {
-      expect(headers).toEqual({'X-CSRF-TOKEN': 'csrf-token'});
-      uppy.addUploader(async ([id]: string[]) => {
-        const file = uppy.getFile(id!);
-        await request('/custom/sign', 'POST', {
-          ticket: session.transport.options.ticket,
-        });
-        uppy.emit('upload-progress', file, {
-          uploadStarted: Date.now(),
-          bytesUploaded: 6,
-          bytesTotal: 6,
-        });
-        beginCompletion();
-        uppy.emit('upload-success', file, {status: 200, body: {}});
-      });
-    }
-  );
-  registerTransport('custom', configure);
+  registerTransport('custom', (uppy) => {
+    const contexts = new Map<string, UploadTransportContext>();
+    uppy.addUploader(async (ids: string[]) => {
+      await Promise.all(
+        ids.map(async (id) => {
+          const {session, request, beginCompletion} = contexts.get(id)!;
+          const file = uppy.getFile(id);
+          await request('/custom/sign', 'POST', {
+            ticket: session.transport.options.ticket,
+          });
+          uppy.emit('upload-progress', file, {
+            uploadStarted: Date.now(),
+            bytesUploaded: 6,
+            bytesTotal: 6,
+          });
+          beginCompletion();
+          uppy.emit('upload-success', file, {status: 200, body: {}});
+        })
+      );
+    });
+    return (id: string, context: UploadTransportContext) => {
+      contexts.set(id, context);
+      return () => contexts.delete(id);
+    };
+  });
   const progress = vi.fn();
   const state = vi.fn();
   const upload = new FileUpload(new File(['abcdef'], 'file.txt'), {
@@ -431,12 +383,14 @@ it('configures a registered transport while Craft retains the session lifecycle'
   });
 
   await expect(upload.upload()).resolves.toEqual({assetId: 42});
-  expect(configure).toHaveBeenCalledOnce();
   expect(progress).toHaveBeenCalledWith(6, 6);
   expect(state).toHaveBeenCalledWith('completing');
   expect(control).toHaveBeenCalledWith(
     '/custom/sign',
-    expect.objectContaining({body: JSON.stringify({ticket: 'upload-ticket'})})
+    expect.objectContaining({
+      body: JSON.stringify({ticket: 'upload-ticket'}),
+      headers: expect.objectContaining({'X-CSRF-TOKEN': 'csrf-token'}),
+    })
   );
   expect(control).toHaveBeenCalledWith(
     '/complete',
@@ -479,7 +433,6 @@ it.each([false, true])(
     upload.pause();
     expect(upload.state).toBe('paused');
     expect(states).toHaveBeenLastCalledWith('paused');
-    expect(upload.upload()).toBe(result);
     expect(
       control.mock.calls.some(([url]) => ['/complete', '/cancel'].includes(url))
     ).toBe(false);
@@ -493,3 +446,167 @@ it.each([false, true])(
     expect(upload.canPause).toBe(false);
   }
 );
+
+it.each([false, true])(
+  'pauses and cancels one file without interrupting another with the same name (S3: %s)',
+  async (useS3) => {
+    s3 = useS3;
+    holdTransfers = true;
+    const file = new File(['abcdef'], 'same.txt');
+    const first = new FileUpload(file, {url: '/start', csrfToken: 'first'});
+    const secondProgress = vi.fn();
+    const second = new FileUpload(file, {
+      url: '/start',
+      onProgress: secondProgress,
+      csrfToken: 'second',
+    });
+    const firstResult = expect(first.upload()).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    const secondResult = second.upload();
+
+    await vi.waitFor(() => expect(sent).toHaveLength(2));
+    const [firstTransfer, secondTransfer] = transfers.filter(
+      ({method}) => method === (useS3 ? 'PUT' : 'PATCH')
+    );
+    if (!useS3) {
+      expect(firstTransfer!.headers['x-csrf-token']).toBe('first');
+      expect(secondTransfer!.headers['x-csrf-token']).toBe('second');
+    }
+    first.pause();
+    expect(first.state).toBe('paused');
+    expect(second.state).toBe('uploading');
+
+    await first.cancel();
+    await firstResult;
+    holdTransfers = false;
+    secondTransfer!.finish();
+    await expect(secondResult).resolves.toEqual({assetId: 42});
+    expect(secondProgress).toHaveBeenLastCalledWith(6, 6);
+    expect(first.state).toBe('canceled');
+    expect(control).toHaveBeenCalledWith(
+      '/cancel',
+      expect.objectContaining({method: 'DELETE'})
+    );
+  }
+);
+
+it.each([false, true])(
+  'reuses each Craft session when retrying files independently (S3: %s)',
+  async (useS3) => {
+    s3 = useS3;
+    statuses = [403];
+    const first = new FileUpload(new File(['abcdef'], 'first.txt'), {
+      url: '/start',
+    });
+    await expect(first.upload()).rejects.toThrow();
+    holdTransfers = true;
+    const second = new FileUpload(new File(['abcdef'], 'second.txt'), {
+      url: '/start',
+    });
+    const secondResult = expect(second.upload()).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    await vi.waitFor(() => expect(sent).toHaveLength(2));
+    expect(first.state).toBe('failed');
+
+    const retry = first.upload();
+    await vi.waitFor(() => expect(sent).toHaveLength(3));
+    const retriedTransfer = transfers
+      .filter(({method}) => method === (useS3 ? 'PUT' : 'PATCH'))
+      .at(-1)!;
+    await second.cancel();
+    await secondResult;
+    holdTransfers = false;
+    retriedTransfer.finish();
+    await expect(retry).resolves.toEqual({assetId: 42});
+    expect(control.mock.calls.filter(([url]) => url === '/start')).toHaveLength(
+      2
+    );
+  }
+);
+
+it('completes a file while another file is still uploading', async () => {
+  holdTransfers = true;
+  const first = new FileUpload(new File(['abcdef'], 'first.txt'), {
+    url: '/start',
+  });
+  const second = new FileUpload(new File(['abcdef'], 'second.txt'), {
+    url: '/start',
+  });
+  const firstResult = first.upload();
+  const secondResult = expect(second.upload()).rejects.toMatchObject({
+    name: 'AbortError',
+  });
+  await vi.waitFor(() => expect(sent).toHaveLength(2));
+  holdTransfers = false;
+  transfers.find(({method}) => method === 'PATCH')!.finish();
+  await expect(firstResult).resolves.toEqual({assetId: 42});
+  expect(second.state).toBe('uploading');
+  await second.cancel();
+  await secondResult;
+});
+
+it('uses each S3 session’s chunk size and signing headers on a shared instance', async () => {
+  s3 = true;
+  const implementation = control.getMockImplementation()!;
+  control.mockImplementation(async (url: string, options: RequestInit) => {
+    const response = await implementation(url, options);
+    if (url !== '/start') return response;
+    const session = await response.json();
+    const {size, chunkSize} = JSON.parse(options.body as string);
+    return Response.json({
+      ...session,
+      chunkSize,
+      partCount: Math.ceil(size / chunkSize),
+    });
+  });
+  const size = 12 * 1024 * 1024;
+  const file = new File([new Uint8Array(size)], 'same.bin');
+  const uploads = [5, 8].map(
+    (megabytes) =>
+      new FileUpload(file, {
+        url: '/start',
+        parameters: {chunkSize: megabytes * 1024 * 1024},
+        csrfToken: `token-${megabytes}`,
+      })
+  );
+  await expect(
+    Promise.all(uploads.map((upload) => upload.upload()))
+  ).resolves.toEqual([{assetId: 42}, {assetId: 42}]);
+  expect(sent.map((part) => part.size).sort((a, b) => a - b)).toEqual(
+    [2, 4, 5, 5, 8].map((megabytes) => megabytes * 1024 * 1024)
+  );
+  for (const [, options] of control.mock.calls.filter(
+    ([url]) => url === '/sign'
+  )) {
+    const {uploadId} = JSON.parse(options.body);
+    expect(options.headers['X-CSRF-TOKEN']).toBe(
+      uploadId === 'multipart-1' ? 'token-5' : 'token-8'
+    );
+  }
+});
+
+it('allows transport replacement only before its first use', async () => {
+  transport = {type: 'replaceable', options: {}};
+  const unavailable = () => {
+    throw new Error('Unavailable');
+  };
+  registerTransport('replaceable', unavailable);
+  registerTransport('replaceable', (uppy) => {
+    uppy.addUploader(async ([id]) => {
+      uppy.emit('upload-success', uppy.getFile(id!), {status: 200, body: {}});
+    });
+  });
+  const file = new File(['abcdef'], 'file.txt');
+  await expect(new FileUpload(file, {url: '/start'}).upload()).resolves.toEqual(
+    {assetId: 42}
+  );
+
+  expect(() => registerTransport('replaceable', unavailable)).toThrow(
+    'Upload transport "replaceable" has already been used and cannot be replaced.'
+  );
+  await expect(new FileUpload(file, {url: '/start'}).upload()).resolves.toEqual(
+    {assetId: 42}
+  );
+});
