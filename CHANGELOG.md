@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
+- Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
+- Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
+
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
