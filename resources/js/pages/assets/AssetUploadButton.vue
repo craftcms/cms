@@ -21,6 +21,7 @@
       canUpload: boolean;
       folderId?: number;
       fsType?: string;
+      allowedKinds?: string[];
       /** The Assets page or relation-field container that accepts dropped files. */
       dropZone?: HTMLElement | null;
       /**
@@ -57,6 +58,7 @@
 
     uploader = new FileUploader(input, {
       fileInput: input,
+      allowedKinds: props.allowedKinds,
       ...(props.dropZone ? {dropZone: props.dropZone} : {}),
       url: store.url(),
       on: {
@@ -94,7 +96,12 @@
   // unrelated invalidations — each of which tears the uploader down and, if
   // the input isn't resolvable at that moment, leaves it null.
   watch(
-    [() => props.canUpload, () => props.folderId, () => props.dropZone],
+    [
+      () => props.canUpload,
+      () => props.folderId,
+      () => props.allowedKinds,
+      () => props.dropZone,
+    ],
     createUploader
   );
   onBeforeUnmount(() => uploader?.destroy());
