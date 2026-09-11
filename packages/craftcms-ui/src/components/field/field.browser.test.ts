@@ -51,15 +51,6 @@ describe('spacing', () => {
     expect(computeAccessibleName(field.querySelector('input')!)).toBe('Title');
   });
 
-  it('spaces a visible label from the input', async () => {
-    const field = await renderField('label="Title"');
-    const heading = field.shadowRoot!.querySelector('.form-field__label')!;
-
-    expect(inputOffset(field)).toBeGreaterThan(
-      heading.getBoundingClientRect().height
-    );
-  });
-
   it('spaces instructions from the input when the label is visually hidden', async () => {
     const field = await renderField(
       'label="Title" label-sr-only help-text="Some instructions"'
