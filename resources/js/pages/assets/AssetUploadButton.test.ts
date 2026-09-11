@@ -3,6 +3,7 @@ import {createApp, h, nextTick} from 'vue';
 import AssetUploadButton from './AssetUploadButton.vue';
 import {Uploader} from '@/modules/uploader/uploader';
 vi.mock('@/modules/uploader/uploader', () => ({Uploader: vi.fn()}));
+import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
 
 const state = vi.hoisted(() => ({
   reload: vi.fn(),
@@ -81,6 +82,33 @@ it('opens the file picker and configures uploads for the selected folder', async
 
   app.unmount();
   expect(destroy).toHaveBeenCalledOnce();
+});
+
+it('captures the background destination before the picker is destroyed', () => {
+  const enqueue = vi
+    .spyOn(assetUploadQueue, 'enqueue')
+    .mockImplementation(() => {});
+  const destination = {
+    folderId: 12,
+    url: '/admin/assets/images',
+    label: 'Images',
+  };
+  const {app} = mountUploader({destination});
+  const settings = vi.mocked(Uploader).mock.calls.at(-1)![1] as {
+    enqueueUpload: (file: File, selection: File[]) => void;
+  };
+  const file = new File(['image'], 'image.png');
+  const selection = [file];
+  destination.folderId = 99;
+  app.unmount();
+  settings.enqueueUpload(file, selection);
+
+  expect(enqueue).toHaveBeenCalledWith(
+    file,
+    {folderId: 12, url: '/admin/assets/images', label: 'Images'},
+    selection
+  );
+  enqueue.mockRestore();
 });
 
 interface UploaderCallbacks {
