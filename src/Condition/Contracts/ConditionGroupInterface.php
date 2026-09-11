@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition\Contracts;
 
+use Closure;
 use CraftCms\Cms\Condition\BaseConditionGroup;
 
 /**
@@ -23,6 +24,14 @@ interface ConditionGroupInterface extends ConditionComponentInterface
      * @return ConditionComponentInterface[]
      */
     public function getRules(): array;
+
+    /**
+     * Returns all the rules that match the given callback function, recursively.
+     *
+     * @param  Closure(ConditionRuleInterface): bool  $callback
+     * @return ConditionRuleInterface[]
+     */
+    public function findRules(Closure $callback): array;
 
     /**
      * Adds a new rule or group.
