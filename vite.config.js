@@ -223,7 +223,7 @@ export default defineConfig(({mode}) => {
       'yii2-adapter/**/*.scss':
         'stylelint --fix --allow-empty-input -c ./yii2-adapter/.stylelintrc.json',
       '!(yii2-adapter)/**/*.scss': 'stylelint --fix --allow-empty-input',
-      '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
+      '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write --no-error-on-unmatched-pattern',
       'resources/js/**/*.{ts,vue}': 'vp check --fix',
     },
     fmt: {
@@ -247,6 +247,7 @@ export default defineConfig(({mode}) => {
         'resources/js/wayfinder/*',
         'yii2-adapter/*',
         'tests-playwright/.authentication.json',
+        'tests/Fixtures/Import/*',
       ],
     },
     base: './',

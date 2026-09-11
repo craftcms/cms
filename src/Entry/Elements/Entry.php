@@ -3062,7 +3062,7 @@ JS;
     public function setAttributesForImport(BaseImporter $importer, array $attributes): void
     {
         // for UI-based import, ensure we're not changing type ID compared to what we chose in the field layout provider step
-        if ($importer->isEditable()) {
+        if (isset($importer->fieldLayout)) {
             unset($attributes['typeId']);
         }
 

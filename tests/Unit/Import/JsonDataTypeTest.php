@@ -4,6 +4,37 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Import\DataTypes\Json;
 
+// format()
+
+it('formats a JSON list into rows', function () {
+    $result = Json::format('[{"title": "one"}, {"title": "two"}]');
+
+    expect($result['success'])->toBeTrue()
+        ->and($result['data'])->toBe([['title' => 'one'], ['title' => 'two']]);
+});
+
+it('keeps nested structures intact when formatting', function () {
+    $result = Json::format('[{"blocks": [{"type": "a", "fields": {"text": "x"}}]}]');
+
+    expect($result['data'][0]['blocks'][0])->toBe(['type' => 'a', 'fields' => ['text' => 'x']]);
+});
+
+it('reports malformed JSON instead of throwing', function () {
+    $result = Json::format('[{"title": "unterminated"');
+
+    expect($result['success'])->toBeFalse()
+        ->and($result['error'])->toStartWith('Invalid JSON:');
+});
+
+it('reports malformed JSON when reading headings', function () {
+    $result = Json::getHeadings('[{"title": "unterminated"');
+
+    expect($result['success'])->toBeFalse()
+        ->and($result['error'])->toStartWith('Invalid JSON:');
+});
+
+// getHeadings()
+
 it('returns top-level keys for a flat JSON array', function () {
     $result = Json::getHeadings('[{"name": "Alice", "age": 30}]');
 

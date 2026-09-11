@@ -134,3 +134,45 @@ it('creates a new address when match criteria does not match any existing addres
 
     expect(Address::find()->ownerId($entry->id)->count())->toBe(2);
 });
+
+// the manual fixture supplies latitude/longitude as strings inside a nested latLong object
+it('ignores a latLong value when the address layout has no lat/long field', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        [...$this->address, 'latLong' => ['latitude' => '37.7749', 'longitude' => '-122.4194']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect($address)->not->toBeNull()
+        ->and($address->addressLine1)->toBe($this->address['addressLine1'])
+        ->and($address->latitude)->toBeNull()
+        ->and($address->longitude)->toBeNull();
+});
+
+it('imports latLong given as a nested object of strings', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        [...$this->address, 'latLong' => ['latitude' => '37.7749', 'longitude' => '-122.4194']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect($address->latitude)->toEqual('37.7749')
+        ->and($address->longitude)->toEqual('-122.4194');
+})->skip('needs an address field layout containing a LatLongField (as the real project config has); the default test layout has none, and swapping in a layout with one makes every address fail validation');
+
+// the manual fixture sends "country", while the element exposes countryCode - this pins which one
+// the Import actually reads
+it('reads the country code from countryCode, not from a country key', function () {
+    $address = $this->address;
+    unset($address['countryCode']);
+
+    $this->import->importItem($this->importer, ($this->entryData)([[...$address, 'country' => 'GB']]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $imported = Address::find()->ownerId($entry->id)->one();
+
+    expect($imported)->not->toBeNull()
+        ->and($imported->countryCode)->not->toBe('GB');
+});

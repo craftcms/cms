@@ -12,16 +12,19 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 
 final class ImportFixtures
 {
     /**
      * Builds a field layout (title + given layout elements), an EntryType wrapping it, a
-     * Section for that EntryType, and seeds one Entry through the import-safe factory path.
+     * Section for that EntryType, and seeds one Entry through the Import-safe factory path.
      */
     public static function seedEntry(
         array $layoutElements,
@@ -53,6 +56,16 @@ final class ImportFixtures
             'section' => $section,
             'entry' => $result->element,
         ];
+    }
+
+    /**
+     * Imports one item with the importer's own matchCriteria resolved and passed in, the way
+     * Import::Import(), the Import job and the Import commands all do. Calling
+     * Import::importItem() without that third argument silently ignores config-level criteria.
+     */
+    public static function importWithConfigCriteria(Import $import, BaseImporter $importer, array $data): void
+    {
+        $import->importItem($importer, $data, ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer));
     }
 
     /**

@@ -59,11 +59,7 @@ beforeEach(function () {
     // An importer's own matchCriteria only reaches the pipeline when it's resolved and passed into
     // importItem() - which is what Import::import(), the import job and craft:import:element all do.
     // Calling importItem() without it means config-level criteria is silently ignored.
-    $this->importWithConfigCriteria = fn ($importer, array $data) => $this->import->importItem(
-        $importer,
-        $data,
-        ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer),
-    );
+    $this->importWithConfigCriteria = fn ($importer, array $data) => ImportFixtures::importWithConfigCriteria($this->import, $importer, $data);
 
     $this->importerMatchingSecondEtBlocks = fn () => (clone $this->importer)->matchCriteria([
         'title' => 'title',

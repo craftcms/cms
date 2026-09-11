@@ -114,3 +114,60 @@ it('imports an entries field value using a transformer with element lookup', fun
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
+
+// the manual fixture lists ids in a deliberately non-ascending order ("image": [141, 140])
+it('preserves the order of related element ids', function () {
+    $second = Entry::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElementWithFields(['title' => 'second related entry', 'slug' => 'second-related-entry'])
+        ->element;
+
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'myEntries' => [$second->id, $this->relatedEntry->id],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$second->id, $this->relatedEntry->id]);
+});
+
+it('leaves existing relations alone when the field is absent from a later Import', function () {
+    $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
+    $this->import->importItem($importer, ($this->entryData)([]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
+});
+
+// an empty value only clears a field that's marked clearable - the same rule ImportClearableItemsTest
+// covers for plain text, here for relations
+it('leaves existing relations alone when an empty list is provided and the field is not clearable', function () {
+    $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
+    $this->import->importItem($importer, ($this->entryData)(['myEntries' => []]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
+});
+
+// applyClearableItems() turns the empty list into null before the importer sees it (the same path
+// that clears a plain text field in ImportClearableItemsTest), but the relation field keeps its
+// existing targets.
+it('clears existing relations when an empty list is provided for a clearable field', function () {
+    $importer = (clone $this->importer)
+        ->matchCriteria(['title' => 'title'])
+        ->clearableItems(['myEntries']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
+    $this->import->importItem($importer, ($this->entryData)(['myEntries' => []]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([]);
+})->skip('an empty value does not clear a relation field even when it is marked clearable, unlike a plain text field');

@@ -80,12 +80,12 @@ class Element extends Command implements PromptsForMissingInput
         $matchCriteria = null;
         if ($this->option('matchCriteria')) {
             $matchCriteria = self::normalizeMatchCriteria($this->option('matchCriteria'));
-        } /*elseif ($responses['matchCriteria']) {
+        } elseif ($responses['matchCriteria']) {
             if (! str_starts_with((string) $responses['matchCriteria'], '=')) {
                 $responses['matchCriteria'] = '='.$responses['matchCriteria'];
             }
             $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
-        }*/
+        }
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $importConfig = (new ElementImporter)

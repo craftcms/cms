@@ -387,7 +387,7 @@ class Import
         $extension = File::extension($filePath);
         $dataTypes = $this->getAllDataTypes();
 
-        if (! $dataTypes[$extension]) {
+        if (! isset($dataTypes[$extension])) {
             throw new Exception('Unsupported data type: '.$extension);
         }
 
@@ -413,7 +413,7 @@ class Import
         $extension = File::extension($filePath);
         $dataTypes = $this->getAllDataTypes();
 
-        if (! $dataTypes[$extension]) {
+        if (! isset($dataTypes[$extension])) {
             throw new Exception('Unsupported data type: '.$extension);
         }
 
