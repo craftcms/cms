@@ -137,10 +137,54 @@ describe('craft-nav-item flyout', () => {
     ).toBe('true');
   });
 
-  it('opens the flyout on focus', async () => {
+  it('leaves the flyout shut when focus lands on the item', async () => {
     const item = await createFixture();
 
     item.dispatchEvent(new Event('focusin'));
+    await item.updateComplete;
+
+    // Opening here would put every child of every branch in the tab order, so
+    // tabbing past a branch would mean tabbing through it.
+    expect(item.flyoutOpen).toBe(false);
+  });
+
+  it('stays open while focus moves within it', async () => {
+    const item = await createFixture();
+    await hover(item, 'mouseenter');
+    expect(item.flyoutOpen).toBe(true);
+
+    // Tabbing from the item into its own subnav: `focusout` bubbles up from
+    // inside the flyout, and closing on it would shut what's being tabbed into.
+    const child = item.querySelector('craft-nav-item')!;
+    item.dispatchEvent(new FocusEvent('focusout', {relatedTarget: child}));
+    await afterCloseDelay();
+
+    expect(item.flyoutOpen).toBe(true);
+  });
+
+  it('closes once focus actually leaves', async () => {
+    const item = await createFixture();
+    await hover(item, 'mouseenter');
+
+    const elsewhere = document.createElement('button');
+    document.body.append(elsewhere);
+    item.dispatchEvent(new FocusEvent('focusout', {relatedTarget: elsewhere}));
+    await afterCloseDelay();
+
+    expect(item.flyoutOpen).toBe(false);
+  });
+
+  it('opens the flyout from its own disclosure instead', async () => {
+    const item = await createFixture();
+    const toggle = item.shadowRoot!.querySelector('.flyout-toggle')!;
+
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe(`${item.id}-subnav`);
+    // Named for what it opens: a row of bare chevrons says nothing about which
+    // branch each one belongs to.
+    expect(toggle.getAttribute('aria-label')).toContain('GraphQL');
+
+    toggle.dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await item.updateComplete;
 
     expect(item.flyoutOpen).toBe(true);
@@ -187,10 +231,12 @@ describe('craft-nav-item flyout', () => {
   it('flies out for a group item, which never shows a disclosure toggle', async () => {
     // The flyout keys off having a subnav, not off the toggle: a `group` item
     // has a subnav and no toggle, and still needs somewhere to put it.
-    const item = await createFixture({group: true});
+    const item = await createFixture({iconOnly: false, group: true});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
 
     expect(flyout(item)).not.toBeNull();
-    expect(item.shadowRoot!.querySelector('craft-tooltip')).toBeNull();
+    expect(item.shadowRoot!.querySelector('.subnav-toggle')).toBeNull();
   });
 
   it('keeps the label tooltip when there is no subnav', async () => {
@@ -224,10 +270,12 @@ describe('craft-nav-item flyout', () => {
     await item.updateComplete;
 
     // The subnav moves out of the indent and into the popover, and there's
-    // nothing left inline to collapse, so the toggle goes with it.
+    // nothing left inline to collapse — so the collapse toggle gives way to
+    // the one that opens the flyout.
     expect(flyout(item)).not.toBeNull();
     expect(item.shadowRoot!.querySelector('.subnav')).toBeNull();
-    expect(item.shadowRoot!.querySelector('craft-button')).toBeNull();
+    expect(item.shadowRoot!.querySelector('.subnav-toggle')).toBeNull();
+    expect(item.shadowRoot!.querySelector('.flyout-toggle')).not.toBeNull();
   });
 
   it('reopens the subnav when the selection moves onto it', async () => {
@@ -419,6 +467,276 @@ describe('craft-nav-item flyout', () => {
     item.icon = 'wrench';
     await item.updateComplete;
     expect(item.subnavState).toBe('open');
+  });
+
+  it('gives both kinds of heading one rule, so they can’t drift', () => {
+    // Against the stylesheet rather than computed styles, which happy-dom
+    // doesn't resolve through `var()`.
+    const hostRule = /:host\(\[group\]\) \{([^}]*)\}/.exec(
+      navItemStyles.cssText
+    )?.[1];
+    const headingRule =
+      /:host\(\[group\]\) \.nav-item,\s*\.flyout__label \{([^}]*)\}/.exec(
+        navItemStyles.cssText
+      )?.[1];
+
+    // A `group` row in the list and the label heading a collapsed item's
+    // flyout are the same thing drawn in two places.
+    expect(headingRule).toMatch(/font-size/);
+    expect(headingRule).toMatch(/font-weight/);
+
+    // A group's subnav is nested inside the host, so type set there would be
+    // inherited and every row beneath would read as a heading too.
+    expect(hostRule).toBeDefined();
+    expect(hostRule).not.toMatch(/font-size|font-weight/);
+  });
+
+  it('gives a heading more room above it than below', () => {
+    const rowRule = /:host\(\[group\]\) \.nav-item \{([^}]*)\}/.exec(
+      navItemStyles.cssText
+    )?.[1];
+
+    // It heads the rows under it, so it belongs with them: the gap above
+    // separates it from what came before, the one below only sets it off.
+    expect(navItemStyles.cssText).toContain(
+      'margin-block-start: var(--c-spacing-sm)'
+    );
+    expect(rowRule).toContain(
+      'padding-block: var(--_padding-block) var(--c-spacing-xs)'
+    );
+  });
+});
+
+describe('craft-nav-item rail stand-ins', () => {
+  it('stands the first letter in for a missing icon when collapsed', async () => {
+    const item = await createFixture({subnav: false});
+    item.removeAttribute('icon');
+    await item.updateComplete;
+
+    // Collapsed there's no label to read, so an icon-less row would be blank.
+    const initial = item.shadowRoot!.querySelector('.nav-item__initial');
+    expect(initial?.textContent?.trim()).toBe('G');
+    // It's a picture of the label, which `aria-label` already carries.
+    expect(initial?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('prefers a real icon over the stand-in', async () => {
+    const item = await createFixture({subnav: false});
+
+    expect(
+      item.shadowRoot!.querySelector('craft-icon.nav-icon')
+    ).not.toBeNull();
+    expect(item.shadowRoot!.querySelector('.nav-item__initial')).toBeNull();
+  });
+
+  it('leaves an expanded item without one, since it shows its label', async () => {
+    const item = await createFixture({iconOnly: false, subnav: false});
+    item.removeAttribute('icon');
+    await item.updateComplete;
+
+    expect(item.shadowRoot!.querySelector('.nav-item__initial')).toBeNull();
+  });
+
+  it('indents a rail subnav in place when asked, rather than flying out', async () => {
+    const item = await createFixture();
+    item.subnavDisplay = 'inline';
+    await item.updateComplete;
+
+    // This is what a selected branch gets: its children as a column of
+    // stand-ins under it, not a popover you have to hover to see.
+    expect(item.shadowRoot!.querySelector('.subnav')).not.toBeNull();
+    expect(flyout(item)).toBeNull();
+    // And the item keeps the tooltip a childless rail item would have.
+    expect(item.shadowRoot!.querySelector('craft-tooltip')).not.toBeNull();
+  });
+
+  it('lets you collapse the branch you are in without expanding the nav', async () => {
+    const item = await createFixture();
+    item.subnavDisplay = 'inline';
+    item.active = true;
+    await item.updateComplete;
+
+    const toggle = item.shadowRoot!.querySelector('.rail-toggle craft-button')!;
+    const subnav = item.shadowRoot!.querySelector<HTMLElement>('.subnav')!;
+
+    // Selected, so it starts open — and it can be shut again from the rail.
+    expect(subnav.style.display).toBe('block');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+
+    item.toggleSubnav(new Event('click'));
+    await item.updateComplete;
+
+    expect(
+      item.shadowRoot!.querySelector<HTMLElement>('.subnav')!.style.display
+    ).toBe('none');
+  });
+
+  it('names the rail toggle by something that is actually rendered', async () => {
+    const item = await createFixture();
+    item.subnavDisplay = 'inline';
+    await item.updateComplete;
+
+    // Expanded it also points at the item's label slot, which the rail has no
+    // equivalent of — a dangling idref would leave the button unnamed.
+    const toggle = item.shadowRoot!.querySelector('.rail-toggle craft-button')!;
+    const target = toggle.getAttribute('aria-labelledby')!;
+
+    expect(target).toBe(`${item.id}-toggle-icon`);
+    expect(item.shadowRoot!.getElementById(target)).not.toBeNull();
+  });
+
+  it('turns a collapsed heading into the rule between the runs it separates', async () => {
+    const item = await createFixture({group: true});
+
+    // No room for the name, and nothing to head but icons.
+    const separator = item.shadowRoot!.querySelector('hr.rail-separator');
+    expect(separator).not.toBeNull();
+    expect(item.shadowRoot!.querySelector('.nav-item')).toBeNull();
+    // The name survives for anything reading the nav aloud.
+    expect(separator!.getAttribute('aria-label')).toBe('GraphQL');
+    // Its children carry on below it.
+    expect(item.shadowRoot!.querySelector('.subnav')).not.toBeNull();
+  });
+
+  it('keeps a way into a collapsed flyout that isn’t the pointer', async () => {
+    const item = await createFixture();
+    const toggle = item.shadowRoot!.querySelector('.flyout-toggle')!;
+
+    // Without it a rail flyout would be reachable by pointer alone, since
+    // focus deliberately doesn't open one.
+    expect(toggle).not.toBeNull();
+    expect(toggle.closest('.rail-toggle')).not.toBeNull();
+
+    // It sits over the icon and only shows once focused — by opacity, because
+    // `visibility` or `display` would take it out of the tab order and then
+    // nothing could ever focus it into view.
+    const hidden = /&:not\(:focus-within\) \{([^}]*)\}/.exec(
+      navItemStyles.cssText
+    )?.[1];
+
+    expect(hidden).toMatch(/opacity:\s*0/);
+    expect(hidden).not.toMatch(/visibility|display/);
+  });
+
+  it('puts the disclosure ahead of what it opens', async () => {
+    const item = await createFixture();
+    const nodes = Array.from(item.shadowRoot!.querySelectorAll('*'));
+
+    // Tab order follows the DOM, so a control that comes after the thing it
+    // reveals would hand you the contents before the way in.
+    expect(
+      nodes.findIndex((node) => node.classList.contains('rail-toggle--flyout'))
+    ).toBeLessThan(nodes.findIndex((node) => node.tagName === 'CRAFT-POPOVER'));
+  });
+
+  it('still flies out by default when collapsed', async () => {
+    const item = await createFixture();
+
+    // A rail has nowhere to indent to, so nothing said is still a flyout.
+    expect(item.subnavDisplay).toBeUndefined();
+    expect(flyout(item)).not.toBeNull();
+    expect(item.shadowRoot!.querySelector('.subnav')).toBeNull();
+  });
+});
+
+describe('craft-nav-item flyout accessibility', () => {
+  it('tells a screen reader that a labelled item discloses a flyout', async () => {
+    const item = await createFixture({iconOnly: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+    const action = item.shadowRoot!.querySelector('.nav-item__action-item')!;
+
+    // Without these the flyout is invisible to anyone not using a pointer:
+    // nothing says the item has more behind it, or whether it's showing.
+    expect(action.getAttribute('aria-expanded')).toBe('false');
+    expect(action.getAttribute('aria-controls')).toBe(`${item.id}-subnav`);
+    expect(flyoutContent(item)!.id).toBe(`${item.id}-subnav`);
+
+    await hover(item, 'mouseenter');
+
+    expect(action.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('points the rail item at the flyout it expands', async () => {
+    const item = await createFixture();
+    const action = item.shadowRoot!.querySelector('.nav-item--icon')!;
+
+    expect(action.getAttribute('aria-expanded')).toBe('false');
+    expect(action.getAttribute('aria-controls')).toBe(`${item.id}-subnav`);
+    expect(flyoutContent(item)!.id).toBe(`${item.id}-subnav`);
+  });
+
+  it('names a rail item, whose label is projected away from it', async () => {
+    const item = await createFixture();
+    const action = item.shadowRoot!.querySelector('.nav-item--icon')!;
+
+    // The label lives in the flyout or the tooltip, so without this the link
+    // is an unnamed icon.
+    expect(action.getAttribute('aria-label')).toBe('GraphQL');
+  });
+
+  it('keeps the anchor out of the flyout aria, which it cannot carry', async () => {
+    const item = await createFixture({iconOnly: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+    await hover(item, 'mouseenter');
+
+    // The popover anchors to the row for position; the row is a plain div, so
+    // the item's own link is what says it expands.
+    expect(
+      item
+        .shadowRoot!.querySelector(`#item-${item.id}`)!
+        .hasAttribute('aria-expanded')
+    ).toBe(false);
+  });
+
+  it('leaves a childless item without a disclosure to announce', async () => {
+    const item = await createFixture({iconOnly: false, subnav: false});
+    const action = item.shadowRoot!.querySelector('.nav-item__action-item')!;
+
+    expect(action.getAttribute('aria-expanded')).toBeNull();
+    expect(action.getAttribute('aria-controls')).toBeNull();
+  });
+
+  it('makes a hrefless item with a flyout a button, so it can be reached', async () => {
+    const item = await createFixture({iconOnly: false, href: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+    const action = item.shadowRoot!.querySelector('.nav-item__action-item')!;
+
+    // A span is neither focusable nor allowed to carry `aria-expanded`, which
+    // would leave the subnav reachable by pointer only.
+    expect(action.tagName).toBe('BUTTON');
+    expect(action.getAttribute('type')).toBe('button');
+    expect(action.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('leaves a hrefless item with nothing to disclose as a label', async () => {
+    const item = await createFixture({
+      iconOnly: false,
+      subnav: false,
+      href: false,
+    });
+
+    expect(
+      item.shadowRoot!.querySelector('.nav-item__action-item')!.tagName
+    ).toBe('SPAN');
+  });
+
+  it('closes the flyout when the disclosure button is clicked', async () => {
+    const item = await createFixture({iconOnly: false, href: false});
+    item.subnavDisplay = 'flyout';
+    await item.updateComplete;
+    const action = item.shadowRoot!.querySelector('.nav-item__action-item')!;
+    await hover(item, 'mouseenter');
+    expect(item.flyoutOpen).toBe(true);
+
+    action.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await item.updateComplete;
+
+    // Hover and focus both open it, so a click on it can only mean dismiss.
+    expect(item.flyoutOpen).toBe(false);
+    expect(action.getAttribute('aria-expanded')).toBe('false');
   });
 });
 

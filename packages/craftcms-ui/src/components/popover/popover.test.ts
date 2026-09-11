@@ -73,6 +73,29 @@ describe('craft-popover', () => {
     expect(popover._overlayReferenceNode).toBe(reference);
   });
 
+  it('marks the invoker as the thing that expands the overlay', async () => {
+    const {popover, button} = await createFixture();
+
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+
+    await popover.show();
+
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('leaves the invoker alone when the consumer owns the aria', async () => {
+    const {popover, button} = await createFixture((popover) => {
+      popover.setAttribute('for', 'popover-trigger');
+      popover.setAttribute('without-invoker-aria', '');
+    });
+
+    // The invoker may be a positioning anchor rather than the control, and a
+    // generic element can't carry `aria-expanded` at all.
+    await popover.show();
+
+    expect(button.hasAttribute('aria-expanded')).toBe(false);
+  });
+
   it('tracks opened state through show() and hide()', async () => {
     const {popover} = await createFixture();
     await popover.show();

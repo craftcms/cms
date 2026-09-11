@@ -105,6 +105,99 @@ export const Group: Story = {
   },
 };
 
+/**
+ * `subnav-display="flyout"` moves the subnav into a popover beside the item,
+ * opened by hover or by the chevron — never by focus, which would put every
+ * child of every branch in the tab order. The chevron carries `aria-expanded`
+ * and `aria-controls`; an item with no `href` renders as a button rather than
+ * a span, so it can be reached by keyboard too.
+ */
+export const Flyout: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list style="max-width: 300px">
+        <craft-nav-item icon="code" href="#graphql" subnav-display="flyout">
+          GraphQL
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="#schemas">Schemas</craft-nav-item>
+            <craft-nav-item href="#tokens">Tokens</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+        <craft-nav-item icon="gear" subnav-display="flyout">
+          Administration
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="#users">Users</craft-nav-item>
+            <craft-nav-item href="#plugins">Plugins</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
+/** Collapsed to a rail there is nowhere to indent, so every subnav flies out. */
+export const IconOnly: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list>
+        <craft-nav-item icon="code" href="#graphql" icon-only>
+          GraphQL
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="#schemas">Schemas</craft-nav-item>
+            <craft-nav-item href="#tokens">Tokens</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+        <craft-nav-item icon="gear" href="#settings" icon-only>
+          Settings
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
+/**
+ * The branch you're in, collapsed. A rail flies out by default, but
+ * `subnav-display="inline"` indents in place instead — and since there's no
+ * room for labels, an icon-less child stands its first letter in for one. A
+ * heading becomes the rule between runs, and the chevron under the parent
+ * shuts the branch without expanding the nav.
+ */
+export const IconOnlyInline: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list>
+        <craft-nav-item
+          icon="newspaper"
+          href="#entries"
+          icon-only
+          subnav-display="inline"
+          active
+        >
+          Entries
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="#all" icon-only active>
+              All Entries
+            </craft-nav-item>
+            <craft-nav-item href="#singles" icon-only>Singles</craft-nav-item>
+            <craft-nav-item group icon-only>
+              Channels
+              <craft-nav-list slot="subnav">
+                <craft-nav-item href="#posts" icon-only>Posts</craft-nav-item>
+              </craft-nav-list>
+            </craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+        <craft-nav-item icon="gear" href="#settings" icon-only>
+          Settings
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
 /** Toggle rendered in the prefix instead of the suffix. */
 export const TogglePositionPrefix: Story = {
   args: {},

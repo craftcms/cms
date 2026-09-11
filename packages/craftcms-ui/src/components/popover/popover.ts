@@ -66,6 +66,15 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   /** Accepted for API compatibility; craft-popover never renders an arrow. */
   @property({type: Boolean, attribute: 'without-arrow'}) withoutArrow = false;
 
+  /**
+   * Stops the overlay writing `aria-expanded` and `aria-controls` onto its
+   * invoker. Set it when the invoker is a positioning anchor rather than the
+   * control itself: a generic element can't carry those attributes, and only
+   * the consumer knows which of its own elements can.
+   */
+  @property({type: Boolean, attribute: 'without-invoker-aria', reflect: true})
+  withoutInvokerAria = false;
+
   #contentWrapper: HTMLElement | null = null;
 
   constructor() {
@@ -77,6 +86,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   _defineOverlayConfig() {
     return {
       ...withDropdownConfig(),
+      handlesAccessibility: !this.withoutInvokerAria,
       inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
       popperConfig: {
         // Position relative to the viewport so the overlay escapes any
@@ -206,7 +216,8 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     if (
       changed.has('placement') ||
       changed.has('distance') ||
-      changed.has('matchInvokerWidth')
+      changed.has('matchInvokerWidth') ||
+      changed.has('withoutInvokerAria')
     ) {
       this._overlayCtrl.updateConfig(this._defineOverlayConfig());
     }

@@ -4,7 +4,10 @@ import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import '../badge-indicator/badge-indicator';
+import '../button/button.js';
+import '../icon/icon.js';
 import '../popover/popover.js';
+import '../tooltip/tooltip.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -16,7 +19,17 @@ import {
 import {dispatchNavigateEvent} from '@src/utilities/navigate-event.js';
 
 /**
+ * One row of a navigation: a link, a heading over a run of them, or a branch
+ * with a subnav.
  *
+ * A branch shows its subnav one of two ways — indented beneath it, or in a
+ * flyout beside it — chosen by the caller through `subnav-display`, since only
+ * the nav as a whole knows which branch you're in.
+ *
+ * Collapsed to a rail (`icon-only`) the row is the icon and nothing else: the
+ * label moves to a tooltip or heads the flyout, an icon-less item stands its
+ * first letter in, and a heading becomes the rule between the runs it
+ * separates.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = styles;
@@ -73,18 +86,20 @@ export default class CraftNavItem extends LitElement {
    * it. Depth runs out of horizontal room long before the nav runs out of
    * levels, so anything past the first is better off in a popover.
    *
-   * `iconOnly` forces `flyout` regardless — collapsed to a rail there's
-   * nowhere to indent to.
+   * Unset, an expanded item indents and a rail flies out — a rail has nowhere
+   * to indent to. Set explicitly, a rail honours `inline` as well: a column of
+   * stand-in icons under the parent, for the branch you're in.
    */
   @property({attribute: 'subnav-display', reflect: true})
-  subnavDisplay: 'inline' | 'flyout' = 'inline';
+  subnavDisplay?: 'inline' | 'flyout';
 
   @state()
-  subnavState: string = 'closed';
+  subnavState: 'open' | 'closed' = 'closed';
 
   /**
-   * Whether the icon-only flyout is showing. Collapsed to an icon, an item has
-   * nowhere to put its subnav, so it moves into a popover on hover or focus.
+   * Whether the flyout is showing. Opened by hover or by the item's own
+   * disclosure — deliberately not by focus, which would put every child of
+   * every branch in the tab order.
    */
   @state()
   flyoutOpen: boolean = false;
@@ -110,18 +125,51 @@ export default class CraftNavItem extends LitElement {
   /** Space left between a flyout and the bottom of the screen, in px. */
   static flyoutViewportMargin = 16;
 
-  /** Whether the default slot (the item's label) has any content. */
-  private get hasLabel(): boolean {
-    return Array.from(this.childNodes).some((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return !!node.textContent?.trim();
-      }
+  /** The default slot's content: the label, as opposed to a named slot. */
+  private get labelNodes(): ChildNode[] {
+    return Array.from(this.childNodes).filter(
+      (node) =>
+        node.nodeType === Node.TEXT_NODE ||
+        (node.nodeType === Node.ELEMENT_NODE &&
+          !(node as Element).hasAttribute('slot'))
+    );
+  }
 
-      return (
-        node.nodeType === Node.ELEMENT_NODE &&
-        !(node as Element).hasAttribute('slot')
-      );
-    });
+  /**
+   * The item's own text, without the subnav's. Collapsed to a rail the label
+   * is projected into the flyout or the tooltip, leaving the item itself with
+   * nothing to be named by.
+   */
+  private get labelText(): string {
+    return this.labelNodes
+      .map((node) => node.textContent ?? '')
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Whether there's a label at all. Not `labelText`: an element in the default
+   * slot is a label even before it has any text of its own.
+   */
+  private get hasLabel(): boolean {
+    return this.labelNodes.some(
+      (node) => node.nodeType !== Node.TEXT_NODE || !!node.textContent?.trim()
+    );
+  }
+
+  /** The row itself, which the flyout and the tooltip anchor to. */
+  private get itemId(): string {
+    return `item-${this.id}`;
+  }
+
+  /**
+   * Whichever subnav container this item renders. Inline and flyout subnavs
+   * are mutually exclusive, so one id serves both and `aria-controls` doesn't
+   * have to care which is in play.
+   */
+  private get subnavId(): string {
+    return `${this.id}-subnav`;
   }
 
   constructor() {
@@ -141,7 +189,6 @@ export default class CraftNavItem extends LitElement {
     const {signal} = (this.#hoverListeners = new AbortController());
     this.addEventListener('mouseenter', this.#openFlyout, {signal});
     this.addEventListener('mouseleave', this.#scheduleFlyoutClose, {signal});
-    this.addEventListener('focusin', this.#focusFlyout, {signal});
     this.addEventListener('focusout', this.#scheduleFlyoutClose, {signal});
   }
 
@@ -233,13 +280,24 @@ export default class CraftNavItem extends LitElement {
     flyoutHoverIntent.requestOpen(this.#hoverIntent);
   };
 
-  // Tabbing to an item is deliberate in a way that sweeping a pointer past it
-  // isn't, so focus skips the warm-up.
-  #focusFlyout = () => {
-    flyoutHoverIntent.requestOpen(this.#hoverIntent, {immediate: true});
-  };
+  /**
+   * Focus or the pointer leaving the item.
+   *
+   * `focusout` bubbles from inside the flyout as well, so tabbing from the
+   * item into its own subnav would otherwise shut the very thing being tabbed
+   * into. Anything in the shadow tree retargets to the host and the subnav's
+   * items are light-DOM descendants, so both read as still being here.
+   *
+   * `mouseleave` doesn't fire moving between descendants, so this only ever
+   * narrows the focus case.
+   */
+  #scheduleFlyoutClose = (event: Event) => {
+    const moved = (event as FocusEvent).relatedTarget;
 
-  #scheduleFlyoutClose = () => {
+    if (moved instanceof Node && (moved === this || this.contains(moved))) {
+      return;
+    }
+
     flyoutHoverIntent.requestClose(this.#hoverIntent);
   };
 
@@ -268,30 +326,68 @@ export default class CraftNavItem extends LitElement {
     dispatchNavigateEvent(this, this.href, event);
   };
 
-  renderIconItem(hasSubnav: boolean) {
-    const itemId = `item-${this.id}`;
-    // Without an href there's nothing to link to, so render a plain span.
-    const tag = this.href ? literal`a` : literal`span`;
+  /**
+   * The tag the item's own row is built from. An item that goes somewhere is a
+   * link; one that only discloses a flyout is a button, so it can be reached by
+   * keyboard and can carry `aria-expanded`; one that does neither is a label.
+   */
+  actionTag(useFlyout: boolean) {
+    if (this.href) {
+      return literal`a`;
+    }
+
+    return useFlyout ? literal`button` : literal`span`;
+  }
+
+  /** A bare `<button>` defaults to submit, which would post its form. */
+  buttonType(useFlyout: boolean) {
+    return !this.href && useFlyout ? 'button' : nothing;
+  }
+
+  #toggleFlyout = (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.flyoutOpen) {
+      this.flyoutOpen = false;
+      flyoutHoverIntent.notifyClosed(this.#hoverIntent);
+    } else {
+      flyoutHoverIntent.requestOpen(this.#hoverIntent, {immediate: true});
+    }
+  };
+
+  renderIconItem(hasSubnav: boolean, useFlyout: boolean) {
+    const tag = this.actionTag(useFlyout);
 
     return staticHtml`
       <${tag}
         class="${classMap({
           'nav-item': true,
           'nav-item--icon': true,
-          'nav-item--static': !this.href,
+          'nav-item--static': !this.href && !useFlyout,
         })}"
-        id="${itemId}"
+        id="${this.itemId}"
+        type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
-        aria-expanded="${hasSubnav ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
-        @click="${this.#handleLinkClick}"
+        aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
+        aria-controls="${useFlyout ? this.subnavId : nothing}"
+        aria-label="${
+          (this.href || hasSubnav) && this.labelText ? this.labelText : nothing
+        }"
+        @click="${this.href ? this.#handleLinkClick : this.#toggleFlyout}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
       ${
-        hasSubnav
-          ? this.renderFlyout(itemId, true)
-          : html`<craft-tooltip for="${itemId}" placement="right-start"
+        useFlyout
+          ? html`<div class="rail-toggle">${this.renderFlyoutToggle()}</div>`
+          : nothing
+      }
+      ${
+        useFlyout
+          ? this.renderFlyout(true)
+          : html`<craft-tooltip for="${this.itemId}" placement="right"
               ><slot></slot
             ></craft-tooltip>`
       }
@@ -306,15 +402,16 @@ export default class CraftNavItem extends LitElement {
    * labelled item has already projected the default slot into itself, and a
    * slot can only render its content in one place.
    */
-  renderFlyout(itemId: string, withLabel: boolean) {
+  renderFlyout(withLabel: boolean) {
     return html`
       <craft-popover
-        for="${itemId}"
+        for="${this.itemId}"
         placement="right-start"
+        without-invoker-aria
         .opened="${this.flyoutOpen}"
         @opened-changed="${this.#onFlyoutOpenedChanged}"
       >
-        <div class="flyout">
+        <div class="flyout" id="${this.subnavId}">
           ${withLabel
             ? html`<div class="flyout__label"><slot></slot></div>`
             : nothing}
@@ -331,16 +428,18 @@ export default class CraftNavItem extends LitElement {
         variant="${Appearance.Plain}"
         icon
         size="small"
-        aria-controls="${this.id}-subnav"
+        aria-controls="${this.subnavId}"
         aria-expanded="${this.subnavState === 'open' ? 'true' : 'false'}"
-        aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
+        class="subnav-toggle"
+        aria-labelledby="${this.iconOnly
+          ? `${this.id}-toggle-icon`
+          : `${this.id}-toggle-icon ${this.id}-label`}"
       >
         <craft-icon
           id="${this.id}-toggle-icon"
           name="${this.subnavState === 'closed'
             ? 'chevron-down'
             : 'chevron-up'}"
-          style="font-size: calc(10rem / 16)"
           label="${t('Toggle subnavigation')}"
         ></craft-icon>
       </craft-button>
@@ -363,7 +462,7 @@ export default class CraftNavItem extends LitElement {
                   name="${this.icon}"
                   class="nav-icon"
                 ></craft-icon>`
-              : nothing}
+              : this.renderInitial()}
           </slot>
           ${this.indicator
             ? html`<craft-badge-indicator
@@ -378,64 +477,95 @@ export default class CraftNavItem extends LitElement {
   /**
    * An item whose subnav opens beside it says so.
    *
-   * A collapsible item has its chevron in the toggle; a flyout has no toggle,
-   * so without this there's nothing to distinguish it from a leaf until you
-   * happen to hover it.
+   * A collapsible item has its chevron in its own toggle; a flyout gets this
+   * one, which both marks the item as having more behind it and is how you
+   * open it without a pointer.
+   *
+   * It has to exist: a flyout that opened on focus would put every child of
+   * every branch in the tab order, so tabbing past a branch would mean tabbing
+   * through it.
    */
-  renderFlyoutIndicator() {
+  renderFlyoutToggle() {
     return html`
-      <craft-icon
-        class="flyout-indicator"
-        name="chevron-right"
-        aria-hidden="true"
-      ></craft-icon>
+      <craft-button
+        class="flyout-toggle"
+        @click="${this.#toggleFlyout}"
+        variant="${Appearance.Plain}"
+        icon
+        size="small"
+        aria-controls="${this.subnavId}"
+        aria-expanded="${this.flyoutOpen ? 'true' : 'false'}"
+        aria-label="${t('Show submenu for “{item}”', {item: this.labelText})}"
+      >
+        <craft-icon
+          class="flyout-indicator"
+          name="chevron-right"
+          aria-hidden="true"
+        ></craft-icon>
+      </craft-button>
     `;
   }
 
-  renderSuffix(showToggle: boolean = false, showFlyoutIndicator = false) {
+  /**
+   * A stand-in icon for a collapsed item that hasn't got one: the first letter
+   * of its label. Only the rail needs it — expanded, an icon-less row simply
+   * has no prefix.
+   *
+   * Hidden from assistive tech: it's a picture of the label, and the item is
+   * already named by `aria-label`.
+   */
+  renderInitial() {
+    const initial = this.iconOnly ? this.labelText.at(0) : null;
+
+    return initial
+      ? html`<span class="nav-item__initial" aria-hidden="true"
+          >${initial.toLocaleUpperCase()}</span
+        >`
+      : nothing;
+  }
+
+  renderSuffix(showToggle: boolean = false, showFlyoutToggle = false) {
     return html`
       <div class="nav-item__suffix">
         <slot name="suffix">
           ${showToggle && this.togglePosition === 'suffix'
             ? this.renderSubnavToggle()
             : nothing}
-          ${showFlyoutIndicator ? this.renderFlyoutIndicator() : nothing}
+          ${showFlyoutToggle ? this.renderFlyoutToggle() : nothing}
         </slot>
       </div>
     `;
   }
 
-  renderItem(
-    showToggle: boolean,
-    hasPrefix: boolean = false,
-    showFlyoutIndicator = false
-  ) {
+  renderItem(showToggle: boolean, hasPrefix: boolean, useFlyout: boolean) {
     return staticHtml`
       <div
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
-          'nav-item--static': !this.href,
+          'nav-item--static': !this.href && !useFlyout,
         })}"
-        id="item-${this.id}"
+        id="${this.itemId}"
       >
         ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
-        ${this.renderInteractiveItem()}
-        ${this.renderSuffix(showToggle, showFlyoutIndicator)}
+        ${this.renderInteractiveItem(useFlyout)}
+        ${this.renderSuffix(showToggle, useFlyout)}
       </div>
     `;
   }
 
-  renderInteractiveItem() {
-    // Without an href there's nothing to link to, so render a plain span.
-    const tag = this.href ? literal`a` : literal`span`;
+  renderInteractiveItem(useFlyout: boolean) {
+    const tag = this.actionTag(useFlyout);
     return staticHtml`
       <${tag}
         class="nav-item__action-item"
+        type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
-        @click="${this.#handleLinkClick}"
+        aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
+        aria-controls="${useFlyout ? this.subnavId : nothing}"
+        @click="${this.href ? this.#handleLinkClick : this.#toggleFlyout}"
       >
         <slot
           id="${this.id}-label"
@@ -449,34 +579,62 @@ export default class CraftNavItem extends LitElement {
     const hasSubnav = !!this.querySelector('[slot="subnav"]');
     // A `slot` can only project its content in one place, so the subnav is
     // either indented below or in the flyout, never both.
-    const useFlyout =
-      hasSubnav && (this.iconOnly || this.subnavDisplay === 'flyout');
+    const display = this.subnavDisplay ?? (this.iconOnly ? 'flyout' : 'inline');
+    const useFlyout = hasSubnav && display === 'flyout';
     // No label means no toggle, and no way to collapse. A `group` item is a
     // permanent semantic grouping: it never shows a toggle and its subnav
     // stays open (subnavOpen falls back to true when there's no toggle).
     // There's nothing to collapse either when the subnav lives in a flyout.
-    const showToggle = hasSubnav && this.hasLabel && !this.group && !useFlyout;
+    const showToggle =
+      hasSubnav &&
+      !useFlyout &&
+      !this.group &&
+      (this.iconOnly || this.hasLabel);
     const toggleInPrefix = showToggle && this.togglePosition === 'prefix';
+    // The badge sits in the prefix, so an item carrying one needs the column
+    // even with no icon to share it with.
     const hasPrefix =
       toggleInPrefix ||
       !!this.icon ||
+      this.indicator ||
       !!this.querySelector('[slot="prefix"]') ||
       !!this.querySelector('[slot="icon"]');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
 
+    // Collapsed, a heading has no room for its name and nothing to sit above
+    // but icons, so it becomes the rule between one run of them and the next.
+    // It keeps the name for anything reading the nav aloud: a hidden row would
+    // take its tooltip out of reach along with it.
+    if (this.group && this.iconOnly) {
+      return html`
+        <li>
+          <hr
+            class="rail-separator"
+            aria-label="${this.labelText || nothing}"
+          />
+          ${hasSubnav
+            ? html`<div class="subnav" id="${this.subnavId}">
+                <slot name="subnav"></slot>
+              </div>`
+            : nothing}
+        </li>
+      `;
+    }
+
     return html`
       <li>
         ${this.iconOnly
-          ? this.renderIconItem(hasSubnav)
+          ? this.renderIconItem(hasSubnav, useFlyout)
           : this.renderItem(showToggle, hasPrefix, useFlyout)}
-        ${!this.iconOnly && useFlyout
-          ? this.renderFlyout(`item-${this.id}`, false)
+        ${this.iconOnly && showToggle
+          ? html`<div class="rail-toggle">${this.renderSubnavToggle()}</div>`
           : nothing}
+        ${!this.iconOnly && useFlyout ? this.renderFlyout(false) : nothing}
         ${hasSubnav && !useFlyout
           ? html`
               <div
                 class="subnav"
-                id="${this.id}-subnav"
+                id="${this.subnavId}"
                 style="${styleMap({
                   display: subnavOpen ? 'block' : 'none',
                 })}"

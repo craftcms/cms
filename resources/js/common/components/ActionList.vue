@@ -57,7 +57,6 @@
     size,
     mode = 'trail',
     iconOnly = false,
-    depth = 0,
   } = defineProps<{
     actions?: ActionItems;
     /** The element each action renders as. */
@@ -73,12 +72,6 @@
     mode?: 'trail' | 'flyout' | 'inline';
     /** Nav only. Collapsed to a rail: labels become tooltips, all flyout. */
     iconOnly?: boolean;
-    /**
-     * Nav only. Nothing about the behaviour depends on it — only the bullet
-     * that stands in for a missing icon below the root, which keeps a subnav's
-     * labels aligned with its parent's.
-     */
-    depth?: number;
   }>();
 
   const isNav = computed(() => as === 'craft-nav-item');
@@ -255,12 +248,11 @@
   }
 
   /**
-   * Below the root, an item with no icon takes a bullet in the icon slot so
-   * its label lines up with the icon-bearing items around it. A group is a
-   * heading rather than a destination, so it doesn't take one.
+   * An item that brought its own SVG rather than naming an icon — a plugin's
+   * `icon.svg`. It goes in the same slot the named icon would fill.
    */
-  function bulleted(action: NavItem): boolean {
-    return depth > 0 && !action.icon && !isGroup(action);
+  function iconSvgOf(action: NavItem): string | undefined {
+    return isGroup(action) ? undefined : action.iconSvg;
   }
 
   /**
@@ -277,6 +269,45 @@
   }
 
   /**
+   * What a nav item renders as.
+   *
+   * Straight to the element when there's nothing for `CpLink` to do: a group
+   * heads its children rather than being somewhere to follow, and a descriptor
+   * that owns its click handles its own navigation. Everything else goes
+   * through `CpLink`, which turns the href into an Inertia visit.
+   */
+  function navIs(action: NavItem): Component | string {
+    return !hrefOf(action) || ownsClick(action) ? 'craft-nav-item' : CpLink;
+  }
+
+  /**
+   * Everything the item is given, so the two cases differ in their bindings
+   * rather than in a second copy of the markup — the label, the icon and the
+   * recursive subnav are the same either way, and were drifting apart.
+   */
+  function navBindings(action: NavItem): Record<string, unknown> {
+    const shared = {
+      ...navAttrs(action),
+      href: hrefOf(action),
+      '.active': isSelected(action),
+      '.indicator': Boolean(action.indicator),
+    };
+
+    if (navIs(action) === 'craft-nav-item') {
+      return shared;
+    }
+
+    const external = action.type === 'link' && Boolean(action.external);
+
+    return {
+      ...shared,
+      as: 'craft-nav-item',
+      '.external': external,
+      inertia: !external,
+    };
+  }
+
+  /**
    * Handlers ride in with the attributes rather than as `@click`, because a
    * template handler has to be a plain member expression: Vue compiles
    * anything else — a ternary picking between a function and `undefined`, say
@@ -287,6 +318,9 @@
     if (action.type === 'group') {
       return defined({
         group: true,
+        // Collapsed, a heading has no room for its name and becomes the rule
+        // between the runs it separates — but only if it's told it's collapsed.
+        'icon-only': iconOnly || undefined,
         'subnav-display': subnavDisplay(action),
         'initial-state': initialState(action),
       });
@@ -307,58 +341,30 @@
 <template>
   <!-- The nav nests, so it's drawn recursively rather than flattened. -->
   <template v-if="isNav">
-    <template
+    <component
+      :is="navIs(action)"
       v-for="(action, index) in navActions"
-      :key="hrefOf(action) ?? labelOf(action) ?? index"
+      :key="hrefOf(action) || labelOf(action) || index"
+      v-bind="navBindings(action)"
     >
-      <!-- Straight to the element when the descriptor owns its click, or when
-        there's nowhere to go: a group heads its children rather than being
-        somewhere to follow, so it renders as a static item. -->
-      <craft-nav-item
-        v-if="!hrefOf(action) || ownsClick(action)"
-        v-bind="navAttrs(action)"
-        :href="hrefOf(action)"
-        :active.prop="isSelected(action)"
-        :indicator.prop="Boolean(action.indicator)"
-      >
-        <span v-if="bulleted(action)" class="nav-bullet" slot="icon"></span>
+      <craft-icon
+        v-if="iconSvgOf(action)"
+        class="nav-icon"
+        slot="icon"
+        v-html="iconSvgOf(action)"
+      ></craft-icon>
 
-        {{ labelOf(action) }}
+      {{ labelOf(action) }}
 
-        <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
-          <ActionList
-            :actions="childrenOf(action)"
-            as="craft-nav-item"
-            :mode="mode"
-            :depth="isGroup(action) ? depth : depth + 1"
-          />
-        </craft-nav-list>
-      </craft-nav-item>
-
-      <CpLink
-        v-else
-        v-bind="navAttrs(action)"
-        as="craft-nav-item"
-        :href="hrefOf(action)!"
-        :active.prop="isSelected(action)"
-        :indicator.prop="Boolean(action.indicator)"
-        :external.prop="action.type === 'link' && action.external"
-        :inertia="!(action.type === 'link' && action.external)"
-      >
-        <span v-if="bulleted(action)" class="nav-bullet" slot="icon"></span>
-
-        {{ labelOf(action) }}
-
-        <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
-          <ActionList
-            :actions="childrenOf(action)"
-            as="craft-nav-item"
-            :mode="mode"
-            :depth="depth + 1"
-          />
-        </craft-nav-list>
-      </CpLink>
-    </template>
+      <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
+        <ActionList
+          :actions="childrenOf(action)"
+          as="craft-nav-item"
+          :mode="mode"
+          :icon-only="iconOnly && expanded(action)"
+        />
+      </craft-nav-list>
+    </component>
   </template>
 
   <template v-else v-for="(action, index) in rendered" :key="index">
@@ -432,18 +438,5 @@
     color: var(--c-text-subtle);
     font-size: var(--c-text-xs);
     font-weight: 600;
-  }
-
-  .nav-bullet {
-    --nav-item-indicator-size: calc(4rem / 16);
-    display: inline-flex;
-    width: var(--nav-item-indicator-size);
-    border-radius: var(--c-radius-full);
-    aspect-ratio: 1;
-    background-color: currentcolor;
-  }
-
-  .nav-bullet[active] {
-    --nav-item-indicator-size: calc(6rem / 16);
   }
 </style>
