@@ -73,6 +73,23 @@ describe('options', () => {
 });
 
 describe('indexParams', () => {
+  it('sends asset location criteria and folder visibility when loading the index', async () => {
+    const loadIndexBody = vi.fn(async () => body());
+    const criteria = {volumeId: 2, folderId: 7, kind: 'image'};
+    const controller = create({
+      criteria,
+      indexSettings: {showFolders: false},
+      loadIndexBody,
+    });
+
+    await controller.open();
+
+    expect(loadIndexBody).toHaveBeenCalledWith(
+      'element-selector-modals/body',
+      expect.objectContaining({criteria, showFolders: false})
+    );
+  });
+
   it('identifies the index', () => {
     const controller = create({
       sources: ['section:a'],

@@ -93,6 +93,7 @@
     canUpload?: boolean;
     uploadFolderId?: number | null;
     fsType?: string | null;
+    showFolders?: boolean;
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
@@ -317,6 +318,7 @@
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
         showSiteMenu: props.control.props.showSiteMenu,
+        indexSettings: {showFolders: props.control.props.showFolders ?? true},
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.

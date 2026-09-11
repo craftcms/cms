@@ -224,6 +224,27 @@ describe('ElementSelectControl', () => {
     expect(updates).toEqual([[5, 9]]);
   });
 
+  it('opens a photo selector with its folder restrictions', async () => {
+    await mount({
+      value: [],
+      props: {
+        sources: ['volume:photos/folder:avatars'],
+        criteria: {volumeId: 2, folderId: 7, kind: 'image'},
+        showFolders: false,
+      },
+    });
+
+    (container!.querySelector('craft-button') as HTMLElement).click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    expect(settings).toMatchObject({
+      sources: ['volume:photos/folder:avatars'],
+      criteria: {volumeId: 2, folderId: 7, kind: 'image'},
+      indexSettings: {showFolders: false},
+    });
+  });
+
   it('drops Replace when there is no element type to pick from', async () => {
     const root = await mount({props: {elementType: null}});
 
