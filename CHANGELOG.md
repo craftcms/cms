@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API.
+
 - Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder.
 
 > [!IMPORTANT]

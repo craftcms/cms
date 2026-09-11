@@ -267,6 +267,7 @@ export default defineConfig(({mode}) => {
     // environment; the craftcms-ui package has its own vitest projects.
     test: {
       environment: 'happy-dom',
+      server: {deps: {inline: ['@uppy/tus']}},
       include: [
         'resources/js/**/*.test.ts',
         'yii2-adapter/resources/js/**/*.test.ts',
@@ -335,6 +336,7 @@ export default defineConfig(({mode}) => {
               input: [
                 'resources/js/cp.ts',
                 'resources/js/legacy.ts',
+                'resources/js/uploads.ts',
                 'resources/css/cp.css',
                 'workbench/resources/js/cp.ts',
               ],
