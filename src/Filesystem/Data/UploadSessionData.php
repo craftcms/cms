@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem\Data;
 
 use CraftCms\Cms\Filesystem\Models\UploadSession;
-use CraftCms\Cms\Filesystem\Uploaders;
 use Illuminate\Contracts\Support\Arrayable;
 
 /** @implements Arrayable<string, mixed> */
@@ -13,7 +12,7 @@ readonly class UploadSessionData implements Arrayable
 {
     /**
      * @param  array{type: string, options: array<string, mixed>}  $transport
-     * @param  array{sign: string, status: string, complete: string, cancel: string}  $urls
+     * @param  array{transfer: string, status: string, complete: string, cancel: string}  $urls
      */
     public function __construct(
         public string $id,
@@ -23,7 +22,8 @@ readonly class UploadSessionData implements Arrayable
         public array $urls,
     ) {}
 
-    public static function fromSession(UploadSession $session): self
+    /** @param array{type: string, options: array<string, mixed>} $transport */
+    public static function fromSession(UploadSession $session, array $transport): self
     {
         $prefix = request()->isCpRequest() ? 'craft.actions.craft.cp.uploads' : 'craft.actions.craft.uploads';
 
@@ -31,9 +31,9 @@ readonly class UploadSessionData implements Arrayable
             id: $session->id,
             chunkSize: $session->chunkSize,
             partCount: $session->partCount(),
-            transport: app(Uploaders::class)->driver($session->uploader)->clientConfig($session),
+            transport: $transport,
             urls: [
-                'sign' => route("$prefix.sign", ['upload' => $session->id]),
+                'transfer' => route("$prefix.transfer", ['upload' => $session->id]),
                 'status' => route("$prefix.status", ['upload' => $session->id]),
                 'complete' => route("$prefix.complete", ['upload' => $session->id]),
                 'cancel' => route("$prefix.destroy", ['upload' => $session->id]),

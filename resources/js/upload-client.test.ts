@@ -128,7 +128,7 @@ beforeEach(() => {
                   }
                 : {type: 'tus', options: {url: `/tus/${sessionCount}`}}),
             urls: {
-              sign: '/sign',
+              transfer: '/sign',
               status: '/status',
               complete: '/complete',
               cancel: '/cancel',

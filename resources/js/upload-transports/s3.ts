@@ -28,8 +28,8 @@ export function configureS3(uppy: Uppy): PrepareUpload {
       }
 
       return request<{url: string}>(
-        session.urls.sign,
-        'POST',
+        session.urls.transfer,
+        parameters.method === 'DELETE' ? 'DELETE' : 'POST',
         parameters,
         parameters.method === 'DELETE' ? {signal: null} : {}
       );

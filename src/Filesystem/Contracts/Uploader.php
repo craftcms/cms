@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem\Contracts;
 
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Filesystem\Data\UploadSetup;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 interface Uploader
 {
-    /** Sets the chunk size and any provider state on the session. */
-    public function start(UploadSession $session): void;
+    public function start(UploadSession $session): UploadSetup;
 
-    /** @return array{type: string, options: array<string, mixed>} */
-    public function clientConfig(UploadSession $session): array;
+    public function handleRequest(Request $request, UploadSession $session): Response;
 
     public function uploaded(UploadSession $session): bool;
 

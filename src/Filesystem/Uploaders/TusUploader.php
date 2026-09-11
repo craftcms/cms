@@ -5,39 +5,101 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem\Uploaders;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Contracts\ReceivesTusUploads;
+use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Filesystem\Data\UploadSetup;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Support\PHP;
+use Illuminate\Http\Request;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class TusUploader implements ReceivesTusUploads
+class TusUploader implements Uploader
 {
     public function __construct(private readonly Filesystems $filesystems) {}
 
-    public function start(UploadSession $session): void
+    public function start(UploadSession $session): UploadSetup
     {
         $requestLimit = PHP::sizeToBytes(ini_get('post_max_size'));
-        $session->chunkSize = min(
+        $chunkSize = min(
             Cms::config()->uploadChunkSize,
             $requestLimit > 0 ? $requestLimit : PHP_INT_MAX,
         );
 
-        if ($session->chunkSize < 1) {
+        if ($chunkSize < 1) {
             throw new RuntimeException('uploadChunkSize must be greater than zero.');
         }
 
-        $session->state = ['offset' => 0, 'parts' => []];
+        $routeName = request()->isCpRequest()
+            ? 'craft.actions.craft.cp.uploads.transfer'
+            : 'craft.actions.craft.uploads.transfer';
+
+        return new UploadSetup(
+            chunkSize: $chunkSize,
+            state: ['offset' => 0, 'parts' => []],
+            transport: ['type' => 'tus', 'options' => ['url' => route($routeName, ['upload' => $session->id])]],
+        );
     }
 
-    public function clientConfig(UploadSession $session): array
+    public function handleRequest(Request $request, UploadSession $session): Response
     {
-        $routeName = request()->isCpRequest()
-            ? 'craft.actions.craft.cp.uploads.tus'
-            : 'craft.actions.craft.uploads.tus';
+        try {
+            $response = $this->respond($request, $session);
+        } catch (HttpException $exception) {
+            $exception->setHeaders([...$exception->getHeaders(), 'Tus-Resumable' => '1.0.0']);
 
-        return ['type' => 'tus', 'options' => ['url' => route($routeName, ['upload' => $session->id])]];
+            throw $exception;
+        }
+
+        $response->headers->set('Tus-Resumable', '1.0.0');
+
+        return $response;
+    }
+
+    private function respond(Request $request, UploadSession $session): Response
+    {
+        if ($request->isMethod('OPTIONS')) {
+            return response()->noContent(headers: [
+                'Tus-Version' => '1.0.0',
+                'Tus-Extension' => 'termination,expiration',
+                'Tus-Max-Size' => (string) Cms::config()->maxUploadFileSize,
+            ]);
+        }
+
+        abort_unless($request->header('Tus-Resumable') === '1.0.0', 412, headers: ['Tus-Version' => '1.0.0']);
+        abort_unless(in_array($request->method(), ['HEAD', 'PATCH', 'DELETE'], true), 405);
+
+        if ($request->isMethod('DELETE')) {
+            $this->abort($session);
+            $session->delete();
+
+            return response()->noContent();
+        }
+
+        if ($request->isMethod('PATCH')) {
+            abort_unless($request->header('Content-Type') === 'application/offset+octet-stream', 415);
+            $offset = filter_var($request->header('Upload-Offset'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+            abort_if($offset === false, 400, 'A valid Upload-Offset header is required.');
+            abort_if($session->result !== null, 409, 'This upload has already completed.');
+            $stream = $request->getContent(asResource: true);
+
+            try {
+                $this->receive($session, $offset, $stream);
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+        }
+
+        return response()->noContent($request->isMethod('HEAD') ? 200 : 204, [
+            'Upload-Offset' => (string) $this->offset($session),
+            'Upload-Length' => (string) $session->size,
+            'Upload-Expires' => $session->expiresAt->toRfc7231String(),
+            'Cache-Control' => 'no-store',
+        ]);
     }
 
     public function offset(UploadSession $session): int

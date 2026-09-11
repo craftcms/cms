@@ -12,14 +12,16 @@ use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Assets;
-use CraftCms\Cms\Filesystem\Contracts\ReceivesTusUploads;
-use CraftCms\Cms\Filesystem\Contracts\SignsS3Uploads;
+use CraftCms\Cms\Filesystem\Contracts\Uploader;
+use CraftCms\Cms\Filesystem\Data\UploadSetup;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploaders;
+use CraftCms\Cms\Filesystem\Uploaders\S3Uploader;
 use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
@@ -126,6 +128,8 @@ it('does not accept another users upload session', function () {
     auth()->logout();
 
     $this->getJson($session['urls']['status'])->assertNotFound();
+    $this->head($session['urls']['transfer'], ['Tus-Resumable' => '1.0.0'])->assertNotFound();
+    $this->deleteJson($session['urls']['transfer'])->assertNotFound();
     postJson($session['urls']['complete'])->assertNotFound();
     $this->deleteJson($session['urls']['cancel'])->assertNotFound();
     expect(UploadSession::count())->toBe(1);
@@ -139,6 +143,7 @@ it('rechecks permissions before resuming an upload', function () {
     Gate::partialMock()->shouldReceive('authorize')->andThrow(new AuthorizationException);
 
     $this->getJson($session['urls']['status'])->assertForbidden();
+    $this->head($session['urls']['transfer'], ['Tus-Resumable' => '1.0.0'])->assertForbidden();
     $this->deleteJson($session['urls']['cancel'])->assertNoContent();
 });
 
@@ -167,6 +172,7 @@ it('expires abandoned sessions but preserves active uploads', function () {
 
     $this->travel(23)->hours();
     $this->getJson($session['urls']['status'])->assertGone();
+    $this->head($session['urls']['transfer'], ['Tus-Resumable' => '1.0.0'])->assertGone();
     expect(app(Uploads::class)->cleanupExpired())->toBe(['removed' => 1, 'failed' => 0]);
     expect(UploadSession::count())->toBe(0);
 });
@@ -354,14 +360,12 @@ it('terminates tus uploads and tolerates repeated cleanup', function () {
 });
 
 it('binds custom S3 signatures to the authorized sessions key and multipart id', function () {
-    $uploader = Mockery::mock(SignsS3Uploads::class);
-    $uploader->shouldReceive('clientConfig')->andReturnUsing(fn (UploadSession $session) => [
-        'type' => 's3', 'options' => ['key' => "custom/{$session->id}", 'uploadId' => 'multipart-id'],
-    ]);
-    $uploader->shouldReceive('start')->andReturnUsing(function (UploadSession $session) {
-        $session->chunkSize = 8388608;
-        $session->state = ['uploadId' => 'multipart-id'];
-    });
+    $uploader = Mockery::mock(S3Uploader::class)->makePartial();
+    $uploader->shouldReceive('start')->andReturnUsing(fn (UploadSession $session) => new UploadSetup(
+        chunkSize: 5242880,
+        state: ['uploadId' => 'multipart-id'],
+        transport: ['type' => 's3', 'options' => ['key' => $session->path(), 'uploadId' => 'multipart-id']],
+    ));
     $uploader->shouldReceive('sign')->once()->withArgs(fn (UploadSession $session, string $method, ?int $part) => $method === 'PUT' && $part === 1)
         ->andReturn(['url' => 'https://storage.example/signed']);
     app(Uploaders::class)->extend('s3-test', fn () => $uploader);
@@ -371,40 +375,42 @@ it('binds custom S3 signatures to the authorized sessions key and multipart id',
     ])->assertCreated()->assertJsonPath('transport.type', 's3')->json();
     $request = ['method' => 'PUT', 'partNumber' => 1, 'key' => $session['transport']['options']['key'], 'uploadId' => 'multipart-id'];
 
-    postJson($session['urls']['sign'], [...$request, 'key' => 'another/file'])->assertNotFound();
-    postJson($session['urls']['sign'], [...$request, 'uploadId' => 'another-upload'])->assertNotFound();
-    postJson($session['urls']['sign'], [...$request, 'method' => 'HEAD'])->assertUnprocessable();
-    postJson($session['urls']['sign'], $request)->assertOk()->assertJsonPath('url', 'https://storage.example/signed');
+    postJson($session['urls']['transfer'], [...$request, 'key' => 'another/file'])->assertNotFound();
+    postJson($session['urls']['transfer'], [...$request, 'uploadId' => 'another-upload'])->assertNotFound();
+    postJson($session['urls']['transfer'], [...$request, 'method' => 'HEAD'])->assertUnprocessable();
+    postJson($session['urls']['transfer'], $request)->assertOk()->assertJsonPath('url', 'https://storage.example/signed');
 
     Gate::partialMock()->shouldReceive('authorize')->andThrow(new AuthorizationException);
-    postJson($session['urls']['sign'], $request)->assertForbidden();
+    postJson($session['urls']['transfer'], $request)->assertForbidden();
+    $this->deleteJson($session['urls']['transfer'], $request)->assertUnprocessable();
+
+    $uploader->shouldReceive('sign')->once()->withArgs(fn (UploadSession $session, string $method, ?int $part) => $method === 'DELETE')
+        ->andReturn(['url' => 'https://storage.example/abort']);
+    $this->travel(25)->hours();
+    $this->deleteJson($session['urls']['transfer'], [...$request, 'method' => 'DELETE'])
+        ->assertOk()->assertJsonPath('url', 'https://storage.example/abort');
 });
 
-it('accepts an independent tus receiver and reads its offset through the contract', function () {
-    $uploader = Mockery::mock(ReceivesTusUploads::class);
-    $uploader->shouldReceive('start')->andReturnUsing(function (UploadSession $session) {
-        $session->chunkSize = 3;
-        $session->state = ['received' => 0];
+it('delegates custom protocol requests to the uploader and persists its state', function () {
+    $uploader = Mockery::mock(Uploader::class);
+    $uploader->shouldReceive('start')->andReturn(new UploadSetup(
+        chunkSize: 3,
+        state: ['received' => 0],
+        transport: ['type' => 'custom', 'options' => []],
+    ));
+    $uploader->shouldReceive('handleRequest')->andReturnUsing(function (Request $request, UploadSession $session) {
+        if ($request->isMethod('POST')) {
+            $session->state = ['received' => strlen($request->input('bytes'))];
+        }
+
+        return new JsonResponse(['received' => $session->state['received']]);
     });
-    $uploader->shouldReceive('clientConfig')->andReturnUsing(fn (UploadSession $session) => [
-        'type' => 'custom-tus',
-        'options' => ['url' => route('craft.actions.craft.uploads.tus', ['upload' => $session->id])],
-    ]);
-    $uploader->shouldReceive('offset')->andReturnUsing(fn (UploadSession $session) => $session->state['received']);
-    $uploader->shouldReceive('receive')->once()->andReturnUsing(function (UploadSession $session, int $offset, mixed $stream) {
-        expect($offset)->toBe(0)->and(stream_get_contents($stream))->toBe('abc');
-        $session->state = ['received' => 3];
-    });
-    app(Uploaders::class)->extend('custom-tus', fn () => $uploader);
-    Cms::config()->uploader = 'custom-tus';
+    app(Uploaders::class)->extend('custom', fn () => $uploader);
+    Cms::config()->uploader = 'custom';
     $session = postJson(action([UploadSessionController::class, 'store']), [
         'filename' => 'example.txt', 'size' => 6, 'folderId' => $this->folder->id,
-    ])->assertCreated()->assertJsonPath('transport.type', 'custom-tus')->json();
-    $url = $session['transport']['options']['url'];
+    ])->assertCreated()->assertJsonPath('transport.type', 'custom')->json();
 
-    $this->call('PATCH', $url, server: [
-        'CONTENT_TYPE' => 'application/offset+octet-stream',
-        'HTTP_TUS_RESUMABLE' => '1.0.0', 'HTTP_UPLOAD_OFFSET' => 0,
-    ], content: 'abc')->assertNoContent()->assertHeader('Upload-Offset', 3);
-    $this->head($url, ['Tus-Resumable' => '1.0.0'])->assertOk()->assertHeader('Upload-Offset', 3);
+    postJson($session['urls']['transfer'], ['bytes' => 'abc'])->assertOk()->assertExactJson(['received' => 3]);
+    $this->getJson($session['urls']['transfer'])->assertOk()->assertExactJson(['received' => 3]);
 });

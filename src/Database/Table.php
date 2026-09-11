@@ -17,8 +17,6 @@ readonly class Table
 
     public const string ASSETINDEXINGSESSIONS = 'assetindexingsessions';
 
-    public const string UPLOADSESSIONS = 'uploadsessions';
-
     public const string ASSETS = 'assets';
 
     public const string ASSETS_SITES = 'assets_sites';
@@ -125,6 +123,8 @@ readonly class Table
     public const string STRUCTURES = 'structures';
 
     public const string SYSTEMMESSAGES = 'systemmessages';
+
+    public const string UPLOADSESSIONS = 'uploadsessions';
 
     public const string USERGROUPS = 'usergroups';
 

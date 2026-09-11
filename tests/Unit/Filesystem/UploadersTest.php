@@ -30,7 +30,9 @@ it('routes custom uploader operations to each sessions disk', function () {
 
     foreach (['upload-first', 'upload-second'] as $disk) {
         $session = new UploadSession(['id' => $disk, 'disk' => "disk:$disk", 'size' => 3, 'chunkSize' => 3]);
-        $uploader->start($session);
+        $setup = $uploader->start($session);
+        $session->chunkSize = $setup->chunkSize;
+        $session->state = $setup->state;
         $sessions[] = $session;
         $stream = fopen('php://temp', 'w+b');
         fwrite($stream, 'abc');
