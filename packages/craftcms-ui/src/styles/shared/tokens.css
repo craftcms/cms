@@ -204,6 +204,13 @@
   --c-checkbox-size: var(--c-size-control-xs);
   --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
 
+  /* Slide rule */
+  --c-slide-rule-height: var(--c-size-touch-target);
+  --c-slide-rule-graduation-width: 10px;
+  --c-slide-rule-graduation-height: 6px;
+  --c-slide-rule-graduation-color: var(--c-color-neutral-border-loud);
+  --c-slide-rule-accent-color: var(--c-color-accent-border-loud);
+
   /** Appearances **/
   /* Generic Panes */
   --c-pane-fill: var(--c-surface-overlay);

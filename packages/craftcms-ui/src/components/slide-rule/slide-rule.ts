@@ -6,6 +6,9 @@ import styles from './slide-rule.styles.js';
 
 const SENSITIVITY = 3;
 
+/** Matches `--c-slide-rule-graduation-width`, for before anything is laid out. */
+const DEFAULT_GRADUATION_WIDTH = 10;
+
 /**
  * @summary Ruler-style slider for fine rotation adjustment — the port of the
  * legacy `Craft.SlideRuleInput`, used by the image editor's straighten control.
@@ -44,12 +47,14 @@ export default class CraftSlideRule extends LitElement {
   @query('.graduations') private _graduations!: HTMLElement;
   @query('.graduations ul') private _list!: HTMLElement;
   @query('.cursor') private _cursor!: HTMLElement;
+  @query('.indicator') private _indicator!: HTMLElement;
 
   #dragging = false;
   #rotateIntent = false;
   #startPositionX = 0;
   #startLeft = 0;
   #calculatedWidth = 0;
+  #placed = false;
   #resizeObserver: ResizeObserver | null = null;
 
   #graduations(): number[] {
@@ -73,8 +78,10 @@ export default class CraftSlideRule extends LitElement {
   }
 
   override firstUpdated(): void {
-    // (n - 1) graduations because each border sits on the left of its 10px box.
-    this.#calculatedWidth = (this.#graduations().length - 1) * 10;
+    // A starting point for the unmeasurable case below; `#reposition()`
+    // replaces it with what was actually rendered.
+    this.#calculatedWidth =
+      (this.#graduations().length - 1) * DEFAULT_GRADUATION_WIDTH;
     this.#reposition();
   }
 
@@ -97,11 +104,109 @@ export default class CraftSlideRule extends LitElement {
     // range. That happens whenever the rule first renders inside something not
     // yet laid out, a closed dialog being the usual case. The resize observer
     // calls back the moment there is a size, so waiting costs nothing.
+    if (this._graduations?.offsetWidth) {
+      this.#measureGraduations();
+    }
+
+    // Drawn before the bail below: the indicator is a function of the value
+    // and the graduation width, so unlike the strip it doesn't need the
+    // window to have been laid out to know where it goes.
+    this.#drawIndicator();
+
     if (!this._list || !this._graduations?.offsetWidth) {
       return;
     }
 
-    this._list.style.left = `${this.#valueToPosition(this.value)}px`;
+    this._list.style.transform = `translateX(${this.#valueToPosition(
+      this.value
+    )}px)`;
+
+    this.#markPlaced();
+  }
+
+  /**
+   * Lets the strip and the indicator start animating, once they have been put
+   * where they belong.
+   *
+   * Neither resting place is something to animate into. `left` never did,
+   * because a transition can't run from `auto` to a length -- but `none` to a
+   * matrix interpolates fine, so both would slide into place every time the
+   * rule first appears. The stylesheet holds their transitions off until this
+   * class lands, a frame later.
+   */
+  #markPlaced(): void {
+    if (this.#placed) {
+      return;
+    }
+
+    this.#placed = true;
+    requestAnimationFrame(() => this._root?.classList.add('placed'));
+  }
+
+  /**
+   * Sizes the band running from zero to the current value.
+   *
+   * The graduations can't carry this themselves: the value is continuous, so
+   * it usually falls between two of them and there is no mark to light up.
+   * The band is measured in the same pixels-per-unit the strip is positioned
+   * in, so it lands exactly on a fractional value.
+   *
+   * It grows from the middle of the window, because that is where the cursor
+   * is and so where the current value always sits. Zero is however far away
+   * the value says it is -- to the left once the value goes positive, since
+   * that is the direction the strip slides.
+   */
+  #drawIndicator(): void {
+    if (!this._indicator) {
+      return;
+    }
+
+    const scaleMax = (this.graduationMin - this.graduationMax) * -1;
+    const perUnit = this.#calculatedWidth / scaleMax;
+
+    this._indicator.style.inlineSize = `${Math.abs(this.value) * perUnit}px`;
+    this._indicator.style.translate = this.value > 0 ? '-100%' : '0';
+  }
+
+  /**
+   * Reads the rendered graduation width instead of assuming the default.
+   *
+   * The positioning maths is in units of one graduation, and
+   * `--c-slide-rule-graduation-width` can be set to anything — so a strip that
+   * doesn't match what the maths assumes puts zero nowhere near the cursor.
+   * That is the shape of two bugs already: graduations rendered as
+   * inline-blocks picked up the template's newlines as whitespace, and an
+   * unmeasurable window centred the strip against zero.
+   *
+   * Measured off the strip rather than one graduation, so a fractional width
+   * doesn't accumulate a rounding error across the whole range.
+   */
+  #measureGraduations(): void {
+    const count = this.#graduations().length;
+    const width = this._list.getBoundingClientRect().width / count;
+
+    if (width > 0) {
+      // (n - 1) because each border sits at the start of its own box.
+      this.#calculatedWidth = (count - 1) * width;
+    }
+  }
+
+  /**
+   * Where the strip is sitting right now, read back off the transform.
+   *
+   * Not the value `#reposition()` last wrote: a drag can start while the
+   * transition from a tap or a keypress is still running, and this has to be
+   * the position on screen rather than the one being animated towards.
+   */
+  #currentOffset(): number {
+    const {transform} = getComputedStyle(this._list);
+
+    // Before the first reposition, and whenever a stylesheet hasn't applied.
+    if (!transform || transform === 'none') {
+      return 0;
+    }
+
+    return new DOMMatrixReadOnly(transform).m41;
   }
 
   #valueText(value: number): string {
@@ -137,6 +242,12 @@ export default class CraftSlideRule extends LitElement {
   #setValue(rawValue: number, emitChange = true): void {
     const value = Math.min(Math.max(rawValue, this.min), this.max);
 
+    // A move that lands on the value already showing shouldn't ask a consumer
+    // to redraw for it.
+    if (value === this.value) {
+      return;
+    }
+
     this.value = value;
 
     if (emitChange) {
@@ -169,7 +280,7 @@ export default class CraftSlideRule extends LitElement {
 
     event.preventDefault();
     this.#startPositionX = event.clientX;
-    this.#startLeft = this._list.offsetLeft;
+    this.#startLeft = this.#currentOffset();
     this._root.setPointerCapture(event.pointerId);
     this.#emit('start');
   }
@@ -252,13 +363,6 @@ export default class CraftSlideRule extends LitElement {
     event.preventDefault();
   }
 
-  #isSelected(graduation: number): boolean {
-    return (
-      graduation >= Math.min(0, this.value) &&
-      graduation <= Math.max(0, this.value)
-    );
-  }
-
   override render() {
     return html`
       <div
@@ -275,9 +379,13 @@ export default class CraftSlideRule extends LitElement {
         @pointermove=${this.#handlePointerMove}
         @pointerup=${this.#handlePointerUp}
       >
-        <div class="overlay"></div>
         <div class="cursor"></div>
         <div class="graduations">
+          <div
+            class="indicator"
+            aria-hidden="true"
+            ?hidden=${this.value === 0}
+          ></div>
           <ul aria-hidden="true">
             ${this.#graduations().map(
               (graduation) => html`
@@ -285,7 +393,6 @@ export default class CraftSlideRule extends LitElement {
                   class=${classMap({
                     graduation: true,
                     'main-graduation': graduation % 5 === 0,
-                    selected: this.#isSelected(graduation),
                   })}
                   data-graduation=${graduation}
                 >
