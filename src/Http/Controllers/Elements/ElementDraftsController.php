@@ -160,7 +160,17 @@ class ElementDraftsController
             'creator' => $element->getDraftCreator()?->getName(),
             'draftName' => $element->draftName,
             'draftNotes' => $element->draftNotes,
-            'modifiedAttributes' => $element->getModifiedAttributes(),
+            // Delta groups the editor badges as modified. An attribute is its own
+            // group (`title`); a custom field's is its handle under `fields`,
+            // which is also the group every control nested inside it inherits —
+            // so a Matrix block's fields badge with the field that holds them.
+            'modifiedAttributes' => [
+                ...$element->getModifiedAttributes(),
+                ...array_map(
+                    fn (string $handle): string => "fields.{$handle}",
+                    $element->getModifiedFields(),
+                ),
+            ],
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
         ];
