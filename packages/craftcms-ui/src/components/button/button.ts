@@ -41,6 +41,10 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  * @csspart suffix - The button's suffix slot.
  * @csspart spinner - Spinner that shows when the button is in a loading state.
  * @csspart link - The anchor element rendered when the button has an href.
+ *
+ * @event craft-toggle - Fired when a `toggle` button is activated. `detail.active`
+ *   is the state being asked for. Cancelable — `active` is owned by whoever set
+ *   it, and the button never changes it itself.
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
@@ -71,11 +75,13 @@ export default class CraftButton extends LionButtonSubmit {
     super.connectedCallback();
     this.syncLinkHostState();
     this.addEventListener('click', this.#handleActionClick);
+    this.addEventListener('click', this.#handleToggleClick);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this.#handleActionClick);
+    this.removeEventListener('click', this.#handleToggleClick);
 
     if (this.announcementTimer) {
       clearTimeout(this.announcementTimer);
@@ -103,10 +109,41 @@ export default class CraftButton extends LionButtonSubmit {
       this.loading = false;
     }
   };
+  /**
+   * Reports that a toggle was activated, for the owner of `active` to act on.
+   *
+   * Cancelable, so a consumer can refuse the change; `active` is left alone
+   * either way.
+   */
+  #handleToggleClick = (event: Event) => {
+    if (!this.toggle || this.disabled || this.loading) {
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('craft-toggle', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {active: !this.active, sourceEvent: event},
+      })
+    );
+  };
+
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
+    }
+
+    // Only while `toggle` is set: a plain button may carry an `aria-pressed`
+    // its owner manages (`craft-button-group` sets one on every child), and
+    // overwriting that would be worse than leaving it alone.
+    if (
+      this.toggle &&
+      (changedProperties.has('active') || changedProperties.has('toggle'))
+    ) {
+      this.setAttribute('aria-pressed', String(this.active));
     }
 
     if (changedProperties.has('loading')) {
@@ -197,6 +234,25 @@ export default class CraftButton extends LionButtonSubmit {
 
   /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
   @property({reflect: true, type: Boolean}) override active: boolean = false;
+
+  /**
+   * Makes the button a toggle: something that turns a thing on and off and
+   * stays that way, rather than firing a one-shot action.
+   *
+   * `aria-pressed` is then derived from `active`, so the pressed state a screen
+   * reader hears and the one people see can't drift apart — setting one and
+   * forgetting the other is the easy mistake here, and `active` already carries
+   * the visible state.
+   *
+   * Deliberately does *not* flip `active` itself. Selection may be owned
+   * elsewhere — `craft-button-group` writes `active` on its children, and a
+   * consumer may reject the change — so the button reports the intent through
+   * `toggle` and lets the owner decide.
+   *
+   * For an on/off setting, reach for `craft-switch` instead; a toggle button is
+   * for a control that acts on something, like a toolbar.
+   */
+  @property({type: Boolean, reflect: true}) toggle: boolean = false;
 
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;

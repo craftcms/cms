@@ -262,3 +262,68 @@ describe('craft-button actions', () => {
     expect(fired).toBe(false);
   });
 });
+
+describe('craft-button toggle', () => {
+  it('derives aria-pressed from active', async () => {
+    const button = document.createElement('craft-button');
+    button.toggle = true;
+    document.body.append(button);
+    await button.updateComplete;
+
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+
+    button.active = true;
+    await button.updateComplete;
+
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('leaves aria-pressed alone on a button that is not a toggle', async () => {
+    // craft-button-group sets aria-pressed on its children; overwriting it
+    // would be worse than leaving it be.
+    const button = document.createElement('craft-button');
+    button.setAttribute('aria-pressed', 'true');
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.active = false;
+    await button.updateComplete;
+
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('reports the state being asked for without changing active itself', async () => {
+    const button = document.createElement('craft-button');
+    button.toggle = true;
+    document.body.append(button);
+    await button.updateComplete;
+
+    let asked: boolean | undefined;
+    button.addEventListener('craft-toggle', (event) => {
+      asked = (event as CustomEvent<{active: boolean}>).detail.active;
+    });
+
+    button.click();
+    await button.updateComplete;
+
+    expect(asked).toBe(true);
+    // The owner of `active` decides; the button does not move on its own.
+    expect(button.active).toBe(false);
+  });
+
+  it('stays quiet when disabled', async () => {
+    const button = document.createElement('craft-button');
+    button.toggle = true;
+    button.setAttribute('disabled', '');
+    document.body.append(button);
+    await button.updateComplete;
+
+    let fired = false;
+    button.addEventListener('craft-toggle', () => {
+      fired = true;
+    });
+    button.click();
+
+    expect(fired).toBe(false);
+  });
+});

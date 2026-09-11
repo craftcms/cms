@@ -136,7 +136,10 @@
         tab in the details column is that list now. -->
 
         <form method="post" @submit.prevent="save()">
-          <div class="sticky top-0 z-1000 pb-2">
+          <!-- Below the overlay band (slideout shade 99, panels and modal
+            shade 100) so the header never paints over a slideout or the image
+            editor modal, which stack above the page. -->
+          <div class="sticky top-0 z-10 pb-2">
             <header
               class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
             >
@@ -350,7 +353,7 @@
     border-block-end: 1px solid var(--color-neutral-border-quiet);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 10;
     background-color: white;
   }
 

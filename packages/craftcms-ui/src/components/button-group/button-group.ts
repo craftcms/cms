@@ -26,7 +26,14 @@ export default class CraftButtonGroup extends LitElement {
   /** Form field name. When set, enables selection mode. */
   @property({reflect: true}) name: string;
 
-  /** The currently selected value in single-selection mode. */
+  /**
+   * The currently selected value in single-selection mode.
+   *
+   * The group owns the children's `active` state and rewrites it from this, so
+   * drive the selection here rather than on the buttons. Left unset, it is
+   * seeded from whichever child is marked `active`, so markup that states its
+   * own selection keeps it.
+   */
   @property({reflect: true}) value: string;
 
   /** Whether multiple buttons can be selected. */
@@ -103,7 +110,39 @@ export default class CraftButtonGroup extends LitElement {
     );
   };
 
+  /**
+   * Seeds `value` from a child already marked `active`, for a group handed its
+   * selection in markup rather than through the property.
+   *
+   * Without this a single-select group with no `value` clears `active` from
+   * every child on its first sync, silently destroying the selection instead of
+   * leaving it alone — and a consumer setting `active` itself gets it stripped
+   * back off on the next sync, with nothing to say why.
+   * `craft-radio-group` adopts its `name` from slotted inputs for the same
+   * reason.
+   *
+   * Multi-select needs none of this: it already reads `active` off the
+   * children rather than writing it.
+   */
+  private _adoptSlottedValue() {
+    if (this.multiple || this.value !== undefined) {
+      return;
+    }
+
+    const selected = this.querySelector('craft-button[active]');
+    const value = selected?.getAttribute('value');
+
+    // No active child yet — leave `value` unset so a later sync can still
+    // adopt once the children have been parsed. There is nothing to clobber in
+    // the meantime.
+    if (value != null) {
+      this.value = value;
+    }
+  }
+
   private _syncChildren() {
+    this._adoptSlottedValue();
+
     const buttons = this.querySelectorAll<Element>('craft-button');
     buttons.forEach((btn) => {
       if (btn.getAttribute('type') !== 'button') {

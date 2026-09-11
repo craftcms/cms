@@ -16,3 +16,8 @@ Check VueUse before writing lifecycle-managed composables. PHP-derived TypeScrip
 
 ## Treat custom elements as native
 Vue treats tags containing a hyphen as native custom elements. Let them pass through instead of registering them as Vue components.
+
+## Bind Lit boolean properties with `.prop`, not `:attr`
+Vue only strips a `false` boolean attribute for the seven names in its `isSpecialBooleanAttr` list (itemscope, allowfullscreen, formnovalidate, ismap, nomodule, novalidate, readonly). `open`, `disabled`, `active` and friends are in the wider `isBooleanAttr` list, which `patchAttr` never consults — so `:open="false"` on a custom element writes `open="false"`, and Lit's `{type: Boolean}` converter reads attribute *presence* and turns it on.
+
+Use the property binding instead: `.opened="isOpen"` on `craft-dialog`, not `:open="isOpen"`. It also survives the element not being upgraded yet, since Lit re-applies shadowed instance properties. Regression test: `resources/js/modules/image-editor/components/dialogOpenBinding.test.ts`.
