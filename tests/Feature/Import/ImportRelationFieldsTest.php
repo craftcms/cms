@@ -63,19 +63,20 @@ beforeEach(function () {
 it('imports an entries field value', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myEntries')->one()->id)->toBe($this->relatedEntry->id);
+    // assert the whole list, so an extra or reordered relation can't slip through
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
 it('imports a users field value', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['myUsers' => [$this->relatedUser->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myUsers')->one()->id)->toBe($this->relatedUser->id);
+    expect($entry->getFieldValue('myUsers')->ids())->toBe([$this->relatedUser->id]);
 });
 
 it('imports an assets field value', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['myAssets' => [$this->relatedAsset->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myAssets')->one()->id)->toBe($this->relatedAsset->id);
+    expect($entry->getFieldValue('myAssets')->ids())->toBe([$this->relatedAsset->id]);
 });
 
 it('imports an entries field value using a transformer with ID map', function () {
@@ -93,7 +94,7 @@ it('imports an entries field value using a transformer with ID map', function ()
 
     $this->import->importItem($importer, ($this->entryData)(['myEntriesToBeMapped' => [$this->relatedEntry->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myEntries')->one()->id)->toBe($this->relatedEntry->id);
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });
 
 it('imports an entries field value using a transformer with element lookup', function () {
@@ -111,5 +112,5 @@ it('imports an entries field value using a transformer with element lookup', fun
 
     $this->import->importItem($importer, ($this->entryData)(['myEntriesToBeMapped' => [$this->relatedEntry->title]]));
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myEntries')->one()->id)->toBe($this->relatedEntry->id);
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
 });

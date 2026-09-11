@@ -30,7 +30,6 @@ describe('nested matrix pruning', function () {
         $this->matrixImporter = ElementImporter::create()
             ->className(EntryElement::class)
             ->site(Sites::getPrimarySite()->handle)
-            ->matchCriteria(['title' => 'title'])
             ->transformer(null);
 
         $this->matrixEntryData = fn (array $blocks) => [
@@ -149,19 +148,6 @@ describe('matrix in matrix pruning', function () {
         $this->matrixInMatrixImporter = ElementImporter::create()
             ->className(EntryElement::class)
             ->site(Sites::getPrimarySite()->handle)
-            ->matchCriteria([
-                'title' => 'title',
-                'outerMatrix' => [
-                    'outerEt' => [
-                        'title' => 'title',
-                        'fields' => [
-                            'innerMatrix' => [
-                                'innerEt' => ['title' => 'title'],
-                            ],
-                        ],
-                    ],
-                ],
-            ])
             ->transformer(null);
 
         $this->matrixInMatrixEntryData = fn (array $outerBlocks) => [

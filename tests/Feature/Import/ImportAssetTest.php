@@ -15,14 +15,15 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
+use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     $this->import = app(Import::class);
 
-    $root = storage_path('framework/testing/import-assets/'.bin2hex(random_bytes(4)));
+    $this->diskRoot = storage_path('framework/testing/import-assets/'.bin2hex(random_bytes(4)));
     config()->set('filesystems.disks.import-test-disk', [
         'driver' => 'local',
-        'root' => $root,
+        'root' => $this->diskRoot,
     ]);
 
     // Volume::factory() doesn't assign a fieldLayoutId by default, which leaves getFieldLayout()
@@ -53,12 +54,27 @@ beforeEach(function () {
         ->fieldLayout($volumeData->getFieldLayout())
         ->transformer(null);
 
+    $this->tempFilePaths = [];
     $this->makeTempFile = function (string $extension = 'txt', string $contents = 'hello world') {
         $path = AssetsHelper::tempFilePath($extension);
         file_put_contents($path, $contents);
+        $this->tempFilePaths[] = $path;
 
         return $path;
     };
+});
+
+afterEach(function () {
+    // a successful import moves the temp file into the volume, so only the leftovers need deleting
+    foreach ($this->tempFilePaths ?? [] as $path) {
+        if (File::exists($path)) {
+            File::delete($path);
+        }
+    }
+
+    if (isset($this->diskRoot)) {
+        File::deleteDirectory($this->diskRoot);
+    }
 });
 
 it('imports an asset from a local temp file, deducing the filename and defaulting the folder', function () {

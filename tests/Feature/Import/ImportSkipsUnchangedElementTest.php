@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\Support\ImportFixtures;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -28,29 +23,20 @@ beforeEach(function () {
 
     Fields::refreshFields();
 
-    $fieldLayout = FieldLayout::factory()->withContentTab([
-        new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
-        CustomField::make($textField->handle),
-        CustomField::make($relationField->handle),
-    ])->create();
+    $seed = ImportFixtures::seedEntry(
+        [
+            CustomField::make($textField->handle),
+            CustomField::make($relationField->handle),
+        ],
+        ['name' => 'With Fields', 'handle' => 'withFields'],
+    );
 
-    $entryType = EntryType::factory()
-        ->withFieldLayout($fieldLayout)
-        ->create(['name' => 'With Fields', 'handle' => 'withFields', 'hasTitleField' => true]);
+    $this->section = $seed->section;
+    $this->entryType = $seed->entryType;
 
-    $this->section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
-    $this->entryType = $entryType;
-
-    $seedResult = Entry::factory()
-        ->forSection($this->section)
-        ->forEntryType($entryType)
-        ->withFieldLayout($fieldLayout)
-        ->createElementWithFields([
-            'title' => 'seed entry',
-            'slug' => 'seed-entry',
-        ]);
-
-    $this->relatedEntry = $seedResult->element;
+    // the seeded entry is both the element the imports below match against, and the element the
+    // relation field points at
+    $this->relatedEntry = $seed->entry;
 
     $this->importer = ElementImporter::create()
         ->className(EntryElement::class)

@@ -3,62 +3,38 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\FieldLayout\FieldLayout as FieldLayoutConfig;
-use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\ImportFixtures;
 use CraftCms\Cms\User\Models\User;
-
-function makeTitleFieldLayout(): FieldLayout
-{
-    $config = FieldLayoutConfig::make(EntryElement::class);
-    $config->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(new EntryTitleField(['required' => true])));
-
-    return FieldLayout::factory()->create(['type' => EntryElement::class, 'config' => $config->getConfig()]);
-}
-
-function makeRequiredPlainTextFieldLayout(): FieldLayout
-{
-    $field = Field::factory()->create(['name' => 'My Required Text', 'handle' => 'myRequiredText', 'type' => PlainText::class]);
-
-    Fields::refreshFields();
-
-    $config = FieldLayoutConfig::make(EntryElement::class);
-    $config->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(
-        new EntryTitleField(['required' => true]),
-        CustomField::make($field->handle)->required(),
-    ));
-
-    return FieldLayout::factory()->create(['type' => EntryElement::class, 'config' => $config->getConfig()]);
-}
 
 beforeEach(function () {
     $this->import = app(Import::class);
 
-    $this->typeA = EntryType::factory()
-        ->withFieldLayout(makeTitleFieldLayout())
-        ->create(['name' => 'Type A', 'handle' => 'typeA', 'hasTitleField' => true]);
-    $this->typeB = EntryType::factory()
-        ->withFieldLayout(makeTitleFieldLayout())
-        ->create(['name' => 'Type B', 'handle' => 'typeB', 'hasTitleField' => true]);
+    // these entry types get their own sections below, so ImportFixtures::seedEntry() (which always
+    // creates a section and a seed entry) isn't a fit — only the entry type part is shared
+    $this->typeA = ImportFixtures::entryTypeWithTitle(attrs: ['name' => 'Type A', 'handle' => 'typeA']);
+    $this->typeB = ImportFixtures::entryTypeWithTitle(attrs: ['name' => 'Type B', 'handle' => 'typeB']);
 
     $this->section = Section::factory()->withEntryTypes($this->typeA, $this->typeB)->create(['minAuthors' => 0]);
 
     $this->sectionWithAuthors = Section::factory()->withEntryTypes($this->typeA)->create();
 
-    $this->typeC = EntryType::factory()
-        ->withFieldLayout(makeRequiredPlainTextFieldLayout())
-        ->create(['name' => 'With Required Text', 'handle' => 'withRequiredText', 'hasTitleField' => true]);
+    $requiredTextField = Field::factory()->create(['name' => 'My Required Text', 'handle' => 'myRequiredText', 'type' => PlainText::class]);
+
+    Fields::refreshFields();
+
+    $this->typeC = ImportFixtures::entryTypeWithTitle(
+        [CustomField::make($requiredTextField->handle)->required()],
+        ['name' => 'With Required Text', 'handle' => 'withRequiredText'],
+    );
 
     $this->importer = ElementImporter::create()
         ->className(EntryElement::class)

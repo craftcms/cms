@@ -29,20 +29,12 @@ final class ImportFixtures
         array $sectionAttrs = ['minAuthors' => 0],
         array $entryAttrs = [],
     ): object {
-        $fieldLayout = FieldLayout::factory()
-            ->withContentTab([
-                new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
-                ...$layoutElements,
-            ])
-            ->create();
+        $entryType = self::entryTypeWithTitle($layoutElements, array_merge([
+            'name' => 'Seed Type',
+            'handle' => 'seedType',
+        ], $entryTypeAttrs));
 
-        $entryType = EntryType::factory()
-            ->withFieldLayout($fieldLayout)
-            ->create(array_merge([
-                'name' => 'Seed Type',
-                'handle' => 'seedType',
-                'hasTitleField' => true,
-            ], $entryTypeAttrs));
+        $fieldLayout = $entryType->fieldLayout;
 
         $section = Section::factory()->withEntryTypes($entryType)->create($sectionAttrs);
 
@@ -61,6 +53,27 @@ final class ImportFixtures
             'section' => $section,
             'entry' => $result->element,
         ];
+    }
+
+    /**
+     * An EntryType with a required title field element plus the given layout elements.
+     */
+    public static function entryTypeWithTitle(array $layoutElements = [], array $attrs = []): EntryType
+    {
+        $fieldLayout = FieldLayout::factory()
+            ->withContentTab([
+                new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
+                ...$layoutElements,
+            ])
+            ->create();
+
+        return EntryType::factory()
+            ->withFieldLayout($fieldLayout)
+            ->create(array_merge([
+                'name' => 'With Title',
+                'handle' => 'withTitle',
+                'hasTitleField' => true,
+            ], $attrs));
     }
 
     /** A PlainText field with the given handle. */

@@ -56,6 +56,22 @@ beforeEach(function () {
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 
+    // An importer's own matchCriteria only reaches the pipeline when it's resolved and passed into
+    // importItem() - which is what Import::import(), the import job and craft:import:element all do.
+    // Calling importItem() without it means config-level criteria is silently ignored.
+    $this->importWithConfigCriteria = fn ($importer, array $data) => $this->import->importItem(
+        $importer,
+        $data,
+        ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer),
+    );
+
+    $this->importerMatchingSecondEtBlocks = fn () => (clone $this->importer)->matchCriteria([
+        'title' => 'title',
+        'myMatrix' => [
+            'secondEt' => ['title' => 'title'],
+        ],
+    ]);
+
     $this->entryData = fn (array $blocks) => [
         'title' => 'imported entry',
         'sectionId' => $this->section->handle,
@@ -87,8 +103,12 @@ it('imports multiple blocks of different entry types', function () {
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
+    $blocks = $entry->getFieldValue('myMatrix')->all();
 
-    expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+    // assert the types too, so this can't pass with both blocks coming out as the same type
+    expect($blocks)->toHaveCount(2)
+        ->and(array_map(fn ($block) => $block->title, $blocks))->toBe(['block 1', 'block 2'])
+        ->and(array_map(fn ($block) => $block->getType()->handle, $blocks))->toBe(['secondEt', 'firstEt']);
 });
 
 it('maps block field values and title correctly', function () {
@@ -140,35 +160,51 @@ it('updates an existing block when match criteria matches', function () {
 });
 
 it('resolves match criteria for nested blocks from the importer config, without it being inlined in the data', function () {
-    $importer = (clone $this->importer)->matchCriteria([
-        'title' => 'title',
-        'myMatrix' => [
-            'secondEt' => ['title' => 'title'],
-        ],
-    ]);
+    $importer = ($this->importerMatchingSecondEtBlocks)();
 
-    $this->import->importItem($importer, ($this->entryData)([
+    ($this->importWithConfigCriteria)($importer, ($this->entryData)([
         ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    $blockId = $entry->getFieldValue('myMatrix')->one()->id;
 
-    $this->import->importItem($importer, ($this->entryData)([
+    ($this->importWithConfigCriteria)($importer, ($this->entryData)([
         ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'updated foo']],
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
-    expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('plainText'))->toBe('updated foo');
+    $block = $entry->getFieldValue('myMatrix')->one();
 
-    $this->import->importItem($importer, ($this->entryData)([
-        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'updated foo']],
+    // the id check is what separates matching from the block being recreated - without it this
+    // test passes even when the config criteria never reaches the pipeline at all
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(1)
+        ->and($block->id)->toBe($blockId)
+        ->and($block->getFieldValue('plainText'))->toBe('updated foo');
+});
+
+it('adds a new block alongside a matched one when a second row is imported', function () {
+    $importer = ($this->importerMatchingSecondEtBlocks)();
+
+    ($this->importWithConfigCriteria)($importer, ($this->entryData)([
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $blockId = $entry->getFieldValue('myMatrix')->one()->id;
+
+    ($this->importWithConfigCriteria)($importer, ($this->entryData)([
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
         ['type' => 'secondEt', 'title' => 'block 2', 'fields' => ['plainText' => 'bar']],
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+    $blocks = $entry->getFieldValue('myMatrix')->all();
+
+    expect($blocks)->toHaveCount(2)
+        ->and(array_map(fn ($block) => $block->title, $blocks))->toBe(['block 1', 'block 2'])
+        ->and($blocks[0]->id)->toBe($blockId);
 });
 
 it('resolves inline pointer-style match criteria against the block\'s own field value', function () {
@@ -365,18 +401,21 @@ describe('nested matrix', function () {
             ],
         ];
 
-        $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
+        ($this->importWithConfigCriteria)($importer, ($this->entryData)([$outerBlock]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
+        $innerBlock = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->one();
         expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+        $innerBlockId = $innerBlock->id;
 
         $outerBlock['fields']['myNestedMatrix'][0]['fields']['plainText'] = 'updated nested foo';
 
-        $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
+        ($this->importWithConfigCriteria)($importer, ($this->entryData)([$outerBlock]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
         $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
         expect($innerBlocks->count())->toBe(1)
+            ->and($innerBlocks->one()->id)->toBe($innerBlockId)
             ->and($innerBlocks->one()->getFieldValue('plainText'))->toBe('updated nested foo');
     });
 
