@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
+use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionComponentInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
@@ -69,6 +70,24 @@ abstract class BaseConditionGroup implements ConditionGroupInterface
     public function getRules(): array
     {
         return $this->rules->all();
+    }
+
+    public function findRules(Closure $callback): array
+    {
+        $rules = [];
+
+        foreach ($this->rules as $rule) {
+            if ($rule instanceof ConditionGroupInterface) {
+                array_push($rules, ...$rule->findRules($callback));
+            } else {
+                /** @var ConditionRuleInterface $rule */
+                if ($callback($rule)) {
+                    $rules[] = $rule;
+                }
+            }
+        }
+
+        return $rules;
     }
 
     public function addRule(ConditionComponentInterface $rule): void

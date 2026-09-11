@@ -255,8 +255,21 @@ readonly class SaveUserController
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $selectedPhoto = $this->validateSelectedPhoto($request, $user);
-        $decodedUserPhoto = $this->validateUserPhoto($request, $user);
+        $selection = $request->input('photo');
+        $selectedPhoto = null;
+
+        if (is_array($selection) && array_is_list($selection)) {
+            $validated = $request->validate([
+                'photo' => ['array', 'max:1'],
+                'photo.*' => ['required', 'integer'],
+            ]);
+
+            if ($validated['photo'] !== []) {
+                $selectedPhoto = $this->validateSelectedPhoto((int) $validated['photo'][0], $user);
+            }
+        }
+
+        $decodedUserPhoto = $this->validateUploadedPhoto($request, $user);
 
         // Don't validate required custom fields if it's public registration
         if (! $isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
@@ -428,24 +441,9 @@ readonly class SaveUserController
         }
     }
 
-    private function validateSelectedPhoto(Request $request, User $user): ?Asset
+    private function validateSelectedPhoto(int $photoId, User $user): ?Asset
     {
-        $selection = $request->input('photo');
-
-        if (! is_array($selection) || ! array_is_list($selection)) {
-            return null;
-        }
-
-        $request->validate([
-            'photo' => ['array', 'max:1'],
-            'photo.*' => ['required', 'integer'],
-        ]);
-
-        if ($selection === []) {
-            return null;
-        }
-
-        $photo = Asset::findOne((int) $selection[0]);
+        $photo = Asset::findOne($photoId);
 
         if ($photo === null || ! ImageHelper::canManipulateAsImage($photo->getExtension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
@@ -468,7 +466,7 @@ readonly class SaveUserController
         return $photo;
     }
 
-    private function validateUserPhoto(Request $request, User $user): ?string
+    private function validateUploadedPhoto(Request $request, User $user): ?string
     {
         $maxUploadSize = AssetsHelper::getMaxUploadSize();
         $uploadedPhoto = $request->file('photo');

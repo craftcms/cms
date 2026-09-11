@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -42,12 +43,6 @@ class Entries extends BaseRelationField
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view
      */
     public bool $showUnpermittedSections = false;
-
-    /**
-     * @var bool Whether to show entries the user doesn’t have permission to view,
-     *           per the “View other users’ entries” permission.
-     */
-    public bool $showUnpermittedEntries = false;
 
     #[Override]
     protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
@@ -87,13 +82,19 @@ class Entries extends BaseRelationField
     /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
-        // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
+        // Default showUnpermittedSections to true for existing Entries fields
         if (isset($config['id']) && ! isset($config['showUnpermittedSections'])) {
             $config['showUnpermittedSections'] = true;
-            $config['showUnpermittedEntries'] = true;
         }
 
         parent::__construct($config);
+
+        // Add the “Viewable” rule by default
+        if (! isset($config['id']) && is_null($this->getSelectionCondition())) {
+            $condition = static::createSelectionCondition();
+            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
+            $this->setSelectionCondition($condition);
+        }
     }
 
     #[Override]
@@ -103,9 +104,6 @@ class Entries extends BaseRelationField
             FormField::make(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedSections')->value($this->showUnpermittedSections)),
-            FormField::make(t('Show unpermitted entries'))
-                ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
-                ->control(Lightswitch::make('showUnpermittedEntries')->value($this->showUnpermittedEntries)),
         );
     }
 
@@ -186,19 +184,6 @@ class Entries extends BaseRelationField
             'sectionId' => $sectionIds,
             'typeId' => array_unique($entryTypeIds),
         ];
-    }
-
-    /** @return array<string, mixed> */
-    #[Override]
-    public function getInputSelectionCriteria(): array
-    {
-        $criteria = parent::getInputSelectionCriteria();
-
-        if (! $this->showUnpermittedEntries) {
-            $criteria['editable'] = true;
-        }
-
-        return $criteria;
     }
 
     protected function createSelectionCondition(): ElementCondition
