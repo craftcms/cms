@@ -1,11 +1,8 @@
 <?php
 
-use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Conditions\ViewableConditionRule as AssetsViewableConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
-use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\ViewableConditionRule as EntriesAssetsViewableConditionRule;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -47,7 +44,7 @@ return new class extends Migration
                 $rules[] = new AssetsViewableConditionRule(['value' => true]);
             }
 
-            $this->addRulesToFieldConfig($config, AssetCondition::class, $rules);
+            $this->addRulesToFieldConfig($config, $rules);
             $projectConfig->set($path, $config);
         }
     }
@@ -69,7 +66,7 @@ return new class extends Migration
                 $rules[] = new EntriesAssetsViewableConditionRule(['value' => true]);
             }
 
-            $this->addRulesToFieldConfig($config, EntryCondition::class, $rules);
+            $this->addRulesToFieldConfig($config, $rules);
             $projectConfig->set($path, $config);
         }
     }
@@ -87,27 +84,19 @@ return new class extends Migration
 
     /**
      * @param  array{type: class-string<FieldInterface>}  $config
-     * @param  class-string<ElementConditionInterface>  $conditionClass
      * @param  ConditionRuleInterface[]  $rules
      */
-    private function addRulesToFieldConfig(array &$config, string $conditionClass, array $rules): void
+    private function addRulesToFieldConfig(array &$config, array $rules): void
     {
         if (empty($rules)) {
             return;
         }
 
-        if (! isset($config['settings']['selectionCondition'])) {
-            $config['settings']['selectionCondition'] = [
-                'class' => $conditionClass,
-                'conditionRules' => [
-                    'operator' => 'and',
-                    'rules' => [],
-                ],
-            ];
-        } elseif (! isset($config['settings']['selectionCondition']['conditionRules']['rules'])) {
+        // Ensure the selection condition is set to a top-level AND group
+        if (! isset($config['settings']['selectionCondition']['conditionRules']['rules'])) {
             $config['settings']['selectionCondition']['conditionRules'] = [
                 'operator' => 'and',
-                'rules' => $config['settings']['selectionCondition']['conditionRules'],
+                'rules' => $config['settings']['selectionCondition']['conditionRules'] ?? [],
             ];
         } elseif (($config['settings']['selectionCondition']['conditionRules']['operator'] ?? 'and') === 'or') {
             $config['settings']['selectionCondition']['conditionRules'] = [
