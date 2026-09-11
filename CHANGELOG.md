@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder.
+
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -254,6 +255,7 @@ readonly class SaveUserController
         // Validate and save!
         // ---------------------------------------------------------------------
 
+        $selectedPhoto = $this->validateSelectedPhoto($request, $user);
         $decodedUserPhoto = $this->validateUserPhoto($request, $user);
 
         // Don't validate required custom fields if it's public registration
@@ -303,7 +305,7 @@ readonly class SaveUserController
         }
 
         // Save the user’s photo, if it was submitted
-        $this->processUserPhoto($request, app(Elements::class), $user, $decodedUserPhoto);
+        $this->processUserPhoto($request, app(Elements::class), $user, $decodedUserPhoto, $selectedPhoto);
 
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {
@@ -361,10 +363,10 @@ readonly class SaveUserController
             : null);
     }
 
-    private function processUserPhoto(Request $request, Elements $elements, User $user, ?string $decodedUserPhoto): void
+    private function processUserPhoto(Request $request, Elements $elements, User $user, ?string $decodedUserPhoto, ?Asset $selectedPhoto): void
     {
         // Delete their photo?
-        if ($request->input('deletePhoto')) {
+        if ($user->photoId && ($request->input('deletePhoto') || $request->input('photo') === [])) {
             $this->users->deleteUserPhoto($user);
             $user->photoId = null;
             $elements->saveElement($user);
@@ -376,7 +378,12 @@ readonly class SaveUserController
         $mimeType = null;
 
         // Did they upload a new one?
-        if ($photo = $request->file('photo')) {
+        if ($selectedPhoto !== null && $selectedPhoto->id !== $user->photoId) {
+            $fileLocation = $selectedPhoto->getCopyOfFile();
+            $filename = $selectedPhoto->getFilename();
+            $mimeType = $selectedPhoto->getMimeType();
+            $newPhoto = true;
+        } elseif ($photo = $request->file('photo')) {
             $fileLocation = AssetsHelper::tempFilePath($photo->extension());
             $photo->move(dirname($fileLocation), basename($fileLocation));
             $filename = $photo->getClientOriginalName();
@@ -419,6 +426,46 @@ readonly class SaveUserController
                 throw $e;
             }
         }
+    }
+
+    private function validateSelectedPhoto(Request $request, User $user): ?Asset
+    {
+        $selection = $request->input('photo');
+
+        if (! is_array($selection) || ! array_is_list($selection)) {
+            return null;
+        }
+
+        $request->validate([
+            'photo' => ['array', 'max:1'],
+            'photo.*' => ['required', 'integer'],
+        ]);
+
+        if ($selection === []) {
+            return null;
+        }
+
+        $photo = Asset::findOne((int) $selection[0]);
+
+        if ($photo === null || ! ImageHelper::canManipulateAsImage($photo->getExtension())) {
+            $user->errors()->add('photo', t('The user photo provided is not an image.'));
+
+            return null;
+        }
+
+        if ($photo->id !== $user->photoId) {
+            Gate::authorize('view', $photo);
+
+            $folder = $this->users->userPhotoFolder($user);
+
+            if ($photo->volumeId !== $folder->volumeId || $photo->folderId !== $folder->id) {
+                $user->errors()->add('photo', t('The user photo provided is not valid.'));
+
+                return null;
+            }
+        }
+
+        return $photo;
     }
 
     private function validateUserPhoto(Request $request, User $user): ?string
