@@ -24,7 +24,9 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->assets = app(Assets::class);
@@ -322,6 +324,96 @@ it('invalidates Asset Transforms once for each source lifecycle operation', func
     'deletion' => [function (Assets $assets, Asset $asset): void {
         app(Elements::class)->deleteElement($asset, true);
     }],
+]);
+
+it('preserves visibility when renaming an asset within its volume', function (string $subpath) {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk', 'subpath' => $subpath]);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'document.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $disk->put($subpath.'document.txt', 'contents', 'public');
+
+    expect($this->assets->moveAsset($asset, $folder, 'renamed.txt'))->toBeTrue();
+
+    $disk->assertMissing($subpath.'document.txt');
+    expect($disk->get($subpath.'renamed.txt'))->toBe('contents')
+        ->and($disk->getVisibility($subpath.'renamed.txt'))->toBe('public')
+        ->and(Asset::findOne($asset->id)->filename)->toBe('renamed.txt');
+})->with(['root' => '', 'subpath' => 'uploads/']);
+
+it('keeps replacement bytes in a volume with a subpath', function () {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk', 'subpath' => 'uploads/']);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'document.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $disk->put('uploads/document.txt', 'original');
+    $replacement = UploadedFile::fake()->createWithContent('document.txt', 'replacement');
+
+    $this->assets->replaceAssetFile($asset, $replacement->getPathname(), 'document.txt');
+
+    expect($asset->errors()->getMessages())->toBe([]);
+    expect($disk->get('uploads/document.txt'))->toBe('replacement')
+        ->and(Asset::findOne($asset->id)->size)->toBe(11);
+});
+
+it('moves existing assets between volumes while preserving their contents and metadata', function (bool $sameDisk) {
+    config()->set('filesystems.disks.asset-move-destination', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-move-destination'),
+    ]);
+    $sourceDisk = Storage::fake('test-disk');
+    $destinationDisk = $sameDisk ? $sourceDisk : Storage::fake('asset-move-destination');
+    $sourceVolume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $destinationVolume = Volume::factory()->create(['fs' => $sameDisk ? 'disk:test-disk' : 'disk:asset-move-destination']);
+    $sourceFolder = app(Folders::class)->getRootFolderByVolumeId($sourceVolume->id);
+    $destinationFolder = app(Folders::class)->getRootFolderByVolumeId($destinationVolume->id);
+    $image = UploadedFile::fake()->image('photo.png', 13, 17);
+    $bytes = file_get_contents($image->getPathname());
+    $modified = now()->subDay()->startOfSecond();
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $sourceVolume->id,
+        'folderId' => $sourceFolder->id,
+        'filename' => 'photo.png',
+        'kind' => FileKind::Image->value,
+        'size' => strlen($bytes),
+        'width' => 13,
+        'height' => 17,
+        'dateModified' => $modified,
+    ]);
+    $sourceDisk->put('photo.png', $bytes);
+    $asset = Asset::findOne($asset->id);
+    $modified = $asset->dateModified;
+    $filename = 'moved.png';
+
+    expect($this->assets->moveAsset($asset, $destinationFolder, $filename))->toBeTrue();
+
+    expect($destinationDisk->get($filename))->toBe($bytes);
+    $sourceDisk->assertMissing('photo.png');
+
+    $saved = Asset::findOne($asset->id);
+    expect($saved->folderId)->toBe($destinationFolder->id)
+        ->and($saved->getVolumeId())->toBe($destinationVolume->id)
+        ->and($saved->getFilename())->toBe($filename)
+        ->and($saved->kind)->toBe(FileKind::Image->value)
+        ->and($saved->size)->toBe(strlen($bytes))
+        ->and($saved->getWidth())->toBe(13)
+        ->and($saved->getHeight())->toBe(17)
+        ->and($saved->dateModified->getTimestamp())->toBe($modified->getTimestamp());
+})->with([
+    'same disk' => [true],
+    'different disks' => [false],
 ]);
 
 it('resets caches', function () {

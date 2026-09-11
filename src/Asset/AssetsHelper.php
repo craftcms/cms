@@ -399,6 +399,14 @@ class AssetsHelper
         return $uploadInBytes;
     }
 
+    /** The asset limit, independent of the size of individual upload requests. */
+    public static function getMaxAssetUploadSize(): int
+    {
+        $limit = PHP::sizeToBytes(Cms::config()->maxUploadFileSize);
+
+        return $limit > 0 ? $limit : PHP_INT_MAX;
+    }
+
     /**
      * Returns scaled width & height values for a maximum container size.
      *
