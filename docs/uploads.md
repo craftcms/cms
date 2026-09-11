@@ -125,11 +125,23 @@ The contract has five methods:
 - `complete()` verifies the stored bytes and returns an `UploadedFile` on the temporary disk. It must tolerate retries after storage completion.
 - `abort()` removes incomplete transfers and completed temporary objects. It must tolerate retries.
 
-Register the matching frontend transport in your plugin’s JavaScript, after the uploads entry has loaded:
+Register the matching frontend transport in your plugin’s JavaScript, after the uploads entry has loaded. A plugin with a fixed endpoint only needs setup:
 
 ```js
-Craft.Uploads.registerTransport('cloud', ({uppy, session}) => {
-  uppy.use(CloudUploadPlugin, session.transport.options);
+Craft.Uploads.registerTransport('cloud', (uppy) => {
+  uppy.use(CloudUploadPlugin, {endpoint: '/cloud/upload'});
+});
+```
+
+If configuration varies per file, return a preparation callback:
+
+```js
+Craft.Uploads.registerTransport('cloud', (uppy) => {
+  uppy.use(CloudUploadPlugin);
+
+  return (fileId, {session}) => {
+    uppy.setFileState(fileId, {cloud: session.transport.options});
+  };
 });
 ```
 
@@ -142,9 +154,11 @@ public function clientConfig(UploadSession $session): array
 }
 ```
 
-The registration callback runs once per file, before Craft adds the file to Uppy, and may be asynchronous. It receives `uppy`, `session`, same-origin request `headers`, a typed `request(url, method, data?, options?)` helper backed by `useFetch`, and `beginCompletion()`. The request helper handles cancellation and normalizes backend errors; it only accepts same-origin URLs. Call `beginCompletion()` before an irreversible storage commit to disable cancellation. Custom plugins advertise pause/resume support through Uppy’s `capabilities.resumableUploads` state and handle its pause/resume events. Use the Uppy plugin lifecycle for transfer progress, failure, retry, and cancellation; Craft retains session creation and finalization.
+The registration callback configures one shared Uppy instance per transport. It may return a function that prepares each file using its Uppy file ID and Craft context. The context contains `session`, same-origin request `headers`, a typed `request(url, method, data?, options?)` helper backed by `useFetch`, and `beginCompletion()`. The preparation function may return a cleanup callback, called after the file is removed from Uppy.
 
-`registerTransport` is also exported from `resources/js/uploads.ts`. Load the uploads entry before accessing `Craft.Uploads`. Registering an existing name replaces its setup for new uploads. An unregistered name fails explicitly.
+The request helper handles cancellation and normalizes backend errors; it only accepts same-origin URLs. Call `beginCompletion()` before an irreversible storage commit. Custom plugins advertise pause/resume support through Uppy’s `capabilities.resumableUploads` state and handle its per-file pause/resume events. Use the Uppy plugin lifecycle for transfer progress, failure, retry, and cancellation; Craft retains session creation and finalization. Uppy owns concurrency; queued files remain in the uploading state. Store session settings per file, since files with different destinations and headers share the instance.
+
+`registerTransport` is also exported from `resources/js/uploads.ts`. Load the uploads entry before accessing `Craft.Uploads`. An existing registration can be replaced before its first use. Attempting to replace it after its Uppy instance has been created throws an error. An unregistered name fails explicitly.
 
 Backend drivers that reuse Craft’s tus endpoint implement `Contracts\ReceivesTusUploads`, which provides `receive()` and `offset()`. Drivers that reuse its S3 signing endpoint implement `Contracts\SignsS3Uploads`, which provides `sign()` and the multipart key/ID configuration. Neither requires inheriting a built-in driver. Other protocols only implement `Uploader` and supply their own transport endpoint.
 

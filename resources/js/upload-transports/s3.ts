@@ -1,17 +1,31 @@
 import AwsS3 from '@uppy/aws-s3';
-import type {UploadTransportContext} from '../upload-client';
+import {UploadError} from '../upload-request';
+import type Uppy from '@uppy/core';
+import type {PrepareUpload, UploadTransportContext} from './registry';
 
-export function configureS3({
-  uppy,
-  session,
-  request,
-  beginCompletion,
-}: UploadTransportContext): void {
+export function configureS3(uppy: Uppy): PrepareUpload {
+  const sessions = new Map<string, UploadTransportContext>();
   uppy.use(AwsS3, {
-    shouldUseMultipart: true,
-    getChunkSize: () => session.chunkSize,
+    shouldUseMultipart: (file) => {
+      const {session} = sessions.get(file.id)!;
+      // Uppy reads getChunkSize immediately after this callback, before starting I/O.
+      uppy.getPlugin('AwsS3')!.setOptions({
+        getChunkSize: () => session.chunkSize,
+      });
+      return true;
+    },
     allowedMetaFields: false,
     signRequest: (parameters) => {
+      const context = [...sessions.values()].find(
+        ({session}) =>
+          session.transport.options.key === parameters.key &&
+          'uploadId' in parameters &&
+          session.transport.options.uploadId === parameters.uploadId
+      );
+      if (!context) {
+        throw new UploadError('No upload session matches the S3 request.', 400);
+      }
+      const {session, request, beginCompletion} = context;
       if (parameters.method === 'POST') {
         beginCompletion();
       }
@@ -23,14 +37,11 @@ export function configureS3({
       );
     },
   });
-  uppy.once('file-added', (file) => {
-    const fileState = {
-      ...file,
-      s3Multipart: {
-        key: session.transport.options.key,
-        uploadId: session.transport.options.uploadId,
-      },
-    };
-    uppy.setFileState(file.id, fileState);
-  });
+  return (fileId, context) => {
+    const {key, uploadId} = context.session.transport.options;
+    sessions.set(fileId, context);
+    const fileState = {...uppy.getFile(fileId), s3Multipart: {key, uploadId}};
+    uppy.setFileState(fileId, fileState);
+    return () => sessions.delete(fileId);
+  };
 }
