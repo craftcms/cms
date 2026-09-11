@@ -7,6 +7,7 @@
 - Fixed a bug where Money and Number fields’ currency labels didn't line up with their inputs. ([#19547](https://github.com/craftcms/cms/pull/19547))
 - Fixed a bug where Structure entries’ “Parent” field could be populated with the parent entry from a different site than the one being edited. ([#19576](https://github.com/craftcms/cms/issues/19576))
 - Fixed a bug where the search input on the Users index page could be filled in automatically by LastPass. ([#19584](https://github.com/craftcms/cms/issues/19584))
+- Fixed a bug where public registration could fail when sending the activation email, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 
 ## 5.11.1 - 2026-09-02
 

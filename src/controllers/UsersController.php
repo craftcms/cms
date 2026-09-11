@@ -1823,9 +1823,10 @@ JS);
             );
         }
 
-        // If this is a new user and email verification isn't required,
+        // If this is a new user and email verification isn't required, and we're not
+        // sending them an activation email (e.g. to set their deferred password),
         // go ahead and activate them now.
-        if ($isNewUser && !$requireEmailVerification && !$deactivateByDefault) {
+        if ($isNewUser && !$requireEmailVerification && !$deactivateByDefault && !$sendActivationEmail) {
             Craft::$app->getUsers()->activateUser($user);
         }
 
