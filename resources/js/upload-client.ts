@@ -1,8 +1,11 @@
 import Uppy from '@uppy/core';
 import {TaskQueue} from '@uppy/core/utils';
-import Tus from '@uppy/tus';
-import AwsS3 from '@uppy/aws-s3';
+import {configureTus} from './upload-transports/tus';
+import {configureS3} from './upload-transports/s3';
+import {assertSameOrigin, UploadError} from './upload-request';
 import {useFetch} from '@/common/composables/useFetch';
+
+export {UploadError} from './upload-request';
 
 export type UploadSession = CraftCms.Cms.Filesystem.Data.UploadSessionData;
 
@@ -55,17 +58,6 @@ export function registerTransport(
 ): void {
   transports.set(type, configure);
   transferQueues.delete(type);
-}
-
-export class UploadError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-    public readonly data: Record<string, unknown> = {}
-  ) {
-    super(message);
-    this.name = 'UploadError';
-  }
 }
 
 /** Uploads Craft sessions, retaining completed parts for same-page retries. */
@@ -371,15 +363,6 @@ function retryableStatus(status: number): boolean {
 const requestFailed =
   'The upload request failed. Check the connection and storage configuration.';
 
-function assertSameOrigin(url: string): void {
-  if (new URL(url, location.href).origin !== location.origin) {
-    throw new UploadError(
-      'Upload control requests must use the current origin.',
-      400
-    );
-  }
-}
-
 function responseError(status: number, response: unknown): UploadError {
   if (typeof response === 'string') {
     try {
@@ -421,43 +404,5 @@ function delay(
   });
 }
 
-registerTransport('tus', ({uppy, session, headers}) => {
-  const {url} = session.transport.options;
-  assertSameOrigin(url);
-  uppy.use(Tus, {
-    uploadUrl: url,
-    chunkSize: session.chunkSize,
-    headers: {Accept: 'application/json', ...headers},
-    storeFingerprintForResuming: false,
-    removeFingerprintOnSuccess: true,
-  });
-});
-
-registerTransport('s3', ({uppy, session, request, beginCompletion}) => {
-  uppy.use(AwsS3, {
-    shouldUseMultipart: true,
-    getChunkSize: () => session.chunkSize,
-    allowedMetaFields: false,
-    signRequest: (parameters) => {
-      if (parameters.method === 'POST') {
-        beginCompletion();
-      }
-      return request<{url: string}>(
-        session.urls.sign,
-        'POST',
-        parameters,
-        parameters.method === 'DELETE' ? {signal: null} : {}
-      );
-    },
-  });
-  uppy.once('file-added', (file) => {
-    const fileState = {
-      ...file,
-      s3Multipart: {
-        key: session.transport.options.key,
-        uploadId: session.transport.options.uploadId,
-      },
-    };
-    uppy.setFileState(file.id, fileState);
-  });
-});
+registerTransport('tus', configureTus);
+registerTransport('s3', configureS3);
