@@ -119,9 +119,9 @@ public function boot(Uploaders $uploaders): void
 
 The contract has five methods:
 
-- `start()` returns an `UploadSetup` containing `chunkSize`, `state`, and `transport`. Craft persists `chunkSize` and `state`, and includes `transport` in the initial response. `state` contains serializable provider data, and `transport` contains `{type, options}`. `type` names a registered frontend transport; `options` contains its public configuration. Built-in types are `tus` (`options.url`) and `s3` (`options.uploadId` and `options.key`).
+- `start()` returns an `UploadSetup` containing `chunkSize`, `state`, `transportType`, and `transportOptions`. Craft persists `chunkSize` and `state`, and includes the transport type and options in the initial response. `state` contains serializable provider data. `transportType` names a registered frontend transport, and `transportOptions` contains its public per-session configuration. Built-in types are `tus` (`url`) and `s3` (`uploadId` and `key`).
 - `handleRequest(Request $request, UploadSession $session)` handles protocol requests at `session.urls.transfer` and returns an HTTP response. The uploader owns request validation, protocol headers, byte reception, or signing.
-- `uploaded()` reports whether the complete file is staged, including when a storage-completion response was lost.
+- `isUploaded()` reports whether the complete file is staged, including when a storage-completion response was lost.
 - `complete()` verifies the stored bytes and returns an `UploadedFile` on the temporary disk. It must tolerate retries after storage completion.
 - `abort()` removes incomplete transfers and completed temporary objects. It must tolerate retries.
 
@@ -155,7 +155,8 @@ public function start(UploadSession $session): UploadSetup
     return new UploadSetup(
         chunkSize: 5242880,
         state: [],
-        transport: ['type' => 'cloud', 'options' => ['endpoint' => $this->uploadUrl($session)]],
+        transportType: 'cloud',
+        transportOptions: ['endpoint' => $this->uploadUrl($session)],
     );
 }
 ```

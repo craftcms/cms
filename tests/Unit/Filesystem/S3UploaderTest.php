@@ -170,7 +170,7 @@ it('recognizes bytes completed by the browser before Craft finalization', functi
     $this->disk->shouldReceive('size')->with($session->path())->andReturn(3);
     $uploader = app(S3Uploader::class);
 
-    expect($uploader->uploaded($session))->toBeTrue()
+    expect($uploader->isUploaded($session))->toBeTrue()
         ->and($uploader->complete($session)->path)->toBe($session->path())
         ->and($this->commands)->toBe([]);
 });
