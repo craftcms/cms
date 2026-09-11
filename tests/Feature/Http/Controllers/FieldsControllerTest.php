@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 use Symfony\Component\DomCrawler\Crawler;
@@ -345,7 +347,7 @@ it('renders a condition builder without query params', function () {
     ])
         ->assertOk()
         ->assertJsonPath('html', fn (string $html): bool => str_contains($html, 'condition-container'))
-        ->assertJsonPath('bodyHtml', fn (string $html): bool => str_contains($html, 'htmx.min.js') && str_contains($html, 'ConditionBuilder.js'));
+        ->assertJsonPath('html', fn (string $html): bool => str_contains($html, '<craft-condition-builder') && str_contains($html, 'data-name="settings[condition]"'));
 });
 
 it('normalizes namespaced condition builder values', function () {
@@ -480,4 +482,20 @@ it('can delete a field', function () {
         ->assertOk();
 
     expect(FieldModel::count())->toBe($currentCount - 1);
+});
+
+it('rejects invalid selection conditions before saving a relation field', function () {
+    $uid = (string) Str::uuid();
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => Entries::class,
+        'name' => 'Related',
+        'handle' => 'related',
+        'settings' => ['selectionCondition' => [
+            'class' => ElementCondition::class,
+            'elementType' => Entry::class,
+            'conditionRules' => [['class' => TitleConditionRule::class, 'uid' => $uid, 'operator' => 'invalid']],
+        ]],
+    ])->assertJsonValidationErrorFor("settings.selectionCondition.$uid.operator");
+
+    expect(FieldModel::where('handle', 'related')->exists())->toBeFalse();
 });

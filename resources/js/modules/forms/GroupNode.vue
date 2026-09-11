@@ -4,7 +4,8 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, shallowRef, watch} from 'vue';
+  import {computed, inject} from 'vue';
+  import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import FormNodeList from './FormNodeList.vue';
   import {FormRefreshingFields} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
@@ -47,20 +48,7 @@
       refreshingFields?.value.has(JSON.stringify(props.node.props.dependsOn))
     );
   });
-  const showLoading = shallowRef(false);
-
-  watch(loading, (loading, _, onCleanup) => {
-    if (!loading) {
-      showLoading.value = false;
-
-      return;
-    }
-
-    const timeout = setTimeout(() => {
-      showLoading.value = true;
-    }, 200);
-    onCleanup(() => clearTimeout(timeout));
-  });
+  const showLoading = useDelayedLoading(loading);
 </script>
 
 <template>

@@ -429,7 +429,6 @@ class Input extends ViewComponent
             'class' => array_filter([
                 'text',
                 $this->inputSize === null ? 'fullwidth' : null,
-                // HTMX restores server classes after Lion upgrades the input.
                 'form-control',
             ]),
             'inputmode' => $this->inputmode,

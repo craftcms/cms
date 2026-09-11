@@ -167,8 +167,7 @@ export default css`
   }
 
   .cp-pane__body {
-    padding-inline: var(--_pane-spacing);
-    padding-block: var(--_pane-spacing) calc(var(--_pane-spacing) * 1.5);
+    padding: var(--_pane-spacing);
   }
 
   .cp-pane__footer {

@@ -9,6 +9,12 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\HasUrlConditionRule;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->service = app(Conditions::class);
@@ -48,7 +54,7 @@ describe('createCondition', function () {
     it('creates a condition with empty conditionRules by default', function () {
         $condition = $this->service->createCondition(ElementCondition::class);
 
-        expect($condition->getConditionRules())->toBeEmpty();
+        expect($condition->getConditionRules()->getRules())->toBeEmpty();
     });
 });
 
@@ -181,4 +187,37 @@ it('accepts clearing a membership control', function () {
     ]);
 
     expect($rule->getConfig()['value'])->toBe('');
+});
+
+it('switches custom field identity when both fields use the same rule class', function () {
+    $oldField = (string) Str::uuid();
+    $newField = (string) Str::uuid();
+    $newLayoutElement = (string) Str::uuid();
+    $rule = $this->service->createConditionRule([
+        'class' => TextFieldConditionRule::class,
+        'fieldUid' => $oldField,
+        'layoutElementUid' => (string) Str::uuid(),
+        'operator' => 'bw',
+        'value' => 'Keep',
+        'type' => json_encode([
+            'class' => TextFieldConditionRule::class,
+            'fieldUid' => $newField,
+            'layoutElementUid' => $newLayoutElement,
+        ]),
+    ]);
+
+    expect($rule->getConfig())
+        ->toMatchArray(['fieldUid' => $newField, 'layoutElementUid' => $newLayoutElement, 'operator' => 'bw', 'value' => 'Keep']);
+});
+
+it('rejects invalid layout conditions before saving', function () {
+    $condition = new ElementCondition(Entry::class);
+    $rule = $condition->createConditionRule(['class' => TitleConditionRule::class, 'operator' => 'invalid']);
+    $condition->addConditionRule($rule);
+    $layout = new FieldLayout(['type' => Entry::class]);
+    $layout->setTabs([new FieldLayoutTab(['name' => 'Main', 'elementCondition' => $condition])]);
+
+    expect(app(Fields::class)->saveLayout($layout))->toBeFalse()
+        ->and($layout->errors()->has("tabs.0.elementCondition.{$rule->uid}.operator"))->toBeTrue()
+        ->and($layout->id)->toBeNull();
 });

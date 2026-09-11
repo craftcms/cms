@@ -51,7 +51,6 @@
     "codemirror": "^5.65.21",
     "d3": "catalog:",
     "fabric": "^1.7.22",
-    "htmx.org": "^1.9.12",
     "iframe-resizer": "^4.4.5",
     "inputmask": "catalog:",
     "jquery": "catalog:",

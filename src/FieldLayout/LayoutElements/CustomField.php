@@ -534,6 +534,16 @@ class CustomField extends BaseField
         return (bool) $this->getElementEditCondition();
     }
 
+    #[Override]
+    protected function validationConditions(): array
+    {
+        return [
+            ...parent::validationConditions(),
+            'editCondition' => $this->getEditCondition(),
+            'elementEditCondition' => $this->getElementEditCondition(),
+        ];
+    }
+
     /**
      * Returns the edit condition for this layout element.
      */

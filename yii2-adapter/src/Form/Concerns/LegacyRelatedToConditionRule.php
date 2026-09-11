@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
 
 /** @phpstan-require-extends \CraftCms\Cms\Element\Conditions\RelatedToConditionRule */
 trait LegacyRelatedToConditionRule
@@ -30,11 +29,6 @@ trait LegacyRelatedToConditionRule
                     'name' => 'elementType',
                     'options' => $this->_elementTypeOptions(),
                     'value' => $this->elementType,
-                    'inputAttributes' => [
-                        'hx' => [
-                            'post' => Url::actionUrl('conditions/render'),
-                        ],
-                    ],
                 ]) .
                 $this->elementInputHtml(),
                 [

@@ -12,7 +12,6 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
 
 class ConditionRuleRenderer
 {
@@ -38,10 +37,7 @@ class ConditionRuleRenderer
                     $node->control?->type === Choice::class ? 'shrink-0' : 'min-w-0',
                     $node->control?->type !== DateTime::class ? '[&>craft-field>[slot=label]]:sr-only' : null,
                 ]),
-                'hx' => $node->control?->reactive ? [
-                    'post' => Url::actionUrl('conditions/render'),
-                    'trigger' => 'change',
-                ] : [],
+
             ]);
         }
 

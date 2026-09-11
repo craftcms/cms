@@ -6,9 +6,9 @@ namespace CraftCms\Yii2Adapter\Form\Concerns;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Yii2Adapter\Form\LegacyConditionClasses;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
 use function CraftCms\Cms\t;
@@ -16,13 +16,16 @@ use function CraftCms\Cms\t;
 /** @phpstan-require-extends \CraftCms\Cms\Condition\BaseConditionRule */
 trait LegacyConditionRuleForm
 {
-    public function getForm(): Form
+    public function getForm(FormContext $context = new FormContext()): Form
     {
-        $namespace = InputNamespace::get();
+        $namespace = LegacyHtml::namespace($context->namespace) ?? InputNamespace::get();
         $node = InputNamespace::with(null, fn() => app(LegacyHtml::class)->capture(
             path: ['__legacyConditionRule', $this->uid],
             hook: fn(): string => InputNamespace::with($namespace, $this->getHtml(...)),
+            namespace: LegacyHtml::namespace($context->namespace),
         ));
+
+        $node?->getControl()->deltaGroupAtNamespace()->expandValues()->reactive();
 
         return Form::make($node === null ? [] : [$node]);
     }
@@ -51,11 +54,6 @@ trait LegacyConditionRuleForm
                         'name' => 'operator',
                         'value' => $this->operator,
                         'options' => array_map(fn($operator) => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators),
-                        'inputAttributes' => [
-                            'hx' => [
-                                'post' => $this->reloadOnOperatorChange ? Url::actionUrl('conditions/render') : false,
-                            ],
-                        ],
                     ])
                 )
                 : Html::hiddenInput('operator', reset($operators))
