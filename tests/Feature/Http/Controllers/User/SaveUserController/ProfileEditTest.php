@@ -172,7 +172,7 @@ describe('photo selection', function () {
         expect(User::findOne($user->id)->photoId)->toBeNull();
     });
 
-    it('creates the configured folder and restricts the photo selector to it', function () {
+    it('creates the configured folder and enables uploads to it', function () {
         ProjectConfig::set('users.photoSubpath', 'new-photos/{id}');
         $path = "new-photos/{$this->user->id}";
         $this->disk->assertMissing($path);
@@ -184,6 +184,8 @@ describe('photo selection', function () {
 
             expect($control['props']['sources'])->toBe(["volume:{$this->volume->uid}/folder:{$folder->uid}"])
                 ->and($control['props']['criteria'])->toBe(['volumeId' => $this->volume->id, 'folderId' => $folder->id, 'kind' => 'image'])
+                ->and($control['props']['canUpload'])->toBeTrue()
+                ->and($control['props']['uploadFolderId'])->toBe($folder->id)
                 ->and($control['props']['showFolders'])->toBeFalse();
         });
 
