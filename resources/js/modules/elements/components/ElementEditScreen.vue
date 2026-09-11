@@ -259,7 +259,11 @@
           </div>
 
           <div v-if="form.hasErrors" class="px-4">
-            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+            <ErrorSummary
+              v-if="form.hasErrors"
+              :errors="form.errors"
+              :title="t('Couldn’t save changes')"
+            />
           </div>
 
           <div
