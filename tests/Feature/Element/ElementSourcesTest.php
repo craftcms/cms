@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -10,6 +12,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 beforeEach(function () {
@@ -183,3 +186,18 @@ class TestElementSourceSortOptionsElement extends Element
         return $this;
     }
 }
+
+it('rejects invalid custom source conditions before writing project config', function () {
+    $condition = new ElementCondition(Entry::class);
+    $condition->addConditionRule($condition->createConditionRule([
+        'class' => TitleConditionRule::class,
+        'operator' => 'invalid',
+    ]));
+    $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class);
+    $original = app(ProjectConfig::class)->get($path);
+
+    expect(fn () => $this->elementSources->saveSources(Entry::class, [
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:test', 'condition' => $condition],
+    ]))->toThrow(ValidationException::class);
+    expect(app(ProjectConfig::class)->get($path))->toBe($original);
+});

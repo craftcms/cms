@@ -23,7 +23,7 @@ describe('setConditionRules() from config arrays', function () {
             ['class' => TitleConditionRule::class],
         ]);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules)->toHaveCount(1);
         expect($rules[0])->toBeInstanceOf(TitleConditionRule::class);
@@ -36,7 +36,7 @@ describe('setConditionRules() from config arrays', function () {
             ['class' => SlugConditionRule::class],
         ]);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules)->toHaveCount(2);
         expect($rules[0])->toBeInstanceOf(TitleConditionRule::class);
@@ -49,7 +49,7 @@ describe('setConditionRules() from config arrays', function () {
             ['class' => TitleConditionRule::class],
         ]);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules[0]->getCondition())->toBe($condition);
     });
@@ -61,7 +61,7 @@ describe('setConditionRules() from config arrays', function () {
             ['class' => TitleConditionRule::class],
         ]);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules)->toHaveCount(1);
         expect($rules[0])->toBeInstanceOf(TitleConditionRule::class);
@@ -78,7 +78,7 @@ describe('setConditionRules() from config arrays', function () {
             ['class' => IdConditionRule::class],
         ]);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules)->toHaveCount(1);
         expect($rules[0])->toBeInstanceOf(IdConditionRule::class);
@@ -92,7 +92,7 @@ describe('setConditionRules() from config arrays', function () {
 
         $condition->setConditionRules([$rule]);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules)->toHaveCount(1);
         expect($rules[0])->toBeInstanceOf(TitleConditionRule::class);
@@ -109,7 +109,7 @@ describe('addConditionRule()', function () {
 
         $condition->addConditionRule($rule);
 
-        $rules = $condition->getConditionRules();
+        $rules = $condition->getConditionRules()->getRules();
 
         expect($rules)->toHaveCount(1);
         expect($rules[0])->toBe($rule);
@@ -129,7 +129,7 @@ describe('addConditionRule()', function () {
         $slugRule->value = 'test';
         $condition->addConditionRule($slugRule);
 
-        expect($condition->getConditionRules())->toHaveCount(2);
+        expect($condition->getConditionRules()->getRules())->toHaveCount(2);
     });
 
     it('throws InvalidArgumentException for a rule not in selectable rules', function () {

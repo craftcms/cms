@@ -211,7 +211,8 @@ describe('getConfig', function () {
             ->toHaveKey('class', ElementCondition::class)
             ->toHaveKey('elementType', Entry::class)
             ->toHaveKey('conditionRules')
-            ->and($config['conditionRules'])->toBeArray()->toBeEmpty();
+            ->and($config['conditionRules'])->toHaveKey('operator', 'and')
+            ->and($config['conditionRules']['rules'])->toBeArray()->toBeEmpty();
     });
 
     it('includes configured rules in config output', function () {
@@ -229,12 +230,12 @@ describe('getConfig', function () {
 
         $config = $condition->getConfig();
 
-        expect($config['conditionRules'])->toHaveCount(2)
-            ->and($config['conditionRules'][0])->toHaveKey('class', TitleConditionRule::class)
-            ->and($config['conditionRules'][0])->toHaveKey('value', 'Test Title')
-            ->and($config['conditionRules'][0])->toHaveKey('operator', '=')
-            ->and($config['conditionRules'][1])->toHaveKey('class', SlugConditionRule::class)
-            ->and($config['conditionRules'][1])->toHaveKey('value', 'test-slug');
+        expect($config['conditionRules']['rules'])->toHaveCount(2)
+            ->and($config['conditionRules']['rules'][0])->toHaveKey('class', TitleConditionRule::class)
+            ->and($config['conditionRules']['rules'][0])->toHaveKey('value', 'Test Title')
+            ->and($config['conditionRules']['rules'][0])->toHaveKey('operator', '=')
+            ->and($config['conditionRules']['rules'][1])->toHaveKey('class', SlugConditionRule::class)
+            ->and($config['conditionRules']['rules'][1])->toHaveKey('value', 'test-slug');
     });
 
     it('preserves rule UIDs in config', function () {
@@ -247,7 +248,7 @@ describe('getConfig', function () {
 
         $config = $condition->getConfig();
 
-        expect($config['conditionRules'][0])->toHaveKey('uid')
-            ->and($config['conditionRules'][0]['uid'])->toBe($titleRule->uid);
+        expect($config['conditionRules']['rules'][0])->toHaveKey('uid')
+            ->and($config['conditionRules']['rules'][0]['uid'])->toBe($titleRule->uid);
     });
 });

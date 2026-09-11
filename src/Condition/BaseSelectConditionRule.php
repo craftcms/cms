@@ -45,8 +45,10 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     #[Override]
     public function getRules(): array
     {
+        $values = $this->_validValues();
+
         return array_merge(parent::getRules(), [
-            'value' => ['required', Rule::in($this->_validValues())],
+            'value' => [Rule::requiredIf(! in_array('', $values, true)), Rule::in($values)],
         ]);
     }
 

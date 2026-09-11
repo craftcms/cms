@@ -147,7 +147,6 @@ class Select extends ViewComponent
 
         return Html::tag('select', $options, Arr::merge([
             'slot' => 'input',
-            // HTMX restores server classes after Lion upgrades the select.
             'class' => ['form-control'],
             'id' => $this->getId(),
             'name' => $this->name,
