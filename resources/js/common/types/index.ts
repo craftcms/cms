@@ -115,6 +115,11 @@ export interface ActionItemButton {
   selected?: boolean;
   variant?: VariantKey | string;
   icon?: string;
+  /**
+   * A rendered SVG to use in place of a named icon, for the things that bring
+   * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
+   */
+  iconSvg?: string;
   disabled?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
@@ -137,6 +142,11 @@ export interface ActionItemLink {
   href: string;
   label: string;
   icon?: string;
+  /**
+   * A rendered SVG to use in place of a named icon, for the things that bring
+   * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
+   */
+  iconSvg?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /**

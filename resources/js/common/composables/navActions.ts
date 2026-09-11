@@ -43,6 +43,7 @@ export function navItemAction(
     label: item.label ?? '',
     selected: item.selected,
     ...(item.icon ? {icon: item.icon} : {}),
+    ...(item.iconSvg ? {iconSvg: item.iconSvg} : {}),
     ...(item.badgeCount > 0 ? {indicator: true} : {}),
     ...(children.length > 0 ? {subnav: navItemActions(children)} : {}),
   };

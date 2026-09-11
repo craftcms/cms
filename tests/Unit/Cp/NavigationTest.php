@@ -335,3 +335,45 @@ it('drops a heading whose members all turned out to be unusable', function () {
     // A heading standing over nothing is worse than no heading.
     expect($entries->subnav)->toBe([]);
 });
+
+it('carries a plugin’s own icon into its settings nav item', function () {
+    $settings = Mockery::mock(Settings::class, [
+        'all' => [
+            'System' => [
+                'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
+            ],
+            'Plugins' => [
+                'test-plugin' => [
+                    'label' => 'Test Plugin',
+                    'url' => '/admin/settings/plugins/test-plugin',
+                    'icon' => '<svg viewBox="0 0 16 16"></svg>',
+                ],
+            ],
+        ],
+    ]);
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        $settings,
+    );
+
+    $groups = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav);
+
+    // As in Craft 5: System holds the Plugins management page, and each
+    // plugin's own settings page sits under a Plugins heading of its own.
+    expect($groups->pluck('label')->all())->toBe(['System', 'Plugins']);
+
+    $plugin = collect($groups->last()->subnav)->firstWhere('label', 'Test Plugin');
+
+    // A plugin ships an `icon.svg` rather than naming an icon, so dropping it
+    // left the item with the bullet that stands in for a missing one.
+    expect($plugin->iconSvg)->toBe('<svg viewBox="0 0 16 16"></svg>')
+        ->and($plugin->icon)->toBeNull();
+});

@@ -49,6 +49,13 @@ class ActionItem extends Component
 
     public ?string $icon = null;
 
+    /**
+     * A rendered SVG to use in place of a named icon, for the things that
+     * bring their own: a plugin's `icon.svg`, a widget's type icon. Takes
+     * precedence over {@see $icon}.
+     */
+    public ?string $iconSvg = null;
+
     public ?string $fontIcon = null;
 
     public ?string $iconColor = null;
@@ -204,6 +211,13 @@ class ActionItem extends Component
     public function icon(?string $icon): static
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    public function iconSvg(?string $iconSvg): static
+    {
+        $this->iconSvg = $iconSvg;
 
         return $this;
     }

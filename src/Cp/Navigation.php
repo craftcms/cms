@@ -424,10 +424,7 @@ readonly class Navigation
             $children = [];
 
             foreach ($settings as $handle => $setting) {
-                $children[] = new NavItem()
-                    ->label($setting['label'])
-                    ->href($setting['url'] ?? 'settings/'.$handle)
-                    ->icon($setting['iconName'] ?? null);
+                $children[] = $this->settingNavItem($handle, $setting);
             }
 
             if ($children === []) {
@@ -441,6 +438,21 @@ readonly class Navigation
         }
 
         return $groups;
+    }
+
+    /**
+     * One settings screen. A plugin ships an `icon.svg` rather than naming an
+     * icon, so both channels come across.
+     *
+     * @param  array<string, mixed>  $setting
+     */
+    private function settingNavItem(string $handle, array $setting): NavItem
+    {
+        return new NavItem()
+            ->label($setting['label'])
+            ->href($setting['url'] ?? 'settings/'.$handle)
+            ->icon($setting['iconName'] ?? null)
+            ->iconSvg($setting['icon'] ?? null);
     }
 
     /**
