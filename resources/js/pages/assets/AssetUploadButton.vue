@@ -3,7 +3,9 @@
   import {router} from '@inertiajs/vue3';
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
   import {store} from '@/routes/craft/actions/craft/cp/uploads';
+  import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
   import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
+  import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
   import {Uploader as FileUploader} from '@/modules/uploader/uploader';
 
@@ -21,6 +23,8 @@
       canUpload: boolean;
       folderId?: number;
       fsType?: string;
+      /** Assets index uploads belong to the application queue when a destination is supplied. */
+      destination?: AssetUploadDestination;
       /** The Assets page or relation-field container that accepts dropped files. */
       dropZone?: HTMLElement | null;
       /**
@@ -54,11 +58,18 @@
     }
 
     const input = fileInput.value;
+    const destination = props.destination ? {...props.destination} : null;
 
     uploader = new FileUploader(input, {
       fileInput: input,
       ...(props.dropZone ? {dropZone: props.dropZone} : {}),
       url: store.url(),
+      ...(destination
+        ? {
+            enqueueUpload: (file: File, selection: File[]) =>
+              assetUploadQueue.enqueue(file, destination, selection),
+          }
+        : {}),
       on: {
         done: ({result}) => {
           Craft.cp?.runQueue?.();
@@ -94,7 +105,14 @@
   // unrelated invalidations — each of which tears the uploader down and, if
   // the input isn't resolvable at that moment, leaves it null.
   watch(
-    [() => props.canUpload, () => props.folderId, () => props.dropZone],
+    [
+      () => props.canUpload,
+      () => props.folderId,
+      () => props.dropZone,
+      () => props.destination?.folderId,
+      () => props.destination?.url,
+      () => props.destination?.label,
+    ],
     createUploader
   );
   onBeforeUnmount(() => uploader?.destroy());

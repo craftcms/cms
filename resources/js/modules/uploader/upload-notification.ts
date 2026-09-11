@@ -1,8 +1,10 @@
 import {t} from '@craftcms/ui';
+import {router} from '@inertiajs/vue3';
 import {getSpeed} from '@uppy/core/utils';
 import {html, nothing, render} from 'lit';
 import type {UploadState} from '@/upload-client';
 import {FileUploadNotificationElement} from './file-upload-notification.ce';
+import {UploadCompleteNotificationElement} from './upload-complete-notification.ce';
 
 declare const Craft: any;
 
@@ -70,6 +72,34 @@ export function createFileUploadNotification(
 }
 
 export type UploadConflictChoice = 'keepBoth' | 'replace' | 'cancel';
+
+export interface AssetUploadDestination {
+  folderId: number;
+  url: string;
+  label: string;
+}
+
+/** One dismissible notification for the successful files in a selection. */
+export function createUploadCompleteNotification(
+  destination: AssetUploadDestination,
+  onClose: () => void
+): {update: (count: number) => void; close: () => void} {
+  const details = new UploadCompleteNotificationElement();
+  details.url = destination.url;
+  details.label = destination.label;
+  details.addEventListener('craft-upload-navigate', () =>
+    router.visit(destination.url)
+  );
+
+  const close = createUploadNotice(t('Upload complete.'), details, onClose);
+
+  return {
+    update(count: number) {
+      details.count = count;
+    },
+    close,
+  };
+}
 
 /** Opening this dialog is an explicit action; dismissing it leaves the conflict pending. */
 export function showUploadConflict(

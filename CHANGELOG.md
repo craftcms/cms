@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added background uploads in the Assets index that continue during Control Panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
+
 - Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides.
 - Changed `users/upload-user-photo` to start an upload session using JSON file metadata instead of multipart file data.
