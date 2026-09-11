@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
+use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -202,6 +203,13 @@ class Assets extends BaseRelationField
         }
 
         parent::__construct($config);
+
+        // Add the “Viewable” rule by default
+        if (! isset($config['id']) && is_null($this->getSelectionCondition())) {
+            $condition = static::createSelectionCondition();
+            $condition->addConditionRule(new ViewableConditionRule(['value' => true]));
+            $this->setSelectionCondition($condition);
+        }
     }
 
     #[Override]

@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -87,6 +88,13 @@ class Entries extends BaseRelationField
         }
 
         parent::__construct($config);
+
+        // Add the “Viewable” rule by default
+        if (! isset($config['id']) && is_null($this->getSelectionCondition())) {
+            $condition = static::createSelectionCondition();
+            $condition->addConditionRule(new ViewableConditionRule(['value' => true]));
+            $this->setSelectionCondition($condition);
+        }
     }
 
     #[Override]
