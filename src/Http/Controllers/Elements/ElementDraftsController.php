@@ -160,17 +160,12 @@ class ElementDraftsController
             'creator' => $element->getDraftCreator()?->getName(),
             'draftName' => $element->draftName,
             'draftNotes' => $element->draftNotes,
-            // Delta groups the editor badges as modified. An attribute is its own
-            // group (`title`); a custom field's is its handle under `fields`,
-            // which is also the group every control nested inside it inherits —
-            // so a Matrix block's fields badge with the field that holds them.
-            'modifiedAttributes' => [
-                ...$element->getModifiedAttributes(),
-                ...array_map(
-                    fn (string $handle): string => "fields.{$handle}",
-                    $element->getModifiedFields(),
-                ),
-            ],
+            // Attributes only, the way Craft 5 sends them: an attribute is its
+            // own delta group, so the editor can badge it by name. A custom
+            // field's badge is decided per element when its layout is compiled
+            // — see `BaseField::formNode()` — which is what keeps a block's
+            // fields answering to the block rather than to its owner.
+            'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
         ];
