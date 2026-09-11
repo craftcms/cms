@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getAllDataTypes()
  * @method static array getAllImporterTypes()
  * @method static bool dispatchImport(ImportRun $run)
- * @method static void importItem(BaseImporter $importer, array $data)
+ * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria)
  * @method static void import(BaseImporter $importer)
  * @method static string getRawData(string $filePath)
  * @method static array getFormattedData(string $filePath)

@@ -9,6 +9,7 @@ use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Validation\ValidationException;
@@ -60,12 +61,12 @@ class Model extends Command implements PromptsForMissingInput
         $matchCriteria = null;
         if ($this->option('matchCriteria')) {
             $matchCriteria = self::normalizeMatchCriteria($this->option('matchCriteria'));
-        } /*elseif ($responses['matchCriteria']) {
+        } elseif ($responses['matchCriteria']) {
             if (! str_starts_with((string) $responses['matchCriteria'], '=')) {
                 $responses['matchCriteria'] = '='.$responses['matchCriteria'];
             }
             $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
-        }*/
+        }
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $importConfig = (new ModelImporter)
@@ -116,12 +117,14 @@ class Model extends Command implements PromptsForMissingInput
     private static function normalizeMatchCriteria(string $matchCriteria): ?array
     {
         if (str_starts_with($matchCriteria, '=')) {
-            $json = substr($matchCriteria, 1);
-
-            return json_decode($json, true);
+            $matchCriteria = substr($matchCriteria, 1);
         }
 
-        return null;
+        try {
+            return Json::decode($matchCriteria);
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
     }
 
     /**

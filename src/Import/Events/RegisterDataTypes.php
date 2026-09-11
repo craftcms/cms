@@ -16,7 +16,7 @@ use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
  * use Illuminate\Support\Facades\Event;
  *
  * Event::listen(RegisterDataTypes::class, function(RegisterDataTypes $event) {
- *     $event->types->add(MyDataType::class);
+ *     $event->dataTypes['xyz'] = MyDataType::class;
  * });
  * ```
  */
@@ -25,7 +25,7 @@ class RegisterDataTypes
     /**
      * Carries the mutable list of registered data type classes for listeners to add to.
      *
-     * @param array<class-string<DataTypeInterface>> $dataTypes The registered data type classes.
+     * @param  array<class-string<DataTypeInterface>>  $dataTypes  The registered data type classes.
      */
     public function __construct(
         /** @var array<class-string<DataTypeInterface>> */

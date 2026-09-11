@@ -37,10 +37,7 @@
 
     /**
      * A container has no value of its own to match on or clear — each of its nested
-     * columns carries its own decision, inside the panel. The server currently reports
-     * `canBeMatchCriteria`/`canBeCleared` as true for containers anyway
-     * (`CustomField::canBeMatchCriteria()` tests `$this` where it means `$field`), so
-     * `isContainer` is the flag to trust here.
+     * columns carries its own decision, inside the panel.
      */
     const canMatch = computed(
         () => !props.col.isContainer && props.col.canBeMatchCriteria
