@@ -38,7 +38,7 @@ interface UseAxiosOptions<T = FormValue> extends Omit<
   immediate?: boolean;
   refetch?: boolean;
   params?: MaybeRef<RequestParams>;
-  transform?: (data: T) => T;
+  transform?: (data: T) => T | Promise<T>;
   enabled?: MaybeRef<boolean>;
   debounce?: number;
   onSuccess?: (data: T, response: AxiosResponse) => void;
@@ -52,11 +52,11 @@ interface UseAxiosReturn<T> {
   data: Ref<T | null>;
   error: Ref<unknown>;
   state: Ref<AxiosFetchState>;
-  execute: (postData?: RequestData) => Promise<void>;
+  execute: (postData?: RequestData) => Promise<T | undefined>;
   isLoading: ComputedRef<boolean>;
   isSuccess: ComputedRef<boolean>;
   isError: ComputedRef<boolean>;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<T | undefined>;
   abort: () => void;
 }
 
@@ -109,7 +109,7 @@ export function useFetch<T = FormValue>(
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   // The actual fetch function
-  const execute = async (postData?: RequestData): Promise<void> => {
+  const execute = async (postData?: RequestData): Promise<T | undefined> => {
     if (!computedUrl.value || !computedEnabled.value) return;
 
     // Cancel previous request
@@ -117,27 +117,35 @@ export function useFetch<T = FormValue>(
       cancelTokenSource.cancel('Request superseded by new request');
     }
 
-    cancelTokenSource = axios.CancelToken.source();
+    const request = axios.CancelToken.source();
+    cancelTokenSource = request;
     state.value = 'loading';
     error.value = null;
 
     try {
-      const response = await axiosInstance<T>({
+      const response = await axiosInstance.request<T>({
         method: computedMethod.value,
         url: computedUrl.value,
         params: computedParams.value,
-        cancelToken: cancelTokenSource.token,
+        cancelToken: request.token,
         data: computedMethod.value === 'get' ? undefined : postData,
         ...axiosOptions,
       });
 
+      request.token.throwIfRequested();
       const transformedData = transform
-        ? transform(response.data)
+        ? await transform(response.data)
         : response.data;
+      request.token.throwIfRequested();
+
       state.value = 'success';
       data.value = transformedData;
       onSuccess?.(transformedData, response);
+
+      return transformedData;
     } catch (err: unknown) {
+      if (request !== cancelTokenSource) return;
+
       if (axios.isCancel(err)) {
         state.value = 'aborted';
       } else if (axios.isAxiosError(err)) {
@@ -196,7 +204,7 @@ export function useFetch<T = FormValue>(
   }
 
   // Manual refetch function
-  const refetch = (): Promise<void> => execute();
+  const refetch = (): Promise<T | undefined> => execute();
 
   // Cancel function
   const abort = (): void => {

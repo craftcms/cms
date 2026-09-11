@@ -1,7 +1,9 @@
 import '@craftcms/ui';
 import '../../packages/craftcms-legacy/cp/src/js/UI.js';
 import Cp from './bootstrap/cp.js';
+import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
+import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
 import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
@@ -54,4 +56,6 @@ import './modules/ui';
 
 window.Cp = Cp;
 defineEntryFieldLayoutFormHost(Cp.$components);
+defineConditionBuilderHost(Cp.$components);
+defineInlineAttributeFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);

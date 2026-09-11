@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use Override;
@@ -94,23 +96,17 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * Defines the element select config.
-     *
-     * @return array<string, mixed>
+     * Defines the element selector.
      */
-    protected function elementSelectConfig(): array
+    protected function elementSelect(): ElementSelect
     {
-        $elements = $this->_elements();
-
-        return [
-            'name' => 'elementIds',
-            'elements' => $elements,
-            'elementType' => $this->elementType(),
-            'sources' => $this->sources(),
-            'criteria' => $this->criteria(),
-            'condition' => $this->selectionCondition(),
-            'single' => ! $this->allowMultiple(),
-        ];
+        return ElementSelect::make('elementIds')
+            ->elementType($this->elementType())
+            ->sources($this->sources())
+            ->criteria($this->criteria() ?? [])
+            ->selectionCondition($this->selectionCondition())
+            ->limit($this->allowMultiple() ? null : 1)
+            ->value($this->getElementIds());
     }
 
     /**
@@ -189,56 +185,30 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         ]);
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if ($this->getCondition()->forProjectConfig) {
             $value = $this->getElementIds(false);
-            if (is_array($value)) {
-                $value = implode(',', $value);
-            }
             $type = $this->elementType()::displayName();
 
-            return FormFields::textFieldHtml([
-                'textExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(
-                    filter: fn ($value) => filter_var($value, FILTER_VALIDATE_INT) !== false && (int) $value > 0,
-                ),
-                'required' => true,
-                'id' => 'elementIds',
-                'class' => 'code',
-                'name' => 'elementIds',
-                'value' => $value,
-                'tip' => $this->allowMultiple()
-                    ? t('Type `$` to choose an environment variable, or enter a Twig template that outputs comma-separated IDs.')
-                    : t('Type `$` to choose an environment variable, or enter a Twig template that outputs an ID.'),
-                'placeholder' => $this->allowMultiple()
-                    ? t('{type} ID(s)', ['type' => $type])
-                    : t('{type} ID', ['type' => $type]),
-            ]);
+            return [
+                Field::make($this->getLabel(), Text::make('elementIds')
+                    ->value(is_array($value) ? implode(',', $value) : $value)
+                    ->monospace()
+                    ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(
+                        filter: fn ($value) => filter_var($value, FILTER_VALIDATE_INT) !== false && (int) $value > 0,
+                    ))
+                    ->placeholder($this->allowMultiple() ? t('{type} ID(s)', ['type' => $type]) : t('{type} ID', ['type' => $type])))
+                    ->required()
+                    ->tip($this->allowMultiple()
+                        ? t('Type `$` to choose an environment variable, or enter a Twig template that outputs comma-separated IDs.')
+                        : t('Type `$` to choose an environment variable, or enter a Twig template that outputs an ID.')),
+            ];
         }
 
-        return FormFields::elementSelectHtml($this->elementSelectConfig());
-    }
-
-    /**
-     * @return ElementInterface[]
-     */
-    private function _elements(): array
-    {
-        $elementIds = $this->getElementIds();
-
-        if (empty($elementIds)) {
-            return [];
-        }
-
-        return $this->elementType()::find()
-            ->site('*')
-            ->preferSites(array_filter([app(RequestedSite::class)->get()?->id]))
-            ->unique()
-            ->id($elementIds)
-            ->status(null)
-            ->limit($this->allowMultiple() ? null : 1)
-            ->all();
+        return [Field::make($this->getLabel(), $this->elementSelect())];
     }
 
     #[Override]

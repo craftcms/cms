@@ -558,6 +558,7 @@ abstract class ContentIndexViewModel extends ViewModel
             elementType: $this->elementType,
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
+            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
         )['query'];
 
         $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
@@ -732,12 +733,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return $chip;
         }
 
-        // `:inertia`, bound — a plain `inertia => false` renders nothing at all
-        // (Html::tag drops false attributes), so the prop falls back to its
-        // `true` default and the title becomes an Inertia <Link> that navigates
-        // on click. The element edit screen isn't an Inertia page, so that
-        // visit only ends in a hard redirect anyway.
-        return Html::tag('CpLink', $chip, ['href' => $editUrl, ':inertia' => 'false']);
+        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
     }
 
     /**

@@ -113,6 +113,31 @@ abstract class FieldLayoutComponent extends Component
         return (bool) $this->getElementCondition();
     }
 
+    /** @return array<string, list<string>> */
+    public function validateConditions(): array
+    {
+        $errors = [];
+
+        foreach ($this->validationConditions() as $attribute => $condition) {
+            if ($condition !== null) {
+                foreach (Conditions::validate($condition) as $path => $messages) {
+                    $errors["$attribute.$path"] = $messages;
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /** @return array<string, ConditionInterface|null> */
+    protected function validationConditions(): array
+    {
+        return [
+            'userCondition' => $this->getUserCondition(),
+            'elementCondition' => $this->getElementCondition(),
+        ];
+    }
+
     public function getUserCondition(): ?UserCondition
     {
         if (isset($this->_userCondition) && ! $this->_userCondition instanceof UserCondition) {
@@ -196,7 +221,7 @@ abstract class FieldLayoutComponent extends Component
             $condition = Conditions::createCondition($condition);
         }
 
-        if (! $condition->getConditionRules()) {
+        if (! $condition->getConditionRules()->getRules()) {
             return null;
         }
 

@@ -1,17 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions\addresses;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Address Administrative Area condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule} instead.
-     */
-    class AdministrativeAreaConditionRule extends \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Support\Facades\Addresses;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyMultiSelectConditionRule;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule instead. */
+class AdministrativeAreaConditionRule extends \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule
+{
+    use LegacyMultiSelectConditionRule;
+
+    protected function inputHtml(): string
     {
+        $countrySelect = FormFields::selectFieldHtml([
+            'id' => 'country-code',
+            'name' => 'countryCode',
+            'options' => Addresses::getCountryList(),
+            'value' => $this->countryCode,
+        ]);
+
+        $multiSelectId = 'multiselect';
+
+        $adminSelectize =
+            Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
+            FormFields::selectizeHtml([
+                'id' => $multiSelectId,
+                'class' => 'selectize fullwidth',
+                'name' => 'values',
+                'values' => $this->getValues(),
+                'options' => $this->options(),
+                'multi' => true,
+                'selectizeOptions' => [
+                    'create' => true, // Must allow creation since administrative area field on addresses could be free text input
+                ],
+            ]);
+
+        return $countrySelect . $adminSelectize;
     }
 }

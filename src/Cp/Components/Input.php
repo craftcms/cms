@@ -429,6 +429,7 @@ class Input extends ViewComponent
             'class' => array_filter([
                 'text',
                 $this->inputSize === null ? 'fullwidth' : null,
+                'form-control',
             ]),
             'inputmode' => $this->inputmode,
             'size' => $this->inputSize,

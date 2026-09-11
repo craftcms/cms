@@ -4729,66 +4729,6 @@ table.data tbody tr:not(.disabled).active-drop-target {
 }
 
 /* ----------------------------------------
-/*  Condition builders
-/* ---------------------------------------- */
-
-.condition-rule,
-.condition-footer {
-    padding: 7px;
-}
-
-.condition-footer {
-    border: 1px dashed var(--border-hairline-medium);
-    border-radius: var(--radius-lg);
-
-    .condition:not(:empty) + & {
-        border-block-start-width: 0;
-        border-start-start-radius: 0;
-        border-start-end-radius: 0;
-    }
-
-    .spinner:not(.loading) {
-        display: none;
-    }
-}
-
-.condition-rule {
-    margin: 0;
-    border: 1px solid var(--border-hairline);
-    background-color: var(--gray-050);
-
-    &:first-child {
-        border-start-start-radius: var(--radius-lg);
-        border-start-end-radius: var(--radius-lg);
-    }
-
-    & + .condition-rule {
-        border-block-start-width: 0;
-    }
-
-    & > .rule-move,
-    & > .rule-actions {
-        margin-block-start: 5px;
-    }
-
-    & > .rule-body {
-        .lightswitch {
-            margin-block-start: 6px;
-            display: block;
-        }
-
-        .selectize {
-            min-width: 100px;
-        }
-
-        .text.fullwidth {
-            min-width: 100px;
-            max-width: 100%;
-        }
-    }
-}
-
-/* ----------------------------------------
 /*  Progress bar
 /* ---------------------------------------- */
 

@@ -62,6 +62,19 @@ export const Default: Story = {
     ></craft-combobox>`,
 };
 
+export const Multiple: Story = {
+  render: () =>
+    html`<craft-combobox
+      label="Countries"
+      name="countries"
+      multiple-choice
+      clearable
+      show-all-on-empty
+      .options=${countries}
+      .modelValue=${['us', 'ca']}
+    ></craft-combobox>`,
+};
+
 export const RichOptions: Story = {
   render: () =>
     html`<craft-combobox

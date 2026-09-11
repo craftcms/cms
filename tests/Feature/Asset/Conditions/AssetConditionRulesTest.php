@@ -22,6 +22,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Database\Query\Builder;
 
 use function Pest\Laravel\actingAs;
 
@@ -58,7 +59,7 @@ describe('SavableConditionRule', function () {
         $rule->value = true;
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });
@@ -97,7 +98,7 @@ describe('FileTypeConditionRule', function () {
         $rule->values = ['image'];
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->kind)->toBe('image');
@@ -139,7 +140,7 @@ describe('UploaderConditionRule', function () {
         $rule->setElementIds([$uploader1->id]);
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->uploaderId)->toBe($uploader1->id);
@@ -194,7 +195,7 @@ describe('FileSizeConditionRule', function () {
         $rule->value = '1024';
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->size)->toBe(1024);
@@ -231,7 +232,7 @@ describe('DateModifiedConditionRule', function () {
         $rule->rangeType = 'notempty';
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1);
     });
@@ -270,7 +271,7 @@ describe('FilenameConditionRule', function () {
         $rule->value = 'photo.jpg';
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->filename)->toBe('photo.jpg');
@@ -310,7 +311,7 @@ describe('HeightConditionRule', function () {
         $rule->value = '800';
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->height)->toBe(800);
@@ -365,7 +366,7 @@ describe('VolumeConditionRule', function () {
         $rule->values = [$volume1->uid];
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->volumeId)->toBe($volume1->id);
@@ -405,7 +406,7 @@ describe('WidthConditionRule', function () {
         $rule->value = '600';
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1)
             ->and($query->one()->width)->toBe(600);
@@ -445,7 +446,7 @@ describe('HasAltConditionRule', function () {
         $rule->value = true;
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBe(1);
     });
@@ -480,7 +481,7 @@ describe('ViewableConditionRule', function () {
         $rule->value = true;
 
         $query = Asset::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });

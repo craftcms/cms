@@ -3,26 +3,46 @@
 ## Unreleased
 
 > [!IMPORTANT]
-> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574) and [#19563](https://github.com/craftcms/cms/pull/19563) for details.
+> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 
+- Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder. ([#19603](https://github.com/craftcms/cms/pull/19603))
+- Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
+- Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
 - Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Replaced the project config implementation with separate change handling, storage, and rebuild components.
+- Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
 - Added `crop`, `fit`, `stretch`, and `letterbox` modes to `craft-thumbnail`, and removed size-dependent asset thumbnail cropping.
-- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now has a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562))
+- Added `CraftCms\Cms\Condition\BaseConditionGroup`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilder`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilderPayload`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilderRenderer`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionRulePayload`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionComponentInterface`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionGroupInterface`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionInterface::createGroup()`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getForm()`, which replaces `getHtml()`. ([#19588](https://github.com/craftcms/cms/pull/19588))
 - Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::isSelectableForCondition()`. ([#19563](https://github.com/craftcms/cms/pull/19563))
+- Added `CraftCms\Cms\Condition\Enums\GroupOperator`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added `CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface`, which element condition rules that modify element queries should now implement. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
-- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. Widgets must now declare `component()` and provide data through `props()`. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
+- Added `CraftCms\Cms\Element\Conditions\ElementCondition`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
+- Removed `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getHtml()`. `getForm()` must be implemented instead. ([#19588](https://github.com/craftcms/cms/pull/19588))
+- Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
-- Remove `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. Plugins must now declare `createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
-- Replaced the project config implementation with separate change handling, storage, and rebuild components.
-- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- Removed HTMX.
 - Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
 - Fixed an error that could occur when creating relation fields. ([#19571](https://github.com/craftcms/cms/pull/19571))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))

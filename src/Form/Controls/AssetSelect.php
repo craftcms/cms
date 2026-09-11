@@ -26,6 +26,15 @@ class AssetSelect extends ElementSelect
 
     private ?string $fsType = null;
 
+    private bool $showFolders = true;
+
+    public function showFolders(bool $showFolders = true): static
+    {
+        $this->showFolders = $showFolders;
+
+        return $this;
+    }
+
     public function canUpload(bool $canUpload = true): static
     {
         $this->canUpload = $canUpload;
@@ -56,6 +65,7 @@ class AssetSelect extends ElementSelect
             'canUpload' => $this->canUpload,
             'uploadFolderId' => $this->uploadFolderId,
             'fsType' => $this->fsType,
+            'showFolders' => $this->showFolders,
         ];
     }
 }

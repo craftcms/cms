@@ -37,11 +37,12 @@ uses(UnitTestCase::class)->in('Unit');
 ## Core Rules
 
 - Read nearby tests first and follow their declaration and organization conventions.
+- Before writing a test, identify the smallest regression it must catch and reuse an existing fixture, factory, or mount helper. For a small behavior change, prefer extending an existing test or adding one focused case.
+- Keep setup and assertions proportional to the change's complexity and risk. If a short change needs a much larger test, simplify the setup before adding custom payloads or nested scenarios; retain extra coverage only for a distinct regression the change could cause.
 - Use Boost's `search-docs` for version-specific Pest and Laravel testing syntax. Confirm an assertion or feature before using it.
 - Test observable behavior and application contracts. Cover each changed decision and applicable high-value failure path, but leave framework behavior to framework tests.
 - Run the narrowest relevant test file or filter. Rerun a test after changing it.
 - Do not delete tests or test files without approval.
-- Do not add comments in test files — no section separators (e.g., `// -- section --`), no inline explanations, no docblocks. Test names should be descriptive enough on their own. Use `describe()` blocks to group related tests instead of comments.
 - Keep test-local abstractions proportional to the repetition they remove. Small one-off helpers such as route wrapper closures or tiny passthrough methods usually shouldn’t exist; inline the setup or request unless the extraction materially improves readability or reuse.
 - Use `CraftCms\Cms\Cms::config()->cpTrigger` when asserting CP URLs; never hard-code `/admin`.
 - Do not instantiate element classes directly with `new` in tests; use factories to ensure database state.

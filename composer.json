@@ -83,7 +83,7 @@
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
     "intervention/image-driver-vips": "^4.1",
-    "larastan/larastan": "^3.4",
+    "larastan/larastan": "^3.12",
     "laravel/boost": "^2.6",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",

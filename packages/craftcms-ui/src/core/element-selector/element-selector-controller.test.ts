@@ -73,14 +73,36 @@ describe('options', () => {
 });
 
 describe('indexParams', () => {
+  it('sends asset location criteria and folder visibility when loading the index', async () => {
+    const loadIndexBody = vi.fn(async () => body());
+    const criteria = {volumeId: 2, folderId: 7, kind: 'image'};
+    const controller = create({
+      criteria,
+      indexSettings: {showFolders: false},
+      loadIndexBody,
+    });
+
+    await controller.open();
+
+    expect(loadIndexBody).toHaveBeenCalledWith(
+      'element-selector-modals/body',
+      expect.objectContaining({criteria, showFolders: false})
+    );
+  });
+
   it('identifies the index', () => {
-    const controller = create({sources: ['section:a'], condition: {x: 1}});
+    const controller = create({
+      sources: ['section:a'],
+      condition: {x: 1},
+      criteria: {id: ['not', 12, 34]},
+    });
 
     expect(controller.indexParams()).toEqual({
       context: 'modal',
       elementType: ENTRY,
       sources: ['section:a'],
       condition: {x: 1},
+      criteria: {id: ['not', 12, 34]},
     });
   });
 
@@ -437,6 +459,7 @@ describe('open and close', () => {
       loadIndexBody,
       bodyAction: 'custom/body',
       sources: ['section:a'],
+      criteria: {id: ['not', 12, 34]},
     });
 
     await controller.open();
@@ -446,6 +469,7 @@ describe('open and close', () => {
       elementType: ENTRY,
       sources: ['section:a'],
       condition: undefined,
+      criteria: {id: ['not', 12, 34]},
     });
   });
 

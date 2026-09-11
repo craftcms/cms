@@ -121,3 +121,15 @@ describe('titles are not links', function () {
         $thumbs->each(fn (array $thumb) => expect($thumb['url'])->toBeNull());
     });
 });
+
+it('excludes the target IDs supplied by replacement modals', function () {
+    $first = EntryModel::factory()->createElement();
+    $second = EntryModel::factory()->createElement();
+    $replacement = EntryModel::factory()->createElement();
+
+    $response = ($this->postBody)([
+        'criteria' => ['id' => ['not', $first->id, $second->id]],
+    ])->assertOk();
+
+    expect(array_column($response->json('props.data'), 'id'))->toBe([$replacement->id]);
+});

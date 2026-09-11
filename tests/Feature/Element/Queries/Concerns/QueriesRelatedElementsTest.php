@@ -11,6 +11,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
@@ -85,12 +86,14 @@ test('relation fields modify element queries with relation filters', function ()
 
     /** @var Entries $fieldInstance */
     $fieldInstance = Fields::getFieldById($field->id);
-    $query = entryQuery()->status(null);
+    $elementQuery = entryQuery()->status(null);
 
-    Entries::modifyQuery($query, [$fieldInstance], $entries[1]->id);
+    $elementQuery->where(function (Builder $query) use ($fieldInstance, $entries, $elementQuery) {
+        Entries::modifyQuery($query, [$fieldInstance], $entries[1]->id, $elementQuery);
+    });
 
-    expect($query->count())->toBe(1);
-    expect($query->one()?->id)->toBe($entry->id);
+    expect($elementQuery->count())->toBe(1);
+    expect($elementQuery->one()?->id)->toBe($entry->id);
 });
 
 test('AND relation IDs retain field and source site restrictions', function (string $direction, bool $allSites) {

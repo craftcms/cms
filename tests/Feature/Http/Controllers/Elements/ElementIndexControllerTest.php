@@ -6,6 +6,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
@@ -228,4 +230,29 @@ it('preserves the legacy action route contract for get-elements', function () {
         ->assertJsonStructure([
             'html',
         ]);
+});
+
+it('reopens an author filter with its selected user', function () {
+    $author = UserModel::factory()->createElement();
+
+    $response = ($this->postIndexAction)('filter-hud', [
+        'id' => 'filters',
+        'conditionConfig' => [
+            'class' => EntryCondition::class,
+            'elementType' => Entry::class,
+            'conditionRules' => [[
+                'class' => AuthorConditionRule::class,
+                'elementIds' => [$author->id],
+            ]],
+        ],
+    ])->assertOk();
+
+    expect($response->json('builder.value.conditionRules.rules.0.elementIds'))->toBe([$author->id]);
+});
+
+it('accepts the modern filter HUD source descriptor', function () {
+    ($this->postIndexAction)('filter-hud', [
+        'id' => 'filters',
+        'source' => ['type' => 'native', 'key' => '*', 'label' => 'All entries'],
+    ])->assertOk()->assertJsonPath('builder.config.sourceKey', '*');
 });

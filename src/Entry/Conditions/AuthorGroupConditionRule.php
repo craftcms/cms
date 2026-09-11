@@ -9,12 +9,12 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -53,7 +53,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
         return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         EntryQuery::applyAuthorGroupId($query, $this->paramValue(fn ($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
     }

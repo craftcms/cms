@@ -48,7 +48,7 @@
 }
 
 .skip-link--global {
-    --x-position: calc(10rem / 16);
+    --x-position: calc(5rem / 16);
     --y-position: calc(5rem / 16);
 }
 
