@@ -1,3 +1,6 @@
+import {Uploader} from '@/modules/uploader/uploader';
+import {UploadError} from '@/upload-client';
+import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {BaseElementSelectInput} from '@/modules/element-select-input/base-element-select-input';
 
 declare const Craft: any;
@@ -7,14 +10,13 @@ declare const $: any;
 /**
  * AssetSelectInput — a port of `Craft.AssetSelectInput` onto
  * {@link BaseElementSelectInput}. Extends the base element select with:
- * - An upload button + hidden file input wired to `Craft.createUploader`
+ * - An upload button + hidden file input wired to the native uploader
  * - A `ProgressBar` overlay during uploads
  * - Shift-Space keyboard shortcut to open the file preview modal
  *
  * Notes:
  * - `keydown` on the elements container is a native event — `addListener` works.
- * - Uploader events (`fileuploadstart` etc.) are bound directly on the options
- *   object passed to `Craft.createUploader`, not via Garnish.
+ * - Upload lifecycle callbacks are passed in the uploader settings.
  * - The upload button's `click` handler uses jQuery `.on()` because the file
  *   input is replaced after each upload (see the comment in `_attachUploader`).
  */
@@ -112,27 +114,24 @@ export class AssetSelectInput extends BaseElementSelectInput {
     }
 
     const options: any = {
-      dropZone: this.$container,
-      fileInput: this.$fileInput,
+      dropZone: this.$container.toArray(),
+      fileInput: this.$fileInput?.toArray(),
     };
 
     if (this.settings.criteria.kind !== undefined) {
-      options.allowedKinds = this.settings.criteria.kind;
+      options.allowedKinds = [this.settings.criteria.kind].flat();
     }
 
     options.canAddMoreFiles = this.canAddMoreFiles.bind(this);
 
-    options.events = {};
-    options.events.fileuploadstart = this._onUploadStart.bind(this);
-    options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
-    options.events.fileuploaddone = this._onUploadComplete.bind(this);
-    options.events.fileuploadfail = this._onUploadFailure.bind(this);
+    options.on = {
+      start: this._onUploadStart.bind(this),
+      progress: this._onUploadProgress.bind(this),
+      done: this._onUploadComplete.bind(this),
+      fail: this._onUploadFailure.bind(this),
+    } satisfies UploaderCallbacks;
 
-    this.uploader = Craft.createUploader(
-      this.settings.fsType,
-      this.$container,
-      options
-    );
+    this.uploader = new Uploader(this.$container[0], options);
 
     const params: any = {fieldId: this.settings.fieldId};
     if (this.settings.sourceElementId) {
@@ -144,8 +143,6 @@ export class AssetSelectInput extends BaseElementSelectInput {
     this.uploader.setParams(params);
 
     if (this.$uploadBtn) {
-      // We can't store a reference to the file input — it's replaced with a new
-      // input after each upload: https://stackoverflow.com/a/25034721/1688568
       this.$uploadBtn.on('click', () => {
         this.$uploadBtn.next('input[type=file]').trigger('click');
       });
@@ -194,15 +191,16 @@ export class AssetSelectInput extends BaseElementSelectInput {
     this.progressBar.showProgressBar();
   }
 
-  _onUploadProgress(event: any, data: any = null): void {
-    data = event instanceof CustomEvent ? event.detail : data;
+  _onUploadProgress(
+    data: Parameters<NonNullable<UploaderCallbacks['progress']>>[0]
+  ): void {
     const progress = Math.round(Math.min(data.loaded / data.total, 1) * 100);
     this.progressBar.setProgressPercentage(progress);
   }
 
-  _onUploadComplete(event: any, data: any = null): void {
-    const result = event instanceof CustomEvent ? event.detail : data.result;
-
+  _onUploadComplete({
+    result,
+  }: Parameters<NonNullable<UploaderCallbacks['done']>>[0]): void {
     Craft.sendActionRequest('POST', 'app/render-elements', {
       data: {
         elements: [
@@ -255,14 +253,22 @@ export class AssetSelectInput extends BaseElementSelectInput {
     Craft.cp.runQueue();
   }
 
-  _onUploadFailure(event: any, data: any = null): void {
-    const response =
-      event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+  _onUploadFailure({
+    error,
+    canceled,
+    file,
+  }: Parameters<NonNullable<UploaderCallbacks['fail']>>[0]): void {
+    if (canceled) {
+      this.progressBar.hideProgressBar();
+      this.$container.removeClass('uploading');
+      return;
+    }
 
-    let {message, filename} = response || {};
+    const response = error instanceof UploadError ? error.data : {};
+
+    let message = error instanceof Error ? error.message : undefined;
+    const filename = response.filename || file?.name;
     const {errors} = response || {};
-
-    filename = filename || data?.files?.[0]?.name;
 
     // SAFETY: The upload endpoint returns arrays of validation message strings.
     const errorMessages: string[] = errors

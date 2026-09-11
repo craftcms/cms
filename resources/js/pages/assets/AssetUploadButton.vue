@@ -2,9 +2,10 @@
   import {t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
-  import {upload} from '@actions/Assets/UploadController';
+  import {store} from '@/routes/craft/actions/craft/cp/uploads';
+  import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 
-  declare const $: any;
+  import {Uploader as FileUploader} from '@/modules/uploader/uploader';
 
   interface Uploader {
     destroy(): void;
@@ -20,12 +21,7 @@
       canUpload: boolean;
       folderId?: number;
       fsType?: string;
-      /**
-       * An element that also accepts dropped files. The asset index doesn't
-       * set one — its drop target is the whole page, handled elsewhere — but
-       * a relation field passes its own container so files can be dropped
-       * onto it.
-       */
+      /** The Assets page or relation-field container that accepts dropped files. */
       dropZone?: HTMLElement | null;
       /**
        * Whether finishing an upload should reload the page's index props.
@@ -41,14 +37,12 @@
   );
 
   const emit = defineEmits<{
-    /** One completed upload, as `assets/upload` reported it. */
+    /** One completed upload, as the upload session reported it. */
     (event: 'uploaded', asset: {id: number; label: string}): void;
   }>();
 
   const fileInput = ref<HTMLInputElement>();
-  const enabled = computed(
-    () => props.canUpload && !!props.folderId && !!props.fsType
-  );
+  const enabled = computed(() => props.canUpload && !!props.folderId);
   let uploader: Uploader | null = null;
 
   function createUploader(): void {
@@ -59,28 +53,15 @@
       return;
     }
 
-    const input = $(fileInput.value);
+    const input = fileInput.value;
 
-    uploader = Craft.createUploader(props.fsType!, input, {
+    uploader = new FileUploader(input, {
       fileInput: input,
-      // Files dropped on the caller's container upload as if picked, which is
-      // what makes a relation field a drop target.
-      ...(props.dropZone ? {dropZone: $(props.dropZone)} : {}),
-      url: upload.url(),
-      events: {
-        // jQuery File Upload calls this as `(event, data)` with the parsed
-        // response on `data.result`; the CustomEvent branch covers an uploader
-        // class that re-dispatches natively instead.
-        fileuploaddone: (event: Event, data: any = null) => {
+      ...(props.dropZone ? {dropZone: props.dropZone} : {}),
+      url: store.url(),
+      on: {
+        done: ({result}) => {
           Craft.cp?.runQueue?.();
-
-          // `assets/upload` answers with the new asset's id and filename. A
-          // filename conflict answers with `conflict` instead and is resolved
-          // separately, so there is nothing to attach yet.
-          const result =
-            event instanceof CustomEvent && event.detail
-              ? event.detail
-              : (data?.result ?? data?.jqXHR?.responseJSON);
 
           if (result?.assetId && !result?.conflict) {
             emit('uploaded', {
@@ -89,20 +70,19 @@
             });
           }
         },
-        fileuploadfail: (event: Event, data: any = null) => {
-          const response =
-            event instanceof CustomEvent && event.detail
-              ? event.detail
-              : data?.jqXHR?.responseJSON;
-
-          Craft.cp?.displayError?.(response?.message ?? t('Upload failed.'));
+        fail: ({error, canceled}) => {
+          if (!canceled) {
+            Craft.cp?.displayError?.(
+              error instanceof Error ? error.message : t('Upload failed.')
+            );
+          }
         },
-        fileuploadalways: () => {
+        settled: () => {
           if (uploader?.isLastUpload() && props.reloadOnComplete) {
             router.reload({only: ['data', 'pagination']});
           }
         },
-      },
+      } satisfies UploaderCallbacks,
     }) as Uploader;
 
     uploader.setParams({folderId: props.folderId});
@@ -114,12 +94,7 @@
   // unrelated invalidations — each of which tears the uploader down and, if
   // the input isn't resolvable at that moment, leaves it null.
   watch(
-    [
-      () => props.canUpload,
-      () => props.folderId,
-      () => props.fsType,
-      () => props.dropZone,
-    ],
+    [() => props.canUpload, () => props.folderId, () => props.dropZone],
     createUploader
   );
   onBeforeUnmount(() => uploader?.destroy());

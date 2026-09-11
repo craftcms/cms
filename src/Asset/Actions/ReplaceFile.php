@@ -36,35 +36,26 @@ class ReplaceFile extends ElementAction
 
             const \$element = selectedItems.find('.element');
             const \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod);
-            const settings = elementIndex._currentUploaderSettings;
+            const settings = {...elementIndex._currentUploaderSettings};
 
             settings.dropZone = null;
-            settings.fileInput = \$fileInput;
-            settings.paramName = 'replaceFile';
+            settings.fileInput = \$fileInput[0];
             settings.replace = true;
-            settings.events = {};
-
-            const fileuploaddone = settings.events?.fileuploaddone;
-            settings.events = Object.assign({}, settings.events || {}, {
-              fileuploaddone: (event, data = null) => {
-                const result = event instanceof CustomEvent ? event.detail : data.result;
+            settings.on = {
+              done: ({result}) => {
                 if (!result.error) {
                   Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
-                  // update the element row
-                  if (Craft.broadcaster) {
-                      Craft.broadcaster.postMessage({
-                        event: 'saveElement',
-                        id: result.assetId,
-                      });
-                  }
+                  Craft.broadcaster?.postMessage({event: 'saveElement', id: result.assetId});
                 }
-                if (fileuploaddone) {
-                  fileuploaddone(event, data);
+              },
+              fail: ({error, canceled}) => {
+                if (!canceled) {
+                  Craft.cp.displayError(error instanceof Error ? error.message : Craft.t('app', 'Replace file failed.'));
                 }
-              }
-            });
+              },
+            };
 
-            const tempUploader = Craft.createUploader(elementIndex.uploader.fsType, \$fileInput, settings);
+            const tempUploader = new Craft.Uploaders.Uploader(\$fileInput[0], settings);
             tempUploader.setParams({
                 assetId: \$element.data('id')
             });

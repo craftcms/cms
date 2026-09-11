@@ -4,84 +4,41 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Closure;
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Filesystem\Data\UploadSessionData;
+use CraftCms\Cms\Filesystem\Uploads;
+use CraftCms\Cms\Http\Requests\UploadRequest;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Users;
-use CraftCms\Cms\View\TemplateMode;
-use CraftCms\Cms\View\TemplateResolver;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use CraftCms\Cms\User\UserPhotoUploads;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response;
-use Throwable;
-
-use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 readonly class PhotoController
 {
-    use AuthorizesRequests;
-    use RespondsWithFlash;
-
     public function __construct(
-        private Users $users,
+        private UserPhotoUploads $photos,
     ) {}
 
     public function renderInput(Request $request): JsonResponse
     {
         $user = $this->authorizeUserPhotoTarget($request);
 
-        return $this->renderPhotoTemplate($request, $user);
+        return $this->photos->renderInput($request, $user);
     }
 
-    public function upload(Request $request): Response
+    public function upload(UploadRequest $request, Uploads $uploads): JsonResponse
     {
-        $user = $this->authorizeUserPhotoTarget($request);
+        $data = $request->validated();
+        $session = $uploads->start(
+            $request,
+            UserPhotoUploads::class,
+            $data['filename'],
+            (int) $data['size'],
+            $request->only('userId'),
+        );
 
-        $request->validate([
-            'photo' => [
-                'nullable',
-                'file',
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if ($value instanceof UploadedFile && $value->getSize() > AssetsHelper::getMaxUploadSize()) {
-                        $fail(t('The uploaded file exceeds the maximum allowed size.'));
-                    }
-                },
-            ],
-        ]);
-
-        if (! $request->hasFile('photo')) {
-            return new JsonResponse;
-        }
-
-        try {
-            $uploadedFile = $request->file('photo');
-
-            // Move to our own temp location
-            $fileLocation = AssetsHelper::tempFilePath($uploadedFile->extension());
-            $file = $uploadedFile->move(dirname($fileLocation), basename($fileLocation));
-            $this->users->saveUserPhoto($fileLocation, $user, $uploadedFile->getClientOriginalName(), $file->getMimeType());
-
-            return $this->renderPhotoTemplate($request, $user);
-        } catch (Throwable $exception) {
-            if (isset($fileLocation) && file_exists($fileLocation)) {
-                File::delete($fileLocation);
-            }
-
-            Log::error('There was an error uploading the photo: '.$exception->getMessage());
-
-            return $this->asFailure(t('There was an error uploading your photo: {error}', [
-                'error' => $exception->getMessage(),
-            ]));
-        }
-
+        return new JsonResponse(UploadSessionData::fromSession($session)->toArray(), 201);
     }
 
     public function destroy(Request $request, Elements $elements): JsonResponse
@@ -95,7 +52,7 @@ readonly class PhotoController
         $user->photoId = null;
         $elements->saveElement($user, false);
 
-        return $this->renderPhotoTemplate($request, $user);
+        return $this->photos->renderInput($request, $user);
     }
 
     private function authorizeUserPhotoTarget(Request $request): User
@@ -104,34 +61,6 @@ readonly class PhotoController
             'userId' => ['required', 'integer'],
         ]);
 
-        $userId = $request->integer('userId');
-        $user = $this->users->getUserById($userId);
-
-        abort_if(! $user, 400, "Invalid user ID: {$userId}");
-
-        $this->authorize('save', $user);
-
-        return $user;
-    }
-
-    private function renderPhotoTemplate(Request $request, User $user): JsonResponse
-    {
-        $templateMode = TemplateMode::get();
-        if (TemplateMode::is(TemplateMode::Site) && ! app(TemplateResolver::class)->exists('users/_photo.twig')) {
-            $templateMode = TemplateMode::Cp;
-        }
-
-        $data = [
-            'html' => template('users/_photo', [
-                'user' => $user,
-            ], templateMode: $templateMode),
-            'photoId' => $user->photoId,
-        ];
-
-        if ($user->getIsCurrent() && $request->isCpRequest()) {
-            $data['headerPhotoHtml'] = template('_layouts/components/header-photo');
-        }
-
-        return new JsonResponse($data);
+        return $this->photos->user($request->integer('userId'));
     }
 }
