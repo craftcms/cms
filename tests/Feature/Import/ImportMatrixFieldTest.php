@@ -222,6 +222,7 @@ it('resolves inline pointer-style match criteria against the block\'s own field 
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    $blockId = $entry->getFieldValue('myMatrix')->one()->id;
 
     // The block's title changes but its plainText value (the inline match criteria) stays the
     // same, so if the pointer resolved correctly this should update the existing block rather
@@ -236,8 +237,12 @@ it('resolves inline pointer-style match criteria against the block\'s own field 
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
-    expect($entry->getFieldValue('myMatrix')->one()->title)->toBe('different title');
+    $block = $entry->getFieldValue('myMatrix')->one();
+
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(1)
+        // without the id check, a discarded-and-recreated block passes this too
+        ->and($block->id)->toBe($blockId)
+        ->and($block->title)->toBe('different title');
 });
 
 it('creates a new block when match criteria does not match any existing block', function () {
@@ -254,6 +259,7 @@ it('creates a new block when match criteria does not match any existing block', 
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    $blockId = $entry->getFieldValue('myMatrix')->one()->id;
 
     $this->import->importItem($importer, ($this->entryData)([
         [
@@ -271,7 +277,12 @@ it('creates a new block when match criteria does not match any existing block', 
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+    $blocks = $entry->getFieldValue('myMatrix')->all();
+
+    // only the second row is new; the first keeps the block it matched
+    expect($blocks)->toHaveCount(2)
+        ->and(array_map(fn ($block) => $block->title, $blocks))->toBe(['block 1', 'block 2'])
+        ->and($blocks[0]->id)->toBe($blockId);
 });
 
 describe('nested matrix', function () {
@@ -433,6 +444,9 @@ describe('nested matrix', function () {
         $outerBlock = [
             'type' => 'thirdEt',
             'title' => 'outer block 1',
+            // the outer block needs criteria of its own too: if it isn't matched, its nested
+            // blocks belong to a freshly created owner and can't survive either
+            'matchCriteria' => ['title' => 'title'],
             'fields' => [
                 'plainText' => 'outer text',
                 'myNestedMatrix' => [
@@ -449,7 +463,9 @@ describe('nested matrix', function () {
         $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
-        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+        $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
+        expect($innerBlocks->count())->toBe(1);
+        $innerBlockId = $innerBlocks->one()->id;
 
         // Title changes but the inline-matched plainText value stays the same, so the existing
         // inner block should be updated (not duplicated) if the pointer resolved correctly.
@@ -459,7 +475,9 @@ describe('nested matrix', function () {
 
         $entry = EntryElement::find()->title('imported entry')->one();
         $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
+
         expect($innerBlocks->count())->toBe(1)
+            ->and($innerBlocks->one()->id)->toBe($innerBlockId)
             ->and($innerBlocks->one()->title)->toBe('renamed inner block');
     });
 
@@ -486,7 +504,9 @@ describe('nested matrix', function () {
         ]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
-        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+        $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
+        expect($innerBlocks->count())->toBe(1);
+        $innerBlockId = $innerBlocks->one()->id;
 
         $this->import->importItem($importer, ($this->entryData)([
             [
@@ -514,7 +534,13 @@ describe('nested matrix', function () {
         ]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
-        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(2);
+        $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->all();
+
+        // only the second inner row is new; the first keeps the block it matched
+        expect($innerBlocks)->toHaveCount(2)
+            ->and(array_map(fn ($block) => $block->title, $innerBlocks))->toBe(['inner block 1', 'inner block 2'])
+            ->and(array_map(fn ($block) => $block->getType()->handle, $innerBlocks))->toBe(['firstEt', 'secondEt'])
+            ->and($innerBlocks[0]->id)->toBe($innerBlockId);
     });
 });
 

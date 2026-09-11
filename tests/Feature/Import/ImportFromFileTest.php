@@ -162,7 +162,7 @@ it('imports a file’s matrix-in-matrix blocks', function () {
 
 // Import::Import() resolves the importer's own matchCriteria before handing each row to
 // importItem() - the wiring that importItem()-level tests can't cover.
-it('matches rows and nested blocks on re-Import using the importer config’s match criteria alone', function () {
+it('matches rows and nested blocks on re-import using the importer config’s match criteria alone', function () {
     $importer = ($this->importerFor)('entries-matrix.json')->matchCriteria([
         'title' => 'title',
         'myMatrix' => [
@@ -185,7 +185,7 @@ it('matches rows and nested blocks on re-Import using the importer config’s ma
         ->and($entry->getFieldValue('myMatrix')->ids())->toBe($blockIds);
 });
 
-it('creates duplicates on re-Import when no match criteria is configured', function () {
+it('creates duplicates on re-import when no match criteria is configured', function () {
     $importer = ($this->importerFor)('entries-plain-text.json');
 
     $this->import->import($importer);

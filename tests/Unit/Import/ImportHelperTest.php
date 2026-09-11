@@ -172,7 +172,8 @@ it('produces no items for block types in the map that are absent from source', f
 
     $result = ImportHelper::remapData($map, $data);
 
-    expect($result['blocks'])->toHaveCount(1);
+    expect($result['blocks'])->toHaveCount(1)
+        ->and($result['blocks'][0]['type'])->toBe('heading');
 });
 
 it('dispatches each row of a nested inline-typed container to only its matching sibling type', function () {

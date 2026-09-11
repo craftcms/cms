@@ -157,7 +157,9 @@ it('prompts for the transformer when the option is omitted, defaulting it when l
         ->expectsQuestion(TRANSFORMER_QUESTION, '')
         ->assertSuccessful();
 
-    expect(EntryElement::find()->section($this->section->handle)->count())->toBe(3);
+    expect(EntryElement::find()->section($this->section->handle)->count())->toBe(3)
+        // the defaulted transformer still has to map the rows' values, not just create entries
+        ->and(EntryElement::find()->title('first file entry')->one()->getFieldValue('plainText'))->toBe('text from the file');
 });
 
 // An unknown site is a hard error rather than a reported configuration problem: site() throws as

@@ -132,7 +132,7 @@ it('preserves the order of related element ids', function () {
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$second->id, $this->relatedEntry->id]);
 });
 
-it('leaves existing relations alone when the field is absent from a later Import', function () {
+it('leaves existing relations alone when the field is absent from a later import', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
 
     $this->import->importItem($importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
