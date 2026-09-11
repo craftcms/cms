@@ -287,3 +287,31 @@ it('still honours a fields wrapper when one is given', function () {
     expect(EntryElement::find()->title('imported entry')->one()->getFieldValue('myContentBlock')->getFieldValue('cbText'))
         ->toBe('foo');
 });
+
+// A content block only comes into existence when its owner saves, so importing one into an element
+// that's already saved and has no block yet depends on change detection noticing it.
+it('creates a content block on an element that has none yet', function () {
+    $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+    // the seeded entry exists already and has no content block
+    $this->import->importItem($importer, [
+        'title' => 'seed entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myContentBlock' => [
+            'fields' => [
+                'cbText' => 'foo',
+                'cbMatrix' => [
+                    ['type' => 'cbBlockEt', 'title' => 'cb block 1', 'fields' => ['blockText' => 'one']],
+                ],
+            ],
+        ],
+    ]);
+
+    $contentBlock = EntryElement::find()->title('seed entry')->status(null)->one()->getFieldValue('myContentBlock');
+
+    expect($contentBlock?->id)->not->toBeNull()
+        ->and($contentBlock->getFieldValue('cbText'))->toBe('foo')
+        ->and($contentBlock->getFieldValue('cbMatrix')->one()?->getFieldValue('blockText'))->toBe('one');
+});

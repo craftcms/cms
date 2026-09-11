@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Addresses as AddressesField;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
@@ -12,6 +13,7 @@ use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 
 describe('nested matrix pruning', function () {
@@ -366,5 +368,109 @@ describe('addresses pruning', function () {
         $entry = EntryElement::find()->title('addresses entry')->one();
 
         expect(Address::find()->ownerId($entry->id)->ids())->toEqualCanonicalizing($this->seededAddressIds);
+    });
+});
+
+// A matrix nested inside a content block: the container that opts in to keeping missing elements is
+// the matrix, but it's reached through the content block, so the keepMissingNestedElements key has
+// to line up with the path ElementImporter::collectAndEnableKeepFields() walks.
+describe('matrix inside a content block pruning', function () {
+    beforeEach(function () {
+        $this->import = app(Import::class);
+
+        $blockTextField = ImportFixtures::plainTextField('blockText', 'Block Text');
+        $blockEntryType = ImportFixtures::blockEntryType('cbBlockEt', [$blockTextField], 'CB Block ET');
+        $cbMatrixField = ImportFixtures::matrixField('cbMatrix', [$blockEntryType], 'CB Matrix');
+
+        Fields::refreshFields();
+
+        $contentBlockField = Field::factory()->create([
+            'name' => 'My Content Block',
+            'handle' => 'myContentBlock',
+            'type' => ContentBlockField::class,
+            'settings' => [
+                'fieldLayouts' => [
+                    Str::uuid()->toString() => [
+                        'tabs' => [[
+                            'uid' => Str::uuid()->toString(),
+                            'name' => 'Content',
+                            'elements' => [[
+                                'uid' => Str::uuid()->toString(),
+                                'type' => CustomField::class,
+                                'fieldUid' => $cbMatrixField->uid,
+                                'required' => false,
+                            ]],
+                        ]],
+                    ],
+                ],
+            ],
+        ]);
+
+        Fields::refreshFields();
+
+        $seed = ImportFixtures::seedEntry(
+            [CustomField::make($contentBlockField->handle)],
+            ['name' => 'With Content Block', 'handle' => 'withContentBlock'],
+            entryAttrs: ['title' => 'cb entry', 'slug' => 'cb-entry'],
+        );
+
+        $this->section = $seed->section;
+        $this->entryType = $seed->entryType;
+
+        $this->importer = ElementImporter::create()
+            ->className(EntryElement::class)
+            ->site(Sites::getPrimarySite()->handle)
+            ->matchCriteria(['title' => 'title'])
+            ->transformer(null);
+
+        $this->block = fn (string $title, string $text) => [
+            'type' => 'cbBlockEt',
+            'title' => $title,
+            'matchCriteria' => ['title' => 'title'],
+            'fields' => ['blockText' => $text],
+        ];
+
+        $this->entryData = fn (array $blocks) => [
+            'title' => 'cb entry',
+            'sectionId' => $this->section->handle,
+            'typeId' => $this->entryType->handle,
+            'matchCriteria' => ['title' => 'title'],
+            'myContentBlock' => ['fields' => ['cbMatrix' => $blocks]],
+        ];
+
+        // seed two blocks inside the content block's matrix
+        $this->import->importItem($this->importer, ($this->entryData)([
+            ($this->block)('block 1', 'one'),
+            ($this->block)('block 2', 'two'),
+        ]));
+
+        $this->nestedBlocks = fn () => EntryElement::find()->title('cb entry')->one()
+            ->getFieldValue('myContentBlock')->getFieldValue('cbMatrix');
+
+        $this->seededBlockIds = ($this->nestedBlocks)()->ids();
+
+        expect($this->seededBlockIds)->toHaveCount(2);
+    });
+
+    it('deletes a nested block missing from a later import by default', function () {
+        $this->import->importItem($this->importer, ($this->entryData)([
+            ($this->block)('block 1', 'one'),
+        ]));
+
+        expect(($this->nestedBlocks)()->ids())->toBe([$this->seededBlockIds[0]]);
+    });
+
+    // The mapping UI names this input keepMissingNestedElements[myContentBlock][fields][cbMatrix][__keep__],
+    // so that's the shape a saved config carries.
+    it('keeps a nested block missing from a later import when the nested matrix opts in', function () {
+        $importer = (clone $this->importer)->keepMissingNestedElements([
+            'myContentBlock' => ['fields' => ['cbMatrix' => ['__keep__' => true]]],
+        ]);
+
+        $this->import->importItem($importer, ($this->entryData)([
+            ($this->block)('block 1', 'one'),
+        ]));
+
+        expect(($this->nestedBlocks)()->ids())->toEqualCanonicalizing($this->seededBlockIds);
     });
 });

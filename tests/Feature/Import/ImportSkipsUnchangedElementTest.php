@@ -20,6 +20,9 @@ beforeEach(function () {
 
     $textField = Field::factory()->create(['name' => 'My Plain Text', 'handle' => 'myPlainText', 'type' => PlainText::class]);
     $relationField = Field::factory()->create(['name' => 'My Entries', 'handle' => 'myEntries', 'type' => EntriesField::class]);
+    $blockTextField = ImportFixtures::plainTextField('blockText', 'Block Text');
+    $blockEntryType = ImportFixtures::blockEntryType('blockEt', [$blockTextField], 'Block ET');
+    $matrixField = ImportFixtures::matrixField('myMatrix', [$blockEntryType], 'My Matrix');
 
     Fields::refreshFields();
 
@@ -27,6 +30,7 @@ beforeEach(function () {
         [
             CustomField::make($textField->handle),
             CustomField::make($relationField->handle),
+            CustomField::make($matrixField->handle),
         ],
         ['name' => 'With Fields', 'handle' => 'withFields'],
     );
@@ -106,4 +110,28 @@ it('always saves a brand-new element even when mapped values match field default
 
     $entry = EntryElement::find()->title('brand new entry')->status(null)->one();
     expect($entry)->not->toBeNull();
+});
+
+// The fix for "a container field the element has nothing for yet" must not turn into "always save
+// when container data is present" - a matrix whose blocks are unchanged still diffs correctly.
+it('does not save when re-importing a row whose matrix blocks are unchanged', function () {
+    $blocks = [
+        [
+            'type' => 'blockEt',
+            'title' => 'block 1',
+            'matchCriteria' => ['title' => 'title'],
+            'fields' => ['blockText' => 'one'],
+        ],
+    ];
+
+    // the seed import in beforeEach had no matrix data, so this one creates the blocks
+    $this->import->importItem($this->importer, ($this->entryData)(['myMatrix' => $blocks]));
+    expect($this->saveCount)->toBeGreaterThan(0);
+
+    $this->saveCount = 0;
+
+    $this->import->importItem($this->importer, ($this->entryData)(['myMatrix' => $blocks]));
+
+    expect($this->saveCount)->toBe(0)
+        ->and(EntryElement::find()->title('seed entry')->status(null)->one()->getFieldValue('myMatrix')->count())->toBe(1);
 });

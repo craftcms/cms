@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -561,7 +562,15 @@ class ElementImporter extends BaseImporter
             }
         }
 
+        // A container field whose nested element doesn't exist yet can serialize identically before
+        // and after the incoming value is set (ContentBlock::serializeValue() returns null while the
+        // block has no id), so the diff below can't see the new content. Treat incoming data for a
+        // container field that's currently empty as a change.
+        $hasNewContainerFieldData = ! $skipChangeDetection
+            && $this->hasNewContainerFieldData($element, $fields, $oldFieldValues);
+
         $hasChanges = $skipChangeDetection
+            || $hasNewContainerFieldData
             || $this->attributeValuesChanged($element, $oldAttributeValues)
             || $this->fieldValuesChanged($element, $oldFieldValues);
 
@@ -612,7 +621,7 @@ class ElementImporter extends BaseImporter
      */
     private function enableKeepMissingNestedElements(ElementInterface $element): array
     {
-        return $this->collectAndEnableKeepFields($element->getFieldLayout(), []);
+        return $this->collectAndEnableKeepFields($element->getFieldLayout(), null, null, null);
     }
 
     /**
@@ -624,11 +633,17 @@ class ElementImporter extends BaseImporter
      * lookup like `Fields::getFieldById()`), so the instance mutated here is the exact same one
      * the real, recursive `Elements::saveElement()` cascade will encounter later.
      *
-     * @param  array<int, string>  $path  The path segments (handle/provider handle/`fields`) leading to $fieldLayout.
+     * @param  FieldInterface|null  $ownerField  The container field $fieldLayout belongs to, if any.
+     * @param  mixed  $provider  The field layout provider $fieldLayout came from, if any.
+     * @param  string|null  $prefix  $ownerField's own prefixed handle, as the mapping screen names it.
      * @return ImportableElementContainerFieldInterface[]
      */
-    private function collectAndEnableKeepFields(?FieldLayout $fieldLayout, array $path): array
-    {
+    private function collectAndEnableKeepFields(
+        ?FieldLayout $fieldLayout,
+        ?FieldInterface $ownerField,
+        mixed $provider,
+        ?string $prefix,
+    ): array {
         if (! $fieldLayout) {
             return [];
         }
@@ -640,12 +655,22 @@ class ElementImporter extends BaseImporter
                 continue;
             }
 
-            $fieldPath = [...$path, $field->handle];
+            // The keep tree is keyed by the names the mapping screen generates, so ask the same
+            // helper the UI does rather than assuming a [handle][providerHandle][fields] shape -
+            // a content block is its own layout provider, which that assumption would spell twice.
+            [, , , $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping(
+                $field->handle,
+                $ownerField,
+                $field,
+                $fieldLayout,
+                $provider,
+                $prefix,
+            );
 
             if ($field->canKeepMissingNestedElements()) {
                 // loose cast: a real checkbox submission survives as int 1/0 (or even the
                 // string "1"/"0") after json_decode(), not strictly bool true/false
-                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, implode('.', [...$fieldPath, '__keep__']));
+                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, implode('.', [...$prefixedHandleAsArray, '__keep__']));
 
                 if ($shouldKeep) {
                     $field->setKeepMissingNestedElements(true);
@@ -653,10 +678,10 @@ class ElementImporter extends BaseImporter
                 }
             }
 
-            foreach ($field->getFieldLayoutProviders() as $provider) {
+            foreach ($field->getFieldLayoutProviders() as $nestedProvider) {
                 $restoreKeepFlagFields = [
                     ...$restoreKeepFlagFields,
-                    ...$this->collectAndEnableKeepFields($provider->getFieldLayout(), [...$fieldPath, $provider->getHandle(), 'fields']),
+                    ...$this->collectAndEnableKeepFields($nestedProvider->getFieldLayout(), $field, $nestedProvider, $prefixedHandle),
                 ];
             }
         }
@@ -707,6 +732,34 @@ class ElementImporter extends BaseImporter
     /**
      * Compares the given old serialized field values against the element's current values.
      */
+    /**
+     * Returns whether the incoming data fills a container field that the element has no nested
+     * elements for yet - a case comparing serialized values can't detect.
+     *
+     * @param  array<string, mixed>  $fields
+     * @param  array<string, mixed>  $oldValues
+     */
+    private function hasNewContainerFieldData(ElementInterface $element, array $fields, array $oldValues): bool
+    {
+        $fieldLayout = $element->getFieldLayout();
+
+        if (! $fieldLayout) {
+            return false;
+        }
+
+        foreach ($fields as $handle => $value) {
+            if (empty($value) || ! empty($oldValues[$handle])) {
+                continue;
+            }
+
+            if ($fieldLayout->getFieldByHandle((string) $handle) instanceof ImportableElementContainerFieldInterface) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function fieldValuesChanged(ElementInterface $element, array $oldValues): bool
     {
         $fieldLayout = $element->getFieldLayout();
