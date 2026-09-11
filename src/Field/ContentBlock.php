@@ -852,6 +852,12 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             return [];
         }
 
-        return $this->normalizeNestedEntryForImport($value, $importer, $this->getFieldLayout(), $rootOwner);
+        // Container fields nested in the block belong to the content block element rather than to
+        // the element this field is on, so that's the owner their match criteria has to look under.
+        // Stays null when there's no block yet, so those fields skip matching and create new
+        // elements.
+        $contentBlock = $rootOwner?->id ? $this->createContentBlockQuery($rootOwner)->one() : null;
+
+        return $this->normalizeNestedEntryForImport($value, $importer, $this->getFieldLayout(), $contentBlock);
     }
 }

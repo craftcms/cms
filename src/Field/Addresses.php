@@ -589,6 +589,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $addressData += $addressData['address'];
             }
 
+            // Import data may nest latitude & longitude under a `latLong` key (the name of the
+            // layout element); the Lat/Long control itself posts them as flat inputs
+            if (isset($addressData['latLong']) && is_array($addressData['latLong'])) {
+                $addressData += $addressData['latLong'];
+            }
+
             foreach ($nativeFields as $field) {
                 if (array_key_exists($field, $addressData)) {
                     $address->$field = $addressData[$field];

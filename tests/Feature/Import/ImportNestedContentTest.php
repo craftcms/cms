@@ -194,3 +194,53 @@ it('updates values at all levels on reimport', function () {
     expect($contentBlock->getFieldValue('cbText'))->toBe('updated content block text');
     expect(Address::find()->ownerId($contentBlock->id)->one()->addressLine1)->toBe('456 Updated Ave');
 });
+
+// Identity through the whole chain: every level is matched in place rather than recreated, which
+// needs the content block element to be handed down as the owner for its nested fields.
+it('keeps every element in the chain on reimport when match criteria are set at each level', function () {
+    $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+    $block = fn (string $text) => [
+        'type' => 'forMatrixEntryType',
+        'title' => 'block 1',
+        'matchCriteria' => ['title' => 'title'],
+        'fields' => [
+            'plainText' => $text,
+            'myContentBlock' => [
+                'fields' => [
+                    'cbText' => $text,
+                    'cbAddresses' => [[...$this->address, 'matchCriteria' => ['title' => 'title']]],
+                ],
+            ],
+        ],
+    ];
+
+    $this->import->importItem($importer, ($this->entryData)([$block('one')]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $matrixBlock = $entry->getFieldValue('myMatrix')->one();
+    $contentBlock = $matrixBlock->getFieldValue('myContentBlock');
+    $seededIds = [
+        'entry' => $entry->id,
+        'matrixBlock' => $matrixBlock->id,
+        'contentBlock' => $contentBlock->id,
+        'address' => Address::find()->ownerId($contentBlock->id)->one()->id,
+    ];
+
+    $this->import->importItem($importer, ($this->entryData)([$block('two')]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $matrixBlock = $entry->getFieldValue('myMatrix')->one();
+    $contentBlock = $matrixBlock->getFieldValue('myContentBlock');
+    $addresses = Address::find()->ownerId($contentBlock->id)->all();
+
+    expect($matrixBlock->getFieldValue('plainText'))->toBe('two')
+        ->and($contentBlock->getFieldValue('cbText'))->toBe('two')
+        ->and($addresses)->toHaveCount(1)
+        ->and([
+            'entry' => $entry->id,
+            'matrixBlock' => $matrixBlock->id,
+            'contentBlock' => $contentBlock->id,
+            'address' => $addresses[0]->id,
+        ])->toBe($seededIds);
+});

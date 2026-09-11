@@ -140,7 +140,7 @@ it('maps content block field values correctly', function () {
     expect($entry->getFieldValue('myContentBlock')->getFieldValue('cbText'))->toBe('foo');
 });
 
-it('updates content block field values on re-Import', function () {
+it('updates content block field values on re-import', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
 
     $this->import->importItem($importer, ($this->entryData)([
@@ -191,7 +191,7 @@ function cbNestedBlock(string $text): array
     ];
 }
 
-it('updates the value of a matrix block nested inside a content block on re-Import', function () {
+it('updates the value of a matrix block nested inside a content block on re-import', function () {
     $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
     $block = cbNestedBlock(...);
 
@@ -210,7 +210,7 @@ it('updates the value of a matrix block nested inside a content block on re-Impo
         ->and($blocks->one()->getFieldValue('blockText'))->toBe('updated one');
 });
 
-// The entry and the content block element both keep their ids across the re-Import, but the block
+// The entry and the content block element both keep their ids across the re-import, but the block
 // inside the content block doesn't - the same inline matchCriteria one level up (on a matrix
 // directly on the entry) does match in place, see ImportMatrixFieldTest's "updates an existing
 // block when match criteria matches".
@@ -232,7 +232,7 @@ it('updates the same matrix block nested inside a content block in place', funct
     $entry = EntryElement::find()->title('imported entry')->one();
 
     expect($entry->getFieldValue('myContentBlock')->getFieldValue('cbMatrix')->one()->id)->toBe($blockId);
-})->skip('a matrix block nested inside a content block is deleted and recreated (new block id) instead of matched, even though its inline matchCriteria resolves');
+});
 
 // fixture row 5: a matrix, a content block and an addresses field all set on the same entry
 it('imports a matrix, a content block and addresses on one entry', function () {
@@ -260,4 +260,30 @@ it('imports a matrix, a content block and addresses on one entry', function () {
         ->and($contentBlock->getFieldValue('cbMatrix')->one()->getFieldValue('blockText'))->toBe('nested value')
         ->and($entry->getFieldValue('myAddresses')->count())->toBe(1)
         ->and($entry->getFieldValue('myAddresses')->one()->addressLine1)->toBe('123 Main St');
+});
+
+// the other shape normalizeValueForImport() documents: field values straight in the top-level array
+// rather than wrapped in `fields`
+it('imports a content block whose values are given without a fields wrapper', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'cbText' => 'foo',
+        'cbMatrix' => [
+            ['type' => 'cbBlockEt', 'title' => 'cb block 1', 'fields' => ['blockText' => 'one']],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $contentBlock = $entry->getFieldValue('myContentBlock');
+
+    expect($contentBlock->getFieldValue('cbText'))->toBe('foo')
+        ->and($contentBlock->getFieldValue('cbMatrix')->one()->getFieldValue('blockText'))->toBe('one');
+});
+
+it('still honours a fields wrapper when one is given', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'fields' => ['cbText' => 'foo'],
+    ]));
+
+    expect(EntryElement::find()->title('imported entry')->one()->getFieldValue('myContentBlock')->getFieldValue('cbText'))
+        ->toBe('foo');
 });

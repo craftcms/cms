@@ -37,7 +37,6 @@ use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
@@ -110,7 +109,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 {
     use ImportableElementContainerField {
         validateMapping as traitValidateMapping;
-        normalizeNestedEntryForImport as traitNormalizeNestedEntryForImport;
     }
 
     public const string VIEW_MODE_CARDS = 'cards';
@@ -1966,31 +1964,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         return $normalizedValue;
-    }
-
-    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
-    {
-        // ensure each entry has the custom fields wrapped in 'fields' key?
-        if (! isset($dataItem['fields'])) {
-            $customFieldHandles = array_filter(
-                array_map(
-                    fn ($fieldLayoutElement) => $fieldLayoutElement instanceof CustomField ? $fieldLayoutElement->attribute() : null,
-                    $fieldLayout->getAllElements()
-                )
-            );
-
-            $customFields = [];
-            foreach ($dataItem as $key => $value) {
-                if (in_array($key, $customFieldHandles)) {
-                    $customFields[$key] = $value;
-                    unset($dataItem[$key]);
-                }
-            }
-
-            $dataItem['fields'] = $customFields;
-        }
-
-        return self::traitNormalizeNestedEntryForImport($dataItem, $importer, $fieldLayout, $owner);
     }
 
     /**

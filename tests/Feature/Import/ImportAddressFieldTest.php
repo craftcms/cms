@@ -141,20 +141,6 @@ it('creates a new address when match criteria does not match any existing addres
 });
 
 // the manual fixture supplies latitude/longitude as strings inside a nested latLong object
-it('ignores a latLong value when the address layout has no lat/long field', function () {
-    $this->import->importItem($this->importer, ($this->entryData)([
-        [...$this->address, 'latLong' => ['latitude' => '37.7749', 'longitude' => '-122.4194']],
-    ]));
-
-    $entry = EntryElement::find()->title('imported entry')->one();
-    $address = Address::find()->ownerId($entry->id)->one();
-
-    expect($address)->not->toBeNull()
-        ->and($address->addressLine1)->toBe($this->address['addressLine1'])
-        ->and($address->latitude)->toBeNull()
-        ->and($address->longitude)->toBeNull();
-});
-
 it('imports latLong given as a nested object of strings', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         [...$this->address, 'latLong' => ['latitude' => '37.7749', 'longitude' => '-122.4194']],
@@ -165,7 +151,7 @@ it('imports latLong given as a nested object of strings', function () {
 
     expect($address->latitude)->toEqual('37.7749')
         ->and($address->longitude)->toEqual('-122.4194');
-})->skip('needs an address field layout containing a LatLongField (as the real project config has); the default test layout has none, and swapping in a layout with one makes every address fail validation');
+});
 
 // the manual fixture sends "country", while the element exposes countryCode - this pins which one
 // the Import actually reads
@@ -256,4 +242,35 @@ it('ignores a criteria-only row while importing the real ones', function () {
     expect($addresses)->toHaveCount(1)
         ->and($addresses[0]->title)->toBe($this->address['title'])
         ->and($addresses[0]->addressLine1)->toBe($this->address['addressLine1']);
+});
+
+// the canonical shape: the CP control posts latitude & longitude as flat inputs, and the mapping UI
+// offers them as two separate columns
+it('imports flat latitude and longitude', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        [...$this->address, 'latitude' => '37.7749', 'longitude' => '-122.4194'],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect($address->latitude)->toEqual('37.7749')
+        ->and($address->longitude)->toEqual('-122.4194');
+});
+
+// $addressData += $addressData['latLong'] keeps keys that are already set, so a flat value wins
+it('prefers a flat latitude over a nested one', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        [
+            ...$this->address,
+            'latitude' => '1.1111',
+            'latLong' => ['latitude' => '9.9999', 'longitude' => '-122.4194'],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect($address->latitude)->toEqual('1.1111')
+        ->and($address->longitude)->toEqual('-122.4194');
 });
