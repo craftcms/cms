@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -154,27 +155,9 @@ class Assets extends BaseRelationField
     public bool $allowUploads = true;
 
     /**
-     * @var bool Whether the available assets should be restricted to
-     *           [[allowedKinds]]
-     */
-    public bool $restrictFiles = false;
-
-    /**
-     * @var list<string>|null The file kinds that the field should be restricted to
-     *                        (only used if [[restrictFiles]] is true)
-     */
-    public ?array $allowedKinds = null;
-
-    /**
      * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
      */
     public bool $showUnpermittedVolumes = false;
-
-    /**
-     * @var bool Whether to show files the user doesn’t have permission to view, per the
-     *           “View files uploaded by other users” permission.
-     */
-    public bool $showUnpermittedFiles = false;
 
     /**
      * @var string How related assets should be presented within element index views.
@@ -225,8 +208,6 @@ class Assets extends BaseRelationField
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'restrictFiles' => 'boolean',
-            'allowedKinds' => Rule::when(fn ($input) => $input->restrictFiles, ['required'], ['nullable']),
             'previewMode' => Rule::in([self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS]),
         ]);
     }
@@ -312,21 +293,6 @@ class Assets extends BaseRelationField
             FormField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-            FormField::make(t('Show unpermitted files'))
-                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
-            FormField::make(t('Restrict allowed file types'))
-                ->control(Lightswitch::make('restrictFiles')
-                    ->value($this->restrictFiles)
-                    ->reactive()),
-            Group::make('asset-file-kind-settings', [
-                FormField::make(t('Allowed Kinds'))
-                    ->control(Choice::make('allowedKinds')
-                        ->multiple()
-                        ->options($this->getFileKindOptions())
-                        ->value($this->allowedKinds ?? []))
-                    ->visible($this->restrictFiles),
-            ])->dependsOn('settings.restrictFiles'),
             FormField::make(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
                 ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
@@ -394,18 +360,6 @@ class Assets extends BaseRelationField
         return $sourceOptions;
     }
 
-    /** @return list<array{value:string, label:string}> */
-    public function getFileKindOptions(): array
-    {
-        $fileKindOptions = [];
-
-        foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
-            $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
-        }
-
-        return $fileKindOptions;
-    }
-
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -442,8 +396,9 @@ class Assets extends BaseRelationField
      */
     public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
-        // Make sure the field restricts file types
-        if (! $this->restrictFiles) {
+        $allowedExtensions = $this->_getAllowedExtensions();
+
+        if (empty($allowedExtensions)) {
             return;
         }
 
@@ -462,7 +417,6 @@ class Assets extends BaseRelationField
         }
 
         // Now make sure that they all check out
-        $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                 $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
@@ -599,14 +553,8 @@ class Assets extends BaseRelationField
         $asset = new Asset;
         $asset->title = t('Related {type} Title', ['type' => $asset->displayName()]);
 
-        if ($this->restrictFiles) {
-            $extensions = $this->_getAllowedExtensions();
-            $filename = 'test.'.$extensions[0];
-        } else {
-            $filename = 'test.txt';
-        }
-
-        $asset->filename = $filename;
+        $extensions = $this->_getAllowedExtensions();
+        $asset->filename = sprintf('test.%s', $extensions[0] ?? 'txt');
         $collection = new ElementCollection([$asset]);
 
         return $this->previewHtml($collection);
@@ -975,11 +923,9 @@ class Assets extends BaseRelationField
     public function getInputSelectionCriteria(): array
     {
         $criteria = parent::getInputSelectionCriteria();
-        $criteria['kind'] = ($this->restrictFiles && ! empty($this->allowedKinds)) ? $this->allowedKinds : [];
 
-        if ($this->showUnpermittedFiles) {
-            $criteria['uploaderId'] = null;
-        }
+        // Let the selection condition determine whether they can view unpermitted files
+        $criteria['uploaderId'] = null;
 
         return $criteria;
     }
@@ -1109,23 +1055,48 @@ class Assets extends BaseRelationField
         return $folder;
     }
 
-    /** @return list<string> */
+    /** @return string[] */
     private function _getAllowedExtensions(): array
     {
-        if (! is_array($this->allowedKinds)) {
+        $allowedKinds = $this->_getAllowedKinds();
+
+        if (empty($allowedKinds)) {
             return [];
         }
 
         $extensions = [];
         $allKinds = AssetsHelper::getFileKinds();
 
-        foreach ($this->allowedKinds as $allowedKind) {
+        foreach ($allowedKinds as $allowedKind) {
             foreach ($allKinds[$allowedKind]['extensions'] as $ext) {
                 $extensions[] = $ext;
             }
         }
 
         return $extensions;
+    }
+
+    /** @return string[] */
+    private function _getAllowedKinds(): array
+    {
+        $condition = $this->getSelectionCondition();
+
+        if (! $condition) {
+            return [];
+        }
+
+        $kinds = [];
+
+        /** @var FileTypeConditionRule[] $rules */
+        $rules = $condition->getConditionRules()->findRules(fn ($rule) => $rule instanceof FileTypeConditionRule);
+
+        foreach ($rules as $rule) {
+            foreach ($rule->getValues() as $kind) {
+                $kinds[$kind] = true;
+            }
+        }
+
+        return array_keys($kinds);
     }
 
     /**
