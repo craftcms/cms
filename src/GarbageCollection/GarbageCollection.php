@@ -34,6 +34,7 @@ use CraftCms\Cms\GarbageCollection\Actions\PurgeExpiredActivity;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
+use CraftCms\Cms\GarbageCollection\Actions\RemoveExpiredUploads;
 use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use CraftCms\Cms\Queue\Models\JobProgress;
 use CraftCms\Cms\User\Elements\User;
@@ -138,6 +139,7 @@ class GarbageCollection
             ]]],
             HardDeleteVolumes::class,
             RemoveEmptyTempFolders::class,
+            RemoveExpiredUploads::class,
         ]);
 
         Artisan::call('model:prune', [

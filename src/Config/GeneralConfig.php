@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
@@ -1813,6 +1814,28 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 16MB
      */
     public string|int $maxUploadFileSize = 16777216;
+
+    /**
+     * The registered upload transport to use, or null to select one from the temporary disk.
+     *
+     * @group Assets
+     */
+    public ?string $uploader = null;
+
+    /**
+     * Maximum bytes per PHP upload request. Proxy request limits may require a smaller value.
+     * S3 multipart uploads use parts of at least 5 MiB.
+     *
+     * @group Assets
+     */
+    public int $uploadChunkSize = 8 * 1024 * 1024;
+
+    /**
+     * Seconds of inactivity before an upload session and its temporary files can be removed.
+     *
+     * @group Assets
+     */
+    public int $uploadSessionDuration = 24 * 60 * 60;
 
     /**
      * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
@@ -4974,6 +4997,27 @@ class GeneralConfig extends BaseConfig
         return $this;
     }
 
+    public function uploader(?string $value): self
+    {
+        $this->uploader = $value;
+
+        return $this;
+    }
+
+    public function uploadChunkSize(int $value): self
+    {
+        $this->uploadChunkSize = $value;
+
+        return $this;
+    }
+
+    public function uploadSessionDuration(int $value): self
+    {
+        $this->uploadSessionDuration = $value;
+
+        return $this;
+    }
+
     /**
      * Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
@@ -6183,6 +6227,14 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the temporary asset upload filesystem handle or disk reference.
+     */
+    public function getTempAssetUploadFs(): string
+    {
+        return Env::parse($this->tempAssetUploadFs) ?: 'disk:'.Filesystems::TEMP_ASSET_DISK;
     }
 
     /**
