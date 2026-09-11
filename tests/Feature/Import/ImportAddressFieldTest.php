@@ -102,14 +102,19 @@ it('updates an existing address when match criteria matches', function () {
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect(Address::find()->ownerId($entry->id)->count())->toBe(1);
+    $addressId = Address::find()->ownerId($entry->id)->one()->id;
 
     $addressLine1Updated = '999 Updated Ave';
 
     $updated = array_merge($addressWithCriteria, ['addressLine1' => $addressLine1Updated]);
     $this->import->importItem($importer, ($this->entryData)([$updated]));
 
-    expect(Address::find()->ownerId($entry->id)->count())->toBe(1);
-    expect(Address::find()->ownerId($entry->id)->one()->addressLine1)->toBe($addressLine1Updated);
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect(Address::find()->ownerId($entry->id)->count())->toBe(1)
+        // without the id check this passes whether the address is matched or recreated
+        ->and($address->id)->toBe($addressId)
+        ->and($address->addressLine1)->toBe($addressLine1Updated);
 });
 
 it('creates a new address when match criteria does not match any existing address', function () {
@@ -175,4 +180,80 @@ it('reads the country code from countryCode, not from a country key', function (
 
     expect($imported)->not->toBeNull()
         ->and($imported->countryCode)->not->toBe('GB');
+});
+
+// Nested criteria supplied by the importer config rather than inlined in each row: the config's
+// criteria for the container is what a type-less row resolves against.
+it('matches an address using nested match criteria from the importer config', function () {
+    $importer = (clone $this->importer)->matchCriteria([
+        'title' => 'title',
+        'myAddresses' => ['title' => 'title'],
+    ]);
+
+    ImportFixtures::importWithConfigCriteria($this->import, $importer, ($this->entryData)([$this->address]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $addressId = Address::find()->ownerId($entry->id)->one()->id;
+
+    ImportFixtures::importWithConfigCriteria($this->import, $importer, ($this->entryData)([
+        [...$this->address, 'addressLine1' => '999 Updated Ave'],
+    ]));
+
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect(Address::find()->ownerId($entry->id)->count())->toBe(1)
+        ->and($address->id)->toBe($addressId)
+        ->and($address->addressLine1)->toBe('999 Updated Ave');
+});
+
+// clearableItems declared under an addresses field has to reach the type-less rows too
+it('clears a native address field marked clearable when it is missing from a later import', function () {
+    $importer = (clone $this->importer)
+        ->matchCriteria(['title' => 'title'])
+        ->clearableItems(['myAddresses' => ['addressLine2' => true]]);
+
+    $addressWithCriteria = [...$this->address, 'matchCriteria' => ['title' => 'title']];
+
+    $this->import->importItem($importer, ($this->entryData)([$addressWithCriteria]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $address = Address::find()->ownerId($entry->id)->one();
+    expect($address->addressLine2)->toBe($this->address['addressLine2']);
+    $addressId = $address->id;
+
+    $withoutLine2 = $addressWithCriteria;
+    unset($withoutLine2['addressLine2']);
+
+    $this->import->importItem($importer, ($this->entryData)([$withoutLine2]));
+
+    $address = Address::find()->ownerId($entry->id)->one();
+
+    expect($address->id)->toBe($addressId)
+        ->and($address->addressLine2)->toBeNull();
+});
+
+// a row that only says how to match, with no address content, isn't an address at all
+it('creates no address for a row that carries only match criteria', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        ['matchCriteria' => ['title' => 'title']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry)->not->toBeNull()
+        ->and(Address::find()->ownerId($entry->id)->count())->toBe(0);
+});
+
+it('ignores a criteria-only row while importing the real ones', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        $this->address,
+        ['matchCriteria' => ['title' => 'title']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    $addresses = Address::find()->ownerId($entry->id)->all();
+
+    expect($addresses)->toHaveCount(1)
+        ->and($addresses[0]->title)->toBe($this->address['title'])
+        ->and($addresses[0]->addressLine1)->toBe($this->address['addressLine1']);
 });

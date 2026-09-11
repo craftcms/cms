@@ -240,10 +240,19 @@ class Import
 
             if (array_is_list($data[$key])) {
                 foreach ($data[$key] as &$item) {
-                    if (! is_array($item) || ! isset($item['type'])) {
+                    if (! is_array($item)) {
                         continue;
                     }
-                    $this->resolveMatchCriteria($item, $value[$item['type']] ?? [], $additionalMatchCriteria[$item['type']] ?? []);
+
+                    // typed rows (matrix blocks) carry their criteria under their own block type;
+                    // rows without a type (addresses) use the container's criteria directly
+                    $type = is_string($item['type'] ?? null) ? $item['type'] : null;
+
+                    $this->resolveMatchCriteria(
+                        $item,
+                        $type !== null ? ($value[$type] ?? []) : $value,
+                        $type !== null ? ($additionalMatchCriteria[$type] ?? []) : ($additionalMatchCriteria[$key] ?? []),
+                    );
                 }
                 unset($item);
             } else {
@@ -275,9 +284,21 @@ class Import
 
             if (! empty($data[$key]) && array_is_list($data[$key]) && ! array_is_list($value)) {
                 foreach ($data[$key] as &$item) {
-                    if (is_array($item) && isset($item['type'], $value[$item['type']])) {
-                        $this->applyClearableItems($item, $value[$item['type']]);
+                    if (! is_array($item)) {
+                        continue;
                     }
+
+                    // as in resolveMatchCriteria(): typed rows look their map up by block type,
+                    // rows without a type (addresses) use the container's own map
+                    if (isset($item['type'])) {
+                        if (isset($value[$item['type']])) {
+                            $this->applyClearableItems($item, $value[$item['type']]);
+                        }
+
+                        continue;
+                    }
+
+                    $this->applyClearableItems($item, $value);
                 }
                 unset($item);
             } else {

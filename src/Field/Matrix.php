@@ -1898,6 +1898,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $i = 0;
 
         foreach ($entries as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+
             // skip this node if everything other than the reserved keys (matchCriteria, type) is empty
             if (ImportHelper::isEmptyImportEntryData(Arr::except($entry, ['matchCriteria', 'type']))) {
                 continue;

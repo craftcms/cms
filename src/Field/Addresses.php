@@ -46,6 +46,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
@@ -1074,7 +1075,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 continue;
             }
 
-            if (empty(array_filter($address))) {
+            // skip this row if everything other than the reserved matchCriteria key is empty
+            if (ImportHelper::isEmptyImportEntryData(Arr::except($address, ['matchCriteria']))) {
                 continue;
             }
 

@@ -61,7 +61,9 @@ describe('nested matrix pruning', function () {
         ]));
 
         $entry = EntryElement::find()->title('matrix entry')->one();
-        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+        $this->seededBlockIds = $entry->getFieldValue('myMatrix')->ids();
+
+        expect($this->seededBlockIds)->toHaveCount(2);
     });
 
     it('deletes an existing block missing from a later import by default', function () {
@@ -78,6 +80,8 @@ describe('nested matrix pruning', function () {
         $blocks = $entry->getFieldValue('myMatrix')->all();
         expect($blocks)->toHaveCount(1);
         expect($blocks[0]->title)->toBe('block 1');
+        // the surviving block is matched and updated in place, not recreated
+        expect($blocks[0]->id)->toBe($this->seededBlockIds[0]);
     });
 
     it('logs pruned nested elements via ImportLog when pruning happens', function () {
@@ -202,7 +206,7 @@ describe('matrix in matrix pruning', function () {
         expect($entry->getFieldValue('outerMatrix')->count())->toBe(2);
     });
 
-    it('keeps an outer block missing from a later Import when only the outer field opts in, while still pruning the remaining block’s missing inner block', function () {
+    it('keeps an outer block missing from a later import when only the outer field opts in, while still pruning the remaining block’s missing inner block', function () {
         $importer = (clone $this->matrixInMatrixImporter)
             ->keepMissingNestedElements(['outerMatrix' => ['__keep__' => true]]);
 
@@ -315,14 +319,22 @@ describe('addresses pruning', function () {
             ($this->address)('address 2', '2 Second St'),
         ]));
 
-        $this->seededAddressIds = Address::find()
+        $seeded = Address::find()
             ->ownerId(EntryElement::find()->title('addresses entry')->one()->id)
-            ->ids();
+            ->all();
+
+        // ids() order isn't tied to the order the addresses were imported in, so index them by label
+        $this->seededAddressIds = array_map(fn (Address $address) => $address->id, $seeded);
+        $this->seededAddressIdByTitle = array_column(
+            array_map(fn (Address $address) => ['title' => $address->title, 'id' => $address->id], $seeded),
+            'id',
+            'title',
+        );
 
         expect($this->seededAddressIds)->toHaveCount(2);
     });
 
-    it('deletes an existing address missing from a later Import by default', function () {
+    it('deletes an existing address missing from a later import by default', function () {
         $this->import->importItem($this->importer, ($this->entryData)([
             ($this->address)('address 1', '1 First St'),
         ]));
@@ -334,8 +346,6 @@ describe('addresses pruning', function () {
             ->and($addresses[0]->title)->toBe('address 1');
     });
 
-    // the matrix equivalent (ImportMatrixFieldTest's "updates an existing block when match criteria
-    // matches") keeps the block's id here
     it('matches the supplied address rather than recreating it while pruning the missing one', function () {
         $this->import->importItem($this->importer, ($this->entryData)([
             ($this->address)('address 1', '1 First St'),
@@ -343,13 +353,10 @@ describe('addresses pruning', function () {
 
         $entry = EntryElement::find()->title('addresses entry')->one();
 
-        expect(Address::find()->ownerId($entry->id)->ids())->toBe([$this->seededAddressIds[0]]);
-    })->skip('the surviving address is recreated with a new id instead of being matched, even though its inline matchCriteria resolves');
+        expect(Address::find()->ownerId($entry->id)->ids())->toBe([$this->seededAddressIdByTitle['address 1']]);
+    });
 
-    // The address that *is* in the payload is added a second time instead of being matched, so the
-    // owner ends up with three addresses rather than two - unlike the matrix case above, where the
-    // same keepMissingNestedElements config still matches the supplied block.
-    it('keeps an existing address missing from a later Import when the field opts in to keeping missing elements', function () {
+    it('keeps an existing address missing from a later import when the field opts in to keeping missing elements', function () {
         $importer = (clone $this->importer)->keepMissingNestedElements(['myAddresses' => ['__keep__' => true]]);
 
         $this->import->importItem($importer, ($this->entryData)([
@@ -358,19 +365,6 @@ describe('addresses pruning', function () {
 
         $entry = EntryElement::find()->title('addresses entry')->one();
 
-        expect(Address::find()->ownerId($entry->id)->ids())->toBe($this->seededAddressIds);
-    })->skip('with keepMissingNestedElements on an addresses field, the supplied address is duplicated instead of matched (owner ends up with 3 addresses)');
-
-    it('does not prune any address when the field opts in to keeping missing elements', function () {
-        $importer = (clone $this->importer)->keepMissingNestedElements(['myAddresses' => ['__keep__' => true]]);
-
-        $this->import->importItem($importer, ($this->entryData)([
-            ($this->address)('address 1', '1 First St'),
-        ]));
-
-        $entry = EntryElement::find()->title('addresses entry')->one();
-
-        // both seeded addresses survive; see the skipped test above for the duplicate
-        expect(Address::find()->ownerId($entry->id)->ids())->toContain(...$this->seededAddressIds);
+        expect(Address::find()->ownerId($entry->id)->ids())->toEqualCanonicalizing($this->seededAddressIds);
     });
 });
