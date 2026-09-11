@@ -16,7 +16,7 @@ interface Uploader
 
     public function handleRequest(Request $request, UploadSession $session): Response;
 
-    public function uploaded(UploadSession $session): bool;
+    public function isUploaded(UploadSession $session): bool;
 
     public function complete(UploadSession $session): UploadedFile;
 

@@ -22,8 +22,7 @@ readonly class UploadSessionData implements Arrayable
         public array $urls,
     ) {}
 
-    /** @param array{type: string, options: array<string, mixed>} $transport */
-    public static function fromSession(UploadSession $session, array $transport): self
+    public static function fromSession(UploadSession $session, UploadSetup $setup): self
     {
         $prefix = request()->isCpRequest() ? 'craft.actions.craft.cp.uploads' : 'craft.actions.craft.uploads';
 
@@ -31,7 +30,10 @@ readonly class UploadSessionData implements Arrayable
             id: $session->id,
             chunkSize: $session->chunkSize,
             partCount: $session->partCount(),
-            transport: $transport,
+            transport: [
+                'type' => $setup->transportType,
+                'options' => $setup->transportOptions,
+            ],
             urls: [
                 'transfer' => route("$prefix.transfer", ['upload' => $session->id]),
                 'status' => route("$prefix.status", ['upload' => $session->id]),

@@ -364,7 +364,8 @@ it('binds custom S3 signatures to the authorized sessions key and multipart id',
     $uploader->shouldReceive('start')->andReturnUsing(fn (UploadSession $session) => new UploadSetup(
         chunkSize: 5242880,
         state: ['uploadId' => 'multipart-id'],
-        transport: ['type' => 's3', 'options' => ['key' => $session->path(), 'uploadId' => 'multipart-id']],
+        transportType: 's3',
+        transportOptions: ['key' => $session->path(), 'uploadId' => 'multipart-id'],
     ));
     $uploader->shouldReceive('sign')->once()->withArgs(fn (UploadSession $session, string $method, ?int $part) => $method === 'PUT' && $part === 1)
         ->andReturn(['url' => 'https://storage.example/signed']);
@@ -396,7 +397,8 @@ it('delegates custom protocol requests to the uploader and persists its state', 
     $uploader->shouldReceive('start')->andReturn(new UploadSetup(
         chunkSize: 3,
         state: ['received' => 0],
-        transport: ['type' => 'custom', 'options' => []],
+        transportType: 'custom',
+        transportOptions: [],
     ));
     $uploader->shouldReceive('handleRequest')->andReturnUsing(function (Request $request, UploadSession $session) {
         if ($request->isMethod('POST')) {

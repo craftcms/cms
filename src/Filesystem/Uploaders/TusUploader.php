@@ -39,7 +39,8 @@ class TusUploader implements Uploader
         return new UploadSetup(
             chunkSize: $chunkSize,
             state: ['offset' => 0, 'parts' => []],
-            transport: ['type' => 'tus', 'options' => ['url' => route($routeName, ['upload' => $session->id])]],
+            transportType: 'tus',
+            transportOptions: ['url' => route($routeName, ['upload' => $session->id])],
         );
     }
 
@@ -107,7 +108,7 @@ class TusUploader implements Uploader
         return $session->state['offset'];
     }
 
-    public function uploaded(UploadSession $session): bool
+    public function isUploaded(UploadSession $session): bool
     {
         return $session->state['offset'] === $session->size;
     }

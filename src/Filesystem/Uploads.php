@@ -61,7 +61,7 @@ class Uploads
         abort_unless($session->chunkSize > 0, 500, 'The uploader returned an invalid chunk size.');
         $session->save();
 
-        return UploadSessionData::fromSession($session, $setup->transport);
+        return UploadSessionData::fromSession($session, $setup);
     }
 
     public function transfer(Request $request, string $id): Response
@@ -79,7 +79,7 @@ class Uploads
     public function status(Request $request, string $id): array
     {
         return $this->withSession($request, $id, fn (UploadSession $session, Uploader $uploader) => [
-            'uploaded' => $session->result !== null || $uploader->uploaded($session),
+            'uploaded' => $session->result !== null || $uploader->isUploaded($session),
         ]);
     }
 

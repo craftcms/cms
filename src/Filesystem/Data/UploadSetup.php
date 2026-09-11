@@ -8,11 +8,12 @@ readonly class UploadSetup
 {
     /**
      * @param  array<string, mixed>  $state
-     * @param  array{type: string, options: array<string, mixed>}  $transport
+     * @param  array<string, mixed>  $transportOptions
      */
     public function __construct(
         public int $chunkSize,
         public array $state,
-        public array $transport,
+        public string $transportType,
+        public array $transportOptions,
     ) {}
 }

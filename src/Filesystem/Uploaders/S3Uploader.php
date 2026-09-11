@@ -42,7 +42,8 @@ class S3Uploader implements Uploader
         return new UploadSetup(
             chunkSize: $chunkSize,
             state: ['uploadId' => $uploadId],
-            transport: ['type' => 's3', 'options' => ['uploadId' => $uploadId, 'key' => $session->path()]],
+            transportType: 's3',
+            transportOptions: ['uploadId' => $uploadId, 'key' => $session->path()],
         );
     }
 
@@ -91,7 +92,7 @@ class S3Uploader implements Uploader
         return ['url' => (string) $request->getUri()];
     }
 
-    public function uploaded(UploadSession $session): bool
+    public function isUploaded(UploadSession $session): bool
     {
         $disk = $this->disk($session);
 
