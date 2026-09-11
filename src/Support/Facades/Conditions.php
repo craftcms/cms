@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
+ * @method static array validate(\CraftCms\Cms\Condition\Contracts\ConditionInterface $condition)
  * @method static \CraftCms\Cms\Condition\Contracts\ConditionInterface createCondition(array|string $config)
  * @method static \CraftCms\Cms\Condition\Contracts\ConditionRuleInterface createConditionRule(array|string $config)
- * @method static array<string, list<string>> validate(\CraftCms\Cms\Condition\Contracts\ConditionInterface $condition)
  *
  * @see \CraftCms\Cms\Condition\Conditions
  */
