@@ -124,6 +124,7 @@ export default class CraftReorderButton extends LitElement {
           slot="invoker"
           type="button"
           icon
+          inherit
           size="small"
           variant="${this.variant}"
           ?disabled="${this.disabled}"

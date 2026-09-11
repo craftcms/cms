@@ -116,6 +116,7 @@
           size="small"
           :icon="icon"
           :aria-label="label"
+          inherit
           :variant="ButtonVariant.Plain"
         >
         </craft-button>
