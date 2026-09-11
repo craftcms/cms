@@ -1,7 +1,6 @@
 import {useFetch} from '@/common/composables/useFetch';
 
 export interface UploadRequestOptions {
-  retry?: boolean;
   signal?: AbortSignal | null;
 }
 
@@ -30,7 +29,6 @@ export async function uploadRequest<T>(
   method: string,
   data?: unknown,
   {
-    retry = true,
     signal = null,
     headers = {},
   }: UploadRequestOptions & {
@@ -56,41 +54,19 @@ export async function uploadRequest<T>(
     },
   });
 
-  const retries = retry ? 3 : 0;
+  signal?.throwIfAborted();
+  await request.execute();
+  signal?.throwIfAborted();
 
-  for (let attempt = 0; ; attempt++) {
-    signal?.throwIfAborted();
-
-    try {
-      failure = undefined;
-      await request.execute();
-      signal?.throwIfAborted();
-
-      if (request.state.value === 'aborted') {
-        throw new DOMException('Upload canceled.', 'AbortError');
-      }
-
-      if (request.state.value === 'error') {
-        throw failure ?? new UploadError(String(request.error.value), 0);
-      }
-
-      return request.data.value as T;
-    } catch (error) {
-      if (
-        attempt >= retries ||
-        !(error instanceof UploadError) ||
-        !retryableStatus(error.status)
-      ) {
-        throw error;
-      }
-
-      await delay(300 * 2 ** attempt, signal);
-    }
+  if (request.state.value === 'aborted') {
+    throw new DOMException('Upload canceled.', 'AbortError');
   }
-}
 
-function retryableStatus(status: number): boolean {
-  return [0, 408, 429].includes(status) || status >= 500;
+  if (request.state.value === 'error') {
+    throw failure ?? new UploadError(String(request.error.value), 0);
+  }
+
+  return request.data.value as T;
 }
 
 export const requestFailed =
@@ -115,25 +91,4 @@ export function responseError(status: number, response: unknown): UploadError {
     status,
     data
   );
-}
-
-function delay(
-  milliseconds: number,
-  signal: AbortSignal | null
-): Promise<void> {
-  signal?.throwIfAborted();
-
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener('abort', abort);
-      resolve();
-    }, milliseconds);
-
-    function abort() {
-      clearTimeout(timer);
-      reject(signal?.reason);
-    }
-
-    signal?.addEventListener('abort', abort, {once: true});
-  });
 }

@@ -8,9 +8,11 @@ export function configureTus(uppy: Uppy): PrepareUpload {
     storeFingerprintForResuming: false,
     removeFingerprintOnSuccess: true,
   });
+
   return (fileId, {session, headers}) => {
     const {url} = session.transport.options;
     assertSameOrigin(url);
+
     uppy.setFileState(fileId, {
       tus: {
         uploadUrl: url,

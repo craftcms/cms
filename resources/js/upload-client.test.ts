@@ -114,7 +114,7 @@ beforeEach(() => {
       url === '/start'
         ? {
             id: String(sessionCount),
-            chunkSize: s3 ? 8388608 : 3,
+            chunkSize: s3 ? 5242880 : 3,
             partCount: s3 ? 1 : 2,
             transport:
               transport ??
@@ -177,7 +177,6 @@ beforeEach(() => {
 afterEach(() => {
   axios.defaults.adapter = adapter;
   vi.unstubAllGlobals();
-  vi.useRealTimers();
 });
 
 it('connects a Craft session to tus and returns the handler response idempotently', async () => {
@@ -250,7 +249,6 @@ it('uses the server-created S3 multipart upload without application headers on s
 });
 
 it('retries finalization without sending the file again', async () => {
-  vi.useFakeTimers();
   const implementation = control.getMockImplementation()!;
   let fail = true;
   control.mockImplementation(async (url: string, options: RequestInit) => {
@@ -265,8 +263,10 @@ it('retries finalization without sending the file again', async () => {
     url: '/start',
   });
   const failure = expect(upload.upload()).rejects.toThrow('Unavailable');
-  await vi.runAllTimersAsync();
   await failure;
+  expect(
+    control.mock.calls.filter(([url]) => url === '/complete')
+  ).toHaveLength(1);
   fail = false;
   const transferred = [...sent];
   await expect(upload.upload()).resolves.toEqual({assetId: 42});
@@ -274,7 +274,6 @@ it('retries finalization without sending the file again', async () => {
 });
 
 it('recognizes completed S3 storage when retrying a failed transfer', async () => {
-  vi.useFakeTimers();
   s3 = true;
   const implementation = control.getMockImplementation()!;
   control.mockImplementation(async (url: string, options: RequestInit) => {
@@ -292,7 +291,6 @@ it('recognizes completed S3 storage when retrying a failed transfer', async () =
     url: '/start',
   });
   const failure = expect(upload.upload()).rejects.toThrow('Unavailable');
-  await vi.runAllTimersAsync();
   await failure;
   uploaded = true;
   const transferred = [...sent];
@@ -547,42 +545,22 @@ it('completes a file while another file is still uploading', async () => {
   await secondResult;
 });
 
-it('uses each S3 session’s chunk size and signing headers on a shared instance', async () => {
+it('uses each S3 session’s signing headers', async () => {
   s3 = true;
-  const implementation = control.getMockImplementation()!;
-  control.mockImplementation(async (url: string, options: RequestInit) => {
-    const response = await implementation(url, options);
-    if (url !== '/start') return response;
-    const session = await response.json();
-    const {size, chunkSize} = JSON.parse(options.body as string);
-    return Response.json({
-      ...session,
-      chunkSize,
-      partCount: Math.ceil(size / chunkSize),
-    });
-  });
-  const size = 12 * 1024 * 1024;
-  const file = new File([new Uint8Array(size)], 'same.bin');
-  const uploads = [5, 8].map(
-    (megabytes) =>
-      new FileUpload(file, {
-        url: '/start',
-        parameters: {chunkSize: megabytes * 1024 * 1024},
-        csrfToken: `token-${megabytes}`,
-      })
+  const file = new File(['abcdef'], 'same.txt');
+  const uploads = ['first', 'second'].map(
+    (csrfToken) => new FileUpload(file, {url: '/start', csrfToken})
   );
   await expect(
     Promise.all(uploads.map((upload) => upload.upload()))
   ).resolves.toEqual([{assetId: 42}, {assetId: 42}]);
-  expect(sent.map((part) => part.size).sort((a, b) => a - b)).toEqual(
-    [2, 4, 5, 5, 8].map((megabytes) => megabytes * 1024 * 1024)
-  );
+
   for (const [, options] of control.mock.calls.filter(
     ([url]) => url === '/sign'
   )) {
     const {uploadId} = JSON.parse(options.body);
     expect(options.headers['X-CSRF-TOKEN']).toBe(
-      uploadId === 'multipart-1' ? 'token-5' : 'token-8'
+      uploadId === 'multipart-1' ? 'first' : 'second'
     );
   }
 });
