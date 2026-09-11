@@ -322,12 +322,18 @@ Craft.CP = Garnish.Base.extend(
         observer.observe(footer);
       }
 
-      // Load any element thumbs.
-      // (Deferred until after the Vite-side `modules/element-thumb-loader` shim
-      // has had a chance to load.)
-      setTimeout(() => {
+      const loadElementThumbs = () => {
         this.elementThumbLoader.load(this.$pageContainer);
-      }, 500);
+      };
+      if (Craft.ElementThumbLoader) {
+        loadElementThumbs();
+      } else {
+        window.addEventListener(
+          'craft:element-thumb-loader-ready',
+          loadElementThumbs,
+          {once: true}
+        );
+      }
 
       // Add notification close listeners
       this.on('notificationClose', () => {
