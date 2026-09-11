@@ -419,6 +419,89 @@ describe('FormRenderer', () => {
     expect(field('uiMode').getAttribute('status')).toBeNull();
   });
 
+  /**
+   * A control inside a nested form belongs to a different element, and inherits
+   * its owner's delta group. Badging on that would mean adding one Matrix block
+   * lit up every field in every block, since all of them answer to the field
+   * that holds them.
+   */
+  it('leaves a nested form’s fields clean when their owner’s field is modified', async () => {
+    const nested = clonePayload();
+    const group = ['settings', 'matrix'];
+    const blockScope = [...group, 'entries', 'block-a'];
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'First'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: group,
+          mode: 'editable',
+          deltaGroup: group,
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {
+                    label: 'Heading',
+                    instructions: null,
+                    required: false,
+                  },
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    // The owner's group, inherited — which is the whole point.
+                    deltaGroup: group,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(nested, {modified: ['settings.matrix']});
+
+    const fieldFor = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="${name}"]`)!
+        .closest('craft-field')!;
+
+    expect(fieldFor('settings[matrix]').getAttribute('status')).toBe(
+      'modified'
+    );
+    expect(
+      fieldFor('settings[matrix][entries][block-a][heading]').getAttribute(
+        'status'
+      )
+    ).toBeNull();
+  });
+
   it('renders the shared payload with equivalent names, values, and errors', () => {
     const placeholder = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'

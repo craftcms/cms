@@ -87,12 +87,27 @@
     () => props.refreshable && Boolean(control.value.reactive)
   );
 
-  // Matched on the delta group, so a field split across several controls badges
-  // as one unit.
+  /**
+   * Matched on the delta group, so a field split across several controls badges
+   * as one unit.
+   *
+   * Only for controls belonging to the element this form is for. A control
+   * inside a nested form — a Matrix block, an address — answers to a different
+   * element, but inherits its owner's delta group, so it would otherwise badge
+   * whenever the field holding it changed: add one block and every field in
+   * every block lights up. A nested form's scope always runs past the group it
+   * inherited, which is what tells the two apart.
+   */
   const modifiedGroups = inject(FormModifiedGroups, undefined);
-  const modified = computed(
-    () => modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
-  );
+  const modified = computed(() => {
+    if (props.scope.length > control.value.deltaGroup.length) {
+      return false;
+    }
+
+    return (
+      modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
+    );
+  });
 
   function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
