@@ -92,7 +92,7 @@ class Entries extends BaseRelationField
         // Add the “Viewable” rule by default
         if (! isset($config['id']) && is_null($this->getSelectionCondition())) {
             $condition = static::createSelectionCondition();
-            $condition->addConditionRule(new ViewableConditionRule(['value' => true]));
+            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
             $this->setSelectionCondition($condition);
         }
     }

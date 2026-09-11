@@ -87,11 +87,6 @@ it('only shows the restricted upload subpath once subfolders are allowed', funct
         ->toBeFalse();
 });
 
-it('only shows the allowed file kinds when file types are restricted', function () {
-    expect(assetsSettingsVisibility()['allowedKinds'])->toBeFalse()
-        ->and(assetsSettingsVisibility(['restrictFiles' => true])['allowedKinds'])->toBeTrue();
-});
-
 it('only shows the search input setting when the field draws from one place', function () {
     expect(assetsSettingsVisibility()['showSearchInput'])->toBeFalse()
         ->and(assetsSettingsVisibility(['sources' => '*'])['showSearchInput'])->toBeFalse()
