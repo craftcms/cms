@@ -20,6 +20,7 @@
     defineProps<{
       canUpload: boolean;
       folderId?: number;
+      allowedKinds?: string[];
       /**
        * An element that also accepts dropped files. The asset index doesn't
        * set one — its drop target is the whole page, handled elsewhere — but
@@ -61,6 +62,7 @@
 
     uploader = new FileUploader(input, {
       fileInput: input,
+      allowedKinds: props.allowedKinds,
       ...(props.dropZone ? {dropZone: props.dropZone} : {}),
       url: store.url(),
       on: {
@@ -98,7 +100,12 @@
   // unrelated invalidations — each of which tears the uploader down and, if
   // the input isn't resolvable at that moment, leaves it null.
   watch(
-    [() => props.canUpload, () => props.folderId, () => props.dropZone],
+    [
+      () => props.canUpload,
+      () => props.folderId,
+      () => props.allowedKinds,
+      () => props.dropZone,
+    ],
     createUploader
   );
   onBeforeUnmount(() => uploader?.destroy());
