@@ -1,4 +1,17 @@
-.markdown-field {
+/*
+ * Scoped to the element rather than a `.markdown-field` wrapper: the legacy
+ * Twig input renders one, the CP's Markdown control and its server-rendered
+ * HTML don't, and everything here was silently dead in the two that don't.
+ * OverType mounts into the element itself, so its DOM is in reach either way.
+ *
+ * `:defined` on the descendant rules is for specificity as much as timing:
+ * OverType injects `.overtype-container * { border: 0 !important }` at runtime,
+ * which ties with a bare element scope and wins on source order.
+ */
+craft-markdown-field {
+  display: block;
+  min-height: 0;
+
   --markdown-field-bg: var(
     --c-input-fill,
     var(--c-form-control-fill, var(--c-surface-form))
@@ -30,12 +43,7 @@
   --markdown-field-text: var(--c-input-text, var(--c-text-default));
 }
 
-.markdown-field .markdown-field-editor {
-  display: block;
-  min-height: 0;
-}
-
-.markdown-field .markdown-field-editor:not(:defined) {
+craft-markdown-field:not(:defined) {
   box-sizing: border-box;
   width: 100%;
   min-height: var(--markdown-field-min-height, 188px);
@@ -54,7 +62,7 @@
   white-space: pre-wrap;
 }
 
-.markdown-field .overtype-container {
+craft-markdown-field:defined .overtype-container {
   overflow: hidden !important;
   border: var(--markdown-field-border) !important;
   border-radius: var(--markdown-field-radius) !important;
@@ -63,26 +71,26 @@
   box-shadow: var(--markdown-field-shadow) !important;
 }
 
-.markdown-field .overtype-container:focus-within {
+craft-markdown-field:defined .overtype-container:focus-within {
   box-shadow:
     var(--markdown-field-focus-ring), var(--markdown-field-shadow) !important;
 }
 
-.markdown-field .overtype-toolbar {
+craft-markdown-field:defined .overtype-toolbar {
   gap: var(--c-spacing-1px) !important;
   padding: var(--c-spacing-sm) !important;
   border-block-end: var(--markdown-field-border) !important;
   background: var(--markdown-field-bg) !important;
 }
 
-.markdown-field .overtype-toolbar-separator {
+craft-markdown-field:defined .overtype-toolbar-separator {
   width: var(--c-spacing-1px) !important;
   height: calc(var(--c-size-control-sm) - var(--c-spacing-sm)) !important;
   margin-inline: calc(var(--c-spacing-sm) - var(--c-spacing-1px)) !important;
   background: var(--c-color-neutral-border-quiet) !important;
 }
 
-.markdown-field .overtype-toolbar-button {
+craft-markdown-field:defined .overtype-toolbar-button {
   min-width: var(--c-size-control-md) !important;
   height: var(--c-size-control-md) !important;
   border: var(--c-spacing-1px) solid transparent !important;
@@ -90,19 +98,19 @@
   color: var(--markdown-field-icon) !important;
 }
 
-.markdown-field .overtype-toolbar-button:hover,
-.markdown-field .overtype-toolbar-button.active {
+craft-markdown-field:defined .overtype-toolbar-button:hover,
+craft-markdown-field:defined .overtype-toolbar-button.active {
   border-color: var(--c-color-neutral-border-quiet) !important;
   background: var(--markdown-field-code-bg) !important;
 }
 
-.markdown-field .overtype-toolbar-button:focus-visible {
+craft-markdown-field:defined .overtype-toolbar-button:focus-visible {
   outline: none !important;
   border-color: var(--markdown-field-focus-border) !important;
   box-shadow: var(--markdown-field-focus-ring) !important;
 }
 
-.markdown-field .overtype-toolbar-button svg {
+craft-markdown-field:defined .overtype-toolbar-button svg {
   display: block !important;
   width: calc(var(--c-size-icon-md) + var(--c-spacing-1px)) !important;
   height: calc(var(--c-size-icon-md) + var(--c-spacing-1px)) !important;
@@ -111,29 +119,31 @@
   fill: currentcolor !important;
 }
 
-.markdown-field .overtype-toolbar-button svg.markdown-field-icon-stroke {
+craft-markdown-field:defined
+  .overtype-toolbar-button
+  svg.markdown-field-icon-stroke {
   fill: none !important;
   stroke: currentcolor !important;
 }
 
-.markdown-field .overtype-stats {
+craft-markdown-field:defined .overtype-stats {
   padding-block: var(--c-spacing-md) !important;
   padding-inline: var(--c-input-spacing-inline) !important;
   z-index: 0 !important;
 }
 
-.markdown-field .overtype-link-tooltip,
-.markdown-field .overtype-link-tooltip.visible {
+craft-markdown-field:defined .overtype-link-tooltip,
+craft-markdown-field:defined .overtype-link-tooltip.visible {
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-.markdown-field .overtype-wrapper {
+craft-markdown-field:defined .overtype-wrapper {
   background: var(--markdown-field-bg) !important;
 }
 
-.markdown-field .markdown-field-footer-controls {
+craft-markdown-field:defined .markdown-field-footer-controls {
   position: absolute !important;
   inset-block-end: var(--c-spacing-md) !important;
   inset-inline-end: var(--c-input-spacing-inline) !important;
@@ -144,52 +154,55 @@
   pointer-events: none !important;
 }
 
-.markdown-field .markdown-field-char-counter {
+craft-markdown-field:defined .markdown-field-char-counter {
   color: var(--c-text-quiet) !important;
   font-family: var(--c-font-body) !important;
   font-size: var(--c-text-base) !important;
   line-height: 1 !important;
 }
 
-.markdown-field .markdown-field-char-counter.negative-chars-left {
+craft-markdown-field:defined .markdown-field-char-counter.negative-chars-left {
   color: var(--c-color-danger-on-quiet) !important;
 }
 
-.markdown-field .markdown-field-type-indicator {
+craft-markdown-field:defined .markdown-field-type-indicator {
   width: calc(var(--c-size-icon-md) + var(--c-spacing-xs)) !important;
   height: var(--c-size-icon-md) !important;
   color: var(--c-text-quiet) !important;
   opacity: 0.5 !important;
 }
 
-.markdown-field .markdown-field-type-indicator svg {
+craft-markdown-field:defined .markdown-field-type-indicator svg {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
   fill: currentcolor !important;
 }
 
-.markdown-field .overtype-wrapper .overtype-input::selection {
+craft-markdown-field:defined .overtype-wrapper .overtype-input::selection {
   background-color: var(--markdown-field-selection-bg) !important;
   color: var(--markdown-field-selection-text) !important;
 }
 
-.markdown-field .overtype-input,
-.markdown-field .overtype-preview,
-.markdown-field .overtype-placeholder {
+craft-markdown-field:defined .overtype-input,
+craft-markdown-field:defined .overtype-preview,
+craft-markdown-field:defined .overtype-placeholder {
   font-family: var(--c-font-mono) !important;
 }
 
-.markdown-field .overtype-preview {
+craft-markdown-field:defined .overtype-preview {
   color: var(--markdown-field-text) !important;
 }
 
-.markdown-field .overtype-wrapper .overtype-preview :where(*) {
+craft-markdown-field:defined .overtype-wrapper .overtype-preview :where(*) {
   color: var(--markdown-field-text) !important;
   text-decoration-color: var(--markdown-field-text) !important;
 }
 
-.markdown-field .overtype-wrapper .overtype-preview :where(h4, h5, h6) {
+craft-markdown-field:defined
+  .overtype-wrapper
+  .overtype-preview
+  :where(h4, h5, h6) {
   display: inline !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -198,7 +211,7 @@
   line-height: inherit !important;
 }
 
-.markdown-field
+craft-markdown-field:defined
   .overtype-container[data-mode='preview']
   .overtype-wrapper
   .overtype-preview {
@@ -211,28 +224,28 @@
   line-height: 1.5 !important;
 }
 
-.markdown-field
+craft-markdown-field:defined
   .overtype-container[data-mode='preview']
   .markdown-field-preview
   > :first-child {
   margin-block-start: 0 !important;
 }
 
-.markdown-field
+craft-markdown-field:defined
   .overtype-container[data-mode='preview']
   .markdown-field-preview
   > :last-child {
   margin-block-end: 0 !important;
 }
 
-.markdown-field
+craft-markdown-field:defined
   .overtype-container[data-mode='preview']
   .markdown-field-preview
   :where(p, ul, ol, blockquote, pre, table) {
   margin-block: 0 1em !important;
 }
 
-.markdown-field
+craft-markdown-field:defined
   .overtype-container[data-mode='preview']
   .markdown-field-preview
   img {
