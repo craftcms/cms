@@ -13,19 +13,9 @@ readonly class UploadSessionController
 {
     public function __construct(private Uploads $uploads) {}
 
-    public function sign(Request $request, string $upload): JsonResponse
+    public function transfer(Request $request, string $upload): Response
     {
-        $data = $request->validate([
-            'method' => ['required', 'in:GET,PUT,POST,DELETE'],
-            'key' => ['required', 'string'],
-            'uploadId' => ['required', 'string'],
-            'partNumber' => ['required_if:method,PUT', 'integer', 'min:1'],
-        ]);
-
-        return new JsonResponse($this->uploads->sign(
-            $request, $upload, $data['method'], $data['key'], $data['uploadId'],
-            isset($data['partNumber']) ? (int) $data['partNumber'] : null,
-        ));
+        return $this->uploads->transfer($request, $upload);
     }
 
     public function status(Request $request, string $upload): JsonResponse

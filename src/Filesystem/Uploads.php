@@ -6,10 +6,9 @@ namespace CraftCms\Cms\Filesystem;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Contracts\ReceivesTusUploads;
-use CraftCms\Cms\Filesystem\Contracts\SignsS3Uploads;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
+use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -19,6 +18,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 #[Singleton]
@@ -30,7 +30,7 @@ class Uploads
      * @param  class-string<UploadHandler>  $handler
      * @param  array<string, mixed>  $parameters
      */
-    public function start(Request $request, string $handler, string $filename, int $size, array $parameters): UploadSession
+    public function start(Request $request, string $handler, string $filename, int $size, array $parameters): UploadSessionData
     {
         $parameters = app($handler)->authorize($request, $parameters, $filename, $size);
 
@@ -55,24 +55,24 @@ class Uploads
             'expiresAt' => now()->addSeconds(Cms::config()->uploadSessionDuration),
         ]);
 
-        $uploader->start($session);
+        $setup = $uploader->start($session);
+        $session->chunkSize = $setup->chunkSize;
+        $session->state = $setup->state;
         abort_unless($session->chunkSize > 0, 500, 'The uploader returned an invalid chunk size.');
         $session->save();
 
-        return $session;
+        return UploadSessionData::fromSession($session, $setup->transport);
     }
 
-    /** @return array{url: string} */
-    public function sign(Request $request, string $id, string $method, string $key, string $uploadId, ?int $part): array
+    public function transfer(Request $request, string $id): Response
     {
-        return $this->withSession($request, $id, function (UploadSession $session, Uploader $uploader) use ($method, $key, $uploadId, $part) {
-            abort_unless($uploader instanceof SignsS3Uploads, 409, 'This uploader does not use S3.');
-            abort_if($session->result !== null, 409, 'This upload has already completed.');
-            $config = $uploader->clientConfig($session)['options'];
-            abort_unless($key === $config['key'] && $uploadId === $config['uploadId'], 404);
-
-            return $uploader->sign($session, $method, $part);
-        }, authorize: $method !== 'DELETE', allowExpired: $method === 'DELETE');
+        return $this->withSession(
+            $request,
+            $id,
+            fn (UploadSession $session, Uploader $uploader) => $uploader->handleRequest($request, $session),
+            authorize: ! $request->isMethod('DELETE'),
+            allowExpired: $request->isMethod('DELETE'),
+        );
     }
 
     /** @return array{uploaded: bool} */
@@ -81,29 +81,6 @@ class Uploads
         return $this->withSession($request, $id, fn (UploadSession $session, Uploader $uploader) => [
             'uploaded' => $session->result !== null || $uploader->uploaded($session),
         ]);
-    }
-
-    /** @return array{session: UploadSession, offset: int} */
-    public function tus(Request $request, string $id, ?int $offset = null): array
-    {
-        return $this->withSession($request, $id, function (UploadSession $session, Uploader $uploader) use ($request, $offset) {
-            abort_unless($uploader instanceof ReceivesTusUploads, 409, 'This uploader does not receive bytes through tus.');
-
-            if ($offset !== null) {
-                abort_if($session->result !== null, 409, 'This upload has already completed.');
-                $stream = $request->getContent(asResource: true);
-
-                try {
-                    $uploader->receive($session, $offset, $stream);
-                } finally {
-                    if (is_resource($stream)) {
-                        fclose($stream);
-                    }
-                }
-            }
-
-            return ['session' => $session, 'offset' => $uploader->offset($session)];
-        });
     }
 
     public function complete(Request $request, string $id): JsonResponse

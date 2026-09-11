@@ -94,7 +94,7 @@ $session = $uploads->start(
     $request->only('documentId'),
 );
 
-return new JsonResponse(UploadSessionData::fromSession($session)->toArray(), 201);
+return new JsonResponse($session->toArray(), 201);
 ```
 
 Inject `CraftCms\Cms\Filesystem\Uploads` as `$uploads`; import `CraftCms\Cms\Filesystem\Data\UploadSessionData` and `Illuminate\Http\JsonResponse`. The handler class is selected by your controller, never supplied by the client. Validate destination parameters inside the handler and apply authentication and throttling to the start route as appropriate for its purpose.
@@ -119,8 +119,8 @@ public function boot(Uploaders $uploaders): void
 
 The contract has five methods:
 
-- `start()` sets the session’s `chunkSize` and serializable provider `state`.
-- `clientConfig()` returns `{type, options}`. `type` names a registered frontend transport; `options` contains its public configuration. Built-in types are `tus` (`options.url`) and `s3` (`options.uploadId` and `options.key`).
+- `start()` returns an `UploadSetup` containing `chunkSize`, `state`, and `transport`. Craft persists `chunkSize` and `state`, and includes `transport` in the initial response. `state` contains serializable provider data, and `transport` contains `{type, options}`. `type` names a registered frontend transport; `options` contains its public configuration. Built-in types are `tus` (`options.url`) and `s3` (`options.uploadId` and `options.key`).
+- `handleRequest(Request $request, UploadSession $session)` handles protocol requests at `session.urls.transfer` and returns an HTTP response. The uploader owns request validation, protocol headers, byte reception, or signing.
 - `uploaded()` reports whether the complete file is staged, including when a storage-completion response was lost.
 - `complete()` verifies the stored bytes and returns an `UploadedFile` on the temporary disk. It must tolerate retries after storage completion.
 - `abort()` removes incomplete transfers and completed temporary objects. It must tolerate retries.
@@ -148,9 +148,15 @@ Craft.Uploads.registerTransport('cloud', (uppy) => {
 `CloudUploadPlugin` is the Uppy uploader plugin supplied by your integration. Its backend driver returns matching configuration:
 
 ```php
-public function clientConfig(UploadSession $session): array
+use CraftCms\Cms\Filesystem\Data\UploadSetup;
+
+public function start(UploadSession $session): UploadSetup
 {
-    return ['type' => 'cloud', 'options' => ['endpoint' => $this->uploadUrl($session)]];
+    return new UploadSetup(
+        chunkSize: 5242880,
+        state: [],
+        transport: ['type' => 'cloud', 'options' => ['endpoint' => $this->uploadUrl($session)]],
+    );
 }
 ```
 
@@ -160,7 +166,9 @@ The request helper handles cancellation and normalizes backend errors; it only a
 
 `registerTransport` is also exported from `resources/js/uploads.ts`. Load the uploads entry before accessing `Craft.Uploads`. An existing registration can be replaced before its first use. Attempting to replace it after its Uppy instance has been created throws an error. An unregistered name fails explicitly.
 
-Backend drivers that reuse Craft’s tus endpoint implement `Contracts\ReceivesTusUploads`, which provides `receive()` and `offset()`. Drivers that reuse its S3 signing endpoint implement `Contracts\SignsS3Uploads`, which provides `sign()` and the multipart key/ID configuration. Neither requires inheriting a built-in driver. Other protocols only implement `Uploader` and supply their own transport endpoint.
+The shared transfer endpoint loads and locks the session, verifies ownership and expiry, and reauthorizes the destination before calling `handleRequest()`. It persists the uploader’s session changes afterward. DELETE requests are reserved for cleanup: ownership is still checked, but expiry and destination authorization are skipped. Uploaders must reject non-cleanup operations sent with DELETE. The S3 transport uses DELETE to request an abort signature and POST for other signatures. Frontend request helpers should pass `{signal: null}` for cleanup after cancellation.
+
+Custom uploaders implement the same contract; no protocol-specific interfaces or controllers are required. They can use `session.urls.transfer` from their frontend transport. Tus and S3 implement their protocol handling within their uploader classes.
 
 Uploaders are cached by name. Keep upload-specific state on the session and resolve its disk through `Filesystems::disk($session->disk)`. Keep provider credentials on the server.
 

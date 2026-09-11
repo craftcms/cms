@@ -75,7 +75,6 @@ use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
-use CraftCms\Cms\Http\Controllers\TusUploadController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
@@ -97,7 +96,6 @@ use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
-use CraftCms\Cms\Http\Middleware\TusHeaders;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
@@ -124,10 +122,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::prefix('uploads')
             ->name(in_array('craft.cp', $middleware, true) ? 'craft.cp.uploads.' : 'craft.uploads.')
             ->group(function () {
-                Route::post('{upload}/sign', [UploadSessionController::class, 'sign'])->whereUuid('upload')->name('sign');
+                Route::any('{upload}/transfer', [UploadSessionController::class, 'transfer'])->whereUuid('upload')->name('transfer');
                 Route::get('{upload}', [UploadSessionController::class, 'status'])->whereUuid('upload')->name('status');
-                Route::match(['HEAD', 'PATCH', 'DELETE', 'OPTIONS'], '{upload}/tus', TusUploadController::class)
-                    ->middleware(TusHeaders::class)->whereUuid('upload')->name('tus');
                 Route::post('{upload}/complete', [UploadSessionController::class, 'complete'])->whereUuid('upload')->name('complete');
                 Route::delete('{upload}', [UploadSessionController::class, 'destroy'])->whereUuid('upload')->name('destroy');
             });

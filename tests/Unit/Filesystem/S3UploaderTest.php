@@ -51,7 +51,9 @@ beforeEach(function () {
 it('signs direct multipart requests and completes using storage-verified parts', function () {
     $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388611]);
     $uploader = app(S3Uploader::class);
-    $uploader->start($session);
+    $setup = $uploader->start($session);
+    $session->chunkSize = $setup->chunkSize;
+    $session->state = $setup->state;
     $request = $uploader->sign($session, 'PUT', 2);
 
     expect($request['url'])->toContain('uploadId=multipart-id', 'partNumber=2', 'X-Amz-Signature=')
@@ -69,7 +71,9 @@ it('signs direct multipart requests and completes using storage-verified parts',
 
 it('sizes S3 parts to match the default upload transport', function (int $size, int $chunkSize, int $partCount) {
     $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => $size]);
-    app(S3Uploader::class)->start($session);
+    $setup = app(S3Uploader::class)->start($session);
+    $session->chunkSize = $setup->chunkSize;
+    $session->state = $setup->state;
 
     expect($session->chunkSize)->toBe($chunkSize)
         ->and($session->partCount())->toBe($partCount);
@@ -81,7 +85,9 @@ it('sizes S3 parts to match the default upload transport', function (int $size, 
 it('rejects storage parts that do not match the declared size', function () {
     $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388612]);
     $uploader = app(S3Uploader::class);
-    $uploader->start($session);
+    $setup = $uploader->start($session);
+    $session->chunkSize = $setup->chunkSize;
+    $session->state = $setup->state;
     $this->disk->shouldReceive('exists')->andReturnFalse();
 
     expect(fn () => $uploader->complete($session))->toThrow(HttpException::class, 'incorrect size');
@@ -136,7 +142,9 @@ it('aborts multipart storage and removes the staging prefix', function () {
 it('only signs completion after verifying all S3 parts', function () {
     $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388611]);
     $uploader = app(S3Uploader::class);
-    $uploader->start($session);
+    $setup = $uploader->start($session);
+    $session->chunkSize = $setup->chunkSize;
+    $session->state = $setup->state;
 
     $request = $uploader->sign($session, 'POST');
     expect($request['url'])->toContain('uploadId=multipart-id', 'X-Amz-Signature=');
@@ -149,7 +157,9 @@ it('only signs completion after verifying all S3 parts', function () {
 it('rejects signing a part outside the session', function () {
     $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 3]);
     $uploader = app(S3Uploader::class);
-    $uploader->start($session);
+    $setup = $uploader->start($session);
+    $session->chunkSize = $setup->chunkSize;
+    $session->state = $setup->state;
 
     expect(fn () => $uploader->sign($session, 'PUT', 2))->toThrow(HttpException::class, 'Invalid upload part');
 });
