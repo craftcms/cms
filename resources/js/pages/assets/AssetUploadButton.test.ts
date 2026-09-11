@@ -1,6 +1,8 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, nextTick} from 'vue';
 import AssetUploadButton from './AssetUploadButton.vue';
+import {Uploader} from '@/modules/uploader/uploader';
+vi.mock('@/modules/uploader/uploader', () => ({Uploader: vi.fn()}));
 
 const state = vi.hoisted(() => ({
   reload: vi.fn(),
@@ -22,6 +24,16 @@ beforeEach(() => {
   setParams = vi.fn();
   isLastUpload = vi.fn(() => true);
 
+  vi.mocked(Uploader)
+    .mockReset()
+    .mockImplementation(
+      class {
+        destroy = destroy;
+        isLastUpload = isLastUpload;
+        setParams = setParams;
+      } as unknown as typeof Uploader
+    );
+
   Object.assign(globalThis, {
     $: vi.fn((value) => value),
     Craft: {
@@ -29,11 +41,6 @@ beforeEach(() => {
         displayError: vi.fn(),
         runQueue: vi.fn(),
       },
-      createUploader: vi.fn(() => ({
-        destroy,
-        isLastUpload,
-        setParams,
-      })),
       t: (_category: string, message: string) => message,
     },
   });
@@ -63,12 +70,11 @@ it('opens the file picker and configures uploads for the selected folder', async
   container.querySelector<HTMLElement>('craft-button')!.click();
 
   expect(inputClick).toHaveBeenCalledOnce();
-  expect(Craft.createUploader).toHaveBeenCalledWith(
-    'Local',
+  expect(Uploader).toHaveBeenCalledWith(
     input,
     expect.objectContaining({
       fileInput: input,
-      url: '/admin/actions/assets/upload',
+      url: '/admin/actions/assets/uploads',
     })
   );
   expect(setParams).toHaveBeenCalledWith({folderId: 12});
@@ -77,16 +83,16 @@ it('opens the file picker and configures uploads for the selected folder', async
   expect(destroy).toHaveBeenCalledOnce();
 });
 
-interface UploaderEvents {
-  fileuploaddone: (...args: any[]) => void;
-  fileuploadfail: (...args: any[]) => void;
-  fileuploadalways: (...args: any[]) => void;
+interface UploaderCallbacks {
+  done: (...args: any[]) => void;
+  fail: (...args: any[]) => void;
+  settled: (...args: any[]) => void;
 }
 
-/** Drives the `events` blob the component hands `Craft.createUploader`. */
+/** Drives the callbacks the component hands `Uploader`. */
 function mountUploader(props: Record<string, unknown> = {}): {
   app: ReturnType<typeof createApp>;
-  events: () => UploaderEvents;
+  events: () => UploaderCallbacks;
 } {
   const app = createApp({
     render: () =>
@@ -102,22 +108,18 @@ function mountUploader(props: Record<string, unknown> = {}): {
   return {
     app,
     events: () =>
-      (Craft.createUploader as any).mock.calls.at(-1)[2]
-        .events as UploaderEvents,
+      (Uploader as any).mock.calls.at(-1)[1].on as UploaderCallbacks,
   };
 }
 
-/** jQuery File Upload's shape: `(event, data)` with the response on `data.result`. */
-const uploadDone = (result: unknown) => [new Event('fileuploaddone'), {result}];
+const uploadDone = (result: unknown) => [{result}];
 
 it('reports a completed upload to whoever is listening', async () => {
   const uploaded = vi.fn();
   const {app, events} = mountUploader({onUploaded: uploaded});
   await nextTick();
 
-  events().fileuploaddone(
-    ...uploadDone({assetId: 7, filename: 'seascape.jpg'})
-  );
+  events().done(...uploadDone({assetId: 7, filename: 'seascape.jpg'}));
 
   expect(uploaded).toHaveBeenCalledWith({id: 7, label: 'seascape.jpg'});
 
@@ -129,7 +131,7 @@ it('holds back an upload still waiting on a filename conflict', async () => {
   const {app, events} = mountUploader({onUploaded: uploaded});
   await nextTick();
 
-  events().fileuploaddone(
+  events().done(
     ...uploadDone({assetId: 7, filename: 'seascape.jpg', conflict: 'A file…'})
   );
 
@@ -142,7 +144,7 @@ it('reloads the index behind it by default', async () => {
   const {app, events} = mountUploader();
   await nextTick();
 
-  events().fileuploadalways();
+  events().settled();
 
   expect(state.reload).toHaveBeenCalledWith({only: ['data', 'pagination']});
 
@@ -155,7 +157,7 @@ it('leaves the page alone when the caller owns the aftermath', async () => {
   const {app, events} = mountUploader({reloadOnComplete: false});
   await nextTick();
 
-  events().fileuploadalways();
+  events().settled();
 
   expect(state.reload).not.toHaveBeenCalled();
 
@@ -167,8 +169,7 @@ it('binds the caller’s drop zone once it resolves', async () => {
   const {app} = mountUploader({dropZone: zone});
   await nextTick();
 
-  expect(Craft.createUploader).toHaveBeenLastCalledWith(
-    'Local',
+  expect(Uploader).toHaveBeenLastCalledWith(
     expect.anything(),
     expect.objectContaining({dropZone: zone})
   );
