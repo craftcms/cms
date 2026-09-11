@@ -1,4 +1,13 @@
-import {fabric, type FabricGroup, type FabricObject} from './fabric';
+import {
+  Circle,
+  Group,
+  Line,
+  Path,
+  Rect,
+  StaticCanvas,
+  type FabricGroup,
+  type FabricObject,
+} from './fabric';
 import {
   arePointsInsideRectangle,
   getFarthestAllowedDeltas,
@@ -107,10 +116,11 @@ export function useCropper(
 
   /** The white L-shaped brackets at each corner of the rectangle. */
   function buildHandles(clipper: FabricObject): FabricGroup {
+    // `fill: false` meant "no fill" in fabric 1.x; v7 spells it null.
     const lineOptions = {
       strokeWidth: 4,
       stroke: state.settings.colors.white,
-      fill: false,
+      fill: null,
     };
 
     const {width, height} = clipper;
@@ -120,9 +130,9 @@ export function useCropper(
       `M ${width - 8},0 L ${width + 4},0 L ${width + 4},10`,
       `M ${width + 4},${height - 8} L${width + 4},${height + 4} L ${width - 8},${height + 4}`,
       `M 10,${height + 4} L 0,${height + 4} L 0,${height - 8}`,
-    ].map((path) => new (fabric().Path)(path, lineOptions));
+    ].map((path) => new Path(path, lineOptions));
 
-    return new (fabric().Group)(paths, {
+    return new Group(paths, {
       left: clipper.left,
       top: clipper.top,
       originX: 'center',
@@ -135,19 +145,22 @@ export function useCropper(
     const gridOptions = {strokeWidth: 2, stroke: 'rgba(255,255,255,0.5)'};
     const {width, height} = clipper;
 
-    const lines = [
+    const lines: [number, number, number, number][] = [
       [width * 0.33, 0, width * 0.33, height],
       [width * 0.66, 0, width * 0.66, height],
       [0, height * 0.33, width, height * 0.33],
       [0, height * 0.66, width, height * 0.66],
-    ].map((points) => new (fabric().Line)(points, gridOptions));
+    ];
 
-    return new (fabric().Group)(lines, {
-      left: clipper.left,
-      top: clipper.top,
-      originX: 'center',
-      originY: 'center',
-    });
+    return new Group(
+      lines.map((points) => new Line(points, gridOptions)),
+      {
+        left: clipper.left,
+        top: clipper.top,
+        originX: 'center',
+        originY: 'center',
+      }
+    );
   }
 
   /**
@@ -163,30 +176,30 @@ export function useCropper(
       strokeWidth,
       originX: 'center',
       originY: 'center',
-    };
+    } as const;
 
-    const outerOutline = new (fabric().Rect)({
+    const outerOutline = new Rect({
       ...shared,
       width: clipper.width + strokeWidth * 4,
       height: clipper.height + strokeWidth * 4,
       stroke: null,
     });
 
-    const innerOutline = new (fabric().Rect)({
+    const innerOutline = new Rect({
       ...shared,
       width: clipper.width + strokeWidth * 2,
       height: clipper.height + strokeWidth * 2,
       stroke: null,
     });
 
-    const outline = new (fabric().Rect)({
+    const outline = new Rect({
       ...shared,
       width: clipper.width,
       height: clipper.height,
       stroke: state.settings.colors.white,
     });
 
-    const group = new (fabric().Group)([outerOutline, innerOutline, outline], {
+    const group = new Group([outerOutline, innerOutline, outline], {
       originX: 'center',
       originY: 'center',
       left: clipper.left,
@@ -202,7 +215,7 @@ export function useCropper(
 
       if (pickedUp && state.moveIcon.value) {
         group.add(
-          new (fabric().Circle)({
+          new Circle({
             fill: state.settings.colors.black,
             top: 0,
             left: 0,
@@ -248,27 +261,27 @@ export function useCropper(
       top: 0,
       originX: 'center',
       originY: 'center',
-    };
+    } as const;
 
     const rings = [
-      new (fabric().Circle)({
+      new Circle({
         ...shared,
         radius: size + width * 2,
         stroke: state.settings.colors.accent,
       }),
-      new (fabric().Circle)({
+      new Circle({
         ...shared,
         radius: size + width,
         stroke: state.settings.colors.white,
       }),
-      new (fabric().Circle)({
+      new Circle({
         ...shared,
         radius: size,
         stroke: state.settings.colors.accent,
       }),
     ];
 
-    const focusRing = new (fabric().Group)(rings, {
+    const focusRing = new Group(rings, {
       originX: 'center',
       originY: 'center',
       left: position.x,
@@ -325,9 +338,11 @@ export function useCropper(
       return;
     }
 
-    state.croppingCanvas.value?.dispose();
+    // Replacing the canvas on the same element -- safe without awaiting, for
+    // the reason given in `hide()`.
+    void state.croppingCanvas.value?.dispose();
 
-    const croppingCanvas = new (fabric().StaticCanvas)(canvasEl, {
+    const croppingCanvas = new StaticCanvas(canvasEl, {
       backgroundColor: state.settings.colors.transparent,
       hoverCursor: 'default',
       selection: false,
@@ -340,7 +355,7 @@ export function useCropper(
 
     state.croppingCanvas.value = croppingCanvas;
 
-    const shade = new (fabric().Rect)({
+    const shade = new Rect({
       left: state.editorWidth.value / 2,
       top: state.editorHeight.value / 2,
       originX: 'center',
@@ -365,7 +380,7 @@ export function useCropper(
       [rectWidth, rectHeight] = [rectHeight, rectWidth];
     }
 
-    const clipper = new (fabric().Rect)({
+    const clipper = new Rect({
       left: state.editorWidth.value / 2,
       top: state.editorHeight.value / 2,
       originX: 'center',
@@ -402,7 +417,19 @@ export function useCropper(
       return;
     }
 
-    state.croppingCanvas.value?.dispose();
+    // Wiped before disposing, because disposing no longer does it. fabric 1.x
+    // cleared the context on the way out; fabric 7 only resets the element's
+    // width and height attributes, and a browser is free to skip that when the
+    // values haven't changed -- leaving the rectangle, its grid and the shade
+    // painted over the image after crop closes.
+    state.croppingCanvas.value?.clear();
+
+    // Not awaited, and it doesn't need to be: the half that matters here --
+    // unwrapping the canvas element and cancelling animations -- happens
+    // synchronously before the promise resolves. Only object teardown is
+    // deferred, and the environment hook it ends at is a no-op in the browser,
+    // so the element is safe to hand to a new canvas the next time crop opens.
+    void state.croppingCanvas.value?.dispose();
     state.croppingCanvas.value = null;
     state.clipper.value = null;
     state.croppingShade.value = null;

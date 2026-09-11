@@ -1,4 +1,10 @@
-import {fabric} from './fabric';
+import {
+  Group,
+  Line,
+  Rect,
+  type FabricAnimatable,
+  type FabricObject,
+} from './fabric';
 import {
   getZoomRatioToFitRectangle,
   isCenterInside,
@@ -76,12 +82,17 @@ export function useImageTransforms(
       state.scaleFactor.value = scaleFactor;
     }
 
-    const imageProperties: Record<string, unknown> = {
+    // Scaled rather than resized: fabric draws an image at its natural size
+    // times its scale, so this is the displayed width the turn should land on,
+    // converted. See `getImageScaleFor()`.
+    const turnedScale = geometry.getImageScaleFor(
+      scaled.width * imageZoomRatio * (scaleFactor < 1 ? scaleFactor : 1)
+    );
+
+    const imageProperties: FabricAnimatable = {
       angle: image.angle + degrees,
-      width:
-        scaled.width * imageZoomRatio * (scaleFactor < 1 ? scaleFactor : 1),
-      height:
-        scaled.height * imageZoomRatio * (scaleFactor < 1 ? scaleFactor : 1),
+      scaleX: turnedScale,
+      scaleY: turnedScale,
     };
 
     // Swing the stored crop offset around the same arc so the same region
@@ -179,7 +190,7 @@ export function useImageTransforms(
     // tilted the same way relative to the picture.
     state.imageStraightenAngle.value = -state.imageStraightenAngle.value;
 
-    const properties: Record<string, unknown> = {
+    const properties: FabricAnimatable = {
       angle: state.viewportRotation.value + state.imageStraightenAngle.value,
     };
 
@@ -386,8 +397,8 @@ export function useImageTransforms(
     const xStep = gridWidth / (GRID_LINE_COUNT + 1);
     const yStep = gridHeight / (GRID_LINE_COUNT + 1);
 
-    const parts = [
-      new (fabric().Rect)({
+    const parts: FabricObject[] = [
+      new Rect({
         strokeWidth: 2,
         stroke: state.settings.colors.white,
         originX: 'center',
@@ -402,17 +413,12 @@ export function useImageTransforms(
 
     for (let i = 1; i <= GRID_LINE_COUNT; i++) {
       parts.push(
-        new (fabric().Line)(
-          [i * xStep, 0, i * xStep, gridHeight],
-          strokeOptions
-        )
+        new Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions)
       );
-      parts.push(
-        new (fabric().Line)([0, i * yStep, gridWidth, i * yStep], strokeOptions)
-      );
+      parts.push(new Line([0, i * yStep, gridWidth, i * yStep], strokeOptions));
     }
 
-    state.grid.value = new (fabric().Group)(parts, {
+    state.grid.value = new Group(parts, {
       left: state.editorWidth.value / 2,
       top: state.editorHeight.value / 2,
       originX: 'center',

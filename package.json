@@ -70,9 +70,9 @@
     "stylelint-use-logical": "^2.1.3",
     "typescript": "^6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
+    "vite-plus": "0.2.6",
     "vitest": "4.1.10",
-    "vue-tsc": "^3.2.7",
-    "vite-plus": "0.2.6"
+    "vue-tsc": "^3.2.7"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.74"
@@ -80,14 +80,15 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
-    "@craftcms/ui": "file:packages/craftcms-ui",
     "@craftcms/graphiql": "file:packages/craftcms-graphiql",
+    "@craftcms/ui": "file:packages/craftcms-ui",
     "@headlessui/vue": "^1.7.23",
     "@inertiajs/vite": "^3.0.3",
     "@inertiajs/vue3": "^3.0.3",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.3.0",
     "axios": "^1.17.0",
+    "fabric": "^7.4.0",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "^3.3.2",
     "overtype": "^2.4.0",

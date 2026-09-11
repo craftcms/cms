@@ -4,7 +4,7 @@ import {t} from '@craftcms/ui';
 import {useHelpers} from '@/common/composables/useCraftData';
 import {useActionClient} from '@/common/composables/useFetch';
 import {useFlashMessages} from '@/common/composables/useFlashMessages';
-import {loadSvg} from './fabric';
+import {loadSvg, type FabricAnimatable} from './fabric';
 import {useCropper} from './useCropper';
 import {
   useCroppingConstraint,
@@ -209,8 +209,8 @@ export function useImageEditor(options: ImageEditorOptions) {
 
   /** Animates the image and viewport between the rotate and crop layouts. */
   function transitionMode(
-    imageProperties: Record<string, unknown>,
-    viewportProperties: Record<string, unknown>,
+    imageProperties: FabricAnimatable,
+    viewportProperties: FabricAnimatable,
     onComplete: () => void
   ): void {
     const image = state.image.value;
@@ -248,10 +248,14 @@ export function useImageEditor(options: ImageEditorOptions) {
     const dimensions = geometry.getScaledImageDimensions();
     state.zoomRatio.value = geometry.getZoomToFitRatio(dimensions);
 
+    const fitScale = geometry.getImageScaleFor(
+      dimensions.width * state.zoomRatio.value
+    );
+
     transitionMode(
       {
-        width: dimensions.width * state.zoomRatio.value,
-        height: dimensions.height * state.zoomRatio.value,
+        scaleX: fitScale,
+        scaleY: fitScale,
         left: state.editorWidth.value / 2,
         top: state.editorHeight.value / 2,
       },
@@ -330,10 +334,14 @@ export function useImageEditor(options: ImageEditorOptions) {
       focalPoint.resetPosition();
     }
 
+    const coverScale = geometry.getImageScaleFor(
+      dimensions.width * state.zoomRatio.value
+    );
+
     transitionMode(
       {
-        width: dimensions.width * state.zoomRatio.value,
-        height: dimensions.height * state.zoomRatio.value,
+        scaleX: coverScale,
+        scaleY: coverScale,
         left: state.editorWidth.value / 2 - offsetX * inverseZoomFactor,
         top: state.editorHeight.value / 2 - offsetY * inverseZoomFactor,
       },

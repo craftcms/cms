@@ -1,138 +1,69 @@
 /**
- * The editor still runs on fabric.js 1.7, which `FabricAsset` loads as a global
- * UMD bundle rather than something we import. Everything the editor touches is
- * funnelled through this one file so the upgrade to fabric 6/7 — which is ESM,
- * renames `fabric.Image` to `FabricImage`, and returns promises instead of
- * taking callbacks — is a change here and nowhere else.
+ * Every fabric API the editor touches is funnelled through this one file, so a
+ * version bump lands here and, as far as possible, nowhere else.
+ *
+ * It earned that on the way from 1.7 to 7. The library stopped being a UMD
+ * global that `FabricAsset` registered and became an ESM package we import,
+ * renamed `fabric.Image` to `FabricImage`, dropped the `getWidth()` accessors
+ * in favour of plain properties, and returned promises where it used to take
+ * callbacks -- and the composables saw none of it.
+ *
+ * The legacy jQuery editor still runs on the 1.7 global. That copy is built
+ * from `packages/craftcms-legacy`'s own dependency and served by `FabricAsset`,
+ * so the two versions don't meet.
  */
+import {
+  Circle,
+  FabricImage,
+  Group,
+  Line,
+  Path,
+  Rect,
+  StaticCanvas,
+  loadSVGFromString,
+  util,
+  type FabricObject,
+} from 'fabric';
 
-export interface FabricObject {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  angle: number;
-  scaleX: number;
-  scaleY: number;
-  flipX: boolean;
-  flipY: boolean;
-  opacity: number;
-  dirty: boolean;
-  globalCompositeOperation?: string;
-  set(properties: Record<string, unknown>): FabricObject;
-  get(property: string): unknown;
-  animate(
-    properties: Record<string, unknown>,
-    options: {
-      duration?: number;
-      onChange?: () => void;
-      onComplete?: () => void;
-    }
-  ): void;
-  _set(key: string, value: unknown): FabricObject;
-}
+export {Circle, FabricImage, Group, Line, Path, Rect, StaticCanvas};
 
-export interface FabricGroup extends FabricObject {
-  add(object: FabricObject): FabricGroup;
-  item(index: number): FabricObject;
-}
-
-export interface FabricImage extends FabricObject {
-  getWidth(): number;
-  getHeight(): number;
-  setSrc(src: string, callback: (image: FabricImage) => void): void;
-}
-
-export interface FabricCanvas {
-  width: number;
-  height: number;
-  enableRetinaScaling: boolean;
-  add(object: FabricObject): FabricCanvas;
-  remove(object: FabricObject | null): FabricCanvas;
-  renderAll(): void;
-  setDimensions(dimensions: {width: number; height: number}): void;
-  dispose(): void;
-}
-
-interface FabricNamespace {
-  Rect: new (options: Record<string, unknown>) => FabricObject;
-  Circle: new (options: Record<string, unknown>) => FabricObject;
-  Line: new (
-    points: number[],
-    options: Record<string, unknown>
-  ) => FabricObject;
-  Path: new (path: string, options: Record<string, unknown>) => FabricObject;
-  Group: new (
-    objects: FabricObject[],
-    options?: Record<string, unknown>
-  ) => FabricGroup;
-  StaticCanvas: new (
-    element: HTMLCanvasElement | string,
-    options?: Record<string, unknown>
-  ) => FabricCanvas;
-  Image: {
-    fromURL(url: string, callback: (image: FabricImage) => void): void;
-  };
-  loadSVGFromString(
-    svg: string,
-    callback: (
-      objects: FabricObject[],
-      options: Record<string, unknown>
-    ) => void
-  ): void;
-  util: {
-    groupSVGElements(
-      objects: FabricObject[],
-      options: Record<string, unknown>
-    ): FabricObject;
-  };
-}
-
-declare global {
-  interface Window {
-    fabric?: FabricNamespace;
-  }
-}
+export type {FabricObject};
 
 /**
- * Throws rather than returning undefined: every caller needs fabric, and a
- * missing global means `FabricAsset` didn't register, which is worth surfacing
- * loudly instead of failing later on a property access.
+ * Properties `animate()` will tween. Everything the editor animates is a
+ * number -- an angle, a size, a position -- and fabric's own signature is
+ * narrower than the `unknown` these objects used to be typed with.
  */
-export function fabric(): FabricNamespace {
-  if (!window.fabric) {
-    throw new Error(
-      'fabric.js is not loaded. The image editor needs FabricAsset registered.'
-    );
+export type FabricAnimatable = Record<string, number>;
+
+/** Named for what the editor uses them as, rather than what fabric calls them. */
+export type FabricGroup = Group;
+export type FabricCanvas = StaticCanvas;
+
+/**
+ * Loads an image, rejecting rather than resolving null.
+ *
+ * fabric resolves to `null` for an image it couldn't fetch, which reads as a
+ * success everywhere it is awaited. The editor wants the failure.
+ */
+export async function loadImage(url: string): Promise<FabricImage> {
+  const image = await FabricImage.fromURL(url);
+
+  if (!image) {
+    throw new Error(`Could not load image: ${url}`);
   }
 
-  return window.fabric;
+  return image;
 }
 
-/** Promise wrapper over fabric 1.x's callback-style image loading. */
-export function loadImage(url: string): Promise<FabricImage> {
-  return new Promise((resolve, reject) => {
-    fabric().Image.fromURL(url, (image) => {
-      if (!image) {
-        reject(new Error(`Could not load image: ${url}`));
-        return;
-      }
+/** Parses an SVG into a single object the editor can place on a canvas. */
+export async function loadSvg(svg: string): Promise<FabricObject> {
+  const {objects, options} = await loadSVGFromString(svg);
+  const parsed = objects.filter((object) => object !== null);
 
-      resolve(image);
-    });
-  });
-}
+  if (!parsed.length) {
+    throw new Error('Could not parse SVG.');
+  }
 
-/** Promise wrapper over fabric 1.x's callback-style SVG parsing. */
-export function loadSvg(svg: string): Promise<FabricObject> {
-  return new Promise((resolve, reject) => {
-    fabric().loadSVGFromString(svg, (objects, options) => {
-      if (!objects?.length) {
-        reject(new Error('Could not parse SVG.'));
-        return;
-      }
-
-      resolve(fabric().util.groupSVGElements(objects, options));
-    });
-  });
+  return util.groupSVGElements(parsed, options);
 }

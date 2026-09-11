@@ -1,4 +1,4 @@
-import {fabric, type FabricGroup} from './fabric';
+import {Circle, Group, type FabricGroup} from './fabric';
 import {
   arePointsInsideRectangle,
   isCenterInside,
@@ -62,7 +62,7 @@ export function useFocalPoint(
 
   /** Builds the marker: a dark disc, a white ring, and a pick-up halo. */
   function buildMarker(left: number, top: number): FabricGroup {
-    const pickedIndicator = new (fabric().Circle)({
+    const pickedIndicator = new Circle({
       radius: 12,
       strokeWidth: 0,
       stroke: 'rgba(255,255,255,0.8)',
@@ -72,7 +72,7 @@ export function useFocalPoint(
       originY: 'center',
     });
 
-    const outerCircle = new (fabric().Circle)({
+    const outerCircle = new Circle({
       radius: 8,
       fill: 'rgba(0,0,0,0.5)',
       strokeWidth: 2,
@@ -83,7 +83,7 @@ export function useFocalPoint(
       originY: 'center',
     });
 
-    const innerCircle = new (fabric().Circle)({
+    const innerCircle = new Circle({
       radius: 1,
       fill: 'rgba(255,255,255,0)',
       strokeWidth: 2,
@@ -96,7 +96,7 @@ export function useFocalPoint(
 
     state.focalPointPickedIndicator.value = pickedIndicator;
 
-    return new (fabric().Group)([pickedIndicator, outerCircle, innerCircle], {
+    return new Group([pickedIndicator, outerCircle, innerCircle], {
       originX: 'center',
       originY: 'center',
       left,

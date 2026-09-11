@@ -1,4 +1,4 @@
-import {fabric, loadImage, type FabricImage} from './fabric';
+import {Rect, StaticCanvas, loadImage, type FabricImage} from './fabric';
 import type {EditorGeometry, EditorState} from './useEditorState';
 import type {Dimensions} from './types';
 
@@ -79,7 +79,7 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
       throw new Error('The image canvas is not mounted.');
     }
 
-    const canvas = new (fabric().StaticCanvas)(canvasEl);
+    const canvas = new StaticCanvas(canvasEl);
     canvas.enableRetinaScaling = true;
     state.canvas.value = canvas;
 
@@ -95,8 +95,8 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
     canvas.add(image);
 
     state.image.value = image;
-    state.originalWidth.value = image.getWidth();
-    state.originalHeight.value = image.getHeight();
+    state.originalWidth.value = image.width;
+    state.originalHeight.value = image.height;
     state.zoomRatio.value = 1;
     state.lastLoadedDimensions.value = geometry.getScaledImageDimensions();
 
@@ -116,9 +116,11 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
 
     state.imageIsLoading.value = true;
 
-    image.setSrc(imageUrl, (loaded) => {
-      state.originalWidth.value = loaded.getWidth();
-      state.originalHeight.value = loaded.getHeight();
+    // fabric 7 resolves rather than calling back, and hands back the same
+    // object it was called on -- so the new size is read off `image` itself.
+    void image.setSrc(imageUrl).then(() => {
+      state.originalWidth.value = image.width;
+      state.originalHeight.value = image.height;
       state.lastLoadedDimensions.value = {
         width: state.originalWidth.value,
         height: state.originalHeight.value,
@@ -137,9 +139,9 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
       return;
     }
 
-    const viewport = new (fabric().Rect)({
-      width: image.width,
-      height: image.height,
+    const viewport = new Rect({
+      width: image.getScaledWidth(),
+      height: image.getScaledHeight(),
       fill: 'rgba(127,0,0,1)',
       originX: 'center',
       originY: 'center',
@@ -157,11 +159,11 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
   /** Sizes the image to the current zoom ratio. */
   function zoomImage(): void {
     const dimensions = geometry.getScaledImageDimensions();
+    const scale = geometry.getImageScaleFor(
+      dimensions.width * state.zoomRatio.value
+    );
 
-    state.image.value?.set({
-      width: dimensions.width * state.zoomRatio.value,
-      height: dimensions.height * state.zoomRatio.value,
-    });
+    state.image.value?.set({scaleX: scale, scaleY: scale});
   }
 
   /**
@@ -236,8 +238,10 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
 
   function destroy(): void {
     cancelPendingRenders();
-    state.croppingCanvas.value?.dispose();
-    state.canvas.value?.dispose();
+    // Unmounting, so there is nothing left to wait for the deferred half of
+    // these to finish tidying -- see the note in `useCropper.hide()`.
+    void state.croppingCanvas.value?.dispose();
+    void state.canvas.value?.dispose();
     state.croppingCanvas.value = null;
     state.canvas.value = null;
   }

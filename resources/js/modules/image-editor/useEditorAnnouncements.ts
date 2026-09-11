@@ -22,11 +22,13 @@ export function useEditorAnnouncements(state: EditorState) {
     }
 
     const x = (
-      ((item.left - image.left + image.width / 2) / image.width) *
+      ((item.left - image.left + image.getScaledWidth() / 2) /
+        image.getScaledWidth()) *
       100
     ).toFixed(1);
     const y = (
-      ((item.top - image.top + image.height / 2) / image.height) *
+      ((item.top - image.top + image.getScaledHeight() / 2) /
+        image.getScaledHeight()) *
       100
     ).toFixed(1);
 

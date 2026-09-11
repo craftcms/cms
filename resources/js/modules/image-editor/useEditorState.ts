@@ -203,6 +203,22 @@ export function useEditorGeometry(state: EditorState) {
    * The size the image occupies in the editor with no straightening or rotation
    * applied — the basis every other measurement is expressed against.
    */
+  /**
+   * The scale that draws the image at a given width on screen.
+   *
+   * fabric sizes an image by scaling it: `width` and `height` are the natural
+   * pixel dimensions of the file that was loaded, not what ends up on screen.
+   * Everything else here works in displayed pixels, so this is the conversion
+   * between the two. In fabric 1.x the image's width *was* the displayed
+   * width, and setting it was how the editor zoomed -- do that now and the
+   * image renders at full resolution inside a box the size of the viewport.
+   */
+  function getImageScaleFor(displayedWidth: number): number {
+    const natural = state.originalWidth.value;
+
+    return natural > 0 ? displayedWidth / natural : 1;
+  }
+
   function getScaledImageDimensions(): Dimensions {
     const originalWidth = state.originalWidth.value;
     const originalHeight = state.originalHeight.value;
@@ -380,6 +396,7 @@ export function useEditorGeometry(state: EditorState) {
   return {
     hasOrientationChanged,
     getContentSize,
+    getImageScaleFor,
     getScaledImageDimensions,
     getZoomToCoverRatio,
     getImageBoundingBox,
