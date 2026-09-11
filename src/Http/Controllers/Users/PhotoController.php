@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Http\Requests\UploadRequest;
 use CraftCms\Cms\User\Elements\User;
@@ -38,7 +37,7 @@ readonly class PhotoController
             $request->only('userId'),
         );
 
-        return new JsonResponse(UploadSessionData::fromSession($session)->toArray(), 201);
+        return new JsonResponse($session->toArray(), 201);
     }
 
     public function destroy(Request $request, Elements $elements): JsonResponse
