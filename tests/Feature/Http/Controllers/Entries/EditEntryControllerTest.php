@@ -12,8 +12,10 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
@@ -117,6 +119,23 @@ it('compiles the meta fields into a sidebar form', function () {
                     && in_array('notes', $paths, true);
             })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
+            ->etc()
+        );
+});
+
+it('includes the parent field for structure entries', function () {
+    $structure = Structure::factory()->create();
+    $this->section->update([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+    Sections::refreshSections();
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes
+                ->contains(fn (array $node) => ($node['control']['path'] ?? null) === ['parentId']))
             ->etc()
         );
 });

@@ -5,6 +5,7 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 
+- Fixed a bug where the “Structure” sorting option was missing from structure element indexes.
 - Fixed a bug where field types could remain unchanged or switch to an unintended option when their combobox query was submitted with <kbd>Return</kbd>. ([#19614](https://github.com/craftcms/cms/pull/19614))
 - Fixed a bug where brand icons, including the Markdown field type icon, were not displayed in combobox options. ([#19614](https://github.com/craftcms/cms/pull/19614))
 - Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder. ([#19603](https://github.com/craftcms/cms/pull/19603))
