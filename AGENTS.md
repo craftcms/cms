@@ -48,6 +48,10 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
 
+## Regression tests
+
+- After a bug fix or behavior change is verified working, propose adding a test that covers it — don't leave that as an unprompted afterthought.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines

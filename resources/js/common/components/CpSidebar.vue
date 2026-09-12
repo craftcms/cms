@@ -5,7 +5,7 @@
   import EditionInfo from '@/common/components/EditionInfo.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import DevModeIndicator from '@/common/components/DevModeIndicator.vue';
-  import {computed, nextTick, watch} from 'vue';
+  import {computed, nextTick, useTemplateRef, watch} from 'vue';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import {type CraftData} from '@/common/composables/useCraftData';
   import {index as generalSettings} from '@/routes/craft/cp/settings/general';
@@ -16,6 +16,7 @@
   // would give the same state two sources of truth.
   const {sidebar, collapsed, toggle, icon} = useGlobalSidebar();
   const page = usePage<{craft: CraftData}>();
+  const sidebarBody = useTemplateRef<HTMLElement>('sidebarBody');
 
   const shouldManageFocus = computed(() => sidebar.mode === 'floating');
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
@@ -36,6 +37,27 @@
       }
     }
   );
+
+  async function toggleAndRestoreFocus() {
+    const wasDocked = sidebar.mode === 'docked';
+    const wasCollapsed = collapsed.value;
+    toggle();
+
+    if (!wasDocked) {
+      return;
+    }
+
+    await nextTick();
+
+    if (wasCollapsed) {
+      document.getElementById('sidebar-toggle')?.focus();
+      return;
+    }
+
+    // Focusing the relocated toggle here would skip past the whole nav for
+    // keyboard and screen reader users, so focus the nav list instead.
+    sidebarBody.value?.focus();
+  }
 </script>
 
 <template>
@@ -57,13 +79,13 @@
           size="small"
           :icon="icon"
           :variant="ButtonVariant.Outline"
-          @click="toggle"
+          @click="toggleAndRestoreFocus"
           :aria-label="t('Toggle menu')"
         >
         </craft-button>
       </div>
     </div>
-    <div class="cp-sidebar__body">
+    <div class="cp-sidebar__body" tabindex="-1" ref="sidebarBody">
       <MainNav :icon-only="collapsed" />
     </div>
     <div class="cp-sidebar__footer">
@@ -77,7 +99,7 @@
           size="small"
           :icon="icon"
           :variant="ButtonVariant.Outline"
-          @click="toggle"
+          @click="toggleAndRestoreFocus"
           :aria-label="t('Toggle menu')"
         >
         </craft-button>
