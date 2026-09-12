@@ -26,6 +26,19 @@ use yii\base\InvalidArgumentException;
 class Locale extends BaseObject
 {
     /**
+     * Returns a locale’s language ID.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    public static function languageId(string $locale): string
+    {
+        $pos = strpos($locale, '-');
+        $lang = $pos !== false ? substr($locale, 0, $pos) : $locale;
+        return strtolower($lang);
+    }
+
+    /**
      * @var int Positive prefix.
      */
     public const ATTR_POSITIVE_PREFIX = 0;
@@ -296,11 +309,7 @@ class Locale extends BaseObject
     #[AllowedInSandbox]
     public function getLanguageID(): string
     {
-        if (($pos = strpos($this->id, '-')) !== false) {
-            return substr($this->id, 0, $pos);
-        }
-
-        return $this->id;
+        return static::languageId($this->id);
     }
 
     /**

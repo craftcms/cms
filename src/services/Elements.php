@@ -4381,6 +4381,19 @@ class Elements extends Component
                 }
             }
 
+            // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
+            // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
+            // something changed, even if this nested element was saved independently of its owner.
+            if (
+                !$element->propagating &&
+                $element instanceof NestedElementInterface &&
+                $element->getIsCanonical() &&
+                isset($element->touchOwnersOnSave) &&
+                $element->touchOwnersOnSave
+            ) {
+                $this->touchOwners($element);
+            }
+
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
@@ -4469,6 +4482,33 @@ class Elements extends Component
                 $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
                 $this->invalidateCachesForElement($owner);
             }
+        }
+    }
+
+    /**
+     * Updates the `dateUpdated` timestamp of a nested element’s owner, and its owner’s owner, and so on up
+     * the ownership chain, so that anything checking an ancestor’s `dateUpdated` to determine whether it’s
+     * changed (e.g. [[\craft\services\Revisions::createRevision()]], deciding whether a new revision needs
+     * to be created) will notice that it has, even though the ancestor itself wasn’t directly modified.
+     *
+     * @param NestedElementInterface $element The (canonical) nested element that was just saved
+     * @see https://github.com/craftcms/cms/issues/19594
+     */
+    private function touchOwners(NestedElementInterface $element): void
+    {
+        $timestamp = Db::prepareDateForDb($element->dateUpdated ?? DateTimeHelper::now());
+        $owner = $element->getOwner();
+
+        while ($owner !== null) {
+            Db::update(Table::ELEMENTS, [
+                'dateUpdated' => $timestamp,
+            ], ['id' => $owner->id]);
+
+            if (!$owner instanceof NestedElementInterface) {
+                return;
+            }
+
+            $owner = $owner->getOwner();
         }
     }
 

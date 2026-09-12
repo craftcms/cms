@@ -857,7 +857,17 @@ JS, [
                     // Only set $resaving=true if the element isn’t new.
                     // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
                     $element->resaving = $owner->resaving && $element->id;
+                    // $owner is already being saved, so it (and its own ancestors, if any) will get its
+                    // `dateUpdated` timestamp updated on its own; no need to do that here as well.
+                    // see https://github.com/craftcms/cms/issues/19594
+                    $touchOwnersOnSave = property_exists($element, 'touchOwnersOnSave');
+                    if ($touchOwnersOnSave) {
+                        $element->touchOwnersOnSave = false;
+                    }
                     $elementsService->saveElement($element, false);
+                    if ($touchOwnersOnSave) {
+                        $element->touchOwnersOnSave = true;
+                    }
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
                     // $owner's canonical (e.g. a draft entry created by Matrix::_createEntriesFromSerializedData()),
