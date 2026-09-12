@@ -54,6 +54,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -112,6 +113,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Imagick;
 use InvalidArgumentException;
+use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
 use Override;
 use RuntimeException;
@@ -266,6 +268,9 @@ class Asset extends Element
      * @var string|null The temp file path
      */
     public ?string $tempFilePath = null;
+
+    /** The staged upload, before it has been promoted into its volume. */
+    public ?UploadedFile $uploadSource = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -2949,8 +2954,12 @@ JS;
             $folderId = $this->folderId;
         }
 
+        if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($this->_filename) === FileKind::Image->value) {
+            $this->tempFilePath ??= $this->uploadSource->localPath();
+        }
+
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
-        if (isset($this->newLocation) || isset($this->tempFilePath)) {
+        if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
             event(new AssetFileHandling($this, isNew: ! $this->id));
         }
 
@@ -3033,7 +3042,7 @@ JS;
             }
 
             // Relocate the file?
-            if (isset($this->newLocation) || isset($this->tempFilePath)) {
+            if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
                 $this->_relocateFile();
             }
 
@@ -3287,7 +3296,7 @@ JS;
 
         $hasNewFolder = $folderId !== $this->folderId;
 
-        $tempPath = null;
+        $tempPath = $this->tempFilePath;
 
         $oldFolder = $this->folderId ? Folders::getFolderById($this->folderId) : null;
         $oldVolume = $oldFolder?->getVolume();
@@ -3298,39 +3307,27 @@ JS;
         $oldPath = $this->folderId ? $this->getPath() : null;
         $newPath = ($newFolder->path ? rtrim((string) $newFolder->path, '/').'/' : '').$filename;
 
-        // Is this just a simple move/rename within the same volume?
-        if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId === $newFolder->volumeId) {
-            if (! $oldVolume->sourceDisk()->move($oldPath, $newPath)) {
-                throw new FilesystemException("Unable to move $oldPath to $newPath");
-            }
-        } else {
-            // Get the temp path
-            if (isset($this->tempFilePath)) {
-                if (! $this->_validateTempFilePath()) {
-                    Log::info("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
-                    throw new FileException(t('There was an error relocating the file.'));
-                }
+        $oldDisk = $oldVolume?->sourceDisk();
+        $newDisk = $newVolume->sourceDisk();
+        $sameFile = $oldDisk !== null && $oldPath !== null &&
+            $oldVolume?->getResolvedFsTarget() === $newVolume->getResolvedFsTarget() &&
+            $oldDisk->path($oldPath) === $newDisk->path($newPath);
 
-                $tempPath = $this->tempFilePath;
-            } else {
-                if ($oldVolume === null || $oldPath === null) {
-                    throw new FileException(t('There was an error relocating the file.'));
-                }
+        if ($tempPath !== null && ! $this->_validateTempFilePath()) {
+            Log::info("Prevented saving $tempPath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
+            throw new FileException(t('There was an error relocating the file.'));
+        }
 
-                $tempFilename = File::uniqueName($filename);
-                $tempPath = Path::temp($tempFilename);
-                AssetsHelper::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
-            }
-
-            // Try to open a file stream
+        if ($this->uploadSource !== null) {
+            $this->uploadSource->storeAs($newDisk, $newPath, $this->getMimeType() ?? 'application/octet-stream', $tempPath);
+        } elseif ($tempPath !== null) {
             if (($stream = fopen($tempPath, 'rb')) === false) {
                 File::delete($tempPath);
                 throw new FileException(t('Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
-            // Upload the file to the new location
             try {
-                if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
+                if (! $newDisk->writeStream($newPath, $stream, [
                     Filesystem::CONFIG_MIMETYPE => File::getMimeType($tempPath),
                 ])) {
                     throw new FilesystemException("Unable to write stream to path: $newPath");
@@ -3339,20 +3336,31 @@ JS;
                 report($exception);
                 throw $exception;
             } finally {
-                // If the volume has not already disconnected the stream, clean it up.
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
             }
-
-            // if we got this far without an exception, it's okay to delete the file from the old volume
-            if (
-                $oldFolder &&
-                ($oldFolder->id !== $newFolder->id || $oldPath !== $newPath)
-            ) {
-                // Delete the old file
-                $oldVolume->sourceDisk()->delete($oldPath);
+        } elseif (! $sameFile) {
+            if ($oldDisk === null || $oldPath === null) {
+                throw new FileException(t('There was an error relocating the file.'));
             }
+
+            new MountManager([
+                'source' => $oldDisk->getDriver(),
+                'destination' => $newDisk->getDriver(),
+            ])->move("source://$oldPath", "destination://$newPath", [
+                'visibility' => $oldVolume->id === $newVolume->id
+                    ? $oldDisk->getVisibility($oldPath)
+                    : ($newDisk->getConfig()['visibility'] ?? 'private'),
+            ]);
+        }
+
+        if (
+            ($this->uploadSource !== null || $tempPath !== null) &&
+            $oldDisk !== null &&
+            ! $sameFile
+        ) {
+            $oldDisk->delete($oldPath);
         }
 
         if ($this->folderId) {
@@ -3366,6 +3374,12 @@ JS;
         $this->folderPath = $newFolder->path;
         $this->_filename = $filename;
         $this->_volume = $newVolume;
+
+        if ($this->uploadSource !== null && $tempPath === null) {
+            $this->size = $this->uploadSource->size();
+            $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
+            $this->_width = $this->_height = null;
+        }
 
         // If there was a new file involved, update file data.
         if ($tempPath && file_exists($tempPath)) {
@@ -3389,6 +3403,7 @@ JS;
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
+        $this->uploadSource = null;
     }
 
     /**

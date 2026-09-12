@@ -124,6 +124,8 @@ readonly class Table
 
     public const string SYSTEMMESSAGES = 'systemmessages';
 
+    public const string UPLOADSESSIONS = 'uploadsessions';
+
     public const string USERGROUPS = 'usergroups';
 
     public const string USERGROUPS_USERS = 'usergroups_users';
