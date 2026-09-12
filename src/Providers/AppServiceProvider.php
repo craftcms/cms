@@ -37,7 +37,6 @@ use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -50,6 +49,7 @@ use RuntimeException;
 use stdClass;
 
 use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 class AppServiceProvider extends ServiceProvider
@@ -174,7 +174,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
-            $defaultUrl ??= Auth::guest()
+            $defaultUrl ??= craftAuth()->guest()
                 ? action_url('users/redirect')
                 : $this->defaultReturnUrl();
 

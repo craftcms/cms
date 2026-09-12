@@ -342,6 +342,7 @@ test('set verification code', function (bool $tokenFailure) {
     $user = UserModel::factory()->createElement(['active' => false, 'pending' => false]);
 
     if ($tokenFailure) {
+        Password::shouldReceive('getDefaultDriver')->once()->andReturn('users');
         Password::shouldReceive('broker->createToken')->once()->andThrow(new RuntimeException('Token failed'));
         expect(fn () => $this->users->setVerificationCodeOnUser($user))->toThrow(RuntimeException::class, 'Token failed');
         expect($user->pending)->toBeFalse()->and(UserModel::findOrFail($user->id)->pending)->toBeFalse();

@@ -31,6 +31,7 @@ use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -530,7 +531,7 @@ readonly class SaveUserController
             return false;
         }
 
-        auth()->login(UserModel::findOrFail($user->id));
+        craftAuth()->login(UserModel::findOrFail($user->id));
 
         return true;
     }

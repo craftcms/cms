@@ -21,13 +21,14 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\craftAuth;
 
 abstract readonly class AuthenticationController
 {
@@ -40,7 +41,7 @@ abstract readonly class AuthenticationController
 
     protected function completeLogin(Request $request, CraftUser $user, bool $remember): Response
     {
-        auth()->loginUsingId($user->getAuthIdentifier(), $remember);
+        craftAuth()->loginUsingId($user->getAuthIdentifier(), $remember);
 
         return $this->handleSuccessfulLogin($request, $user);
     }
@@ -94,7 +95,7 @@ abstract readonly class AuthenticationController
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
         event(new Failed(
-            guard: Auth::getDefaultDriver(),
+            guard: Cms::config()->getAuthGuard(),
             user: $user,
             credentials: $request->only('loginName', 'password'),
         ));
@@ -152,13 +153,13 @@ abstract readonly class AuthenticationController
 
         // If someone is logged in and it’s not this person, log them out
         if ($request->craftUser() && $request->craftUser()->getCraftUserId() !== $user->id) {
-            auth()->logout();
+            craftAuth()->logout();
         }
 
         event(new UserEmailVerifying($user));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker();
+        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
@@ -177,7 +178,7 @@ abstract readonly class AuthenticationController
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
-        if ($user && ! auth()->guest()) {
+        if ($user && ! craftAuth()->guest()) {
             return redirect(URL::returnUrl());
         }
 
@@ -208,7 +209,7 @@ abstract readonly class AuthenticationController
             return false;
         }
 
-        return (bool) auth()->loginUsingId($user->id);
+        return (bool) craftAuth()->loginUsingId($user->id);
     }
 
     protected function redirectUserToCp(User $user): ?Response

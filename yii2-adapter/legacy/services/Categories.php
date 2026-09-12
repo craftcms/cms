@@ -34,7 +34,6 @@ use CraftCms\Cms\View\TemplateResolver;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -42,6 +41,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\maxPowerCaptain;
 
 /**
@@ -169,7 +169,7 @@ class Categories extends Component
             return $this->getAllGroups();
         }
 
-        $user = Auth::user();
+        $user = craftAuth()->user();
 
         if (!$user) {
             return [];

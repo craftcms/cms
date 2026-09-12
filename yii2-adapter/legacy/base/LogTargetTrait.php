@@ -10,13 +10,14 @@ namespace craft\base;
 use Craft;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Security;
-use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\log\Target;
 use yii\web\Request;
 use yii\web\Session;
+
+use function CraftCms\Cms\craftAuth;
 
 /**
  * LogTargetTrait implements the common methods and properties for log target classes.
@@ -65,7 +66,7 @@ trait LogTargetTrait
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
-        if ($user && ($identity = Auth::user())) {
+        if ($user && ($identity = craftAuth()->user())) {
             $userID = $identity->getId();
         } else {
             $userID = '-';

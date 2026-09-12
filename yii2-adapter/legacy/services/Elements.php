@@ -80,7 +80,6 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -91,6 +90,7 @@ use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\web\ForbiddenHttpException;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -1713,7 +1713,7 @@ class Elements extends Component
 
     private function _checkAuthorization(ElementInterface $element, string $ability, ?User $user = null): bool
     {
-        $user ??= Auth::user();
+        $user ??= craftAuth()->user();
 
         if (!$user) {
             return false;

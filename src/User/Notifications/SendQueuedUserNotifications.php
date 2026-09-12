@@ -10,9 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\SendQueuedNotifications;
-use Illuminate\Support\Facades\Auth;
 use LogicException;
 use Override;
+
+use function CraftCms\Cms\craftAuth;
 
 class SendQueuedUserNotifications extends SendQueuedNotifications
 {
@@ -27,7 +28,7 @@ class SendQueuedUserNotifications extends SendQueuedNotifications
     {
         if ($notifiables instanceof User) {
             $this->restoreUserElements = true;
-            $notifiables = Auth::getProvider()->retrieveById($notifiables->getAuthIdentifier());
+            $notifiables = craftAuth()->getProvider()->retrieveById($notifiables->getAuthIdentifier());
 
             if (! $notifiables instanceof Model || ! $notifiables instanceof CraftUser) {
                 throw new LogicException('The configured auth model must be an Eloquent model implementing CraftUser.');

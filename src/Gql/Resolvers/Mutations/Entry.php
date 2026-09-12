@@ -20,9 +20,10 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use Error;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use Throwable;
+
+use function CraftCms\Cms\craftAuth;
 
 class Entry extends ElementMutationResolver
 {
@@ -85,7 +86,7 @@ class Entry extends ElementMutationResolver
             $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             Drafts::saveElementAsDraft(
                 $entry,
-                creatorId: Auth::id(),
+                creatorId: craftAuth()->id(),
                 name: $arguments['draftName'] ?? null,
                 notes: $arguments['draftNotes'] ?? null,
             );

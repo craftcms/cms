@@ -17,9 +17,9 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -198,7 +198,7 @@ class QuickPost extends Widget
         }
 
         return [
-            'params' => ['siteId' => $siteId, 'section' => $section->handle, 'type' => $entryType->handle, 'authorId' => Auth::id()],
+            'params' => ['siteId' => $siteId, 'section' => $section->handle, 'type' => $entryType->handle, 'authorId' => craftAuth()->id()],
         ];
     }
 

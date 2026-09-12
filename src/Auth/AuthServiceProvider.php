@@ -35,6 +35,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\SendQueuedNotifications;
@@ -50,9 +51,21 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        if (! class_exists($this->app->make(Repository::class)->get('auth.providers.users.model'))) {
-            $this->app->make(Repository::class)->set('auth.providers.users.model', User::class);
+        $config = $this->app->make(Repository::class);
+
+        if (! class_exists($config->get('auth.providers.users.model'))) {
+            $config->set('auth.providers.users.model', User::class);
         }
+
+        $config->set('auth.providers.craft', array_replace([
+            'driver' => 'eloquent',
+            'model' => User::class,
+        ], $config->get('auth.providers.craft', [])));
+        $config->set('auth.guards.craft', array_replace([
+            'driver' => 'session',
+            'provider' => 'craft',
+            'remember' => 20160,
+        ], $config->get('auth.guards.craft', [])));
 
         $this->app->bind(SendQueuedNotifications::class, SendQueuedUserNotifications::class);
 
@@ -85,7 +98,11 @@ class AuthServiceProvider extends ServiceProvider
          * This hooks our permission system into
          * Laravel's Gate authorization system
          */
-        Gate::after(function (CraftUser $user, string $ability, ?bool $result) {
+        Gate::after(function (Authenticatable $user, string $ability, ?bool $result) {
+            if (! $user instanceof CraftUser) {
+                return null;
+            }
+
             /**
              * Only check our permissions when the
              * result was not explicitly set.
@@ -118,11 +135,19 @@ class AuthServiceProvider extends ServiceProvider
     private function registerEvents(): void
     {
         Event::listen(function (Authenticated $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             Sites::refreshSites();
             app(RequestedSite::class)->reset();
         });
 
         Event::listen(Login::class, function (Login $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             $user = $event->user instanceof CraftUser ? $event->user->asElement() : null;
 
             if (! $user) {
@@ -133,10 +158,14 @@ class AuthServiceProvider extends ServiceProvider
 
             app(AuthMethods::class)->setRememberedUsername($user);
 
-            Session::passwordConfirmed();
+            Session::put(Cms::config()->getPasswordConfirmationKey(), now()->unix());
         });
 
         Event::listen(Failed::class, function (Failed $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             $user = $event->user instanceof CraftUser ? $event->user->asElement() : null;
 
             if (! $user) {
@@ -146,7 +175,11 @@ class AuthServiceProvider extends ServiceProvider
             UsersFacade::handleInvalidLogin($user);
         });
 
-        Event::listen(Logout::class, function () {
+        Event::listen(Logout::class, function (Logout $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             app(Impersonation::class)->setImpersonatorId(null);
         });
     }
