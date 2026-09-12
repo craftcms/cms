@@ -338,18 +338,18 @@ Public API symbols carry TSDoc — your editor's IntelliSense is the fastest ref
 ## Development
 
 ```bash
-npm run dev          # Storybook dev server at http://localhost:6006
-npm run storybook    # alias of `npm run dev`
-npm run build:storybook  # static Storybook build
-npm run build        # production build (dual `.` + `/compat` entries)
-npm run build:watch  # Vite+ pack watch build
-npm run test         # Vitest suite
-npm run check:types  # tsc --noEmit (includes stories)
-npm run format       # Oxfmt (writes ./src ./tests ./stories ./.storybook)
+pnpm run dev          # Storybook dev server at http://localhost:6006
+pnpm run storybook    # alias of `pnpm run dev`
+pnpm run build:storybook  # static Storybook build
+pnpm run build        # production build (dual `.` + `/compat` entries)
+pnpm run build:watch  # Vite+ pack watch build
+pnpm run test         # Vitest suite
+pnpm run check:types  # tsc --noEmit (includes stories)
+pnpm run format       # Oxfmt (writes ./src ./tests ./stories ./.storybook)
 ```
 
-Interactive component demos live in **Storybook** (`npm run dev` or
-`npm run storybook` → http://localhost:6006), with one story file per component
+Interactive component demos live in **Storybook** (`pnpm run dev` or
+`pnpm run storybook` → http://localhost:6006), with one story file per component
 under `stories/`. Stories import the real source from `../src`, so edits
 hot-reload instantly. See [`docs/contributing.md`](docs/contributing.md) for the
 toolchain, the verification gates, how stories are organized, the Actions-panel event

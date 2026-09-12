@@ -1,6 +1,9 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
+// Named explicitly so the emitted .d.ts can reference Lion's mixin
+// constructor by package specifier instead of a pnpm store path (TS2883).
+import type {} from '@open-wc/dedupe-mixin';
 import type {VirtualElement} from '@popperjs/core';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';

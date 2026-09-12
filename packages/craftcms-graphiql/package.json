@@ -12,8 +12,10 @@
   "license": "MIT",
   "author": "Brandon Kelly <brandon@pixelandtonic.com>",
   "devDependencies": {
-    "@craftcms/webpack": "file:../craftcms-webpack",
-    "@craftcms/sass": "file:../craftcms-sass"
+    "@craftcms/webpack": "workspace:*",
+    "@craftcms/sass": "workspace:*",
+    "webpack": "catalog:",
+    "webpack-dev-server": "catalog:"
   },
   "engines": {
     "node": ">=20"
