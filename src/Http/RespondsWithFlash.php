@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http;
 
+use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
@@ -136,6 +137,10 @@ trait RespondsWithFlash
         }
 
         $redirect ??= $this->getPostedRedirectUrl($model);
+
+        if ($redirect === null && ! request()->expectsJson() && request()->isCpRequest() && $model instanceof CpEditable) {
+            $redirect = $model->getCpEditUrl();
+        }
 
         return $this->asSuccess($message, $data, $redirect);
     }
