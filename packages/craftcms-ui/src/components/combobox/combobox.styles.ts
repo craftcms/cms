@@ -65,7 +65,6 @@ export default css`
 
   :host([multiple-choice]) .input-group__input {
     ${baseFormControlStyles}
-    box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     align-items: center;

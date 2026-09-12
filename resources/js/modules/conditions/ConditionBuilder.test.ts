@@ -188,6 +188,17 @@ async function changeOperator(): Promise<void> {
   await nextTick();
 }
 
+async function changeGroupOperator(
+  value: GroupConfig['operator']
+): Promise<void> {
+  const operator = container.querySelector<HTMLSelectElement>(
+    '.condition-group__operator select'
+  )!;
+  operator.value = value;
+  operator.dispatchEvent(new Event('change', {bubbles: true}));
+  await nextTick();
+}
+
 function submitted(): GroupConfig {
   return (
     expandFormData(new FormData(form)).condition as {
@@ -199,7 +210,7 @@ function submitted(): GroupConfig {
 it('edits nested operators locally and prunes empty groups only in submitted values', async () => {
   const post = vi.spyOn(actionClient, 'request');
   await mount();
-  button('Any').click();
+  await changeGroupOperator('or');
   button('Add a group').click();
   await nextTick();
 

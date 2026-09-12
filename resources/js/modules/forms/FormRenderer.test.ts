@@ -456,6 +456,49 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('visually hides field labels the server marks screen-reader-only', async () => {
+    const field = (
+      name: string,
+      props: FormPayload['nodes'][number]['props']
+    ): FormPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: name, ...props},
+      control: {
+        type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+        component: 'craft:choice',
+        props: {
+          options: [{label: 'is one of', value: 'in'}],
+          multiple: false,
+          presentation: 'select',
+        },
+        path: ['settings', name],
+        mode: 'editable',
+        deltaGroup: ['settings', name],
+      },
+    });
+    app.unmount();
+    await mount({
+      scope: ['settings'],
+      refreshable: false,
+      nodes: [field('hidden', {labelSrOnly: true}), field('visible', {})],
+      values: {settings: {hidden: 'in', visible: 'in'}},
+      errors: [],
+      globalErrors: [],
+    });
+
+    // The select's own label chrome follows the field's.
+    const labelSrOnly = (name: string, selector: string) =>
+      container
+        .querySelector(`select[name="settings[${name}]"]`)!
+        .closest(selector)!
+        .hasAttribute('label-sr-only');
+    expect(labelSrOnly('hidden', 'craft-field')).toBe(true);
+    expect(labelSrOnly('hidden', 'craft-select')).toBe(true);
+    expect(labelSrOnly('visible', 'craft-field')).toBe(false);
+    expect(labelSrOnly('visible', 'craft-select')).toBe(false);
+  });
+
   it('displays a combobox option label for its initial value', async () => {
     const status: FormPayload = {
       scope: ['settings'],
@@ -919,12 +962,11 @@ describe('FormRenderer', () => {
     app.unmount();
     await mount(condition);
 
-    const operator = [
-      ...container.querySelectorAll<HTMLElement>(
-        '.condition-group craft-button'
-      ),
-    ].find((button) => button.textContent?.trim() === 'Any')!;
-    operator.click();
+    const operator = container.querySelector<HTMLSelectElement>(
+      '.condition-group__operator select'
+    )!;
+    operator.value = 'or';
+    operator.dispatchEvent(new Event('change', {bubbles: true}));
     await nextTick();
 
     expect(renderer.currentValues()).toMatchObject({
@@ -2551,11 +2593,11 @@ describe('FormRenderer', () => {
         'select[name="settings[choice]"]'
       )?.value
     ).toBe('1');
-    expect(
-      container
-        .querySelector('select[name="settings[choice]"]')
-        ?.closest('craft-select')
-    ).not.toBeNull();
+    const choiceSelect = container
+      .querySelector('select[name="settings[choice]"]')
+      ?.closest('craft-select');
+    expect(choiceSelect).not.toBeNull();
+    expect(choiceSelect!.hasAttribute('label-sr-only')).toBe(false);
     expect(
       container.querySelectorAll(
         'input[type="checkbox"][name="settings[tags][]"]'

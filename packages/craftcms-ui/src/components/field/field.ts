@@ -1,4 +1,10 @@
-import {LitElement, html, nothing, type PropertyValues} from 'lit';
+import {
+  LitElement,
+  html,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -8,6 +14,7 @@ import '../callout/callout.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
+import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 
 type FormControlTarget = HTMLElement & {
@@ -97,6 +104,23 @@ export default class CraftField extends FormControlMixin(LitElement) {
    * shrinks without one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
+
+  /**
+   * Visually hides the label, keeping it available to screen readers.
+   * `FormControlMixin` declares this property (`label-sr-only`), but its
+   * types leave it out.
+   */
+  declare labelSrOnly: boolean;
+
+  private readonly __hasSlot = new HasSlotController(
+    this,
+    'heading-prefix',
+    'label-extra',
+    'actions',
+    'heading-suffix',
+    'tip',
+    'warning'
+  );
 
   private __lightDomObserver = new MutationObserver(() =>
     this.__onLightDomChanged()
@@ -306,19 +330,53 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   /**
    * The field heading: label, read-only badge, flex-grow spacer, label extras
-   * and actions, mirroring `.field > .heading` in the Blade wrapper.
+   * and actions, mirroring `.field > .heading` in the Blade wrapper. Skipped
+   * entirely when there's nothing to put in it.
+   *
+   * With `label-sr-only`, the label stays available to screen readers but is
+   * visually hidden. When it's the only thing in the heading, the whole
+   * heading is hidden rather than just the label, so it leaves the flow and
+   * takes no gap; otherwise only the label is, keeping the rest visible.
    */
   protected override _labelTemplate() {
-    const hasActions = this.__hasLightChild('actions');
+    const hasLabel = this.__hasLabel;
+    const hasLabelExtra = this.__hasSlot.test('label-extra');
+    const hasActions = this.__hasSlot.test('actions');
+    const hasOtherContent =
+      hasLabelExtra ||
+      hasActions ||
+      this.readOnly ||
+      this.__hasSlot.test('heading-prefix') ||
+      this.__hasSlot.test('heading-suffix');
+
+    if (!hasLabel && !hasOtherContent) {
+      // Lion types this override as returning a TemplateResult.
+      return html``;
+    }
+
+    let label: TemplateResult | typeof nothing = nothing;
+    if (hasLabel) {
+      label =
+        this.labelSrOnly && hasOtherContent
+          ? html`<span class="cp-visually-hidden"
+              ><slot name="label"></slot
+            ></span>`
+          : html`<slot name="label"></slot>`;
+    }
 
     return html`
-      <div class="form-field__label">
+      <div
+        class=${classMap({
+          'form-field__label': true,
+          'cp-visually-hidden': this.labelSrOnly && !hasOtherContent,
+        })}
+      >
         <slot name="heading-prefix"></slot>
-        <slot name="label"></slot>
+        ${label}
         ${this.readOnly
           ? html`<span class="read-only-badge">${t('Read Only')}</span>`
           : nothing}
-        ${this.__hasLightChild('label-extra') || hasActions
+        ${hasLabelExtra || hasActions
           ? html`<div class="flex-grow"></div>`
           : nothing}
         <slot name="label-extra"></slot>
@@ -337,6 +395,11 @@ export default class CraftField extends FormControlMixin(LitElement) {
         <slot name="heading-suffix"></slot>
       </div>
     `;
+  }
+
+  /** The instructions, skipped entirely when there are none. */
+  protected override _helpTextTemplate() {
+    return this.__hasHelpText ? super._helpTextTemplate() : html``;
   }
 
   /**
@@ -385,7 +448,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
    * for warnings, each with a visually hidden prefix.
    */
   protected _noticeTemplate(kind: 'tip' | 'warning') {
-    if (!this.__hasLightChild(kind)) {
+    if (!this.__hasSlot.test(kind)) {
       return nothing;
     }
 
@@ -406,8 +469,19 @@ export default class CraftField extends FormControlMixin(LitElement) {
     `;
   }
 
-  private __hasLightChild(slotName: string): boolean {
-    return this.__lightChild(slotName) !== undefined;
+  /**
+   * Whether there's a label to show. Lion's `SlotMixin` always generates a
+   * light-DOM label node (empty when there's no `label`), so the node's
+   * presence says nothing — its text does. `label` reads that text back when
+   * a consumer slots their own label instead of setting the attribute.
+   */
+  private get __hasLabel(): boolean {
+    return this.label.trim() !== '';
+  }
+
+  /** Whether there are instructions to show. See `__hasLabel`. */
+  private get __hasHelpText(): boolean {
+    return this.helpText.trim() !== '';
   }
 
   private __lightChild(slotName: string): HTMLElement | undefined {
@@ -423,8 +497,8 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
-    // Conditional templates (tip/warning callouts, heading spacer, action
-    // group) depend on light DOM children.
+    // Conditional templates (label, instructions, tip/warning callouts,
+    // heading spacer, action group) depend on light DOM children.
     this.requestUpdate();
   }
 

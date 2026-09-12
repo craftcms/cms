@@ -2,9 +2,16 @@
   import '@craftcms/ui/components/field/field';
   // Leaf module, not the barrel — the barrel registers every `craft-*` element.
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
+  import {
+    computed,
+    getCurrentInstance,
+    inject,
+    onErrorCaptured,
+    provide,
+  } from 'vue';
   import FormNodeList from './FormNodeList.vue';
   import {
+    FieldLabelSrOnly,
     FormControlOverrides,
     FormFailure,
     FormModifiedGroups,
@@ -23,6 +30,8 @@
 
   type FieldNodeProps = {
     label?: string | null;
+    /** Visually hides the label, keeping it available to screen readers. */
+    labelSrOnly?: boolean;
     instructions?: string | null;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
@@ -51,6 +60,10 @@
     (event: 'change', change: FormChange): void;
   }>();
   const invalidate = inject(FormFailure)!;
+  provide(
+    FieldLabelSrOnly,
+    computed(() => Boolean(props.node.props.labelSrOnly))
+  );
   const overrides = inject(FormControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
@@ -130,6 +143,7 @@
 <template>
   <craft-field
     :label="node.props.label ?? undefined"
+    :label-sr-only="node.props.labelSrOnly || undefined"
     :help-text="node.props.instructions ?? undefined"
     :instructions-position="node.props.instructionsPosition"
     :required="Boolean(node.props.required)"

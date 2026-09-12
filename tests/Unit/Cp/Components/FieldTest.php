@@ -40,6 +40,14 @@ describe('attributes', function () {
             ->and($html)->toContain('orientation="rtl"');
     });
 
+    it('only renders label-sr-only when set', function () {
+        expect(Field::make()->label('My Label')->toHtml())
+            ->not->toContain('label-sr-only');
+
+        expect(Field::make()->label('My Label')->labelSrOnly()->toHtml())
+            ->toContain(' label-sr-only');
+    });
+
     it('only renders width when set', function () {
         expect(Field::make()->toHtml())
             ->not->toContain('width');
