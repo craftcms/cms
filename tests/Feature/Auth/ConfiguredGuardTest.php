@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
-use RuntimeException;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;

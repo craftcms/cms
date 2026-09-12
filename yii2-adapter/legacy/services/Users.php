@@ -281,7 +281,10 @@ class Users extends Component
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
-        if (Password::broker(Cms::config()->getAuthPasswordBroker())->tokenExists($user, $code)) {
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
+
+        if ($broker->tokenExists($user, $code)) {
             return true;
         }
 
