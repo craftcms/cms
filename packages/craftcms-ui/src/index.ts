@@ -70,6 +70,9 @@ export {default as CraftRadioGroup} from './components/radio-group/radio-group.j
 export {default as CraftRadio} from './components/radio/radio.js';
 export {
   default as CraftReorderButton,
+  getReorderActions,
+  getReorderPosition,
+  type ReorderAction,
   type ReorderPosition,
   type ReorderDirection,
   type ReorderOrientation,

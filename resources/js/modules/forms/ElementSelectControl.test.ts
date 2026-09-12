@@ -1342,6 +1342,48 @@ describe('ElementSelectControl', () => {
       return handles(root).map((handle) => handle.getAttribute('orientation'));
     }
 
+    it('offers valid move actions in a stacked list', async () => {
+      const root = await mount({value: [5, 6, 7]});
+      const actionMenus = menus(root);
+
+      expect(actionLabels(actionMenus[0].actions)).toEqual([
+        'Move down',
+        '---',
+        'Replace',
+        '---',
+        'Remove',
+      ]);
+      expect(actionLabels(actionMenus[1].actions)).toEqual([
+        'Move up',
+        'Move down',
+        '---',
+        'Replace',
+        '---',
+        'Remove',
+      ]);
+      expect(actionLabels(actionMenus[2].actions)).toEqual([
+        'Move up',
+        '---',
+        'Replace',
+        '---',
+        'Remove',
+      ]);
+
+      actionMenus[0].actions[0].onClick();
+
+      expect(updates).toEqual([[6, 5, 7]]);
+    });
+
+    it('uses reading-order move labels in an inline list', async () => {
+      const root = await mount({
+        props: {viewMode: 'list-inline'},
+        value: [5, 6],
+      });
+
+      expect(actionLabels(menus(root)[0].actions).at(0)).toBe('Move backward');
+      expect(actionLabels(menus(root)[1].actions).at(0)).toBe('Move forward');
+    });
+
     it('gives every card a reorder handle when the field is sortable', async () => {
       const root = await mount({props: {viewMode: 'cards'}, value: [5, 6]});
 

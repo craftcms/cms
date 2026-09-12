@@ -1,6 +1,11 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
-  import {t} from '@craftcms/ui';
+  import {
+    getReorderActions,
+    getReorderPosition,
+    t,
+    type ReorderOrientation,
+  } from '@craftcms/ui';
   import {computed, reactive, ref, useId} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
@@ -489,6 +494,33 @@
     };
   }
 
+  function moveActions(index: number): ActionItem[] {
+    if (!sortable.value) {
+      return [];
+    }
+
+    const orientation: ReorderOrientation = [
+      'cards-grid',
+      'thumbs',
+      'list-inline',
+    ].includes(viewMode.value)
+      ? 'horizontal'
+      : 'vertical';
+
+    return getReorderActions(
+      orientation,
+      getReorderPosition(index, ids.value.length),
+      Craft.orientation === 'rtl'
+    )
+      .filter((action) => !action.disabled)
+      .map((action) => ({
+        icon: action.icon,
+        label: action.label,
+        onClick: () =>
+          reorder(index, index + (action.direction === 'up' ? -1 : 1)),
+      }));
+  }
+
   /** The menu for a chip or card, with the edit item where it belongs. */
   function menuActions(value: number | string, index: number): ActionItem[] {
     return chipActions(value, index, {withEdit: !list.isCards.value});
@@ -528,6 +560,7 @@
     // What the element itself offers — server-described, so an element type's
     // own actions (an asset's Preview file, Download, …) arrive here.
     const elementSection = elementActions(value);
+    const moveSection = moveActions(index);
 
     // What the field offers for that element.
     const fieldSection: ActionItem[] = [];
@@ -563,7 +596,12 @@
       });
     }
 
-    return withSeparators([elementSection, fieldSection, removeSection]);
+    return withSeparators([
+      moveSection,
+      elementSection,
+      fieldSection,
+      removeSection,
+    ]);
   }
 
   /**

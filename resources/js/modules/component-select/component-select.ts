@@ -7,7 +7,12 @@ import {
   prefersReducedMotion,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
-import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
+import {
+  getReorderActions,
+  getReorderPosition,
+  type CraftActionMenu,
+  type ReorderDirection,
+} from '@craftcms/ui';
 import {componentSelectData} from './support';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
@@ -660,9 +665,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * on {@link container} (NOT via garnish `trigger`, since its `detail.actions`
    * array is synchronously mutated by ancestor listeners) — lets a wrapping
    * element contribute extra actions ahead of the built-in Replace/Remove —
-   * see {@link DefineChipActionsEventDetail}. The legacy Move
-   * forward/backward actions are intentionally not ported — the
-   * `<craft-reorder-button>` owns reordering now.
+   * see {@link DefineChipActionsEventDetail}. Move actions remain available in
+   * both this menu and the `<craft-reorder-button>` menu for legacy parity.
    *
    * Like the legacy handlers, these avoid a hard `this`: a chip CAN end up
    * assigned to a different component select (see {@link adoptChip}), so each
@@ -678,6 +682,32 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       closestRegistered(chip, componentSelectData) ?? this;
 
     const actions: any[] = [];
+    const li = chip.closest('li');
+
+    if (li && this.settings.sortable) {
+      const horizontal =
+        this.#list?.classList.contains('inline-chips') ?? false;
+      const index = this.#chips().indexOf(chip);
+      const itemCount = this.#chips().length;
+
+      getReorderActions(
+        horizontal ? 'horizontal' : 'vertical',
+        getReorderPosition(index, itemCount),
+        Craft.orientation === 'rtl'
+      ).forEach((action) => {
+        actions.push({
+          icon: action.icon,
+          label: action.label,
+          onActivate: () => owner().moveComponent(li, action.direction),
+          attributes: {
+            [action.direction === 'up'
+              ? 'data-move-forward'
+              : 'data-move-backward']: true,
+            hidden: action.disabled,
+          },
+        });
+      });
+    }
 
     this.container.dispatchEvent(
       new CustomEvent<DefineChipActionsEventDetail>('define-chip-actions', {
@@ -1007,16 +1037,28 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       .filter((li): li is HTMLElement => li !== null);
 
     lis.forEach((li, index) => {
+      const position = getReorderPosition(index, lis.length);
+      const [forwardAction, backwardAction] = getReorderActions(
+        'vertical',
+        position
+      );
+
+      li.querySelector<HTMLElement>('[data-move-forward]')?.toggleAttribute(
+        'hidden',
+        forwardAction.disabled
+      );
+      li.querySelector<HTMLElement>('[data-move-backward]')?.toggleAttribute(
+        'hidden',
+        backwardAction.disabled
+      );
+
       const btn = li.querySelector('craft-reorder-button');
       if (!btn) {
         return;
       }
 
       btn.toggleAttribute('disabled', lis.length < 2);
-      btn.setAttribute(
-        'position',
-        index === 0 ? 'first' : index === lis.length - 1 ? 'last' : 'middle'
-      );
+      btn.setAttribute('position', position);
     });
   }
 

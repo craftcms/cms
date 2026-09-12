@@ -1,10 +1,12 @@
 <script setup lang="ts">
-  import type {EntryType} from '@/common/types';
+  import type {ActionItem, EntryType} from '@/common/types';
   import {computed, ref} from 'vue';
   import {
     appendBodyHtml,
     appendHeadHtml,
     ButtonVariant,
+    getReorderActions,
+    getReorderPosition,
     serializeFormInputs,
     t,
   } from '@craftcms/ui';
@@ -55,16 +57,34 @@
     emit('update:modelValue', items);
   }
 
-  function getRowPosition(index: number) {
-    if (index === 0) {
-      return 'first';
-    }
+  function getActions(entryType: EntryType, index: number): Array<ActionItem> {
+    const moveActions = getReorderActions(
+      'vertical',
+      getReorderPosition(index, props.modelValue.length)
+    )
+      .filter((action) => !action.disabled)
+      .map<ActionItem>((action) => ({
+        label: action.label,
+        icon: action.icon,
+        onClick: () =>
+          reorder(index, index + (action.direction === 'up' ? -1 : 1)),
+      }));
 
-    if (index === props.modelValue.length - 1) {
-      return 'last';
-    }
-
-    return 'middle';
+    return [
+      ...moveActions,
+      ...(moveActions.length ? [{type: 'hr' as const}] : []),
+      {
+        label: t('Settings'),
+        icon: 'gear',
+        onClick: () => openSlideout(entryType.id),
+      },
+      {
+        label: t('Remove'),
+        variant: 'danger',
+        icon: 'x',
+        onClick: () => removeItem(entryType.id),
+      },
+    ];
   }
 
   const {setItemRef, setHandleRef, getDragState, getDropState} =
@@ -284,30 +304,14 @@
           :description="entryType.description"
           :draggable="modelValue.length > 1"
           :indicators="entryType.indicators"
-          :actions="
-            !readOnly
-              ? [
-                  {
-                    label: t('Settings'),
-                    icon: 'gear',
-                    onClick: () => openSlideout(entryType.id),
-                  },
-                  {
-                    label: t('Remove'),
-                    variant: 'danger',
-                    icon: 'x',
-                    onClick: () => removeItem(entryType.id),
-                  },
-                ]
-              : []
-          "
+          :actions="!readOnly ? getActions(entryType, index) : []"
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
         >
           <template #drag-handle>
             <craft-reorder-button
               v-if="!readOnly"
               variant="inherit"
-              :position="getRowPosition(index)"
+              :position="getReorderPosition(index, modelValue.length)"
               @reorder="
                 (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                   reorder(

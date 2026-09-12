@@ -7,9 +7,54 @@ import '../action-item/action-item.js';
 import '../button/button.js';
 import '../icon/icon.js';
 
-export type ReorderPosition = 'first' | 'middle' | 'last';
+export type ReorderPosition = 'first' | 'middle' | 'last' | 'only';
 export type ReorderDirection = 'up' | 'down';
 export type ReorderOrientation = 'vertical' | 'horizontal';
+
+export interface ReorderAction {
+  direction: ReorderDirection;
+  icon: string;
+  label: string;
+  disabled: boolean;
+}
+
+export function getReorderPosition(
+  index: number,
+  itemCount: number
+): ReorderPosition {
+  if (itemCount === 1) {
+    return 'only';
+  }
+
+  if (index === 0) {
+    return 'first';
+  }
+
+  return index === itemCount - 1 ? 'last' : 'middle';
+}
+
+export function getReorderActions(
+  orientation: ReorderOrientation,
+  position: ReorderPosition,
+  rtl = false
+): [ReorderAction, ReorderAction] {
+  const horizontal = orientation === 'horizontal';
+
+  return [
+    {
+      direction: 'up',
+      icon: horizontal ? (rtl ? 'arrow-right' : 'arrow-left') : 'arrow-up',
+      label: horizontal ? t('Move forward') : t('Move up'),
+      disabled: position === 'first' || position === 'only',
+    },
+    {
+      direction: 'down',
+      icon: horizontal ? (rtl ? 'arrow-left' : 'arrow-right') : 'arrow-down',
+      label: horizontal ? t('Move backward') : t('Move down'),
+      disabled: position === 'last' || position === 'only',
+    },
+  ];
+}
 
 /**
  * @summary A drag handle that also exposes "Move up"/"Move down" actions via a
@@ -34,8 +79,8 @@ export default class CraftReorderButton extends LitElement {
   @property() label: string | null = null;
 
   /**
-   * The item's position within its list. Disables "Move up" at `first` and
-   * "Move down" at `last`.
+   * The item's position within its list. Disables "Move up" at `first`, "Move
+   * down" at `last`, and both at `only`.
    */
   @property({reflect: true}) position: ReorderPosition = 'middle';
 
@@ -77,7 +122,8 @@ export default class CraftReorderButton extends LitElement {
 
     if (
       (direction === 'up' && this.position === 'first') ||
-      (direction === 'down' && this.position === 'last')
+      (direction === 'down' && this.position === 'last') ||
+      this.position === 'only'
     ) {
       return;
     }
@@ -101,22 +147,11 @@ export default class CraftReorderButton extends LitElement {
 
   override render() {
     const label = this.label ?? t('Reorder');
-    const horizontal = this.orientation === 'horizontal';
-    const rtl = horizontal && this._isRtl();
-    // "up" = toward the start of the list; on horizontal lists that's the
-    // inline-start side, so the arrows flip with the writing direction.
-    const upIcon = horizontal
-      ? rtl
-        ? 'arrow-right'
-        : 'arrow-left'
-      : 'arrow-up';
-    const downIcon = horizontal
-      ? rtl
-        ? 'arrow-left'
-        : 'arrow-right'
-      : 'arrow-down';
-    const upLabel = horizontal ? t('Move forward') : t('Move up');
-    const downLabel = horizontal ? t('Move backward') : t('Move down');
+    const [upAction, downAction] = getReorderActions(
+      this.orientation,
+      this.position,
+      this._isRtl()
+    );
 
     return html`
       <craft-action-menu ?disabled="${this.disabled}">
@@ -140,20 +175,20 @@ export default class CraftReorderButton extends LitElement {
 
         <div slot="content">
           <craft-action-item
-            icon="${upIcon}"
-            ?disabled="${this.position === 'first'}"
+            icon="${upAction.icon}"
+            ?disabled="${upAction.disabled}"
             @click="${() => this._reorder('up')}"
             data-action="moveUp"
             command="--move-up"
-            >${upLabel}</craft-action-item
+            >${upAction.label}</craft-action-item
           >
           <craft-action-item
-            icon="${downIcon}"
-            ?disabled="${this.position === 'last'}"
+            icon="${downAction.icon}"
+            ?disabled="${downAction.disabled}"
             @click="${() => this._reorder('down')}"
             data-action="moveDown"
             command="--move-down"
-            >${downLabel}</craft-action-item
+            >${downAction.label}</craft-action-item
           >
         </div>
       </craft-action-menu>

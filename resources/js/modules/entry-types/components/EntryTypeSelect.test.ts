@@ -89,6 +89,43 @@ it('keeps selected entry types visible without edit actions when read-only', () 
   expect(container.textContent).not.toContain('Create');
 });
 
+it('reorders entry types from their action menus', async () => {
+  const update = vi.fn();
+  app = createApp(EntryTypeSelect, {
+    modelValue: [existingEntryType, newEntryType],
+    entryTypes: [existingEntryType, newEntryType],
+    'onUpdate:modelValue': update,
+  });
+  app.mount(container);
+  await nextTick();
+
+  const actionMenus = container.querySelectorAll('craft-action-menu');
+  const firstActions = actionMenus[0]?.actions;
+  const secondActions = actionMenus[1]?.actions;
+  if (!Array.isArray(firstActions) || !Array.isArray(secondActions)) {
+    throw new Error('Expected an action menu for each entry type.');
+  }
+
+  expect(
+    firstActions.map((action) => ('label' in action ? action.label : undefined))
+  ).toEqual(['Move down', undefined, 'Settings', 'Remove']);
+  expect(
+    secondActions.map((action) =>
+      'label' in action ? action.label : undefined
+    )
+  ).toEqual(['Move up', undefined, 'Settings', 'Remove']);
+
+  const moveDownAction = firstActions.find(
+    (action) => 'label' in action && action.label === 'Move down'
+  );
+  if (!moveDownAction || !('onClick' in moveDownAction)) {
+    throw new Error('Expected a Move down action.');
+  }
+  moveDownAction.onClick?.(new Event('click'));
+
+  expect(update).toHaveBeenCalledWith([newEntryType, existingEntryType]);
+});
+
 it('selects an entry type created from the picker', async () => {
   const update = vi.fn();
   app = createApp(EntryTypeSelect, {
