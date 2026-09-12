@@ -55,6 +55,12 @@ export class PromptHandler extends Base {
   #promptBatchNum = 0;
   #promptCallback: PromptSelectionCallback = () => {};
 
+  constructor(
+    private readonly getPromptMount: () => HTMLElement = () => document.body
+  ) {
+    super();
+  }
+
   resetPrompts(): void {
     this.#prompts = [];
     this.#promptBatchCallback = () => {};
@@ -239,6 +245,7 @@ export class PromptHandler extends Base {
     }
 
     this.modal.show();
+    this.getPromptMount().append(this.#modalContainer);
   }
 
   _selectPromptChoice(choice: string, applyToRemaining: boolean): void {
