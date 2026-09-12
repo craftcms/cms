@@ -72,7 +72,14 @@
       if (v) props.table.setPageSize(parseInt(String(v)));
     },
   });
-  const showPagination = computed(() => props.table.getPageCount() > 1);
+  const showPagination = computed(
+    () =>
+      props.table.getPageCount() > 1 &&
+      Boolean(
+        props.table.options.manualPagination ||
+        props.table.options.getPaginationRowModel
+      )
+  );
   const showPageSize = computed(() => props.enableAdjustPageSize);
   const pageSizeLabel = t('Items per page');
   const showDisplayedRows = computed(
