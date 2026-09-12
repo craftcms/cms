@@ -232,9 +232,12 @@ export class Uploader extends BaseUploader {
           }
         },
         settled: () => {
-          this.inProgress--;
           if (!this.destroyed) {
             this.uploadCallbacks.settled?.(upload);
+          }
+
+          this.inProgress--;
+          if (!this.destroyed) {
             if (this.inProgress === 0) {
               this.uploadCallbacks.stop?.();
             }

@@ -100,6 +100,31 @@ it('reports cancellation of a waiting file and keeps start/stop callbacks balanc
   expect(callbacks.settled).toHaveBeenCalledTimes(2);
 });
 
+it('reports only the final concurrent upload as the last upload', async () => {
+  const finishes: Array<(result: Record<string, unknown>) => void> = [];
+  const lastUploads: boolean[] = [];
+  vi.spyOn(FileUpload.prototype, 'upload').mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finishes.push(resolve);
+      })
+  );
+  callbacks.settled.mockImplementation(() => {
+    lastUploads.push(uploader.isLastUpload());
+  });
+
+  uploader.acceptFile(new File(['a'], 'first.txt'));
+  uploader.acceptFile(new File(['b'], 'second.txt'));
+  await vi.waitFor(() => expect(finishes).toHaveLength(2));
+
+  finishes[0]!({assetId: 1});
+  await vi.waitFor(() => expect(callbacks.settled).toHaveBeenCalledOnce());
+  finishes[1]!({assetId: 2});
+  await vi.waitFor(() => expect(callbacks.settled).toHaveBeenCalledTimes(2));
+
+  expect(lastUploads).toEqual([false, true]);
+});
+
 it('detaches a final save and cancels waiting files when a local picker is destroyed', async () => {
   let finish!: (result: Record<string, unknown>) => void;
   const upload = vi
