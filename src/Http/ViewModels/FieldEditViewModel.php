@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -74,6 +75,7 @@ class FieldEditViewModel extends ViewModel
         ];
         $typeField = FormField::make(t('Field Type'), Combobox::make('type')
             ->options($this->fieldTypeOptions())
+            ->requireOptionMatch()
             ->reactive())
             ->instructions(t('What type of field is this?'))
             ->required();
@@ -213,12 +215,17 @@ class FieldEditViewModel extends ViewModel
             ))
             ->map(function (string $class) use ($compatibleFieldTypes, $currentType): array {
                 $name = $class::displayName();
+                $icon = Icons::resolveIconData(
+                    $class === $currentType && ! $this->field instanceof MissingField
+                        ? $this->field->getIcon()
+                        : $class::icon(),
+                );
 
                 return [
                     'data' => [
-                        'icon' => $class === $currentType && ! $this->field instanceof MissingField
-                            ? $this->field->getIcon()
-                            : $class::icon(),
+                        'icon' => $icon['family'] === 'solid'
+                            ? $icon['name']
+                            : "{$icon['family']}/{$icon['name']}",
                     ],
                     'value' => $class,
                     'label' => $class === $currentType || $compatibleFieldTypes->contains($class)
