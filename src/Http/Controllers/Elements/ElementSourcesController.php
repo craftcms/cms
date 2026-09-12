@@ -12,6 +12,7 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,19 +33,23 @@ readonly class ElementSourcesController
         return new JsonResponse([
             'multiPage' => $multiPage,
             'sources' => $sources
-                ->map(fn (array $source) => [
-                    'key' => $source['key'] ?? null,
-                    'type' => $source['type'],
-                    'label' => $source['label'] ?? null,
-                    'heading' => $source['heading'] ?? null,
-                    'page' => $multiPage ? ($source['page'] ?? $this->defaultPage($elementType)) : null,
-                    // ElementSources synthesizes a keyless blank heading as a
-                    // separator. Nothing can address it by Control path and
-                    // store() can't save it, so it gets no Form.
-                    'form' => ($source['key'] ?? '') !== ''
-                        ? $sourceForm->payload($elementType, $source)
-                        : null,
-                ])
+                ->map(function (array $source) use ($elementType, $sourceForm, $multiPage) {
+                    $source = self::withHeadingKey($source);
+
+                    return [
+                        'key' => $source['key'] ?? null,
+                        'type' => $source['type'],
+                        'label' => $source['label'] ?? null,
+                        'heading' => $source['heading'] ?? null,
+                        'page' => $multiPage ? ($source['page'] ?? $this->defaultPage($elementType)) : null,
+                        // ElementSources synthesizes a keyless blank heading as a
+                        // separator. Nothing can address it by Control path and
+                        // store() can't save it, so it gets no Form.
+                        'form' => ($source['key'] ?? '') !== ''
+                            ? $sourceForm->payload($elementType, $source)
+                            : null,
+                    ];
+                })
                 ->values()
                 ->all(),
             'pageSettings' => $elementSources->getPageSettings($elementType),
@@ -92,6 +97,37 @@ readonly class ElementSourcesController
         return new JsonResponse([
             'form' => $scope === [] ? $payload : $payload->forScope($scope),
         ]);
+    }
+
+    /**
+     * Gives a labeled heading a key if it doesn't have one.
+     *
+     * Element types define their group headings without keys (Entry's
+     * “Singles”, “Channels”, and “Structures”, say), as did headings stored
+     * before the modal started keying them. A keyless row can't carry a Form or
+     * be posted back in `sourceOrder`, so it would be dropped from project
+     * config the first time its sources were customized.
+     *
+     * The blank heading {@see ElementSources::getSources()} synthesizes to
+     * separate customized sources from the rest is regenerated on every read,
+     * so it stays keyless and unsaveable.
+     *
+     * @param  array<string, mixed>  $source
+     * @return array<string, mixed>
+     */
+    private static function withHeadingKey(array $source): array
+    {
+        if (
+            ($source['type'] ?? null) !== ElementSources::TYPE_HEADING ||
+            ($source['key'] ?? '') !== '' ||
+            ($source['heading'] ?? '') === ''
+        ) {
+            return $source;
+        }
+
+        $source['key'] = 'heading:'.Str::uuid()->toString();
+
+        return $source;
     }
 
     /**

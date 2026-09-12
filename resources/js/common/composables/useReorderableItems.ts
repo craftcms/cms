@@ -9,12 +9,14 @@ import {
 } from 'vue';
 import {
   type Axis,
+  type DragData,
   type DragState,
   type DropState,
+  type ForeignDropTarget,
   useDragAndDrop,
 } from './useDragAndDrop.js';
 
-export type {DragState, DropState};
+export type {DragData, DragState, DropState, ForeignDropTarget};
 
 type ReorderableElement = Element | ComponentPublicInstance | null;
 
@@ -23,6 +25,12 @@ export interface UseReorderableItemsOptions {
   onReorder: (startIndex: number, finishIndex: number) => void;
   enabled?: () => boolean;
   axis?: Axis;
+  /** Extra data to attach to a row's drag payload, for other lists to read. */
+  dragData?: (id: string | number, index: number) => DragData;
+  /** Whether a row dragged out of another list may be dropped onto a row here. */
+  canDropForeign?: (data: DragData) => boolean;
+  /** A foreign row was dropped on this list, at the given position. */
+  onForeignDrop?: (data: DragData, target: ForeignDropTarget) => void;
 }
 
 export interface UseReorderableItemsReturn {
@@ -49,6 +57,9 @@ export function useReorderableItems(
     useDragAndDrop({
       onReorder: options.onReorder,
       axis: options.axis ?? 'vertical',
+      dragData: (id, index) => options.dragData?.(id, index) ?? {},
+      canDropForeign: (data) => options.canDropForeign?.(data) ?? false,
+      onForeignDrop: (data, target) => options.onForeignDrop?.(data, target),
     });
 
   function resolveElement(el: ReorderableElement): HTMLElement | null {

@@ -1,6 +1,8 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
 ### Administration
+- Single sections are now individual entry sources, rather than sharing one combined “Singles” source. Each single can be given its own place in the control panel navigation and its own index page, and gets its own breadcrumb when edited.
+- Entry breadcrumbs now show a single’s section name even when its source is disabled, where previously no section crumb was shown at all.
 - Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))

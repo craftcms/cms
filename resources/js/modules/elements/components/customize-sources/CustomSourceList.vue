@@ -9,7 +9,11 @@
   import {CraftActionItem, t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
-  import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
+  import {
+    type DragData,
+    useReorderableItems,
+  } from '@/common/composables/useReorderableItems';
   import PageIcon from './PageIcon.vue';
   import VarDump from '@/common/components/VarDump.vue';
 
@@ -33,11 +37,24 @@
     disabled?: (item: T) => boolean;
     /** A row's action menu. Returning nothing renders no menu. */
     actions?: (item: T, index: number) => ActionItem[];
+    /**
+     * What a row's drag carries for the other list to read — a source key, say.
+     * Rows this returns nothing for can still be reordered here, they just
+     * can't be dropped anywhere else.
+     */
+    dragData?: (item: T, index: number) => DragData;
+    /**
+     * Whether a row dragged out of the other list can be dropped into this
+     * one, which emits `foreign-drop` rather than reordering.
+     */
+    canDropForeign?: (data: DragData) => boolean;
   }>();
 
   const emit = defineEmits<{
     (e: 'select', id: string): void;
     (e: 'reorder', from: number, to: number): void;
+    /** `index` is where the row would be inserted, 0 through `items.length`. */
+    (e: 'foreign-drop', data: DragData, index: number): void;
   }>();
 
   // Resolved once per row rather than per binding: the id is read five times in
@@ -60,12 +77,43 @@
     emit('reorder', from, to);
   }
 
+  function rowById(id: string | number) {
+    return rows.value.find((row) => row.id === String(id));
+  }
+
   const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
     useReorderableItems({
       getItemIds: () => rows.value.map((row) => row.id),
       onReorder: reorder,
-      enabled: () => props.items.length > 1,
+      // A lone row has nothing to reorder with, but it can still be dragged
+      // over to the other list, and be dropped on.
+      enabled: () =>
+        props.items.length > 1 ||
+        props.dragData !== undefined ||
+        props.canDropForeign !== undefined,
+      dragData: (id, index) => {
+        const row = rowById(id);
+
+        return row ? (props.dragData?.(row.item, index) ?? {}) : {};
+      },
+      canDropForeign: (data) => props.canDropForeign?.(data) ?? false,
+      onForeignDrop: (data, target) =>
+        emit(
+          'foreign-drop',
+          data,
+          target.index + (target.edge === 'bottom' ? 1 : 0)
+        ),
     });
+
+  /**
+   * Which side of a row a foreign drag would land on, so the insertion point is
+   * marked the way it will be applied.
+   */
+  function foreignDropEdge(id: string): Edge | null {
+    const state = getDropState(id);
+
+    return state.type === 'is-over-foreign' ? state.closestEdge : null;
+  }
 
   function select(item: T, id: string): void {
     if (props.disabled?.(item)) return;
@@ -86,6 +134,8 @@
         'cs-item': true,
         'cs-item--heading': row.type === 'heading',
         'cs-item--dragging': getDragState(row.id).type === 'is-dragging',
+        'cs-item--drop-before': foreignDropEdge(row.id) === 'top',
+        'cs-item--drop-after': foreignDropEdge(row.id) === 'bottom',
       }"
     >
       <craft-reorder-button
@@ -127,6 +177,25 @@
 
   .cs-item {
     display: flex;
+    position: relative;
+  }
+
+  // Where a source dropped into this list would land.
+  .cs-item--drop-before::before,
+  .cs-item--drop-after::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    height: calc(2rem / 16);
+    background-color: var(--c-color-accent-fill-loud);
+  }
+
+  .cs-item--drop-before::before {
+    top: calc(-1rem / 16);
+  }
+
+  .cs-item--drop-after::after {
+    bottom: calc(-1rem / 16);
   }
 
   .cs-item--heading {

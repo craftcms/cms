@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
@@ -37,9 +38,21 @@ it('falls back to the first page for unknown section handles', function () {
         ->assertRedirect(cp_url('content/entries'));
 });
 
-it('redirects the singles handle to the singles source page', function () {
+it('redirects the legacy singles handle to the combined singles page', function () {
     actingAs(User::find()->one());
 
     get(cp_url('entries/singles'))
         ->assertRedirect(cp_url('content/entries/singles'));
+});
+
+it('redirects a single’s handle to its own content index page', function () {
+    actingAs(User::find()->one());
+
+    Section::factory()->create([
+        'type' => SectionType::Single,
+        'handle' => 'homePage',
+    ]);
+
+    get(cp_url('entries/homePage'))
+        ->assertRedirect(cp_url('content/entries/homePage'));
 });
