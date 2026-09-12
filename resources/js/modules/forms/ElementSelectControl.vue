@@ -126,6 +126,11 @@
   const showUpload = computed(
     () => props.editable && props.control.props.canUpload === true
   );
+  const uploadKinds = computed(() => {
+    const kind = props.control.props.criteria.kind;
+
+    return kind === undefined ? undefined : ([kind].flat() as string[]);
+  });
 
   const ids = computed(() =>
     (Array.isArray(props.value)
@@ -636,6 +641,7 @@
           :can-upload="control.props.canUpload"
           :folder-id="control.props.uploadFolderId ?? undefined"
           :fs-type="control.props.fsType ?? undefined"
+          :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"
           :disabled="!showUpload"

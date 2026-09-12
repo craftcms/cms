@@ -17,7 +17,6 @@ class UserPhotoAsset implements LegacyAssetInterface
 {
     public array $depends = [
         CpAsset::class,
-        FileUploadAsset::class,
     ];
 
     public function register(HtmlStack $htmlStack): void
