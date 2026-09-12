@@ -15,25 +15,26 @@
     defineProps<{
       modelValue: Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
       selectedType?: string;
-      isMultiSite?: boolean;
       isHeadless?: boolean;
       disabled?: boolean;
     }>(),
-    {isMultiSite: false, isHeadless: false}
+    {isHeadless: false}
   );
 
   const page = usePage<{
     homepageUri?: string;
     templateOptions: Array<import('@/common/types').SelectItem>;
+    isMultiSite?: boolean;
   }>();
 
   const homepageUri = computed(() => page.props.homepageUri);
   const templateOptions = computed(() => page.props.templateOptions);
+  const isMultiSite = computed(() => page.props.isMultiSite ?? false);
 
   const columnVisibility = computed(() => {
     return {
       name: true,
-      enabled: props.isMultiSite,
+      enabled: !!isMultiSite.value,
       singleHomepage: props.selectedType === 'single',
       singleUri: props.selectedType === 'single',
       uriFormat: props.selectedType !== 'single',
