@@ -13,141 +13,144 @@ CP Styles
 @import './slideout.css';
 
 :root {
-  --global-sidebar-width: calc(226rem / 16);
-  --global-sidebar-collapsed-width: calc(
-    var(--c-size-touch-target) + var(--c-spacing-md)
-  );
-  --global-content-width: calc(1440rem / 16);
-  --header-height: calc(44rem / 16);
-  --global-sidebar-z-index: 10;
-
-  /* Workspace */
-  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
-  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
-  --workspace-bg-image:
-    linear-gradient(
-      to right,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 0
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 1px
+    --global-sidebar-width: calc(226rem / 16);
+    --global-sidebar-collapsed-width: calc(
+        var(--c-size-touch-target) + var(--c-spacing-md)
     );
-  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
-    var(--workspace-bg-image);
+    --global-content-width: calc(1440rem / 16);
+    --header-height: calc(44rem / 16);
+    --global-sidebar-z-index: 10;
+
+    /* Workspace */
+    --workspace-bg-color: var(--c-color-neutral-fill-quiet);
+    --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+    --workspace-bg-image:
+        linear-gradient(
+            to right,
+            color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+            transparent 0
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+            transparent 1px
+        );
+    --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
+        var(--workspace-bg-image);
 }
 
 .skip-link--global {
-  z-index: calc(var(--global-sidebar-z-index) + 1);
+    z-index: calc(var(--global-sidebar-z-index) + 1);
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The
    legacy stylesheet and panel-stack.css each define this too; repeated here so
    the lock still works on a CP page that loads neither. */
 body.no-scroll {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 /**
 Temporary holding for cp-pane styles until craft-pane is a thing
  */
 .cp-workspace {
-  padding: var(--c-spacing-xl);
-  border-radius: var(--c-radius-sm);
-  background-color: var(--workspace-bg-color);
-  background-image: var(--workspace-bg-image);
-  background-size: var(--workspace-bg-size);
-  background-position: -1px -1px;
-  box-shadow: var(--c-shadow-sunken);
-  background-clip: padding-box;
-  border: 1px solid var(--c-color-border-quiet);
-  overflow: clip;
+    padding: var(--c-spacing-xl);
+    border-radius: var(--c-radius-sm);
+    background-color: var(--workspace-bg-color);
+    background-image: var(--workspace-bg-image);
+    background-size: var(--workspace-bg-size);
+    background-position: -1px -1px;
+    box-shadow: var(--c-shadow-sunken);
+    background-clip: padding-box;
+    border: 1px solid var(--c-color-border-quiet);
+    overflow: clip;
 }
 
 .markdown-field > .markdown-field-editor {
-  display: block;
-  min-height: 0;
+    display: block;
+    min-height: 0;
 }
 
 .markdown-field > .markdown-field-editor:not(:defined) {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: var(--markdown-field-min-height, 188px);
-  margin: 0;
-  padding-block: var(--c-spacing-md);
-  padding-inline: var(--c-input-spacing-inline);
-  overflow: auto;
-  border: var(
-      --c-input-border-width,
-      var(--c-form-control-border-width, var(--c-spacing-1px))
-    )
-    var(--c-input-border-style, var(--c-form-control-border-style, solid))
-    var(
-      --c-input-border-color,
-      var(--c-form-control-border-color, var(--c-color-neutral-border-quiet))
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--markdown-field-min-height, 188px);
+    margin: 0;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--c-input-spacing-inline);
+    overflow: auto;
+    border: var(
+            --c-input-border-width,
+            var(--c-form-control-border-width, var(--c-spacing-1px))
+        )
+        var(--c-input-border-style, var(--c-form-control-border-style, solid))
+        var(
+            --c-input-border-color,
+            var(
+                --c-form-control-border-color,
+                var(--c-color-neutral-border-quiet)
+            )
+        );
+    border-radius: var(--c-input-radius, var(--c-radius-sm));
+    background: var(
+        --c-input-fill,
+        var(--c-form-control-fill, var(--c-surface-form))
     );
-  border-radius: var(--c-input-radius, var(--c-radius-sm));
-  background: var(
-    --c-input-fill,
-    var(--c-form-control-fill, var(--c-surface-form))
-  );
-  background-clip: padding-box;
-  box-shadow: var(--c-input-shadow);
-  color: var(--c-input-text, var(--c-text-default));
-  font-family: var(--c-font-mono);
-  font-size: var(--c-text-base);
-  line-height: 1.5;
-  white-space: pre-wrap;
+    background-clip: padding-box;
+    box-shadow: var(--c-input-shadow);
+    color: var(--c-input-text, var(--c-text-default));
+    font-family: var(--c-font-mono);
+    font-size: var(--c-text-base);
+    line-height: 1.5;
+    white-space: pre-wrap;
 }
 
 /**
 Sidebar metadata
  */
 .cp-metadata-list {
-  display: grid;
-  gap: var(--c-spacing-md);
-  margin: 0;
-  padding: 0;
+    display: grid;
+    gap: var(--c-spacing-md);
+    margin: 0;
+    padding: 0;
 }
 
 .cp-metadata-list dt {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .cp-metadata-list__item {
-  display: grid;
-  gap: var(--c-spacing-xs);
-  align-items: baseline;
+    display: grid;
+    gap: var(--c-spacing-xs);
+    align-items: baseline;
 }
 
 /* Roughly 250px */
 @container (width > 16.25rem) {
-  .cp-metadata-list {
-    grid-template-columns: minmax(max-content, 25%) 1fr;
-  }
+    .cp-metadata-list {
+        grid-template-columns: minmax(max-content, 25%) 1fr;
+    }
 
-  .cp-metadata-list__item {
-    grid-column: span 2;
-    display: grid;
-    gap: unset;
-    grid-template-columns: subgrid;
-  }
+    .cp-metadata-list__item {
+        grid-column: span 2;
+        display: grid;
+        gap: unset;
+        grid-template-columns: subgrid;
+    }
 }
 
 /**
 CP Checkbox Select (minimal legacy styling)
  */
 .cp-checkbox-select {
-  display: grid;
-  gap: var(--c-spacing-sm);
+    display: grid;
+    gap: var(--c-spacing-sm);
 }
 
 .cp-checkbox-select__item {
-  display: flex;
-  align-items: center;
-  gap: var(--c-spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
 }
 
 /**
@@ -157,40 +160,47 @@ the drag handler and the hidden checkbox with legacy markup.
 Remove once we have a stable way to create a `<craft-checkbox/>` via twig
  */
 .cp-checkbox-select__item craft-reorder-button {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
 }
 
 /**
 Form controls
  */
 .cp-form-control {
-  --_border-width: var(
-    --c-input-border-width,
-    var(--c-form-control-border-width)
-  );
-  font: inherit;
-  color: var(--c-input-text, var(--c-text-default));
-  position: relative;
-  min-height: calc(
-    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
-  );
-  border-width: var(--_border-width);
-  border-style: var(--c-input-border-style, var(--c-form-control-border-style));
-  border-color: var(--c-input-border-color, var(--c-form-control-border-color));
-  border-radius: var(--c-input-radius, var(--c-radius-sm));
-  padding-block: 0;
-  width: 100%;
-  flex: 1 1 auto;
-  background-color: var(--c-input-fill, var(--c-form-control-fill));
-  box-shadow: var(--c-input-shadow);
-  overflow: clip;
+    --_border-width: var(
+        --c-input-border-width,
+        var(--c-form-control-border-width)
+    );
+    font: inherit;
+    color: var(--c-input-text, var(--c-text-default));
+    position: relative;
+    min-height: calc(
+        var(--c-input-height, var(--c-size-control-md)) - 2 *
+            var(--_border-width)
+    );
+    border-width: var(--_border-width);
+    border-style: var(
+        --c-input-border-style,
+        var(--c-form-control-border-style)
+    );
+    border-color: var(
+        --c-input-border-color,
+        var(--c-form-control-border-color)
+    );
+    border-radius: var(--c-input-radius, var(--c-radius-sm));
+    padding-block: 0;
+    width: 100%;
+    flex: 1 1 auto;
+    background-color: var(--c-input-fill, var(--c-form-control-fill));
+    box-shadow: var(--c-input-shadow);
+    overflow: clip;
 }
 
 .selectize-dropdown.cp-form-control {
-  position: absolute;
-  min-height: 0;
-  overflow: visible;
+    position: absolute;
+    min-height: 0;
+    overflow: visible;
 }
 
 /**
@@ -201,10 +211,10 @@ target — folder rows, sidebar sources, and breadcrumb crumbs alike. Garnish ad
 `.active-drop-target` while the cursor is over a valid target.
  */
 [data-folder-drop-target].active-drop-target {
-  outline: 2px solid var(--c-color-accent-border-loud);
-  outline-offset: -2px;
-  border-radius: var(--c-radius-sm);
-  background-color: var(--c-color-accent-fill-quiet);
+    outline: 2px solid var(--c-color-accent-border-loud);
+    outline-offset: -2px;
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-color-accent-fill-quiet);
 }
 
 /**
@@ -216,8 +226,8 @@ doesn't leave a trail of selected text behind it.
  */
 .is-resizing-inline,
 .is-resizing-inline * {
-  cursor: col-resize !important;
-  user-select: none !important;
+    cursor: col-resize !important;
+    user-select: none !important;
 }
 
 /*
@@ -226,11 +236,11 @@ doesn't leave a trail of selected text behind it.
  * got from wrapping the image and the input in a single label.
  */
 .radio-thumbnail {
-  display: block;
-  margin-block-end: var(--c-spacing-xs);
-  cursor: pointer;
+    display: block;
+    margin-block-end: var(--c-spacing-xs);
+    cursor: pointer;
 }
 
 .radio-thumbnail img {
-  display: block;
+    display: block;
 }

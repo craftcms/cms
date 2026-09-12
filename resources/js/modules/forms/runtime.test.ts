@@ -3,20 +3,20 @@ import {formChangeFromEvent, ignoreModelValueInitialization} from './runtime';
 import type {FormChange} from './types';
 
 describe('ignoreModelValueInitialization', () => {
-  it('only forwards changes after initialization', () => {
-    const changes: Event[] = [];
-    const listener = ignoreModelValueInitialization((event) => {
-      changes.push(event);
+    it('only forwards changes after initialization', () => {
+        const changes: Event[] = [];
+        const listener = ignoreModelValueInitialization((event) => {
+            changes.push(event);
+        });
+        const change = new CustomEvent('model-value-changed');
+
+        listener(
+            new CustomEvent('model-value-changed', {detail: {initialize: true}})
+        );
+        listener(change);
+
+        expect(changes).toEqual([change]);
     });
-    const change = new CustomEvent('model-value-changed');
-
-    listener(
-      new CustomEvent('model-value-changed', {detail: {initialize: true}})
-    );
-    listener(change);
-
-    expect(changes).toEqual([change]);
-  });
 });
 
 describe('formChangeFromEvent', () => {

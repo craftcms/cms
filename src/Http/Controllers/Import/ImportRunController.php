@@ -1,0 +1,228 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Import;
+
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImportRunEditViewModel;
+use CraftCms\Cms\Import\Data\ImportRun as ImportRunData;
+use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
+use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\ImportConfig;
+use CraftCms\Cms\Import\ImportRun;
+use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Url;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
+use function CraftCms\Cms\t;
+
+class ImportRunController
+{
+    use RespondsWithFlash;
+
+    private bool $readOnly;
+
+    public function __construct(
+        private Request $request,
+        GeneralConfig $generalConfig,
+        private readonly ImportRun $importRunService,
+        private readonly Import $importService,
+        private readonly ImportConfig $importConfigService,
+    ) {
+        $this->readOnly = ! $generalConfig->allowAdminChanges;
+    }
+
+    public function index(): InertiaResponse
+    {
+        $currentUser = $this->request->craftUser();
+
+        return Inertia::render('import/runs/Index', [
+            'title' => t('Import runs'),
+            'crumbs' => [
+                ['label' => t('Import'), 'href' => Url::cpUrl('import')],
+            ],
+            'readOnly' => $this->readOnly,
+            'canSave' => ! $this->readOnly && (bool) $currentUser?->can('saveImportRuns'),
+            'canTriggerRuns' => (bool) $currentUser?->can('triggerImportRuns'),
+            'canDelete' => ! $this->readOnly && (bool) $currentUser?->can('deleteImportRuns'),
+            'runs' => $this->importRunService->getImportRuns()
+                ->map(fn (ImportRunData $run) => [
+                    'uid' => $run->uid,
+                    'name' => $run->name,
+                    'handle' => $run->handle,
+                    'editUrl' => Url::cpUrl('import/runs/'.$run->handle),
+                ])
+                ->values()
+                ->all(),
+        ]);
+    }
+
+    public function create(): CpScreenResponse
+    {
+        $old = $this->request->session()->get('run');
+        if (! empty($old)) {
+            $run = new ImportRunData($old);
+        } else {
+            $run = new ImportRunData;
+        }
+
+        return $this->cpScreenResponse($run);
+    }
+
+    public function edit(?ImportRunData $run = null, ?string $handle = null): CpScreenResponse
+    {
+        $handle ??= $run->handle ?? $this->request->input('handle');
+
+        if (is_null($handle)) {
+            return $this->create();
+        }
+
+        abort_if(is_null($found = $this->importRunService->getImportRunByHandle($handle)), 404, 'Import run not found');
+
+        $old = $this->request->session()->get('run');
+        if (! empty($old)) {
+            $run = new ImportRunData($old);
+        }
+
+        $run ??= $found;
+
+        return $this->cpScreenResponse($run);
+    }
+
+    public function store(): Response
+    {
+        $runUid = $this->request->input('uid');
+
+        if ($runUid) {
+            abort_if(is_null($run = $this->importRunService->getImportRunByUid($runUid)), 400, "Invalid run UID: $runUid");
+        } else {
+            $run = new ImportRunData;
+        }
+
+        $run->name = $this->request->input('name', $run->name);
+        $run->handle = $this->request->input('handle', $run->handle);
+        $run->description = $this->request->input('description', $run->description);
+        $run->steps = $this->request->input('steps', $run->steps);
+
+        if (! $this->importRunService->saveRun($run)) {
+            return $this->asModelFailure($run, t('Couldn’t save import run.'), 'run');
+        }
+
+        return $this->asModelSuccess(
+            $run,
+            t('Import run saved.'),
+            'run',
+        );
+    }
+
+    public function destroy(): Response
+    {
+        $uid = $this->request->input('uid');
+
+        if (! $uid) {
+            throw ValidationException::withMessages([
+                'id' => t('uid is required.'),
+            ]);
+        }
+
+        $run = $this->importRunService->getImportRunByUid($uid);
+
+        abort_if(is_null($run), 404, "Invalid import run UID: $uid");
+
+        $this->importRunService->deleteRun($run);
+
+        return $this->asSuccess(t('“{name}” deleted.', [
+            'name' => $run->name,
+        ]));
+    }
+
+    public function run(): Response
+    {
+        $uid = $this->request->input('uid');
+
+        abort_if(is_null($uid), 400, 'Import run uid is required.');
+        abort_if(is_null($run = $this->importRunService->getImportRunByUid($uid)), 400, 'Import run not found.');
+
+        try {
+            $this->importService->dispatchImport($run);
+        } catch (InvalidConfigException $e) {
+            return $this->asFailure(t("Import config “{$e->config}” not found. Review “{$run->name}” run and try again."));
+        } catch (Throwable $e) {
+            ImportLog::warning("Import run failed: {$e->getMessage()}");
+
+            return $this->asFailure(t('Import could not be started.'));
+        }
+
+        return $this->asSuccess(t('Import started'));
+    }
+
+    private function cpScreenResponse(ImportRunData $run): CpScreenResponse
+    {
+        $currentUser = $this->request->craftUser();
+        $canSave = (bool) $currentUser?->can('saveImportRuns');
+        $editable = ! $this->readOnly && $canSave;
+
+        return new CpScreenResponse()
+            ->title(! isset($run->uid) ? t('Create a new import run') : t('Edit {name} import run', ['name' => $run->name]))
+            ->addCrumb(t('Import'), 'import')
+            ->addCrumb(t('Runs'), 'import/runs')
+            ->formAttributes(['action' => action([self::class, 'store'])])
+            ->inertiaPage('import/runs/Edit', new ImportRunEditViewModel(
+                $run,
+                $this->importConfigService,
+                app(FormResolver::class),
+                $this->readOnly,
+                $canSave,
+            ))
+            ->when(
+                $editable,
+                callback: function (CpScreenResponse $response) use ($run) {
+                    $response
+                        ->action('import/runs/save')
+                        ->redirectUrl('import/runs')
+                        ->addAltAction(t('Delete'), [
+                            'variant' => 'danger',
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'DELETE',
+                                'url' => action([self::class, 'destroy']),
+                                'body' => [
+                                    'uid' => $run->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to delete “{name}”?', [
+                                    'name' => $run->name,
+                                ]),
+                            ],
+                        ]);
+
+                    if ($run->uid) {
+                        $response->addAltAction(t('Start this run'), [
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'POST',
+                                'url' => action([self::class, 'run']),
+                                'body' => [
+                                    'uid' => $run->uid,
+                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                ],
+                                'confirm' => t('Are you sure you want to start “{name}” import run?', [
+                                    'name' => $run->name,
+                                ]),
+                            ],
+                        ]);
+                    }
+                },
+            );
+    }
+}

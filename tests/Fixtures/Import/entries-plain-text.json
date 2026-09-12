@@ -1,0 +1,21 @@
+[
+    {
+        "sectionId": "fixtureSection",
+        "typeId": "fixtureType",
+        "title": "first file entry",
+        "plainText": "text from the file"
+    },
+    {
+        "sectionId": "fixtureSection",
+        "typeId": "fixtureType",
+        "title": "second file entry",
+        "plainText": "more text from the file",
+        "slug": "second-file-entry-slug"
+    },
+    {
+        "sectionId": "fixtureSection",
+        "typeId": "fixtureType",
+        "title": "third file entry",
+        "plainText": "even more text from the file"
+    }
+]

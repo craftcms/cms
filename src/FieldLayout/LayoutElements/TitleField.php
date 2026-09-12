@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-class TitleField extends TextField
+class TitleField extends TextField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public bool $mandatory = true;
 
@@ -79,5 +83,17 @@ class TitleField extends TextField
         }
 
         return $items;
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
+    {
+        return true;
     }
 }

@@ -62,6 +62,8 @@ use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use CraftCms\Cms\Http\Controllers\IconController;
+use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
+use CraftCms\Cms\Http\Controllers\Import\ImportRunController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
@@ -308,6 +310,24 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
+        });
+
+        // Import
+        Route::middleware('can:saveImportConfigs')->group(function () {
+            Route::post('import/configs/render-form', [ImportConfigController::class, 'renderForm']);
+            Route::post('import/configs/save', [ImportConfigController::class, 'store']);
+            Route::post('import/configs/save-field-layout-provider', [ImportConfigController::class, 'storeFieldLayoutProvider']);
+            Route::post('import/configs/save-map', [ImportConfigController::class, 'storeMap']);
+            Route::get('import/configs/nested-mapping-cols', [ImportConfigController::class, 'nestedMappingCols']);
+            Route::post('import/configs/duplicate', [ImportConfigController::class, 'duplicate']);
+        });
+        Route::middleware('can:deleteImportConfigs')->delete('import/configs/delete', [ImportConfigController::class, 'destroy']);
+
+        Route::middleware('can:saveImportRuns')->post('import/runs/save', [ImportRunController::class, 'store']);
+        Route::middleware('can:deleteImportRuns')->delete('import/runs/delete', [ImportRunController::class, 'destroy']);
+        Route::middleware('can:triggerImportRuns')->group(function () {
+            Route::post('import/run', [ImportRunController::class, 'run']);
+            Route::post('import/configs/run', [ImportConfigController::class, 'run']);
         });
 
         // Matrix

@@ -7,74 +7,74 @@ the shade, the positioned container, the panel itself, and the generic
 sidebar, preview thumb, image actions) are not included here.
  */
 .slideout-shade {
-  z-index: 100;
-  position: fixed;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--c-surface-shade);
-  opacity: 0;
-  transition: opacity linear 250ms;
+    z-index: 100;
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--c-surface-shade);
+    opacity: 0;
+    transition: opacity linear 250ms;
 }
 
 .slideout-shade:not(.visible) {
-  display: none;
+    display: none;
 }
 
 .slideout-shade.so-visible {
-  opacity: 1;
+    opacity: 1;
 }
 
 .slideout-shade.blurred {
-  backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 
 .slideout-container {
-  z-index: 100;
-  box-sizing: border-box;
-  position: fixed;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available; /* h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384 */
-  pointer-events: none;
+    z-index: 100;
+    box-sizing: border-box;
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: 100vw;
+    height: 100vh;
+    height: -webkit-fill-available; /* h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384 */
+    pointer-events: none;
 }
 
 .slideout-container.so-lp {
-  position: fixed;
-  inset-block-start: var(--m);
-  inset-inline-start: var(--m);
-  width: calc(100% - var(--m) * 2);
-  height: calc(100vh - var(--m) * 2);
+    position: fixed;
+    inset-block-start: var(--m);
+    inset-inline-start: var(--m);
+    width: calc(100% - var(--m) * 2);
+    height: calc(100vh - var(--m) * 2);
 }
 
 body.has-debug-toolbar .slideout-container {
-  height: calc(100vh - 42px);
+    height: calc(100vh - 42px);
 }
 
 .slideout {
-  z-index: 100;
-  box-sizing: border-box;
-  position: absolute;
-  background-color: var(--c-modal-fill);
-  box-shadow: var(--c-modal-shadow);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  pointer-events: all;
-  container-type: inline-size;
+    z-index: 100;
+    box-sizing: border-box;
+    position: absolute;
+    background-color: var(--c-modal-fill);
+    box-shadow: var(--c-modal-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    pointer-events: all;
+    container-type: inline-size;
 }
 
 .slideout.so-mobile,
 .slideout.so-lp {
-  width: 100%;
-  height: 100%;
-  inset-inline-start: 0;
-  transition: inset-block-start linear 250ms;
-  will-change: inset-block-start;
-  box-shadow: none;
+    width: 100%;
+    height: 100%;
+    inset-inline-start: 0;
+    transition: inset-block-start linear 250ms;
+    will-change: inset-block-start;
+    box-shadow: none;
 }
 
 /*.slideout.so-lp {*/
@@ -82,22 +82,22 @@ body.has-debug-toolbar .slideout-container {
 /*}*/
 
 .slideout:not(.so-mobile, .so-lp) {
-  border-start-start-radius: var(--radius-lg);
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-  border-end-start-radius: var(--radius-lg);
-  inset-block-start: 0;
-  width: 55vw;
-  min-height: 100vh;
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: var(--radius-lg);
+    inset-block-start: 0;
+    width: 55vw;
+    min-height: 100vh;
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
-  .slideout:not(.so-mobile, .so-lp) {
-    transition:
-      inset-inline-start linear 250ms,
-      inset-inline-end linear 250ms;
-    will-change: transform;
-  }
+    .slideout:not(.so-mobile, .so-lp) {
+        transition:
+            inset-inline-start linear 250ms,
+            inset-inline-end linear 250ms;
+        will-change: transform;
+    }
 }
 
 /*.slideout > .pane-header {*/
@@ -121,12 +121,12 @@ body.has-debug-toolbar .slideout-container {
 /*}*/
 
 .slideout__body {
-  flex: 1;
-  overflow: hidden auto;
-  position: relative;
-  padding: var(--c-spacing-lg);
-  display: flex;
-  flex-direction: column;
+    flex: 1;
+    overflow: hidden auto;
+    position: relative;
+    padding: var(--c-spacing-lg);
+    display: flex;
+    flex-direction: column;
 }
 
 /*.slideout > .so-body:not(:last-child) {*/
@@ -144,38 +144,38 @@ body.has-debug-toolbar .slideout-container {
 /*}*/
 
 .slideout__footer {
-  position: relative;
-  display: flex;
-  gap: var(--c-spacing-sm);
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  padding-block: var(--c-spacing-sm);
-  padding-inline: var(--c-spacing-md);
-  border-block-start: var(--c-color-neutral-border-quiet);
-  background: var(--c-modal-fill);
-  z-index: 3;
+    position: relative;
+    display: flex;
+    gap: var(--c-spacing-sm);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
+    border-block-start: var(--c-color-neutral-border-quiet);
+    background: var(--c-modal-fill);
+    z-index: 3;
 }
 
 .slideout__footer > .so-notice {
-  display: flex;
-  align-items: center;
-  margin-inline-end: auto;
+    display: flex;
+    align-items: center;
+    margin-inline-end: auto;
 }
 
 .slideout__footer > .so-extra {
-  flex: 0 0 100%;
-  margin-block: 0;
-  margin-inline: var(--neg-padding);
-  padding-block: 0 8px;
-  padding-inline: var(--padding);
-  border-block-end: 1px solid var(--border-hairline);
+    flex: 0 0 100%;
+    margin-block: 0;
+    margin-inline: var(--neg-padding);
+    padding-block: 0 8px;
+    padding-inline: var(--padding);
+    border-block-end: 1px solid var(--border-hairline);
 }
 
 @container (width > 700px) {
-  .slideout__footer > .so-extra {
-    margin: 0;
-    padding: 0;
-    border: none;
-    flex: auto 0 1;
-  }
+    .slideout__footer > .so-extra {
+        margin: 0;
+        padding: 0;
+        border: none;
+        flex: auto 0 1;
+    }
 }

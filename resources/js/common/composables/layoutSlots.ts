@@ -16,42 +16,42 @@ import {inject, provide, reactive, type InjectionKey} from 'vue';
  * in document order.
  */
 export interface LayoutSlotRegistry {
-  /** Distinguishes this shell's outlets in the DOM. */
-  scope: string;
-  register(name: string): void;
-  unregister(name: string): void;
-  has(name: string): boolean;
+    /** Distinguishes this shell's outlets in the DOM. */
+    scope: string;
+    register(name: string): void;
+    unregister(name: string): void;
+    has(name: string): boolean;
 }
 
 export const LayoutSlotRegistryKey: InjectionKey<LayoutSlotRegistry> =
-  Symbol('layoutSlotRegistry');
+    Symbol('layoutSlotRegistry');
 
 let nextScope = 0;
 
 export function createLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
-  const counts = reactive(new Map<string, number>());
+    const counts = reactive(new Map<string, number>());
 
-  return {
-    scope: scope ?? `screen-${++nextScope}`,
+    return {
+        scope: scope ?? `screen-${++nextScope}`,
 
-    register(name) {
-      counts.set(name, (counts.get(name) ?? 0) + 1);
-    },
+        register(name) {
+            counts.set(name, (counts.get(name) ?? 0) + 1);
+        },
 
-    unregister(name) {
-      const next = (counts.get(name) ?? 0) - 1;
+        unregister(name) {
+            const next = (counts.get(name) ?? 0) - 1;
 
-      if (next <= 0) {
-        counts.delete(name);
-      } else {
-        counts.set(name, next);
-      }
-    },
+            if (next <= 0) {
+                counts.delete(name);
+            } else {
+                counts.set(name, next);
+            }
+        },
 
-    has(name) {
-      return (counts.get(name) ?? 0) > 0;
-    },
-  };
+        has(name) {
+            return (counts.get(name) ?? 0) > 0;
+        },
+    };
 }
 
 /**
@@ -62,10 +62,10 @@ const defaultRegistry = createLayoutSlotRegistry('default');
 
 /** Called by a screen shell during setup. */
 export function provideLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
-  const registry = createLayoutSlotRegistry(scope);
-  provide(LayoutSlotRegistryKey, registry);
+    const registry = createLayoutSlotRegistry(scope);
+    provide(LayoutSlotRegistryKey, registry);
 
-  return registry;
+    return registry;
 }
 
 /**
@@ -77,5 +77,5 @@ export function provideLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
  * `layoutSlots.test.ts`.
  */
 export function useLayoutSlotRegistry(): LayoutSlotRegistry {
-  return inject(LayoutSlotRegistryKey, defaultRegistry);
+    return inject(LayoutSlotRegistryKey, defaultRegistry);
 }

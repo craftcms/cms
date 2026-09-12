@@ -16,11 +16,11 @@ import {registerCraftGlobals} from '@/common/craft-global';
  * this just relocates it into `resources/js`.
  */
 class ElementThumbLoader extends ThumbnailLoader {
-  override load($elements: any): void {
-    for (let i = 0; i < $elements.length; i++) {
-      super.load($elements[i], '.thumb[data-sizes]');
+    override load($elements: any): void {
+        for (let i = 0; i < $elements.length; i++) {
+            super.load($elements[i], '.thumb[data-sizes]');
+        }
     }
-  }
 }
 
 registerCraftGlobals({ElementThumbLoader});

@@ -1,11 +1,11 @@
 import {
-  computed,
-  effectScope,
-  nextTick,
-  reactive,
-  ref,
-  watch,
-  type Ref,
+    computed,
+    effectScope,
+    nextTick,
+    reactive,
+    ref,
+    watch,
+    type Ref,
 } from 'vue';
 import {useMediaQuery} from '@vueuse/core';
 import {useLocalStorage} from '@/common/composables/useStorage';
@@ -21,11 +21,11 @@ import {useLocalStorage} from '@/common/composables/useStorage';
  * the other kept rendering the old state.
  */
 const sidebar = reactive<{
-  mode: 'docked' | 'floating';
-  visibility: 'hidden' | 'visible';
+    mode: 'docked' | 'floating';
+    visibility: 'hidden' | 'visible';
 }>({
-  mode: 'floating',
-  visibility: 'hidden',
+    mode: 'floating',
+    visibility: 'hidden',
 });
 
 /**
@@ -50,55 +50,58 @@ const isLargeScreen = useMediaQuery('(min-width: 1024px)');
 let scope: ReturnType<typeof effectScope> | null = null;
 
 function initialize(): void {
-  if (scope) {
-    return;
-  }
+    if (scope) {
+        return;
+    }
 
-  scope = effectScope(true);
-  scope.run(() => {
-    // Persisted in localStorage rather than a cookie: no request needs to
-    // carry it, since nothing on the server reads it. Craft 5 used a cookie
-    // because PHP rendered the sidebar and had to render it already collapsed;
-    // this one is rendered by Vue, and with Inertia SSR off the preference is
-    // read before the first paint either way.
-    const collapsedPreference = useLocalStorage('sidebar.collapsed', false);
+    scope = effectScope(true);
+    scope.run(() => {
+        // Persisted in localStorage rather than a cookie: no request needs to
+        // carry it, since nothing on the server reads it. Craft 5 used a cookie
+        // because PHP rendered the sidebar and had to render it already collapsed;
+        // this one is rendered by Vue, and with Inertia SSR off the preference is
+        // read before the first paint either way.
+        const collapsedPreference = useLocalStorage('sidebar.collapsed', false);
 
-    watch(
-      isLargeScreen,
-      (value) => {
-        if (value) {
-          sidebar.mode = 'docked';
-          sidebar.visibility = collapsedPreference.value ? 'hidden' : 'visible';
-        } else {
-          sidebar.mode = 'floating';
-          sidebar.visibility = 'hidden';
-        }
-      },
-      {immediate: true}
-    );
+        watch(
+            isLargeScreen,
+            (value) => {
+                if (value) {
+                    sidebar.mode = 'docked';
+                    sidebar.visibility = collapsedPreference.value
+                        ? 'hidden'
+                        : 'visible';
+                } else {
+                    sidebar.mode = 'floating';
+                    sidebar.visibility = 'hidden';
+                }
+            },
+            {immediate: true}
+        );
 
-    // Only remember what the user chose for the docked sidebar. A floating one
-    // is hidden because the window is narrow, not because anyone asked for it,
-    // and storing that would expand the rail on the next wide-screen visit.
-    watch(
-      () => sidebar.visibility,
-      (visibility) => {
-        if (sidebar.mode !== 'docked') {
-          return;
-        }
+        // Only remember what the user chose for the docked sidebar. A floating one
+        // is hidden because the window is narrow, not because anyone asked for it,
+        // and storing that would expand the rail on the next wide-screen visit.
+        watch(
+            () => sidebar.visibility,
+            (visibility) => {
+                if (sidebar.mode !== 'docked') {
+                    return;
+                }
 
-        collapsedPreference.value = visibility === 'hidden';
-      }
-    );
-  });
+                collapsedPreference.value = visibility === 'hidden';
+            }
+        );
+    });
 }
 
 function toggle() {
-  sidebar.visibility = sidebar.visibility === 'visible' ? 'hidden' : 'visible';
+    sidebar.visibility =
+        sidebar.visibility === 'visible' ? 'hidden' : 'visible';
 }
 
 function close() {
-  sidebar.visibility = 'hidden';
+    sidebar.visibility = 'hidden';
 }
 
 /**
@@ -114,22 +117,22 @@ function close() {
  * be worse than doing nothing.
  */
 watch(
-  () => sidebar.visibility,
-  async (visibility) => {
-    if (visibility !== 'hidden') {
-      return;
+    () => sidebar.visibility,
+    async (visibility) => {
+        if (visibility !== 'hidden') {
+            return;
+        }
+
+        const active = document.activeElement;
+        const inSidebar = active?.closest?.('.cp-sidebar') != null;
+
+        if (!inSidebar) {
+            return;
+        }
+
+        await nextTick();
+        toggleButton.value?.focus();
     }
-
-    const active = document.activeElement;
-    const inSidebar = active?.closest?.('.cp-sidebar') != null;
-
-    if (!inSidebar) {
-      return;
-    }
-
-    await nextTick();
-    toggleButton.value?.focus();
-  }
 );
 
 /**
@@ -139,45 +142,45 @@ watch(
  * content, actually leaves.
  */
 const collapsed = computed(
-  () => sidebar.mode === 'docked' && sidebar.visibility === 'hidden'
+    () => sidebar.mode === 'docked' && sidebar.visibility === 'hidden'
 );
 
 const icon = computed(() =>
-  sidebar.visibility === 'visible'
-    ? 'arrow-left-to-line'
-    : 'arrow-right-from-line'
+    sidebar.visibility === 'visible'
+        ? 'arrow-left-to-line'
+        : 'arrow-right-from-line'
 );
 
 const width = computed(() => {
-  if (sidebar.mode === 'docked') {
-    return sidebar.visibility === 'visible'
-      ? 'var(--global-sidebar-width)'
-      : 'var(--global-sidebar-collapsed-width)';
-  }
+    if (sidebar.mode === 'docked') {
+        return sidebar.visibility === 'visible'
+            ? 'var(--global-sidebar-width)'
+            : 'var(--global-sidebar-collapsed-width)';
+    }
 
-  return 'auto';
+    return 'auto';
 });
 
 export function useGlobalSidebar(): {
-  isLargeScreen: Ref<boolean>;
-  sidebar: typeof sidebar;
-  collapsed: Ref<boolean>;
-  toggleButton: Ref<HTMLElement | null>;
-  toggle: () => void;
-  close: () => void;
-  icon: Ref<string>;
-  width: Ref<string>;
+    isLargeScreen: Ref<boolean>;
+    sidebar: typeof sidebar;
+    collapsed: Ref<boolean>;
+    toggleButton: Ref<HTMLElement | null>;
+    toggle: () => void;
+    close: () => void;
+    icon: Ref<string>;
+    width: Ref<string>;
 } {
-  initialize();
+    initialize();
 
-  return {
-    isLargeScreen,
-    sidebar,
-    collapsed,
-    toggleButton,
-    toggle,
-    close,
-    icon,
-    width,
-  };
+    return {
+        isLargeScreen,
+        sidebar,
+        collapsed,
+        toggleButton,
+        toggle,
+        close,
+        icon,
+        width,
+    };
 }

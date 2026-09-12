@@ -8,6 +8,8 @@ use ArrayIterator;
 use BadMethodCallException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Concerns\Importable;
+use CraftCms\Cms\Component\Contracts\ImportableInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
@@ -16,6 +18,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Support\Attributes\Importable as ImportableAttribute;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -40,7 +43,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules<static> $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements AllowableInSandbox, ElementInterface
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface, ImportableInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -70,6 +73,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
+    use Importable;
     use LegacyConstants;
     use Macroable {
         __call as macroCall;
@@ -84,6 +88,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var int|null The element's ID
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('id', 'ID', canBeCleared: false)]
     public ?int $id = null;
 
     /**
@@ -95,6 +100,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s UID
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('uid', 'UID', canBeCleared: false)]
     public ?string $uid = null;
 
     /**
@@ -108,12 +114,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s title
      */
     #[AllowedInSandbox]
+    // importing is handled via native field
     public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('slug', 'Slug')]
     public ?string $slug = null;
 
     /**

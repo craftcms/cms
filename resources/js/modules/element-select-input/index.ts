@@ -4,17 +4,17 @@ import {BaseElementSelectInput} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
 import {TagSelectInput} from './tag-select-input';
 import CraftElementSelectInput, {
-  CraftAssetSelectInput,
-  CraftEntrySelectInput,
+    CraftAssetSelectInput,
+    CraftEntrySelectInput,
 } from './element-select-input.ce';
 import {defineElement} from '@/common/web-components';
 
 // Assign legacy `Craft.*` globals so PHP-emitted `new Craft.BaseElementSelectInput({…})`
 // and subclasses via `.extend()` keep working.
 registerCraftGlobals({
-  BaseElementSelectInput,
-  EntrySelectInput,
-  TagSelectInput,
+    BaseElementSelectInput,
+    EntrySelectInput,
+    TagSelectInput,
 });
 
 defineElement('craft-asset-select-input', CraftAssetSelectInput);

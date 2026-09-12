@@ -26,12 +26,12 @@ registerCraftGlobals({FieldLayoutDesigner});
 defineElement('craft-field-layout-designer', CraftFieldLayoutDesigner);
 
 export {
-  FieldLayoutDesigner,
-  Tab,
-  Element,
-  CardViewDesigner,
-  BaseDrag,
-  TabDrag,
-  ElementDrag,
-  CraftFieldLayoutDesigner,
+    FieldLayoutDesigner,
+    Tab,
+    Element,
+    CardViewDesigner,
+    BaseDrag,
+    TabDrag,
+    ElementDrag,
+    CraftFieldLayoutDesigner,
 };

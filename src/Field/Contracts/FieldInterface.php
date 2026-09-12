@@ -23,6 +23,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -532,4 +533,9 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * @param  ElementInterface  $element  The element that was just restored
      */
     public function afterElementRestore(ElementInterface $element): void;
+
+    /**
+     * Normalizes value so that it can be imported into the field.
+     */
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): mixed;
 }

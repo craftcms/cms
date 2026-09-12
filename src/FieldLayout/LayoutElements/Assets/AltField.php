@@ -7,6 +7,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -15,8 +17,10 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-class AltField extends TextareaField
+class AltField extends TextareaField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'alt';
 

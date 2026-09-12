@@ -8,7 +8,9 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Path;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     Cms::setIsInstalled(false);
@@ -513,6 +515,47 @@ describe('tempFilePath', function () {
 
         // Cleanup
         @unlink($path);
+    });
+});
+
+describe('downloadUrl', function () {
+    test('throws for a URL with a disallowed hostname, without making a request', function () {
+        Http::fake();
+
+        expect(fn () => AssetsHelper::downloadUrl('http://127.0.0.1/file.txt', AssetsHelper::tempFilePath()))
+            ->toThrow(InvalidArgumentException::class);
+
+        Http::assertNothingSent();
+    });
+
+    test('throws for a URL with an invalid scheme, without making a request', function () {
+        Http::fake();
+
+        expect(fn () => AssetsHelper::downloadUrl('file:///etc/passwd', AssetsHelper::tempFilePath()))
+            ->toThrow(InvalidArgumentException::class);
+
+        Http::assertNothingSent();
+    });
+
+    test('downloads a remote file to the given temp path', function () {
+        Http::fake([
+            'example.com/*' => Http::response('hello from the internet'),
+        ]);
+
+        $tempPath = AssetsHelper::tempFilePath();
+
+        AssetsHelper::downloadUrl('http://example.com/file.txt', $tempPath);
+
+        expect(file_get_contents($tempPath))->toBe('hello from the internet');
+    });
+
+    test('does not swallow a failed response', function () {
+        Http::fake([
+            'example.com/*' => Http::response('not found', 404),
+        ]);
+
+        expect(fn () => AssetsHelper::downloadUrl('http://example.com/missing.txt', AssetsHelper::tempFilePath()))
+            ->toThrow(RequestException::class);
     });
 });
 

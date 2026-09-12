@@ -7,6 +7,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -15,13 +18,14 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-class LatLongField extends BaseNativeField
+class LatLongField extends BaseNativeField implements ImportableFieldLayoutElementInterface
 {
     #[Override]
     public string $attribute = 'latLong';
@@ -172,5 +176,56 @@ class LatLongField extends BaseNativeField
         }
 
         return '61.108, -149.779';
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        $cols = [
+            'multiple' => true,
+            'heading' => $this->label(),
+        ];
+
+        $subfields = [];
+
+        $parts = [
+            ['attribute' => 'latitude', 'label' => t('Latitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+            ['attribute' => 'longitude', 'label' => t('Longitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+        ];
+
+        foreach ($parts as $part) {
+            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+
+            $subfields[] = [
+                'handle' => $part['attribute'],
+                'label' => $part['label'],
+                'prefixedHandleForMap' => $prefixedHandleForMap,
+                'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+                'prefixedHandleForClear' => $prefixedHandleForClear,
+                'prefixedHandle' => $prefixedHandle,
+                'prefixedHandleAsArray' => $prefixedHandleAsArray,
+                'isContainer' => false,
+                'canBeMatchCriteria' => $part['canBeMatchCriteria'],
+                'canBeCleared' => $part['canBeCleared'],
+            ];
+        }
+
+        $cols['subfields'] = $subfields;
+
+        return $cols;
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
     }
 }

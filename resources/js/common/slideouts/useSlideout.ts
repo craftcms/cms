@@ -10,11 +10,11 @@ import type {OpenSlideoutOptions} from './types';
  * legacy code and event handlers can reach it too.
  */
 export function useSlideoutOpener() {
-  return {
-    open: (href: string, options?: OpenSlideoutOptions) =>
-      openSlideout(href, options),
-    closeAll: closeAllSlideouts,
-  };
+    return {
+        open: (href: string, options?: OpenSlideoutOptions) =>
+            openSlideout(href, options),
+        closeAll: closeAllSlideouts,
+    };
 }
 
 /**
@@ -22,5 +22,5 @@ export function useSlideoutOpener() {
  * page. Page components use this to close themselves after a save.
  */
 export function useSlideout(): SlideoutController | null {
-  return inject(SlideoutControllerKey, null);
+    return inject(SlideoutControllerKey, null);
 }
