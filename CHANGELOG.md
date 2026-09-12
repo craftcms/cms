@@ -5,6 +5,7 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 
+- Fixed a bug where Save and continue editing left newly created control panel items on their creation page. ([#19619](https://github.com/craftcms/cms/pull/19619))
 - Fixed a bug where the “Structure” sorting option was missing from structure element indexes. ([#19620](https://github.com/craftcms/cms/pull/19620))
 - Fixed a bug where unpaginated Inertia admin tables could show nonfunctional pagination controls. ([#19618](https://github.com/craftcms/cms/pull/19618))
 - Fixed a bug where creating an entry type from an entry type select field opened an empty slideout. ([#19617](https://github.com/craftcms/cms/pull/19617))
