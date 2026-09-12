@@ -33,10 +33,10 @@ Crucially, both share the **same transform functions** from
 orchestration around those; they do **not** reimplement the transforms. So a
 Twig page and its eventual Vue replacement generate identical values.
 
-Exception: **slug** generation has no shared transform (it depends on the
-page-global `XRegExp` and live `Craft.*` config, which don't belong in the
-component package), so `slug-generator.ts` keeps that transform inline while
-still reusing `asciiString`.
+Exception: **slug** generation has no shared transform because its live
+`Craft.*` config doesn't belong in the component package, so
+`slug-generator.ts` keeps that transform inline while still reusing
+`asciiString`.
 
 ## Shape (differs from the standard module pattern)
 
@@ -64,12 +64,11 @@ The module is **jQuery-free** — the base orchestrator uses plain DOM
 visibility) and `@craftcms/garnish` `Base`'s jQuery-free listener registry.
 `Craft.selectFullValue` was inlined so the base doesn't even touch `Craft`.
 
-The only remaining page globals (`declare const … : any`) are in the subclasses,
-and neither is jQuery:
+The only remaining page global (`declare const … : any`) is in the subclasses,
+and it isn't jQuery:
 
 - **`Craft`** — live config only (`Craft.handleCasing`, `Craft.slugWordSeparator`,
   `Craft.limitAutoSlugsToAscii`, `Craft.allowUppercaseInSlug`).
-- **`XRegExp`** — slug unicode word matching.
 
 String transforms (`asciiString`, `toHandle`, `toUriFormat`) come from
 `@craftcms/ui`.

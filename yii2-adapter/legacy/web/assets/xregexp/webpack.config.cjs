@@ -6,9 +6,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = getConfig({
   context: __dirname,
   config: {
-    output: {
-      path: __dirname + '/../../../cms-assets/resources/legacy/xregexp/dist',
-    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [
