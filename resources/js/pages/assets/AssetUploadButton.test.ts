@@ -4,6 +4,31 @@ import AssetUploadButton from './AssetUploadButton.vue';
 import {Uploader} from '@/modules/uploader/uploader';
 vi.mock('@/modules/uploader/uploader', () => ({Uploader: vi.fn()}));
 
+const conflicts = vi.hoisted(() => ({
+  prompts: [] as any[],
+  resolve: null as ((prompts: any[]) => void) | null,
+}));
+
+vi.mock('@/modules/prompt-handler/prompt-handler', () => ({
+  PromptHandler: class {
+    resetPrompts() {
+      conflicts.prompts = [];
+    }
+
+    addPrompt(prompt: any) {
+      conflicts.prompts.push(prompt);
+    }
+
+    getPromptCount() {
+      return conflicts.prompts.length;
+    }
+
+    showBatchPrompts(resolve: (prompts: any[]) => void) {
+      conflicts.resolve = resolve;
+    }
+  },
+}));
+
 const state = vi.hoisted(() => ({
   reload: vi.fn(),
 }));
@@ -23,6 +48,8 @@ beforeEach(() => {
   destroy = vi.fn();
   setParams = vi.fn();
   isLastUpload = vi.fn(() => true);
+  conflicts.prompts = [];
+  conflicts.resolve = null;
 
   vi.mocked(Uploader)
     .mockReset()
@@ -126,16 +153,27 @@ it('reports a completed upload to whoever is listening', async () => {
   app.unmount();
 });
 
-it('holds back an upload still waiting on a filename conflict', async () => {
+it('reports a conflicting upload after the user chooses to keep both', async () => {
   const uploaded = vi.fn();
   const {app, events} = mountUploader({onUploaded: uploaded});
   await nextTick();
 
-  events().done(
-    ...uploadDone({assetId: 7, filename: 'seascape.jpg', conflict: 'A file…'})
-  );
+  const result = {
+    assetId: 7,
+    filename: 'seascape.jpg',
+    suggestedFilename: 'seascape_1.jpg',
+    conflict: 'A file…',
+  };
+  events().done(...uploadDone(result));
+  events().settled();
 
   expect(uploaded).not.toHaveBeenCalled();
+  expect(conflicts.resolve).not.toBeNull();
+
+  conflicts.resolve!([{...result, choice: 'keepBoth'}]);
+  await nextTick();
+
+  expect(uploaded).toHaveBeenCalledWith({id: 7, label: 'seascape_1.jpg'});
 
   app.unmount();
 });

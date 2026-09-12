@@ -1,9 +1,13 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
   import {router} from '@inertiajs/vue3';
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+  import ResolveUploadConflictController from '@/actions/CraftCms/Cms/Http/Controllers/Assets/ResolveUploadConflictController';
+  import {deleteAsset} from '@/actions/CraftCms/Cms/Http/Controllers/Assets/ActionController';
   import {store} from '@/routes/craft/actions/craft/cp/uploads';
   import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
+  import {PromptHandler} from '@/modules/prompt-handler/prompt-handler';
 
   import {Uploader as FileUploader} from '@/modules/uploader/uploader';
 
@@ -11,6 +15,20 @@
     destroy(): void;
     isLastUpload(): boolean;
     setParams(params: Record<string, unknown>): void;
+  }
+
+  type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
+
+  interface ConflictPrompt extends UploadResult {
+    assetId: number | string;
+    filename: string;
+    conflict: string;
+    choice?: string;
+    prompt: {
+      message: string;
+      choices: {value: string; title: string}[];
+      modalSettings: {hideOnEsc: boolean; hideOnShadeClick: boolean};
+    };
   }
 
   // `withDefaults`, because Vue casts an absent optional Boolean prop to
@@ -44,7 +62,78 @@
 
   const fileInput = ref<HTMLInputElement>();
   const enabled = computed(() => props.canUpload && !!props.folderId);
+  const promptHandler = new PromptHandler(
+    () =>
+      fileInput.value?.closest<HTMLElement>('craft-element-selector-modal') ??
+      document.body
+  );
   let uploader: Uploader | null = null;
+
+  function reportUploaded(result: UploadResult): void {
+    if (!result.assetId) {
+      return;
+    }
+
+    emit('uploaded', {
+      id: Number(result.assetId),
+      label: String(result.filename ?? result.assetId),
+    });
+  }
+
+  function queueConflict(result: Omit<ConflictPrompt, 'prompt'>): void {
+    promptHandler.addPrompt({
+      ...result,
+      prompt: {
+        message: result.conflict,
+        choices: [
+          {value: 'keepBoth', title: t('Keep both')},
+          {value: 'replace', title: t('Replace it')},
+        ],
+        modalSettings: {hideOnEsc: false, hideOnShadeClick: false},
+      },
+    });
+  }
+
+  function finishUploads(): void {
+    promptHandler.resetPrompts();
+
+    if (props.reloadOnComplete) {
+      router.reload({only: ['data', 'pagination']});
+    }
+  }
+
+  async function resolveConflicts(conflicts: ConflictPrompt[]): Promise<void> {
+    try {
+      for (const conflict of conflicts) {
+        if (conflict.choice === 'keepBoth') {
+          reportUploaded({
+            ...conflict,
+            filename: conflict.suggestedFilename ?? conflict.filename,
+          });
+        } else if (conflict.choice === 'replace') {
+          const target = conflict.conflictingAssetId
+            ? {assetId: conflict.conflictingAssetId}
+            : {targetFilename: conflict.filename};
+          const {data} = await actionClient.post<UploadResult>(
+            ResolveUploadConflictController.url(),
+            {sourceAssetId: Number(conflict.assetId), ...target}
+          );
+
+          reportUploaded(data);
+        } else {
+          await actionClient.post(deleteAsset.url(), {
+            assetId: Number(conflict.assetId),
+          });
+        }
+      }
+    } catch (error) {
+      Craft.cp?.displayError?.(
+        error instanceof Error ? error.message : t('Upload failed.')
+      );
+    } finally {
+      finishUploads();
+    }
+  }
 
   function createUploader(): void {
     uploader?.destroy();
@@ -62,14 +151,14 @@
       ...(props.dropZone ? {dropZone: props.dropZone} : {}),
       url: store.url(),
       on: {
-        done: ({result}) => {
+        start: () => promptHandler.resetPrompts(),
+        done: ({result}: {result: UploadResult}) => {
           Craft.cp?.runQueue?.();
 
-          if (result?.assetId && !result?.conflict) {
-            emit('uploaded', {
-              id: Number(result.assetId),
-              label: String(result.filename ?? result.assetId),
-            });
+          if (result.assetId && result.filename && result.conflict) {
+            queueConflict(result as Omit<ConflictPrompt, 'prompt'>);
+          } else {
+            reportUploaded(result);
           }
         },
         fail: ({error, canceled}) => {
@@ -80,8 +169,16 @@
           }
         },
         settled: () => {
-          if (uploader?.isLastUpload() && props.reloadOnComplete) {
-            router.reload({only: ['data', 'pagination']});
+          if (!uploader?.isLastUpload()) {
+            return;
+          }
+
+          if (promptHandler.getPromptCount()) {
+            promptHandler.showBatchPrompts((conflicts) => {
+              void resolveConflicts(conflicts as ConflictPrompt[]);
+            });
+          } else {
+            finishUploads();
           }
         },
       } satisfies UploaderCallbacks,
