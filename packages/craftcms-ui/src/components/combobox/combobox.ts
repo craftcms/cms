@@ -1,7 +1,6 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
 import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
-import {keyed} from 'lit/directives/keyed.js';
 import {repeat} from 'lit/directives/repeat.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
@@ -133,6 +132,7 @@ export default class CraftCombobox extends LionCombobox {
     // We own filtering (see `matchCondition`), so keep Lion in list mode and
     // avoid its inline-autofill, which would fight our pre-filtered set.
     this.autocomplete = 'list';
+    this.selectionFollowsFocus = false;
 
     // Lion announces while it still holds the previous value: a requested value
     // is only adopted once the option naming it registers, so until then
@@ -156,15 +156,19 @@ export default class CraftCombobox extends LionCombobox {
         return;
       }
       if (
-        this.multipleChoice &&
         event.target === this &&
         (event as CustomEvent).detail?.isTriggeredByUser
       ) {
-        this.pendingModelValue = [...this.selectedValues];
-        this.syncInputs();
-        this.dispatchEvent(
-          new Event('change', {bubbles: true, composed: true})
-        );
+        this.pendingModelValue = this.multipleChoice
+          ? [...this.selectedValues]
+          : this.modelValue;
+
+        if (this.multipleChoice) {
+          this.syncInputs();
+          this.dispatchEvent(
+            new Event('change', {bubbles: true, composed: true})
+          );
+        }
       }
     });
     this.addEventListener('focusout', (event) => {
@@ -276,7 +280,7 @@ export default class CraftCombobox extends LionCombobox {
   #onInput = () => {
     this.#filtering = true;
     this.#renderOptions();
-    if (!this.multipleChoice) {
+    if (!this.multipleChoice && !this.requireOptionMatch) {
       this.#syncModelFromInput();
     }
   };
@@ -334,6 +338,10 @@ export default class CraftCombobox extends LionCombobox {
    */
   override matchCondition(option: CraftOption) {
     return !this.multipleChoice || !option.hidden;
+  }
+
+  override _autoSelectCondition() {
+    return !this.multipleChoice;
   }
 
   /**
@@ -459,37 +467,14 @@ export default class CraftCombobox extends LionCombobox {
 
     // Retain selected option elements while filtering: Lion derives checked
     // values from registered options, including selections outside the limit.
-    const content = html`${this.multipleChoice
-      ? repeat(
-          rows,
-          (row) => row.value,
-          (row) => row.template
-        )
-      : rows.map((row) => row.template)}${footer}`;
-    // Single selection keys the whole option set so replaced options disconnect
-    // and register with Lion again. Otherwise Lion keeps the old choice values
-    // and can reject the new model value. Filtering keeps the same key.
     render(
-      this.multipleChoice ? content : keyed(this.#optionSetKey(), content),
+      html`${repeat(
+        rows,
+        (row) => row.value,
+        (row) => row.template
+      )}${footer}`,
       node
     );
-  }
-
-  /** Identifies the current option set, so a changed one rebuilds the list. */
-  #optionSetKey(): string {
-    const values: string[] = [];
-
-    for (const item of this.options) {
-      if (this.#isGroup(item)) {
-        for (const option of item.options) {
-          values.push(String(option.value));
-        }
-      } else {
-        values.push(String(item.value));
-      }
-    }
-
-    return values.join('\u0000');
   }
 
   #optionTemplate(option: ComboboxOption, selected = false) {

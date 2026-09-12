@@ -153,6 +153,41 @@ describe('craft-combobox', () => {
     expect(emitted).toBe(true);
   });
 
+  it.each(['Mark', 'Markdown'])(
+    'selects the filtered option when Enter is pressed for %s',
+    async (query) => {
+      const combobox = await createFixture((c) => {
+        c.requireOptionMatch = true;
+        c.options = [
+          {label: 'Addresses', value: 'addresses'},
+          {label: 'Markdown', value: 'markdown'},
+          {label: 'Plain Text', value: 'plain-text'},
+        ];
+        c.modelValue = 'plain-text';
+      });
+      let emitted = false;
+      combobox.addEventListener('model-value-changed', () => {
+        emitted = true;
+      });
+
+      const input = combobox.querySelector('input')!;
+      input.focus();
+      await typeQuery(combobox, query);
+      expect(combobox.activeIndex).toBe(0);
+      expect(String(combobox.formElements[0]?.choiceValue)).toBe('markdown');
+      emitted = false;
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+      );
+      await combobox.updateComplete;
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(combobox.modelValue).toBe('markdown');
+      expect(input.value).toBe('Markdown');
+      expect(emitted).toBe(true);
+    }
+  );
+
   it('shows the selected option’s icon in the textbox', async () => {
     const combobox = await createFixture((c) => {
       c.options = [

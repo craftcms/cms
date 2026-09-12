@@ -4,6 +4,7 @@ import {getIconUrl} from './icons.js';
 describe('getIconUrl', () => {
   test.for([
     ['custom-icons/graphql', '/vendor/craft/icons/custom-icons/graphql.svg'],
+    ['brands/markdown', '/vendor/craft/icons/brands/markdown.svg'],
     ['light/sliders', '/vendor/craft/icons/light/sliders.svg'],
     ['x', '/vendor/craft/icons/regular/x.svg'],
     ['newstamp', '/vendor/craft/icons/regular/newstamp.svg'],
