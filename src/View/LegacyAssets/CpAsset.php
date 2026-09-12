@@ -33,7 +33,6 @@ class CpAsset implements LegacyAssetInterface
         SelectizeAsset::class,
         VelocityAsset::class,
         FileUploadAsset::class,
-        XregexpAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
