@@ -42,13 +42,13 @@ use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -518,7 +518,7 @@ class Category extends Element
             ],
         ];
 
-        $user = Auth::user();
+        $user = craftAuth()->user();
 
         $ancestors = $this->getAncestors();
         if ($ancestors instanceof ElementQueryInterface) {

@@ -258,7 +258,7 @@ class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        return Password::broker()->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
+        return Password::broker(Cms::config()->getAuthPasswordBroker())->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
     }
 
     /**
@@ -916,7 +916,7 @@ class Users
         $this->validateUserChanges($user, $changes);
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker();
+        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
         $token = $broker->createToken($user);
 
         $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);

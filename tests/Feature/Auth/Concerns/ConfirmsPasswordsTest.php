@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -81,4 +85,18 @@ test('password confirmation can be disabled', function () {
 
     expect(new TestConfirmsPasswords()->confirmedPasswordTimeout())->toBeFalse();
     expect(new TestConfirmsPasswords()->isPasswordConfirmed())->toBeTrue();
+});
+
+test('password confirmation is isolated for a configured Craft guard', function () {
+    Cms::config()->authGuard = 'craft';
+    Auth::guard('craft')->login(User::find()->first());
+    Session::forget('auth.craft.password_confirmed_at');
+    Session::put('auth.password_confirmed_at', now()->unix());
+
+    expect(new TestConfirmsPasswords()->isPasswordConfirmed())->toBeFalse();
+
+    new TestConfirmsPasswords()->confirmPassword();
+
+    expect(Session::get('auth.craft.password_confirmed_at'))->toBe(now()->unix())
+        ->and(new TestConfirmsPasswords()->isPasswordConfirmed())->toBeTrue();
 });

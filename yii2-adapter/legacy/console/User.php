@@ -8,9 +8,9 @@
 namespace craft\console;
 
 use CraftCms\Cms\User\Elements\User as UserElement;
-use Illuminate\Support\Facades\Auth;
 use yii\base\Component;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 
 /**
@@ -62,7 +62,13 @@ class User extends Component
      */
     public function setIdentity(?UserElement $identity = null): void
     {
-        Auth::login($identity);
+        if ($identity === null) {
+            craftAuth()->logout();
+
+            return;
+        }
+
+        craftAuth()->login($identity);
     }
 
     /**

@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -65,7 +64,7 @@ readonly class Cms
 
         // If the user is logged in *and* has a preferred time zone, use that
         // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-        if (request()->isCpRequest() && Auth::hasUser() && $id = Auth::id()) {
+        if (request()->isCpRequest() && craftAuth()->hasUser() && ($id = craftAuth()->id())) {
             $timezone = Users::getUserPreference($id, 'timeZone');
         }
 

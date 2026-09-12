@@ -43,12 +43,12 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -793,7 +793,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Auth::id(), null, null, [
+                $contentBlock = app(Drafts::class)->createDraft($contentBlock, craftAuth()->id(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

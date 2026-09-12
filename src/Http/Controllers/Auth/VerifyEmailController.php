@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
@@ -61,7 +62,7 @@ readonly class VerifyEmailController extends AuthenticationController
         abort_if(! $user, 400, 'Invalid user UUID: '.$request->input('uid'));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker();
+        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }

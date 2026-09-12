@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use yii\base\Action;
@@ -32,6 +31,7 @@ use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -260,7 +260,7 @@ abstract class Controller extends \yii\web\Controller
             if ($isCpRequest) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
-            } elseif (Auth::guest()) {
+            } elseif (craftAuth()->guest()) {
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
@@ -517,7 +517,7 @@ abstract class Controller extends \yii\web\Controller
     {
         $userSession = Craft::$app->getUser();
 
-        if (Auth::guest()) {
+        if (craftAuth()->guest()) {
             $userSession->loginRequired();
             Craft::$app->end();
         }
@@ -533,7 +533,7 @@ abstract class Controller extends \yii\web\Controller
     {
         $userSession = Craft::$app->getUser();
 
-        if (!Auth::guest()) {
+        if (!craftAuth()->guest()) {
             $userSession->guestRequired();
             Craft::$app->end();
         }
@@ -569,7 +569,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePermission(string $permissionName): void
     {
-        Gate::forUser(Auth::user())->authorize($permissionName);
+        Gate::forUser(craftAuth()->user())->authorize($permissionName);
     }
 
     /**

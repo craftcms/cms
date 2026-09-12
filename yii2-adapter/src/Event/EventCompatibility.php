@@ -47,6 +47,7 @@ use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\twig\variables\Cp;
 use craft\web\View;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
 use CraftCms\Cms\User\Elements\User;
@@ -155,18 +156,30 @@ readonly class EventCompatibility
         });
 
         Event::listen(function(Authenticated $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             /** @var User $user */
             $user = $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
         Event::listen(function(Login $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             /** @var User $user */
             $user = $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
-        Event::listen(Logout::class, function() {
+        Event::listen(Logout::class, function(Logout $event) {
+            if ($event->guard !== Cms::config()->getAuthGuard()) {
+                return;
+            }
+
             app('Craft')->getUser()->setIdentity(null);
         });
 

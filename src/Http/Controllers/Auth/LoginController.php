@@ -33,6 +33,7 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\site_url;
 use function CraftCms\Cms\template;
 
@@ -88,7 +89,7 @@ readonly class LoginController extends AuthenticationController
         // to avoid strange behaviour, clear out whatever's left so that we start with the right amount of time
         // see https://github.com/craftcms/cms/pull/18753
         if ($forElevatedSession) {
-            $request->session()->forget('auth.password_confirmed_at');
+            $request->session()->forget($this->generalConfig->getPasswordConfirmationKey());
         }
 
         // If the current user is being impersonated, get the impersonator instead
@@ -126,7 +127,7 @@ readonly class LoginController extends AuthenticationController
         /**
          * @var EloquentUserProvider $provider
          */
-        $provider = auth()->getProvider();
+        $provider = craftAuth()->getProvider();
 
         $user = $this->retrieveLoginUser($request->input('loginName'));
 
@@ -185,7 +186,7 @@ readonly class LoginController extends AuthenticationController
     {
         $request->session()->forget('url.intended');
 
-        auth()->logout();
+        craftAuth()->logout();
 
         if ($request->wantsJson()) {
             return $this->asSuccess();

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
@@ -25,8 +26,9 @@ return new class extends Migration
             return;
         }
 
+        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->getAuthGuard()));
         /** @var class-string<Model> $authModel */
-        $authModel = config('auth.providers.users.model');
+        $authModel = config("auth.providers.$provider.model");
         $notifiableType = (new $authModel)->getMorphClass();
 
         DB::table('announcements')

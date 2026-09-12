@@ -12,12 +12,12 @@ use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Contracts\CraftUser;
-use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 readonly class PasskeyController extends AuthenticationController
@@ -66,8 +66,7 @@ readonly class PasskeyController extends AuthenticationController
             return $this->asFailure(t('Passkey authentication failed.'));
         }
 
-        /** @var SessionGuard $guard */
-        $guard = auth();
+        $guard = craftAuth();
         $user = $guard->getProvider()->retrieveById($credential->userId);
 
         if (! $user instanceof CraftUser) {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -22,7 +21,7 @@ class RequireGuestNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('if ('.Auth::class."::check()) {\n")
+            ->write("if (\\CraftCms\\Cms\\craftAuth()->check()) {\n")
             ->indent()
             ->write('redirect('.URL::class."::returnUrl())->throwResponse();\n")
             ->outdent()

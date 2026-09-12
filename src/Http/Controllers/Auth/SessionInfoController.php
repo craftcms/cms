@@ -75,7 +75,7 @@ readonly class SessionInfoController
             ]);
         }
 
-        $request->session()->forget('auth.password_confirmed_at');
+        $request->session()->forget($generalConfig->getPasswordConfirmationKey());
         $user = $impersonation->getImpersonator() ?? $request->craftUser()?->asElement();
 
         if (! $user) {

@@ -10,9 +10,10 @@ namespace craft\filters;
 use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
-use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 use yii\filters\auth\HttpBasicAuth;
+
+use function CraftCms\Cms\craftAuth;
 
 /**
  * Filter for adding basic HTTP authentication with static credentials to site requests.
@@ -55,7 +56,7 @@ class BasicHttpAuthStatic extends HttpBasicAuth
             throw new InvalidConfigException('Basic authentication is not configured.');
         }
 
-        $currentUser = Auth::user();
+        $currentUser = craftAuth()->user();
 
         if ($currentUser) {
             return true;
