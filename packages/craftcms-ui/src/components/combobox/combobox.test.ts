@@ -87,7 +87,7 @@ describe('craft-combobox', () => {
     // Regression: Lion's match-highlighting used to mutate option DOM and
     // collide with our lit-html render, producing e.g. "Option 000Option 300".
     const combobox = await createFixture((c) => {
-      c.options = makeOptions(400);
+      c.options = makeOptions(301);
     });
     for (const q of ['O', 'Op', 'Option 3', 'Option 30', 'Option 300']) {
       await typeQuery(combobox, q);
