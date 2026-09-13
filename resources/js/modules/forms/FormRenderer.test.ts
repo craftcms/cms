@@ -2695,6 +2695,19 @@ describe('FormRenderer', () => {
             placeholder: 'Write <Markdown>',
             toolbarButtons: ['bold', 'link'],
             showToolbar: true,
+            types: [
+              {
+                id: 'asset',
+                label: 'Asset',
+                kind: 'element',
+                elementSelectConfig: {
+                  sources: ['volume:documents'],
+                  criteria: {kind: ['pdf']},
+                },
+              },
+            ],
+            showLabelField: true,
+            advancedFields: ['title'],
           },
           '<script>alert(1)</script> **Safe**',
         ],
@@ -2830,6 +2843,27 @@ describe('FormRenderer', () => {
         .querySelector('craft-markdown-field')
         ?.hasAttribute('sanitize-html')
     ).toBe(true);
+    expect(
+      container.querySelector<
+        HTMLElement & {
+          linkTypes: unknown[];
+          showLinkLabelField: boolean;
+          linkAdvancedFields: string[];
+        }
+      >('craft-markdown-field')
+    ).toMatchObject({
+      linkTypes: [
+        {
+          id: 'asset',
+          elementSelectConfig: {
+            sources: ['volume:documents'],
+            criteria: {kind: ['pdf']},
+          },
+        },
+      ],
+      showLinkLabelField: true,
+      linkAdvancedFields: ['title'],
+    });
     expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
     expect(
       container.querySelector<HTMLInputElement>(
