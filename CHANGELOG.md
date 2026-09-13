@@ -14,6 +14,7 @@
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
 - Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Improved the styling for collapsible field groups.
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
 - Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
