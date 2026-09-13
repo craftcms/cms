@@ -1,8 +1,11 @@
 <?php
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Conditions\ViewableConditionRule as AssetsViewableConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\ViewableConditionRule as EntriesAssetsViewableConditionRule;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -44,7 +47,7 @@ return new class extends Migration
                 $rules[] = new FileTypeConditionRule(['values' => $allowedKinds]);
             }
 
-            $this->addRulesToFieldConfig($config, $rules);
+            $this->addRulesToFieldConfig($config, AssetCondition::class, $rules);
             $projectConfig->set($path, $config);
         }
     }
@@ -66,7 +69,7 @@ return new class extends Migration
                 $rules[] = new EntriesAssetsViewableConditionRule(['value' => true]);
             }
 
-            $this->addRulesToFieldConfig($config, $rules);
+            $this->addRulesToFieldConfig($config, EntryCondition::class, $rules);
             $projectConfig->set($path, $config);
         }
     }
@@ -84,9 +87,10 @@ return new class extends Migration
 
     /**
      * @param  array{type: class-string<FieldInterface>}  $config
+     * @param  class-string<ElementConditionInterface>  $conditionClass
      * @param  ConditionRuleInterface[]  $rules
      */
-    private function addRulesToFieldConfig(array &$config, array $rules): void
+    private function addRulesToFieldConfig(array &$config, string $conditionClass, array $rules): void
     {
         if (empty($rules)) {
             return;
@@ -94,9 +98,12 @@ return new class extends Migration
 
         // Ensure the selection condition is set to a top-level AND group
         if (! isset($config['settings']['selectionCondition']['conditionRules']['rules'])) {
-            $config['settings']['selectionCondition']['conditionRules'] = [
-                'operator' => 'and',
-                'rules' => $config['settings']['selectionCondition']['conditionRules'] ?? [],
+            $config['settings']['selectionCondition'] = [
+                'class' => $conditionClass,
+                'conditionRules' => [
+                    'operator' => 'and',
+                    'rules' => $config['settings']['selectionCondition']['conditionRules'] ?? [],
+                ],
             ];
         } elseif (($config['settings']['selectionCondition']['conditionRules']['operator'] ?? 'and') === 'or') {
             $config['settings']['selectionCondition']['conditionRules'] = [
