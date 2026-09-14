@@ -360,9 +360,7 @@ export class AssetMover extends Base {
         })
           .then((response: any) => {
             responses.push(
-              Object.assign({success: true}, response.data, {
-                request,
-              })
+              Object.assign({success: true}, response.data, {request})
             );
             if (request.onSuccess) {
               request.onSuccess(response.data);

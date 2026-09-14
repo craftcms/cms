@@ -295,9 +295,7 @@
                       slot="header"
                       class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
                     >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Info') }}
-                      </h3>
+                      <h3 slot="title" class="text-xs/4">{{ t('Info') }}</h3>
                     </div>
                     <div class="py-4">
                       <div class="grid gap-4">

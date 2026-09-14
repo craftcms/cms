@@ -147,11 +147,7 @@
           <Text
             v-if="showDisplayedRows"
             template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
-            :params="{
-              from: from ?? 0,
-              to: to ?? 0,
-              total: total ?? 0,
-            }"
+            :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
           />
         </div>
         <div class="flex gap-1">

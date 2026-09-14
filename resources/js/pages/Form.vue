@@ -91,10 +91,7 @@
     values: FormPayload['values'],
     scope: string[] = []
   ): Promise<FormPayload> {
-    const {data} = await actionClient.post(props.refreshUrl!, {
-      values,
-      scope,
-    });
+    const {data} = await actionClient.post(props.refreshUrl!, {values, scope});
 
     if (!data.form) {
       throw new Error('The refresh endpoint did not return a Form payload.');

@@ -195,11 +195,7 @@ describe('useElementEditor', () => {
         {
           type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
           component: 'craft:field',
-          props: {
-            label: 'Title',
-            instructions: null,
-            required: false,
-          },
+          props: {label: 'Title', instructions: null, required: false},
           control: {
             type: 'CraftCms\\Cms\\Form\\Controls\\Text',
             component: 'craft:text',

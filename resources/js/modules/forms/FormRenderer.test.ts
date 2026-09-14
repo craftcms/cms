@@ -516,12 +516,7 @@ describe('FormRenderer', () => {
                     {
                       trigger: '$',
                       boundary: 'start',
-                      options: [
-                        {
-                          label: '$SITE_EMAIL',
-                          value: '$SITE_EMAIL',
-                        },
-                      ],
+                      options: [{label: '$SITE_EMAIL', value: '$SITE_EMAIL'}],
                     },
                   ],
                 },
@@ -934,9 +929,7 @@ describe('FormRenderer', () => {
 
     expect(renderer.currentValues()).toMatchObject({
       settings: {
-        selectionCondition: {
-          conditionRules: {operator: 'or', rules: []},
-        },
+        selectionCondition: {conditionRules: {operator: 'or', rules: []}},
       },
     });
   });
@@ -2084,12 +2077,7 @@ describe('FormRenderer', () => {
       values: {
         settings: {
           matrix: {
-            entries: {
-              'block-a': {
-                type: 'text',
-                heading: 'Canonical heading',
-              },
-            },
+            entries: {'block-a': {type: 'text', heading: 'Canonical heading'}},
             sortOrder: ['block-a'],
           },
         },
@@ -2098,11 +2086,7 @@ describe('FormRenderer', () => {
         {
           type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
           component: 'craft:field',
-          props: {
-            label: 'Content',
-            instructions: null,
-            required: false,
-          },
+          props: {label: 'Content', instructions: null, required: false},
           control: {
             type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
             component: 'craft:matrix',
@@ -2222,10 +2206,7 @@ describe('FormRenderer', () => {
     relational.values = {settings: {related: [2, 1]}};
     Object.assign(relational, {
       errors: [
-        {
-          path: ['settings', 'related'],
-          messages: ['Choose valid entries.'],
-        },
+        {path: ['settings', 'related'], messages: ['Choose valid entries.']},
       ],
     });
     relational.nodes[0]!.control = {
@@ -2795,10 +2776,7 @@ describe('FormRenderer', () => {
                 visible: true,
                 required: false,
                 spinner: true,
-                options: {
-                  'BE-VAN': 'Antwerp',
-                  'BE-WBR': 'Walloon Brabant',
-                },
+                options: {'BE-VAN': 'Antwerp', 'BE-WBR': 'Walloon Brabant'},
               },
               {
                 name: 'locality',
@@ -3210,10 +3188,7 @@ describe('FormRenderer', () => {
     ];
     Object.assign(nested, {
       errors: [
-        {
-          path: [...contentScope, 'body'],
-          messages: ['Body is invalid.'],
-        },
+        {path: [...contentScope, 'body'], messages: ['Body is invalid.']},
       ],
     });
     const firstForm = required(
@@ -3425,11 +3400,7 @@ describe('FormRenderer', () => {
         control: {
           type: 'CraftCms\\Cms\\Form\\Controls\\Money',
           component: 'craft:money',
-          props: {
-            currency: 'USD',
-            locale: 'en-US',
-            showCurrency: true,
-          },
+          props: {currency: 'USD', locale: 'en-US', showCurrency: true},
           path: ['settings', 'price'],
           mode: 'editable',
           deltaGroup: ['settings', 'price'],
@@ -3618,10 +3589,7 @@ describe('FormRenderer', () => {
 
     edit.checked = true;
     edit.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        composed: true,
-      })
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
     await nextTick();
 

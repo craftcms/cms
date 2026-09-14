@@ -187,9 +187,7 @@
               "
               data-form-matrix-remove
               :accessible-name="
-                t('Remove {type}', {
-                  type: entryType(uid)?.label ?? uid,
-                })
+                t('Remove {type}', {type: entryType(uid)?.label ?? uid})
               "
             />
           </div>

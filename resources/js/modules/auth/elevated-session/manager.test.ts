@@ -33,22 +33,20 @@ describe('ElevatedSessionManager', () => {
       confirmed: boolean;
       timeout: number;
     }) => void;
-    const firstResponse = new Promise<{
-      confirmed: boolean;
-      timeout: number;
-    }>((resolve) => {
-      resolveFirst = resolve;
-    });
+    const firstResponse = new Promise<{confirmed: boolean; timeout: number}>(
+      (resolve) => {
+        resolveFirst = resolve;
+      }
+    );
     let resolveSecond!: (response: {
       confirmed: boolean;
       timeout: number;
     }) => void;
-    const secondResponse = new Promise<{
-      confirmed: boolean;
-      timeout: number;
-    }>((resolve) => {
-      resolveSecond = resolve;
-    });
+    const secondResponse = new Promise<{confirmed: boolean; timeout: number}>(
+      (resolve) => {
+        resolveSecond = resolve;
+      }
+    );
     const request = vi
       .fn()
       .mockReturnValueOnce(firstResponse)

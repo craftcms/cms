@@ -108,9 +108,7 @@
         return t('Saving…');
       case 'saved':
         return autosave.savedAt.value
-          ? t('Saved {timestamp}', {
-              timestamp: autosave.savedAt.value,
-            })
+          ? t('Saved {timestamp}', {timestamp: autosave.savedAt.value})
           : t('Saved');
       case 'failed':
         return autosave.error.value ?? t('Couldn’t save draft.');

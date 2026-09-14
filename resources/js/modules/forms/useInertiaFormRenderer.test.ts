@@ -216,17 +216,7 @@ describe('useInertiaFormRenderer', () => {
                 path: ['settings', 'matrix'],
                 forms: [
                   {
-                    nodes: [
-                      {
-                        children: [
-                          {
-                            control: {
-                              path: ownerPath,
-                            },
-                          },
-                        ],
-                      },
-                    ],
+                    nodes: [{children: [{control: {path: ownerPath}}]}],
                   },
                 ],
               },

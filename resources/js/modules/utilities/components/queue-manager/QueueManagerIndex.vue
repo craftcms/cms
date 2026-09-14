@@ -51,12 +51,7 @@
       cell: ({row, getValue}) =>
         h(
           CpLink,
-          {
-            href: show.url({
-              id: 'queue-manager',
-              extra: row.original.uid,
-            }),
-          },
+          {href: show.url({id: 'queue-manager', extra: row.original.uid})},
           () => getValue()
         ),
     }),

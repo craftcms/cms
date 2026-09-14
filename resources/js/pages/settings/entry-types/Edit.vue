@@ -26,9 +26,7 @@
     ...(!props.brandNew
       ? [
           {
-            label: t('Save as a new {type}', {
-              type: props.lowerTypeName,
-            }),
+            label: t('Save as a new {type}', {type: props.lowerTypeName}),
             onClick: () =>
               formPage.value?.save({
                 data: {saveAsNew: true},

@@ -51,12 +51,7 @@ describe('ChoiceControl', () => {
     const control = reactive<FormControlPayload<any>>({
       type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
       component: 'craft:choice',
-      props: {
-        options,
-        multiple: true,
-        presentation: 'checkboxes',
-        ...props,
-      },
+      props: {options, multiple: true, presentation: 'checkboxes', ...props},
       path: ['settings', 'sites'],
       mode: 'editable',
       deltaGroup: ['settings', 'sites'],

@@ -166,12 +166,8 @@
         :select-label="t('Select {label}', {label: labelFor(element)})"
         :show-status="!!element.status || undefined"
         @selected-change="
-          (
-            event: CustomEvent<{
-              selected: boolean;
-              shiftKey: boolean;
-            }>
-          ) => onSelectedChange(element, event.detail)
+          (event: CustomEvent<{selected: boolean; shiftKey: boolean}>) =>
+            onSelectedChange(element, event.detail)
         "
         @click="(event: MouseEvent) => onChipClick(element, event)"
         @dblclick="(event: MouseEvent) => onDoubleClick(element, event)"
@@ -219,11 +215,8 @@
               :position="getRowPosition(index)"
               :orientation="inline ? 'horizontal' : 'vertical'"
               @reorder="
-                (
-                  event: CustomEvent<{
-                    direction: 'up' | 'down';
-                  }>
-                ) => move(index, event.detail.direction === 'up' ? -1 : 1)
+                (event: CustomEvent<{direction: 'up' | 'down'}>) =>
+                  move(index, event.detail.direction === 'up' ? -1 : 1)
               "
             ></craft-reorder-button>
           </span>

@@ -58,24 +58,9 @@ const meta = {
       },
       craft: {
         nav: [
-          {
-            label: 'Dashboard',
-            url: '#',
-            icon: 'gauge',
-            selected: false,
-          },
-          {
-            label: 'Entries',
-            url: '#',
-            icon: 'newspaper',
-            selected: true,
-          },
-          {
-            label: 'Settings',
-            url: '#',
-            icon: 'gear',
-            selected: false,
-          },
+          {label: 'Dashboard', url: '#', icon: 'gauge', selected: false},
+          {label: 'Entries', url: '#', icon: 'newspaper', selected: true},
+          {label: 'Settings', url: '#', icon: 'gear', selected: false},
         ],
       },
     },

@@ -17,9 +17,7 @@
         return t('Saving…');
       case 'saved':
         return props.autosave.savedAt.value
-          ? t('Saved {timestamp}', {
-              timestamp: props.autosave.savedAt.value,
-            })
+          ? t('Saved {timestamp}', {timestamp: props.autosave.savedAt.value})
           : t('Saved');
       case 'failed':
         return props.autosave.error.value ?? t('Couldn’t save draft.');
