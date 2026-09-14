@@ -23,7 +23,7 @@ beforeEach(function () {
 function replaceReferencesMarkdownFixture(string $value)
 {
     return EntryModel::factory()
-        ->withField('body', MarkdownField::class, value: $value)
+        ->withField('body', MarkdownField::class, value: new MarkdownField()->normalizeValueFromRequest($value, null))
         ->createElementWithFields();
 }
 
