@@ -1,4 +1,5 @@
 import {
+  animate,
   Group,
   Line,
   Rect,
@@ -123,8 +124,12 @@ export function useImageTransforms(
       state.canvas.value?.remove(state.focalPoint.value);
     }
 
-    viewport.animate(
-      {angle: degrees === 90 ? '+=90' : '-=90'},
+    // An absolute angle. fabric 1.x read `'+=90'` as relative; fabric 7
+    // subtracts the start from the end outright, so the string left the
+    // viewport's angle NaN for the length of the turn.
+    animate(
+      viewport,
+      {angle: viewport.angle + (degrees === 90 ? 90 : -90)},
       {
         duration: state.settings.animationDuration,
         onComplete: () => {
@@ -136,7 +141,7 @@ export function useImageTransforms(
       }
     );
 
-    image.animate(imageProperties, {
+    animate(image, imageProperties, {
       duration: state.settings.animationDuration,
       onChange: () => state.canvas.value?.renderAll(),
       onComplete: () => {
@@ -257,7 +262,7 @@ export function useImageTransforms(
     image.flipX = false;
     image.flipY = false;
 
-    image.animate(properties, {
+    animate(image, properties, {
       duration: state.settings.animationDuration,
       onChange: () => state.canvas.value?.renderAll(),
       onComplete: () => {

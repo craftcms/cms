@@ -36,6 +36,61 @@ export type {FabricObject};
  */
 export type FabricAnimatable = Record<string, number>;
 
+export interface AnimateOptions {
+  duration?: number;
+  /** Once per frame, after every property has taken its value for it. */
+  onChange?: () => void;
+  /** Once, after every property has landed. */
+  onComplete?: () => void;
+}
+
+/**
+ * Animates several properties of one object as a single animation.
+ *
+ * fabric 7 runs `animate({a, b, c}, options)` as one animation per property and
+ * hands every one of them the same callbacks, so `onComplete` fires once per
+ * property where 1.x fired it once. The editor's completion handlers put the
+ * focal point marker back on the canvas, and `add()` doesn't check for an
+ * object that's already there -- four animated properties left four copies of
+ * the marker behind each time the crop view closed.
+ *
+ * `onChange` is taken from the last property, so a render it triggers sees
+ * every value for the frame; `onComplete` waits for all of them.
+ */
+export function animate(
+  object: FabricObject,
+  properties: FabricAnimatable,
+  {duration, onChange, onComplete}: AnimateOptions = {}
+): void {
+  const entries = Object.entries(properties);
+
+  if (entries.length === 0) {
+    onComplete?.();
+    return;
+  }
+
+  let remaining = entries.length;
+
+  entries.forEach(([key, value], index) => {
+    const last = index === entries.length - 1;
+
+    object.animate(
+      {[key]: value},
+      {
+        duration,
+        ...(last && onChange ? {onChange} : {}),
+        onComplete: () => {
+          remaining -= 1;
+
+          if (remaining === 0) {
+            onComplete?.();
+          }
+        },
+      }
+    );
+  });
+}
+
 /** Named for what the editor uses them as, rather than what fabric calls them. */
 export type FabricGroup = Group;
 export type FabricCanvas = StaticCanvas;

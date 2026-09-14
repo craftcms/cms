@@ -1,3 +1,4 @@
+import {animate} from './fabric';
 import {arePointsInsideRectangle, getRectangleVertices} from './geometry';
 import type {Cropper} from './useCropper';
 import type {EditorState} from './useEditorState';
@@ -106,7 +107,8 @@ export function useCroppingConstraint(
       }
     }
 
-    clipper.animate(
+    animate(
+      clipper,
       {width: rectangle.width, height: rectangle.height},
       {
         duration: state.settings.animationDuration,

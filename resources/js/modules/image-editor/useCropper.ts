@@ -1,4 +1,5 @@
 import {
+  animate,
   Circle,
   Group,
   Line,
@@ -467,7 +468,8 @@ export function useCropper(
 
     state.animationInProgress.value = true;
 
-    clipper.animate(
+    animate(
+      clipper,
       {width: target.width, height: target.height},
       {
         duration: state.settings.animationDuration,

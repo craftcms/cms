@@ -4,7 +4,7 @@ import {t} from '@craftcms/ui';
 import {useHelpers} from '@/common/composables/useCraftData';
 import {useActionClient} from '@/common/composables/useFetch';
 import {useFlashMessages} from '@/common/composables/useFlashMessages';
-import {loadSvg, type FabricAnimatable} from './fabric';
+import {animate, loadSvg, type FabricAnimatable} from './fabric';
 import {useCropper} from './useCropper';
 import {
   useCroppingConstraint,
@@ -228,7 +228,7 @@ export function useImageEditor(options: ImageEditorOptions) {
       canvas.renderImage();
     }
 
-    image.animate(imageProperties, {
+    animate(image, imageProperties, {
       duration: state.settings.animationDuration,
       onChange: () => state.canvas.value?.renderAll(),
       onComplete: () => {
@@ -238,7 +238,7 @@ export function useImageEditor(options: ImageEditorOptions) {
       },
     });
 
-    viewport.animate(viewportProperties, {
+    animate(viewport, viewportProperties, {
       duration: state.settings.animationDuration,
     });
   }
