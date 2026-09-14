@@ -17,6 +17,7 @@ use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
 use Fruitcake\LaravelDebugbar\LaravelDebugbar;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -89,7 +90,7 @@ function currentUser(): ?CraftUser
         return null;
     }
 
-    $user = Auth::user();
+    $user = craftAuth()->user();
 
     if ($user === null || $user instanceof CraftUser) {
         return $user;
@@ -99,6 +100,11 @@ function currentUser(): ?CraftUser
         'The authenticated user must implement %s to be used by Craft.',
         CraftUser::class,
     ));
+}
+
+function craftAuth(): Guard
+{
+    return Auth::guard(Cms::config()->getAuthGuard());
 }
 
 function currentUserElement(): ?UserElement

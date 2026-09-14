@@ -15,6 +15,7 @@
         link-types="{{ settings.linkTypes|json_encode|e('html_attr') }}"
         link-advanced-fields="{{ settings.linkAdvancedFields|json_encode|e('html_attr') }}"
         asset-sources="{{ settings.assetSources|json_encode|e('html_attr') }}"
+        asset-condition="{{ settings.assetCondition|json_encode|e('html_attr') }}"
         {% if settings.encode %}encode{% endif %}
         {% if settings.sanitizeHtml %}sanitize-html{% endif %}
         {% if settings.showToolbar %}show-toolbar{% endif %}

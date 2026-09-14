@@ -34,7 +34,6 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Prompts\Support\Logger;
@@ -42,6 +41,7 @@ use ReflectionClass;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\warning;
@@ -1338,7 +1338,7 @@ class Install extends Migration
             ]);
 
             if (! app()->runningInConsole()) {
-                Auth::login($user);
+                craftAuth()->login($user);
             }
 
             $logger?->success('Saved.');

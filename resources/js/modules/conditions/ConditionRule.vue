@@ -169,8 +169,6 @@
     flex: 0 0 auto;
   }
 
-  .condition-rule-fields
-    :deep(craft-field:not(:has(craft-input-date-time)) > [slot='label']),
   .condition-rule-fields :deep(craft-combobox > [slot='label']) {
     position: absolute;
     width: 1px;

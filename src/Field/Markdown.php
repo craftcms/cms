@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
@@ -19,6 +23,7 @@ use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Form\Controls\Number;
@@ -30,6 +35,7 @@ use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -160,7 +166,13 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public bool $showUnpermittedVolumes = false;
 
-    public bool $showUnpermittedFiles = false;
+    /**
+     * @phpstan-var ElementConditionInterface|array{class:class-string<ElementConditionInterface>}|null
+     *
+     * @see getAssetSelectionCondition()
+     * @see setAssetSelectionCondition()
+     */
+    private array|null|ElementConditionInterface $_assetSelectionCondition = null;
 
     /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
@@ -215,6 +227,13 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         if (isset($this->placeholder)) {
             $this->placeholder = Str::shortcodesToEmoji($this->placeholder);
         }
+
+        // Add the “Viewable” rule by default
+        if (! isset($config['id']) && is_null($this->getAssetSelectionCondition())) {
+            $condition = $this->createAssetSelectionCondition();
+            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
+            $this->setAssetSelectionCondition($condition);
+        }
     }
 
     #[Override]
@@ -254,6 +273,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         $volumeOptions = $this->volumeOptions();
+        $assetSelectionCondition = $this->getAssetSelectionCondition() ?? $this->createAssetSelectionCondition();
 
         return Form::make([
             FormField::make(t('Markdown Flavor'))
@@ -313,9 +333,13 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                     FormField::make(t('Show unpermitted volumes'))
                         ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                         ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-                    FormField::make(t('Show unpermitted files'))
-                        ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                        ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
+                    FormField::make(t('Selectable Assets Condition'))
+                        ->instructions(mb_ucfirst(t('Only allow assets to be selected if they match the following rules:')))
+                        ->control(ConditionBuilder::make('assetSelectionCondition')
+                            ->conditionClass($assetSelectionCondition::class)
+                            ->queryParams(['site'])
+                            ->forProjectConfig()
+                            ->value($assetSelectionCondition->getConfig())),
                     FormField::make(t('Upload Volume'))
                         ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
                         ->control(Choice::make('uploadVolume')->options([
@@ -406,7 +430,54 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             $settings['placeholder'] = Str::emojiToShortcodes($settings['placeholder']);
         }
 
+        if ($assetSelectionCondition = $this->getAssetSelectionCondition()) {
+            $settings['assetSelectionCondition'] = $assetSelectionCondition->getConfig();
+        }
+
         return $settings;
+    }
+
+    /**
+     * Returns the element condition that should be used to determine which assets are selectable by this field.
+     */
+    public function getAssetSelectionCondition(): ?ElementConditionInterface
+    {
+        if ($this->_assetSelectionCondition !== null && ! $this->_assetSelectionCondition instanceof ConditionInterface) {
+            /** @var ElementConditionInterface $condition */
+            $condition = Conditions::createCondition($this->_assetSelectionCondition);
+            if (! empty($condition->getConditionRules()->getRules())) {
+                $this->_assetSelectionCondition = $condition;
+            } else {
+                $this->_assetSelectionCondition = null;
+            }
+        }
+
+        return $this->_assetSelectionCondition;
+    }
+
+    /**
+     * Sets the element condition that should be used to determine which assets are selectable by this field.
+     *
+     * @param  ElementConditionInterface|string|array|null  $condition
+     *
+     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
+     */
+    public function setAssetSelectionCondition(mixed $condition): void
+    {
+        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
+            $condition = null;
+        }
+
+        // Don't instantiate it unless we actually end up needing it.
+        $this->_assetSelectionCondition = $condition;
+    }
+
+    /**
+     * Creates an element condition that should be used to determine which assets are selectable by this field.
+     */
+    protected function createAssetSelectionCondition(): ElementConditionInterface
+    {
+        return AssetElement::createCondition();
     }
 
     #[Override]
@@ -467,7 +538,6 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 },
             ],
             'showUnpermittedVolumes' => ['boolean'],
-            'showUnpermittedFiles' => ['boolean'],
         ], $this->linkSettingsRules());
     }
 
@@ -519,6 +589,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             : null;
         $assetSourceKeys = $this->assetSourceKeys();
         $settings = [
+            'assetCondition' => $this->getAssetSelectionCondition()?->getConfig(),
             'assetCriteria' => $this->assetSelectionCriteria(),
             'assetSources' => $assetSourceKeys,
             'describedBy' => $this->describedBy === null ? null : collect(explode(' ', $this->describedBy))
@@ -562,10 +633,11 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->all();
     }
 
-    /** @return array{}|array{uploaderId: null} */
+    /** @return array{uploaderId: null} */
     private function assetSelectionCriteria(): array
     {
-        return $this->showUnpermittedFiles ? ['uploaderId' => null] : [];
+        // Let the selection condition determine whether they can view unpermitted files
+        return ['uploaderId' => null];
     }
 
     private function uploadFolderId(): ?int

@@ -209,8 +209,9 @@ function cpDriftExpectedPhpOnly(): array
         // are PHP conveniences (pressed state, Invoker Commands API).
         'craft-button' => ['type', 'active', 'disabled', 'command'],
 
-        // craft-field: `label` is a WC slot; `readonly`/`disabled` are native.
-        'craft-field' => ['label', 'readonly', 'disabled'],
+        // craft-field: `label` is a WC slot; `readonly`/`disabled` are native;
+        // `label-sr-only` is Lion-inherited (not in the manifest).
+        'craft-field' => ['label', 'label-sr-only', 'readonly', 'disabled'],
 
         // craft-switch: native input state / a slot, not declared manifest attributes.
         'craft-switch' => ['checked', 'disabled', 'label'],

@@ -119,28 +119,28 @@ deleteCookie('name');
 
 ```bash
 # Run tests
-npm test
+pnpm test
 
 # Run tests in watch mode
-npm run test:dev
+pnpm run test:dev
 
 # Build the package
-npm run build
+pnpm run build
 
 # Development build with watch mode
-npm run dev
+pnpm run dev
 
 # Run Storybook
-npm run storybook
+pnpm run storybook
 
 # Build Storybook
-npm run build:storybook
+pnpm run build:storybook
 
 # Type checking
-npm run check:types
+pnpm run check:types
 
 # Format code
-npm run format
+pnpm run format
 ```
 
 ### Testing
@@ -148,7 +148,7 @@ npm run format
 Tests are written using Vitest with browser and happy-dom support.
 
 ```bash
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ## Peer Dependencies

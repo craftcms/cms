@@ -105,7 +105,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -119,6 +118,7 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -3195,7 +3195,7 @@ JS;
         $volume = $this->getVolume();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume->isTemporary() || Auth::id() === $this->uploaderId) {
+        if ($volume->isTemporary() || craftAuth()->id() === $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {

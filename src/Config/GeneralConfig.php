@@ -11,6 +11,8 @@ use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
@@ -86,6 +88,48 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public string $actionTrigger = 'actions';
+
+    /**
+     * @var string|null The Laravel authentication guard Craft should use.
+     *
+     * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
+     * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authGuard('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_GUARD=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthGuard()
+     */
+    public ?string $authGuard = null;
+
+    /**
+     * @var string|null The Laravel password broker Craft should use.
+     *
+     * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
+     * and token table in `config/auth.php`, and set this to the broker name.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authPasswordBroker('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_PASSWORD_BROKER=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthPasswordBroker()
+     */
+    public ?string $authPasswordBroker = null;
 
     /**
      * @var mixed The maximum age of activity events before garbage collection deletes them.
@@ -6183,6 +6227,36 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the Laravel authentication guard Craft should use.
+     *
+     * @see authGuard
+     */
+    public function getAuthGuard(): string
+    {
+        return $this->authGuard ?? Auth::getDefaultDriver();
+    }
+
+    /**
+     * Returns the Laravel password broker Craft should use.
+     *
+     * @see authPasswordBroker
+     */
+    public function getAuthPasswordBroker(): string
+    {
+        return $this->authPasswordBroker ?? Password::getDefaultDriver();
+    }
+
+    /**
+     * Returns the session key used to store the password confirmation timestamp.
+     */
+    public function getPasswordConfirmationKey(): string
+    {
+        return $this->authGuard === null
+            ? 'auth.password_confirmed_at'
+            : sprintf('auth.%s.password_confirmed_at', $this->authGuard);
     }
 
     /**

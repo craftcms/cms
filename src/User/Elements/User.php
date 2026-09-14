@@ -79,7 +79,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
@@ -89,6 +88,7 @@ use LogicException;
 use Override;
 use Stringable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -422,7 +422,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /** @return MorphMany<DatabaseNotification, Model&AuthenticatableContract> */
     public function notifications(): MorphMany
     {
-        $user = Auth::getProvider()->retrieveById($this->getAuthIdentifier());
+        $user = craftAuth()->getProvider()->retrieveById($this->getAuthIdentifier());
 
         if (! $user instanceof Model || ! method_exists($user, 'notifications')) {
             throw new LogicException('The configured auth model must be an Eloquent model using Laravel\'s Notifiable trait to receive database notifications.');
@@ -2299,7 +2299,13 @@ JS, [
         }
 
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
-            Auth::logoutOtherDevices($newPassword);
+            $guard = craftAuth();
+
+            if (! method_exists($guard, 'logoutOtherDevices')) {
+                throw new LogicException('Craft auth guard does not support logging out other devices.');
+            }
+
+            $guard->logoutOtherDevices($newPassword);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {

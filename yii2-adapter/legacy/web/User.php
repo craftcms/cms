@@ -16,11 +16,12 @@ use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
+
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -64,7 +65,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function loginByUserId(int $userId, int $duration = 0): bool
     {
-        return Auth::loginUsingId($userId, $duration > 0) !== false;
+        return craftAuth()->loginUsingId($userId, $duration > 0) !== false;
     }
 
     /**
@@ -180,7 +181,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getIsGuest(): bool
     {
-        return Auth::guest();
+        return craftAuth()->guest();
     }
 
     /**
@@ -207,7 +208,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getRemainingSessionTime(): int
     {
         // Are they logged in?
-        if (Auth::check()) {
+        if (craftAuth()->check()) {
             return (int) CarbonInterval::minutes(config('session.lifetime', 120))->totalSeconds;
         }
 
@@ -262,7 +263,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getIsAdmin(): bool
     {
-        $user = Auth::user();
+        $user = craftAuth()->user();
 
         return ($user && $user->admin);
     }
@@ -276,7 +277,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function checkPermission(string $permissionName): bool
     {
-        return Gate::check($permissionName);
+        return Gate::forUser(craftAuth()->user())->check($permissionName);
     }
 
     /**

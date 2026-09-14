@@ -75,7 +75,6 @@ use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -86,6 +85,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -1723,7 +1723,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     )
                 ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $entry = app(Drafts::class)->createDraft($entry, Auth::id(), null, null, [
+                    $entry = app(Drafts::class)->createDraft($entry, craftAuth()->id(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,
