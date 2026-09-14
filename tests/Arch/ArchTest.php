@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use craft\web\twig\Extension;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\Extensions\LaravelExtension;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 arch('No debug functions')
@@ -70,3 +73,13 @@ arch('Don\'t use legacy aliases')
     ->expect(['Craft::getAlias', 'Craft::setAlias', 'Craft::getRootAlias'])
     ->not()
     ->toBeUsed();
+
+arch('Craft authentication uses its configured guard')
+    ->expect([Auth::class, 'auth'])
+    ->not
+    ->toBeUsed()
+    ->ignoring([
+        GeneralConfig::class,
+        LaravelExtension::class,
+        'CraftCms\\Cms\\craftAuth',
+    ]);

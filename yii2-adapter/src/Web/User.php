@@ -10,6 +10,8 @@ use RuntimeException;
 use yii\db\BaseActiveRecord;
 use yii\web\IdentityInterface;
 
+use function CraftCms\Cms\craftAuth;
+
 class User extends \yii\web\User
 {
     private IdentityInterface|false|null $_identity = false;
@@ -25,7 +27,7 @@ class User extends \yii\web\User
             return $this->_identity;
         }
 
-        $identity = $this->getIlluminateAuthManager()->user();
+        $identity = craftAuth()->user();
 
         if ($identity !== null) {
             $identity = $this->convertIlluminateIdentity($identity);
@@ -59,7 +61,7 @@ class User extends \yii\web\User
         $this->setIdentity($identity);
 
         if ($identity === null) {
-            $this->getIlluminateAuthManager()->logout();
+            craftAuth()->logout();
 
             return;
         }
@@ -74,7 +76,7 @@ class User extends \yii\web\User
          * When "Remember me for 2 weeks" is checked, the duration will be larger
          * than 3600, so we pass remember to Laravel's auth as well.
          */
-        $this->getIlluminateAuthManager()->loginUsingId($id, remember: $duration > 3600);
+        craftAuth()->loginUsingId($id, remember: $duration > 3600);
     }
 
     protected function convertIlluminateIdentity(mixed $identity): IdentityInterface

@@ -15,6 +15,7 @@ use craft\events\UserGroupsAssignEvent;
 use craft\events\UserPhotoEvent;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -276,12 +277,12 @@ class Users extends Component
      * @param string $code The verification code to check for.
      *
      * @return bool Whether the code is still valid.
-     * @deprecated 6.0.0. Use `Password::tokenExists($user, $code)`
+     * @deprecated 6.0.0. Use `Password::broker(Cms::config()->getAuthPasswordBroker())->tokenExists($user, $code)`
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
-        $broker = Password::broker();
+        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
 
         if ($broker->tokenExists($user, $code)) {
             return true;

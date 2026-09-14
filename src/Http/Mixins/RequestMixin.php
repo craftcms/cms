@@ -27,7 +27,7 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $user = $request->user();
+            $user = $request->user(Cms::config()->authGuard);
 
             if ($user === null || $user instanceof CraftUser) {
                 return $user;

@@ -57,7 +57,6 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -65,6 +64,7 @@ use Illuminate\Validation\Validator;
 use Override;
 use Symfony\Component\Mime\MimeTypes;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -616,7 +616,7 @@ class Assets extends BaseRelationField
                         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = Auth::id();
+                        $asset->uploaderId = craftAuth()->id();
                         $asset->avoidFilenameConflicts = true;
                         $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 

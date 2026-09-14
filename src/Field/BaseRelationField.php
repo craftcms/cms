@@ -66,7 +66,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -75,6 +74,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -1565,7 +1565,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 );
                 $siteIds = Arr::where($siteIds, fn ($siteId) => $siteId !== $element->siteId);
                 if (! empty($siteIds)) {
-                    $userId = Auth::id();
+                    $userId = craftAuth()->id();
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
