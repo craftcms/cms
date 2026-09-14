@@ -1,4 +1,4 @@
 // line 1
-if (Illuminate\Support\Facades\Auth::guest()) {
+if (\CraftCms\Cms\craftAuth()->guest()) {
     throw new Illuminate\Auth\AuthenticationException('Unauthenticated.');
 }

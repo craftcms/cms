@@ -113,7 +113,7 @@ jobs:
           claude -p \
             --dangerously-skip-permissions \
             --allowedTools "Bash,Edit,Read,Write" \
-            --max-turns 30 \
+            --max-turns 100 \
             "$(cat /tmp/prompt.md)" | tee /tmp/claude-response.md
 
       - name: Comment for human review
