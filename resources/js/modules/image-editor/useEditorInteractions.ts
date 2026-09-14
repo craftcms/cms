@@ -128,7 +128,11 @@ export function useEditorInteractions(
       ? hitTestHandle(point, state.clipper.value)
       : null;
 
-    if (state.focalPoint.value && isOver(point, state.focalPoint.value)) {
+    if (
+      focalEditable() &&
+      state.focalPoint.value &&
+      isOver(point, state.focalPoint.value)
+    ) {
       cursor.value = 'pointer';
     } else if (handle) {
       cursor.value = getCursorForHandle(handle);
@@ -139,6 +143,18 @@ export function useEditorInteractions(
     } else {
       cursor.value = 'default';
     }
+  }
+
+  /**
+   * Whether the focal point can be picked up or moved.
+   *
+   * Not while cropping, where the marker is taken off the canvas. It still
+   * exists and still has a position, and hit-testing reads that position
+   * rather than whether it's drawn -- so without this an invisible marker
+   * would take presses meant for the cropper's handles.
+   */
+  function focalEditable(): boolean {
+    return state.currentView.value !== 'crop';
   }
 
   /** Whether a press is currently driving the cropper or focal point. */
@@ -155,7 +171,9 @@ export function useEditorInteractions(
 
     // Focal point wins over a resize handle, which wins over a drag.
     const overFocal =
-      Boolean(state.focalPoint.value) && isOver(point, state.focalPoint.value);
+      focalEditable() &&
+      Boolean(state.focalPoint.value) &&
+      isOver(point, state.focalPoint.value);
     const handle = state.clipper.value
       ? hitTestHandle(point, state.clipper.value)
       : null;
@@ -251,6 +269,7 @@ export function useEditorInteractions(
       }
     } else if (
       editing.focalPickedUp.value &&
+      focalEditable() &&
       !draggingFocal.value &&
       !draggingCropper.value &&
       !scalingCropper.value

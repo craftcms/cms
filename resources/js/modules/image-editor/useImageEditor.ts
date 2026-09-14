@@ -282,9 +282,12 @@ export function useImageEditor(options: ImageEditorOptions) {
           height: cropperState.height * scale,
         });
 
-        if (state.focalPoint.value) {
-          focalPoint.restoreFromState();
-        }
+        // The transition lifted the marker off, and it stays off while
+        // cropping. It's still positioned for the crop's zoom, though:
+        // `disableCropMode` checks it against the rectangle in these
+        // coordinates to decide whether it survives the crop, and then puts
+        // it back itself.
+        focalPoint.positionFromState();
       }
     );
   }
@@ -365,14 +368,22 @@ export function useImageEditor(options: ImageEditorOptions) {
     const previousView = state.currentView.value;
 
     // Flip first, so the host can show or hide whatever this view owns — the
-    // crop sidebar — and settle at its new width before anything is measured.
+    // straightening rule under the image goes away while cropping — and settle
+    // at its new size before anything is measured.
     state.currentView.value = view;
 
+    // Nothing picked up survives the switch. A crop handle has no cropper to
+    // drive on the Rotate tab, and the focal point can't be moved while
+    // cropping, so a marker picked up on Rotate is put back down here rather
+    // than left answering the arrow keys.
+    editing.reset();
+    focalPoint.setPickedUpStyles(false);
+
     void nextTick().then(() => {
-      // One measurement, taken once the sidebar is in place. Laying out against
-      // the old width and letting the resize correct it afterwards is what made
-      // the image lurch: it moved for the old width, animated towards a target
-      // computed for the old width, then moved again when the sidebar landed.
+      // One measurement, taken once the layout has settled. Laying out against
+      // the old size and letting the resize correct it afterwards is what made
+      // the image lurch: it moved for the old size, animated towards a target
+      // computed for the old size, then moved again when the layout landed.
       //
       // Safe to measure without preserving the previous dimensions: both
       // transitions set the image's position outright rather than shifting it
