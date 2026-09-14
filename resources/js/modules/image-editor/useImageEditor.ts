@@ -21,7 +21,15 @@ import {
 import {useFocalPoint} from './useFocalPoint';
 import {useImageCanvas} from './useImageCanvas';
 import {useImageTransforms} from './useImageTransforms';
-import type {Dimensions, EditorView, RelativeFocalPoint} from './types';
+import {useEditHistory} from './useEditHistory';
+import type {
+  CropperState,
+  Dimensions,
+  EditorView,
+  FlipData,
+  FocalPointState,
+  RelativeFocalPoint,
+} from './types';
 
 export interface ImageEditorOptions {
   assetId: number;
@@ -39,6 +47,78 @@ export interface SaveResult {
 
 /** `replace` overwrites the asset's file; `copy` saves the result alongside it. */
 export type SaveMode = 'replace' | 'copy';
+
+/**
+ * The host's own control state -- the selected constraint, the orientation --
+ * which a history step has to put back alongside the image.
+ */
+export interface UiAdapter {
+  capture(): unknown;
+  /** Called after the editor has restored a snapshot. */
+  apply(ui: unknown): void;
+}
+
+/** Everything an edit can change, as it stood at one moment. */
+interface EditorSnapshot {
+  view: EditorView;
+  editorWidth: number;
+  editorHeight: number;
+  viewportRotation: number;
+  imageStraightenAngle: number;
+  flipData: FlipData;
+  zoomRatio: number;
+  scaleFactor: number;
+  cropperState: CropperState | null;
+  croppingConstraint: number | false;
+  hasFocalPoint: boolean;
+  focalPointState: FocalPointState | null;
+  image: {
+    angle: number;
+    left: number;
+    top: number;
+    flipX: boolean;
+    flipY: boolean;
+  };
+  viewport: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    angle: number;
+  };
+  ui: unknown;
+}
+
+/**
+ * The part of a snapshot that is the edit itself, for telling whether a step
+ * changed anything. Positions, zoom and the view are consequences of the edit
+ * and of the editor's size, not the edit; offsets are taken relative to the
+ * image so a resize between two snapshots doesn't read as a change.
+ */
+function editOf(snapshot: EditorSnapshot): string {
+  const round = (value: number) => Math.round(value * 1000) / 1000;
+  const crop = snapshot.cropperState;
+  const focal = snapshot.focalPointState;
+
+  return JSON.stringify({
+    rotation: snapshot.viewportRotation,
+    straighten: round(snapshot.imageStraightenAngle),
+    flip: snapshot.flipData,
+    crop: crop
+      ? [crop.offsetX, crop.offsetY, crop.width, crop.height].map((value) =>
+          round(value / crop.imageDimensions.width)
+        )
+      : null,
+    constraint: snapshot.croppingConstraint,
+    focal:
+      snapshot.hasFocalPoint && focal
+        ? [focal.offsetX, focal.offsetY].map((value) =>
+            round(value / focal.imageDimensions.width)
+          )
+        : null,
+    ui: snapshot.ui,
+  });
+}
 
 function defaultSettings(
   allowDegreeFractions: boolean,
@@ -105,7 +185,8 @@ export function useImageEditor(options: ImageEditorOptions) {
     canvas,
     cropper,
     focalPoint,
-    announcements
+    announcements,
+    {begin: beginChange, commit: commitChange, record: recordChange}
   );
 
   const helpers = useHelpers();
@@ -121,6 +202,317 @@ export function useImageEditor(options: ImageEditorOptions) {
   const isSaving = computed(() => savingAs.value !== null);
   /** Bumped on save so a reloaded image isn't served from cache. */
   const cacheBust = ref(Date.now());
+
+  const history = useEditHistory<EditorSnapshot>({
+    equals: (a, b) => editOf(a) === editOf(b),
+  });
+  /** True while a history step is being put back. */
+  const restoring = ref(false);
+  /** Changes still waiting to settle before they can be recorded. */
+  const pendingRecords = ref(0);
+  /** The "before" of a gesture that has started and not yet been recorded. */
+  const gestureBefore = ref<EditorSnapshot | null>(null);
+  let recordingDepth = 0;
+  let uiAdapter: UiAdapter | null = null;
+
+  /**
+   * Nothing moves through the history while an edit is unfinished: a step
+   * restored underneath a running animation, or recorded after an undo, would
+   * leave the stack describing something that never happened.
+   */
+  const canStep = computed(
+    () =>
+      isReady.value &&
+      !restoring.value &&
+      !state.animationInProgress.value &&
+      pendingRecords.value === 0 &&
+      gestureBefore.value === null
+  );
+  const canUndo = computed(() => canStep.value && history.canUndo.value);
+  const canRedo = computed(() => canStep.value && history.canRedo.value);
+
+  function captureSnapshot(): EditorSnapshot | null {
+    const image = state.image.value;
+    const viewport = state.viewport.value;
+    const crop = state.cropperState.value;
+    const focal = state.focalPointState.value;
+
+    if (!image || !viewport) {
+      return null;
+    }
+
+    return {
+      view: state.currentView.value,
+      editorWidth: state.editorWidth.value,
+      editorHeight: state.editorHeight.value,
+      viewportRotation: state.viewportRotation.value,
+      imageStraightenAngle: state.imageStraightenAngle.value,
+      flipData: {...state.flipData.value},
+      zoomRatio: state.zoomRatio.value,
+      scaleFactor: state.scaleFactor.value,
+      cropperState: crop
+        ? {...crop, imageDimensions: {...crop.imageDimensions}}
+        : null,
+      croppingConstraint: state.croppingConstraint.value,
+      hasFocalPoint: state.focalPoint.value !== null,
+      focalPointState: focal
+        ? {...focal, imageDimensions: {...focal.imageDimensions}}
+        : null,
+      image: {
+        angle: image.angle,
+        left: image.left,
+        top: image.top,
+        flipX: image.flipX,
+        flipY: image.flipY,
+      },
+      viewport: {
+        left: viewport.left,
+        top: viewport.top,
+        width: viewport.width,
+        height: viewport.height,
+        angle: viewport.angle,
+      },
+      ui: uiAdapter?.capture() ?? null,
+    };
+  }
+
+  /** Resolves once a view change, and anything it animates, has finished. */
+  async function settle(): Promise<void> {
+    await nextTick();
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
+
+    if (!state.animationInProgress.value) {
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      const stop = watch(
+        () => state.animationInProgress.value,
+        (busy) => {
+          if (!busy) {
+            stop();
+            resolve();
+          }
+        }
+      );
+    });
+  }
+
+  function recordAfterSettling(before: EditorSnapshot, key?: string): void {
+    pendingRecords.value += 1;
+
+    void settle().then(() => {
+      pendingRecords.value -= 1;
+      const after = captureSnapshot();
+
+      if (after) {
+        history.record(before, after, key);
+      }
+    });
+  }
+
+  /**
+   * Records whatever `work` changes as one history step. Nests: an operation
+   * that records itself, run from inside a larger change, is part of that
+   * change rather than a step of its own.
+   */
+  function recordChange(work: () => void, key?: string): void {
+    if (
+      recordingDepth > 0 ||
+      restoring.value ||
+      gestureBefore.value ||
+      !isReady.value
+    ) {
+      work();
+      return;
+    }
+
+    const before = captureSnapshot();
+    recordingDepth += 1;
+
+    try {
+      work();
+    } finally {
+      recordingDepth -= 1;
+    }
+
+    if (before) {
+      recordAfterSettling(before, key);
+    }
+  }
+
+  /** Opens a gesture -- a drag, a straightening slide -- as one step. */
+  function beginChange(): void {
+    if (gestureBefore.value || restoring.value || !isReady.value) {
+      return;
+    }
+
+    gestureBefore.value = captureSnapshot();
+  }
+
+  function commitChange(key?: string): void {
+    const before = gestureBefore.value;
+    gestureBefore.value = null;
+
+    if (before) {
+      recordAfterSettling(before, key);
+    }
+  }
+
+  /**
+   * Puts a snapshot back exactly: every value is written as it was recorded,
+   * rather than worked out again. Straightening and rotating fit the crop to
+   * the viewport as they go, so replaying them in reverse doesn't land where
+   * the edit started.
+   */
+  async function restoreSnapshot(snapshot: EditorSnapshot): Promise<void> {
+    restoring.value = true;
+
+    try {
+      // The other tab's edit is restored in its own view, never across one --
+      // rotating under the cropper is what the tabs exist to prevent.
+      if (snapshot.view !== state.currentView.value) {
+        showView(snapshot.view);
+        await settle();
+      }
+
+      const image = state.image.value;
+      const viewport = state.viewport.value;
+
+      if (!image || !viewport) {
+        return;
+      }
+
+      const measured = {
+        width: state.editorWidth.value,
+        height: state.editorHeight.value,
+      };
+
+      // Written against the size the snapshot was taken at; a resize since is
+      // corrected below from the restored state.
+      state.editorWidth.value = snapshot.editorWidth;
+      state.editorHeight.value = snapshot.editorHeight;
+      state.viewportRotation.value = snapshot.viewportRotation;
+      state.imageStraightenAngle.value = snapshot.imageStraightenAngle;
+      state.flipData.value = {...snapshot.flipData};
+      state.zoomRatio.value = snapshot.zoomRatio;
+      state.scaleFactor.value = snapshot.scaleFactor;
+      state.cropperState.value = snapshot.cropperState
+        ? {
+            ...snapshot.cropperState,
+            imageDimensions: {...snapshot.cropperState.imageDimensions},
+          }
+        : null;
+      state.croppingConstraint.value = snapshot.croppingConstraint;
+      state.focalPointState.value = snapshot.focalPointState
+        ? {
+            ...snapshot.focalPointState,
+            imageDimensions: {...snapshot.focalPointState.imageDimensions},
+          }
+        : null;
+
+      image.set({
+        angle: snapshot.image.angle,
+        left: snapshot.image.left,
+        top: snapshot.image.top,
+      });
+      image.flipX = snapshot.image.flipX;
+      image.flipY = snapshot.image.flipY;
+      canvas.zoomImage();
+      viewport.set({...snapshot.viewport});
+      transforms.hideGrid();
+
+      restoreFocalMarker(snapshot);
+
+      if (
+        measured.width !== snapshot.editorWidth ||
+        measured.height !== snapshot.editorHeight
+      ) {
+        updateSizeAndPosition();
+      } else {
+        geometry.setFittedImageVerticeCoordinates();
+
+        if (state.currentView.value === 'crop') {
+          cropper.restoreFromState();
+          canvas.renderCropper();
+        }
+      }
+
+      editing.reset();
+      uiAdapter?.apply(snapshot.ui);
+      canvas.renderImage();
+    } finally {
+      restoring.value = false;
+    }
+  }
+
+  /**
+   * Brings the focal point marker in line with a snapshot. It's taken off the
+   * canvas first whatever happens, so it can never end up there twice.
+   */
+  function restoreFocalMarker(snapshot: EditorSnapshot): void {
+    const existing = state.focalPoint.value;
+
+    if (existing) {
+      state.canvas.value?.remove(existing);
+    }
+
+    if (!snapshot.hasFocalPoint) {
+      state.focalPoint.value = null;
+      return;
+    }
+
+    if (!existing) {
+      // `create()` places a marker at the middle of the view when its offset
+      // is zero; the recorded state is put back over that below.
+      const recorded = state.focalPointState.value;
+      focalPoint.create();
+      state.focalPointState.value = recorded;
+    }
+
+    const marker = state.focalPoint.value;
+
+    if (!marker) {
+      return;
+    }
+
+    state.canvas.value?.remove(marker);
+    focalPoint.positionFromState();
+    focalPoint.setPickedUpStyles(false);
+
+    // Off the canvas while cropping, as it is whenever the crop view opens.
+    if (state.currentView.value !== 'crop') {
+      state.canvas.value?.add(marker);
+      focalPoint.updateVisibilityForViewport();
+    }
+  }
+
+  function undo(): void {
+    if (!canUndo.value) {
+      return;
+    }
+
+    history.seal();
+    const snapshot = history.undo();
+
+    if (snapshot) {
+      void restoreSnapshot(snapshot);
+    }
+  }
+
+  function redo(): void {
+    if (!canRedo.value) {
+      return;
+    }
+
+    const snapshot = history.redo();
+
+    if (snapshot) {
+      void restoreSnapshot(snapshot);
+    }
+  }
 
   /**
    * Mode transitions animate, so overlapping ones would fight. They're chained
@@ -590,6 +982,10 @@ export function useImageEditor(options: ImageEditorOptions) {
     }
 
     canvas.renderImage();
+
+    // Back to the original, so there is nothing before it to undo to.
+    history.clear();
+    gestureBefore.value = null;
   }
 
   async function load(): Promise<void> {
@@ -826,24 +1222,39 @@ export function useImageEditor(options: ImageEditorOptions) {
     // Views
     showView,
 
+    // History
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    recordChange,
+    beginChange,
+    commitChange,
+    setUiAdapter: (adapter: UiAdapter | null) => {
+      uiAdapter = adapter;
+    },
+
     // Transforms
-    rotate: transforms.rotate,
-    flip: transforms.flip,
+    rotate: (degrees: 90 | -90) =>
+      recordChange(() => transforms.rotate(degrees)),
+    flip: (axis: 'x' | 'y') => recordChange(() => transforms.flip(axis)),
     straighten: transforms.straighten,
     showGrid: transforms.showGrid,
     hideGrid: transforms.hideGrid,
     cleanupFocalPointAfterStraighten: focalPoint.cleanupAfterStraighten,
 
     // Focal point
-    toggleFocalPoint: focalPoint.toggle,
+    toggleFocalPoint: () => recordChange(() => focalPoint.toggle()),
 
     // Cropping constraint
-    applyConstraint: (value: ConstraintValue) => constraint.apply(value),
-    turnCrop,
-    applyCustomConstraint: (width: number, height: number) => {
-      constraint.setCustomConstraint(width, height);
-      constraint.enforce();
-    },
+    applyConstraint: (value: ConstraintValue) =>
+      recordChange(() => constraint.apply(value)),
+    turnCrop: () => recordChange(turnCrop),
+    applyCustomConstraint: (width: number, height: number) =>
+      recordChange(() => {
+        constraint.setCustomConstraint(width, height);
+        constraint.enforce();
+      }),
 
     // Pointer
     onPointerDown: interactions.onPointerDown,

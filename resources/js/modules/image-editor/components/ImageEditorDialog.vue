@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
+import { useEventListener } from "@vueuse/core";
 import { t } from "@craftcms/ui";
 import { useImageEditor, type SaveMode, type SaveResult } from "../useImageEditor";
 import { constraintOptions as buildConstraintOptions, defaultConstraintKey } from "../constraints";
@@ -134,6 +135,94 @@ const directionalButtons = computed(() =>
 
 defineExpose({ directionalButtons });
 
+/**
+ * The controls the editor can't see: a history step puts these back alongside
+ * the image, so a restored crop doesn't sit under the wrong constraint.
+ */
+editor.setUiAdapter({
+  capture: () => ({
+    constraintKey: constraintKey.value,
+    cropOrientation: cropOrientation.value,
+    customWidth: customWidth.value,
+    customHeight: customHeight.value,
+  }),
+  apply: (ui) => {
+    const restored = ui as {
+      constraintKey: string;
+      cropOrientation: "landscape" | "portrait";
+      customWidth: number;
+      customHeight: number;
+    } | null;
+
+    if (restored) {
+      constraintKey.value = restored.constraintKey;
+      cropOrientation.value = restored.cropOrientation;
+      customWidth.value = restored.customWidth;
+      customHeight.value = restored.customHeight;
+    }
+
+    // The rule holds its own copy of the angle; follow the editor back.
+    straightenValue.value = editor.state.imageStraightenAngle.value;
+  },
+});
+
+const tabsEl = useTemplateRef<HTMLElement & { selectedIndex: number }>("tabsEl");
+
+// An undo can move the editor to the other tab's view. Setting the strip's
+// selection fires `selected-changed`, which asks for the view it's already on.
+watch(
+  () => editor.state.currentView.value,
+  (view) => {
+    const index = view === "crop" ? 1 : 0;
+
+    if (tabsEl.value && tabsEl.value.selectedIndex !== index) {
+      tabsEl.value.selectedIndex = index;
+    }
+  },
+);
+
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+const undoLabel = computed(() => `${t("Undo")} (${isMac ? "⌘Z" : "Ctrl+Z"})`);
+const redoLabel = computed(() => `${t("Redo")} (${isMac ? "⇧⌘Z" : "Ctrl+Y"})`);
+
+/** A field keeps its own undo for the text being typed into it. */
+function isTypingIn(event: KeyboardEvent): boolean {
+  const target = event.composedPath()[0];
+
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+  );
+}
+
+function onHistoryShortcut(event: KeyboardEvent): void {
+  if (
+    !opened.value ||
+    event.defaultPrevented ||
+    event.altKey ||
+    !(event.metaKey || event.ctrlKey) ||
+    isTypingIn(event)
+  ) {
+    return;
+  }
+
+  const key = event.key.toLowerCase();
+
+  if (key === "z" && !event.shiftKey) {
+    event.preventDefault();
+    editor.undo();
+  } else if (
+    (key === "z" && event.shiftKey) ||
+    (key === "y" && event.ctrlKey && !event.metaKey)
+  ) {
+    event.preventDefault();
+    editor.redo();
+  }
+}
+
+useEventListener(document, "keydown", onHistoryShortcut);
+
 /** Discards every edit, after asking. The dialog stays open. */
 function onReset(): void {
   if (!window.confirm(t("Discard all changes to this image?"))) {
@@ -194,14 +283,21 @@ function applySelectedConstraint(): void {
   }
 }
 
+// Recorded around the control change as well as the reshape it causes, so
+// undoing it puts the previous selection back too.
 function onConstraintChange(key: string): void {
-  constraintKey.value = key;
-  applySelectedConstraint();
+  editor.recordChange(() => {
+    constraintKey.value = key;
+    applySelectedConstraint();
+  });
 }
 
 function onCustomConstraintInput(): void {
   if (customWidth.value > 0 && customHeight.value > 0) {
-    editor.applyCustomConstraint(customWidth.value, customHeight.value);
+    editor.recordChange(
+      () => editor.applyCustomConstraint(customWidth.value, customHeight.value),
+      "custom-constraint",
+    );
   }
 }
 
@@ -219,12 +315,13 @@ function onOrientationChange(value: "landscape" | "portrait"): void {
     return;
   }
 
-  cropOrientation.value = value;
-
   // Turn the rectangle rather than rebuilding it from the flipped ratio: the
   // crop the user framed is kept, just stood the other way up. It carries the
   // inverted ratio with it, so the constraint list stays in step.
-  editor.turnCrop();
+  editor.recordChange(() => {
+    cropOrientation.value = value;
+    editor.turnCrop();
+  });
 }
 
 /** Stable id per option, so each radio's slotted label can target it. */
@@ -253,10 +350,29 @@ function isPressed(handle: FabricElementHandle): boolean {
   return editor.editing.pickedHandle.value === handle;
 }
 
+/** Set while the rule is being dragged, which records as one gesture. */
+let straightening = false;
+
+function onStraightenStart(): void {
+  straightening = true;
+  editor.showGrid();
+  editor.beginChange();
+}
+
 function onStraightenChange(event: Event): void {
   const value = Number((event.target as HTMLInputElement).value);
-  straightenValue.value = value;
-  editor.straighten(value);
+  const apply = () => {
+    straightenValue.value = value;
+    editor.straighten(value);
+  };
+
+  // The arrow keys change the rule without a start or end, so a run of them
+  // is merged into one step instead.
+  if (straightening) {
+    apply();
+  } else {
+    editor.recordChange(apply, "straighten-keyboard");
+  }
 }
 
 /**
@@ -277,6 +393,8 @@ async function onSave(mode: SaveMode): Promise<void> {
 function onStraightenEnd(): void {
   editor.hideGrid();
   editor.cleanupFocalPointAfterStraighten();
+  straightening = false;
+  editor.commitChange();
 }
 </script>
 
@@ -310,7 +428,7 @@ function onStraightenEnd(): void {
           `craft-tabs` owns the tablist: it assigns each tab its id, role,
           `aria-controls`/`aria-selected` and roving tabindex, pairs tabs with
           panels by document order, and drives panel visibility. -->
-          <craft-tabs @selected-changed="onTabChanged">
+          <craft-tabs ref="tabsEl" @selected-changed="onTabChanged">
             <craft-tab slot="tab">
               <div class="flex items-center gap-1">
                 <craft-icon name="rotate" />
@@ -565,7 +683,7 @@ function onStraightenEnd(): void {
                   id="slide-rule"
                   :label="t('Rotate')"
                   :value="straightenValue"
-                  @start="editor.showGrid"
+                  @start="onStraightenStart"
                   @change="onStraightenChange"
                   @end="onStraightenEnd"
                 />
@@ -578,6 +696,22 @@ function onStraightenEnd(): void {
 
     <div slot="footer" class="w-full flex gap-6 items-center justify-between">
       <div class="flex gap-2 items-center">
+        <craft-button
+          type="button"
+          icon="arrow-turn-left"
+          :aria-label="undoLabel"
+          :title="undoLabel"
+          :disabled="!editor.canUndo.value || undefined"
+          @click="editor.undo"
+        ></craft-button>
+        <craft-button
+          type="button"
+          icon="arrow-turn-right"
+          :aria-label="redoLabel"
+          :title="redoLabel"
+          :disabled="!editor.canRedo.value || undefined"
+          @click="editor.redo"
+        ></craft-button>
         <craft-button
           type="button"
           icon="arrow-rotate-left"

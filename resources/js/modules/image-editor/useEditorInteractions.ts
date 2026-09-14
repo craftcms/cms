@@ -16,6 +16,21 @@ import type {EditorState} from './useEditorState';
 import type {FocalPoint} from './useFocalPoint';
 import type {ImageCanvas} from './useImageCanvas';
 
+/**
+ * How an edit made here reaches the editor's history.
+ *
+ * Passed in rather than imported: the editor owns the history and assembles
+ * this composable, so a direct import would run the other way round.
+ */
+export interface ChangeRecorder {
+  /** Takes the "before" state at the start of a gesture. */
+  begin(): void;
+  /** Records the gesture once whatever it animated has settled. */
+  commit(): void;
+  /** Records a single change made by `work`; a shared `key` merges a run. */
+  record(work: () => void, key?: string): void;
+}
+
 const NUDGE_KEYS: Record<string, NudgeDirection> = {
   ArrowUp: 'up',
   ArrowDown: 'down',
@@ -82,7 +97,8 @@ export function useEditorInteractions(
   canvas: ImageCanvas,
   cropper: Cropper,
   focalPoint: FocalPoint,
-  announcements: EditorAnnouncements
+  announcements: EditorAnnouncements,
+  recorder: ChangeRecorder
 ) {
   /** Bound to the editor element, so the cursor stays a template concern. */
   const cursor = ref('default');
@@ -94,6 +110,8 @@ export function useEditorInteractions(
   const draggingFocal = ref(false);
   const draggingCropper = ref(false);
   const scalingCropper = ref(false);
+  /** Bumped per pick-up, so a session's nudges merge into one history step. */
+  let nudgeSession = 0;
 
   /** Pointer position relative to the cropping canvas's top-left. */
   function toCanvasPoint(event: PointerEvent): Point {
@@ -182,6 +200,8 @@ export function useEditorInteractions(
     if (!overFocal && !handle && !overClipper) {
       return;
     }
+
+    recorder.begin();
 
     previousPointer.value = {x: event.clientX, y: event.clientY};
 
@@ -275,7 +295,8 @@ export function useEditorInteractions(
       !scalingCropper.value
     ) {
       // While picked up, clicking anywhere moves the focal point there.
-      focalPoint.moveTo(toCanvasPoint(event));
+      const point = toCanvasPoint(event);
+      recorder.record(() => focalPoint.moveTo(point));
     }
 
     draggingCropper.value = false;
@@ -284,6 +305,8 @@ export function useEditorInteractions(
     pointerHandle.value = null;
     draggingFocal.value = false;
     focalClicked.value = false;
+
+    recorder.commit();
   }
 
   function onPointerLeave(event: PointerEvent): void {
@@ -304,6 +327,7 @@ export function useEditorInteractions(
 
   function pickUp(handle: FabricElementHandle, label?: string): void {
     editing.reset();
+    nudgeSession += 1;
 
     if (handle === 'rectangle') {
       editing.rectanglePickedUp.value = true;
@@ -356,7 +380,7 @@ export function useEditorInteractions(
     label?: string
   ): void {
     if (handle === 'focalpoint') {
-      focalPoint.toggle();
+      recorder.record(() => focalPoint.toggle());
     }
 
     if (pressed) {
@@ -369,6 +393,10 @@ export function useEditorInteractions(
 
   /** Moves whatever is currently picked up. */
   function nudge(direction: NudgeDirection): void {
+    recorder.record(() => applyNudge(direction), `nudge-${nudgeSession}`);
+  }
+
+  function applyNudge(direction: NudgeDirection): void {
     const deltas = getDeltasFromDirection(direction);
 
     if (editing.rectanglePickedUp.value) {
