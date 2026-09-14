@@ -97,11 +97,11 @@ describe('craft-field label association', () => {
 });
 
 describe('craft-field required indicator', () => {
-  it('renders the required spans inside the label', async () => {
+  it('renders the required text inside the label', async () => {
     const element = await createField({label: 'My field', required: ''});
 
     const label = labelNode(element)!;
-    const srOnly = label.querySelector('span.visually-hidden');
+    const srOnly = label.querySelector('craft-visually-hidden');
     const indicator = label.querySelector('craft-icon[name="asterisk"]');
     expect(srOnly?.textContent).toBe('Required');
     expect(indicator).not.toBeNull();
@@ -119,7 +119,7 @@ describe('craft-field required indicator', () => {
       labelNode(element)!.querySelector('craft-icon[name="asterisk"]')
     ).toBeNull();
     expect(
-      labelNode(element)!.querySelector('span.visually-hidden')
+      labelNode(element)!.querySelector('craft-visually-hidden')
     ).toBeNull();
   });
 
@@ -248,7 +248,7 @@ describe('craft-field status badge', () => {
     expect(element.getAttribute('status')).toBe('modified');
     expect(badge!.getAttribute('title')).toBe('This field has been modified.');
     expect(badge!.getAttribute('aria-hidden')).toBe('true');
-    expect(badge!.querySelector('.cp-visually-hidden')?.textContent).toBe(
+    expect(badge!.querySelector('craft-visually-hidden')?.textContent).toBe(
       'This field has been modified.'
     );
   });
