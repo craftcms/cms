@@ -19,6 +19,7 @@ use craft\services\Elements;
  * Provides element saving behavior for fixtures.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.12.0
  */
 trait ElementFixtureTrait
 {
