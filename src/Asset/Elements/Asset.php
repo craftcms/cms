@@ -3345,14 +3345,18 @@ JS;
                 throw new FileException(t('There was an error relocating the file.'));
             }
 
-            new MountManager([
-                'source' => $oldDisk->getDriver(),
-                'destination' => $newDisk->getDriver(),
-            ])->move("source://$oldPath", "destination://$newPath", [
-                'visibility' => $oldVolume->id === $newVolume->id
-                    ? $oldDisk->getVisibility($oldPath)
-                    : ($newDisk->getConfig()['visibility'] ?? 'private'),
-            ]);
+            if ($oldVolume->id === $newVolume->id) {
+                if (! $oldDisk->move($oldPath, $newPath)) {
+                    throw new FilesystemException("Unable to move $oldPath to $newPath");
+                }
+            } else {
+                new MountManager([
+                    'source' => $oldDisk->getDriver(),
+                    'destination' => $newDisk->getDriver(),
+                ])->move("source://$oldPath", "destination://$newPath", [
+                    'visibility' => $newDisk->getConfig()['visibility'] ?? 'private',
+                ]);
+            }
         }
 
         if (

@@ -24,6 +24,7 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
@@ -346,6 +347,27 @@ it('preserves visibility when renaming an asset within its volume', function (st
         ->and($disk->getVisibility($subpath.'renamed.txt'))->toBe('public')
         ->and(Asset::findOne($asset->id)->filename)->toBe('renamed.txt');
 })->with(['root' => '', 'subpath' => 'uploads/']);
+
+it('uses the disk native move when renaming within a volume', function () {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'document.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $nativeDisk = Mockery::mock(FilesystemAdapter::class);
+    $nativeDisk->shouldReceive('path')->with('document.txt')->andReturn('/document.txt');
+    $nativeDisk->shouldReceive('path')->with('renamed.txt')->andReturn('/renamed.txt');
+    $nativeDisk->shouldReceive('exists')->with('renamed.txt')->andReturnFalse();
+    $nativeDisk->shouldReceive('move')->once()->with('document.txt', 'renamed.txt')->andReturnTrue();
+    Storage::set('test-disk', $nativeDisk);
+
+    expect($this->assets->moveAsset($asset, $folder, 'renamed.txt'))->toBeTrue();
+});
 
 it('keeps replacement bytes in a volume with a subpath', function () {
     $disk = Storage::fake('test-disk');

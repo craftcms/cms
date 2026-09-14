@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Uploaders;
 
+use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use Aws\Signature\S3SignatureV4;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSetup;
@@ -16,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Psr\Http\Message\RequestInterface;
 
 class S3Uploader implements Uploader
 {
@@ -87,9 +90,32 @@ class S3Uploader implements Uploader
             'UploadId' => $session->state['uploadId'],
             ...$parameters,
         ]);
-        $request = $this->client($session)->createPresignedRequest($command, '+15 minutes');
+        $request = $method === 'PUT'
+            ? $this->presignUploadPart($this->client($session), $command, $session->partSize($part))
+            : $this->client($session)->createPresignedRequest($command, '+15 minutes');
 
         return ['url' => (string) $request->getUri()];
+    }
+
+    private function presignUploadPart(S3Client $client, CommandInterface $command, int $contentLength): RequestInterface
+    {
+        $command = clone $command;
+        $command->getHandlerList()->remove('signer');
+        $command->getHandlerList()->remove('s3.checksum');
+        $request = \Aws\serialize($command)->withHeader('Content-Length', (string) $contentLength);
+        $signer = new class('s3', $client->getConfig('signing_region')) extends S3SignatureV4
+        {
+            /** @return array<string, true> */
+            protected function getHeaderBlacklist(): array
+            {
+                $headers = parent::getHeaderBlacklist();
+                unset($headers['content-length']);
+
+                return $headers;
+            }
+        };
+
+        return $signer->presign($request, $client->getCredentials()->wait(), '+15 minutes');
     }
 
     public function isUploaded(UploadSession $session): bool

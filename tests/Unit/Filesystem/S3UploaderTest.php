@@ -57,6 +57,7 @@ it('signs direct multipart requests and completes using storage-verified parts',
     $request = $uploader->sign($session, 'PUT', 2);
 
     expect($request['url'])->toContain('uploadId=multipart-id', 'partNumber=2', 'X-Amz-Signature=')
+        ->and(urldecode($request['url']))->toContain('X-Amz-SignedHeaders=content-length;host')
         ->and($session->chunkSize)->toBe(5242880);
 
     $this->disk->shouldReceive('exists')->once()->with($session->path())->andReturnFalse();
