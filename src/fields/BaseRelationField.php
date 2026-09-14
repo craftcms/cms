@@ -685,7 +685,6 @@ JS, [
                 ->eagerly();
         }
 
-        $errorCount = 0;
         $invalidTargetIds = [];
 
         foreach ($value->all() as $i => $target) {
@@ -693,11 +692,10 @@ JS, [
                 /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $invalidTargetIds[] = $target->id;
-                $errorCount++;
             }
         }
 
-        if ($errorCount) {
+        if (!empty($invalidTargetIds)) {
             $element->addInvalidNestedElementIds($invalidTargetIds);
             $selectedCount = (int)$value->count();
             $element->addError($this->handle, Craft::t('app', 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [

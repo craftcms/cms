@@ -5743,7 +5743,7 @@ JS,
      */
     public function getInvalidNestedElementIds(): array
     {
-        return $this->_invalidNestedElementIds;
+        return array_keys($this->_invalidNestedElementIds);
     }
 
     /**
@@ -5751,8 +5751,9 @@ JS,
      */
     public function addInvalidNestedElementIds(array $ids): void
     {
-        array_push($this->_invalidNestedElementIds, ...$ids);
-        $this->_invalidNestedElementIds = array_unique($this->_invalidNestedElementIds);
+        foreach ($ids as $id) {
+            $this->_invalidNestedElementIds[$id] = true;
+        }
     }
 
     /**
