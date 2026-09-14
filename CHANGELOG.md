@@ -129,6 +129,7 @@
 - Fixed a bug where field types could remain unchanged or switch to an unintended option when their combobox query was submitted with <kbd>Return</kbd>. ([#19614](https://github.com/craftcms/cms/pull/19614))
 - Fixed a bug where brand icons, including the Markdown field type icon, were not displayed in combobox options. ([#19614](https://github.com/craftcms/cms/pull/19614))
 - Fixed user photo asset selections not being saved, and restricted the photo selector to images in the configured volume and subfolder. ([#19603](https://github.com/craftcms/cms/pull/19603))
+- Fixed a bug where sections’ site settings tables didn’t have status switches.
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
