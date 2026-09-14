@@ -6238,6 +6238,15 @@ JS,
 
     private function contentBlockAttributeHtml(string $attribute): string
     {
+        [$block, , $nestedAttribute] = $this->contentBlockFromAttribute($attribute);
+        return $block?->getAttributeHtml($nestedAttribute) ?? '';
+    }
+
+    /**
+     * @return array{0:ContentBlock|null,1:ContentBlockField|null,2:string|null}
+     */
+    private function contentBlockFromAttribute(string $attribute): array
+    {
         $parts = explode('.', $attribute);
         $uid = StringHelper::removeLeft(array_shift($parts), 'contentBlock:');
 
@@ -6255,11 +6264,13 @@ JS,
         }
 
         if (!$field instanceof ContentBlockField) {
-            return '';
+            return [null, null, null];
         }
 
         $block = $this->getFieldValue($field->handle);
-        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+        $nestedAttribute = implode('.', $parts);
+
+        return [$block, $field, $nestedAttribute];
     }
 
     /**
@@ -6391,6 +6402,12 @@ JS,
             }
 
             $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
+        } elseif (str_starts_with($attribute, 'contentBlock:')) {
+            [$block, $field, $nestedAttribute] = $this->contentBlockFromAttribute($attribute);
+            if (!$block) {
+                return '';
+            }
+            return Craft::$app->getView()->namespaceInputs(fn() => $block->getInlineAttributeInputHtml($nestedAttribute), "$field->handle[fields]");
         }
 
         if ($field !== null) {
