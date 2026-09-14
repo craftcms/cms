@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Concerns\HasLinkFieldSettings;
 use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Html;
@@ -17,6 +18,7 @@ use Illuminate\Support\Arr;
  */
 class Markdown extends Control
 {
+    use HasLinkFieldSettings;
     use HasTextExpander;
 
     private int $rows = 8;
@@ -40,6 +42,9 @@ class Markdown extends Control
             'max-length' => $control->props['maxLength'] ?? null,
             'toolbar-buttons' => Json::encode($control->props['toolbarButtons'] ?? []),
             'show-toolbar' => (bool) ($control->props['showToolbar'] ?? true) && $attributes['name'] !== null,
+            'link-types' => Json::encode($control->props['types'] ?? []),
+            'show-link-label-field' => $control->props['showLabelField'] ?? false,
+            'link-advanced-fields' => Json::encode($control->props['advancedFields'] ?? []),
             'sanitize-html' => true,
             'disabled' => $attributes['name'] === null,
             'required' => $attributes['required'],
@@ -102,6 +107,7 @@ class Markdown extends Control
             'maxLength' => $this->maxLength,
             'toolbarButtons' => $this->toolbarButtons,
             'showToolbar' => $this->showToolbar,
+            ...$this->linkFieldSettingsProps(),
             ...$this->textExpanderProps(),
         ]);
     }

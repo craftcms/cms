@@ -40,6 +40,7 @@
 
   const props = defineProps<{
     payload: FormPayload;
+    disabled?: boolean;
     refresh?: (
       values: FormPayload['values'],
       scope?: string[]
@@ -58,6 +59,17 @@
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
+  const nodes = computed(() => {
+    if (!props.disabled) return payload.value.nodes;
+
+    const nodes = cloneRaw(payload.value.nodes);
+    visitControls(nodes, (control) =>
+      Object.assign(control, {mode: 'disabled'})
+    );
+
+    return nodes;
+  });
+
   const root = ref<HTMLElement>();
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
@@ -112,6 +124,11 @@
     () => props.payload,
     (refreshed) => reconcile(refreshed)
   );
+
+  watch(
+    () => props.disabled,
+    () => emitMutation()
+  );
   onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
 
   function onControlChange(change: FormChange): void {
@@ -136,7 +153,7 @@
     const scope = change.scope ?? payload.value.scope;
     const key = JSON.stringify(scope);
 
-    if (!props.refresh || !change.refreshable) {
+    if (props.disabled || !props.refresh || !change.refreshable) {
       return;
     }
 
@@ -159,6 +176,8 @@
     scope: string[],
     fieldPath: string[]
   ): Promise<void> {
+    if (props.disabled) return;
+
     const snapshot = cloneRaw(valueAt(values, scope));
 
     if (!isRecord(snapshot)) {
@@ -318,7 +337,7 @@
     const groups = new Map<string, string[]>();
     const editablePaths = new Set<string>();
 
-    visitControls(payload.value.nodes, (control) => {
+    visitControls(nodes.value, (control) => {
       if (control.mode === 'editable') {
         groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
         editablePaths.add(JSON.stringify(control.path));
@@ -504,7 +523,7 @@
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
     <FormNodeList
-      :nodes="payload.nodes"
+      :nodes="nodes"
       :values="values"
       :errors="effectiveErrors"
       :touched-paths="touchedPaths"

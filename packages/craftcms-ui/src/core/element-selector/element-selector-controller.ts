@@ -311,6 +311,14 @@ export class ElementSelectorController<
       params.siteIds = options.siteIds;
     }
 
+    if (options.criteria) {
+      params.criteria = {...options.criteria};
+    }
+
+    if (typeof options.indexSettings.showFolders === 'boolean') {
+      params.showFolders = options.indexSettings.showFolders;
+    }
+
     return params;
   }
 

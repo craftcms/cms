@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User;
 
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -395,8 +396,9 @@ class Users
         if ($event->photoId && ($photo = AssetsService::getAssetById($event->photoId)) !== null) {
             AssetsService::replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
         } else {
-            $volume = $this->userPhotoVolume();
-            $folderId = $this->userPhotoFolderId($user, $volume);
+            $folder = $this->userPhotoFolder($user);
+            $volume = $folder->getVolume();
+            $folderId = $folder->id;
             $filename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset;
@@ -426,8 +428,7 @@ class Users
             return;
         }
 
-        $volume = $this->userPhotoVolume();
-        $folderId = $this->userPhotoFolderId($user, $volume);
+        $folderId = $this->userPhotoFolder($user)->id;
 
         if ($photo->folderId === $folderId) {
             return;
@@ -463,13 +464,12 @@ class Users
     /**
      * Returns the folder that a user’s photo should be stored.
      *
-     * @param  Volume  $volume  The user photo volume
-     *
      * @throws VolumeException if the user photo volume doesn’t exist
      * @throws InvalidSubpathException if the user photo subpath can’t be resolved
      */
-    private function userPhotoFolderId(User $user, Volume $volume): int
+    public function userPhotoFolder(User $user): VolumeFolder
     {
+        $volume = $this->userPhotoVolume();
         $subpath = (string) app(ProjectConfig::class)->get('users.photoSubpath');
 
         if ($subpath !== '') {
@@ -480,7 +480,11 @@ class Users
             }
         }
 
-        return Folders::ensureFolderByFullPathAndVolume($subpath, $volume)->id;
+        if (array_intersect(explode('/', str_replace('\\', '/', $subpath)), ['.', '..'])) {
+            throw new InvalidSubpathException($subpath);
+        }
+
+        return Folders::ensureFolderByFullPathAndVolume($subpath, $volume, justRecord: false);
     }
 
     /**

@@ -113,7 +113,6 @@ return [
     'Allow subfolders' => 'Almappák engedélyezése',
     'Allow uploading directly to the field' => 'Közvetlenül a mezőbe történő feltöltés engedélyezése',
     'Allowed File Types' => 'Engedélyezett fájltípusok',
-    'Allowed Kinds' => 'Allowed Kinds',
     'Allowed Link Types' => 'Engedélyezett hivatkozástípusok',
     'Allows creating drafts of new {type}.' => 'Lehetővé teszi új {type} típusú vázlatok létrehozását.',
     'Allows deleting other users’ {type} for all sites.' => 'Lehetővé teszi más felhasználók {type} típusának törlését az összes webhelyen.',
@@ -1483,7 +1482,6 @@ return [
     'Response:' => 'Válasz:',
     'Restart' => 'Újraindítás',
     'Restore' => 'Visszaállítás',
-    'Restrict allowed file types' => 'Szűkíti az engedélyezett fájltípusok körét',
     'Restrict assets to a single location' => 'Tartalmak korlátozása egyetlen helyre',
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
@@ -2234,11 +2232,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => "Hello {{user.friendlyName|e}},
+    'account_activation_body' => 'Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>",
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',

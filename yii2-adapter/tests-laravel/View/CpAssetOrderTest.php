@@ -5,6 +5,7 @@ declare(strict_types=1);
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\jquery\JqueryAsset;
+use craft\web\assets\xregexp\XregexpAsset;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack as HtmlStackService;
@@ -81,7 +82,8 @@ it('renders the internal CP asset files before Yii asset bundle dependents', fun
 
     expect($html)->toContain('legacy/jquery/dist/jquery.js')
         ->and($html)->toContain('https://example.test/assets/dependent.js')
-        ->and(strpos($html, 'legacy/jquery/dist/jquery.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'));
+        ->and(strpos($html, 'legacy/jquery/dist/jquery.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'))
+        ->and($html)->not->toContain('xregexp-all.js');
 });
 
 it('resolves Yii jQuery asset bundles to the internal jQuery asset', function() {
@@ -120,6 +122,14 @@ it('renders other internal assets before Craft asset bundle dependents', functio
     expect($html)->toContain('legacy/axios/dist/axios.js')
         ->and($html)->toContain('https://example.test/assets/depends-on-craft-axios.js')
         ->and(strpos($html, 'legacy/axios/dist/axios.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/depends-on-craft-axios.js'));
+});
+
+it('registers the XRegExp compatibility asset', function() {
+    $view = Craft::$app->getView();
+
+    $view->registerAssetBundle(XregexpAsset::class);
+
+    expect($view->placeholderHtml()['bodyEndHtml'])->toContain('xregexp-all.js');
 });
 
 it('uses the current scoped HtmlStack after scoped instances are flushed', function() {

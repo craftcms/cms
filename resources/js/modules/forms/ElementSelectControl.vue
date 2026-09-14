@@ -93,6 +93,7 @@
     canUpload?: boolean;
     uploadFolderId?: number | null;
     fsType?: string | null;
+    showFolders?: boolean;
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
@@ -320,6 +321,7 @@
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
         showSiteMenu: props.control.props.showSiteMenu,
+        indexSettings: {showFolders: props.control.props.showFolders ?? true},
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.
@@ -617,7 +619,7 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-2 py-2" slot="header">
+      <div v-if="editable && !atLimit" class="flex gap-2 pb-2" slot="header">
         <craft-button
           ref="addButton"
           type="button"

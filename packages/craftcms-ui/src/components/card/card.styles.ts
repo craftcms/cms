@@ -24,7 +24,7 @@ export default css`
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
       transparent 70%
     );
-    border: 1px solid
+    border: var(--c-card-border-width, 1px) solid
       var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));

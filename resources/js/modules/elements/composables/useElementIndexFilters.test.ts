@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {reactive, shallowRef} from 'vue';
 import {useElementIndexFilters} from './useElementIndexFilters';
-import type {ConditionConfig} from './useConditionBuilder';
+import type {ConditionConfig} from '@/modules/conditions/types';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {IndexQueryParams} from './useElementIndexVisits';
 import type {SourceItem} from '@/modules/elements/types/sources';
@@ -93,13 +93,16 @@ describe('useElementIndexFilters', () => {
   it('submits the filter condition intact alongside the other filters', () => {
     const condition: ConditionConfig = {
       class: 'craft\\elements\\conditions\\entries\\EntryCondition',
-      conditionRules: [
-        {
-          class: 'craft\\elements\\conditions\\TitleConditionRule',
-          uid: 'uid-1',
-          value: 'foo',
-        },
-      ],
+      conditionRules: {
+        operator: 'or',
+        rules: [
+          {class: 'TitleConditionRule', value: 'Alpha'},
+          {
+            operator: 'and',
+            rules: [{class: 'TitleConditionRule', value: 'Beta'}],
+          },
+        ],
+      },
     };
 
     const {submit} = useElementIndexFilters(

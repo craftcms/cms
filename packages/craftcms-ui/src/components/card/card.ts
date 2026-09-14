@@ -35,6 +35,7 @@ import {classMap} from 'lit/directives/class-map.js';
  *
  * @attr collapsed - Collapses the card to its header.
  *
+ * @cssproperty --c-card-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-card-shadow - Box shadow. Defaults to `--c-shadow-sm`.
  * @cssproperty --c-card-padding-inline - Inline (horizontal) padding of the
@@ -110,21 +111,11 @@ export default class CraftCard extends LitElement {
 
   private _syncSlotPresence() {
     this._hasSlottedHeader =
-      this._hasSlotted('header') ||
-      this._hasSlotted('label') ||
-      this._hasSlotted('actions');
-    this._hasSlottedFooter = this._hasSlotted('footer');
-    this._hasThumbnail = this._hasSlotted('thumbnail');
-  }
-
-  /**
-   * Only a direct child can be assigned to a slot, so the search stops there. A
-   * plain descendant search reaches into this card's own body and reads a
-   * nested card or chip's thumbnail as if it were ours — which is what a
-   * populated relation field inside a Matrix block looks like.
-   */
-  private _hasSlotted(name: string): boolean {
-    return !!this.querySelector(`:scope > [slot="${name}"]`);
+      !!this.querySelector(':scope > [slot="header"]') ||
+      !!this.querySelector(':scope > [slot="label"]') ||
+      !!this.querySelector(':scope > [slot="actions"]');
+    this._hasSlottedFooter = !!this.querySelector(':scope > [slot="footer"]');
+    this._hasThumbnail = !!this.querySelector(':scope > [slot="thumbnail"]');
   }
 
   private _handleThumbnailSlotChange(event: Event) {

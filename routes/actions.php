@@ -216,8 +216,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Conditions
         Route::post('conditions/render', [ConditionsController::class, 'show']);
-        Route::post('conditions/add-rule', [ConditionsController::class, 'store']);
-        Route::post('conditions/remove-rule', [ConditionsController::class, 'destroy']);
+        Route::post('conditions/render-rule', [ConditionsController::class, 'rule']);
+        Route::post('conditions/validate', [ConditionsController::class, 'validate']);
 
         // Edition
         Route::middleware([RequireAdmin::class])->group(function () {

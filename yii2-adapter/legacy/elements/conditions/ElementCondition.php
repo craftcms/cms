@@ -6,12 +6,19 @@ namespace craft\elements\conditions;
 
 use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\ElementConditionGroup;
 use CraftCms\Yii2Adapter\Form\LegacyConditionClasses;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Element\Conditions\ElementCondition instead. */
 class ElementCondition extends \CraftCms\Cms\Element\Conditions\ElementCondition
 {
+    public static function createGroup(): ConditionGroupInterface
+    {
+        return new ElementConditionGroup();
+    }
+
     public function getBuilderHtml(): string
     {
         return new ConditionBuilderRenderer($this)->render();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Concerns\HasLinkFieldSettings;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -12,28 +13,10 @@ use CraftCms\Cms\Support\Json;
 /**
  * A Link Control. Its canonical value is an object with required `type` and
  * `value` strings and optional `label`, `urlSuffix`, and `title` strings.
- *
- * @phpstan-type LinkType array{
- *     id: string,
- *     label: string,
- *     kind: 'custom'|'element'|'text',
- *     prefixes?: list<string>,
- *     pattern?: string,
- *     inputAttributes?: array<string, string>,
- *     elementType?: string,
- *     refHandle?: string,
- *     elementSelectConfig?: array<string, mixed>,
- * }
  */
 class Link extends Control
 {
-    /** @var list<LinkType> */
-    private array $types = [];
-
-    private bool $showLabelField = false;
-
-    /** @var list<'urlSuffix'|'title'> */
-    private array $advancedFields = [];
+    use HasLinkFieldSettings;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
@@ -54,29 +37,6 @@ class Link extends Control
         return 'craft:link';
     }
 
-    /** @param list<LinkType> $types */
-    public function types(array $types): static
-    {
-        $this->types = $types;
-
-        return $this;
-    }
-
-    public function showLabelField(bool $showLabelField = true): static
-    {
-        $this->showLabelField = $showLabelField;
-
-        return $this;
-    }
-
-    /** @param list<'urlSuffix'|'title'> $advancedFields */
-    public function advancedFields(array $advancedFields): static
-    {
-        $this->advancedFields = $advancedFields;
-
-        return $this;
-    }
-
     /** @return array<string, mixed> */
     #[\Override]
     public function emptyValue(): mixed
@@ -87,10 +47,6 @@ class Link extends Control
     #[\Override]
     public function props(mixed $value = null): array
     {
-        return [
-            'types' => $this->types,
-            'showLabelField' => $this->showLabelField,
-            'advancedFields' => $this->advancedFields,
-        ];
+        return $this->linkFieldSettingsProps();
     }
 }

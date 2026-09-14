@@ -13,6 +13,7 @@
   import FormNodeList from './FormNodeList.vue';
   import {
     FieldActionItems,
+    FieldLabelSrOnly,
     FormControlOverrides,
     FormFailure,
     FormChangedPaths,
@@ -32,6 +33,8 @@
 
   type FieldNodeProps = {
     label?: string | null;
+    /** Visually hides the label, keeping it available to screen readers. */
+    labelSrOnly?: boolean;
     instructions?: string | null;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
@@ -60,6 +63,10 @@
     (event: 'change', change: FormChange): void;
   }>();
   const invalidate = inject(FormFailure)!;
+  provide(
+    FieldLabelSrOnly,
+    computed(() => Boolean(props.node.props.labelSrOnly))
+  );
   const overrides = inject(FormControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
@@ -180,6 +187,7 @@
 <template>
   <craft-field
     :label="node.props.label ?? undefined"
+    :label-sr-only="node.props.labelSrOnly || undefined"
     :help-text="node.props.instructions ?? undefined"
     :instructions-position="node.props.instructionsPosition"
     :required="Boolean(node.props.required)"
