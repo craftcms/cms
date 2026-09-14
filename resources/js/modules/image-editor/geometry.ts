@@ -61,6 +61,21 @@ export function getRectangleVertices(
  * be rotated, so this projects each point onto two adjacent edges rather than
  * comparing bounds.
  */
+/**
+ * How far past the image's edge a point may sit, in pixels, and still count as
+ * inside it.
+ *
+ * The image's outline and the cropping rectangle are worked out along
+ * different paths -- the outline from dimensions rounded to whole pixels, the
+ * rectangle from the crop's true aspect ratio -- and a straightened outline
+ * goes through trigonometry on top. So a crop flush with the image regularly
+ * sits a fraction of a pixel outside it. Checked exactly, that fraction failed
+ * every corner of every candidate, and the cropper refused to resize or move at
+ * all from a full-image crop. Half a pixel absorbs the rounding without letting
+ * anything visibly escape.
+ */
+export const CONTAINMENT_TOLERANCE = 0.5;
+
 export function arePointsInsideRectangle(
   points: Point[],
   rectangle: VerticeCoords
@@ -70,15 +85,20 @@ export function arePointsInsideRectangle(
   const scalarAbAb = getScalarProduct(ab, ab);
   const scalarBcBc = getScalarProduct(bc, bc);
 
+  // The scalar products are distances along an edge scaled by its length, so
+  // the tolerance is scaled the same way to compare like with like.
+  const slackAb = CONTAINMENT_TOLERANCE * Math.sqrt(scalarAbAb);
+  const slackBc = CONTAINMENT_TOLERANCE * Math.sqrt(scalarBcBc);
+
   return points.every((point) => {
     const scalarAbAp = getScalarProduct(ab, getVector(rectangle.a, point));
     const scalarBcBp = getScalarProduct(bc, getVector(rectangle.b, point));
 
     return (
-      scalarAbAp >= 0 &&
-      scalarAbAp <= scalarAbAb &&
-      scalarBcBp >= 0 &&
-      scalarBcBp <= scalarBcBc
+      scalarAbAp >= -slackAb &&
+      scalarAbAp <= scalarAbAb + slackAb &&
+      scalarBcBp >= -slackBc &&
+      scalarBcBp <= scalarBcBc + slackBc
     );
   });
 }

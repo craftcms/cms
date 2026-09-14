@@ -49,6 +49,34 @@ it('rejects a rectangle that leaves the image on any side', () => {
   }
 });
 
+it('accepts a crop that sits a fraction of a pixel outside the image', () => {
+  // Measured in the editor: the image's outline comes from dimensions rounded
+  // to whole pixels (623 x 830), while the crop keeps the image's true 3:4
+  // ratio (623 x 830.667). Checked exactly, the crop's top and bottom corners
+  // fell a third of a pixel outside, and every resize and move was refused.
+  const outline: VerticeCoords = {
+    a: {x: 937, y: 20},
+    b: {x: 937, y: 850},
+    c: {x: 314, y: 850},
+    d: {x: 314, y: 20},
+  };
+  const crop: Rectangle = {
+    left: 314,
+    top: 19.667,
+    width: 623,
+    height: 830.667,
+  };
+
+  expect(arePointsInsideRectangle(getRectangleVertices(crop), outline)).toBe(
+    true
+  );
+
+  // A whole pixel out is still out.
+  expect(
+    arePointsInsideRectangle(getRectangleVertices(crop, 0, -1), outline)
+  ).toBe(false);
+});
+
 it('shrinks from the dragged edge and leaves the others alone', () => {
   const smaller = resizeRectangle(full, -50, 0, 'r', false, false);
 
