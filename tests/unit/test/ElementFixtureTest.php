@@ -187,7 +187,9 @@ class ElementFixtureTest extends TestCase
             self::assertInstanceOf(Entry::class, $nested);
             self::assertFalse($this->hasRevisions($nested));
             self::assertTrue($field->enableVersioning);
-            self::assertTrue($nested->getField()->enableVersioning);
+            $nestedField = $nested->getField();
+            self::assertInstanceOf(Matrix::class, $nestedField);
+            self::assertTrue($nestedField->enableVersioning);
 
             $nested->setFieldValue('secondSubfield', 'Saved outside the fixture');
             self::assertTrue(Craft::$app->getElements()->saveElement($nested));
