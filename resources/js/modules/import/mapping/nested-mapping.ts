@@ -14,34 +14,34 @@ import {actionClient} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {cloneValues} from './paths';
 import type {
-    MappingCol,
-    MappingGroup,
-    MappingValues,
-    SourceDataCol,
+  MappingCol,
+  MappingGroup,
+  MappingValues,
+  SourceDataCol,
 } from './types';
 
 export interface NestedMappingContext {
-    col: MappingCol;
-    fieldName: string;
-    groups: MappingGroup[];
-    sourceDataCols: SourceDataCol[];
-    values: MappingValues;
-    editable: boolean;
-    /** Carried through so a container inside the panel can open a panel of its own. */
-    importUid: string;
-    colsUrl: string;
-    apply(values: MappingValues): void;
+  col: MappingCol;
+  fieldName: string;
+  groups: MappingGroup[];
+  sourceDataCols: SourceDataCol[];
+  values: MappingValues;
+  editable: boolean;
+  /** Carried through so a container inside the panel can open a panel of its own. */
+  importUid: string;
+  colsUrl: string;
+  apply(values: MappingValues): void;
 }
 
 export interface OpenNestedMappingOptions {
-    col: MappingCol;
-    importUid: string;
-    /** Endpoint returning the container's destination columns. */
-    colsUrl: string;
-    values: MappingValues;
-    editable: boolean;
-    opener: HTMLElement | null;
-    apply(values: MappingValues): void;
+  col: MappingCol;
+  importUid: string;
+  /** Endpoint returning the container's destination columns. */
+  colsUrl: string;
+  values: MappingValues;
+  editable: boolean;
+  opener: HTMLElement | null;
+  apply(values: MappingValues): void;
 }
 
 // Callbacks can't ride in `ScreenPageProps`, so the panel is handed a key instead and
@@ -50,17 +50,17 @@ const contexts = new Map<string, NestedMappingContext>();
 let nextContextId = 0;
 
 export function takeNestedMappingContext(
-    contextId: string
+  contextId: string
 ): NestedMappingContext {
-    const context = contexts.get(contextId);
+  const context = contexts.get(contextId);
 
-    if (!context) {
-        throw new Error(`Unknown nested mapping context: ${contextId}`);
-    }
+  if (!context) {
+    throw new Error(`Unknown nested mapping context: ${contextId}`);
+  }
 
-    contexts.delete(contextId);
+  contexts.delete(contextId);
 
-    return context;
+  return context;
 }
 
 /**
@@ -68,50 +68,50 @@ export function takeNestedMappingContext(
  * changes in a panel this one would have replaced.
  */
 export async function openNestedMapping(
-    options: OpenNestedMappingOptions
+  options: OpenNestedMappingOptions
 ): Promise<boolean> {
-    const {col} = options;
+  const {col} = options;
 
-    const {data} = await actionClient.get(options.colsUrl, {
-        params: {
-            importUid: options.importUid,
-            fieldUid: col.fieldUid ?? '',
-            fieldHandle: col.prefixedHandle,
-            fieldIsProperty: col.isProperty ? 1 : 0,
-        },
-    });
+  const {data} = await actionClient.get(options.colsUrl, {
+    params: {
+      importUid: options.importUid,
+      fieldUid: col.fieldUid ?? '',
+      fieldHandle: col.prefixedHandle,
+      fieldIsProperty: col.isProperty ? 1 : 0,
+    },
+  });
 
-    const [{openSlideoutWith}, {default: NestedMapping}] = await Promise.all([
-        import('@/common/slideouts'),
-        import('./NestedMapping.vue'),
-    ]);
+  const [{openSlideoutWith}, {default: NestedMapping}] = await Promise.all([
+    import('@/common/slideouts'),
+    import('./NestedMapping.vue'),
+  ]);
 
-    const contextId = `import-nested-mapping-${++nextContextId}`;
-    contexts.set(contextId, {
-        col,
-        fieldName: data.fieldName,
-        groups: data.groups,
-        sourceDataCols: data.sourceDataCols ?? [],
-        values: cloneValues(options.values),
-        editable: options.editable,
-        importUid: options.importUid,
-        colsUrl: options.colsUrl,
-        apply: options.apply,
-    });
+  const contextId = `import-nested-mapping-${++nextContextId}`;
+  contexts.set(contextId, {
+    col,
+    fieldName: data.fieldName,
+    groups: data.groups,
+    sourceDataCols: data.sourceDataCols ?? [],
+    values: cloneValues(options.values),
+    editable: options.editable,
+    importUid: options.importUid,
+    colsUrl: options.colsUrl,
+    apply: options.apply,
+  });
 
-    // SAFETY: The slideout host renders this imported Vue SFC exactly like its Inertia
-    // page components; it does not require an Inertia page module.
-    const panel = openSlideoutWith(
-        NestedMapping as InertiaPageComponent,
-        {contextId, title: data.title},
-        {opener: options.opener}
-    );
+  // SAFETY: The slideout host renders this imported Vue SFC exactly like its Inertia
+  // page components; it does not require an Inertia page module.
+  const panel = openSlideoutWith(
+    NestedMapping as InertiaPageComponent,
+    {contextId, title: data.title},
+    {opener: options.opener}
+  );
 
-    if (!panel) {
-        contexts.delete(contextId);
+  if (!panel) {
+    contexts.delete(contextId);
 
-        return false;
-    }
+    return false;
+  }
 
-    return true;
+  return true;
 }

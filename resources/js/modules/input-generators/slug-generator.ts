@@ -12,39 +12,35 @@ declare const Craft: any;
  * component package. It still reuses the shared `asciiString`.
  */
 export class SlugGenerator extends BaseInputGenerator {
-    constructor(source?: any, target?: any, settings?: any) {
-        super(source, target, settings);
-        if (new.target === SlugGenerator) {
-            this.init(source, target, settings);
-        }
+  constructor(source?: any, target?: any, settings?: any) {
+    super(source, target, settings);
+    if (new.target === SlugGenerator) {
+      this.init(source, target, settings);
+    }
+  }
+
+  override generateTargetValue(sourceVal: string): string {
+    // Remove HTML tags
+    sourceVal = sourceVal.replace(/<(.*?)>/g, '');
+
+    // Remove inner-word punctuation
+    sourceVal = sourceVal.replace(/['"‘’“”ʻ[\](){}:]/g, '');
+
+    if (Craft.limitAutoSlugsToAscii) {
+      // Convert extended ASCII characters to basic ASCII
+      sourceVal = asciiString(sourceVal, this.settings!.charMap ?? undefined);
     }
 
-    override generateTargetValue(sourceVal: string): string {
-        // Remove HTML tags
-        sourceVal = sourceVal.replace(/<(.*?)>/g, '');
-
-        // Remove inner-word punctuation
-        sourceVal = sourceVal.replace(/['"‘’“”ʻ[\](){}:]/g, '');
-
-        if (Craft.limitAutoSlugsToAscii) {
-            // Convert extended ASCII characters to basic ASCII
-            sourceVal = asciiString(
-                sourceVal,
-                this.settings!.charMap ?? undefined
-            );
-        }
-
-        // Make it lowercase
-        if (!Craft.allowUppercaseInSlug) {
-            sourceVal = sourceVal.toLowerCase();
-        }
-
-        // Get the "words". Keep XRegExp's previous BMP-only Unicode matching.
-        const words =
-            sourceVal.match(
-                /(?:(?![\u{10000}-\u{10FFFF}])[\p{L}\p{N}\p{M}])+/gu
-            ) ?? [];
-
-        return words.join(Craft.slugWordSeparator);
+    // Make it lowercase
+    if (!Craft.allowUppercaseInSlug) {
+      sourceVal = sourceVal.toLowerCase();
     }
+
+    // Get the "words". Keep XRegExp's previous BMP-only Unicode matching.
+    const words =
+      sourceVal.match(/(?:(?![\u{10000}-\u{10FFFF}])[\p{L}\p{N}\p{M}])+/gu) ??
+      [];
+
+    return words.join(Craft.slugWordSeparator);
+  }
 }

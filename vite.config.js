@@ -229,6 +229,7 @@ export default defineConfig(({mode}) => {
     fmt: {
       singleQuote: true,
       bracketSpacing: false,
+      tabWidth: 2,
       vueIndentScriptAndStyle: true,
       trailingComma: 'es5',
       printWidth: 80,
