@@ -290,6 +290,28 @@
         addAreaWidth.value > 0 &&
         addAreaWidth.value < buttonsWidth.value)
   );
+  /**
+   * The add menu's button shows the same loading state the add buttons do.
+   *
+   * `ActionMenu` renders its invoker once (`v-once` keeps Vue from patching DOM
+   * the overlay has moved), so bindings on it never update. Set on the element
+   * instead, after each render — the menu comes and goes with `addFromMenu`.
+   */
+  watch(
+    [adding, busy, addFromMenu],
+    () => {
+      const invoker = addArea.value?.querySelector<
+        HTMLElement & {loading: boolean; disabled: boolean}
+      >('[slot="invoker"] craft-button');
+
+      if (invoker) {
+        invoker.loading = adding.value !== null;
+        invoker.disabled = busy.value;
+      }
+    },
+    {flush: 'post'}
+  );
+
   /** Craft 5's threshold: past this many, the menu is worth searching. */
   const addMenuSearchable = computed(
     () => (props.control.props.entryTypes?.length ?? 0) > 5
@@ -1492,7 +1514,6 @@
               type="button"
               variant="dashed"
               icon="plus"
-              :disabled="busy"
             >
               {{ control.props.addLabel }}
             </craft-button>

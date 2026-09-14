@@ -24,10 +24,25 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
     default: {
       name: 'ActionMenu',
       props: {actions: {type: Array, default: () => []}},
-      setup(props: {actions: ActionItems}) {
+      setup(
+        props: {actions: ActionItems},
+        {
+          slots,
+        }: {slots: Record<string, ((scope: object) => unknown) | undefined>}
+      ) {
         menuStub.instances.push(props);
 
-        return () => createElement('div', {class: 'stub-action-menu'});
+        // The invoker renders where the real one does, so its state can be read.
+        return () =>
+          createElement('div', {class: 'stub-action-menu'}, [
+            slots.invoker
+              ? createElement(
+                  'span',
+                  {slot: 'invoker'},
+                  slots.invoker({attributes: {slot: 'invoker'}}) as never
+                )
+              : null,
+          ]);
       },
     },
   };
@@ -754,6 +769,64 @@ describe('MatrixControl', () => {
         color: 'red',
         ...(group ? {group: group(index)} : {}),
       }));
+
+    it('shows the add menu’s button loading while the server mints a block', async () => {
+      const uid = '9f1c0a3e-0000-4000-8000-000000000002';
+      let settle: (value: unknown) => void;
+      action.post.mockReturnValueOnce(
+        new Promise((resolve) => {
+          settle = resolve;
+        })
+      );
+
+      mount(
+        {entries: {}, sortOrder: []},
+        {
+          // Two groups: the types are offered from a menu.
+          entryTypes: types(2, (index) => (index === 0 ? 'Layout' : 'Content')),
+          create: {
+            fieldId: 33,
+            ownerId: 1568,
+            ownerElementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            siteId: 1,
+            entryTypeIds: {'type-0': 25, 'type-1': 26},
+          },
+        }
+      );
+      await nextTick();
+
+      const invoker = () =>
+        container!.querySelector<
+          HTMLElement & {loading?: boolean; disabled?: boolean}
+        >('[slot="invoker"] craft-button');
+      const groups = menus.at(-1)!.actions as unknown as Array<{
+        items: Array<{onClick: () => void}>;
+      }>;
+
+      expect(invoker()).not.toBeNull();
+
+      groups[0]!.items[0]!.onClick();
+      await nextTick();
+
+      expect(invoker()!.loading).toBe(true);
+      expect(invoker()!.disabled).toBe(true);
+
+      settle!({
+        data: {
+          uid,
+          type: 'type-0',
+          form: {
+            scope: ['fields', 'pageBuilder', 'entries', uid],
+            refreshable: true,
+            nodes: [],
+          },
+          values: {},
+        },
+      });
+
+      await vi.waitFor(() => expect(invoker()?.loading).toBe(false));
+      expect(invoker()!.disabled).toBe(false);
+    });
 
     it('carries each entry type’s own icon and colour', async () => {
       mount({entries: {}, sortOrder: []}, {entryTypes: types(2)});
