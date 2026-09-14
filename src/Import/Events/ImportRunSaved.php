@@ -14,8 +14,7 @@ final readonly class ImportRunSaved
     /**
      * Carries the saved run and isNew flag, fired after save.
      *
-     * @param ImportRun $run The import run this event concerns.
-     * @param bool $isNew
+     * @param  ImportRun  $run  The import run this event concerns.
      */
     public function __construct(
         public ImportRun $run,

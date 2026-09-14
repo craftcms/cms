@@ -31,8 +31,7 @@ class ElementTransformer extends BaseTransformer
      *
      * Returns the transformed data array, ready to be imported into an Element.
      *
-     * @param mixed $item The raw item data to transform.
-     * @return array
+     * @param  mixed  $item  The raw item data to transform.
      *
      * @throws \ReflectionException
      */

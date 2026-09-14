@@ -17,8 +17,7 @@ class ImportConfigSaving
     /**
      * Carries the importer config and isNew flag for a cancellable pre-save event.
      *
-     * @param BaseImporter $importer The importer config for this event.
-     * @param bool $isNew
+     * @param  BaseImporter  $importer  The importer config for this event.
      */
     public function __construct(
         public BaseImporter $importer,

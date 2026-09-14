@@ -17,8 +17,7 @@ class ImportRunDispatching
     /**
      * Carries the steps and run for a cancellable pre-dispatch event.
      *
-     * @param array $steps The queue job steps to be dispatched.
-     * @param ImportRun $run
+     * @param  array  $steps  The queue job steps to be dispatched.
      */
     public function __construct(
         public array $steps,

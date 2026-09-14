@@ -14,8 +14,7 @@ class ImportRunDispatched
     /**
      * Carries the dispatched job steps and the run, fired after queue dispatch.
      *
-     * @param array $steps The queue job steps to be dispatched.
-     * @param ImportRun $run
+     * @param  array  $steps  The queue job steps to be dispatched.
      */
     public function __construct(
         public array $steps,

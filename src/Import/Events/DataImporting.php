@@ -17,8 +17,7 @@ class DataImporting
     /**
      * Promotes the importer config and raw data into a cancellable event fired before import.
      *
-     * @param BaseImporter $importer The importer config for this event.
-     * @param array $data
+     * @param  BaseImporter  $importer  The importer config for this event.
      */
     public function __construct(
         public BaseImporter $importer,

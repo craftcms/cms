@@ -14,8 +14,7 @@ final readonly class ImportConfigSaved
     /**
      * Carries the saved importer config and whether it was newly created, fired after save.
      *
-     * @param BaseImporter $importer The importer config for this event.
-     * @param bool $isNew
+     * @param  BaseImporter  $importer  The importer config for this event.
      */
     public function __construct(
         public BaseImporter $importer,

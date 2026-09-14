@@ -13,9 +13,6 @@ final readonly class DataImported
 {
     /**
      * Promotes the importer config and imported data into a readonly event payload fired after import.
-     *
-     * @param BaseImporter $importer
-     * @param array $data
      */
     public function __construct(
         public BaseImporter $importer,
