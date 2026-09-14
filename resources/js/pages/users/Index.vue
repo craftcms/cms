@@ -67,7 +67,6 @@
       <CpLink
         v-if="page.props.canRegisterUsers"
         :href="create().url"
-        class="btn submit add icon"
         icon="plus"
         appearance="button"
         variant="accent"
