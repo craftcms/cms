@@ -52,11 +52,13 @@ readonly class SetPasswordController extends AuthenticationController
                 'uid' => $uid,
                 'newUser' => ! $user->password,
                 'action' => $request->isCpRequest() ? action([self::class, 'store']) : action_url('users/set-password'),
+                'passwordRules' => Password::defaults()->toPasswordRulesString(),
             ],
             data: [
                 'code' => $code,
                 'uid' => $uid,
                 'newUser' => ! $user->password,
+                'passwordRules' => Password::defaults()->toPasswordRulesString(),
             ],
         );
     }

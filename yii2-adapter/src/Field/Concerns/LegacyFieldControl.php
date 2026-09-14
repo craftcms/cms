@@ -38,6 +38,7 @@ trait LegacyFieldControl
                 ControlMode::Disabled => LegacyHtmlMode::Disabled,
             },
             deltaGroup: $path,
+            inline: $context->inline,
         );
 
         return $node?->getControl()->expandValues() ?? throw new RuntimeException(sprintf(

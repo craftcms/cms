@@ -158,6 +158,7 @@ const UNDOCUMENTABLE = new Set([
   'craft-combobox.modelValue',
   'craft-combobox.defaultValidators',
   'craft-combobox.autocomplete',
+  'craft-combobox.selectionFollowsFocus',
 ]);
 
 describe('no internals are published as API', () => {

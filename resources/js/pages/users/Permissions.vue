@@ -115,10 +115,7 @@
       >
         <template v-if="props.teamPermissionsNotice.allowAdminChanges">
           {{ t('Team permissions can be managed from') }}
-          <CpLink
-            :href="props.teamPermissionsNotice.settingsUrl"
-            :inertia="false"
-          >
+          <CpLink :href="props.teamPermissionsNotice.settingsUrl">
             {{ t('User Permissions') }}
           </CpLink>
         </template>

@@ -6,14 +6,18 @@ namespace CraftCms\Cms\Support;
 
 use BackedEnum;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Translation\Locale;
 use Exception;
 use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
+use Normalizer;
 use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
 use RuntimeException;
+use Throwable;
+use Transliterator;
 use voku\helper\ASCII;
 
 class Str extends \Illuminate\Support\Str
@@ -371,6 +375,19 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Converts all characters in the string to lowercase, respecting language-specific casing rules.
+     *
+     * @param  string  $value  The string to convert to lowercase.
+     * @param  string|null  $language  The string's language.
+     * @return string The lowercase string.
+     */
+    #[Override]
+    public static function lower($value, ?string $language = null): string
+    {
+        return self::modifyCase($value, $language, 'Lower') ?? parent::lower($value);
+    }
+
+    /**
      * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
      * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
@@ -494,6 +511,20 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Converts the first character of each word in the string to uppercase, respecting language-specific
+     * casing rules.
+     *
+     * @param  string  $value  The string to convert case.
+     * @param  string|null  $language  The string's language.
+     * @return string The title-cased string.
+     */
+    #[Override]
+    public static function title($value, ?string $language = null): string
+    {
+        return self::modifyCase($value, $language, 'Title') ?? parent::title($value);
+    }
+
+    /**
      * Returns a handle-safe version of a string.
      */
     public static function toHandle(string $str): string
@@ -598,8 +629,47 @@ class Str extends \Illuminate\Support\Str
         return str_replace($map, array_keys($map), $str);
     }
 
+    /**
+     * Converts all characters in the string to uppercase, respecting language-specific casing rules.
+     *
+     * @param  string  $value  The string to convert to uppercase.
+     * @param  string|null  $language  The string's language.
+     * @return string The uppercase string.
+     */
+    #[Override]
+    public static function upper($value, ?string $language = null): string
+    {
+        return self::modifyCase($value, $language, 'Upper') ?? parent::upper($value);
+    }
+
     public static function uuidPattern(): string
     {
         return Str::between((new GenericValidator)->getPattern(), '\A', '\z');
+    }
+
+    private static function modifyCase(string $value, ?string $language, string $case): ?string
+    {
+        // Only attempt a language-aware transliteration if a language was given, or the app can supply
+        // its current locale. The container running this code might not be a full application instance,
+        // or might not have its `config` binding registered yet (e.g. within the Yii2 adapter's test suite),
+        // so fall back to a non-localized conversion rather than blowing up.
+        if ($language === null) {
+            try {
+                $language = app()->getLocale();
+            } catch (Throwable) {
+                return null;
+            }
+        }
+
+        $transliterator = Transliterator::create(sprintf('%s-%s', Locale::languageId($language), $case));
+
+        if (! $transliterator) {
+            return null;
+        }
+
+        // Normalize NFD chars to NFC
+        $value = Normalizer::normalize($value, Normalizer::FORM_C);
+
+        return $transliterator->transliterate($value);
     }
 }

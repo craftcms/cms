@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Models\Authenticator;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
@@ -23,11 +25,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\cp_url;
+use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
-    Cms::config()->isSystemLive = true;
     ProjectConfig::set('users.allowPublicRegistration', true);
 
     FakeOAuthProvider::reset();
@@ -122,6 +124,52 @@ describe('redirect flow', function () {
 });
 
 describe('callback flow', function () {
+    test('callback rejects user creation without maintenance access', function (bool $isCpRequest) {
+        configureOAuthControllerProvider([
+            'createsUsers' => true,
+            'activatesUsers' => true,
+        ]);
+        app()->maintenanceMode()->activate([]);
+
+        completeOAuthControllerCallback([
+            'id' => 'provider-user-maintenance',
+            'email' => 'oauth-maintenance@example.com',
+        ], $isCpRequest)
+            ->assertRedirect(oauthControllerLoginUrl($isCpRequest))
+            ->assertSessionHas('errorCode', ($isCpRequest ? AuthError::NoCpOfflineAccess : AuthError::NoSiteOfflineAccess)->value);
+
+        expect(User::find()->email('oauth-maintenance@example.com')->status(null)->first())->toBeNull()
+            ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-maintenance', 1))->toBeFalse()
+            ->and(Auth::guest())->toBeTrue();
+    })->with(['site' => false, 'CP' => true]);
+
+    test('callback rejects identity connections without control panel maintenance access', function () {
+        $user = UserModel::factory()
+            ->active()
+            ->withPermissions(['accessCp'])
+            ->createElement();
+        actingAs($user);
+        configureOAuthControllerProvider();
+        FakeOAuthProvider::$fakeUser = FakeOAuthProvider::fakeUser([
+            'id' => 'provider-connect-maintenance',
+            'email' => $user->email,
+        ]);
+        session()->put(OAuth::CONNECT_SESSION_KEY, [
+            'provider' => 'test',
+            'userId' => $user->id,
+        ]);
+        app()->maintenanceMode()->activate([]);
+
+        get(oauthControllerCallbackUrl(true))
+            ->assertRedirect(action([SignInProvidersController::class, 'index']))
+            ->assertSessionHas('error', fn (mixed $message): bool => is_string($message)
+                && str_contains($message, 'control panel')
+                && str_contains($message, 'maintenance mode'));
+
+        expect(oauthControllerHasLinkedIdentity('test', 'provider-connect-maintenance', $user->id))->toBeFalse()
+            ->and(Auth::id())->toBe($user->id);
+    });
+
     test('callback creates a new user, links the identity, and assigns groups', function () {
         UserGroups::saveGroup($group = new UserGroup([
             'name' => 'Members',
@@ -240,7 +288,8 @@ describe('callback flow', function () {
             ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-2', $user->id))->toBeTrue();
     });
 
-    test('callback rejects unavailable users', function (array $elementAttributes) {
+    test('callback rejects unavailable users', function (array $elementAttributes, array $userAttributes, AuthError $error, ?int $cooldown, bool $isCpRequest) {
+        app(GeneralConfig::class)->cooldownDuration = $cooldown;
         $user = UserModel::factory()->active()->createElement([
             'email' => 'unavailable@example.com',
             'username' => 'unavailable-user',
@@ -248,7 +297,8 @@ describe('callback flow', function () {
 
         DB::table(Table::ELEMENTS)
             ->where('id', $user->id)
-            ->update($elementAttributes);
+            ->update(['enabled' => true, ...$elementAttributes]);
+        DB::table(Table::USERS)->where('id', $user->id)->update(['lockoutDate' => now('UTC'), ...$userAttributes]);
 
         configureOAuthControllerProvider([
             'trustsEmail' => true,
@@ -257,16 +307,22 @@ describe('callback flow', function () {
         completeOAuthControllerCallback([
             'id' => 'provider-user-unavailable',
             'email' => 'unavailable@example.com',
-        ])
-            ->assertRedirect(oauthControllerLoginUrl(false))
-            ->assertSessionHas('error');
+        ], $isCpRequest)
+            ->assertRedirect(oauthControllerLoginUrl($isCpRequest))
+            ->assertSessionHas('errorCode', $error->value);
 
         expect(Auth::check())->toBeFalse()
             ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-unavailable', $user->id))->toBeFalse();
     })->with([
-        'disabled' => [['enabled' => false]],
-        'archived' => [['archived' => true]],
-    ]);
+        'disabled' => [['enabled' => false], [], AuthError::InvalidCredentials, null],
+        'archived' => [['archived' => true], [], AuthError::InvalidCredentials, null],
+        'inactive' => [[], ['active' => false], AuthError::InvalidCredentials, null],
+        'pending before lock' => [[], ['pending' => true, 'locked' => true], AuthError::PendingVerification, null],
+        'suspended before pending' => [[], ['suspended' => true, 'pending' => true], AuthError::AccountSuspended, null],
+        'lock before reset' => [[], ['locked' => true, 'passwordResetRequired' => true], AuthError::AccountLocked, null],
+        'cooldown' => [[], ['locked' => true], AuthError::AccountCooldown, 60],
+        'reset before CP permission' => [[], ['passwordResetRequired' => true], AuthError::PasswordResetRequired, null],
+    ])->with(['site' => false, 'CP' => true]);
 
     test('callback does not link an existing user by email fallback for untrusted providers', function () {
         $user = UserModel::factory()->active()->createElement([
@@ -312,7 +368,8 @@ describe('callback flow', function () {
             $response->assertRedirect();
         }
 
-        expect(Auth::check())->toBe($shouldAuthenticate);
+        expect(Auth::check())->toBe($shouldAuthenticate)
+            ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-context', $user->id))->toBe($shouldAuthenticate);
 
         if ($shouldAuthenticate) {
             expect(Auth::id())->toBe($user->id);
@@ -341,6 +398,22 @@ describe('callback flow', function () {
 
         expect(Auth::id())->toBe($user->id)
             ->and(session('user.id'))->toBeNull();
+    });
+
+    test('control panel callback remains accessible during maintenance mode', function () {
+        $user = User::findOne();
+
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
+        app()->maintenanceMode()->activate([]);
+
+        completeOAuthControllerCallback([
+            'id' => 'provider-user-maintenance',
+            'email' => $user->email,
+        ], true)->assertRedirect();
+
+        expect(Auth::id())->toBe($user->id);
     });
 });
 

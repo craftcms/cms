@@ -16,21 +16,26 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Testing\CachedState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Foundation\Testing\WithCachedRoutes;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
@@ -46,14 +51,40 @@ use ReflectionProperty;
 
 class TestCase extends Orchestra
 {
+    use IsolatesParallelFiles;
     use RefreshDatabase;
     use RegistersPackageAliases;
+    use WithCachedRoutes;
     use WithWorkbench;
+
+    private static bool $parallelDatabaseCreated = false;
+
+    #[Override]
+    protected function resolveApplicationResolvingCallback($app): void
+    {
+        parent::resolveApplicationResolvingCallback($app);
+
+        if (CachedState::$cachedRoutes !== null) {
+            $app->booting(fn () => $this->markRoutesCached($app));
+            $app->booted(fn () => $this->restoreCachedMaintenanceRouteExceptions());
+        }
+    }
+
+    protected function restoreCachedMaintenanceRouteExceptions(): void
+    {
+        CraftMaintenanceMiddleware::registerRouteExceptions(
+            CachedState::$cachedRoutes['craftMaintenanceExceptions'] ??= CraftMaintenanceMiddleware::routeExceptionTemplates(app(Router::class)->getRoutes()->getRoutes()),
+        );
+    }
 
     #[Override]
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
+
+        if (getenv('TEST_TOKEN') !== false) {
+            return;
+        }
 
         DatabaseLock::acquire();
     }
@@ -64,7 +95,17 @@ class TestCase extends Orchestra
         // This is so route registration in tests work
         $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
 
+        $databaseNeedsMigration = ! RefreshDatabaseState::$migrated;
+
+        if ($databaseNeedsMigration) {
+            CachedState::$cachedRoutes = null;
+        }
+
         parent::setUp();
+
+        if ($databaseNeedsMigration) {
+            CachedState::$cachedRoutes = null;
+        }
 
         config()->set('app.debug', true);
 
@@ -88,7 +129,8 @@ class TestCase extends Orchestra
             app(Search::class)->useFullText = false;
         }
 
-        File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(config_path('craft/'.app(ProjectConfig::class)->folderName));
+
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
 
         Factory::guessFactoryNamesUsing(
@@ -100,12 +142,14 @@ class TestCase extends Orchestra
         $this->withoutVite();
 
         // Always start with a fresh default admin user
-        User::first()->update([
-            'username' => 'craftcms',
-            'password' => Hash::make('craftcms2018!!'),
-            'email' => 'support@craftcms.com',
-            'admin' => true,
-        ]);
+        if ($user = User::first()) {
+            $user->update([
+                'username' => 'craftcms',
+                'password' => Hash::make('craftcms2018!!'),
+                'email' => 'support@craftcms.com',
+                'admin' => true,
+            ]);
+        }
     }
 
     protected function connectionsToTransact(): array
@@ -120,7 +164,9 @@ class TestCase extends Orchestra
     #[Override]
     protected function tearDown(): void
     {
+        app()->maintenanceMode()->deactivate();
         Gate::clearResolvedInstances();
+        PreventRequestsDuringMaintenance::flushState();
 
         app(ProjectConfig::class)->reset();
 
@@ -155,21 +201,6 @@ class TestCase extends Orchestra
             [FieldLayoutComponent::class, 'defaultElementConditions', []],
             [CustomField::class, 'defaultElementEditConditions', []],
         ];
-
-        // Reset ProjectConfig "processed" flags
-        $projectConfigFlags = [
-            '_processedFilesystems',
-            '_processedFields',
-            '_processedSites',
-            '_processedUserGroups',
-            '_processedEntryTypes',
-            '_processedSections',
-            '_processedGqlSchemas',
-        ];
-
-        foreach ($projectConfigFlags as $flag) {
-            $resets[] = [ProjectConfigHelper::class, $flag, false];
-        }
 
         foreach ($resets as [$class, $property, $default]) {
             new ReflectionProperty($class, $property)->setValue(null, $default);
@@ -222,7 +253,24 @@ class TestCase extends Orchestra
     #[Override]
     protected function defineEnvironment($app): void
     {
-        File::cleanDirectory(config_path('craft/project'));
+        $projectConfigFolder = 'project';
+
+        if (($token = getenv('TEST_TOKEN')) !== false) {
+            $projectConfigFolder .= "_$token";
+            $storagePath = $app->storagePath("parallel_$token");
+            $app->useStoragePath($storagePath);
+            File::ensureDirectoryExists($storagePath);
+            File::ensureDirectoryExists($app->storagePath('framework'));
+            File::ensureDirectoryExists($app->storagePath('framework/testing'));
+
+            $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig) use ($projectConfigFolder) {
+                $projectConfig->folderName = $projectConfigFolder;
+                $projectConfig->writeYamlAutomatically = false;
+            });
+        }
+
+        File::cleanDirectory(config_path("craft/$projectConfigFolder"));
+
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
         File::cleanDirectory(storage_path('logs'));
 
@@ -250,6 +298,8 @@ class TestCase extends Orchestra
                 $connectionConfig = ConnectionConfig::normalize($connectionConfig);
 
                 if (($connectionConfig['driver'] ?? null) === 'sqlite') {
+                    $connectionConfig['foreign_key_constraints'] = true;
+
                     unset(
                         $connectionConfig['busy_timeout'],
                         $connectionConfig['journal_mode'],
@@ -260,7 +310,23 @@ class TestCase extends Orchestra
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }
 
+                if (($token = getenv('TEST_TOKEN')) !== false && ($database = $connectionConfig['database'] ?? null) !== ':memory:') {
+                    $config->set("database.connections.{$connection}", $connectionConfig);
+                    DB::setDefaultConnection($connection);
+
+                    $parallelDatabase = "{$database}_test_{$token}";
+
+                    if (! self::$parallelDatabaseCreated) {
+                        DB::getSchemaBuilder()->dropDatabaseIfExists($parallelDatabase);
+                        DB::getSchemaBuilder()->createDatabase($parallelDatabase);
+                        self::$parallelDatabaseCreated = true;
+                    }
+
+                    $connectionConfig['database'] = $parallelDatabase;
+                }
+
                 $config->set("database.connections.{$connection}", $connectionConfig);
+                DB::purge($connection);
             }
 
             if ($connection === 'pgsql') {

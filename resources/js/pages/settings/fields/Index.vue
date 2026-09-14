@@ -44,18 +44,6 @@
     isMultiSite: boolean;
   }>();
 
-  function deleteField(field: FieldRow) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}”?', {
-          name: field.title,
-        })
-      )
-    ) {
-      router.delete(destroy({fieldId: field.id}));
-    }
-  }
-
   const searchTerm = ref(props.searchTerm ?? '');
   const columnHelper = createColumnHelper<FieldRow>();
   const columnVisibility = computed(() => {
@@ -76,11 +64,7 @@
         trackSize: '1.5fr',
       },
       cell: ({row, getValue}) =>
-        h(
-          CpLink,
-          {href: row.original.url, inertia: false, class: 'font-bold'},
-          getValue
-        ),
+        h(CpLink, {href: row.original.url, class: 'font-bold'}, getValue),
     }),
     columnHelper.accessor('searchable', {
       header: t('Searchable'),
@@ -146,7 +130,10 @@
       cell: ({row}) =>
         h('div', {class: 'self-end flex justify-end'}, [
           h(DeleteButton, {
-            onClick: () => deleteField(row.original),
+            confirm: t('Are you sure you want to delete “{name}”?', {
+              name: row.original.title,
+            }),
+            onClick: () => router.delete(destroy({fieldId: row.original.id})),
           }),
         ]),
     }),
@@ -216,13 +203,7 @@
 
 <template>
   <LayoutSlot name="actions">
-    <CpLink
-      :inertia="false"
-      appearance="button"
-      variant="accent"
-      :href="create()"
-      icon="plus"
-    >
+    <CpLink appearance="button" variant="accent" :href="create()" icon="plus">
       {{ t('New field') }}
     </CpLink>
   </LayoutSlot>

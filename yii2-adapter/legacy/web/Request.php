@@ -217,10 +217,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             Aliases::set('@webroot', dirname($this->getScriptFile()));
             $this->isWebrootAliasSetDynamically = true;
         }
-        if (Aliases::get('@web', false) === false) {
-            Aliases::set('@web', $this->getHostInfo() . $this->getBaseUrl());
-            $this->isWebAliasSetDynamically = true;
-        }
+        $this->setWebAlias($this->getHostInfo() . $this->getBaseUrl());
 
         // Determine the request path
         $this->_path = $this->getFullPath();

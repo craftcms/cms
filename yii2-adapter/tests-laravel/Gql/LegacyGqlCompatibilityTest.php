@@ -136,11 +136,11 @@ it('uses configured legacy handler instances independently for each manager', fu
         $secondResult = new LegacyArgumentManager()->prepareArguments(['adapter' => true]);
 
         expect($firstResult)->toMatchArray([
-                'handledBy' => 'legacy',
-                'configuration' => 'configured',
-                'calls' => 1,
-                'managerBound' => true,
-            ])
+            'handledBy' => 'legacy',
+            'configuration' => 'configured',
+            'calls' => 1,
+            'managerBound' => true,
+        ])
             ->and($secondResult)->toMatchArray([
                 'handledBy' => 'legacy',
                 'configuration' => 'configured',

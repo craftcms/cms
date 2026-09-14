@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Asset\AssetIndexer;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -23,6 +23,7 @@ readonly class AssetIndexesController
 
     public function __construct(
         private AssetIndexer $assetIndexer,
+        private AssetTransformers $assetTransformers,
         Utilities $utilitiesService,
     ) {
         if (! $utilitiesService->checkAuthorization(AssetIndexes::class)) {
@@ -170,7 +171,7 @@ readonly class AssetIndexesController
         return $this->asSuccess(null, ['session' => $indexingSession]);
     }
 
-    public function finishIndexingSession(Request $request, Elements $elements, ImageTransforms $imageTransforms): Response
+    public function finishIndexingSession(Request $request, Elements $elements): Response
     {
         $validated = $request->validate([
             'sessionId' => ['required', 'integer'],
@@ -206,7 +207,7 @@ readonly class AssetIndexesController
                 ->all();
 
             foreach ($assets as $asset) {
-                $imageTransforms->deleteCreatedTransformsForAsset($asset);
+                $this->assetTransformers->invalidate($asset);
                 $asset->keepFileOnDelete = true;
                 $elements->deleteElement($asset);
             }

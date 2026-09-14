@@ -74,6 +74,27 @@ export const SuffixOnly: Story = {
 };
 
 /**
+ * `selectable` adds the selection checkbox; `selected` styles the chip to match
+ * a selected thumbnail tile in the element index, so a selection reads the same
+ * whichever view mode the elements are shown in.
+ */
+export const Selectable: Story = {
+  args: {},
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 0.5rem; align-items: start;"
+    >
+      <craft-chip selectable select-label="Select Homepage"
+        >Homepage</craft-chip
+      >
+      <craft-chip selectable selected select-label="Select About us"
+        >About us</craft-chip
+      >
+    </div>
+  `,
+};
+
+/**
  * Attaching an action menu after the chip has rendered, then adding items to
  * it. "Attach action menu" appends a `craft-action-menu` to the chip's
  * `suffix` slot, and the chip renders the suffix region without being told to

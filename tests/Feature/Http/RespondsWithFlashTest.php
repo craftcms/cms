@@ -90,8 +90,7 @@ it('asSuccess returns JSON for API request', function () {
 });
 
 it('asFailure returns JSON with 400 for API request', function () {
-    postJson('/test-flash/failure')
-        ->assertStatus(400)
+    postJson('/test-flash/failure')->assertBadRequest()
         ->assertJson(['message' => 'Failure message', 'error' => 'details']);
 });
 
@@ -137,8 +136,7 @@ it('asModelSuccess returns JSON with model data for API request', function () {
 });
 
 it('asModelFailure returns JSON with errors for API request', function () {
-    postJson('/test-flash/model-failure')
-        ->assertStatus(400)
+    postJson('/test-flash/model-failure')->assertBadRequest()
         ->assertJson([
             'message' => 'Model save failed',
             'modelName' => 'testModel',

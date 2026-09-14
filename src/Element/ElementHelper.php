@@ -53,6 +53,18 @@ class ElementHelper
     }
 
     /**
+     * Returns whether a string contains a temporary slug.
+     */
+    public static function containsTempSlug(?string $str): bool
+    {
+        if ($str === null) {
+            return false;
+        }
+
+        return (bool) preg_match('/\b__temp_[a-z]{36}\b/', $str);
+    }
+
+    /**
      * Generates a new slug based on a given string.
      *
      * This is different from `normalizeSlug()` in two ways:
@@ -71,13 +83,15 @@ class ElementHelper
             $slug = Str::ascii($slug, $language);
         }
 
-        return self::normalizeSlug($slug);
+        return self::normalizeSlug($slug, $language);
     }
 
     /**
      * Normalizes a slug.
+     *
+     * @param  string|null  $language  The slug's language.
      */
-    public static function normalizeSlug(string $slug): string
+    public static function normalizeSlug(string $slug, ?string $language = null): string
     {
         if ($slug === Element::HOMEPAGE_URI) {
             return $slug;
@@ -89,7 +103,7 @@ class ElementHelper
         $generalConfig = Cms::config();
 
         if (! $generalConfig->allowUppercaseInSlug) {
-            $slug = mb_strtolower((string) $slug);
+            $slug = Str::lower((string) $slug, $language);
         }
 
         $words = Arr::whereNotEmpty(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', (string) $slug));

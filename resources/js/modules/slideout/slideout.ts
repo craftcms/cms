@@ -192,6 +192,9 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   /** Whether this opened inside a live preview pane. See {@link open}. */
   _inPreview = false;
 
+  /** Fallback timeouts scheduled by {@link _afterTransition}, in case their transitionend event never fires. */
+  _transitionTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
+
   // --- Shared panel stack (see `@/common/slideouts/panel-stack`) -----------
 
   /** The element the stack moves, reflows, and fires lifecycle events on. */
@@ -464,18 +467,76 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   }
 
   /**
-   * Performs the callback after the CSS transition has ended, or immediately
-   * if the user prefers reduced motion.
+   * Performs the callback after the CSS transition has ended, or after its
+   * expected duration if no event is emitted, or immediately if the user
+   * prefers reduced motion.
    */
   _afterTransition($target: any, callback: () => void): void {
+    // If a user prefers reduced motion, perform the callback immediately
     if (prefersReducedMotion()) {
       callback();
-    } else {
-      $target.one('transitionend.slideout', callback);
+      return;
     }
+
+    const target = $target[0];
+    const styles = getComputedStyle(target);
+    const properties = styles.transitionProperty
+      .split(',')
+      .map((property) => property.trim());
+    const durations = styles.transitionDuration
+      .split(',')
+      .map(Slideout._timeToMilliseconds);
+    const delays = styles.transitionDelay
+      .split(',')
+      .map(Slideout._timeToMilliseconds);
+    let transitionDuration = 0;
+
+    properties.forEach((property, i) => {
+      if (property !== 'none') {
+        transitionDuration = Math.max(
+          transitionDuration,
+          (durations[i % durations.length] ?? 0) +
+            (delays[i % delays.length] ?? 0)
+        );
+      }
+    });
+
+    if (transitionDuration <= 0) {
+      callback();
+      return;
+    }
+
+    let timeout: ReturnType<typeof setTimeout>;
+    const complete = () => {
+      if (!this._transitionTimeouts.has(timeout)) {
+        return;
+      }
+
+      clearTimeout(timeout);
+      this._transitionTimeouts.delete(timeout);
+      $target.off('transitionend.slideout', onTransitionEnd);
+      callback();
+    };
+    const onTransitionEnd = (ev: Event) => {
+      if (ev.target === target) {
+        complete();
+      }
+    };
+
+    $target.on('transitionend.slideout', onTransitionEnd);
+    timeout = setTimeout(complete, transitionDuration + 50);
+    this._transitionTimeouts.add(timeout);
+  }
+
+  static _timeToMilliseconds(time: string): number {
+    const value = parseFloat(time);
+    return time.trim().endsWith('ms') ? value : value * 1000;
   }
 
   _cancelTransitionListeners(): void {
+    this._transitionTimeouts.forEach(clearTimeout);
+    this._transitionTimeouts.clear();
+
     this.$container.off('transitionend.slideout');
   }
 
@@ -486,6 +547,8 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    * `destroy`, removes tracked listeners).
    */
   override destroy(): void {
+    this._cancelTransitionListeners();
+
     // Only drop the reference — the shade is shared with every other panel
     // and belongs to the stack, so removing it would take it away from them.
     this.$shade = null;

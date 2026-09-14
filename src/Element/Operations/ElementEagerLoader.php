@@ -396,6 +396,7 @@ readonly class ElementEagerLoader
                         $eagerLoadResult = new EagerLoadInfo($plan, $filteredElements);
                         foreach ($flatTargetElements as $element) {
                             $element->eagerLoadInfo = $eagerLoadResult;
+                            $element->elementQueryResult = $flatTargetElements;
                         }
 
                         // Pass the instantiated elements to afterPopulate()

@@ -1,5 +1,7 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import ActionNode from './ActionNode.vue';
+import ActionMenuNode from './ActionMenuNode.vue';
+import CopyAttributeNode from './CopyAttributeNode.vue';
 import CheckboxControl from './CheckboxControl.vue';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
@@ -32,6 +34,7 @@ import TemplateContentNode from './TemplateContentNode.vue';
 import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
 import HandleControl from './HandleControl.vue';
+import HiddenControl from './HiddenControl.vue';
 import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import PermissionTreeControl from './PermissionTreeControl.vue';
@@ -44,6 +47,8 @@ export function registerFormComponents(
   components.register('craft:form', FormRenderer);
   components.register('craft:field', FieldNode);
   components.register('craft:action', ActionNode);
+  components.register('craft:action-menu', ActionMenuNode);
+  components.register('craft:copy-attribute', CopyAttributeNode);
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
   components.register('craft:template-content', TemplateContentNode);
@@ -56,6 +61,7 @@ export function registerFormComponents(
   components.register('craft:separator', SeparatorNode);
   components.register('craft:handle', HandleControl);
   components.register('craft:hidden-field', HiddenFieldNode);
+  components.register('craft:hidden', HiddenControl);
   components.register('craft:text', TextControl);
   components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);

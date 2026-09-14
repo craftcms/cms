@@ -9,9 +9,14 @@ use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Events\ElementPopulating;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
+use CraftCms\Cms\Gql\Types\Input\ContentBlock;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User;
+use GraphQL\Type\Definition\FieldDefinition;
+use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -23,6 +28,11 @@ function createConcreteElementMutationResolver(array $resolutionData = [], array
         public function publicPopulateElementWithData($element, array $arguments, $resolveInfo = null)
         {
             return $this->populateElementWithData($element, $arguments, $resolveInfo);
+        }
+
+        public function publicNormalizeArguments(ResolveInfo $info, array $arguments): array
+        {
+            return $this->recursivelyNormalizeArgumentValues($info, $arguments);
         }
 
         public function publicSaveElement($element)
@@ -170,4 +180,28 @@ it('applies SCENARIO_LIVE when element is enabled', function () {
 it('uses content field key for field value population', function () {
     $resolver = createConcreteElementMutationResolver();
     expect(ElementMutationResolver::CONTENT_FIELD_KEY)->toBe('_contentFields');
+});
+
+it('keeps nested argument types local regardless of input order', function () {
+    $input = new InputObjectType([
+        'name' => 'ContentInput',
+        'fields' => ['value' => Type::string()],
+        'normalizeValue' => [ContentBlock::class, 'normalizeValue'],
+    ]);
+    $info = Mockery::mock(ResolveInfo::class);
+    $info->fieldDefinition = new FieldDefinition([
+        'name' => 'save',
+        'type' => Type::string(),
+        'args' => ['children' => Type::nonNull(Type::listOf($input)), 'value' => $input],
+    ]);
+    $resolver = createConcreteElementMutationResolver();
+    $arguments = ['children' => [['value' => 'child'], ['value' => null]], 'value' => ['value' => 'parent']];
+    $expected = [
+        'children' => ['fields' => [['value' => 'child'], ['value' => null]]],
+        'value' => ['fields' => ['value' => 'parent']],
+    ];
+
+    foreach ([$arguments, array_reverse($arguments, true), $arguments] as $inputArguments) {
+        expect($resolver->publicNormalizeArguments($info, $inputArguments))->toEqual($expected);
+    }
 });

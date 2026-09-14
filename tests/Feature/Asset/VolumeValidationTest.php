@@ -5,12 +5,15 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function () {
     Cms::config()->tempAssetUploadFs = null;
+    putenv('CRAFT_TEST_VOLUME_SUBPATH');
 });
 
 it('validates id and fieldLayoutId integer attributes', function () {
@@ -148,42 +151,47 @@ it('validates fsHandle for required invalid references and internal disks', func
         ->and($internal->errors()->has('fsHandle'))->toBeTrue();
 });
 
-it('allows empty transformFsHandle and validates it when present', function () {
-    $empty = new Volume;
-
-    expect($empty->validate(['transformFsHandle']))->toBeTrue()
-        ->and($empty->errors()->has('transformFsHandle'))->toBeFalse();
-
+it('validates asset transformer references while allowing unresolved environment variables', function () {
     $invalid = new Volume([
-        'transformFsHandle' => 'missing-transform-filesystem',
+        'assetTransformer' => 'missing-transformer',
     ]);
 
-    expect($invalid->validate(['transformFsHandle']))->toBeFalse()
-        ->and($invalid->errors()->has('transformFsHandle'))->toBeTrue();
-
-    config()->set('filesystems.disks.valid-transform-disk', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/volume-validation/valid-transform-disk'),
-    ]);
+    expect($invalid->validate(['assetTransformer']))->toBeFalse()
+        ->and($invalid->errors()->has('assetTransformer'))->toBeTrue();
 
     $valid = new Volume([
-        'transformFsHandle' => 'valid-transform-disk',
+        'assetTransformer' => 'craft',
     ]);
 
-    expect($valid->validate(['transformFsHandle']))->toBeTrue()
-        ->and($valid->errors()->has('transformFsHandle'))->toBeFalse();
+    expect($valid->validate(['assetTransformer']))->toBeTrue()
+        ->and($valid->errors()->has('assetTransformer'))->toBeFalse();
+
+    $unresolved = new Volume([
+        'assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER',
+    ]);
+
+    expect($unresolved->validate(['assetTransformer']))->toBeTrue()
+        ->and($unresolved->errors()->has('assetTransformer'))->toBeFalse();
+
+    putenv('CRAFT_TEST_ASSET_TRANSFORMER=missing-transformer');
+
+    try {
+        $resolved = new Volume([
+            'assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER',
+        ]);
+
+        expect($resolved->validate(['assetTransformer']))->toBeFalse()
+            ->and($resolved->errors()->has('assetTransformer'))->toBeTrue();
+    } finally {
+        putenv('CRAFT_TEST_ASSET_TRANSFORMER');
+    }
 });
 
-it('rejects temp upload filesystem targets for fsHandle and transformFsHandle', function () {
+it('rejects the temp upload filesystem target for fsHandle', function () {
     config()->set('filesystems.disks.temp-reserved', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-validation/temp-reserved'),
     ]);
-    config()->set('filesystems.disks.temp-allowed', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/volume-validation/temp-allowed'),
-    ]);
-
     Cms::config()->tempAssetUploadFs = 'disk:temp-reserved';
 
     $volumeFs = new Volume([
@@ -192,14 +200,6 @@ it('rejects temp upload filesystem targets for fsHandle and transformFsHandle', 
 
     expect($volumeFs->validate(['fsHandle']))->toBeFalse()
         ->and($volumeFs->errors()->has('fsHandle'))->toBeTrue();
-
-    $volumeTransformFs = new Volume([
-        'fsHandle' => 'temp-allowed',
-        'transformFsHandle' => 'temp-reserved',
-    ]);
-
-    expect($volumeTransformFs->validate(['transformFsHandle']))->toBeFalse()
-        ->and($volumeTransformFs->errors()->has('transformFsHandle'))->toBeTrue();
 });
 
 it('requires subpath for shared filesystems and rejects overlapping roots', function () {
@@ -223,6 +223,16 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
 
     expect($missingSubpath->validate(['subpath']))->toBeFalse()
         ->and($missingSubpath->errors()->has('subpath'))->toBeTrue();
+
+    $missingEnvironmentSubpath = new Volume([
+        'name' => 'Missing Environment Subpath',
+        'handle' => 'missingEnvironmentSubpath',
+        'fsHandle' => 'shared-validation-disk',
+        'subpath' => '$CRAFT_TEST_VOLUME_SUBPATH',
+    ]);
+
+    expect($missingEnvironmentSubpath->validate(['subpath']))->toBeFalse()
+        ->and($missingEnvironmentSubpath->errors()->has('subpath'))->toBeTrue();
 
     $overlap = new Volume([
         'name' => 'Overlap',
@@ -266,6 +276,10 @@ it('propagates invalid field layout errors to fieldLayout prefixed keys', functi
 
     expect($volume->validate(['fieldLayout']))->toBeFalse()
         ->and($volume->errors()->has('fieldLayout.customFields'))->toBeTrue();
+
+    $html = app(FieldLayoutDesigner::class)->generatedFieldsTableHtml($fieldLayout);
+    expect(new Crawler($html)->filter('td.error [name="generatedFields[0][handle]"]')->count())->toBe(1)
+        ->and($fieldLayout->getConfig()['generatedFields'][0]['handle'])->toBe('alt');
 });
 
 function insertVolumeValidationRow(array $overrides = []): void
@@ -277,8 +291,6 @@ function insertVolumeValidationRow(array $overrides = []): void
         'handle' => "volume{$counter}",
         'fs' => 'disk:default-validation-disk',
         'subpath' => null,
-        'transformFs' => null,
-        'transformSubpath' => null,
         'titleTranslationMethod' => 'site',
         'titleTranslationKeyFormat' => null,
         'altTranslationMethod' => 'none',

@@ -48,6 +48,10 @@ import {
  * @slot suffix - Trailing content, shown after the label. Typically an action
  *   button or menu.
  *
+ * @event selected-change - The selection checkbox was toggled.
+ *   `detail.selected` is the new state, and `detail.shiftKey` whether Shift
+ *   was held on the click before it, for range selection.
+ *
  * @csspart chip - The outer chip wrapper.
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
@@ -113,12 +117,21 @@ export default class CraftChip extends LitElement {
    */
   @property({type: Boolean}) selectable: boolean = false;
 
+  /** Whether the chip is selected. Only meaningful alongside `selectable`. */
+  @property({type: Boolean, reflect: true}) selected: boolean = false;
+
   /**
    * Accessible name for the `selectable` checkbox. Set it to name the entity
    * the chip stands for, so a list of chips does not read as a run of
    * identically labelled checkboxes.
    */
   @property({attribute: 'select-label'}) selectLabel: string | null = null;
+
+  /**
+   * The modifier state of the click that preceded `change`, captured because
+   * `change` itself doesn't carry it and range selection needs it.
+   */
+  #selectShiftKey = false;
 
   #thumbLoader = new ThumbnailLoader();
 
@@ -137,6 +150,39 @@ export default class CraftChip extends LitElement {
     if (!this.getAttribute('data-color')) {
       this.setAttribute('data-color', 'white');
     }
+  }
+
+  #onSelectClick(event: MouseEvent): void {
+    this.#selectShiftKey = event.shiftKey;
+
+    // Ticking the box is the checkbox's business, not a click on the chip body;
+    // stop it here rather than making every host filter it back out.
+    event.stopPropagation();
+  }
+
+  #onSelectChange(event: Event): void {
+    const {checked} = event.target as HTMLInputElement;
+
+    this.selected = checked;
+    this.dispatchEvent(
+      new CustomEvent('selected-change', {
+        detail: {selected: checked, shiftKey: this.#selectShiftKey},
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  protected renderSelect() {
+    return html`<input
+      type="checkbox"
+      class="cp-chip__select"
+      part="select"
+      .checked=${this.selected}
+      aria-label=${this.selectLabel ?? t('Select')}
+      @click=${this.#onSelectClick}
+      @change=${this.#onSelectChange}
+    />`;
   }
 
   protected renderPrefix() {
@@ -185,12 +231,7 @@ export default class CraftChip extends LitElement {
           'cp-chip--show-status': this.showStatus,
         })}"
       >
-        ${this.selectable
-          ? html` <input
-              type="checkbox"
-              aria-label="${this.selectLabel ?? t('Select')}"
-            />`
-          : nothing}
+        ${this.selectable ? this.renderSelect() : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
         <slot class="cp-chip__body"></slot>
         ${renderSuffix

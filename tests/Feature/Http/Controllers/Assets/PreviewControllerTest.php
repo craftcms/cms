@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -39,6 +40,7 @@ it('validates preview thumb input', function () {
 });
 
 it('can preview a thumb', function () {
+    Queue::fake();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,

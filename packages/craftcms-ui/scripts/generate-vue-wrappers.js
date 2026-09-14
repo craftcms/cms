@@ -175,7 +175,7 @@ const VALUE_COMPONENTS = [
     tagName: 'craft-input-file',
     className: 'CraftInputFile',
     fileName: 'CraftInputFile',
-    modelType: 'File[]',
+    modelType: "import('../components/input-file/input-file.ts.mjs').default['modelValue']",
     importPath: '../components/input-file/input-file',
     slots: [
       'label',
@@ -300,7 +300,7 @@ const COMBOBOX_COMPONENT = {
   fileName: 'CraftCombobox',
   // Values are strings at the DOM level, but consumers bind number/boolean refs
   // for env-backed fields; keep the model type permissive to match.
-  modelType: 'string | number | boolean',
+  modelType: 'string | string[] | number | boolean',
   importPath: '../components/combobox/combobox',
 };
 
@@ -659,6 +659,7 @@ function generateComboboxWrapper(component) {
     defineProps<{
       error?: null | string;
       options?: ComboboxItem[];
+      multipleChoice?: boolean;
       requireOptionMatch?: boolean;
       showAllOnEmpty?: boolean;
       clearable?: boolean;
@@ -666,6 +667,7 @@ function generateComboboxWrapper(component) {
     }>(),
     {
       options: () => [],
+      multipleChoice: false,
       requireOptionMatch: false,
       showAllOnEmpty: false,
       clearable: false,
@@ -687,6 +689,7 @@ function generateComboboxWrapper(component) {
 
 <template>
   <${component.tagName}
+    .multipleChoice="multipleChoice"
     .options="options"
     .requireOptionMatch="requireOptionMatch"
     .showAllOnEmpty="showAllOnEmpty"

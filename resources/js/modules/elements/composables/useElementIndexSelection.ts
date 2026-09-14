@@ -1,7 +1,11 @@
-import {computed, type MaybeRefOrGetter, ref, type Ref, toValue} from 'vue';
+import {computed, type MaybeRefOrGetter, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import {isInteractiveClick} from '@/common/utils/dom';
+import {
+  type SelectableId,
+  useSelectable,
+} from '@/common/composables/useSelectable';
 
 export interface ElementIndexSelectionOptions {
   selectable: MaybeRefOrGetter<boolean>;
@@ -9,28 +13,51 @@ export interface ElementIndexSelectionOptions {
   actions: MaybeRefOrGetter<Array<BulkActionItem> | null | undefined>;
 }
 
+/**
+ * The element index's selection, in the index's own `Row`-shaped terms.
+ *
+ * The anchor/range mechanics live in {@link useSelectable}; this adds the parts
+ * that are specific to the index — translating rows to ids, TanStack's
+ * select-all, and the bulk-action visibility flags. Selection state stays in the
+ * table rather than being mirrored here, so the checkboxes, the row model and
+ * this composable can never disagree.
+ */
 export function useElementIndexSelection(
   table: MaybeRefOrGetter<Table<any>>,
   options: ElementIndexSelectionOptions
 ) {
-  // The anchor is the last individually-toggled row; shift-click selects the
-  // inclusive range between it and the clicked row in current row-model order.
-  const anchorIndex: Ref<number | null> = ref(null);
-
   const readOnly = computed(() => toValue(options.readOnly));
   const selectable = computed(() => toValue(options.selectable));
 
-  const selectedIds = computed<Array<string | number>>(() => {
-    const t = toValue(table);
-    const selectedRows = t.getSelectedRowModel().rows;
-    return selectedRows.map((row) => row.original.id);
+  const rows = (): Array<Row<any>> => toValue(table).getRowModel().rows;
+  const rowFor = (id: SelectableId): Row<any> | undefined =>
+    rows().find((row) => row.original.id === id);
+
+  const selection = useSelectable({
+    ids: () => rows().map((row) => row.original.id),
+    enabled: selectable,
+    readOnly,
+    // The index selects through checkboxes, so a plain click adds to the
+    // selection rather than collapsing it to the clicked row.
+    click: 'toggle',
+    store: {
+      isSelected: (id) => rowFor(id)?.getIsSelected() ?? false,
+      setSelected: (id, selected) => rowFor(id)?.toggleSelected(selected),
+      selectedIds: () =>
+        toValue(table)
+          .getSelectedRowModel()
+          .rows.map((row) => row.original.id),
+      clear: () => toValue(table).resetRowSelection(),
+    },
   });
-  const hasSelection = computed(() => selectedIds.value.length > 0);
+
+  const {anchorIndex, hasSelection, selectedIds} = selection;
+
   const hasBulkActions = computed(
     () => (toValue(options.actions)?.length ?? 0) > 0
   );
   const showBulkActions = computed(
-    () => toValue(options.selectable) && hasBulkActions.value
+    () => selectable.value && hasBulkActions.value
   );
   const bulkActionsActive = computed(
     () => showBulkActions.value && hasSelection.value
@@ -50,41 +77,16 @@ export function useElementIndexSelection(
     }
   }
 
-  function rowIndex(row: Row<any>): number {
-    return toValue(table)
-      .getRowModel()
-      .rows.findIndex((r) => r.id === row.id);
-  }
-
   function selectRow(
     row: Row<any>,
     {checked, shiftKey = false}: {checked: boolean; shiftKey?: boolean}
   ) {
-    if (readOnly.value) return;
-    const rows = toValue(table).getRowModel().rows;
-    const index = rowIndex(row);
-
-    if (shiftKey && anchorIndex.value !== null) {
-      const [start, end] =
-        anchorIndex.value <= index
-          ? [anchorIndex.value, index]
-          : [index, anchorIndex.value];
-      for (let i = start; i <= end; i++) {
-        rows[i]!.toggleSelected(checked);
-      }
-      return; // anchor is preserved across a range select
-    }
-
-    // Guard the programmatic re-fire: nothing to do if state already matches.
-    if (checked === row.getIsSelected()) return;
-    row.toggleSelected(checked);
-    anchorIndex.value = index;
+    selection.setChecked(row.original.id, checked, {shiftKey});
   }
 
   function toggleRow(row: Row<any>) {
     if (readOnly.value) return;
-    row.toggleSelected();
-    anchorIndex.value = rowIndex(row);
+    selection.toggle(row.original.id);
   }
 
   // A click anywhere on a selectable row/card body toggles that row, unless it
@@ -109,16 +111,13 @@ export function useElementIndexSelection(
 
   function extendSelectionTo(row: Row<any>) {
     if (readOnly.value) return;
-    const rows = toValue(table).getRowModel().rows;
-    const index = rowIndex(row);
-    const from = anchorIndex.value ?? index;
-    const [start, end] = from <= index ? [from, index] : [index, from];
-    for (let i = start; i <= end; i++) {
-      rows[i]!.toggleSelected(true);
-    }
+    selection.extendTo(row.original.id);
   }
 
   return {
+    // The shared primitive, for handing to list bodies that take a
+    // `selection` prop (ElementCards, ElementThumbs, …).
+    selection,
     selectedIds,
     hasSelection,
     hasBulkActions,

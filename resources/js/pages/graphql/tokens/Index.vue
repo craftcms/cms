@@ -37,18 +37,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteToken(token: TokenData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete the “{name}” token?', {
-          name: token.name,
-        })
-      )
-    ) {
-      router.delete(destroy({tokenId: token.id}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<TokenData>();
   const table = useVueTable({
     get columns() {
@@ -66,7 +54,20 @@
           header: t('Expires'),
         }),
         columnHelper.actions(({row}) => [
-          h(DeleteButton, {onClick: () => deleteToken(row.original)}),
+          h(DeleteButton, {
+            confirm: t('Are you sure you want to delete the “{name}” token?', {
+              name: row.original.name,
+            }),
+            onClick: () =>
+              router
+                .optimistic<{tokens: {data: Array<TokenData>}}>(({tokens}) => ({
+                  tokens: {
+                    ...tokens,
+                    data: tokens.data.filter(({id}) => id !== row.original.id),
+                  },
+                }))
+                .delete(destroy({tokenId: row.original.id})),
+          }),
         ]),
       ];
     },

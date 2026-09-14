@@ -19,7 +19,9 @@
     "tests/TestClasses/TestPlugin/resources/js/**/*.ts",
     "tests/TestClasses/TestPlugin/resources/js/**/*.vue",
     "workbench/resources/js/**/*.ts",
-    "workbench/resources/js/**/*.vue"
+    "workbench/resources/js/**/*.vue",
+    "yii2-adapter/resources/js/**/*.ts",
+    "yii2-adapter/resources/js/**/*.vue"
   ],
   "exclude": ["node_modules"]
 }

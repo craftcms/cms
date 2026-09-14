@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -49,6 +50,7 @@ class Elements
     public function __construct(
         private readonly ElementPlaceholders $placeholders,
         private readonly ElementTypes $elementTypes,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -715,6 +717,58 @@ class Elements
     public function restoreElements(array $elements): bool
     {
         return app(ElementDeletions::class)->restoreElements($elements);
+    }
+
+    /**
+     * Reorders nested elements for a given owner element.
+     *
+     * @param  ElementInterface  $owner  The owner element
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $nestedElements  The owner’s nested elements
+     * @param  int[]  $elementIds  The nested element IDs that are being moved, in their new relative order
+     * @param  int  $offset  The zero-based offset that `$elementIds` should be inserted at, relative to the owner’s
+     *                       other nested elements
+     */
+    public function reorderNestedElements(
+        ElementInterface $owner,
+        ElementQueryInterface|ElementCollection $nestedElements,
+        array $elementIds,
+        int $offset,
+    ): void {
+        $elementIds = array_map(fn ($id) => (int) $id, $elementIds);
+
+        if ($nestedElements instanceof ElementQueryInterface) {
+            $oldSortOrders = (clone $nestedElements)
+                ->status(null)
+                ->asArray()
+                ->select(['id', 'sortOrder'])
+                ->pluck('sortOrder', 'id')
+                ->all();
+        } else {
+            $oldSortOrders = $nestedElements
+                ->keyBy(fn (ElementInterface $element) => $element->id)
+                /** @phpstan-ignore-next-line */
+                ->map(fn (NestedElementInterface $element) => $element->getSortOrder())
+                ->all();
+        }
+
+        // Build the full list of IDs in the new sort order
+        $allIds = array_diff(array_keys($oldSortOrders), $elementIds);
+        array_splice($allIds, $offset, 0, $elementIds);
+
+        // Update all the incorrect sort orders
+        foreach ($allIds as $i => $id) {
+            $sortOrder = $i + 1;
+            if (! isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
+                DB::table(Table::ELEMENTS_OWNERS)
+                    ->where('ownerId', $owner->id)
+                    ->where('elementId', $id)
+                    ->update([
+                        'sortOrder' => $sortOrder,
+                    ]);
+            }
+        }
+
+        $this->elementCaches->invalidateForElement($owner);
     }
 
     // Misc

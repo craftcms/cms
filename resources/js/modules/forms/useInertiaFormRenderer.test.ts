@@ -169,6 +169,109 @@ describe('useInertiaFormRenderer', () => {
     ]);
   });
 
+  /**
+   * A validator keys an element's field error by its handle, but the control
+   * sits under `fields`. The server resolves that when it renders; errors that
+   * come back from a save have to be resolved the same way or they match no
+   * control and read as global.
+   */
+  it('resolves an error key onto the control that owns it', async () => {
+    const layoutPayload: FormPayload = {
+      ...rootPayload,
+      nodes: [
+        {
+          uid: 'n1',
+          type: 'field',
+          control: {path: ['fields', 'assets']},
+        },
+      ] as unknown as FormPayload['nodes'],
+    };
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
+
+    mount(() => {
+      form = useForm({title: '', settings: {}});
+      integration = useInertiaFormRenderer(form, layoutPayload, {
+        mutationKey: 'settings',
+      });
+    });
+
+    form.setError({assets: 'Choose a valid asset.'} as never);
+    await nextTick();
+
+    expect(integration.errors.value).toEqual([
+      {path: ['fields', 'assets'], messages: ['Choose a valid asset.']},
+    ]);
+  });
+
+  it('resolves an error key through structural children and Control-owned Forms', async () => {
+    const ownerPath = ['settings', 'matrix', 'entries', 'block-a', 'heading'];
+    const nestedPayload: FormPayload = {
+      ...payload,
+      nodes: [
+        {
+          children: [
+            {
+              control: {
+                path: ['settings', 'matrix'],
+                forms: [
+                  {
+                    nodes: [{children: [{control: {path: ownerPath}}]}],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ] as unknown as FormPayload['nodes'],
+    };
+    let form!: InertiaForm<{settings: TestSettings}>;
+    let integration!: TestIntegration;
+
+    mount(() => {
+      form = useForm({settings: {}});
+      integration = useInertiaFormRenderer(form, nestedPayload, {
+        mutationKey: 'settings',
+      });
+    });
+
+    form.setError({heading: 'A heading is required.'} as never);
+    await nextTick();
+
+    expect(integration.errors.value).toEqual([
+      {path: ownerPath, messages: ['A heading is required.']},
+    ]);
+  });
+
+  it('leaves an unowned error key alone, so it stays global', async () => {
+    const layoutPayload: FormPayload = {
+      ...rootPayload,
+      nodes: [
+        {
+          uid: 'n1',
+          type: 'field',
+          control: {path: ['fields', 'assets']},
+        },
+      ] as unknown as FormPayload['nodes'],
+    };
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
+
+    mount(() => {
+      form = useForm({title: '', settings: {}});
+      integration = useInertiaFormRenderer(form, layoutPayload, {
+        mutationKey: 'settings',
+      });
+    });
+
+    form.setError({somethingElse: 'Nothing owns this.'} as never);
+    await nextTick();
+
+    expect(integration.errors.value).toEqual([
+      {path: ['somethingElse'], messages: ['Nothing owns this.']},
+    ]);
+  });
+
   it('supports screen-specific Laravel error paths', async () => {
     let form!: InertiaForm<{name: string; settings: TestSettings}>;
     let integration!: TestIntegration;

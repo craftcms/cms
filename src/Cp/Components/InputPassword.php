@@ -24,6 +24,16 @@ class InputPassword extends Input
     #[\Override]
     protected string $type = 'password';
 
+    protected ?string $passwordRules = null;
+
+    public function passwordRules(?string $passwordRules): static
+    {
+        $this->passwordRules = $passwordRules;
+        $this->inputAttributes['passwordrules'] = $passwordRules;
+
+        return $this;
+    }
+
     #[\Override]
     protected function tagName(): string
     {
@@ -39,6 +49,8 @@ class InputPassword extends Input
         // reveal button. The slotted native input still carries it via
         // Input::inputHtml() for pre-upgrade masking and form posting.
         unset($attributes['type']);
+
+        $attributes['passwordrules'] = $this->passwordRules;
 
         return $attributes;
     }

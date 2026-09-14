@@ -34,7 +34,7 @@ class User extends ElementResolver
             return $query;
         }
 
-        if (! GqlHelper::canSchema('usergroups.everyone')) {
+        if (! GqlHelper::canQueryAllUsers()) {
             if ($groups = Arr::pull($arguments, 'group')) {
                 $query->group($groups);
             }

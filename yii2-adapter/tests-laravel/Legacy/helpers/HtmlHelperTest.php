@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
 use craft\helpers\Html;
 use InvalidArgumentException;
+use LogicException;
 use Orchestra\Testbench\PHPUnit\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -267,6 +268,133 @@ class HtmlHelperTest extends TestCase
         $content = "foo\nbar\nbaz";
         $noscriptContent = str_replace($cssFile, $content, Html::cssFile('foo.css', ['noscript' => true]));
         self::assertSame([$content, true], Html::unwrapNoscript($noscriptContent));
+    }
+
+    public function testSvg(): void
+    {
+        $path = dirname(__DIR__, 4) . '/tests/_data/assets/files/craft-logo.svg';
+        $contents = file_get_contents($path);
+
+        $svg = Html::svg($path);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+
+        $svg = Html::svg($contents);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertMatchesRegularExpression('/id="\w+\-Symbols"/', $svg);
+
+        $svg = Html::svg($contents, namespace: false);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+    }
+
+    /**
+     * @param string[] $expectedPresent Strings that should be present in the sanitized SVG
+     * @param string[] $expectedAbsent Strings that should not be present in the sanitized SVG
+     * @param string $svg
+     */
+    #[DataProvider('sanitizeSvgDataProvider')]
+    public function testSanitizeSvg(array $expectedPresent, array $expectedAbsent, string $svg): void
+    {
+        $sanitized = Html::sanitizeSvg($svg);
+
+        foreach ($expectedPresent as $string) {
+            self::assertStringContainsString($string, $sanitized);
+        }
+
+        foreach ($expectedAbsent as $string) {
+            self::assertStringNotContainsString($string, $sanitized);
+        }
+    }
+
+    public function testSanitizeSvgWithEmptyString(): void
+    {
+        self::assertSame('', Html::sanitizeSvg(''));
+    }
+
+    public function testSanitizeSvgWithoutSvgRoot(): void
+    {
+        $this->expectException(LogicException::class);
+        Html::sanitizeSvg('<div>Not an SVG</div>');
+    }
+
+    public function testSanitizeSvgWithFixture(): void
+    {
+        $path = dirname(__DIR__, 4) . '/tests/_data/assets/files/dirty-svg.svg';
+        $sanitized = Html::sanitizeSvg(file_get_contents($path));
+
+        // Legitimate content survives
+        self::assertStringContainsString('id="Symbols"', $sanitized);
+        self::assertStringContainsString('id="Shape"', $sanitized);
+
+        // Malicious/unknown content is stripped
+        self::assertStringNotContainsString('<script', $sanitized);
+        self::assertStringNotContainsString('alert(1)', $sanitized);
+        self::assertStringNotContainsString('<this', $sanitized);
+        self::assertStringNotContainsString('shouldn', $sanitized);
+    }
+
+    /**
+     * @return array
+     */
+    public static function sanitizeSvgDataProvider(): array
+    {
+        $xmlns = 'xmlns="http://www.w3.org/2000/svg"';
+        $xmlnsXlink = 'xmlns:xlink="http://www.w3.org/1999/xlink"';
+
+        return [
+            'script tags are removed' => [
+                [],
+                ['<script', 'alert(1)'],
+                "<svg $xmlns><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'event handler attributes are removed' => [
+                ['<rect'],
+                ['onclick', 'alert(1)'],
+                "<svg $xmlns><rect onclick=\"alert(1)\" width=\"1\" height=\"1\"/></svg>",
+            ],
+            'javascript: URIs are removed' => [
+                ['<a'],
+                ['javascript:'],
+                "<svg $xmlns $xmlnsXlink><a xlink:href=\"javascript:alert(1)\"><rect width=\"1\" height=\"1\"/></a></svg>",
+            ],
+            'comments are removed' => [
+                ['<rect'],
+                ['<!--', 'a sneaky comment'],
+                "<svg $xmlns><!-- a sneaky comment --><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'title tags are removed' => [
+                ['<rect'],
+                ['<title', 'My Title'],
+                "<svg $xmlns><title>My Title</title><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'desc tags are removed' => [
+                ['<rect'],
+                ['<desc', 'My Desc'],
+                "<svg $xmlns><desc>My Desc</desc><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'foreignObject and its contents are removed' => [
+                ['<rect'],
+                ['foreignObject', 'onload', 'alert(1)'],
+                "<svg $xmlns><foreignObject><div onload=\"alert(1)\">hi</div></foreignObject><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'unknown elements are removed' => [
+                ['<rect'],
+                ['<this', 'shouldn\'t be here'],
+                "<svg $xmlns><this>shouldn't be here</this><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'allowed elements and attributes are preserved' => [
+                ['<rect', 'width="1"', 'height="1"', 'fill="red"'],
+                [],
+                "<svg $xmlns><rect width=\"1\" height=\"1\" fill=\"red\"/></svg>",
+            ],
+            // filterUnits is manually added to the allowed attribute list via craft\image\SvgAllowedAttributes
+            'filterUnits attribute is preserved' => [
+                ['filterUnits="userSpaceOnUse"'],
+                [],
+                "<svg $xmlns><filter x=\"0\" y=\"0\" width=\"1\" height=\"1\" filterUnits=\"userSpaceOnUse\"><feGaussianBlur stdDeviation=\"2\"/></filter><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+        ];
     }
 
     /**

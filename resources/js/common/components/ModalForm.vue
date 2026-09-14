@@ -37,6 +37,7 @@
     :width="width"
     :height="height"
     :max-height="maxHeight"
+    :resizable="resizable"
   >
     <form @submit.prevent="submitHandler">
       <!--
@@ -56,12 +57,17 @@
         <div v-if="$slots.title" slot="title" class="contents">
           <slot name="title"></slot>
         </div>
-        <div
-          v-if="$slots['header-actions']"
-          slot="header-actions"
-          class="contents"
-        >
-          <slot name="header-actions"></slot>
+        <div slot="header-actions" class="contents">
+          <slot name="header-actions">
+            <craft-button
+              type="button"
+              icon="x"
+              :aria-label="t('Close')"
+              variant="plain"
+              size="small"
+              @click="emit('close')"
+            ></craft-button>
+          </slot>
         </div>
         <div v-if="$slots.body" slot="body" class="contents">
           <slot name="body"></slot>
@@ -114,7 +120,7 @@
           v-else
           slot="primary-action"
           type="submit"
-          variant="accent"
+          variant="primary"
           :loading="loading"
         >
           {{ submitLabel }}
@@ -124,4 +130,42 @@
   </Modal>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  /*
+    Grow, but never shrink. Growing fills a modal held open by its height
+    floor; refusing to shrink means a long form still overflows so `.content`
+    scrolls it — `craft-pane` clips rather than scrolls, so it must never be
+    constrained below its content.
+  */
+  form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+
+  /*
+    Also a flex column: the pane's inner surface sizes itself with
+    `block-size: 100%`, which can't resolve against a host whose own height
+    comes from flex-grow, so it has to grow rather than measure.
+  */
+  form > craft-pane {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+
+  /*
+    The pane stacks header/body/footer as blocks, and its footer is only
+    sticky while something scrolls — so a short body would strand the footer
+    mid-modal once the floor holds the box open.
+  */
+  craft-pane::part(base) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+
+  craft-pane::part(body) {
+    flex: 1 0 auto;
+  }
+</style>

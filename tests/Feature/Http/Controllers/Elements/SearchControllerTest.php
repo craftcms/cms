@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Condition\BaseCondition;
+use CraftCms\Cms\Condition\BaseConditionGroup;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
@@ -220,6 +223,11 @@ it('ignores non-element conditions', function () {
 
             return new class extends BaseCondition
             {
+                public static function createGroup(): ConditionGroupInterface
+                {
+                    return new class extends BaseConditionGroup {};
+                }
+
                 protected function selectableConditionRules(): array
                 {
                     return [];
@@ -285,18 +293,18 @@ it('passes the reference element context into element conditions', function () {
                     parent::__construct(Entry::class);
                 }
 
-                public function modifyQuery(ElementQueryInterface $query): void
+                public function modifyQuery(ElementQueryInterface $elementQuery): void
                 {
                     $this->state->modifyQueryCalled = true;
                     $this->state->referenceElementId = $this->referenceElement?->id;
 
-                    $query->id($this->referenceElement?->id ?? 0);
+                    $elementQuery->id($this->referenceElement?->id ?? 0);
                 }
             };
         }
     };
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), $referenceEntry) extends Elements
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $referenceEntry) extends Elements
     {
         public ?int $requestedElementId = null;
 
@@ -307,9 +315,10 @@ it('passes the reference element context into element conditions', function () {
         public function __construct(
             ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
+            ElementCaches $elementCaches,
             private readonly Entry $referenceEntry,
         ) {
-            parent::__construct($placeholders, $elementTypes);
+            parent::__construct($placeholders, $elementTypes, $elementCaches);
         }
 
         public function getElementById(

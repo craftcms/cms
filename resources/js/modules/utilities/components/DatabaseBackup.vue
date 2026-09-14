@@ -10,7 +10,7 @@
     downloadBackup: true,
   });
 
-  const {csrfTokenValue, csrfTokenName} = useCraftData();
+  const {csrfTokenName, csrfTokenValue} = useCraftData();
   const formRef = useTemplateRef('formRef');
 
   function handleSubmit() {

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\ModalIndexViewModel;
 use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
@@ -36,21 +39,30 @@ readonly class ElementSelectorModalController
             $statuses = $elementType::statuses();
 
             if ($condition) {
-                /** @var StatusConditionRule|null $statusRule */
-                $statusRule = collect($condition->getConditionRules())
-                    ->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
+                $rules = collect($condition->getConditionRules()->getRules());
 
-                if ($statusRule) {
-                    $statusValues = $statusRule->getValues();
-                    $statuses = collect($statuses)
-                        ->filter(function ($info, string $status) use ($statusRule, $statusValues) {
-                            $inValues = in_array($status, $statusValues);
+                if (
+                    $condition->getConditionRules()->operator === GroupOperator::And &&
+                    $rules->doesntContain(fn ($rule) => $rule instanceof ConditionGroupInterface)
+                ) {
+                    /** @var StatusConditionRule|null $statusRule */
+                    $statusRule = $rules->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
 
-                            return $statusRule->operator === 'in' ? $inValues : ! $inValues;
-                        });
+                    if ($statusRule) {
+                        $statusValues = $statusRule->getValues();
+                        $statuses = collect($statuses)
+                            ->filter(function ($info, string $status) use ($statusRule, $statusValues) {
+                                $inValues = in_array($status, $statusValues);
+
+                                return $statusRule->operator === 'in' ? $inValues : ! $inValues;
+                            });
+                    }
                 }
+
             }
         }
+
+        $sources = $request->input('sources');
 
         return new JsonResponse([
             'html' => $elementIndexHtml->html($elementType, [
@@ -60,9 +72,18 @@ readonly class ElementSelectorModalController
                 'showSiteMenu' => $request->input('showSiteMenu', 'auto'),
                 'siteIds' => $request->input('siteIds'),
                 'showStatusMenu' => $hasStatuses,
-                'sources' => $request->input('sources'),
+                'sources' => $sources,
                 'statuses' => $statuses ?? null,
             ]),
+            // The same payload the index screens render from. Served alongside
+            // the HTML rather than instead of it: the modal still boots the
+            // legacy index off `html`, and will keep doing so until it mounts
+            // the Vue index.
+            'props' => new ModalIndexViewModel(
+                $elementType,
+                $request,
+                restrictToSources: is_array($sources) ? array_values($sources) : null,
+            )->toArray(),
         ]);
     }
 }

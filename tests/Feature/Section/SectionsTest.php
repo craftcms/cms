@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
@@ -23,12 +25,14 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -272,7 +276,7 @@ it('queues section jobs after committing section changes', function (string $con
     'section resaves' => ['handle', 'updatedSection', ResaveElements::class],
 ]);
 
-it('can delete a section by id', function () {
+it('can delete and restore a section by id', function () {
     Event::fake([
         SectionDeleting::class,
         SectionDeletionApplying::class,
@@ -283,15 +287,29 @@ it('can delete a section by id', function () {
     Event::listen(SectionDeletionApplying::class, fn () => null);
     Event::listen(SectionDeleted::class, fn () => null);
 
-    $section = Section::factory()->create();
+    $types = EntryType::factory()->count(2)->create();
+    $section = Section::factory()->withEntryTypes(...$types)->create();
+    $entries = $types->map(fn (EntryType $type) => Entry::factory()->forSection($section)->forEntryType($type)->createElement());
+    $trashed = Entry::factory()->forSection($section)->forEntryType($types->first())->createElement();
+    Elements::deleteElement($trashed);
     $this->sections->refreshSections();
     ProjectConfig::rebuild();
+    $config = ProjectConfig::get("sections.$section->uid");
 
     expect(Section::count())->toBe(1);
 
     expect($this->sections->deleteSectionById($section->id))->toBeTrue();
 
     expect(Section::count())->toBe(0);
+
+    expect(DB::table(Table::ENTRIES)->where('deletedWithSection', true)->orderBy('id')->pluck('id')->all())->toBe($entries->pluck('id')->all());
+    expect(DB::table(Table::ELEMENTS)->whereIn('id', $entries->pluck('id'))->whereNull('dateDeleted')->count())->toBe(0);
+
+    ProjectConfig::set("sections.$section->uid", $config);
+
+    expect(DB::table(Table::ELEMENTS)->whereIn('id', $entries->pluck('id'))->whereNull('dateDeleted')->count())->toBe(2);
+    expect(DB::table(Table::ELEMENTS)->where('id', $trashed->id)->value('dateDeleted'))->not->toBeNull();
+    expect(DB::table(Table::ENTRIES)->where('deletedWithSection', true)->count())->toBe(0);
 
     Event::assertDispatchedOnce(SectionDeleting::class);
     Event::assertDispatchedOnce(SectionDeletionApplying::class);

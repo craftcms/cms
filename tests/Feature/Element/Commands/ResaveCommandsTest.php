@@ -13,11 +13,14 @@ use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -92,35 +95,63 @@ it('accepts comma-separated with-fields on entries command directly', function (
         ->and(EntryElement::find()->id($second->element->id)->one()?->title)->toBe('Updated by Fields');
 });
 
-it('sets matching fields to their default values', function () {
+it('sets matching fields to their default values', function (bool $queued) {
     $result = Entry::factory()
         ->withField('featured', Lightswitch::class, ['default' => true], value: false)
         ->withField('promoted', Lightswitch::class, ['default' => true], value: false)
+        ->withField('category', Dropdown::class, ['options' => [['label' => 'Old', 'value' => 'old']]], value: 'old')
         ->createElementWithFields();
 
-    $this->artisan('craft:resave:entries --with-fields=featured,promoted --to-default')
+    Queue::fake();
+    $this->artisan('craft:resave:entries --with-fields=featured,promoted,category --to-default'.($queued ? ' --queue' : ''))
         ->assertSuccessful();
+    Queue::pushed(ResaveElements::class)->each(fn ($job) => unserialize(serialize($job))->handle());
 
     $entry = EntryElement::find()->id($result->element->id)->one();
 
     expect($entry->getFieldValue('featured'))->toBeTrue()
-        ->and($entry->getFieldValue('promoted'))->toBeTrue();
-});
+        ->and($entry->getFieldValue('promoted'))->toBeTrue()
+        ->and($entry->getFieldValue('category')->value)->toBeNull();
+})->with(['inline' => false, 'queued' => true]);
 
-it('sets a single field to its default value when passed as set', function () {
+it('sets a single field to its default value when passed as set', function (bool $queued) {
+    Entry::factory()->create();
     $result = Entry::factory()
         ->withField('featured', Lightswitch::class, ['default' => true], value: false)
         ->withField('promoted', Lightswitch::class, ['default' => true], value: false)
         ->createElementWithFields();
 
-    $this->artisan('craft:resave:entries --set=featured --to-default')
+    Queue::fake();
+    $this->artisan('craft:resave:entries --set=featured --to-default'.($queued ? ' --queue' : ''))
         ->assertSuccessful();
+    Queue::pushed(ResaveElements::class)->each(fn ($job) => unserialize(serialize($job))->handle());
 
     $entry = EntryElement::find()->id($result->element->id)->one();
 
     expect($entry->getFieldValue('featured'))->toBeTrue()
         ->and($entry->getFieldValue('promoted'))->toBeFalse();
-});
+})->with(['inline' => false, 'queued' => true]);
+
+it('applies resave conditions consistently', function (?int $value, string $condition, int $expected, string $assignment, bool $queued) {
+    $result = Entry::factory()->withField('amount', Number::class, ['min' => 0, 'defaultValue' => 1], value: $value)
+        ->createElementWithFields(save: false);
+    $result->element->setFieldValue('amount', $value);
+    Elements::saveElement($result->element, runValidation: false);
+
+    Queue::fake();
+    $this->artisan("craft:resave:entries --set=amount $assignment $condition".($queued ? ' --queue' : ''))
+        ->assertExitCode(! $queued && $expected === -1 ? 1 : 0);
+    Queue::pushed(ResaveElements::class)->each(fn ($job) => unserialize(serialize($job))->handle());
+
+    expect(EntryElement::findOne($result->element->id)->getFieldValue('amount'))->toEqual($expected);
+})->with([
+    'empty' => [null, '--if-empty', 1],
+    'not empty' => [2, '--if-empty', 2],
+    'invalid' => [-1, '--if-invalid', 1],
+    'valid' => [2, '--if-invalid', 2],
+    'empty takes precedence' => [-1, '--if-empty --if-invalid', -1],
+])->with(['template' => '--to="=1"', 'default' => '--to-default'])
+    ->with(['inline' => false, 'queued' => true]);
 
 it('requires a target field when setting fields to default values', function () {
     $this->artisan('craft:resave:entries --to-default')

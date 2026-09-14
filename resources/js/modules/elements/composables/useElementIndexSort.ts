@@ -1,6 +1,7 @@
 import {computed, type Ref, watch} from 'vue';
 import {
   createIndexVisitor,
+  type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
@@ -21,6 +22,8 @@ interface UseElementIndexSortOptions {
   route: ElementIndexRoute;
   /** Called with the server-confirmed sort, e.g. to keep a filter form in sync. */
   onSortChange?: (sort: Array<SortItem>) => void;
+  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
+  visitor?: IndexVisitor;
 }
 
 /**
@@ -60,7 +63,7 @@ export function useElementIndexSort(
   viewState: Ref<ViewState>,
   options: UseElementIndexSortOptions
 ) {
-  const visitor = createIndexVisitor(options.route);
+  const visitor = options.visitor ?? createIndexVisitor(options.route);
 
   // The user's sort is persisted per source, so each source falls back to its
   // own `defaultSort` (resolved server-side) until the user sorts it.
@@ -76,6 +79,8 @@ export function useElementIndexSort(
 
   const {sortingState, sortingConfig, onSortingChange} = useServerSort({
     initialState: normalizeSort(props.sort ?? persistedSort()),
+    // A non-page index keeps its query in the visitor, not in the URL.
+    currentQuery: () => visitor.currentQuery(),
     onChange: ({query}) => {
       visitor.visit(query, {only: ['data', 'sort', 'pagination']});
     },

@@ -8,9 +8,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -68,7 +70,7 @@ abstract class ContentIndexViewModel extends ViewModel
     private ?array $visibleColumns = null;
 
     /** @var list<array<string, mixed>>|null */
-    private ?array $resolvedSources = null;
+    protected ?array $resolvedSources = null;
 
     public function __construct(
         /** @var class-string<ElementInterface> */
@@ -182,13 +184,15 @@ abstract class ContentIndexViewModel extends ViewModel
 
     public function showStatusMenu(): bool
     {
-        return $this->elementType::hasStatuses()
-            && count($this->elementType::statuses()) >= 2;
+        return $this->indexState()->showStatusMenu($this->elementType);
     }
 
     public function showSiteMenu(): bool
     {
-        return Sites::isMultiSite() && $this->elementType::isLocalized();
+        // The shared resolution is just "is the element type localized?"; the
+        // Inertia index additionally only ever offers the menu on multi-site
+        // installs, where there's something to switch between.
+        return Sites::isMultiSite() && $this->indexState()->showSiteMenu($this->elementType);
     }
 
     /**
@@ -211,7 +215,10 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return list<array<string, mixed>> */
     public function sources(): array
     {
-        return $this->resolvedSources ??= ElementSources::getSources(
+        // The context is deliberately left at ElementSources' `index` default,
+        // which is what this method has always resolved under. (sourceState()
+        // passes static::RENDER_CONTEXT explicitly — the same value today.)
+        return $this->resolvedSources ??= $this->indexState()->sources(
             $this->elementType,
             withDisabled: true,
             page: $this->page,
@@ -266,46 +273,46 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     public function sortOptions(): array
     {
-        [$sourceKey] = $this->sourceState();
+        [$sourceKey, $source] = $this->sourceState();
 
         if ($sourceKey === null) {
             return [];
         }
 
+        $indexState = $this->indexState();
         $options = [];
 
-        foreach ($this->elementType::sortOptions() as $attribute => $option) {
-            if (! is_array($option)) {
-                $options[$attribute] = [
-                    'label' => $option,
-                    'value' => $attribute,
-                    'defaultDir' => 'asc',
-                ];
+        if (isset($source['structureId'])) {
+            $options['structure'] = [
+                'label' => t('Structure'),
+                'value' => 'structure',
+                'defaultDir' => 'asc',
+            ];
+        }
 
-                continue;
-            }
+        foreach ($indexState->sortOptions($this->elementType) as $option) {
+            $value = self::addressableSortAttribute($option);
 
-            $value = $option['attribute']
-                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
-
-            if (is_string($value) && $value !== '') {
+            if ($value !== null) {
                 $options[$value] = [
                     'label' => $option['label'] ?? $value,
                     'value' => $value,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                    'defaultDir' => $option['defaultDir'],
                 ];
             }
         }
 
-        foreach (ElementSources::getSourceSortOptions($this->elementType, $sourceKey) as $option) {
-            $value = $option['attribute']
-                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
+        // The element type's own options win over a source's field-layout
+        // options that happen to sort on the same attribute.
+        foreach (ElementSources::getSourceSortOptions($this->elementType, $sourceKey) as $key => $option) {
+            $option = $indexState->normalizeSortOption($option, $key);
+            $value = self::addressableSortAttribute($option);
 
-            if (is_string($value) && $value !== '' && ! isset($options[$value])) {
+            if ($value !== null && ! isset($options[$value])) {
                 $options[$value] = [
                     'label' => $option['label'] ?? $value,
                     'value' => $value,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                    'defaultDir' => $option['defaultDir'],
                 ];
             }
         }
@@ -326,8 +333,8 @@ abstract class ContentIndexViewModel extends ViewModel
             return [];
         }
 
-        return ElementSources::getAvailableTableAttributes($this->elementType)
-            ->merge(ElementSources::getSourceTableAttributes($this->elementType, $sourceKey))
+        return $this->indexState()
+            ->tableColumns($this->elementType, $sourceKey)
             ->map(fn (array $attribute, string $key) => [
                 'label' => $attribute['label'],
                 'value' => $key,
@@ -364,6 +371,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         $elements = $this->resolvePaginator()->items();
+        $this->prepareElements($elements);
 
         return match ($this->mode()) {
             ElementIndexViewMode::Cards->value => $this->cardData($elements),
@@ -371,6 +379,9 @@ abstract class ContentIndexViewModel extends ViewModel
             default => $this->tableRows($elements),
         };
     }
+
+    /** @param list<ElementInterface|array<string, mixed>> $elements */
+    protected function prepareElements(array $elements): void {}
 
     /** @return array<int, array<string, mixed>>|null */
     public function actions(): ?array
@@ -471,27 +482,47 @@ abstract class ContentIndexViewModel extends ViewModel
 
         // An explicit ?source= wins; otherwise the element type's default
         // (e.g. a section-handle or volume-path URL) selects its source.
-        $requestedSource = $this->request->input('source')
-            ?? $this->defaultSourceKey()
-            ?? '*';
+        $requestedSource = $this->request->input('source') ?? $this->defaultSourceKey();
 
-        $resolved = app(ElementIndexes::class)
-            ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
+        if ($requestedSource !== null) {
+            $resolved = app(ElementIndexes::class)
+                ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
+
+            if ($resolved[0] !== null) {
+                return $this->resolvedSource = $resolved;
+            }
+        }
 
         // Not every element type has a `*` source (assets index per-volume,
         // for example), so mirror the legacy index's behavior and fall back
         // to the first available source.
-        if ($resolved[0] === null) {
-            $firstSourceKey = ElementSources::getSources($this->elementType, static::RENDER_CONTEXT)
-                ->first(fn (array $source): bool => isset($source['key']))['key'] ?? null;
+        $sources = array_filter($this->sources(), fn (array $source): bool => isset($source['key']) && ! ($source['disabled'] ?? false));
+        $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
+            ?? array_first($sources);
 
-            if ($firstSourceKey !== null && $firstSourceKey !== $requestedSource) {
-                $resolved = app(ElementIndexes::class)
-                    ->resolveSource($this->elementType, $firstSourceKey, static::RENDER_CONTEXT);
-            }
-        }
+        return $this->resolvedSource = [$source['keyPath'] ?? $source['key'] ?? null, $source];
+    }
 
-        return $this->resolvedSource = $resolved;
+    /**
+     * The shared server-side index state — source, column, sort-option and
+     * menu resolution, shared with the server-rendered index shell.
+     */
+    protected function indexState(): ElementIndexState
+    {
+        return app(ElementIndexState::class);
+    }
+
+    /**
+     * The client addresses sort options by attribute name, so options that only
+     * sort by a query expression or closure aren't offered.
+     *
+     * @param  array{attribute: mixed, ...}  $option
+     */
+    private static function addressableSortAttribute(array $option): ?string
+    {
+        $attribute = $option['attribute'];
+
+        return is_string($attribute) && $attribute !== '' ? $attribute : null;
     }
 
     /**
@@ -535,9 +566,10 @@ abstract class ContentIndexViewModel extends ViewModel
             elementType: $this->elementType,
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
+            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
         )['query'];
 
-        $query->status($this->status() ?: null);
+        $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
 
         if (($search = $this->search()) !== null && $search !== '') {
             $query->search($search);
@@ -688,6 +720,11 @@ abstract class ContentIndexViewModel extends ViewModel
      * Elements with no edit URL (e.g. asset folders, which navigate via their
      * own row handler) render the bare chip, so no stray anchor intercepts the
      * row's click.
+     *
+     * Nothing links in a selector modal, where a click on a row is a selection
+     * and navigating away would drop it — the same rule, keyed off the same
+     * context, that {@see ElementHtml} applies to a chip's or card's own
+     * hyperlink.
      */
     private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
     {
@@ -696,18 +733,15 @@ abstract class ContentIndexViewModel extends ViewModel
             'appearance' => 'plain',
         ]);
 
-        $editUrl = $element->getCpEditUrl();
+        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
+            ? $element->getCpEditUrl()
+            : null;
 
         if ($editUrl === null) {
             return $chip;
         }
 
-        // `:inertia`, bound — a plain `inertia => false` renders nothing at all
-        // (Html::tag drops false attributes), so the prop falls back to its
-        // `true` default and the title becomes an Inertia <Link> that navigates
-        // on click. The element edit screen isn't an Inertia page, so that
-        // visit only ends in a hard redirect anyway.
-        return Html::tag('CpLink', $chip, ['href' => $editUrl, ':inertia' => 'false']);
+        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
     }
 
     /**
@@ -762,8 +796,10 @@ abstract class ContentIndexViewModel extends ViewModel
             'id' => $this->rowId($element),
             ...$this->extraRowData($element),
             'label' => $element->getUiLabel(),
-            'url' => $element->getCpEditUrl(),
-            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE),
+            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
+                ? $element->getCpEditUrl()
+                : null,
+            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
         ], $elements);
     }
 

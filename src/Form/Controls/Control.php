@@ -14,6 +14,8 @@ abstract class Control implements ControlContract
 
     protected ControlMode $mode = ControlMode::Editable;
 
+    protected bool $reactive = false;
+
     /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
 
@@ -51,6 +53,19 @@ abstract class Control implements ControlContract
     final public function path(): string|array
     {
         return $this->path;
+    }
+
+    /**
+     * Returns a copy bound to a different path, preserving the control's configuration.
+     *
+     * @param  string|list<string>  $path
+     */
+    final public function withPath(string|array $path): static
+    {
+        $control = clone $this;
+        $control->path = $path;
+
+        return $control;
     }
 
     /** @param string|list<string> $path */
@@ -113,6 +128,18 @@ abstract class Control implements ControlContract
     final public function getMode(): ControlMode
     {
         return $this->mode;
+    }
+
+    final public function reactive(bool $reactive = true): static
+    {
+        $this->reactive = $reactive;
+
+        return $this;
+    }
+
+    final public function isReactive(): bool
+    {
+        return $this->reactive;
     }
 
     /**

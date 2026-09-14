@@ -2,186 +2,111 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Condition\ConditionBuilder;
+use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
+use CraftCms\Cms\Element\Conditions\HasUrlConditionRule;
+use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
-use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
-use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
-
-    $this->conditionPayload = function (EntryCondition $condition, array $conditionOverrides = []): array {
-        $portableConfig = $condition->getConfig();
-
-        return [
-            'config' => Json::encode(array_merge($condition->getBuilderConfig(), [
-                'class' => $portableConfig['class'],
-                'id' => $condition->id,
-                'name' => $condition->name,
-                'mainTag' => $condition->mainTag,
-                'sortable' => $condition->sortable,
-                'forProjectConfig' => $condition->forProjectConfig,
-                'addRuleLabel' => $condition->addRuleLabel,
-            ])),
-            $condition->name => array_merge([
-                'class' => $portableConfig['class'],
-                'config' => Json::encode($condition->getBuilderConfig()),
-                'conditionRules' => $portableConfig['conditionRules'],
-            ], $conditionOverrides),
-        ];
-    };
-
-    $this->sourcesPayload = function (EntryCondition $condition, array $conditionOverrides = []): array {
-        $portableConfig = $condition->getConfig();
-
-        $sourceKey = 'custom:'.Str::uuid();
-
-        return [
-            'sources' => [
-                $sourceKey => [
-                    $condition->name => array_merge([
-                        'class' => $portableConfig['class'],
-                        'config' => Json::encode($condition->getBuilderConfig()),
-                        'new-rule-type' => TypeConditionRule::class,
-                    ], $conditionOverrides),
-                ],
-            ],
-            'config' => Json::encode(array_merge($condition->getBuilderConfig(), [
-                'class' => $portableConfig['class'],
-                'id' => $condition->id,
-                'name' => "sources[$sourceKey][$condition->name]",
-                'mainTag' => $condition->mainTag,
-                'sortable' => $condition->sortable,
-                'forProjectConfig' => $condition->forProjectConfig,
-                'addRuleLabel' => $condition->addRuleLabel,
-            ])),
-        ];
-    };
+    $condition = new EntryCondition(Entry::class);
+    $builder = app(ConditionBuilder::class)->resolve($condition);
+    $this->payload = ['config' => $builder->config, 'value' => $builder->value];
 });
 
-describe('show', function () {
-    it('validates that config is required json', function () {
-        postJson(action([ConditionsController::class, 'show']))
-            ->assertJsonValidationErrorFor('config');
-    });
-
-    it('validates the nested condition payload exists', function () {
-        $condition = new EntryCondition(Entry::class);
-        $condition->id = 'entry-condition';
-
-        $payload = ($this->conditionPayload)($condition);
-        unset($payload[$condition->name]);
-
-        postJson(action([ConditionsController::class, 'show']), $payload)
-            ->assertJsonValidationErrorFor($condition->name);
-    });
-
-    it('validates the nested condition class matches the builder config class', function () {
-        $condition = new EntryCondition(Entry::class);
-        $condition->id = 'entry-condition';
-
-        $payload = ($this->conditionPayload)($condition, [
-            'class' => TitleConditionRule::class,
-        ]);
-
-        postJson(action([ConditionsController::class, 'show']), $payload)
-            ->assertJsonValidationErrorFor("{$condition->name}.class");
-    });
-
-    it('renders the posted condition builder html', function () {
-        $condition = new EntryCondition(Entry::class);
-        $condition->id = 'entry-condition';
-
-        $rule = $condition->createConditionRule(TitleConditionRule::class);
-        $rule->operator = '=';
-        $rule->value = 'Hello World';
-        $condition->addConditionRule($rule);
-
-        $response = post(action([ConditionsController::class, 'show']), ($this->conditionPayload)($condition));
-
-        $response->assertOk();
-
-        expect($response->getContent())
-            ->toContain('condition-main')
-            ->toContain('value="Hello World"')
-            ->toContain(TitleConditionRule::class);
-    });
-
-    it('handles a custom sources payload', function () {
-        $condition = new EntryCondition(Entry::class);
-        $condition->id = 'entry-condition';
-
-        $payload = ($this->sourcesPayload)($condition);
-        postJson(action([ConditionsController::class, 'show']), $payload)->assertOk();
-    });
-
+it('requires a builder config and portable value', function () {
+    postJson(action([ConditionsController::class, 'show']))
+        ->assertJsonValidationErrors(['config', 'value']);
 });
 
-describe('store', function () {
-    it('adds the first selectable rule to the condition', function () {
-        $condition = new EntryCondition(Entry::class);
-        $condition->id = 'entry-condition';
+it('requires matching condition classes', function () {
+    $this->payload['value']['class'] = TitleConditionRule::class;
 
-        /** @var ConditionRuleInterface $expectedRule */
-        $expectedRule = collect($condition->getSelectableConditionRules())
-            ->sortBy(fn (ConditionRuleInterface $rule) => $rule->getLabel())
-            ->first();
-
-        $response = post(action([ConditionsController::class, 'store']), ($this->conditionPayload)($condition));
-
-        $response->assertOk();
-
-        expect($expectedRule)->toBeInstanceOf(ConditionRuleInterface::class)
-            ->and($response->getContent())
-            ->toContain('condition-rule')
-            ->toContain($expectedRule::class);
-    });
+    postJson(action([ConditionsController::class, 'show']), $this->payload)
+        ->assertJsonValidationErrorFor('value.class');
 });
 
-describe('destroy', function () {
-    it('validates that uid is a uuid', function () {
-        $condition = new EntryCondition(Entry::class);
+it('resolves nested and repeated rules into scoped Forms', function () {
+    $this->payload['value']['conditionRules'] = [
+        'operator' => 'or',
+        'rules' => [
+            ['class' => TitleConditionRule::class, 'operator' => '=', 'value' => 'Alpha'],
+            ['operator' => 'and', 'rules' => [
+                ['class' => TitleConditionRule::class, 'operator' => '=', 'value' => 'Beta'],
+            ]],
+        ],
+    ];
 
-        postJson(action([ConditionsController::class, 'destroy']), array_merge(
-            ($this->conditionPayload)($condition),
-            ['uid' => 'not-a-uuid'],
-        ))->assertJsonValidationErrorFor('uid');
-    });
+    $response = postJson(action([ConditionsController::class, 'show']), $this->payload)
+        ->assertOk()
+        ->assertJsonPath('builder.value.conditionRules.operator', 'or')
+        ->assertJsonPath('builder.value.conditionRules.rules.1.rules.0.value', 'Beta');
 
-    it('removes the matching rule from the condition', function () {
-        $condition = new EntryCondition(Entry::class);
-        $condition->id = 'entry-condition';
+    $rules = $response->json('builder.rules');
 
-        $titleRule = $condition->createConditionRule(TitleConditionRule::class);
-        $titleRule->operator = '=';
-        $titleRule->value = 'Remove me';
-        $condition->addConditionRule($titleRule);
+    expect($rules)->toHaveCount(2);
 
-        $slugRule = $condition->createConditionRule(SlugConditionRule::class);
-        $slugRule->operator = '=';
-        $slugRule->value = 'keep-me';
-        $condition->addConditionRule($slugRule);
-
-        $response = post(action([ConditionsController::class, 'destroy']), array_merge(
-            ($this->conditionPayload)($condition),
-            ['uid' => $titleRule->uid],
-        ));
-
-        $response->assertOk();
-
-        expect($response->getContent())
-            ->not->toContain('value="Remove me"')
-            ->toContain('value="keep-me"')
-            ->toContain(SlugConditionRule::class);
-    });
+    foreach ($rules as $uid => $rule) {
+        expect($rule['form']['scope'])->toBe(['_conditionRules', $uid])
+            ->and($rule['form']['values']['_conditionRules'][$uid]['value'])->toBeIn(['Alpha', 'Beta']);
+    }
 });
+
+it('creates the selected rule with its Form and assets', function () {
+    postJson(action([ConditionsController::class, 'rule']), [
+        ...$this->payload,
+        'rule' => ['type' => TitleConditionRule::class],
+    ])->assertOk()
+        ->assertJsonPath('rule.config.class', TitleConditionRule::class)
+        ->assertJsonStructure(['rule' => ['form', 'config', 'label'], 'headHtml', 'bodyHtml']);
+});
+
+it('preserves compatible values when switching rule types', function () {
+    postJson(action([ConditionsController::class, 'rule']), [
+        ...$this->payload,
+        'rule' => ['class' => TitleConditionRule::class, 'type' => SlugConditionRule::class, 'operator' => 'bw', 'value' => 'keep-me'],
+    ])->assertOk()
+        ->assertJsonPath('rule.config.class', SlugConditionRule::class)
+        ->assertJsonPath('rule.config.operator', 'bw')
+        ->assertJsonPath('rule.config.value', 'keep-me');
+});
+
+it('rejects invalid rule identity', function (array $rule, string $error) {
+    postJson(action([ConditionsController::class, 'rule']), [...$this->payload, 'rule' => $rule])
+        ->assertJsonValidationErrorFor($error);
+})->with([
+    'invalid class' => [['type' => stdClass::class], 'rule'],
+    'invalid uid' => [['class' => TitleConditionRule::class, 'uid' => 'not-a-uuid'], 'rule.uid'],
+]);
+
+it('validates nested rule values on apply', function (array $config, ?string $attribute) {
+    $uid = (string) Str::uuid();
+    $this->payload['value']['conditionRules'] = ['operator' => 'or', 'rules' => [
+        ['operator' => 'and', 'rules' => [['uid' => $uid, ...$config]]],
+    ]];
+
+    $response = postJson(action([ConditionsController::class, 'validate']), $this->payload);
+
+    if ($attribute !== null) {
+        $response->assertJsonValidationErrorFor("_conditionRules.$uid.$attribute");
+    } else {
+        $response->assertOk()->assertJsonPath('valid', true);
+    }
+})->with([
+    'invalid operator' => [['class' => TitleConditionRule::class, 'operator' => 'invalid'], 'operator'],
+    'invalid range maximum' => [['class' => IdConditionRule::class, 'operator' => 'between', 'maxValue' => 'invalid'], 'maxValue'],
+    'unused range maximum' => [['class' => IdConditionRule::class, 'operator' => 'empty', 'maxValue' => 'invalid'], null],
+    'empty text operator' => [['class' => TitleConditionRule::class, 'operator' => 'empty'], null],
+    'date without an operator' => [['class' => DateCreatedConditionRule::class], null],
+    'boolean without an operator' => [['class' => HasUrlConditionRule::class], null],
+]);

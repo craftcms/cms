@@ -34,18 +34,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteFs(fs: FileSystemData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}”', {
-          name: fs.name,
-        })
-      )
-    ) {
-      router.delete(destroy({handle: fs.handle}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<FileSystemData>();
 
   const columnVisibility = computed(() => {
@@ -63,7 +51,6 @@
         href: edit['/{cpTrigger?}/settings/filesystems/{handle}/edit']({
           handle: row.original.handle,
         }).url,
-        inertia: false,
       }),
     }),
     columnHelper.handle('handle'),
@@ -78,7 +65,22 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteFs(row.original),
+        confirm: t('Are you sure you want to delete “{name}”', {
+          name: row.original.name,
+        }),
+        onClick: () =>
+          router
+            .optimistic<{filesystems: {data: Array<FileSystemData>}}>(
+              ({filesystems}) => ({
+                filesystems: {
+                  ...filesystems,
+                  data: filesystems.data.filter(
+                    ({handle}) => handle !== row.original.handle
+                  ),
+                },
+              })
+            )
+            .delete(destroy({handle: row.original.handle})),
       }),
     ]),
   ]);
@@ -101,20 +103,16 @@
 
 <template>
   <LayoutSlot name="actions">
-    <CpLink
-      variant="accent"
-      appearance="button"
-      :href="create().url"
-      :inertia="false"
-      >{{ t('New filesystem') }}</CpLink
-    >
+    <CpLink variant="accent" appearance="button" :href="create().url">{{
+      t('New filesystem')
+    }}</CpLink>
   </LayoutSlot>
 
   <craft-pane padding="0" appearance="raised">
     <AdminTable :table="table" :reorderable="false">
       <template #empty-row>
         <Empty :label="t('No filesystems exist yet.')" icon="light/folder-open">
-          <CpLink appearance="button" :href="create().url" :inertia="false">{{
+          <CpLink appearance="button" :href="create().url">{{
             t('New filesystem')
           }}</CpLink>
         </Empty>

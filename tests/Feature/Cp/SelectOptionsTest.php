@@ -68,17 +68,6 @@ describe('getEnvSuggestions', function () {
         unset($_SERVER['TEST_NON_HTTP_VAR'], $_SERVER['HTTP_TEST_VAR']);
     });
 
-    it('excludes @web aliases when includeAliases is true', function () {
-        $suggestions = SelectOptions::getEnvSuggestions(includeAliases: true);
-
-        if (isset($suggestions[1]['options'])) {
-            foreach ($suggestions[1]['options'] as $suggestion) {
-                expect($suggestion['label'])->not->toBe('@web')
-                    ->and($suggestion['label'])->not->toStartWith('@web/');
-            }
-        }
-    });
-
     it('formats env var names with $ prefix', function () {
         $_SERVER['TEST_FORMAT_ENV_VAR'] = 'test';
 

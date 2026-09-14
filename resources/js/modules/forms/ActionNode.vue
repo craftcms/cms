@@ -56,6 +56,9 @@
     )
   );
   const value = computed(() => valueAt(props.values, control.value.path));
+  const refreshable = computed(
+    () => props.refreshable && Boolean(control.value.reactive)
+  );
 
   function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
@@ -64,7 +67,7 @@
       kind,
       path: control.value.path,
       scope: props.scope,
-      refreshable: props.refreshable,
+      refreshable: refreshable.value,
     });
   }
 

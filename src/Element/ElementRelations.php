@@ -61,9 +61,7 @@ readonly class ElementRelations
                     $sourceSiteIds[$field->id] = $localizeRelations ? $element->siteId : null;
                     $relationData[$field->id] ??= [];
                     foreach ($field->getRelationTargetIds($element) as $targetId) {
-                        if (! isset($relationData[$field->id][$targetId])) {
-                            $relationData[$field->id][$targetId] = count($relationData[$field->id]) + 1;
-                        }
+                        $relationData[$field->id][$targetId] ??= count($relationData[$field->id]) + 1;
                     }
                 }
             } else {

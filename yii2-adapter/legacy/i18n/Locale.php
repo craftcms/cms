@@ -107,6 +107,16 @@ class Locale extends BaseObject
         );
     }
 
+    /**
+     * Returns a locale's language ID.
+     *
+     * @since 5.12.0
+     */
+    public static function languageId(string $locale): string
+    {
+        return \CraftCms\Cms\Translation\Locale::languageId($locale);
+    }
+
     public function __call($name, $params)
     {
         return $this->newLocale->$name(...$params);

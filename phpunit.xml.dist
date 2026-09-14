@@ -22,7 +22,7 @@
         <bootstrap class="DG\BypassFinals\PHPUnitExtension"/>
     </extensions>
     <php>
-        <ini name="memory_limit" value="2048M" />
+        <ini name="memory_limit" value="4096M" />
 
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

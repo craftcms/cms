@@ -9,17 +9,15 @@
   import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
-  import Breadcrumbs, {
-    type BreadcrumbItem,
-  } from '@/common/components/Breadcrumbs.vue';
+  import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
-  import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
+  import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
@@ -39,6 +37,7 @@
 
   const {
     activity,
+    activityTimelineVersion,
     autosave,
     discardDraft,
     errors,
@@ -101,7 +100,10 @@
   ]);
 
   const hasDetails = computed(
-    () => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml)
+    () =>
+      Boolean(sidebarPayload.value) ||
+      Boolean(payload.metadataHtml) ||
+      Boolean(payload.activityTimelineUrl)
   );
 
   // Mirrors the legacy wording: a changed draft names the draft, anything else
@@ -260,8 +262,8 @@
             :class="{'element-editor__body--details': hasDetails}"
           >
             <div class="element-editor__content">
-              <craft-pane padding="none" appearance="plain">
-                <div class="py-1">
+              <craft-pane appearance="plain">
+                <div class="py-4">
                   <!-- Tabs are rendered by `FormNodeList` inside the form itself. -->
                   <div class="element-form">
                     <FormRenderer
@@ -282,14 +284,12 @@
               v-if="hasDetails || $slots['details-header']"
               class="element-editor__details"
             >
-              <craft-tabs size="small" placement="inline-end" collapsible>
-                <craft-tab slot="tab">
-                  <craft-icon
-                    name="circle-info"
-                    :label="t('Info')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
+              <ElementDetailsTabs
+                :payload="payload"
+                :activity-timeline-version="activityTimelineVersion"
+                pane
+              >
+                <template #info>
                   <craft-pane appearance="plain" padding="none">
                     <div
                       slot="header"
@@ -312,7 +312,7 @@
                         </craft-field-group>
 
                         <hr />
-                        <div class="px-4">
+                        <div>
                           <DynamicHtmlRenderer
                             v-if="payload.metadataHtml"
                             :html="payload.metadataHtml"
@@ -321,48 +321,8 @@
                       </div>
                     </div>
                   </craft-pane>
-                </div>
-
-                <craft-tab slot="tab" id="tab-1">
-                  <craft-icon
-                    name="wave-pulse"
-                    :label="t('Activity')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
-                    <div
-                      slot="header"
-                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-                    >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Activity') }}
-                      </h3>
-                    </div>
-                    @TODO
-                  </craft-pane>
-                </div>
-
-                <craft-tab slot="tab">
-                  <craft-icon
-                    name="clock-rotate-left"
-                    :label="t('Revisions')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
-                    <div
-                      slot="header"
-                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-                    >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Revisions') }}
-                      </h3>
-                    </div>
-                    <RevisionsList :items="payload.contextMenu?.items ?? []" />
-                  </craft-pane>
-                </div>
-              </craft-tabs>
+                </template>
+              </ElementDetailsTabs>
             </div>
           </div>
         </form>
@@ -458,35 +418,6 @@
   @container (width >= 768px) {
     .element-editor__body {
       align-items: start;
-    }
-  }
-
-  craft-tabs::part(base) {
-    gap: var(--c-spacing-sm);
-  }
-
-  craft-tabs::part(strip) {
-    border: 0;
-  }
-
-  craft-tab {
-    padding: 0;
-    width: var(--c-size-touch-target);
-    background-color: white;
-    aspect-ratio: 1;
-    display: grid;
-    place-items: center;
-    border-radius: var(--c-radius-md);
-    border: 1px solid transparent;
-  }
-
-  craft-tab[selected='true'] {
-    background-color: var(--c-color-neutral-fill-normal);
-    border-color: var(--c-color-neutral-border-normal);
-    color: var(--c-color-neutral-on-normal);
-
-    &:after {
-      display: none;
     }
   }
 </style>

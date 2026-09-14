@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\FormFields;
+use Illuminate\Validation\Rules\Password;
 
 describe('input-password', function () {
     it('renders a craft-input-password with a slotted password input', function () {
@@ -57,6 +58,7 @@ describe('FormFields::passwordFromConfig', function () {
             ->and($html)->toContain('id="newPassword"')
             ->and($html)->toContain('name="newPassword"')
             ->and($html)->toContain('autocomplete="new-password"')
+            ->and($html)->toContain('passwordrules="'.Password::defaults()->toPasswordRulesString().'"')
             // Preserves the legacy `.password` input class for CSS/JS keyed on it.
             ->and($html)->toContain('password');
     });

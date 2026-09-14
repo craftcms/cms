@@ -15,14 +15,17 @@
   import {useEventListener} from '@vueuse/core';
   import FormNodeList from './FormNodeList.vue';
   import {
+    canonical,
     FormFailure,
     FormControlOverrides,
     FormModifiedGroups,
+    FormRefreshingFields,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
     unsetValue,
     valueAt,
+    visitControls,
   } from './runtime';
   import type {
     FormChange,
@@ -34,17 +37,9 @@
     FormValues,
   } from './types';
 
-  type CanonicalFormValue =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | CanonicalFormValue[]
-    | {[key: string]: CanonicalFormValue};
-
   const props = defineProps<{
     payload: FormPayload;
+    disabled?: boolean;
     refresh?: (
       values: FormPayload['values'],
       scope?: string[]
@@ -63,6 +58,17 @@
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
+  const nodes = computed(() => {
+    if (!props.disabled) return payload.value.nodes;
+
+    const nodes = cloneRaw(payload.value.nodes);
+    visitControls(nodes, (control) =>
+      Object.assign(control, {mode: 'disabled'})
+    );
+
+    return nodes;
+  });
+
   const root = ref<HTMLElement>();
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
@@ -70,6 +76,8 @@
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const refreshVersions = new Map<string, number>();
+  const activeRefreshes = new Map<string, {field: string; request: number}>();
+  const refreshingFields = reactive(new Set<string>());
   const lastRefreshValues = new Map([
     [
       JSON.stringify(props.payload.scope),
@@ -85,6 +93,10 @@
   provide(
     FormModifiedGroups,
     computed(() => new Set(props.modified ?? []))
+  );
+  provide(
+    FormRefreshingFields,
+    computed(() => refreshingFields)
   );
 
   useEventListener(hostForm, 'submit', (event) => {
@@ -103,6 +115,11 @@
     () => props.payload,
     (refreshed) => reconcile(refreshed)
   );
+
+  watch(
+    () => props.disabled,
+    () => emitMutation()
+  );
   onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
 
   function onControlChange(change: FormChange): void {
@@ -115,25 +132,33 @@
     emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
-    const refreshable = change.refreshable ?? payload.value.refreshable;
     const key = JSON.stringify(scope);
-    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
 
-    if (!props.refresh || !refreshable) {
+    if (props.disabled || !props.refresh || !change.refreshable) {
       return;
     }
 
+    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
     clearTimeout(refreshTimers.get(key));
+
+    if (change.kind === 'discrete') {
+      void requestRefresh(scope, change.path);
+
+      return;
+    }
+
     refreshTimers.set(
       key,
-      setTimeout(
-        () => requestRefresh(scope),
-        change.kind === 'typing' ? 1000 : 100
-      )
+      setTimeout(() => requestRefresh(scope, change.path), 1000)
     );
   }
 
-  async function requestRefresh(scope: string[]): Promise<void> {
+  async function requestRefresh(
+    scope: string[],
+    fieldPath: string[]
+  ): Promise<void> {
+    if (props.disabled) return;
+
     const snapshot = cloneRaw(valueAt(values, scope));
 
     if (!isRecord(snapshot)) {
@@ -152,6 +177,15 @@
     lastRefreshValues.set(key, serialized);
     const request = (refreshVersions.get(key) ?? 0) + 1;
     refreshVersions.set(key, request);
+    const field = JSON.stringify(fieldPath);
+    const activeRefresh = activeRefreshes.get(key);
+
+    if (activeRefresh) {
+      refreshingFields.delete(activeRefresh.field);
+    }
+
+    activeRefreshes.set(key, {field, request});
+    refreshingFields.add(field);
 
     try {
       const refreshed = await props.refresh!(snapshot, scope);
@@ -162,6 +196,11 @@
     } catch {
       lastRefreshValues.delete(key);
       // The current presentation and values are already the last valid state.
+    } finally {
+      if (activeRefreshes.get(key)?.request === request) {
+        activeRefreshes.delete(key);
+        refreshingFields.delete(field);
+      }
     }
   }
 
@@ -251,6 +290,8 @@
     // Dropping the versions abandons any refresh still in flight: it was asked
     // for with the values being discarded, so its answer describes them too.
     refreshVersions.clear();
+    activeRefreshes.clear();
+    refreshingFields.clear();
     lastRefreshValues.clear();
     lastRefreshValues.set(
       JSON.stringify(source.scope),
@@ -276,7 +317,7 @@
     const groups = new Map<string, string[]>();
     const editablePaths = new Set<string>();
 
-    visitControls(payload.value.nodes, (control) => {
+    visitControls(nodes.value, (control) => {
       if (control.mode === 'editable') {
         groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
         editablePaths.add(JSON.stringify(control.path));
@@ -317,15 +358,29 @@
   }
 
   function currentValues(): FormPayload['values'] {
-    const result: FormPayload['values'] = {};
+    const groups = new Map<string, string[]>();
+    const controlPaths = new Set<string>();
 
     visitControls(payload.value.nodes, (control) => {
-      const value = valueAt(values, control.path);
+      groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+      controlPaths.add(JSON.stringify(control.path));
+    });
+
+    const result: FormPayload['values'] = {};
+
+    for (const path of groups.values()) {
+      const value = groupValue(values, path, controlPaths);
+
+      if (path.length === 0 && isRecord(value)) {
+        Object.assign(result, value);
+
+        continue;
+      }
 
       if (value !== undefined) {
-        setPathValue(result, control.path, cloneRaw(value));
+        setPathValue(result, path, value);
       }
-    });
+    }
 
     return result;
   }
@@ -339,23 +394,13 @@
     recordChange({kind, path});
   }
 
-  defineExpose({advanceBaseline, currentValues, resetValues, setValue});
-
-  function visitControls(
-    nodes: FormNodePayload[],
-    visit: (control: FormControlPayload) => void
-  ): void {
-    for (const node of nodes) {
-      if (node.control) {
-        visit(node.control);
-        node.control.forms?.forEach((form) => visitControls(form.nodes, visit));
-      }
-
-      if (node.children) {
-        visitControls(node.children, visit);
-      }
-    }
-  }
+  defineExpose({
+    advanceBaseline,
+    currentValues,
+    resetValues,
+    setValue,
+    canSubmit: () => !renderError.value,
+  });
 
   function rememberControlPaths(nodes: FormNodePayload[]): void {
     visitControls(nodes, (control) =>
@@ -445,41 +490,6 @@
     return raw;
   }
 
-  function canonical(value: FormValue): string {
-    return JSON.stringify(canonicalValue(value));
-  }
-
-  function canonicalValue(value: FormValue): CanonicalFormValue {
-    // Nothing and empty mean the same thing to a form, so a control reporting
-    // one where the server sent the other has not edited anything. Without
-    // this, populating a field on load can read as a change purely because the
-    // control's idea of empty differs from the server's.
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
-
-    if (Array.isArray(value)) {
-      return value.map(canonicalValue);
-    }
-
-    if (value instanceof File) {
-      return {
-        name: value.name,
-        size: value.size,
-        type: value.type,
-        lastModified: value.lastModified,
-      };
-    }
-
-    if (!isRecord(value)) return value;
-
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, canonicalValue(value[key])])
-    );
-  }
-
   function isWithin(path: string[], scope: string[]): boolean {
     return scope.every((segment, index) => path[index] === segment);
   }
@@ -493,7 +503,7 @@
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
     <FormNodeList
-      :nodes="payload.nodes"
+      :nodes="nodes"
       :values="values"
       :errors="effectiveErrors"
       :touched-paths="touchedPaths"

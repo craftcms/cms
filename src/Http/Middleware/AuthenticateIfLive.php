@@ -12,7 +12,7 @@ class AuthenticateIfLive extends Authenticate
     #[\Override]
     public function handle($request, Closure $next, ...$guards): mixed
     {
-        if (app()->isLive()) {
+        if (! app()->isDownForMaintenance()) {
             return parent::handle($request, $next, ...$guards);
         }
 

@@ -13,8 +13,8 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\QueueState;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
@@ -133,11 +133,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => Flash::getSuccess(),
                 'error' => Flash::getError(),
             ],
-            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? [
-                'displayedJob' => $progressService->getDisplayedJob(),
-                'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
-                'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
-            ] : [
+            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? new QueueState($progressService) : [
                 'displayedJob' => null,
                 'hasReservedJobs' => false,
                 'hasWaitingJobs' => false,
@@ -170,6 +166,7 @@ class HandleInertiaRequests extends Middleware
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
+                'maintenanceMode' => app()->isDownForMaintenance(),
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),

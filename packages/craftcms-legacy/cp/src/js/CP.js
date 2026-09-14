@@ -306,83 +306,6 @@ Craft.CP = Garnish.Base.extend(
         );
       }
 
-      // Announcements HUD
-      if (Craft.announcements?.length) {
-        let $btn = $('#announcements-btn').removeClass('hidden');
-        const hasUnreads = Craft.announcements.some((a) => a.unread);
-        let $unreadMessage;
-        if (hasUnreads) {
-          $unreadMessage = $('<span/>', {
-            class: 'visually-hidden',
-            html: Craft.t('app', 'Unread messages'),
-          });
-          $btn.addClass('unread').append($unreadMessage);
-        }
-        let hud;
-        this.addListener($btn, 'click', () => {
-          if (!hud) {
-            let contents = '';
-            Craft.announcements.forEach((a) => {
-              contents +=
-                `<div class="announcement ${
-                  a.unread ? 'unread' : ''
-                }" role="listitem">` +
-                '<div class="announcement__header">' +
-                `<h3 class="announcement__heading h2">${a.heading}</h3>` +
-                '<div class="announcement-label-container">' +
-                `<div class="announcement-icon" aria-hidden="true">${a.icon}</div>` +
-                `<div class="announcement-label">${a.label}</div>` +
-                '</div>' +
-                '</div>' +
-                `<p>${a.body}</p>` +
-                '</div>';
-            });
-            hud = new Garnish.HUD(
-              $btn,
-              `<h2 class="visually-hidden">${Craft.t(
-                'app',
-                'Announcements'
-              )}</h2><div id="announcements" role="list">${contents}</div>`,
-              {
-                onShow: () => {
-                  $btn.addClass('active');
-                },
-                onHide: () => {
-                  $btn.removeClass('active');
-                },
-              }
-            );
-
-            // Open outbound links in new windows
-            $('a', hud.$main).each(function () {
-              if (
-                this.hostname.length &&
-                this.hostname !== location.hostname &&
-                typeof $(this).attr('target') === 'undefined'
-              ) {
-                $(this).attr('rel', 'noopener').attr('target', '_blank');
-              }
-            });
-
-            if (hasUnreads) {
-              $btn.removeClass('unread');
-              $unreadMessage.remove();
-              Craft.sendActionRequest(
-                'POST',
-                'users/mark-announcements-as-read',
-                {
-                  data: {
-                    ids: Craft.announcements.map((a) => a.id),
-                  },
-                }
-              );
-            }
-          } else {
-            hud.show();
-          }
-        });
-      }
-
       // Add .stuck class to #footer when stuck
       // h/t https://stackoverflow.com/a/61115077/1688568
       const footer = document.getElementById('footer');
@@ -399,12 +322,18 @@ Craft.CP = Garnish.Base.extend(
         observer.observe(footer);
       }
 
-      // Load any element thumbs.
-      // (Deferred until after the Vite-side `modules/element-thumb-loader` shim
-      // has had a chance to load.)
-      setTimeout(() => {
+      const loadElementThumbs = () => {
         this.elementThumbLoader.load(this.$pageContainer);
-      }, 500);
+      };
+      if (Craft.ElementThumbLoader) {
+        loadElementThumbs();
+      } else {
+        window.addEventListener(
+          'craft:element-thumb-loader-ready',
+          loadElementThumbs,
+          {once: true}
+        );
+      }
 
       // Add notification close listeners
       this.on('notificationClose', () => {

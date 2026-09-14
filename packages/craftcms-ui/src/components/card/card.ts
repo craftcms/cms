@@ -46,6 +46,7 @@ import {
  * @csspart thumbnail - The fixed column the `thumbnail` slot renders into.
  * @csspart footer - The default footer region.
  *
+ * @cssproperty --c-card-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-card-shadow - Box shadow. Defaults to `--c-shadow-sm`.
  * @cssproperty --c-card-padding-inline - Inline (horizontal) padding of the

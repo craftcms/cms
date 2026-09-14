@@ -220,7 +220,9 @@ export class DomListenerRegistry {
     } else if (type === 'textchange') {
       installerDispose = installTextchange(
         el as HTMLElement & {value: string},
-        {delay: (options.data?.delay as number | null | undefined) ?? null}
+        {
+          delay: (options.data?.delay as number | null | undefined) ?? null,
+        }
       );
     } else if (type === 'resize') {
       installerDispose = installResize(el);
@@ -294,7 +296,9 @@ export class DomListenerRegistry {
         binding.element.removeEventListener(
           binding.type,
           binding.wrappedHandler,
-          {capture: binding.capture}
+          {
+            capture: binding.capture,
+          }
         );
       }
       this.bindings.splice(i, 1);

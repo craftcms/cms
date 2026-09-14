@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use Closure;
 use CraftCms\Cms\Support\Utils;
 use Illuminate\Contracts\Support\Arrayable;
+use Inertia\ProvidesInertiaProperties;
+use Inertia\RenderContext;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -13,25 +16,35 @@ use ReflectionMethod;
  * Base class for Inertia page payloads.
  *
  * Public properties are returned as-is. Public zero-argument instance methods on
- * concrete view models are called and returned under their method name, which
+ * concrete view models are returned under their method name, which
  * keeps constructors focused on required dependencies and lets view models expose
  * derived payload data without storing duplicate properties. Methods that take
  * arguments are skipped, so a view model can expose fluent setters alongside
- * its payload.
+ * its payload. Array conversion evaluates methods immediately. Passing the view
+ * model as an Inertia property provider lets Inertia evaluate only requested props.
  */
 /** @implements Arrayable<string, mixed> */
-abstract class ViewModel implements Arrayable
+abstract class ViewModel implements Arrayable, ProvidesInertiaProperties
 {
     public function toArray(): array
     {
         return [
             ...Utils::getPublicProperties($this),
-            ...$this->publicMethodValues(),
+            ...array_map(fn (Closure $method): mixed => $method(), $this->publicMethodClosures()),
         ];
     }
 
     /** @return array<string, mixed> */
-    private function publicMethodValues(): array
+    public function toInertiaProperties(RenderContext $context): array
+    {
+        return [
+            ...Utils::getPublicProperties($this),
+            ...$this->publicMethodClosures(),
+        ];
+    }
+
+    /** @return array<string, Closure> */
+    private function publicMethodClosures(): array
     {
         return collect(new ReflectionClass($this)->getMethods(ReflectionMethod::IS_PUBLIC))
             ->filter(fn (ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() !== self::class
@@ -42,7 +55,7 @@ abstract class ViewModel implements Arrayable
                 // invoked — argument-less — as payload.
                 && $method->getNumberOfParameters() === 0)
             ->mapWithKeys(fn (ReflectionMethod $method): array => [
-                $method->getName() => $method->invoke($this),
+                $method->getName() => $method->getClosure($this),
             ])
             ->all();
     }

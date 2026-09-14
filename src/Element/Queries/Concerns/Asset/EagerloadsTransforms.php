@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use CraftCms\Cms\Support\Facades\ImageTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use Illuminate\Support\Collection;
 
 /**
@@ -13,7 +14,7 @@ use Illuminate\Support\Collection;
 trait EagerloadsTransforms
 {
     /**
-     * @var mixed The asset transform indexes that should be eager-loaded, if they exist
+     * @var mixed The Asset Transforms that should be preloaded, if supported by their drivers
      *            ---
      *            ```php{4}
      *            // fetch images with their 'thumb' transforms preloaded
@@ -36,38 +37,36 @@ trait EagerloadsTransforms
 
     protected function initEagerloadsTransforms(): void
     {
-        $this->afterQuery(function (mixed $result) {
+        $this->afterQuery(static function (mixed $result, AssetQuery $assetQuery) {
             if (! $result instanceof Collection) {
                 return $result;
             }
 
-            // Eager-load transforms?
-            if (! $this->withTransforms) {
+            if (! $assetQuery->withTransforms) {
                 return $result;
             }
 
-            if ($this->asArray) {
+            if ($assetQuery->asArray) {
                 return $result;
             }
 
-            $transforms = $this->withTransforms;
+            $transforms = $assetQuery->withTransforms;
             if (! is_array($transforms)) {
                 $transforms = is_string($transforms)
                     ? str($transforms)->explode(',')->all()
                     : [$transforms];
             }
 
-            ImageTransforms::eagerLoadTransforms($result->all(), $transforms);
+            app(AssetTransformers::class)->preload($result->all(), $transforms);
 
             return $result;
         });
     }
 
     /**
-     * Causes the query to return matching assets eager-loaded with image transform indexes.
+     * Asks capable Asset Transform drivers to preload the requested transforms for matching assets.
      *
-     * This can improve performance when displaying several image transforms at once, if the transforms
-     * have already been generated.
+     * This may improve later transform rendering performance, but does not guarantee that output has materialized.
      *
      * Transforms can be specified as their handle or an object that contains `width` and/or `height` properties.
      *

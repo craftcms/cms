@@ -365,9 +365,7 @@ trait HasCustomFields
 
     public function setGeneratedFieldRawValue(string $handle, mixed $value): void
     {
-        if (! isset($this->_generatedFieldValues)) {
-            $this->_generatedFieldValues = [];
-        }
+        $this->_generatedFieldValues ??= [];
 
         $this->_generatedFieldValues[$handle] = $value;
     }

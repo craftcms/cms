@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
-use craft\base\BaseFsInterface;
+use craft\base\Fs;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
+use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToListContents;
 
@@ -81,11 +85,51 @@ it('logs one actionable deprecation per concrete legacy filesystem class', funct
         ->toContain('getDiskConfig()');
 });
 
-class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsInterface
+it('combines base URL fields with legacy settings HTML', function() {
+    $filesystem = new LegacyFilesystemCompatibilityTestFs([
+        'hasUrls' => true,
+        'url' => 'https://assets.example.test/root/',
+    ]);
+    $context = new FormContext(namespace: 'settings');
+
+    $payload = app(FormResolver::class)->resolve($filesystem->settingsForm($context), $context);
+
+    expect(array_map(
+        fn($node): string => implode('.', array_slice($node->control->path, 1)),
+        $payload->nodes,
+    ))->toBe(['hasUrls', 'url', '__legacySettings'])
+        ->and(array_map(fn($node): string => $node->control->type, $payload->nodes))->toBe([
+            Lightswitch::class,
+            Text::class,
+            LegacyHtmlControl::class,
+        ])
+        ->and($filesystem->getSettings()['hasUrls'])->toBeTrue()
+        ->and($filesystem->getSettings()['url'])->toBe('https://assets.example.test/root/');
+});
+
+it('preserves legacy URL setting flags', function() {
+    $filesystem = new LegacyFilesystemWithoutUrlSettingsTestFs();
+    $context = new FormContext(namespace: 'settings');
+    $payload = app(FormResolver::class)->resolve($filesystem->settingsForm($context), $context);
+
+    expect($filesystem->getShowHasUrlSetting())->toBeFalse()
+        ->and($filesystem->getShowUrlSetting())->toBeFalse()
+        ->and(array_map(
+            fn($node): string => implode('.', array_slice($node->control->path, 1)),
+            $payload->nodes,
+        ))->toBe(['__legacySettings']);
+});
+
+class LegacyFilesystemCompatibilityTestFs extends Fs
 {
     private array $files = [];
 
     public array $listingValues = [];
+
+    public function getSettingsHtml(): ?string
+    {
+        return '<input name="legacySetting" value="legacy">';
+    }
 
     public function register(): void
     {
@@ -205,4 +249,11 @@ class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsIn
     public function renameDirectory(string $path, string $newName): void
     {
     }
+}
+
+class LegacyFilesystemWithoutUrlSettingsTestFs extends LegacyFilesystemCompatibilityTestFs
+{
+    protected static bool $showHasUrlSetting = false;
+
+    protected static bool $showUrlSetting = false;
 }

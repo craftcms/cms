@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Validation;
 
 use Closure;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Database\Eloquent\Builder;
@@ -48,18 +50,21 @@ class VolumeRules extends Ruleset
             ],
             'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
             'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'transformFsHandle' => ['nullable', fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'subpath' => [
+            'assetTransformer' => [new EnvValueRule([
+                'nullable',
+                'string',
+                Rule::in(app(AssetTransformers::class)->getAllAssetTransformers()->pluck('handle')->all()),
+            ])],
+            'subpath' => [new EnvValueRule([
                 Rule::requiredIf(fn () => $this->subpathRequired()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),
-            ],
+            ])],
         ];
 
         $tempAssetUploadTarget = $this->subject->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
 
         if ($tempAssetUploadTarget !== null) {
             $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
-            $rules['transformFsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
         }
 
         return $rules;
@@ -172,7 +177,6 @@ class VolumeRules extends Ruleset
     {
         return match ($attribute) {
             'fsHandle' => $this->subject->getFsHandle(false),
-            'transformFsHandle' => $this->subject->getTransformFsHandle(false),
             default => null,
         };
     }

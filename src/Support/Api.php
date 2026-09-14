@@ -184,7 +184,7 @@ class Api
                 } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
-                if ($licenseKey || $allowAdminChanges) {
+                if ($licenseKey || ($licenseKey !== false && $allowAdminChanges)) {
                     $pluginLicenses[] = "$pluginHandle:".($licenseKey ?? '__REQUEST__');
                 }
             }

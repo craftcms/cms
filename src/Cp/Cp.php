@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\CpDataResolving;
+use CraftCms\Cms\Cp\Notifications\NotificationCenter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
@@ -79,6 +79,28 @@ readonly class Cp
             ->useBuildDirectory('vendor/craft/build');
     }
 
+    /**
+     * Returns the URL for a file under `resources/public`.
+     *
+     * Those files are Vite's `publicDir`: copied into the build verbatim rather
+     * than hashed into the manifest, so `Vite::asset()` can't resolve them.
+     * Served from the dev server while it's running, and from the published
+     * build directory otherwise.
+     */
+    public static function publicAssetUrl(string $path): string
+    {
+        $path = ltrim($path, '/');
+        $vite = static::vite();
+
+        if ($vite->isRunningHot()) {
+            $hot = trim((string) file_get_contents(CmsAssets::resourcesPath('hot')));
+
+            return rtrim($hot, '/')."/$path";
+        }
+
+        return asset("vendor/craft/build/$path");
+    }
+
     public static function viteScripts(): Vite
     {
         return static::vite()->withEntryPoints([
@@ -143,7 +165,7 @@ readonly class Cp
 
         if (request()->isCpRequest()) {
             $data += [
-                'announcements' => $upToDate ? app(Announcements::class)->get() : [],
+                'notifications' => $upToDate ? app(NotificationCenter::class)->get() : [],
                 'baseCpUrl' => Url::cpUrl(),
                 'cpTrigger' => $generalConfig->cpTrigger,
             ];

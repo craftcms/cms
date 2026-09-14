@@ -19,6 +19,7 @@ CP Styles
   );
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
+  --global-sidebar-z-index: 10;
 
   /* Workspace */
   --workspace-bg-color: var(--c-color-neutral-fill-quiet);
@@ -36,6 +37,17 @@ CP Styles
     );
   --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
     var(--workspace-bg-image);
+}
+
+.skip-link--global {
+  z-index: calc(var(--global-sidebar-z-index) + 1);
+}
+
+/* Held by overlays — modals and slideouts — while any of them is open. The
+   legacy stylesheet and panel-stack.css each define this too; repeated here so
+   the lock still works on a CP page that loads neither. */
+body.no-scroll {
+  overflow: hidden;
 }
 
 /**
@@ -206,4 +218,19 @@ doesn't leave a trail of selected text behind it.
 .is-resizing-inline * {
   cursor: col-resize !important;
   user-select: none !important;
+}
+
+/*
+ * Choice option illustrations (View Mode and friends). The label is `for`-bound
+ * to its radio, so clicking the illustration selects the option — what Craft 5
+ * got from wrapping the image and the input in a single label.
+ */
+.radio-thumbnail {
+  display: block;
+  margin-block-end: var(--c-spacing-xs);
+  cursor: pointer;
+}
+
+.radio-thumbnail img {
+  display: block;
 }

@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -63,60 +64,25 @@ trait QueriesUserGroups
 
     protected function initQueriesUserGroups(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
+        $this->beforeQuery(static function (UserQuery $userQuery) {
             if ($userQuery->groupId === []) {
                 throw new QueryAbortedException;
             }
 
-            if (! $userQuery->groupId) {
-                return;
-            }
-
-            // Checking multiple groups?
-            if (
-                is_array($userQuery->groupId) &&
-                is_string(reset($userQuery->groupId)) &&
-                strtolower(reset($userQuery->groupId)) === 'and'
-            ) {
-                $groupIdChecks = array_slice($userQuery->groupId, 1);
-            } else {
-                $groupIdChecks = [$userQuery->groupId];
-            }
-
-            foreach ($groupIdChecks as $i => $groupIdCheck) {
-                if (
-                    is_array($groupIdCheck) &&
-                    is_string(reset($groupIdCheck)) &&
-                    strtolower(reset($groupIdCheck)) === 'not'
-                ) {
-                    $groupIdOperator = 'whereNotExists';
-                    array_shift($groupIdCheck);
-                    if (empty($groupIdCheck)) {
-                        continue;
-                    }
-                } else {
-                    $groupIdOperator = 'whereExists';
-                }
-
-                $userQuery->$groupIdOperator(
-                    DB::table(Table::USERGROUPS_USERS, "ugu$i")
-                        ->whereColumn('elements.id', "ugu$i.userId")
-                        ->whereNumericParam('groupId', $groupIdCheck),
-                );
-            }
+            static::applyGroupId($userQuery, $userQuery->groupId);
         });
 
-        $this->afterQuery(function (mixed $result) {
+        $this->afterQuery(static function (mixed $result, UserQuery $userQuery) {
             if (! $result instanceof Collection) {
                 return $result;
             }
 
             // Eager-load transforms?
-            if (! $this->withGroups) {
+            if (! $userQuery->withGroups) {
                 return $result;
             }
 
-            if ($this->asArray) {
+            if ($userQuery->asArray) {
                 return $result;
             }
 
@@ -128,6 +94,46 @@ trait QueriesUserGroups
 
             return $result;
         });
+    }
+
+    public static function applyGroupId(Builder $query, mixed $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        // Checking multiple groups?
+        if (
+            is_array($value) &&
+            is_string(reset($value)) &&
+            strtolower(reset($value)) === 'and'
+        ) {
+            $groupIdChecks = array_slice($value, 1);
+        } else {
+            $groupIdChecks = [$value];
+        }
+
+        foreach ($groupIdChecks as $i => $groupIdCheck) {
+            if (
+                is_array($groupIdCheck) &&
+                is_string(reset($groupIdCheck)) &&
+                strtolower(reset($groupIdCheck)) === 'not'
+            ) {
+                $groupIdOperator = 'whereNotExists';
+                array_shift($groupIdCheck);
+                if (empty($groupIdCheck)) {
+                    continue;
+                }
+            } else {
+                $groupIdOperator = 'whereExists';
+            }
+
+            $query->$groupIdOperator(
+                DB::table(Table::USERGROUPS_USERS, "ugu$i")
+                    ->whereColumn('elements.id', "ugu$i.userId")
+                    ->whereNumericParam('groupId', $groupIdCheck),
+            );
+        }
     }
 
     /**

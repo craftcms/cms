@@ -161,18 +161,14 @@ class DirectiveTest extends TestCase
         $assetTransform = Transform::class;
 
         $transformParameters = [
-            ['handle' => 'anExampleTransform', 'immediately' => false],
-            ['handle' => 'anExampleTransform', 'immediately' => true],
-            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5, 'immediately' => true],
-            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5, 'immediately' => false],
+            ['handle' => 'anExampleTransform'],
+            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5],
         ];
 
         // asset transform
         return [
             [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[0])], $transformParameters[0]],
             [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[1])], $transformParameters[1]],
-            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[2])], $transformParameters[2]],
-            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[3])], $transformParameters[3]],
         ];
     }
 

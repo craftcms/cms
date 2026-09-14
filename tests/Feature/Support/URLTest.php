@@ -5,11 +5,11 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 
 beforeEach(function () {
-    Aliases::set('@web', 'https://localhost');
-
     swapUrlRequest('https://localhost/news');
 });
 
@@ -216,6 +216,61 @@ describe('query and encoding helpers', function () {
         ],
     ]);
 
+    test('removes multiple query params from a URL', function (string $expected, string $url, array $params) {
+        expect(Url::removeParams($url, $params))->toBe($expected);
+    })->with([
+        'removes-multiple' => [
+            'https://craftcms.com/?bar=2#anchor',
+            'https://craftcms.com/?foo=1&bar=2&baz=3#anchor',
+            ['foo', 'baz'],
+        ],
+        'removes-all-listed' => [
+            'https://craftcms.com/#anchor',
+            'https://craftcms.com/?foo=1&bar=2#anchor',
+            ['foo', 'bar'],
+        ],
+        'keeps-url-when-params-are-missing' => [
+            'https://craftcms.com/?foo=1',
+            'https://craftcms.com/?foo=1',
+            ['bar', 'baz'],
+        ],
+        'empty-params' => [
+            'https://craftcms.com/?foo=1',
+            'https://craftcms.com/?foo=1',
+            [],
+        ],
+    ]);
+
+    test('removes all query params from a URL', function (string $expected, string $url, array $except) {
+        expect(Url::removeAllParams($url, $except))->toBe($expected);
+    })->with([
+        'removes-all' => [
+            'https://craftcms.com/',
+            'https://craftcms.com/?foo=1&bar=2',
+            [],
+        ],
+        'keeps-fragment' => [
+            'https://craftcms.com/#anchor',
+            'https://craftcms.com/?foo=1&bar=2#anchor',
+            [],
+        ],
+        'except' => [
+            'https://craftcms.com/?bar=2',
+            'https://craftcms.com/?foo=1&bar=2&baz=3',
+            ['bar'],
+        ],
+        'except-multiple' => [
+            'https://craftcms.com/?foo=1&baz=3',
+            'https://craftcms.com/?foo=1&bar=2&baz=3',
+            ['foo', 'baz'],
+        ],
+        'except-missing' => [
+            'https://craftcms.com/',
+            'https://craftcms.com/?foo=1&bar=2',
+            ['baz'],
+        ],
+    ]);
+
     test('adds token params to a URL', function (string $expected, string $url, string $token) {
         Cms::config()->useSslOnTokenizedUrls = true;
 
@@ -326,6 +381,7 @@ describe('base and control panel helpers', function () {
 
         expect(Url::baseUrl())->toBe('https://localhost/')
             ->and(Url::baseSiteUrl())->toBe('https://localhost/')
+            ->and(Url::baseCpUrl())->toBe('https://localhost/')
             ->and(Url::host())->toBe('https://localhost')
             ->and(Url::siteHost())->toBe('https://localhost');
 
@@ -390,6 +446,13 @@ describe('generated URLs', function () {
         ['{siteUrl}endpoint?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'endpoint', ['returnUrl' => 'https://example.test/admin/entries?site={handle}'], 'https', null],
     ]);
 
+    it('removes all params from a full URL when params is false', function () {
+        swapUrlRequest('https://localhost/news');
+
+        expect(Url::url('https://craftcms.com/?x-craft-preview=foo&test=bar', false))
+            ->toBe('https://craftcms.com/');
+    });
+
     it('creates action URLs', function () {
         swapUrlRequest('https://localhost/news');
 
@@ -403,6 +466,24 @@ describe('generated URLs', function () {
         expect(Url::actionUrl('endpoint'))
             ->toBe(buildExpectedUrl('{cpUrl}/actions/endpoint', 'https'));
     });
+
+    it('builds target-site URLs without changing the current site', function (?string $baseUrl, string $expected) {
+        Aliases::set('@urlTestSite', 'https://other.test/');
+        $target = Site::factory()->create(['baseUrl' => $baseUrl, 'enabled' => false]);
+        Sites::refreshSites();
+        $current = Sites::getCurrentSite();
+        $current->setBaseUrl('https://current.test/');
+        $locale = app()->getLocale();
+
+        expect(Url::siteUrl('news', siteId: $target->id))->toBe($expected);
+        expect(fn () => Url::siteUrl('news', ['#' => []], siteId: $target->id))->toThrow(TypeError::class);
+        expect(Sites::getCurrentSite())->toBe($current)
+            ->and(app()->getLocale())->toBe($locale);
+    })->with([
+        'absolute base' => ['https://other.test/', 'https://other.test/news'],
+        'missing base' => [null, 'https://localhost/news'],
+        'alias base' => ['@urlTestSite', 'https://other.test/news'],
+    ]);
 
     it('throws for invalid site IDs', function () {
         expect(fn () => Url::siteUrl('', null, null, 12892))

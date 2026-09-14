@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,6 +10,7 @@
 namespace craft\config;
 
 use craft\services\Config;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -17,6 +20,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config as ConfigFacade;
+use Illuminate\Support\Facades\Context;
 use InvalidArgumentException;
 use RuntimeException;
 use yii\base\InvalidConfigException;
@@ -27,6 +31,7 @@ use function CraftCms\Cms\t;
  * General config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  * @deprecated in 6.0.0. [[\CraftCms\Cms\Config\GeneralConfig]] should be used instead.
  */
@@ -46,6 +51,29 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     ];
 
     public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @deprecated in 6.0.0. Use Laravel maintenance mode instead.
+     */
+    public ?bool $isSystemLive = null {
+        set {
+            $this->deprecateIsSystemLive();
+            $this->isSystemLive = $value;
+        }
+    }
+
+    /**
+     * @var bool Whether Craft image transforms should be generated before page load.
+     *
+     * @deprecated in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.
+     */
+    public bool $generateTransformsBeforePageLoad = false {
+        set {
+            $this->deprecateGenerateTransformsBeforePageLoad();
+            Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value);
+            $this->generateTransformsBeforePageLoad = $value;
+        }
+    }
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -80,7 +108,39 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public mixed $verificationCodeDuration = 86400;
 
     /**
-     * @inheritdoc
+     * @var string The path to the root directory that should store published control panel resources.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->resourceBasePath('@webroot/craft-resources')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
+     * ```
+     * :::
+     *
+     * @group Environment
+     */
+    public string $resourceBasePath = '@webroot/cpresources';
+
+    /**
+     * @var string The URL to the root directory where control panel resources are published.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->resourceBaseUrl('@web/craft-resources')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
+     * ```
+     * :::
+     *
+     * @group Environment
+     */
+    public string $resourceBaseUrl = '@web/cpresources';
+
+    /**
+     * {@inheritdoc}
      */
     protected ?string $filename = Config::CATEGORY_GENERAL;
 
@@ -324,6 +384,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * :::
      *
      * @group System
+     *
      * @deprecated 6.0.0 in favor of [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages)
      */
     public string $errorTemplatePrefix = '';
@@ -348,6 +409,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * :::
      *
      * @group Routing
+     *
      * @deprecated 6.0.0
      */
     public ?string $pathParam = null;
@@ -381,6 +443,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * :::
      *
      * @group Routing
+     *
      * @deprecated 6.0.0
      */
     public bool $omitScriptNameInUrls = true;
@@ -400,6 +463,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * :::
      *
      * @group Routing
+     *
      * @deprecated 6.0.0
      */
     public bool $usePathInfo = false;
@@ -480,7 +544,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public bool $enableTwigSandbox = true;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws InvalidConfigException
      */
     public function init(): void
@@ -515,8 +580,15 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             ->extraAppLocales($this->extraAppLocales)
             // misc
             ->maxUploadFileSize($this->maxUploadFileSize)
-            ->disabledPlugins($this->disabledPlugins)
-        ;
+            ->disabledPlugins($this->disabledPlugins);
+    }
+
+    #[Deprecated(message: 'in 6.0.0. Use Laravel maintenance mode instead.')]
+    public function isSystemLive(?bool $value): self
+    {
+        $this->isSystemLive = $value;
+
+        return $this;
     }
 
     /**
@@ -544,6 +616,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The higher the cost value, the longer it takes to generate a password hash and to verify against it.
      *
@@ -577,6 +650,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The name of CSRF token used for CSRF validation if <config5:enableCsrfProtection> is set to `true`.
      *
@@ -599,6 +673,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      *
@@ -623,6 +698,15 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
+    #[Deprecated(message: 'in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.')]
+    public function generateTransformsBeforePageLoad(bool $value = true): self
+    {
+        $this->generateTransformsBeforePageLoad = $value;
+
+        return $this;
+    }
+
     /**
      * The domain that cookies generated by Craft should be created for.
      *
@@ -689,6 +773,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether the `@transform` directive should be disabled for the GraphQL API.
      *
@@ -711,6 +796,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
      * stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
@@ -734,6 +820,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
      *
@@ -759,6 +846,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
@@ -788,6 +876,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether user-defined Twig templates should be sandboxed.
      *
@@ -806,6 +895,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether generated URLs should omit `index.php` (e.g. `http://my-project.tld/path` instead of `http://my-project.tld/index.php/path`)
      *
@@ -837,6 +927,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The query string param that Craft will check when determining the request’s path.
      *
@@ -865,6 +956,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The `Permissions-Policy` header that should be sent for web responses.
      *
@@ -884,6 +976,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The name of the PHP session cookie.
      *
@@ -909,6 +1002,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
      *
@@ -937,6 +1031,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether Craft should require a matching user agent string when restoring a user session from a cookie.
      *
@@ -958,6 +1053,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether Craft should require the existence of a user agent string and IP address when creating a new user session.
      *
@@ -979,6 +1075,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
      *
@@ -1004,6 +1101,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Lists of headers that are, by default, subject to the trusted host configuration.
      *
@@ -1058,6 +1156,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * List of headers to check for determining whether the connection is made via HTTPS.
      *
@@ -1093,6 +1192,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
      *
@@ -1162,6 +1262,42 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
+     * The path to the root directory that should store published control panel resources.
+     *
+     * ```php
+     * ->resourceBasePath('@webroot/craft-resources')
+     * ```
+     *
+     * @group Environment
+     *
+     * @see $resourceBasePath
+     */
+    public function resourceBasePath(string $value): self
+    {
+        $this->resourceBasePath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URL to the root directory where control panel resources are published.
+     *
+     * ```php
+     * ->resourceBaseUrl('@web/craft-resources')
+     * ```
+     *
+     * @group Environment
+     *
+     * @see $resourceBaseUrl
+     */
+    public function resourceBaseUrl(string $value): self
+    {
+        $this->resourceBaseUrl = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
      *
      * Some file systems, such as NFS, do not support exclusive file locking.
@@ -1208,6 +1344,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
      *
@@ -1235,6 +1372,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
     /**
      * The amount of time before a user will get logged out due to inactivity.
      *
@@ -1266,7 +1404,6 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * for testing purposes.
      *
      * @deprecated in 6.0.0. Configure `Illuminate\Support\Facades\Mail::alwaysTo()` instead.
-     *
      * @see $testToEmailAddress
      */
     #[Deprecated(message: 'in 6.0.0. Configure `Illuminate\\Support\\Facades\\Mail::alwaysTo()` instead.')]
@@ -1315,7 +1452,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $to = [];
         if ($this->testToEmailAddress) {
-            foreach ((array)$this->testToEmailAddress as $key => $value) {
+            foreach ((array) $this->testToEmailAddress as $key => $value) {
                 if (is_numeric($key)) {
                     $to[$value] = t('Test Recipient');
                 } else {
@@ -1325,5 +1462,21 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         }
 
         return $to;
+    }
+
+    private function deprecateGenerateTransformsBeforePageLoad(): void
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.generateTransformsBeforePageLoad',
+            'generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.',
+        ));
+    }
+
+    private function deprecateIsSystemLive(): void
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.isSystemLive',
+            '`craft\\config\\GeneralConfig::$isSystemLive` and `craft\\config\\GeneralConfig::isSystemLive()` are deprecated. Use Laravel maintenance mode instead.',
+        ));
     }
 }

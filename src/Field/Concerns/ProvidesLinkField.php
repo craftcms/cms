@@ -206,7 +206,8 @@ trait ProvidesLinkField
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)
                     ->options($this->linkTypeOptions($types))
-                    ->value($this->{$this->namespacedAttribute('types')})),
+                    ->value($this->{$this->namespacedAttribute('types')})
+                    ->reactive()),
         ];
 
         foreach ($types as $typeId => $typeClass) {
@@ -219,7 +220,8 @@ trait ProvidesLinkField
             if ($settings !== []) {
                 $nodes[] = Group::make("link-type-settings-{$typeId}", $settings)
                     ->label($this->linkTypeSettingsLabel($typeClass))
-                    ->collapsible();
+                    ->collapsible()
+                    ->dependsOn("settings.{$prefix}types");
             }
         }
 

@@ -109,16 +109,23 @@ describe('create / edit', function () {
                 ->where('title', t('Create a new asset volume'))
                 ->where('form.values.volumeId', null)
                 ->where('form.values.name', '')
+                ->where('form.values.assetTransformer', '')
                 ->where('submit.url', action([VolumesController::class, 'store']))
-                ->where('form.nodes', fn (Collection $nodes): bool => $nodes->contains(
-                    fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
-                        && ($node['control']['props']['createUrl'] ?? null) === action([FilesystemsController::class, 'create']),
-                ) && collect(['subpath', 'transformSubpath'])->every(
-                    fn (string $path): bool => $nodes->contains(
-                        fn (array $node): bool => ($node['control']['path'] ?? null) === [$path]
-                            && ! empty($node['control']['props']['textExpanderTriggers']),
-                    ),
-                )));
+                ->where('form.nodes', function (Collection $nodes): bool {
+                    $paths = $nodes->pluck('control.path');
+
+                    return $nodes->contains(
+                        fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
+                            && ($node['control']['props']['createUrl'] ?? null) === action([FilesystemsController::class, 'create']),
+                    )
+                        && $nodes->contains(
+                            fn (array $node): bool => ($node['control']['path'] ?? null) === ['subpath']
+                                && ! empty($node['control']['props']['textExpanderTriggers']),
+                        )
+                        && $paths->doesntContain(['transformFsHandle'])
+                        && $paths->doesntContain(['transformSubpath'])
+                        && $paths->contains(['assetTransformer']);
+                }));
     });
 
     test('edit loads existing volume', function () {
@@ -168,8 +175,7 @@ describe('create / edit', function () {
                 'handle' => 'newVolume',
                 'fsHandle' => 'disk:test-disk',
                 'subpath' => '',
-                'transformFsHandle' => '',
-                'transformSubpath' => '',
+                'assetTransformer' => 'craft',
                 'titleTranslationMethod' => 'site',
                 'titleTranslationKeyFormat' => '',
                 'altTranslationMethod' => 'none',
@@ -180,7 +186,8 @@ describe('create / edit', function () {
         ])
             ->assertOk()
             ->assertJsonPath('form.values.handle', 'newVolume')
-            ->assertJsonPath('form.values.fsHandle', 'disk:test-disk');
+            ->assertJsonPath('form.values.fsHandle', 'disk:test-disk')
+            ->assertJsonPath('form.values.assetTransformer', 'craft');
     });
 
     test('edit returns 404 for non-existent volume', function () {
@@ -191,16 +198,23 @@ describe('create / edit', function () {
 
 describe('store', function () {
     test('store creates volume with valid data', function () {
-        postJson(action([VolumesController::class, 'store']), [
-            'name' => 'New Volume',
-            'handle' => 'newVolume',
-            'fsHandle' => 'disk:test-disk',
-        ])->assertOk();
+        $response = postJson(
+            action([VolumesController::class, 'store']),
+            [
+                'name' => 'New Volume',
+                'handle' => 'newVolume',
+                'fsHandle' => 'disk:test-disk',
+                'assetTransformer' => 'craft',
+            ],
+            ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+        );
 
         app()->forgetInstance(Volumes::class);
         $volume = app(Volumes::class)->getVolumeByHandle('newVolume');
         expect($volume)->not()->toBeNull();
-        expect($volume->name)->toBe('New Volume');
+        expect($volume->name)->toBe('New Volume')
+            ->and($volume->getAssetTransformerHandle(false))->toBe('craft');
+        $response->assertRedirect(Url::cpUrl("settings/assets/volumes/{$volume->id}"));
     });
 
     test('store updates existing volume', function () {
@@ -224,6 +238,16 @@ describe('store', function () {
             'handle' => '',
             'fsHandle' => '',
         ])->assertUnprocessable();
+    });
+
+    test('store validates the Asset Transformer reference shape', function () {
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'Invalid Transform Volume',
+            'handle' => 'invalidTransformVolume',
+            'fsHandle' => 'disk:test-disk',
+            'assetTransformer' => [],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('assetTransformer');
     });
 
     test('store validates changes made by saving event listeners', function () {

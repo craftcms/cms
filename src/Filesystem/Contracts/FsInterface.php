@@ -15,8 +15,7 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  * @property string|null $name
  * @property string|null $handle
  * @property string|null $oldHandle
- * @property bool $hasUrls
- * @property string|null $url
+ * @property-read string|null $rootUrl
  * @property string|null $uid
  *
  * @phpstan-require-extends Filesystem
@@ -31,12 +30,7 @@ interface FsInterface extends ConfigurableComponentInterface, SavableComponentIn
     public function getDiskConfig(): array;
 
     /**
-     * Returns whether the “Files in this filesystem have public URLs” setting should be shown.
+     * Returns the root URL for this filesystem, if it has one.
      */
-    public function getShowHasUrlSetting(): bool;
-
-    /**
-     * Returns whether the “Base URL” setting should be shown.
-     */
-    public function getShowUrlSetting(): bool;
+    public function getRootUrl(): ?string;
 }

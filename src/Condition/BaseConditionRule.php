@@ -7,10 +7,15 @@ namespace CraftCms\Cms\Condition;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\DateTime;
+use CraftCms\Cms\Form\Controls\Hidden;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Action;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Url;
 use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
@@ -19,7 +24,6 @@ use function CraftCms\Cms\t;
  * BaseConditionRule provides a base implementation for condition rules.
  *
  * @property bool $isNew Whether the rule is new
- * @property-read string $html The rule’s HTML for a condition builder
  * @property-read string $uiLabel The rule’s option label
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
@@ -92,20 +96,19 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         get => $this->getConfig();
     }
 
-    public string $html {
-        get => $this->getHtml();
-    }
-
     public function __construct(object|array $config = [])
     {
         parent::__construct($config);
 
-        if (! isset($this->uid)) {
-            $this->uid = Str::uuid()->toString();
-        }
+        $this->uid ??= Str::uuid()->toString();
     }
 
     public static function supportsProjectConfig(): bool
+    {
+        return true;
+    }
+
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
     {
         return true;
     }
@@ -135,7 +138,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return null;
     }
 
-    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [
@@ -161,11 +163,13 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * Returns the input HTML.
+     * Returns the value fields.
+     *
+     * @return list<Node>
      */
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        return '';
+        return [];
     }
 
     /**
@@ -191,33 +195,57 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         };
     }
 
-    public function getHtml(): string
+    /**
+     * @param  array<int|string, string|array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
+    protected function formOptions(array $options): array
+    {
+        return collect($options)
+            ->map(fn (string|array $option, int|string $value): array => is_array($option) ? $option : ['value' => (string) $value, 'label' => $option])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Rule fields sit inline beside the rule picker, which already names what's
+     * being matched, so their labels are only announced to screen readers.
+     * Date fields keep theirs visible, since “From” and “To” are otherwise
+     * indistinguishable.
+     */
+    public function getForm(FormContext $context = new FormContext): Form
+    {
+        $nodes = [
+            ...$this->operatorNodes(),
+            ...$this->inputNodes(),
+        ];
+
+        foreach ($nodes as $node) {
+            if ($node instanceof Field && ! $node->getControl() instanceof DateTime) {
+                $node->labelSrOnly();
+            }
+        }
+
+        return Form::make($nodes);
+    }
+
+    /** @return list<Node> */
+    protected function operatorNodes(): array
     {
         $operators = $this->operators();
+        $nodes = [];
 
-        return
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-start'],
-            ]).
-            (count($operators) > 1
-                ? (
-                    Html::hiddenLabel(t('Operator'), 'operator').
-                    FormFields::selectHtml([
-                        'id' => 'operator',
-                        'name' => 'operator',
-                        'value' => $this->operator,
-                        'options' => array_map(fn ($operator) => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators),
-                        'inputAttributes' => [
-                            'hx' => [
-                                'post' => $this->reloadOnOperatorChange ? Url::actionUrl('conditions/render') : false,
-                            ],
-                        ],
-                    ])
-                )
-                : Html::hiddenInput('operator', reset($operators))
-            ).
-            $this->inputHtml().
-            Html::endTag('div');
+        if (count($operators) > 1) {
+            $nodes[] = Field::make(t('Operator'), Choice::make('operator')
+                ->options(array_map(fn (string $operator): array => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators))
+                ->withoutPlaceholder()
+                ->value($this->operator)
+                ->reactive($this->reloadOnOperatorChange));
+        } elseif ($operators !== []) {
+            $nodes[] = Action::make(Hidden::make('operator')->value(reset($operators)));
+        }
+
+        return $nodes;
     }
 
     #[\Override]

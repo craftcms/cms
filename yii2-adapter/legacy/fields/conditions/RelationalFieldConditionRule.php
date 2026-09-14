@@ -1,17 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\fields\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Relational field condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule} instead.
-     */
-    class RelationalFieldConditionRule extends \CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule
+use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyElementSelectConditionRule;
+use RuntimeException;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule instead. */
+class RelationalFieldConditionRule extends \CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule
+{
+    use LegacyElementSelectConditionRule {
+        inputHtml as private baseInputHtml;
+    }
+
+    protected function inputHtml(): string
     {
+        if (!$this->field() instanceof BaseRelationField) {
+            throw new RuntimeException();
+        }
+
+        return match ($this->operator) {
+            self::OPERATOR_RELATED_TO => $this->baseInputHtml(),
+            default => '',
+        };
     }
 }

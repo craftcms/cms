@@ -395,10 +395,9 @@ class EntryTypes
                     ->where('entries.deletedWithEntryType', true)
                     ->get();
 
-                /** @var Entry[][] $entriesBySection */
-                $entriesBySection = $entries->groupBy('sectionId')->all();
+                $entriesBySection = $entries->groupBy('sectionId');
                 foreach ($entriesBySection as $sectionEntries) {
-                    Elements::restoreElements($sectionEntries);
+                    Elements::restoreElements($sectionEntries->all());
                 }
             });
         }
@@ -506,16 +505,6 @@ class EntryTypes
                 'elements.dateDeleted',
             ]);
 
-            DB::table(Table::ELEMENTS, 'elements')
-                ->whereIn(
-                    'elements.id',
-                    DB::table(Table::ENTRIES, 'entries')
-                        ->where('entries.typeId', $entryType->id)
-                        ->select('entries.id'),
-                )
-                ->where($condition)
-                ->softDelete();
-
             DB::table(Table::ENTRIES, 'entries')
                 ->whereIn(
                     'entries.id',
@@ -527,6 +516,17 @@ class EntryTypes
                 ->update([
                     'deletedWithEntryType' => true,
                 ]);
+
+            DB::table(Table::ELEMENTS, 'elements')
+                ->whereIn(
+                    'elements.id',
+                    DB::table(Table::ENTRIES, 'entries')
+                        ->where('entries.typeId', $entryType->id)
+                        ->where('entries.deletedWithEntryType', true)
+                        ->select('entries.id'),
+                )
+                ->where($condition)
+                ->softDelete();
 
             // Delete the field layout
             if ($entryTypeModel->fieldLayoutId) {

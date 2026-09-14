@@ -1,16 +1,16 @@
 import {css} from 'lit';
+import {baseComboboxStyles} from '@src/styles/form.styles';
 
 export default css`
   :host {
+    ${baseComboboxStyles}
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--c-spacing-sm);
-    width: 100%;
     cursor: pointer;
     padding-block: 0;
     padding-inline: var(--c-input-spacing-inline);
-    min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
     font: inherit;
     overflow: clip;
   }

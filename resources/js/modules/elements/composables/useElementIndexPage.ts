@@ -4,13 +4,13 @@ import {
   type RowSelectionState,
   useVueTable,
 } from '@tanstack/vue-table';
-import {computed, onMounted, onScopeDispose, ref} from 'vue';
+import {computed, onMounted, onScopeDispose, ref, shallowRef} from 'vue';
 import {
   type ElementIndexRow,
   useContentIndexData,
 } from '@/modules/elements/composables/useContentIndexData';
 import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
-import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
+import type {ConditionConfig} from '@/modules/conditions/types';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
 import {useElementIndexLoading} from '@/modules/elements/composables/useElementIndexLoading';
@@ -49,9 +49,9 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
   const elementIndex = useContentIndexData();
 
   const viewState = useElementIndexViewState(elementIndex);
-  const {conditions} = useConditionBuilder({
-    initialState: elementIndex.currentCondition ?? null,
-  });
+  const conditions = shallowRef<ConditionConfig | null>(
+    elementIndex.currentCondition ?? null
+  );
   const filters = useElementIndexFilters(
     elementIndex,
     viewState,
@@ -157,33 +157,6 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     refreshResults();
   }
 
-  function createCustomizeSourcesModal() {
-    // The modal was written for the legacy BaseElementIndex instance, but it
-    // only reads a few things off it: the element type (to load/save settings),
-    // the current `settings.page`, and the current/root source key (to preselect
-    // a row). Its save flow reloads the page, so `asyncSelectSourceByKey` /
-    // `$visibleSources` only need to be safe no-ops here.
-    const elementIndexShim = {
-      elementType: elementIndex.elementType,
-      settings: {page: elementIndex.page},
-      sourceKey: elementIndex.source?.key ?? null,
-      rootSourceKey: elementIndex.source?.key ?? null,
-      $visibleSources: {first: () => ({data: () => null})},
-      asyncSelectSourceByKey: () => Promise.resolve(),
-    };
-
-    // Recreate it each time, mirroring the legacy implementation.
-    const modal = new Craft.CustomizeSourcesModal(elementIndexShim, {
-      hideOnEsc: false,
-      hideOnShadeClick: false,
-      onFadeOut: function () {
-        modal.destroy();
-      },
-    });
-
-    return modal;
-  }
-
   const elementTable = useVueTable<ElementIndexRow>({
     get data() {
       return elementIndex.data ?? [];
@@ -251,6 +224,5 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     rowSelection,
     refreshResults,
     onActionPerformed,
-    createCustomizeSourcesModal,
   };
 }

@@ -48,5 +48,5 @@ it('returns 400 when action params fail validation', function () {
         'elementType' => Entry::class,
         'elementAction' => SetStatus::class,
         'elementIds' => [$entry->id],
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });

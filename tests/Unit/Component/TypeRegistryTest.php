@@ -62,8 +62,6 @@ use CraftCms\Cms\Gql\Directives\StripTags;
 use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\GqlDirectives;
-use CraftCms\Cms\Image\ImageTransformer;
-use CraftCms\Cms\Image\ImageTransformers;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -148,9 +146,6 @@ it('contains its built-in types in order', function (string $registry, array $ex
     'filesystems' => [FilesystemTypes::class, [
         Local::class,
     ]],
-    'image transformers' => [ImageTransformers::class, [
-        ImageTransformer::class,
-    ]],
     'link types' => [LinkTypes::class, [
         LinkAsset::class,
         LinkEmail::class,
@@ -213,7 +208,6 @@ it('rejects types that do not satisfy the registry contract', function (string $
     'widgets' => WidgetTypes::class,
     'utilities' => UtilityTypes::class,
     'filesystems' => FilesystemTypes::class,
-    'image transformers' => ImageTransformers::class,
     'link types' => LinkTypes::class,
     'gql directives' => GqlDirectives::class,
 ]);

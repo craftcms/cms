@@ -50,7 +50,10 @@ export class CustomSelect extends Base<CustomSelectSettings> {
   private _optionSearchText = new WeakMap<HTMLElement, string>();
   private _anim: Animation | null = null;
 
-  constructor(container?: ElementInput, settings?: Partial<CustomSelectSettings>) {
+  constructor(
+    container?: ElementInput,
+    settings?: Partial<CustomSelectSettings>
+  ) {
     super();
     if (new.target === CustomSelect) {
       this.init(container, settings);
@@ -160,9 +163,7 @@ export class CustomSelect extends Base<CustomSelectSettings> {
 
     this.removeAllListeners(added);
     this.addListener(added, 'click', (ev) => {
-      this.selectOption(
-        (ev as unknown as Event).currentTarget as HTMLElement
-      );
+      this.selectOption((ev as unknown as Event).currentTarget as HTMLElement);
     });
   }
 
@@ -204,8 +205,7 @@ export class CustomSelect extends Base<CustomSelectSettings> {
 
     // Is there room for the menu below the anchor?
     const topClearance = anchorOffset.top - windowScrollTop;
-    const bottomClearance =
-      windowHeight + windowScrollTop - anchorOffsetBottom;
+    const bottomClearance = windowHeight + windowScrollTop - anchorOffsetBottom;
 
     if (
       bottomClearance >= menuHeight ||
@@ -244,7 +244,12 @@ export class CustomSelect extends Base<CustomSelectSettings> {
         ((align === 'right' && leftClearance >= 0) || rightClearance < 0) &&
         menuWidth < anchorOffset.left + anchorWidth
       ) {
-        this._alignRight(anchorOffset.left, anchorWidth, menuWidth, windowWidth);
+        this._alignRight(
+          anchorOffset.left,
+          anchorWidth,
+          menuWidth,
+          windowWidth
+        );
       } else {
         this._alignLeft(anchorOffset.left, menuWidth, windowWidth);
       }
@@ -306,7 +311,10 @@ export class CustomSelect extends Base<CustomSelectSettings> {
     };
 
     this._anim?.cancel();
-    if (prefersReducedMotion() || typeof this.$container.animate !== 'function') {
+    if (
+      prefersReducedMotion() ||
+      typeof this.$container.animate !== 'function'
+    ) {
       finalize();
     } else {
       const anim = this.$container.animate([{opacity: 1}, {opacity: 0}], {

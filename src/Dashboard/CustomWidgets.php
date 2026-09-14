@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use League\CommonMark\Extension\FrontMatter\Data\SymfonyYamlFrontMatterParser;
 use League\CommonMark\Extension\FrontMatter\FrontMatterParser;
 use Symfony\Component\Finder\SplFileInfo;
+use UnexpectedValueException;
 
 #[Singleton]
 class CustomWidgets
@@ -41,10 +42,17 @@ class CustomWidgets
             return $this->definitions = Collection::make();
         }
 
+        try {
+            $files = File::files($path, hidden: true);
+        } catch (UnexpectedValueException) {
+            // the directory was removed between the is_dir() check and now
+            return $this->definitions = Collection::make();
+        }
+
         $definitions = Collection::make();
         $handles = [];
 
-        foreach (File::files($path, hidden: true) as $file) {
+        foreach ($files as $file) {
             if (strtolower($file->getExtension()) !== 'md') {
                 continue;
             }

@@ -49,7 +49,7 @@ it('returns bad request when creating under a missing parent folder', function (
     postJson(action([FolderController::class, 'create']), [
         'parentId' => 999999,
         'folderName' => 'New Folder',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('can delete a folder', function () {
@@ -72,7 +72,7 @@ it('validates delete folder input', function () {
 it('returns bad request when deleting a missing folder', function () {
     postJson(action([FolderController::class, 'delete']), [
         'folderId' => 999999,
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('validates rename folder input', function () {
@@ -84,7 +84,7 @@ it('returns bad request when renaming a missing folder', function () {
     postJson(action([FolderController::class, 'rename']), [
         'folderId' => 999999,
         'newName' => 'Renamed Folder',
-    ])->assertStatus(400);
+    ])->assertBadRequest();
 });
 
 it('can rename a folder', function () {
@@ -120,8 +120,7 @@ it('returns bad request when moving a missing folder', function (bool $missingSo
         ? ['folderId' => 999999, 'parentId' => $this->folder->id]
         : ['folderId' => $this->folder->id, 'parentId' => 999999];
 
-    postJson(action([FolderController::class, 'move']), $payload)
-        ->assertStatus(400);
+    postJson(action([FolderController::class, 'move']), $payload)->assertBadRequest();
 })->with([
     'missing source' => true,
     'missing destination' => false,

@@ -150,7 +150,7 @@ test('edit loads existing filesystem by handle', function () {
         'settings' => [
             'path' => sys_get_temp_dir().'/test-filesystem',
             'hasUrls' => false,
-            'url' => '@web/uploads',
+            'url' => 'https://example.test/uploads',
         ],
     ]);
 
@@ -164,7 +164,7 @@ test('edit loads existing filesystem by handle', function () {
             ->where('form.values.handle', 'testFilesystem')
             ->where('form.values.oldHandle', 'testFilesystem')
             ->where('form.values.settings.path', File::normalizePath(sys_get_temp_dir().'/test-filesystem', '/'))
-            ->where('form.values.settings.url', '@web/uploads')
+            ->where('form.values.settings.url', 'https://example.test/uploads')
             ->where('form.nodes', fn ($nodes): bool => collect(filesystemFormControls(collect($nodes)->all()))
                 ->pluck('path')
                 ->doesntContain(['settings', 'url'])));
@@ -188,14 +188,18 @@ test('edit renders existing filesystems as read-only when admin changes are disa
 });
 
 test('save creates filesystem with valid data', function () {
-    postJson(action([FilesystemsController::class, 'store']), [
-        'type' => Local::class,
-        'name' => 'New Test Filesystem',
-        'handle' => 'newTestFilesystem',
-        'settings' => [
-            'path' => sys_get_temp_dir().'/test-uploads',
+    $response = postJson(
+        action([FilesystemsController::class, 'store']),
+        [
+            'type' => Local::class,
+            'name' => 'New Test Filesystem',
+            'handle' => 'newTestFilesystem',
+            'settings' => [
+                'path' => sys_get_temp_dir().'/test-uploads',
+            ],
         ],
-    ])->assertOk();
+        ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+    );
 
     $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
     expect($fs)->not()->toBeNull()
@@ -203,6 +207,7 @@ test('save creates filesystem with valid data', function () {
         ->and($fs->getSettings())->toMatchArray([
             'path' => File::normalizePath(sys_get_temp_dir().'/test-uploads', '/'),
         ]);
+    $response->assertRedirect(Url::cpUrl("settings/filesystems/{$fs->handle}"));
 });
 
 test('refreshes filesystem settings without saving', function () {
@@ -214,7 +219,7 @@ test('refreshes filesystem settings without saving', function () {
             'oldHandle' => null,
             'settings' => [
                 'hasUrls' => true,
-                'url' => '@web/uploads',
+                'url' => 'https://example.test/uploads',
                 'path' => sys_get_temp_dir().'/uploads',
             ],
         ],
@@ -222,7 +227,7 @@ test('refreshes filesystem settings without saving', function () {
     ])->assertOk()
         ->assertJsonPath('form.scope', [])
         ->assertJsonPath('form.values.name', 'Uploads')
-        ->assertJsonPath('form.values.settings.url', '@web/uploads');
+        ->assertJsonPath('form.values.settings.url', 'https://example.test/uploads');
 
     expect(Filesystems::getFilesystemByHandle('uploads'))->toBeNull();
 });
@@ -235,7 +240,7 @@ test('refresh omits controls that do not apply to the current settings', functio
         'oldHandle' => null,
         'settings' => [
             'hasUrls' => false,
-            'url' => '@web/uploads',
+            'url' => 'https://example.test/uploads',
             'path' => sys_get_temp_dir().'/uploads',
         ],
     ];
@@ -320,9 +325,32 @@ test('save returns failure on invalid data', function () {
         'settings' => [],
     ]);
 
-    $response
-        ->assertStatus(400)
+    $response->assertBadRequest()
         ->assertJsonStructure(['errors' => ['name', 'handle', 'settings.path']]);
+});
+
+test('save rejects missing environment variables for required settings', function () {
+    postJson(action([FilesystemsController::class, 'store']), [
+        'type' => Local::class,
+        'name' => 'Missing Path',
+        'handle' => 'missingPath',
+        'settings' => [
+            'path' => '$FILESYSTEM_SETTINGS_MISSING',
+        ],
+    ])->assertBadRequest()
+        ->assertJsonStructure(['errors' => ['settings.path']]);
+
+    postJson(action([FilesystemsController::class, 'store']), [
+        'type' => Local::class,
+        'name' => 'Missing URL',
+        'handle' => 'missingUrl',
+        'settings' => [
+            'hasUrls' => true,
+            'url' => '$FILESYSTEM_SETTINGS_MISSING',
+            'path' => sys_get_temp_dir().'/missing-url',
+        ],
+    ])->assertBadRequest()
+        ->assertJsonStructure(['errors' => ['settings.url']]);
 });
 
 test('delete removes filesystem successfully', function () {

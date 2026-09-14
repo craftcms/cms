@@ -1,5 +1,6 @@
-import {css, html} from 'lit';
-import {state} from 'lit/decorators.js';
+import {css, html, type PropertyValues} from 'lit';
+import {property, state} from 'lit/decorators.js';
+import {baseFormControlStyles} from '@src/styles/form.styles';
 import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
@@ -20,6 +21,12 @@ import '../button/button.js';
  *   own replaces it.
  */
 export default class CraftInputPassword extends CraftInput {
+  /**
+   * Rules for a password manager generating a password, passed through to the
+   * native input's `passwordrules` attribute.
+   */
+  @property({attribute: 'passwordrules'}) passwordRules = '';
+
   @state()
   protected _visible = false;
 
@@ -36,6 +43,19 @@ export default class CraftInputPassword extends CraftInput {
           inset-inline-end: var(--c-input-spacing-inline);
           inset-block-start: 50%;
           transform: translateY(calc(-50%));
+          border: none;
+        }
+
+        ::slotted(.form-control) {
+          ${baseFormControlStyles}
+          --_input-end-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
+          --_input-start-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
         }
       `,
     ];
@@ -50,6 +70,29 @@ export default class CraftInputPassword extends CraftInput {
   constructor() {
     super();
     this.type = 'password';
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.#syncPasswordRules();
+  }
+
+  override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+
+    if (changedProperties.has('passwordRules')) {
+      this.#syncPasswordRules();
+    }
+  }
+
+  #syncPasswordRules() {
+    if (this.passwordRules) {
+      this._inputNode?.setAttribute('passwordrules', this.passwordRules);
+
+      return;
+    }
+
+    this._inputNode?.removeAttribute('passwordrules');
   }
 
   protected reveal = () => {

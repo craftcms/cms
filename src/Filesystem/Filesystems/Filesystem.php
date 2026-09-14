@@ -7,15 +7,16 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
+use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use Illuminate\Validation\Rule;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-abstract class Filesystem extends Component implements FsInterface
+abstract class Filesystem extends Component implements CpEditable, FsInterface
 {
     use ConfigurableComponent;
     use SavableComponent;
@@ -30,50 +31,26 @@ abstract class Filesystem extends Component implements FsInterface
 
     public const string VISIBILITY_PUBLIC = 'public';
 
-    /**
-     * Whether the “Files in this filesystem have public URLs” setting should be shown.
-     */
-    protected static bool $showHasUrlSetting = true;
-
-    /**
-     * Whether the “Base URL” setting should be shown.
-     */
-    protected static bool $showUrlSetting = true;
-
     public ?string $name = null;
 
     public ?string $handle = null;
 
     public ?string $oldHandle = null;
 
-    public bool $hasUrls = false;
-
-    public ?string $url = null;
-
     public ?string $uid = null;
-
-    public ?string $rootUrl {
-        get => $this->getRootUrl();
-        set {
-        }
-    }
 
     public function getRootUrl(): ?string
     {
-        if (! $this->hasUrls) {
+        return null;
+    }
+
+    public function getCpEditUrl(): ?string
+    {
+        if (! $this->handle || ! currentUser()?->isAdmin()) {
             return null;
         }
 
-        $url = Env::parse($this->url);
-        if (is_string($url)) {
-            $url = rtrim($url, '/');
-        }
-
-        if ($url) {
-            return "$url/";
-        }
-
-        return null;
+        return Url::cpUrl("settings/filesystems/{$this->handle}");
     }
 
     abstract public function getDiskConfig(): array;
@@ -84,18 +61,7 @@ abstract class Filesystem extends Component implements FsInterface
         return [
             'handle' => t('Handle'),
             'name' => t('Name'),
-            'url' => t('Base URL'),
         ];
-    }
-
-    public function getShowHasUrlSetting(): bool
-    {
-        return static::$showHasUrlSetting;
-    }
-
-    public function getShowUrlSetting(): bool
-    {
-        return static::$showUrlSetting;
     }
 
     #[Override]
@@ -116,12 +82,6 @@ abstract class Filesystem extends Component implements FsInterface
                     'title',
                     'uid',
                 ]),
-            ],
-            'url' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::requiredIf(fn () => $this->hasUrls && $this->getShowUrlSetting()),
             ],
         ];
     }

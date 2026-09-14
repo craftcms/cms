@@ -5,10 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\UserAuthenticating;
-use CraftCms\Cms\Auth\Passkeys\CredentialRepository;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
-use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -16,10 +13,6 @@ use Illuminate\Support\Facades\Event;
 use Symfony\Component\Uid\Uuid;
 use Webauthn\CredentialRecord;
 use Webauthn\TrustPath\EmptyTrustPath;
-
-beforeEach(function () {
-    Cms::config()->isSystemLive = true;
-});
 
 test('authenticateWithPasskey enforces user status after a valid response', function (
     array $elementAttributes,
@@ -44,27 +37,12 @@ test('authenticateWithPasskey enforces user status after a valid response', func
 
     $passkeys = mockAuthPasskeys();
 
-    $credentialRepository = Mockery::mock(CredentialRepository::class);
-    $credentialRepository
-        ->shouldReceive('saveCredentialSource')
-        ->once()
-        ->with($updatedCredentialSource);
-
-    $webauthnServer = Mockery::mock(WebauthnServer::class);
-    $webauthnServer
-        ->shouldReceive('getCredentialRepository')
-        ->once()
-        ->andReturn($credentialRepository);
-
     $passkeys
         ->shouldReceive('verifyPasskey')
         ->once()
         ->with(Mockery::type(UserElement::class), $requestOptions, $response)
         ->andReturn($updatedCredentialSource);
-    $passkeys
-        ->shouldReceive('webauthnServer')
-        ->once()
-        ->andReturn($webauthnServer);
+    $passkeys->shouldNotReceive('webauthnServer');
 
     $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
@@ -112,27 +90,12 @@ test('authenticateWithPasskey does not persist a prior result when a replay is r
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'valid-credential-id', 'response' => 'valid-response']);
 
-    $credentialRepository = Mockery::mock(CredentialRepository::class);
-    $credentialRepository
-        ->shouldReceive('saveCredentialSource')
-        ->once()
-        ->with($updatedCredentialSource);
-
-    $webauthnServer = Mockery::mock(WebauthnServer::class);
-    $webauthnServer
-        ->shouldReceive('getCredentialRepository')
-        ->once()
-        ->andReturn($credentialRepository);
-
     $passkeys = mockAuthPasskeys();
     $passkeys
         ->shouldReceive('verifyPasskey')
         ->twice()
         ->andReturn($updatedCredentialSource, false);
-    $passkeys
-        ->shouldReceive('webauthnServer')
-        ->once()
-        ->andReturn($webauthnServer);
+    $passkeys->shouldNotReceive('webauthnServer');
 
     $authMethods = app(AuthMethods::class);
 
@@ -148,13 +111,6 @@ test('authenticateWithPasskey keeps credential results scoped to concurrent atte
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $firstResponse = Json::encode(['id' => 'first-credential-id', 'response' => 'first-response']);
     $secondResponse = Json::encode(['id' => 'second-credential-id', 'response' => 'second-response']);
-
-    $credentialRepository = Mockery::mock(CredentialRepository::class);
-    $credentialRepository->shouldReceive('saveCredentialSource')->once()->with($firstCredentialSource);
-    $credentialRepository->shouldReceive('saveCredentialSource')->once()->with($secondCredentialSource);
-
-    $webauthnServer = Mockery::mock(WebauthnServer::class);
-    $webauthnServer->shouldReceive('getCredentialRepository')->twice()->andReturn($credentialRepository);
 
     $passkeys = mockAuthPasskeys();
     $passkeys
@@ -173,7 +129,7 @@ test('authenticateWithPasskey keeps credential results scoped to concurrent atte
 
             return $secondCredentialSource;
         });
-    $passkeys->shouldReceive('webauthnServer')->twice()->andReturn($webauthnServer);
+    $passkeys->shouldNotReceive('webauthnServer');
 
     $authMethods = app(AuthMethods::class);
 

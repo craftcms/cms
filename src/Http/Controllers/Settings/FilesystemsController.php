@@ -188,8 +188,6 @@ class FilesystemsController
         if ($oldFilesystem && is_a($oldFilesystem, $type)) {
             $settings = [
                 ...$oldFilesystem->getSettings(),
-                'hasUrls' => $oldFilesystem->hasUrls,
-                'url' => $oldFilesystem->url,
                 ...$settings,
             ];
         }
@@ -202,6 +200,6 @@ class FilesystemsController
     {
         $filesystem = $this->filesystems->createFilesystem(['type' => $type]);
 
-        return [...$filesystem->settingsAttributes(), 'hasUrls', 'url'];
+        return $filesystem->settingsAttributes();
     }
 }

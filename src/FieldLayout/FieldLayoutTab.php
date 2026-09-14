@@ -189,9 +189,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getConfig(): array
     {
-        if (! isset($this->uid)) {
-            $this->uid = Str::uuid()->toString();
-        }
+        $this->uid ??= Str::uuid()->toString();
 
         $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
@@ -209,9 +207,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         $elementConfigs = [];
 
         foreach ($this->getElements() as $layoutElement) {
-            if (! isset($layoutElement->uid)) {
-                $layoutElement->uid = Str::uuid()->toString();
-            }
+            $layoutElement->uid ??= Str::uuid()->toString();
 
             $elementConfigs[] = $layoutElement instanceof Missing
                 ? ['type' => $layoutElement->expectedType] + ($layoutElement->settings ?? [])

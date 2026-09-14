@@ -53,7 +53,9 @@ import './dashboard.scss';
 
     getTypeInfo: function (type, property, defaultValue) {
       if (property) {
-        if (typeof this.widgetTypes[type][property] === 'undefined') {
+        // Some type info properties (e.g. settingsHtml/settingsJs) are sent as `null`
+        // rather than omitted, so treat null the same as undefined here.
+        if (!this.widgetTypes[type][property]) {
           return defaultValue;
         } else {
           return this.widgetTypes[type][property];
@@ -407,7 +409,7 @@ import './dashboard.scss';
       this.storedSettings = storedSettings;
 
       this.$settingsToggle = this.$container.find('[data-settings-toggle]');
-      this.$gridItem = this.$container.parent();
+      this.$gridItem = this.$container.closest('.item');
 
       // Store a reference to this object on the container element
       this.$container.data('widget', this);
@@ -423,11 +425,13 @@ import './dashboard.scss';
       }
 
       this.$front = this.$container.children('.front');
-      this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
-      this.$heading = this.$front.find('> .pane > .widget-heading');
+      const $pane = this.$front.children('.pane, craft-pane');
+
+      this.$settingsBtn = $pane.children('.icon.settings, .widget-settings-button');
+      this.$heading = $pane.children('.widget-heading');
       this.$title = this.$heading.find('> h2');
       this.$subtitle = this.$heading.find('> h5');
-      this.$bodyContainer = this.$front.find('> .pane > .body');
+      this.$bodyContainer = $pane.children('.body');
 
       this.setSettings(settingsHtml, initSettingsFn, settingsForm);
 

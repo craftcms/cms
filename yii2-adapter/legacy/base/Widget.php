@@ -5,10 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\base;
 
 use CraftCms\Cms\Dashboard\Dashboard;
-use function CraftCms\Cms\craftAsset;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -133,19 +134,5 @@ abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboar
     public function getSubtitle(): ?string
     {
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getBodyHtml(): ?string
-    {
-        $url = craftAsset('legacy/cp/dist/images/prg.jpg');
-
-        return <<<EOD
-<div style="margin: 0 -24px -24px;">
-    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="$url">
-</div>
-EOD;
     }
 }

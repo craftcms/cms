@@ -12,13 +12,12 @@ use CraftCms\Cms\Console\Commands\IdeHelper\GenerateCustomFieldsCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
+use CraftCms\Cms\Console\Commands\RouteCacheCommand;
 use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
 use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
-use CraftCms\Cms\Console\Commands\System\OffCommand;
-use CraftCms\Cms\Console\Commands\System\OnCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
@@ -41,6 +40,8 @@ class ConsoleServiceProvider extends ServiceProvider
 {
     /** @var list<class-string> */
     private array $commands = [
+        RouteCacheCommand::class,
+
         // Install
         UpCommand::class,
         InstallCommand::class,
@@ -52,10 +53,6 @@ class ConsoleServiceProvider extends ServiceProvider
         SetupCommand::class,
         CloudCommand::class,
         PublishCommand::class,
-
-        // System
-        OffCommand::class,
-        OnCommand::class,
 
         // Env
         EnvShowCommand::class,

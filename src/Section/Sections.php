@@ -464,13 +464,11 @@ class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        if (! isset($this->sectionSiteSettings[$sectionId])) {
-            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
-                ->where('sections_sites.sectionId', $sectionId)
-                ->get()
-                ->mapInto(SectionSiteSettings::class)
-                ->all();
-        }
+        $this->sectionSiteSettings[$sectionId] ??= $this->_createSectionSiteSettingsQuery()
+            ->where('sections_sites.sectionId', $sectionId)
+            ->get()
+            ->mapInto(SectionSiteSettings::class)
+            ->all();
 
         return $this->sectionSiteSettings[$sectionId];
     }
@@ -832,15 +830,14 @@ class Sections
                 ->where('entries.deletedWithSection', true)
                 ->get();
 
-            /** @var Entry[][] $entriesByType */
-            $entriesByType = $entries->groupBy('typeId')->all();
+            $entriesByType = $entries->groupBy('typeId');
             foreach ($entriesByType as $typeEntries) {
                 try {
-                    array_walk($typeEntries, function (Entry $entry) {
+                    $typeEntries->each(function (Entry $entry) {
                         $entry->deletedWithSection = false;
                     });
 
-                    $this->elements->restoreElements($typeEntries);
+                    $this->elements->restoreElements($typeEntries->all());
                 } catch (RuntimeException) {
                     // the entry type probably wasn't restored
                 }
@@ -913,9 +910,7 @@ class Sections
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
-        if ($siteSettings === null) {
-            $siteSettings = $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
-        }
+        $siteSettings ??= $this->projectConfig->get(ProjectConfig::PATH_SECTIONS.'.'.$section->uid.'.siteSettings');
 
         if (empty($siteSettings)) {
             throw new Exception('No site settings exist for section '.$section->id);
@@ -1120,16 +1115,6 @@ class Sections
                 'elements.dateDeleted',
             ]);
 
-            DB::table(Table::ELEMENTS, 'elements')
-                ->whereIn(
-                    'elements.id',
-                    DB::table(Table::ENTRIES, 'entries')
-                        ->where('entries.sectionId', $section->id)
-                        ->select('entries.id'),
-                )
-                ->where($condition)
-                ->softDelete();
-
             DB::table(Table::ENTRIES, 'entries')
                 ->whereIn(
                     'entries.id',
@@ -1139,6 +1124,17 @@ class Sections
                 )
                 ->where('entries.sectionId', $section->id)
                 ->update(['deletedWithSection' => true]);
+
+            DB::table(Table::ELEMENTS, 'elements')
+                ->whereIn(
+                    'elements.id',
+                    DB::table(Table::ENTRIES, 'entries')
+                        ->where('entries.sectionId', $section->id)
+                        ->where('entries.deletedWithSection', true)
+                        ->select('entries.id'),
+                )
+                ->where($condition)
+                ->softDelete();
 
             // Delete the structure
             if ($sectionModel->structureId) {

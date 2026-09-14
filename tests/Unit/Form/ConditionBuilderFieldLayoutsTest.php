@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\Conditions;
+use Symfony\Component\DomCrawler\Crawler;
 
 it('advertises field layouts on the resolved payload', function () {
     $layout = ['type' => Entry::class, 'tabs' => []];
@@ -60,4 +61,25 @@ it('renders a builder for a condition seeded with field layouts', function () {
     );
 
     expect($html)->toContain('elementCondition');
+});
+
+it('applies a custom add-rule label to the builder', function () {
+    $control = ConditionBuilder::make('condition')
+        ->conditionClass(ElementCondition::class)
+        ->addRuleLabel('Add a filter');
+
+    expect($control->props()['addRuleLabel'])->toBe('Add a filter')
+        ->and(ConditionBuilder::make('condition')->conditionClass(ElementCondition::class)->props())
+        ->not->toHaveKey('addRuleLabel')
+        ->and(ConditionBuilder::builderHtml([], ElementCondition::class, [], true, 'condition', false, [], 'Add a filter'))
+        ->toContain('Add a filter');
+});
+
+it('mounts a disabled builder with its fully namespaced input name', function () {
+    $html = ConditionBuilder::builderHtml([], ElementCondition::class, [], true, 'settings[selectionCondition]', true);
+    $crawler = new Crawler($html);
+    $host = $crawler->filter('craft-condition-builder');
+
+    expect($host->attr('data-name'))->toBe('settings[selectionCondition]')
+        ->and($host->attr('data-editable'))->toBe('0');
 });

@@ -82,7 +82,7 @@ abstract class Job implements DescribableJob, ShouldQueue
     /**
      * Determines if the job should still run.
      *
-     * Returns false if the job's progress entry was deleted (cancelled).
+     * Returns false if the job's progress entry is missing or cancelled.
      * Jobs can override this to add custom cancellation logic.
      */
     public function shouldStillRun(): bool

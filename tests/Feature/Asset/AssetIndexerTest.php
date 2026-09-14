@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Facades\AssetIndexer as AssetIndexerFacade;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -143,6 +144,46 @@ it('can store an index list from a generator', function () {
     expect($entries[2]->uri)->toBe('document.pdf');
     expect($entries[2]->isDir)->toBeFalse();
 });
+
+it('stores bounded batches in order with one timestamp', function (int $total) {
+    $this->freezeSecond();
+    $volume = resolveIndexerVolumeData(createIndexerTestVolume());
+    $session = $this->indexer->createIndexingSession([$volume]);
+    $started = now();
+    $listings = (function () use ($total) {
+        for ($i = 0; $i < $total; $i++) {
+            if ($i === 1000) {
+                expect(AssetIndexData::count())->toBeGreaterThan(0);
+                $this->travel(1)->second();
+            }
+            yield new FsListing(['basename' => ($i % 1000).'.txt', 'type' => 'file']);
+        }
+    })();
+
+    expect($this->indexer->storeIndexList($listings, $session->id, $volume))->toBe($total);
+    $entries = AssetIndexData::orderBy('id')->get();
+    expect($entries->pluck('uri')->all())->toBe(array_map(fn ($i) => ($i % 1000).'.txt', $total ? range(0, $total - 1) : []));
+    expect($entries->pluck('dateCreated')->map->getTimestamp()->unique()->all())->toBe($total ? [$started->getTimestamp()] : []);
+})->with([0, 1003]);
+
+it('rolls back earlier batches when listing or database work fails', function (bool $databaseFailure) {
+    $volume = resolveIndexerVolumeData(createIndexerTestVolume());
+    $session = $this->indexer->createIndexingSession([$volume]);
+    $listings = (function () use ($databaseFailure) {
+        for ($i = 0; $i < 1000; $i++) {
+            yield new FsListing(['basename' => "$i.txt", 'type' => 'file']);
+        }
+        expect(AssetIndexData::count())->toBeGreaterThan(0);
+        if ($databaseFailure) {
+            DB::statement('SELECT * FROM nonexistent_asset_index_table');
+        }
+        throw new RuntimeException('Listing failed');
+    })();
+
+    expect(fn () => $this->indexer->storeIndexList($listings, $session->id, $volume))
+        ->toThrow($databaseFailure ? QueryException::class : RuntimeException::class, $databaseFailure ? 'nonexistent_asset_index_table' : 'Listing failed');
+    expect(AssetIndexData::count())->toBe(0);
+})->with([false, true]);
 
 it('can get the next index entry', function () {
     $volume = createIndexerTestVolume();

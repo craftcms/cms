@@ -29,6 +29,7 @@ import {
     _form = null;
     _error = null;
     _errors = [];
+    ready = Promise.resolve();
 
     set node(node) {
       this.control = node?.control ?? null;
@@ -62,7 +63,7 @@ import {
       this._fragmentKey = fragmentKey;
 
       if (this.isConnected) {
-        void this.mount();
+        this.ready = this.mount();
       }
     }
 
@@ -100,7 +101,7 @@ import {
       this._form?.addEventListener('submit', this.handleSubmit, true);
       this.addEventListener('input', this.handleInput);
       this.addEventListener('change', this.handleInput);
-      void this.mount();
+      this.ready = this.mount();
     }
 
     disconnectedCallback() {

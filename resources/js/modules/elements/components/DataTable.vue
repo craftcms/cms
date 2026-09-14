@@ -1,7 +1,16 @@
 <script setup lang="ts">
   import {type Column, FlexRender, type Table} from '@tanstack/vue-table';
   import {t} from '@craftcms/ui';
-  import {computed, type HTMLAttributes, ref, useId} from 'vue';
+  import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
+  import {
+    computed,
+    type HTMLAttributes,
+    nextTick,
+    ref,
+    useId,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
@@ -36,6 +45,7 @@
   }>();
 
   const page = usePage<{readOnly: boolean}>();
+  const loadingRef = useTemplateRef<CraftSpinner>('loading-ref');
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   const {
@@ -102,6 +112,54 @@
   function resolveMetaClasses(value: HTMLAttributes['class']) {
     return value;
   }
+
+  // Re-sorting reloads the index's data, and `loading` swaps the whole
+  // <table> out for the spinner while that happens (see `v-if="loading"`
+  // below), tearing down the sort button the user just pressed along with
+  // it. Move focus onto the spinner once it mounts — `craft-spinner` has
+  // its own internal tabindex="-1" wrapper and forwards `.focus()` to it —
+  // then return focus to the same column's sort button once the table
+  // remounts with the new data.
+  const pendingSortFocusHeaderId = ref<string | null>(null);
+
+  // `craft-spinner`'s default slot is its accessible name (a visually-hidden
+  // span) — without it, a screen reader announces nothing when focus lands
+  // there. Distinguish the sort-triggered reload from any other cause
+  // (filters, pagination, source switches, …) since only the former moves
+  // focus onto the spinner in the first place.
+  const loadingLabel = computed(() =>
+    pendingSortFocusHeaderId.value ? t('Sorting') : t('Loading')
+  );
+
+  function captureFocusedHeaderId(): string | null {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) return null;
+    const headerCell = active.closest<HTMLElement>('th[id^="header-"]');
+    return headerCell ? headerCell.id.slice('header-'.length) : null;
+  }
+
+  watch(
+    () => props.loading,
+    async (isLoading, wasLoading) => {
+      if (isLoading) {
+        pendingSortFocusHeaderId.value = captureFocusedHeaderId();
+        if (!pendingSortFocusHeaderId.value) return;
+        await nextTick();
+        loadingRef.value?.focus();
+        return;
+      }
+
+      if (wasLoading && pendingSortFocusHeaderId.value) {
+        const headerId = pendingSortFocusHeaderId.value;
+        pendingSortFocusHeaderId.value = null;
+        await nextTick();
+        document
+          .getElementById(`header-${headerId}`)
+          ?.querySelector<HTMLButtonElement>('button')
+          ?.focus();
+      }
+    }
+  );
 
   function getAriaSortAttribute(
     column: Column<any>
@@ -219,15 +277,11 @@
       }
     }
   }
-
-  function checkboxValue(event: Event): boolean {
-    return event.target instanceof HTMLInputElement && event.target.checked;
-  }
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-20" v-if="loading">
-    <craft-spinner></craft-spinner>
+  <div v-if="loading" class="grid place-items-center min-h-20">
+    <craft-spinner ref="loading-ref">{{ loadingLabel }}</craft-spinner>
   </div>
   <table
     v-else
@@ -339,6 +393,7 @@
             row: true,
             'cp-table-row': true,
             'cp-table-row--folder': isFolderRow(row.original),
+            sel: row.getIsSelected(),
             'row--dragging':
               !readOnly && getDragState(row.id).type === 'is-dragging',
           }"
@@ -429,11 +484,11 @@
     white-space: nowrap;
   }
 
-  :deep(.cell--header) {
+  :deep(.cp-table-cell--header) {
     white-space: nowrap;
   }
 
-  :deep(.cell--header[aria-sort]) {
+  :deep(.cp-table-cell--header[aria-sort]) {
     &:hover,
     &:focus-within {
       background-color: var(--c-color-neutral-fill-loud);
@@ -474,5 +529,13 @@
 
   .cp-table-row--folder {
     cursor: pointer;
+  }
+
+  // Selected rows take the accent fill a selected chip or thumbnail does, so a
+  // selection reads the same whichever view mode you're in. Painted on the
+  // cells rather than the row: a `<tr>` background loses to any the cells set.
+  :deep(.cp-table-row.sel > td) {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
   }
 </style>

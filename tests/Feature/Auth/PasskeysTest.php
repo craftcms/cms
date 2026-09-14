@@ -148,9 +148,12 @@ test('verifyPasskey returns the validated credential source', function () {
     $credentialRepository
         ->shouldReceive('findOneByCredentialId')
         ->once()
-        ->with('test-credential-id', false)
+        ->with('test-credential-id')
         ->andReturn($credentialRecord);
-    $credentialRepository->shouldNotReceive('saveCredentialSource');
+    $credentialRepository
+        ->shouldReceive('saveCredentialSource')
+        ->once()
+        ->with($updatedCredentialRecord);
 
     $assertionResponseValidator = Mockery::mock(AuthenticatorAssertionResponseValidator::class);
     $assertionResponseValidator

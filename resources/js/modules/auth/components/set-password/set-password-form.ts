@@ -13,6 +13,7 @@ export default class CraftSetPasswordForm extends LitElement {
   @property() action = '';
   @property() uid = '';
   @property() code = '';
+  @property({attribute: 'password-rules'}) passwordRules = '';
   @property({attribute: 'initial-error'}) initialError = '';
   @property({type: Boolean, attribute: 'new-user'}) newUser = false;
 
@@ -45,6 +46,7 @@ export default class CraftSetPasswordForm extends LitElement {
               id="newPassword"
               name="newPassword"
               autocomplete="new-password"
+              passwordrules="${this.passwordRules}"
               required
               autofocus
             ></craft-input-password>

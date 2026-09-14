@@ -17,7 +17,7 @@ trait ElementEventConstants
     /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element's edit page.
      *
-     * @see canView()
+     * @see Element::canView()
      * @since 4.0.0
      * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.
      */
@@ -74,7 +74,7 @@ trait ElementEventConstants
      *
      * @see getCacheTags()
      * @since 4.1.0
-     * @deprecated 6.0.0 Use {@see ElementQueryCacheTagsResolving} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementCacheTagsResolving} instead.
      */
     public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 
@@ -82,7 +82,7 @@ trait ElementEventConstants
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
      *
      * @see sources()
-     * @deprecated 6.0.0 Use {@see RegisterSources} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSourcesResolving} instead.
      */
     public const EVENT_REGISTER_SOURCES = 'registerSources';
 
@@ -92,7 +92,7 @@ trait ElementEventConstants
      *
      * @see fieldLayouts()
      * @since 3.5.0
-     * @deprecated 6.0.0 Use {@see RegisterFieldLayouts} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving} instead.
      */
     public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
@@ -101,7 +101,7 @@ trait ElementEventConstants
      *
      * @see getPreviewTargets()
      * @since 3.2.0
-     * @deprecated 6.0.0 Use {@see RegisterPreviewTargets} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementPreviewTargetsResolving} instead.
      */
     public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
@@ -110,7 +110,7 @@ trait ElementEventConstants
      *
      * @see actions()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see RegisterActions} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementActionsResolving} and {@see \CraftCms\Cms\Element\Events\ElementAltActionsResolving} instead.
      */
     public const EVENT_REGISTER_ACTIONS = 'registerActions';
 
@@ -119,7 +119,7 @@ trait ElementEventConstants
      *
      * @see exporters()
      * @since 3.4.0
-     * @deprecated 6.0.0 Use {@see RegisterExporters} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementExportersResolving} instead.
      */
     public const EVENT_REGISTER_EXPORTERS = 'registerExporters';
 
@@ -128,43 +128,43 @@ trait ElementEventConstants
      *
      * @see render()
      * @since 5.7.5
-     * @deprecated 6.0.0 Use {@see Render} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementRendering} instead.
      */
     public const EVENT_RENDER = 'render';
 
     /**
      * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an element attribute.
      *
-     * @see getSearchKeywords()
+     * @see Element::getSearchKeywords()
      * @since 3.5.0
-     * @deprecated 6.0.0 Use {@see DefineKeywords} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementKeywordsResolving} instead.
      */
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
      * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
      *
-     * @see sortOptions()
+     * @see Element::sortOptions()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see RegisterSortOptions} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSortOptionsResolving} instead.
      */
     public const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
 
     /**
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      *
-     * @see tableAttributes()
+     * @see Element::tableAttributes()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see RegisterTableAttributes} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementTableAttributesResolving} instead.
      */
     public const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
 
     /**
      * @event RegisterElementDefaultTableAttributesEvent The event that is triggered when registering the default table attributes for the element type.
      *
-     * @see defaultTableAttributes()
+     * @see Element::defaultTableAttributes()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see RegisterDefaultTableAttributes} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving} instead.
      */
     public const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
 
@@ -173,7 +173,7 @@ trait ElementEventConstants
      *
      * @see cardAttributes()
      * @since 5.5.0
-     * @deprecated 6.0.0 Use {@see RegisterCardAttributes} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementCardAttributesResolving} instead.
      */
     public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
 
@@ -182,16 +182,16 @@ trait ElementEventConstants
      *
      * @see defaultCardAttributes()
      * @since 5.5.0
-     * @deprecated 6.0.0 Use {@see RegisterDefaultCardAttributes} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving} instead.
      */
     public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
 
     /**
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      *
-     * @see searchableAttributes()
+     * @see Element::searchableAttributes()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see RegisterSearchableAttributes} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving} instead.
      */
     public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
 
@@ -200,7 +200,7 @@ trait ElementEventConstants
      *
      * @see indexHtml()
      * @since 3.7.14
-     * @deprecated 6.0.0 Use {@see PrepQueryForTableAttribute} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\QueryForTableAttributePreparing} instead.
      */
     public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
 
@@ -209,7 +209,7 @@ trait ElementEventConstants
      *
      * @see eagerLoadingMap()
      * @since 3.1.0
-     * @deprecated 6.0.0 Use {@see DefineEagerLoadingMap} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementEagerLoadingMapResolving} instead.
      */
     public const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
 
@@ -218,7 +218,7 @@ trait ElementEventConstants
      *
      * @see setEagerLoadedElements()
      * @since 3.5.0
-     * @deprecated 6.0.0 Use {@see SetEagerLoadedElements} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\SetEagerLoadedElements} instead.
      */
     public const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
 
@@ -228,7 +228,7 @@ trait ElementEventConstants
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
      *
      * @see beforeSave()
-     * @deprecated 6.0.0 Use {@see BeforeSave} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSaving} instead.
      */
     public const EVENT_BEFORE_SAVE = 'beforeSave';
 
@@ -236,7 +236,7 @@ trait ElementEventConstants
      * @event ModelEvent The event that is triggered after the element is saved.
      *
      * @see afterSave()
-     * @deprecated 6.0.0 Use {@see AfterSave} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSaved} instead.
      */
     public const EVENT_AFTER_SAVE = 'afterSave';
 
@@ -245,7 +245,7 @@ trait ElementEventConstants
      *
      * @see afterPropagate()
      * @since 3.2.0
-     * @deprecated 6.0.0 Use {@see AfterPropagate} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementPropagated} instead.
      */
     public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
@@ -255,7 +255,7 @@ trait ElementEventConstants
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
      *
      * @see beforeDelete()
-     * @deprecated 6.0.0 Use {@see BeforeDelete} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementDeleting} instead.
      */
     public const EVENT_BEFORE_DELETE = 'beforeDelete';
 
@@ -263,7 +263,7 @@ trait ElementEventConstants
      * @event \yii\base\Event The event that is triggered after the element is deleted.
      *
      * @see afterDelete()
-     * @deprecated 6.0.0 Use {@see AfterDelete} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementDeleted} instead.
      */
     public const EVENT_AFTER_DELETE = 'afterDelete';
 
@@ -274,7 +274,7 @@ trait ElementEventConstants
      *
      * @see beforeRestore()
      * @since 3.1.0
-     * @deprecated 6.0.0 Use {@see BeforeRestore} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementRestoring} instead.
      */
     public const EVENT_BEFORE_RESTORE = 'beforeRestore';
 
@@ -283,7 +283,7 @@ trait ElementEventConstants
      *
      * @see afterRestore()
      * @since 3.1.0
-     * @deprecated 6.0.0 Use {@see AfterRestore} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementRestored} instead.
      */
     public const EVENT_AFTER_RESTORE = 'afterRestore';
 
@@ -292,7 +292,7 @@ trait ElementEventConstants
      *
      * @see getAdditionalButtons()
      * @since 4.0.0
-     * @deprecated 6.0.0 Use {@see DefineAdditionalButtons} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving} instead.
      */
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
@@ -301,7 +301,7 @@ trait ElementEventConstants
      *
      * @see getAltActions()
      * @since 5.6.0
-     * @deprecated 6.0.0 Use {@see DefineAltActions} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementAltActionsResolving} instead.
      */
     public const EVENT_DEFINE_ALT_ACTIONS = 'defineAltActions';
 
@@ -310,7 +310,7 @@ trait ElementEventConstants
      *
      * @see getActionMenuItems()
      * @since 5.0.0
-     * @deprecated 6.0.0 Use {@see DefineActionMenuItems} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving} instead.
      */
     public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
 
@@ -319,7 +319,7 @@ trait ElementEventConstants
      *
      * @see getSidebarHtml()
      * @since 3.7.0
-     * @deprecated 6.0.0 Use {@see DefineSidebarHtml} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving} instead.
      */
     public const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
 
@@ -328,7 +328,7 @@ trait ElementEventConstants
      *
      * @see metaFieldsHtml()
      * @since 3.7.0
-     * @deprecated 6.0.0 Use {@see DefineMetaFieldsHtml} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving} instead.
      */
     public const EVENT_DEFINE_META_FIELDS_HTML = 'defineMetaFieldsHtml';
 
@@ -337,14 +337,14 @@ trait ElementEventConstants
      *
      * @see getMetadata()
      * @since 3.7.0
-     * @deprecated 6.0.0 Use {@see DefineMetadata} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementMetadataResolving} instead.
      */
     public const EVENT_DEFINE_METADATA = 'defineMetadata';
 
     /**
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element's DOM representation in the control panel.
      *
-     * @deprecated 6.0.0 Use {@see RegisterHtmlAttributes} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving} instead.
      */
     public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
 
@@ -353,7 +353,7 @@ trait ElementEventConstants
      *
      * @see getAttributeHtml()
      * @since 5.0.0
-     * @deprecated 6.0.0 Use {@see DefineAttributeHtml} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving} instead.
      */
     public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
 
@@ -362,7 +362,7 @@ trait ElementEventConstants
      *
      * @see getInlineAttributeInputHtml()
      * @since 5.0.0
-     * @deprecated 6.0.0 Use {@see DefineInlineAttributeInputHtml} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving} instead.
      */
     public const EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML = 'defineInlineAttributeInputHtml';
 
@@ -380,7 +380,7 @@ trait ElementEventConstants
      *
      * @see getUrl()
      * @since 4.4.6
-     * @deprecated 6.0.0 Use {@see BeforeDefineUrl} instead.
+     * @deprecated 6.0.0 Use the generic {@see \CraftCms\Cms\Element\Events\ElementUrlResolving} or the asset-specific {@see \CraftCms\Cms\Asset\Events\AssetUrlResolving} event instead.
      */
     public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
 
@@ -389,7 +389,7 @@ trait ElementEventConstants
      *
      * @see getUrl()
      * @since 4.3.0
-     * @deprecated 6.0.0 Use {@see DefineUrl} instead.
+     * @deprecated 6.0.0 Use the generic {@see \CraftCms\Cms\Element\Events\ElementUrlResolved} or the asset-specific {@see \CraftCms\Cms\Asset\Events\AssetUrlDefined}.
      */
     public const EVENT_DEFINE_URL = 'defineUrl';
 
@@ -398,16 +398,16 @@ trait ElementEventConstants
      *
      * @see beforeMoveInStructure()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see BeforeMoveInStructure} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementMovingInStructure} instead.
      */
     public const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
 
     /**
      * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
      *
-     * @see afterMoveInStructure()
+     * @see Element::afterMoveInStructure()
      * @since 3.0.0
-     * @deprecated 6.0.0 Use {@see AfterMoveInStructure} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementMovedInStructure} instead.
      */
     public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 

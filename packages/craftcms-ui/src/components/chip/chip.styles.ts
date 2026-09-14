@@ -106,6 +106,19 @@ export default css`
     --_thumb-size: calc(40rem / 16);
   }
 
+  /*
+   * Selected state, matching a selected thumbnail tile in the element index
+   * (.thumbsview > li.sel .thumb-tile) so a selection reads the same however the
+   * elements are being shown.
+   *
+   * Specificity puts this above the appearance and size variants deliberately:
+   * a selected chip stays legible as selected even when it is plain.
+   */
+  :host([selected]) .cp-chip {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+  }
+
   .cp-chip__prefix,
   .cp-chip__body,
   .cp-chip__suffix {

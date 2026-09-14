@@ -1,10 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 import ElementCards from './ElementCards.vue';
-import {
-  createSampleTable,
-  sampleCards,
-  sampleEntries,
-} from '@/modules/elements/fixtures/elements';
+import {useSelectable} from '@/common/composables/useSelectable';
+import {sampleCards} from '@/modules/elements/fixtures/elements';
 
 const meta = {
   title: 'Elements/ElementCards',
@@ -36,12 +33,14 @@ function render(extraProps: Record<string, boolean> = {}) {
   return (args: NonNullable<Story['args']>) => ({
     components: {ElementCards},
     setup() {
-      const table = createSampleTable({
-        data: sampleEntries.slice(0, sampleCards.length),
+      // No table needed: the body takes selection directly now.
+      const selection = useSelectable({
+        ids: sampleCards.map((card) => card.id),
       });
-      return {args: {...args, ...extraProps}, table, cards: sampleCards};
+      return {args: {...args, ...extraProps}, selection, cards: sampleCards};
     },
-    template: '<ElementCards v-bind="args" :table="table" :data="cards" />',
+    template:
+      '<ElementCards v-bind="args" :selection="selection" :data="cards" />',
   });
 }
 
@@ -61,9 +60,10 @@ export const Empty: Story = {
   render: (args) => ({
     components: {ElementCards},
     setup() {
-      const table = createSampleTable({data: []});
-      return {args, table};
+      const selection = useSelectable<number>({ids: []});
+      return {args, selection};
     },
-    template: '<ElementCards v-bind="args" :table="table" :data="[]" />',
+    template:
+      '<ElementCards v-bind="args" :selection="selection" :data="[]" />',
   }),
 };

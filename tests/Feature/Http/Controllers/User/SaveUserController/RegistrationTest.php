@@ -252,7 +252,7 @@ it('returns proper error message on validation failure', function () {
         'email' => 'invalid-email',
     ]);
 
-    $response->assertStatus(400);
+    $response->assertBadRequest();
 
     $content = $response->json();
     expect($content)->toHaveKey('errors');

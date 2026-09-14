@@ -22,6 +22,7 @@ use Intervention\Image\Exceptions\MissingDependencyException;
 use Intervention\Image\FileExtension;
 use Intervention\Image\Format;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Interfaces\DriverInterface;
 use Jcupitt\Vips\Image as VipsImage;
 use Throwable;
 
@@ -32,6 +33,11 @@ class Images
 {
     /** @var string[] */
     private array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
+
+    /** @var string[]|null */
+    private ?array $additionalImageFormats = null;
+
+    private ?DriverInterface $supportedFormatsDriver = null;
 
     private ImageDriver $driver;
 
@@ -116,15 +122,19 @@ class Images
      */
     public function getSupportedImageFormats(): array
     {
-        $additionalFormats = array_filter(
-            FileExtension::cases(),
-            fn (FileExtension $extension) => ! in_array($extension->format(), [Format::JPEG, Format::GIF, Format::PNG], true)
-                && $this->canDecodeFormat($extension),
-        );
+        if ($this->additionalImageFormats === null || $this->supportedFormatsDriver !== $this->manager->driver) {
+            $additionalFormats = array_filter(
+                FileExtension::cases(),
+                fn (FileExtension $extension) => ! in_array($extension->format(), [Format::JPEG, Format::GIF, Format::PNG], true)
+                    && $this->canDecodeFormat($extension),
+            );
+            $this->additionalImageFormats = array_map(fn (FileExtension $extension) => $extension->value, $additionalFormats);
+            $this->supportedFormatsDriver = $this->manager->driver;
+        }
 
         return array_values(array_unique([
             ...$this->supportedImageFormats,
-            ...array_map(fn (FileExtension $extension) => $extension->value, $additionalFormats),
+            ...$this->additionalImageFormats,
         ]));
     }
 

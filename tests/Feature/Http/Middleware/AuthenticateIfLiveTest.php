@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\AuthenticateIfLive;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\AuthenticationException;
@@ -14,8 +13,8 @@ beforeEach(function () {
     $this->middleware = app(AuthenticateIfLive::class);
 });
 
-it('passes through when app is not live', function () {
-    Cms::config()->isSystemLive = false;
+it('passes through during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     $request = Request::create('foo');
     $request->setUserResolver(fn () => null);
@@ -25,9 +24,7 @@ it('passes through when app is not live', function () {
     expect($result)->toBe('passed');
 });
 
-it('authenticates when app is live and user exists', function () {
-    Cms::config()->isSystemLive = true;
-
+it('authenticates outside maintenance mode when a user exists', function () {
     $user = User::findOne();
     actingAs($user);
 
@@ -39,9 +36,7 @@ it('authenticates when app is live and user exists', function () {
     expect($result)->toBe('passed');
 });
 
-it('throws AuthenticationException when app is live and no user', function () {
-    Cms::config()->isSystemLive = true;
-
+it('throws AuthenticationException outside maintenance mode when no user exists', function () {
     $request = Request::create('foo');
     $request->setUserResolver(fn () => null);
 

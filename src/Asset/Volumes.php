@@ -169,8 +169,7 @@ class Volumes
             $volumeModel->handle = $data['handle'];
             $volumeModel->fs = $data['fs'] ?? null;
             $volumeModel->subpath = $data['subpath'] ?? null;
-            $volumeModel->transformFs = $data['transformFs'] ?? null;
-            $volumeModel->transformSubpath = $data['transformSubpath'] ?? null;
+            $volumeModel->assetTransformer = $data['assetTransformer'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
             $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -221,6 +220,7 @@ class Volumes
 
         // Clear caches
         $this->volumes = null;
+        $this->folders->reset();
 
         if ($wasTrashed) {
             /** @var Asset[] $assets */
@@ -323,6 +323,7 @@ class Volumes
         }
 
         $this->volumes = null;
+        $this->folders->reset();
 
         event(new VolumeDeleted(volume: $volume));
 

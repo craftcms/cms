@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Queries\UserQuery;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -44,25 +44,40 @@ trait QueriesAuthors
 
     protected function initQueriesAuthors(): void
     {
-        $this->beforeQuery(function (UserQuery $userQuery) {
-            if (is_bool($userQuery->authors)) {
-                $method = $userQuery->authors ? 'whereExists' : 'whereNotExists';
-
-                $userQuery->$method(DB::table(Table::ENTRIES_AUTHORS)->whereColumn('authorId', 'elements.id'));
-            }
-
-            if ($userQuery->authorOf) {
-                if (! $userQuery->authorOf->id) {
-                    throw new QueryAbortedException;
-                }
-
-                $userQuery->whereExists(
-                    DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
-                        ->where('entryId', $this->authorOf->id)
-                        ->whereColumn('entries_authors.authorId', 'users.id'),
-                );
-            }
+        $this->beforeQuery(static function (UserQuery $userQuery) {
+            static::applyAuthors($userQuery, $userQuery->authors);
+            static::applyAuthorOf($userQuery, $userQuery->authorOf);
         });
+    }
+
+    public static function applyAuthors(Builder $query, ?bool $value): void
+    {
+        if (! is_bool($value)) {
+            return;
+        }
+
+        $method = $value ? 'whereExists' : 'whereNotExists';
+
+        $query->$method(DB::table(Table::ENTRIES_AUTHORS)->whereColumn('authorId', 'elements.id'));
+    }
+
+    public static function applyAuthorOf(Builder $query, ?ElementInterface $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        if (! $value->id) {
+            $query->whereRaw('0 = 1');
+
+            return;
+        }
+
+        $query->whereExists(
+            DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
+                ->where('entryId', $value->id)
+                ->whereColumn('entries_authors.authorId', 'users.id'),
+        );
     }
 
     /**

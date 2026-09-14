@@ -13,6 +13,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -21,6 +22,7 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     actingAs(User::findOne());
+    Queue::fake();
 
     config()->set('filesystems.disks.edit-asset-test', [
         'driver' => 'local',
@@ -67,6 +69,8 @@ it('renders the asset edit screen as an Inertia page', function () {
             ->where('folderId', $this->folder->id)
             ->where('title', 'Current Title')
             ->where('readOnly', false)
+            ->where('activityTimelineUrl', fn (?string $url) => is_string($url)
+                && str_contains($url, 'elements/activity'))
         );
 });
 
@@ -124,5 +128,5 @@ it('re-keys rename errors onto the field that posts them', function () {
 });
 
 it('rejects an id that doesn’t resolve to an asset', function () {
-    get(cp_url('assets/edit/999999999-nope'))->assertStatus(400);
+    get(cp_url('assets/edit/999999999-nope'))->assertBadRequest();
 });

@@ -350,7 +350,9 @@ import './plugins.scss';
 
       // show the license key?
       const showLicenseKey =
-        info.licenseKey || info.licenseKeyStatus !== 'unknown';
+        info.licenseKey ||
+        this.$keyInput.val() !== '' ||
+        info.licenseKeyStatus !== 'unknown';
       if (showLicenseKey) {
         this.$keyContainer.removeClass('hidden');
         if (info.licenseKey && !this.$keyInput.val().match(/^\$/)) {

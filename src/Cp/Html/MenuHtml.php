@@ -151,9 +151,7 @@ readonly class MenuHtml
         ?Site $selectedSite = null,
         array $config = [],
     ): array {
-        if ($sites === null) {
-            $sites = $this->sites->getEditableSites()->all();
-        }
+        $sites ??= $this->sites->getEditableSites()->all();
 
         $config += [
             'showSiteGroupHeadings' => null,

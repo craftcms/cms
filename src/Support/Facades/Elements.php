@@ -40,6 +40,7 @@ use Override;
  * @method static void deleteElementsForSite(\CraftCms\Cms\Element\Contracts\ElementInterface[] $elements)
  * @method static bool restoreElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static bool restoreElements(\CraftCms\Cms\Element\Contracts\ElementInterface[] $elements)
+ * @method static void reorderNestedElements(\CraftCms\Cms\Element\Contracts\ElementInterface $owner, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface|\CraftCms\Cms\Element\ElementCollection $nestedElements, int[] $elementIds, int $offset)
  * @method static string parseRefs(string $str, int|null $defaultSiteId = null)
  * @method static void setPlaceholderElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface[] getPlaceholderElements()

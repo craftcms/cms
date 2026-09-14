@@ -20,7 +20,10 @@ describe('Legacy HTML Form Control', () => {
   it('mounts assets in order and expands flat values before mutation', async () => {
     const appendChild = Node.prototype.appendChild;
 
-    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (node) {
+    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (
+      this: Node,
+      node
+    ) {
       if (node instanceof HTMLElement && node.dataset.legacyOrder) {
         ((window as any).legacyOrder ??= []).push(node.dataset.legacyOrder);
       }
@@ -66,11 +69,38 @@ describe('Legacy HTML Form Control', () => {
     });
   });
 
+  it('submits edited and unchanged HTML widget settings', async () => {
+    const {container, form, submitted} = await mount({
+      html: '<input name="widget1-settings[title]" value="Original"><input name="widget1-settings[limit]" value="5">',
+      headHtml: '',
+      bodyHtml: '',
+    }, {
+      scope: ['widget1-settings'],
+      path: ['widget1-settings', '__legacySettings'],
+      namespace: 'widget1-settings',
+      values: {'widget1-settings': {__legacySettings: {
+        'widget1-settings[title]': 'Original',
+        'widget1-settings[limit]': '5',
+      }}},
+    });
+    const input = container.querySelector<HTMLInputElement>('[name="widget1-settings[title]"]')!;
+    input.value = 'Edited';
+    input.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    form.dispatchEvent(new SubmitEvent('submit', {bubbles: true, cancelable: true}));
+
+    expect(submitted.value).toEqual({'widget1-settings': {title: 'Edited', limit: '5'}});
+  });
+
   it('reports asset failures and prevents submission', async () => {
     const appendChild = document.body.appendChild;
     let failedScript: HTMLScriptElement | undefined;
 
-    vi.spyOn(document.body, 'appendChild').mockImplementation(function (node) {
+    vi.spyOn(document.body, 'appendChild').mockImplementation(function (
+      this: Node,
+      node
+    ) {
       if (
         node instanceof HTMLScriptElement &&
         node.src.endsWith('/missing-legacy.js')
@@ -286,7 +316,7 @@ async function mount(
   },
   options: {
     refreshable?: boolean;
-    refresh?: (values: FormPayload['values'], scope: string[]) => void;
+    refresh?: (values: FormPayload['values'], scope?: string[]) => void;
     scope?: string[];
     path?: string[];
     namespace?: string;
@@ -297,6 +327,8 @@ async function mount(
 ) {
   const registry = createCpComponentRegistry();
   const mutation = ref<Record<string, unknown>>({});
+  const submitted = ref<FormPayload['values']>();
+  const renderer = ref<InstanceType<typeof FormRenderer>>();
   const payload: FormPayload = {
     scope: options.scope ?? [],
     refreshable: options.refreshable ?? false,
@@ -339,9 +371,10 @@ async function mount(
     setup() {
       return () =>
         h(FormRenderer, {
+          ref: renderer,
           payload,
           refresh: options.refresh
-            ? async (values: FormPayload['values'], scope: string[]) => {
+            ? async (values: FormPayload['values'], scope?: string[]) => {
                 options.refresh!(values, scope);
 
                 return payload;
@@ -354,6 +387,10 @@ async function mount(
     },
   });
 
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    submitted.value = renderer.value!.currentValues();
+  });
   form.appendChild(container);
   document.body.appendChild(form);
   registry.install(app);
@@ -361,5 +398,5 @@ async function mount(
   app.mount(container);
   await nextTick();
 
-  return {app, container, form, mutation};
+  return {app, container, form, mutation, submitted};
 }

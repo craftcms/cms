@@ -2,6 +2,7 @@ import {LionRadioGroup} from '@lion/ui/radio-group.js';
 import {inputStyles} from '@src/styles/form.styles';
 import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
 import {css} from 'lit';
+import {property} from 'lit/decorators.js';
 
 /**
  * @summary A group of radios sharing one name, for a choice where exactly one
@@ -23,6 +24,12 @@ export default class CraftRadioGroup extends SsrChoiceGroupMixin(
   LionRadioGroup,
   'radio'
 ) {
+  /**
+   * Lays the options out as a row of tiles rather than a stacked list, for
+   * groups whose options carry a thumbnail.
+   */
+  @property({type: Boolean, reflect: true}) thumbnails = false;
+
   static override get styles() {
     return [
       ...super.styles,
@@ -31,6 +38,17 @@ export default class CraftRadioGroup extends SsrChoiceGroupMixin(
         .input-group {
           display: grid;
           gap: var(--c-spacing-xs);
+        }
+
+        /*
+         * Options illustrated with a thumbnail read as a row of tiles rather
+         * than a stacked list — the layout Craft 5 hand-rolled for View Mode.
+         */
+        :host([thumbnails]) .input-group {
+          grid-auto-flow: column;
+          justify-content: start;
+          align-items: start;
+          gap: var(--c-spacing-lg);
         }
       `,
     ];

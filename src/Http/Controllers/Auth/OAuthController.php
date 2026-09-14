@@ -53,6 +53,14 @@ readonly class OAuthController extends AuthenticationController
 
             if ($connectRequest = $this->pullConnectRequest($request)) {
                 try {
+                    $user = $request->craftUser()?->asElement();
+
+                    if ($user && ($authError = $this->auth->getMaintenanceAuthError($user, $isCpRequest))) {
+                        return $this->connectFailedResponse(
+                            $this->auth->getLoginFailureInfo($authError, $user)[1],
+                        );
+                    }
+
                     return $this->connectResponse($request, $connectRequest, $definition, $identity, $oauthManager);
                 } catch (Throwable $e) {
                     return $this->connectFailedResponse(t('Authentication failed.'), $e);
@@ -85,6 +93,14 @@ readonly class OAuthController extends AuthenticationController
 
             $user = $oauthManager->populateUser($definition, $socialiteUser, $user, $identity, $isNew);
 
+            if ($authError = $this->auth->getMaintenanceAuthError($user, $isCpRequest)) {
+                return $this->failedResponse(
+                    $isCpRequest,
+                    $this->auth->getLoginFailureInfo($authError, $user)[1],
+                    $authError,
+                );
+            }
+
             if ($isNew && $definition->activatesUsers) {
                 $user->active = true;
                 $user->pending = false;
@@ -102,7 +118,7 @@ readonly class OAuthController extends AuthenticationController
                 $users->activateUser($user);
             }
 
-            $authError = $this->getAuthError($user, $isCpRequest);
+            $authError = $this->auth->getAuthError($user, $isCpRequest);
 
             if (! $authError || $isNew) {
                 $oauthManager->linkIdentity($user, $definition, $identity);
@@ -267,46 +283,5 @@ readonly class OAuthController extends AuthenticationController
         }
 
         return \CraftCms\Cms\Support\Url::siteUrl($loginPath);
-    }
-
-    private function getAuthError(User $user, bool $isCpRequest): ?AuthError
-    {
-        if (! $isCpRequest) {
-            return $this->auth->getAuthError($user);
-        }
-
-        return match ($user->getStatus()) {
-            User::STATUS_INACTIVE, User::STATUS_ARCHIVED => AuthError::InvalidCredentials,
-            User::STATUS_PENDING => AuthError::PendingVerification,
-            User::STATUS_SUSPENDED => AuthError::AccountSuspended,
-            User::STATUS_ACTIVE => $this->getCpAuthError($user),
-            default => AuthError::InvalidCredentials,
-        };
-    }
-
-    private function getCpAuthError(User $user): ?AuthError
-    {
-        if ($user->locked) {
-            return $this->generalConfig->cooldownDuration
-                ? AuthError::AccountCooldown
-                : AuthError::AccountLocked;
-        }
-
-        if ($user->passwordResetRequired) {
-            return AuthError::PasswordResetRequired;
-        }
-
-        if (! $user->can('accessCp')) {
-            return AuthError::NoCpAccess;
-        }
-
-        if (
-            app()->isLive() === false &&
-            $user->can('accessCpWhenSystemIsOff') === false
-        ) {
-            return AuthError::NoCpOfflineAccess;
-        }
-
-        return null;
     }
 }

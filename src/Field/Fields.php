@@ -9,12 +9,15 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -1144,6 +1147,12 @@ class Fields
             $previousConfig = null;
         }
 
+        if (! $isNewLayout) {
+            // capture any replaced custom fields, and update internal conditions with the new UUIDs where possible
+            $replacedFields = $this->captureReplacedFields($layout);
+            $this->updateFieldConditionRules($layout, $replacedFields);
+        }
+
         // Save the layout
         $layoutModel->type = $layout->type;
         $layoutModel->config = $layout->getConfig();
@@ -1171,6 +1180,79 @@ class Fields
         $this->invalidateCaches();
 
         return true;
+    }
+
+    /** @return array<string, array{string, string}> */
+    private function captureReplacedFields(FieldLayout $layout): array
+    {
+        $replacedFields = [];
+
+        foreach ($layout->getCustomFieldElements() as $layoutElement) {
+            if (isset($layoutElement->oldFieldUid)) {
+                if ($layoutElement->oldFieldUid !== $layoutElement->getFieldUid()) {
+                    $replacedFields[$layoutElement->oldFieldUid] = [$layoutElement->getFieldUid(), $layoutElement->uid];
+                }
+
+                $layoutElement->oldFieldUid = null;
+            }
+        }
+
+        return $replacedFields;
+    }
+
+    /** @param array<string, array{string, string}> $replacedFields */
+    private function updateFieldConditionRules(FieldLayout $layout, array $replacedFields): void
+    {
+        if (empty($replacedFields)) {
+            return;
+        }
+
+        foreach ($layout->getTabs() as $tab) {
+            $this->updateElementCondition($tab->getUserCondition(), $replacedFields);
+            $this->updateElementCondition($tab->getElementCondition(), $replacedFields);
+
+            foreach ($tab->getElements() as $layoutElement) {
+                $this->updateElementCondition($layoutElement->getUserCondition(), $replacedFields);
+                $this->updateElementCondition($layoutElement->getElementCondition(), $replacedFields);
+
+                if ($layoutElement instanceof CustomField) {
+                    $this->updateElementCondition($layoutElement->getEditCondition(), $replacedFields);
+                    $this->updateElementCondition($layoutElement->getElementEditCondition(), $replacedFields);
+                }
+            }
+        }
+    }
+
+    /** @param array<string, array{string, string}> $replacedFields */
+    private function updateElementCondition(?ElementConditionInterface $condition, array $replacedFields): void
+    {
+        if (! $condition) {
+            return;
+        }
+
+        $this->updateFieldUidInRules($condition->getConditionRules(), $replacedFields);
+    }
+
+    /** @param array<string, array{string, string}> $replacedFields */
+    private function updateFieldUidInRules(ConditionGroupInterface $group, array &$replacedFields): void
+    {
+        foreach ($group->getRules() as $rule) {
+            if ($rule instanceof ConditionGroupInterface) {
+                $this->updateFieldUidInRules($rule, $replacedFields);
+
+                continue;
+            }
+
+            if (! $rule instanceof FieldConditionRuleInterface) {
+                continue;
+            }
+
+            $fieldUid = $rule->getFieldUid();
+
+            if (isset($replacedFields[$fieldUid])) {
+                $rule->setFieldUid($replacedFields[$fieldUid][0]);
+            }
+        }
     }
 
     /**

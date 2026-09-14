@@ -10,12 +10,16 @@ use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -24,8 +28,8 @@ use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Query\Builder;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -167,17 +171,12 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Applies a condition to the query builder for the given field instances, for a user-provided param value.
      *
-     * If `false` is returned, an always-false condition will be used.
-     *
-     * @param  Builder  $query  The query instance to modify
+     * @param  Builder  $query  The query builder to modify
      * @param  static[]  $instances  The field instances to search
      * @param  mixed  $value  The user-supplied param value
+     * @param  ElementQueryInterface  $elementQuery  The element query being executed
      */
-    public static function modifyQuery(
-        Builder $query,
-        array $instances,
-        mixed $value,
-    ): Builder;
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -254,9 +253,25 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function useFieldset(): bool;
 
     /**
+     * Returns the action menu items contributed by the field when it is used by a custom field layout component.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getFieldLayoutActionMenuItems(FieldLayoutElementContext $context): array;
+
+    /**
      * Returns the renderer-neutral Control used to edit the field's value.
      */
     public function formControl(FieldContext $context): Control;
+
+    /**
+     * Returns a warning the field itself needs to show, on top of any the
+     * field layout author wrote, or `null` when it has nothing to say.
+     *
+     * For misconfiguration the author can't see from the layout — an Assets
+     * field pointed at a volume that no longer exists, say.
+     */
+    public function formWarning(?ElementInterface $element = null): ?string;
 
     /**
      * Prepare the field value for validation.
@@ -383,7 +398,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the element condition rule class that should be used for this field.
      *
-     * The rule class must be an instance of [[\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface]].
+     * The rule class must be an instance of {@see FieldConditionRuleInterface} and {@see ElementConditionRuleInterface} and/or {@see ElementQueryConditionRuleInterface}.
      *
      * @phpstan-return string|array{class:string}|null
      */

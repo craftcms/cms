@@ -23,6 +23,7 @@ use craft\fields\Link;
 use craft\fields\Matrix;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -441,10 +442,10 @@ trait LegacyFieldConstants
 
     // Other compatibility methods
 
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         if (!method_exists(static::class, 'queryCondition')) {
-            return $query;
+            return;
         }
 
         $params = [];
@@ -452,7 +453,7 @@ trait LegacyFieldConstants
         $condition = static::queryCondition($instances, $value, $params);
 
         if ($condition === null || $condition === false) {
-            return $query;
+            return;
         }
 
         $db = Craft::$app->getDb();
@@ -461,7 +462,7 @@ trait LegacyFieldConstants
         // Yii uses named parameters, Laravel uses positional
         $sql = preg_replace('/:qp\d+/', '?', $sql);
 
-        return $query->whereRaw($sql, array_values($params));
+        $query->whereRaw($sql, array_values($params));
     }
 
     public function getElementValidationRules(): array

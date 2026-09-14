@@ -35,6 +35,6 @@ class YamlResponseFormatter extends Component implements ResponseFormatterInterf
             return;
         }
 
-        $response->content = Yaml::dump($data, 20, 2);
+        $response->content = Yaml::dump($data, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
     }
 }

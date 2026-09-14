@@ -280,9 +280,11 @@ export default class CraftActionItem extends LitElement {
 
   protected renderPrefix() {
     const hasIcon = !!this.querySelector('[slot="icon"]') || !!this.icon;
+    const hasPrefix = !!this.querySelector('[slot="prefix"]');
 
     return html`
       ${this.type === 'checkbox' ? this.renderCheckbox() : nothing}
+      ${hasPrefix ? html`<slot name="prefix" part="prefix"></slot>` : nothing}
       ${hasIcon
         ? html`<div class="action-item__icon">${this.renderIcon()}</div>`
         : nothing}

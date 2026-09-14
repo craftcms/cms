@@ -6,15 +6,15 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\widgets;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Feed` instead.
-     */
-    class Feed extends \CraftCms\Cms\Dashboard\Widgets\Feed
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Feed` instead.
+ */
+class Feed extends \CraftCms\Cms\Dashboard\Widgets\Feed
+{
+    use BuiltInWidgetTrait;
 }

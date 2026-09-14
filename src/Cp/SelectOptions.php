@@ -85,13 +85,6 @@ class SelectOptions
         if ($includeAliases) {
             $aliasSuggestions = [];
             foreach (Aliases::getAll() as $alias => $path) {
-                // Don't ever suggest @web
-                if ($alias === '@web') {
-                    continue;
-                }
-                if (str_starts_with($alias, '@web/')) {
-                    continue;
-                }
                 if (! $filter || $filter($path)) {
                     $aliasSuggestions[] = [
                         'label' => $alias,

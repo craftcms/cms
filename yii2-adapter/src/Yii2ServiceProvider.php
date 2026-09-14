@@ -10,7 +10,12 @@ use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Events\AssetUrlResolving;
+use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\MigrationRepository;
@@ -19,12 +24,14 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
+use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
@@ -44,11 +51,14 @@ use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
+use CraftCms\Yii2Adapter\Console\OffCommand;
+use CraftCms\Yii2Adapter\Console\OnCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Form\LegacyConditions;
 use CraftCms\Yii2Adapter\Form\Nodes\LegacyHtmlField;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
@@ -111,16 +121,39 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new LegacyApp()->register($this->app);
         new CompatibilityMixins()->register();
+        Event::listen(VolumeConfigPreparing::class, function(VolumeConfigPreparing $event): void {
+            $event->config['transformFs'] = $event->volume->getTransformFsHandle(false);
+            $event->config['transformSubpath'] = $event->volume->getTransformSubpath(false, false);
+        });
         new FilesystemCompatibility()->register($this->app);
         $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
         $this->app->singleton(Settings::class, LegacySettings::class);
         $this->app->singleton(GqlArguments::class, LegacyGqlArguments::class);
         $this->app->singleton(GqlDirectives::class, LegacyGqlDirectives::class);
         $this->app->singleton(GqlTypes::class, LegacyGqlTypes::class);
+        Event::listen(AssetUrlResolving::class, function(AssetUrlResolving $event): void {
+            $state = $this->app->make(AssetTransformContext::class)->get($event->asset);
+
+            if ($state === null || $event->transform === null || $event->url !== null || $event->handled) {
+                return;
+            }
+
+            try {
+                $event->url = $this->app->make(AssetTransformers::class)->transform(
+                    $event->asset,
+                    $event->transform,
+                )->url;
+            } catch (AssetTransformException|NotSupportedException $exception) {
+                report($exception);
+            }
+
+            $event->handled = true;
+        });
         $this->app->scoped(Gql::class, LegacyGql::class);
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->app->singleton(Conditions::class, LegacyConditions::class);
         $this->callAfterResolving(FormNodeTypes::class, fn(FormNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(FormControlTypes::class, fn(FormControlTypes $types) => $types->register(LegacyHtmlControl::class));
         /**
@@ -271,6 +304,8 @@ class Yii2ServiceProvider extends ServiceProvider
             DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
             MigrateSessionsTableCommand::class,
+            OffCommand::class,
+            OnCommand::class,
             RepairCategoryGroupStructureCommand::class,
         ]);
 
@@ -306,7 +341,10 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->ensureNewSessionsTable();
         });
 
-        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+        $this->app->terminating(function(): void {
+            $this->triggerAfterRequestForLaravelRequest();
+            Craft::getLogger()->flush(true);
+        });
 
         if (!$this->app->runningInConsole()) {
             return;

@@ -197,9 +197,7 @@ function maxPowerCaptain(): void
 function silence(Closure|string $callable, ?int $mask = null): mixed
 {
     // loosely based on Composer\Util\Silencer
-    if (! isset($mask)) {
-        $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED;
-    }
+    $mask ??= E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED;
 
     $old = error_reporting();
     error_reporting($old & ~$mask);

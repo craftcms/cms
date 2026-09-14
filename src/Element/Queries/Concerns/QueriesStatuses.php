@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use Closure;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -35,17 +37,19 @@ trait QueriesStatuses
 
     protected function initQueriesStatuses(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
+        $this->beforeQuery(static function (ElementQuery $elementQuery) {
             if ($elementQuery->archived) {
                 $elementQuery->whereBool('elements.archived', true);
 
                 return;
             }
 
-            $this->applyStatusParam($elementQuery);
+            if ($elementQuery->elementType::hasStatuses()) {
+                static::applyStatus($elementQuery, $elementQuery->status, $elementQuery);
+            }
 
             // only set archived=false if 'archived' doesn't show up in the status param
-            // (_applyStatusParam() will normalize $this->status to an array if applicable)
+            // (applyStatus() will normalize $elementQuery->status to an array if applicable)
             if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
                 $elementQuery->whereBool('elements.archived', false);
             }
@@ -95,24 +99,35 @@ trait QueriesStatuses
         return $this;
     }
 
-    /**
-     * Applies the 'status' param to the query being prepared.
-     *
-     * @throws QueryAbortedException
-     */
-    /** @param ElementQuery<*> $elementQuery */
-    private function applyStatusParam(ElementQuery $elementQuery): void
+    private function normalizeStatus(): void
     {
-        if (! $elementQuery->status || ! $elementQuery->elementType::hasStatuses()) {
+        if (! $this->status) {
             return;
         }
 
-        // Normalize the status param
-        if (! is_array($elementQuery->status)) {
-            $elementQuery->status = str($elementQuery->status)->explode(',')->all();
+        if (! is_array($this->status)) {
+            $this->status = str($this->status)->explode(',')->all();
+        }
+    }
+
+    /**
+     * Applies the 'status' param to the query being prepared.
+     *
+     * @param  ElementQuery<ElementInterface>  $elementQuery
+     *
+     * @throws QueryAbortedException
+     */
+    public static function applyStatus(BuilderContract $query, mixed $value, ElementQuery $elementQuery): void
+    {
+        if (! $value) {
+            return;
         }
 
-        $statuses = array_merge($elementQuery->status);
+        if (! is_array($value)) {
+            $value = str($value)->explode(',')->all();
+        }
+
+        $statuses = array_merge($value);
         $firstVal = strtolower((string) reset($statuses));
         $glue = 'or';
 
@@ -125,12 +140,12 @@ trait QueriesStatuses
             return;
         }
 
-        $elementQuery->where(function (Builder $query) use ($statuses, $glue) {
+        $query->where(function (Builder $q) use ($elementQuery, $statuses, $glue) {
             foreach ($statuses as $status) {
                 if ($glue === 'not') {
-                    $query->whereNot($this->placeholderCondition($this->statusCondition($status)));
+                    $q->whereNot($elementQuery->placeholderCondition($elementQuery->statusCondition($status)));
                 } else {
-                    $query->orWhere($this->placeholderCondition($this->statusCondition($status)));
+                    $q->orWhere($elementQuery->placeholderCondition($elementQuery->statusCondition($status)));
                 }
             }
         });

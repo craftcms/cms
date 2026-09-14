@@ -66,7 +66,6 @@
     <template #actions>
       <CpLink
         v-if="page.props.canRegisterUsers"
-        :inertia="false"
         :href="create().url"
         class="btn submit add icon"
         icon="plus"

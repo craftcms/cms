@@ -52,6 +52,13 @@ const {
 } = useElementIndexSelection(() => table, {selectable, readOnly, actions});
 ```
 
+`useElementIndexSelection` is a thin adapter: the anchor/range mechanics live in
+the shared `useSelectable` composable, and this wrapper adds what's specific to
+the index — translating rows to ids, TanStack's select-all, and the bulk-action
+flags. Selection state stays in the table rather than being mirrored, so the
+checkboxes, the row model and the composable can't drift apart. See
+**Composables → useSelectable** for the underlying model.
+
 A few behaviors worth knowing:
 
 - **Shift-click range selection** — the composable keeps an anchor (the last

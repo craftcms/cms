@@ -19,7 +19,8 @@ body {
   pointer interaction. Placeholder treatment — adjust as needed.
 */
 :focus-visible {
-  outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+  outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+    var(--c-color-focus-outline);
   outline-offset: var(--c-focus-outline-offset);
 }
 
@@ -231,6 +232,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   textarea,
   input:not([type='checkbox']):not([type='radio']) {
+    --c-focus-outline-offset: -2px;
     border: 0;
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);

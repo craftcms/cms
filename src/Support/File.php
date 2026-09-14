@@ -213,13 +213,13 @@ class File extends \Illuminate\Support\Facades\File
                 continue;
             }
 
-            if ($item->isDir() && ! $item->isLink()) {
-                app(Filesystem::class)->deleteDirectory($item->getPathname());
+            $deleted = $item->isDir() && ! $item->isLink()
+                ? app(Filesystem::class)->deleteDirectory($item->getPathname())
+                : app(Filesystem::class)->delete($item->getPathname());
 
-                continue;
+            if (! $deleted) {
+                return false;
             }
-
-            app(Filesystem::class)->delete($item->getPathname());
         }
 
         return true;
@@ -520,9 +520,7 @@ class File extends \Illuminate\Support\Facades\File
             throw new InvalidArgumentException("No file/directory exists at $path");
         }
 
-        if ($to === null) {
-            $to = "$path.zip";
-        }
+        $to ??= "$path.zip";
 
         $zip = new ZipArchive;
 

@@ -12,7 +12,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -132,14 +131,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerMacros(): void
     {
-        Application::macro('isLive', function (): bool {
-            if (is_bool($live = Cms::config()->isSystemLive)) {
-                return $live;
-            }
-
-            return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
-        });
-
         Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
 
         // Register Collection::one() as an alias of first()
@@ -266,11 +257,6 @@ class AppServiceProvider extends ServiceProvider
                 : $this->app->basePath('templates'));
         }
 
-        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
-            Aliases::set('@web', $webUrl);
-        } else {
-            Aliases::set('@web', config('app.url'));
-        }
     }
 
     private function registerThrottleExceptionHandler(): void

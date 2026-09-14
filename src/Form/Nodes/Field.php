@@ -9,18 +9,26 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Enums\FieldWidth;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Form\Nodes\Concerns\HasVisibility;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Arr;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 
 class Field implements Node
 {
+    use Conditionable;
+    use HasVisibility;
+
     private ?string $label = null;
+
+    private bool $labelSrOnly = false;
 
     private ?string $instructions = null;
 
@@ -70,6 +78,7 @@ class Field implements Node
         return FieldComponent::make()
             ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
             ->label($label)
+            ->labelSrOnly((bool) ($node->props['labelSrOnly'] ?? false))
             ->instructions($instructions)
             ->instructionsPosition((string) ($node->props['instructionsPosition'] ?? 'before'))
             ->tip(isset($node->props['tip']) ? (string) $node->props['tip'] : null)
@@ -88,6 +97,7 @@ class Field implements Node
                 'data-layout-element' => $node->props['layoutUid'] ?? null,
                 'data-mode' => $control->mode->value,
             ])
+            ->attributes(self::visibilityAttributes($node->props))
             ->toHtml();
     }
 
@@ -103,6 +113,14 @@ class Field implements Node
     public function label(?string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /** Visually hides the label, keeping it available to screen readers. */
+    public function labelSrOnly(bool $labelSrOnly = true): static
+    {
+        $this->labelSrOnly = $labelSrOnly;
 
         return $this;
     }
@@ -149,9 +167,16 @@ class Field implements Node
         return $this;
     }
 
-    public function width(?int $width): static
+    /**
+     * Sets how wide the field should be within its container.
+     *
+     * Rendered as a `width-{n}` class and resolved by `<craft-field-group>`'s
+     * twelve-column grid. Ints are accepted for layout elements, whose width
+     * comes from project config; prefer {@see FieldWidth} in PHP.
+     */
+    public function width(FieldWidth|int|null $width): static
     {
-        $this->width = $width;
+        $this->width = $width instanceof FieldWidth ? $width->value : $width;
 
         return $this;
     }
@@ -210,6 +235,7 @@ class Field implements Node
             'instructions' => $this->instructions,
             'required' => $this->required,
             ...Arr::whereNotNull([
+                'labelSrOnly' => $this->labelSrOnly ?: null,
                 'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
                 'tip' => $this->tip,
                 'tipHtml' => $this->noticeHtml($this->tip),
@@ -221,6 +247,7 @@ class Field implements Node
                 'statusLabel' => $this->status !== null ? $this->statusLabel : null,
                 'hasActions' => $this->actions === [] ? null : true,
             ]),
+            ...$this->visibilityProps(),
         ];
     }
 

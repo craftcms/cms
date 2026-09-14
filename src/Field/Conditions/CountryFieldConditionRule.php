@@ -6,11 +6,14 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Country;
+use CraftCms\Cms\Form\Contracts\Node;
 use RuntimeException;
 
-class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
+class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
@@ -19,14 +22,15 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return app(Addresses::class)->getCountryList(app()->getLocale());
     }
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof Country) {
             throw new RuntimeException;
         }
 
-        return parent::inputHtml();
+        return parent::inputNodes();
     }
 
     /** @return list<string>|null */

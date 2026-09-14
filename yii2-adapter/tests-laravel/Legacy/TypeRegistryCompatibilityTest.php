@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use craft\base\Event as YiiEvent;
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Link as LegacyLink;
 use craft\helpers\Assets as LegacyAssets;
+use craft\imagetransforms\ImageTransformer as LegacyImageTransformer;
 use craft\services\Auth as LegacyAuth;
 use craft\services\Dashboard as LegacyDashboard;
 use craft\services\Elements as LegacyElements;
@@ -41,15 +43,12 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\FilesystemTypes;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
-use CraftCms\Cms\Image\ImageTransformer;
-use CraftCms\Cms\Image\ImageTransformers;
-use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Utility\Utilities\PhpInfo;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\Utility\UtilityTypes;
+use CraftCms\Yii2Adapter\Asset\ImageTransformers;
 use Illuminate\Support\Collection;
 
 beforeEach(function() {
@@ -328,10 +327,10 @@ it('applies legacy type registration events to a fresh modern registry snapshot'
         AdapterRegistryImageTransformer::class,
         LegacyImageTransforms::class,
         LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS,
-        ImageTransforms::class,
+        LegacyImageTransforms::class,
         'getAllImageTransformers',
         AdapterRetainedImageTransformer::class,
-        ImageTransformer::class,
+        LegacyImageTransformer::class,
     ],
 ]);
 

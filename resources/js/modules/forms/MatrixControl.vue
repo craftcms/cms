@@ -120,7 +120,7 @@
     emit('change', {
       ...change,
       scope: form.scope,
-      refreshable: form.refreshable,
+      refreshable: form.refreshable && change.refreshable,
     });
   }
 </script>

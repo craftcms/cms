@@ -2702,7 +2702,7 @@ return
                 'sortOrder' => 1,
             ],
             '208d5d40-635a-45a0-bffd-33e73fc42b99' => [
-                'baseUrl' => '@web/',
+                'baseUrl' => 'https://example.test/',
                 'enabled' => true,
                 'handle' => 'siteB',
                 'hasUrls' => true,

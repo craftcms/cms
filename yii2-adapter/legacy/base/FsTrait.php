@@ -17,7 +17,7 @@ namespace craft\base;
  * @since 4.0.0
  * @deprecated 6.0.0
  */
-trait FsTrait // @phpstan-ignore trait.unused
+trait FsTrait
 {
     /**
      * @var bool Whether the “Files in this filesystem have public URLs” setting should be shown.

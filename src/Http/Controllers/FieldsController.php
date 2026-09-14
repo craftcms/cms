@@ -127,9 +127,7 @@ class FieldsController
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 
-        if ($field === null) {
-            $field = $found;
-        }
+        $field ??= $found;
 
         return $this->editScreenResponse($field, $request->boolean('multiInstanceTypesOnly'));
     }
@@ -164,9 +162,6 @@ class FieldsController
         if (! $this->readOnly) {
             $response->addAltAction(t('Delete'), [
                 'variant' => 'danger',
-                'confirm' => t('Are you sure you want to delete “{name}”?', [
-                    'name' => $field->name,
-                ]),
                 'action' => [
                     'type' => 'http',
                     'method' => 'DELETE',
@@ -174,6 +169,9 @@ class FieldsController
                     'body' => [
                         'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                     ],
+                    'confirm' => t('Are you sure you want to delete “{name}”?', [
+                        'name' => $field->name,
+                    ]),
                 ],
             ]);
         }
@@ -311,6 +309,7 @@ class FieldsController
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
             'fieldLayouts' => ['nullable', 'array'],
+            'addRuleLabel' => ['nullable', 'string'],
         ]);
 
         $html = ConditionBuilderControl::builderHtml(
@@ -321,6 +320,7 @@ class FieldsController
             $data['name'],
             $data['disabled'],
             $data['fieldLayouts'] ?? [],
+            $data['addRuleLabel'] ?? null,
         );
 
         return new JsonResponse([
@@ -396,7 +396,7 @@ class FieldsController
                         return ['settings.fieldLimit' => $messages];
                     }
 
-                    return in_array($attribute, $settingAttributes, true)
+                    return in_array(explode('.', $attribute)[0], $settingAttributes, true)
                         ? ["settings.{$attribute}" => $messages]
                         : [$attribute => $messages];
                 })->all();
@@ -540,6 +540,10 @@ class FieldsController
         /** @var FieldLayoutTab $tab */
         $tab = $this->fieldLayoutComponent($request);
 
+        if ($errors = $tab->validateConditions()) {
+            throw ValidationException::withMessages($errors);
+        }
+
         return new JsonResponse([
             'config' => $tab->toArray(),
             'labelHtml' => $tab->labelHtml(),
@@ -550,6 +554,10 @@ class FieldsController
     {
         /** @var FieldLayoutElement $element */
         $element = $this->fieldLayoutComponent($request, $settings);
+
+        if ($errors = $element->validateConditions()) {
+            throw ValidationException::withMessages($errors);
+        }
 
         if (! empty($settings)) {
             $validateAttributes = array_intersect(
@@ -643,6 +651,9 @@ class FieldsController
                     // If fieldId is set, we're replacing the selected field
                     if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
                         if (! empty($elementConfig['fieldId'])) {
+                            // Keep track of the old field's UUID so we can update any conditions referencing it on save
+                            $elementConfig['oldFieldUid'] ??= $elementConfig['fieldUid'] ?? null;
+
                             unset($elementConfig['fieldUid']);
                         } else {
                             unset($elementConfig['fieldId']);

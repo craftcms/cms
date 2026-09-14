@@ -215,3 +215,17 @@ it('frees the replaced chip’s slot before applying the limit', async () => {
     expect.objectContaining({id: 7}),
   ]);
 });
+
+it.each([
+  '<button class="btn add">Choose</button>',
+  '<button command="--add-element">Choose</button>',
+])('finds the add button in supported element picker markup', (html) => {
+  const {input} = chipActionInput();
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  input.$container = {
+    find: (selector: string) => container.querySelectorAll(selector),
+  };
+
+  expect([...input.getAddElementsBtn()]).toEqual([container.firstElementChild]);
+});

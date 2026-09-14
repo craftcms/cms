@@ -12,6 +12,7 @@ it('reports when there is nothing to repair', function () {
 
 it('repairs double-packed associative arrays in project config', function () {
     app(ProjectConfig::class)->set('testFixture.item', doublePackedArray());
+    app(ProjectConfig::class)->writeYamlFiles();
 
     $this->artisan('craft:repair:project-config', ['--no-interaction' => true])
         ->expectsOutputToContain('testFixture.item')
@@ -23,6 +24,7 @@ it('repairs double-packed associative arrays in project config', function () {
 
 it('supports a dry run without changing the project config', function () {
     app(ProjectConfig::class)->set('testFixture.item', doublePackedArray());
+    app(ProjectConfig::class)->writeYamlFiles();
 
     $this->artisan('craft:project-config:repair', ['--dry-run' => true, '--no-interaction' => true])
         ->expectsOutputToContain('testFixture.item')

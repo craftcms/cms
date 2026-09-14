@@ -178,6 +178,32 @@ it('can get sites by id', function () {
     expect($this->sites->getSiteById(999))->toBeNull();
 });
 
+it('respects disabled site visibility when looking up sites by id', function (bool $enabled, ?bool $withDisabled) {
+    $site = Site::factory()->create(['enabled' => $enabled, 'primary' => false]);
+    $this->sites->refreshSites();
+
+    expect($this->sites->getSiteById($site->id, $withDisabled)?->id)
+        ->toBe($enabled || $withDisabled !== false ? $site->id : null);
+})->with([true, false])->with([true, false, null]);
+
+it('refreshes site id lookups when a site is enabled or disabled', function () {
+    $site = Site::factory()->create(['enabled' => true, 'primary' => false]);
+    $this->sites->refreshSites();
+
+    expect($this->sites->getSiteById($site->id, false)?->id)->toBe($site->id);
+
+    $site->update(['enabled' => false]);
+    $this->sites->refreshSites();
+
+    expect($this->sites->getSiteById($site->id, false))->toBeNull()
+        ->and($this->sites->getSiteById($site->id, true)?->id)->toBe($site->id);
+
+    $site->update(['enabled' => true]);
+    $this->sites->refreshSites();
+
+    expect($this->sites->getSiteById($site->id, false)?->id)->toBe($site->id);
+});
+
 it('can get sites by handle', function () {
     $defaultSite = Site::firstOrFail();
 

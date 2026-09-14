@@ -1,6 +1,7 @@
 import {LionSwitchButton} from '@lion/ui/switch.js';
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {baseFormControlStyles} from '@src/styles/form.styles';
 
 /**
  * @summary The toggle itself — the track and thumb a `craft-switch` renders.
@@ -35,7 +36,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
       css`
         :host {
           --c-switch-height: var(--c-size-control-sm);
-          --c-switch-thumb-offset: 6px;
+          --c-switch-thumb-offset: 5px;
           --c-switch-thumb-height: calc(
             var(--c-switch-height) - var(--c-switch-thumb-offset)
           );
@@ -55,12 +56,12 @@ export default class CraftSwitchButton extends LionSwitchButton {
         }
 
         .switch-button__track {
+          ${baseFormControlStyles}
           --tw-inset-shadow-color: var(--color-slate-300);
           margin-inline: -1px;
           background-color: var(--c-color-neutral-fill-quiet);
           border-radius: var(--c-radius-full);
-          border: 1px solid var(--c-form-control-border-color);
-          box-shadow: var(--c-input-shadow);
+          min-height: unset;
         }
 
         .switch-button__thumb {
@@ -71,12 +72,15 @@ export default class CraftSwitchButton extends LionSwitchButton {
           border: 1px solid var(--c-form-control-border-color);
           background-color: var(--c-switch-thumb-fill, var(--c-surface-raised));
           inset-block-start: calc(var(--c-switch-thumb-offset) / 2);
-          inset-inline-start: calc(var(--c-switch-thumb-offset) / 2);
+          inset-inline-start: calc(var(--c-switch-thumb-offset) / 2 - 1px);
           inset-inline-end: auto;
+          box-sizing: border-box;
         }
 
         :host([indeterminate]:not([checked])) .switch-button__thumb {
-          inset-inline-start: calc(50% - (var(--c-switch-thumb-height) / 2));
+          inset-inline-start: calc(
+            50% - (var(--c-switch-thumb-height) / 2) + 1px
+          );
           inset-inline-end: auto;
         }
 
@@ -88,7 +92,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
           border: 1px solid var(--c-color-success-border-loud);
           inset-inline-start: auto;
           inset-inline-end: calc(
-            (var(--c-switch-height) - var(--c-switch-thumb-height)) / 2
+            (var(--c-switch-height) - var(--c-switch-thumb-height)) / 2 + 1px
           );
         }
 

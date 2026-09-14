@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Directives;
 
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\Arguments\Transform as TransformArguments;
+use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use GraphQL\Language\DirectiveLocation;
@@ -43,46 +43,27 @@ class Transform extends Directive
         }
 
         $transform = Gql::prepareTransformArguments($arguments);
+        $context = app(AssetTransformContext::class);
+        $withTransform = fn (Asset $asset) => $context->set(clone $asset, $transform);
 
         if ($value instanceof Asset) {
-            return $value->setTransform($transform);
+            return $withTransform($value);
         }
 
-        if ($value instanceof Collection || is_array($value)) {
-            foreach ($value as $asset) {
-                // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
-                if ($asset instanceof Asset) {
-                    $asset->setTransform($transform);
-                }
-            }
+        if ($value instanceof Collection) {
+            return $value->map(fn ($asset) => $asset instanceof Asset ? $withTransform($asset) : $asset);
+        }
 
-            return $value;
+        if (is_array($value)) {
+            return array_map(fn ($asset) => $asset instanceof Asset ? $withTransform($asset) : $asset, $value);
         }
 
         if (! $source instanceof Asset) {
             return $value;
         }
 
-        $allowTransform = match ($source->getMimeType()) {
-            'image/gif' => Cms::config()->transformGifs,
-            'image/svg+xml' => Cms::config()->transformSvgs,
-            default => true,
-        };
-
-        if (! $allowTransform) {
-            $transform = null;
-        }
-
-        return match ($resolveInfo->fieldName) {
-            'format' => $source->getFormat($transform),
-            'height' => $source->getHeight($transform),
-            'mimeType' => $source->getMimeType($transform),
-            'url' => $source->getUrl(
-                transform: $transform,
-                immediately: $arguments['immediately'] ?? null,
-            ),
-            'width' => $source->getWidth($transform),
-            default => $value,
-        };
+        return Gql::isAssetTransformField($resolveInfo->fieldName)
+            ? Gql::resolveAssetTransform($source, $transform, $resolveInfo->fieldName)
+            : $value;
     }
 }

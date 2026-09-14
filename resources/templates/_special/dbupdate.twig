@@ -6,6 +6,6 @@
     <form method="post" action="{{ cpUrl('updates') }}" class="buttons">
         {{ csrfInput() }}
         {{ hiddenInput('return', Request.path()) }}
-        <button type="submit" class="btn submit">{{ 'Finish up'|t('app') }}</button>
+      <craft-button type="submit" variant="primary">{{ 'Finish up'|t('app') }}</craft-button>
     </form>
 {% endblock %}

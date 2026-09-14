@@ -21,6 +21,12 @@ const config: StorybookConfig = {
     '../resources/js/**/*.mdx',
     '../resources/js/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
+  // `craft-icon` fetches `/vendor/craft/icons/<family>/<name>.svg`, which in the
+  // CP is a symlink to `cms-assets/resources`. Without this every icon in every
+  // story 404s and renders nothing.
+  staticDirs: [
+    {from: '../cms-assets/resources/icons', to: '/vendor/craft/icons'},
+  ],
   addons: [
     getAbsolutePath('@storybook/addon-themes'),
     getAbsolutePath('@storybook/addon-docs'),

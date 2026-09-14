@@ -5,9 +5,7 @@
 
   const {iconOnly = false} = defineProps<{iconOnly?: boolean}>();
 
-  const craftData = useCraftData();
-  const system = computed(() => craftData.system);
-  const site = computed(() => craftData.site);
+  const {system, site} = useCraftData();
   const tag = computed(() => (site.value?.url ? 'a' : 'div'));
 </script>
 

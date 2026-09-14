@@ -42,6 +42,7 @@
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   const {
+    selection,
     selectedIds,
     hasSelection,
     showBulkActions,
@@ -71,8 +72,16 @@
       if (v) props.table.setPageSize(parseInt(String(v)));
     },
   });
-  const showPagination = computed(() => props.table.getPageCount() > 1);
+  const showPagination = computed(
+    () =>
+      props.table.getPageCount() > 1 &&
+      Boolean(
+        props.table.options.manualPagination ||
+        props.table.options.getPaginationRowModel
+      )
+  );
   const showPageSize = computed(() => props.enableAdjustPageSize);
+  const pageSizeLabel = t('Items per page');
   const showDisplayedRows = computed(
     () => props.from && props.to && props.total
   );
@@ -116,7 +125,7 @@
     </div>
 
     <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
-      <slot name="body"></slot>
+      <slot name="body" :selection="selection"></slot>
     </div>
 
     <div class="element-index__footer" ref="indexFooter" v-if="showFooter">
@@ -188,9 +197,11 @@
         </div>
         <div class="flex gap-2 items-center">
           <template v-if="showPageSize && !bulkActionsActive">
-            {{ t('Items per page:') }}
+            <span aria-hidden="true">{{ pageSizeLabel }}</span>
             <Select
               small
+              :label="pageSizeLabel"
+              label-sr-only
               :options="pageSizeOptions!"
               v-model="pageSizeProxy"
               class="w-auto"

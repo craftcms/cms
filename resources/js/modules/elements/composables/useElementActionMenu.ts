@@ -68,13 +68,23 @@ export type ElementActionBehavior =
       prompt: string;
     };
 
-export interface ElementActionMenuItem {
+export interface ElementActionMenuButton {
+  type?: 'button';
   label: string;
   icon?: string;
   color?: string;
   destructive?: boolean;
   behavior: ElementActionBehavior;
 }
+
+/** A rule between groups of items, as the server describes it. */
+export interface ElementActionMenuSeparator {
+  type: 'hr';
+}
+
+export type ElementActionMenuItem =
+  | ElementActionMenuButton
+  | ElementActionMenuSeparator;
 
 interface Options {
   /**
@@ -89,10 +99,14 @@ interface Options {
  * render, dispatching each behavior directly rather than through registered
  * jQuery handlers.
  */
-export function useElementActionMenu(
-  items: () => Array<ElementActionMenuItem>,
-  {currentEntryTypeId}: Options = {}
-): ComputedRef<Array<ActionItem>> {
+/**
+ * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
+ *
+ * Separate from {@link useElementActionMenu} so a caller with many menus — a
+ * relation field drawing one per chip — can map them all through a single
+ * dispatcher instead of standing up a computed per element.
+ */
+export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
   function dispatch(behavior: ElementActionBehavior): void {
     switch (behavior.type) {
       case 'link':
@@ -297,15 +311,27 @@ export function useElementActionMenu(
     input.click();
   }
 
-  return computed(() =>
-    items().map(
-      (item): ActionItem => ({
-        label: item.label,
-        icon: item.icon,
-        iconColor: item.color,
-        variant: item.destructive ? 'danger' : undefined,
-        onClick: () => dispatch(item.behavior),
-      })
-    )
-  );
+  return (items: Array<ElementActionMenuItem>): Array<ActionItem> =>
+    items.map(
+      (item): ActionItem =>
+        item.type === 'hr'
+          ? {type: 'hr'}
+          : {
+              label: item.label,
+              icon: item.icon,
+              iconColor: item.color,
+              variant: item.destructive ? 'danger' : undefined,
+              onClick: () => dispatch(item.behavior),
+            }
+    );
+}
+
+/** One element's action menu, kept in step with the descriptors it's given. */
+export function useElementActionMenu(
+  items: () => Array<ElementActionMenuItem>,
+  options: Options = {}
+): ComputedRef<Array<ActionItem>> {
+  const toActionItems = createElementActionMenu(options);
+
+  return computed(() => toActionItems(items()));
 }
