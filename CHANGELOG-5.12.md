@@ -6,10 +6,12 @@
 
 ### Extensibility
 
+- Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - Added `craft\base\NestedElementTrait::$touchOwnersOnSave`.
 - Added `craft\i18n\Locale::languageId()`.
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveField()`.
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
+- Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 
