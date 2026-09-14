@@ -243,7 +243,19 @@ it('orders a structure source by its structure rather than a literal column', fu
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.structureId', $structure->id)
             ->where('sort.0.field', 'structure')
+            ->where('structure.id', $structure->id)
+            ->where('viewModes', fn ($modes) => collect($modes)->contains(
+                fn (array $mode): bool => $mode['mode'] === 'structure' && $mode['structuresOnly'] === true,
+            ))
+            ->where('sortOptions', fn ($options) => collect($options)->contains(
+                fn (array $option): bool => $option === [
+                    'label' => 'Structure',
+                    'value' => 'structure',
+                    'defaultDir' => 'asc',
+                ],
+            ))
             ->where('pagination.total', 3)
             ->where('data.0.id', $c->id)
             ->where('data.1.id', $a->id)

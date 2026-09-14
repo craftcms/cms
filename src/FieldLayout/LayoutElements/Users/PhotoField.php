@@ -9,13 +9,14 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\AssetSelect;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Users;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\UserPhotoAsset;
 use InvalidArgumentException;
@@ -71,8 +72,18 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        return ElementSelect::make($this->attribute())
+        $folder = app(Users::class)->userPhotoFolder($context->element);
+        $source = 'volume:'.$folder->getVolume()->uid;
+
+        if ($folder->parentId) {
+            $source .= '/folder:'.$folder->uid;
+        }
+
+        return AssetSelect::make($this->attribute())
             ->elementType(Asset::class)
+            ->sources([$source])
+            ->criteria(['volumeId' => $folder->volumeId, 'folderId' => $folder->id, 'kind' => 'image'])
+            ->showFolders(false)
             ->limit(1)
             ->value($context->element->photoId ? [$context->element->photoId] : []);
     }

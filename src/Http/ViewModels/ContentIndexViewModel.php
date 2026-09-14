@@ -273,7 +273,7 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     public function sortOptions(): array
     {
-        [$sourceKey] = $this->sourceState();
+        [$sourceKey, $source] = $this->sourceState();
 
         if ($sourceKey === null) {
             return [];
@@ -281,6 +281,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
         $indexState = $this->indexState();
         $options = [];
+
+        if (isset($source['structureId'])) {
+            $options['structure'] = [
+                'label' => t('Structure'),
+                'value' => 'structure',
+                'defaultDir' => 'asc',
+            ];
+        }
 
         foreach ($indexState->sortOptions($this->elementType) as $option) {
             $value = self::addressableSortAttribute($option);

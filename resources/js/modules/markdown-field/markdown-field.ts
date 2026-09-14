@@ -55,6 +55,9 @@ class MarkdownField extends LitElement {
   @property({attribute: 'asset-any-uploader', type: Boolean})
   assetAnyUploader = false;
 
+  @property({attribute: 'asset-condition', type: Object})
+  assetCondition: Record<string, unknown> | null = null;
+
   @property({attribute: 'asset-sources', type: Array})
   assetSources: string[] = [];
 
@@ -203,6 +206,7 @@ class MarkdownField extends LitElement {
     this.assetController = createAssetController(
       editor,
       this.assetAnyUploader ? {uploaderId: null} : {},
+      this.assetCondition,
       this.assetSources,
       previewController
     );

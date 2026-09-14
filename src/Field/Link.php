@@ -220,7 +220,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             : $context->value;
 
         $types = array_values(array_map(
-            fn (BaseLinkType $type): array => Arr::except($type->pickerConfig(), 'elementSelectConfig'),
+            fn (BaseLinkType $type): array => $type->pickerConfig(),
             $this->getLinkTypes(),
         ));
 

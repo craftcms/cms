@@ -362,11 +362,15 @@ it('normalizes namespaced condition builder values', function () {
 it('can save a new field', function () {
     $currentCount = FieldModel::count();
 
-    $this->postJson(action([FieldsController::class, 'store']), [
-        'type' => PlainText::class,
-        'name' => 'My plaintext field',
-        'handle' => 'plainText',
-    ])->assertOk();
+    $response = $this->postJson(
+        action([FieldsController::class, 'store']),
+        [
+            'type' => PlainText::class,
+            'name' => 'My plaintext field',
+            'handle' => 'plainText',
+        ],
+        ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+    );
 
     expect(FieldModel::count())->toBe($currentCount + 1);
     tap(FieldModel::query()->latest('id')->firstOrFail(), function (FieldModel $field) {
@@ -374,6 +378,8 @@ it('can save a new field', function () {
         expect($field->handle)->toBe('plainText');
         expect($field->type)->toBe(PlainText::class);
     });
+
+    $response->assertRedirect(Fields::getFieldByHandle('plainText')->getCpEditUrl());
 });
 
 it('can save a new field with settings posted as a url-encoded string', function () {
