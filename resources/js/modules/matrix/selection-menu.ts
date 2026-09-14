@@ -6,8 +6,9 @@ import {t} from '@craftcms/ui/utilities/translate';
  * The server sends the field's "⋮" menu once, with "Collapse selected blocks"
  * and "Disable selected blocks" hidden (see `Matrix::blockViewActionMenuItems()`).
  * Whether they show, what they say, and whether "Copy all blocks" copies every
- * block or just the selected ones all depend on the selection, which only the
- * browser knows. Both render paths rewrite the server's items through here:
+ * block or just the selected ones all depend on the selection — and whether
+ * "Expand/Collapse all blocks" has anything to do depends on the blocks' own
+ * state — which only the browser knows. Both render paths rewrite the server's items through here:
  * MatrixControl as menu props, the legacy input on the rendered
  * `craft-action-item` elements.
  */
@@ -15,6 +16,8 @@ import {t} from '@craftcms/ui/utilities/translate';
 export const MATRIX_SELECTION_ACTION = 'craft:matrix-selection-action';
 
 const COPY_ACTION = 'craft:copy-nested-elements';
+
+const TOGGLE_ALL_ACTION = 'craft:matrix-toggle-all';
 
 export type MatrixSelectionState = {
   /** How many blocks the field holds. */
@@ -25,6 +28,10 @@ export type MatrixSelectionState = {
   collapsed: boolean;
   /** Whether every selected block is disabled, so the item enables instead. */
   disabled: boolean;
+  /** Whether any block is collapsed, so there's something to expand. */
+  anyCollapsed: boolean;
+  /** Whether any block is expanded, so there's something to collapse. */
+  anyExpanded: boolean;
 };
 
 type EventAction = {
@@ -66,6 +73,16 @@ export function selectionMenuItem<Item extends object>(
   // What the field calls its blocks — "entries", unless the server says.
   const type =
     typeof action.detail?.type === 'string' ? action.detail.type : t('blocks');
+
+  // "Expand all" with nothing collapsed (or vice versa) would do nothing.
+  if (action.name === TOGGLE_ALL_ACTION) {
+    return {
+      ...item,
+      hidden: action.detail?.collapse
+        ? !state.anyExpanded
+        : !state.anyCollapsed,
+    };
+  }
 
   if (action.name === COPY_ACTION) {
     const selector = action.detail?.selector;
@@ -168,7 +185,11 @@ function serverItem(element: Element): SelectionMenuItem | null {
 
   const name = eventAction(action)?.name;
 
-  if (name !== COPY_ACTION && name !== MATRIX_SELECTION_ACTION) {
+  if (
+    name !== COPY_ACTION &&
+    name !== MATRIX_SELECTION_ACTION &&
+    name !== TOGGLE_ALL_ACTION
+  ) {
     return null;
   }
 
@@ -183,7 +204,7 @@ function serverItem(element: Element): SelectionMenuItem | null {
 }
 
 /**
- * Brings a server-rendered field menu in line with the field's selection. Its
+ * Brings a server-rendered field menu in line with the field's blocks. Its
  * items are `craft-action-item` elements carrying their action as a JSON
  * attribute and their label as text.
  */
@@ -199,6 +220,8 @@ export function syncSelectionMenu(field: Element): void {
     count: selected.length,
     collapsed: every('collapsed'),
     disabled: every('disabled-entry'),
+    anyCollapsed: blocks.some((block) => block.classList.contains('collapsed')),
+    anyExpanded: blocks.some((block) => !block.classList.contains('collapsed')),
   };
 
   for (const element of field.querySelectorAll<HTMLElement>(

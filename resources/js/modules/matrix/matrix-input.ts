@@ -245,6 +245,8 @@ export class MatrixInput extends Base<MatrixInputSettings> {
           entry.collapse();
         }
       }
+
+      this.syncFieldMenu();
     }
 
     if (this.addEntryBtn && !this.settings!.formControl) {

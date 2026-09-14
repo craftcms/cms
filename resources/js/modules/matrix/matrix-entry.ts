@@ -335,6 +335,7 @@ export class MatrixEntry extends Base {
 
     this.setCollapsedInput('1');
     this.collapsed = true;
+    this.syncFieldMenu();
   }
 
   previewHtml(): string {
@@ -398,6 +399,17 @@ export class MatrixEntry extends Base {
 
     this.setCollapsedInput('');
     this.collapsed = false;
+    this.syncFieldMenu();
+  }
+
+  /**
+   * The field's "⋮" menu offers "Expand/Collapse all blocks" only when there's
+   * something to expand or collapse. The Vue control keeps its own menu.
+   */
+  private syncFieldMenu(): void {
+    if (!this.matrix.settings!.formControl) {
+      this.matrix.syncFieldMenu();
+    }
   }
 
   /**

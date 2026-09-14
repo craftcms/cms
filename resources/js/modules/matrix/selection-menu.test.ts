@@ -34,7 +34,14 @@ const disable = {
     detail: {action: 'disable'},
   },
 };
-const nothingSelected = {count: 0, total: 3, collapsed: false, disabled: false};
+const nothingSelected = {
+  count: 0,
+  total: 3,
+  anyCollapsed: false,
+  anyExpanded: true,
+  collapsed: false,
+  disabled: false,
+};
 
 describe('selectionMenuItem', () => {
   it('leaves the menu as the server sent it with nothing selected', () => {
@@ -48,6 +55,8 @@ describe('selectionMenuItem', () => {
       ...nothingSelected,
       count: 2,
       total: 3,
+      anyCollapsed: false,
+      anyExpanded: true,
     });
 
     expect(item.label).toBe('Copy selected blocks');
@@ -58,8 +67,22 @@ describe('selectionMenuItem', () => {
   });
 
   it('shows the selection items, offering what the selection needs', () => {
-    const some = {count: 2, total: 3, collapsed: false, disabled: false};
-    const folded = {count: 2, total: 3, collapsed: true, disabled: true};
+    const some = {
+      count: 2,
+      total: 3,
+      anyCollapsed: false,
+      anyExpanded: true,
+      collapsed: false,
+      disabled: false,
+    };
+    const folded = {
+      count: 2,
+      total: 3,
+      anyCollapsed: false,
+      anyExpanded: true,
+      collapsed: true,
+      disabled: true,
+    };
 
     expect(selectionMenuItem(collapse, some)).toMatchObject({
       hidden: false,
@@ -92,7 +115,14 @@ describe('selectionMenuItem', () => {
         detail: {action: 'select'},
       },
     };
-    const state = {count: 0, total: 2, collapsed: false, disabled: false};
+    const state = {
+      count: 0,
+      total: 2,
+      anyCollapsed: false,
+      anyExpanded: true,
+      collapsed: false,
+      disabled: false,
+    };
 
     expect(selectionMenuItem(select, state)).toMatchObject({
       hidden: false,
@@ -104,7 +134,14 @@ describe('selectionMenuItem', () => {
       action: {detail: {action: 'deselect'}},
     });
     // Nothing to select in an empty field.
-    expect(selectionMenuItem(select, {...state, total: 0}).hidden).toBe(true);
+    expect(
+      selectionMenuItem(select, {
+        ...state,
+        total: 0,
+        anyCollapsed: false,
+        anyExpanded: true,
+      }).hidden
+    ).toBe(true);
   });
 
   it('calls the blocks what the server calls them', () => {
@@ -121,11 +158,49 @@ describe('selectionMenuItem', () => {
     ).toBe('Copy selected entries');
   });
 
+  it('offers to expand or collapse all only when there is something to do', () => {
+    const toggle = (collapse: boolean) => ({
+      type: 'button',
+      label: collapse ? 'Collapse all blocks' : 'Expand all blocks',
+      hidden: false,
+      action: {
+        type: 'event',
+        name: 'craft:matrix-toggle-all',
+        detail: {collapse},
+      },
+    });
+    const allExpanded = {
+      ...nothingSelected,
+      anyCollapsed: false,
+      anyExpanded: true,
+    };
+    const allCollapsed = {
+      ...nothingSelected,
+      anyCollapsed: true,
+      anyExpanded: false,
+    };
+
+    expect(selectionMenuItem(toggle(false), allExpanded).hidden).toBe(true);
+    expect(selectionMenuItem(toggle(true), allExpanded).hidden).toBe(false);
+    expect(selectionMenuItem(toggle(false), allCollapsed).hidden).toBe(false);
+    expect(selectionMenuItem(toggle(true), allCollapsed).hidden).toBe(true);
+    // An empty field has nothing either way.
+    const empty = {...nothingSelected, anyCollapsed: false, anyExpanded: false};
+    expect(selectionMenuItem(toggle(false), empty).hidden).toBe(true);
+    expect(selectionMenuItem(toggle(true), empty).hidden).toBe(true);
+  });
+
   it('leaves other items alone', () => {
     const hr = {type: 'hr'};
 
     expect(
-      selectionMenuItem(hr, {...nothingSelected, count: 1, total: 3})
+      selectionMenuItem(hr, {
+        ...nothingSelected,
+        count: 1,
+        total: 3,
+        anyCollapsed: false,
+        anyExpanded: true,
+      })
     ).toBe(hr);
   });
 });
@@ -175,6 +250,31 @@ describe('syncSelectionMenu', () => {
     // Only the field's own selected block counts, and it's collapsed.
     expect(collapseItem!.hasAttribute('hidden')).toBe(false);
     expect(collapseItem!.textContent).toBe('Expand selected blocks');
+  });
+
+  it('hides "Expand all blocks" until a block is collapsed', () => {
+    document.body.innerHTML = `
+      <craft-field id="field">
+        <craft-action-menu>
+          ${item({type: 'event', name: 'craft:matrix-toggle-all', detail: {collapse: false}}, 'Expand all blocks')}
+          ${item({type: 'event', name: 'craft:matrix-toggle-all', detail: {collapse: true}}, 'Collapse all blocks')}
+        </craft-action-menu>
+        <div class="matrixblock"></div>
+      </craft-field>
+    `;
+    const field = document.querySelector<HTMLElement>('#field')!;
+    const [expand, collapse] = field.querySelectorAll('craft-action-item');
+
+    syncSelectionMenu(field);
+
+    expect(expand!.hasAttribute('hidden')).toBe(true);
+    expect(collapse!.hasAttribute('hidden')).toBe(false);
+
+    field.querySelector('.matrixblock')!.classList.add('collapsed');
+    syncSelectionMenu(field);
+
+    expect(expand!.hasAttribute('hidden')).toBe(false);
+    expect(collapse!.hasAttribute('hidden')).toBe(true);
   });
 
   it('hides the selection items again once nothing is selected', () => {

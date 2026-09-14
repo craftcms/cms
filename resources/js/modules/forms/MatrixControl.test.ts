@@ -936,6 +936,53 @@ describe('MatrixControl', () => {
       );
     });
 
+    it('offers to expand or collapse all only when there is something to do', async () => {
+      const trigger = await mountTwoInField();
+      const items = [
+        {
+          type: 'button',
+          label: 'Expand all blocks',
+          action: {
+            type: 'event',
+            name: 'craft:matrix-toggle-all',
+            detail: {collapse: false},
+          },
+        },
+        {
+          type: 'button',
+          label: 'Collapse all blocks',
+          action: {
+            type: 'event',
+            name: 'craft:matrix-toggle-all',
+            detail: {collapse: true},
+          },
+        },
+      ] as unknown as ActionItems;
+      const hidden = () =>
+        (fieldActions!.value!(items) as unknown as ResolvedItem[]).map((item) =>
+          Boolean(item.hidden)
+        );
+
+      // Both blocks start expanded: nothing to expand.
+      expect(hidden()).toEqual([true, false]);
+
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-toggle-all', {
+          detail: {collapse: true, trigger},
+        })
+      );
+      await nextTick();
+
+      expect(hidden()).toEqual([false, true]);
+
+      // One block open again: both have something to do.
+      await selectFirst();
+      invokeSelection(trigger, 'expand');
+      await nextTick();
+
+      expect(hidden()).toEqual([false, false]);
+    });
+
     it('selects every block, then offers to deselect them', async () => {
       const trigger = await mountTwoInField();
       const items = [

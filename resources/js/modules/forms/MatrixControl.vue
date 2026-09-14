@@ -1328,6 +1328,8 @@
 
     return {
       total: props.value.sortOrder.length,
+      anyCollapsed: props.value.sortOrder.some((uid) => isCollapsed(uid)),
+      anyExpanded: props.value.sortOrder.some((uid) => !isCollapsed(uid)),
       count: selected.length,
       collapsed: selected.length > 0 && selected.every(isCollapsed),
       disabled: selected.length > 0 && selected.every(isDisabled),
