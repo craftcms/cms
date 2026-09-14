@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
@@ -109,7 +110,7 @@ describe('SectionConditionRule', function () {
         $rule->operator = 'notempty';
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });
@@ -188,7 +189,7 @@ describe('TypeConditionRule', function () {
         $rule->values = [$entryType1->uid];
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -343,7 +344,7 @@ describe('ExpiryDateConditionRule', function () {
         $rule->rangeType = 'notempty';
 
         $query = Entry::find()->status(null);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -471,7 +472,7 @@ describe('SavableConditionRule', function () {
         $rule->value = true;
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });
@@ -503,7 +504,7 @@ describe('ViewableConditionRule', function () {
         $rule->value = true;
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });
@@ -543,7 +544,7 @@ describe('FieldConditionRule', function () {
         $rule->operator = 'empty';
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 

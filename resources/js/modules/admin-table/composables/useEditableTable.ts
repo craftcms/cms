@@ -292,9 +292,7 @@ export function useEditableTable<T extends object>(
           requireOptionMatch: cellOptions.requireOptionMatch,
         }),
         disabled: resolveDisabled(cellOptions?.disabled, row),
-        'onUpdate:modelValue': (
-          value: string | number | boolean | undefined
-        ) => {
+        'onUpdate:modelValue': (value: unknown) => {
           const strValue = String(value ?? '');
           cellOptions?.onChange?.(strValue, {row, column});
           handleChange(row, column.id, strValue);

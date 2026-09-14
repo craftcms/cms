@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\Entries\ReassignEntriesModalController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -111,3 +112,35 @@ it('reassigns entries to the selected author', function (int $count, string $mes
     'single entry' => [1, 'Entry reassigned.'],
     'multiple entries' => [2, 'Entries reassigned.'],
 ]);
+
+it('submits the rendered reassignment Form through its namespace', function () {
+    $response = postJson(action([ReassignEntriesModalController::class, 'show']), [
+        'oldUserIds' => [12, 34],
+    ])->assertOk();
+
+    $namespace = $response->json('namespace');
+    $crawler = new Crawler('<form>'.$response->json('content').'</form>', 'http://localhost');
+    $settings = json_decode($crawler->filter('craft-element-select-input')->attr('settings'), true);
+
+    expect($settings['name'])->toBe("{$namespace}[newUserId]")
+        ->and($settings['single'])->toBeTrue()
+        ->and($settings['limit'])->toBe(1)
+        ->and($settings['criteria']['id'])->toBe(['not', 12, 34]);
+
+    $form = $crawler->filter('form')->form();
+    $form->setValues(["{$namespace}[newUserId]" => '56']);
+
+    expect($form->getPhpValues())->toBe([$namespace => [
+        'newUserId' => '56',
+        'oldUserIds' => ['12', '34'],
+        'action' => 'entries/reassign',
+    ]]);
+
+    $entries = Mockery::mock(Entries::class);
+    $entries->shouldReceive('reassignEntries')->once()->with([12, 34], 56)->andReturn(2);
+    app()->instance(Entries::class, $entries);
+
+    postJson(action([ReassignEntriesModalController::class, 'store']), $form->getPhpValues(), [
+        'X-Craft-Namespace' => $namespace,
+    ])->assertOk()->assertJsonPath('message', 'Entries reassigned.');
+});

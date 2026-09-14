@@ -19,16 +19,9 @@ use InvalidArgumentException;
 interface ConditionInterface
 {
     /**
-     * Renders the HTML for the condition builder, including its outer container element.
+     * Creates new condition groups.
      */
-    public function getBuilderHtml(): string;
-
-    /**
-     * Renders the inner HTML for the condition builder, excluding its outer container element.
-     *
-     * @param  bool  $autofocusAddButton  Whether the Add Rule button should be autofocused
-     */
-    public function getBuilderInnerHtml(bool $autofocusAddButton = false): string;
+    public static function createGroup(): ConditionGroupInterface;
 
     /**
      * Returns configuration that should be maintained for the builder.
@@ -66,19 +59,17 @@ interface ConditionInterface
 
     /**
      * Returns the rules this condition is configured with.
-     *
-     * @return ConditionRuleInterface[]
      */
-    public function getConditionRules(): array;
+    public function getConditionRules(): ConditionGroupInterface;
 
     /**
      * Sets the rules this condition should be configured with.
      *
-     * @param  array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules
+     * @param  ConditionGroupInterface|array{operator: string, rules: array{class: string}|array{type: string}}|array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules
      *
      * @throws InvalidArgumentException if any of the rules are not selectable
      */
-    public function setConditionRules(array $rules): void;
+    public function setConditionRules(ConditionGroupInterface|array $rules): void;
 
     /**
      * Adds a rule to the condition.

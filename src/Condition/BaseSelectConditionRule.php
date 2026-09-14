@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Nodes\Field;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -34,26 +35,20 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
         ]);
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        $selectId = 'select';
-
-        return
-            Html::hiddenLabel(Html::encode($this->getLabel()), $selectId).
-            FormFields::selectHtml([
-                'id' => $selectId,
-                'name' => 'value',
-                'options' => $this->options(),
-                'value' => $this->value,
-            ]);
+        return [Field::make($this->getLabel(), Choice::make('value')->options($this->formOptions($this->options()))->withoutPlaceholder()->value($this->value))];
     }
 
     #[Override]
     public function getRules(): array
     {
+        $values = $this->_validValues();
+
         return array_merge(parent::getRules(), [
-            'value' => ['required', Rule::in($this->_validValues())],
+            'value' => [Rule::requiredIf(! in_array('', $values, true)), Rule::in($values)],
         ]);
     }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {computed, h} from 'vue';
+  import {computed, h, shallowReactive} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Empty from '@/common/components/Empty.vue';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
@@ -11,11 +11,16 @@
   import PluginActionMenu from '@/modules/plugin-manager/components/PluginActionMenu.vue';
   import {router} from '@inertiajs/vue3';
   import {index} from '@actions/PluginsController';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
 
   const props = defineProps<{
     pluginInfo: Record<string, PluginInfo>;
     readOnly?: boolean;
   }>();
+
+  const {announce} = useAnnouncer();
+  const errors = shallowReactive<string[]>([]);
+  const errorSummary = t('An error occurred.');
 
   const plugins = computed(() => {
     return Object.entries(props.pluginInfo).map(([handle, value]) => {
@@ -76,6 +81,15 @@
    * an http action is successful
    */
   function handleStateChange(event: CustomEvent) {
+    if (event.detail?.state === 'loading') {
+      errors.length = 0;
+    }
+
+    if (event.detail?.state === 'error') {
+      errors.push(event.detail.message ?? t('Request failed'));
+      announce(errorSummary);
+    }
+
     if (
       event.detail?.state === 'success' &&
       event.detail?.actionType === 'http'
@@ -89,6 +103,23 @@
 
 <template>
   <craft-pane appearance="raised" padding="0">
+    <div v-if="errors.length" class="action-errors">
+      <craft-callout
+        v-for="(error, index) in errors"
+        :key="index"
+        variant="danger"
+      >
+        <strong>{{ errorSummary }}</strong>
+        <div
+          class="action-error-message"
+          role="region"
+          tabindex="0"
+          :aria-label="errorSummary"
+        >
+          {{ error }}
+        </div>
+      </craft-callout>
+    </div>
     <AdminTable :table="table" @action:change-state="handleStateChange">
       <template #empty-row>
         <Empty
@@ -100,4 +131,26 @@
   </craft-pane>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  craft-pane,
+  .action-errors,
+  .action-error-message {
+    min-inline-size: 0;
+  }
+
+  .action-errors {
+    display: grid;
+    gap: var(--c-spacing-md);
+    padding: var(--c-spacing-md);
+    overflow-wrap: anywhere;
+  }
+
+  .action-error-message {
+    margin-block-start: var(--c-spacing-sm);
+    max-block-size: min(200px, 40dvh);
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    user-select: text;
+  }
+</style>

@@ -918,9 +918,15 @@ class Plugins
                 $config['edition'] = Arr::first($editions);
             }
 
+            $settingsInput = Config::get("craft.$handle", []);
+
+            if (! is_array($settingsInput)) {
+                throw new InvalidArgumentException("Configuration [craft.$handle] must be an array; got ".get_debug_type($settingsInput).'.');
+            }
+
             $settings = array_merge(
                 $info['settings'] ?? [],
-                Config::get("craft.$handle", []),
+                $settingsInput,
             );
 
             if ($settings !== []) {

@@ -27,10 +27,8 @@ export const baseFormControlStyles = css`
     var(--_input-end-end-radius) var(--_input-end-start-radius);
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
-  min-height: calc(
-    var(--c-input-height, var(--c-size-control-md)) - 2 *
-      var(--_input-border-width)
-  );
+  min-height: var(--c-input-height, var(--c-size-control-md));
+  box-sizing: border-box;
 `;
 
 /**

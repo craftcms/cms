@@ -188,14 +188,18 @@ test('edit renders existing filesystems as read-only when admin changes are disa
 });
 
 test('save creates filesystem with valid data', function () {
-    postJson(action([FilesystemsController::class, 'store']), [
-        'type' => Local::class,
-        'name' => 'New Test Filesystem',
-        'handle' => 'newTestFilesystem',
-        'settings' => [
-            'path' => sys_get_temp_dir().'/test-uploads',
+    $response = postJson(
+        action([FilesystemsController::class, 'store']),
+        [
+            'type' => Local::class,
+            'name' => 'New Test Filesystem',
+            'handle' => 'newTestFilesystem',
+            'settings' => [
+                'path' => sys_get_temp_dir().'/test-uploads',
+            ],
         ],
-    ])->assertOk();
+        ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+    );
 
     $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
     expect($fs)->not()->toBeNull()
@@ -203,6 +207,7 @@ test('save creates filesystem with valid data', function () {
         ->and($fs->getSettings())->toMatchArray([
             'path' => File::normalizePath(sys_get_temp_dir().'/test-uploads', '/'),
         ]);
+    $response->assertRedirect(Url::cpUrl("settings/filesystems/{$fs->handle}"));
 });
 
 test('refreshes filesystem settings without saving', function () {

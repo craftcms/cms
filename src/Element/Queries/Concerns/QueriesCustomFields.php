@@ -224,12 +224,12 @@ trait QueriesCustomFields
                 ? QueryParam::AND
                 : QueryParam::OR;
 
-            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $value) {
+            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $value, $elementQuery) {
                 foreach ($fieldsByHandle[$handle] as $instances) {
-                    $query->where(function (Builder $query) use ($instances, $value) {
+                    $query->where(function (Builder $query) use ($instances, $value, $elementQuery) {
                         static::$activeQuery = $this;
                         try {
-                            $instances[0]::modifyQuery($query, $instances, $value);
+                            $instances[0]::modifyQuery($query, $instances, $value, $elementQuery);
                         } finally {
                             static::$activeQuery = null;
                         }

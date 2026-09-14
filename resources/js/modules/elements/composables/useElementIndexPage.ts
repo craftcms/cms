@@ -4,13 +4,13 @@ import {
   type RowSelectionState,
   useVueTable,
 } from '@tanstack/vue-table';
-import {computed, onMounted, onScopeDispose, ref} from 'vue';
+import {computed, onMounted, onScopeDispose, ref, shallowRef} from 'vue';
 import {
   type ElementIndexRow,
   useContentIndexData,
 } from '@/modules/elements/composables/useContentIndexData';
 import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
-import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
+import type {ConditionConfig} from '@/modules/conditions/types';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
 import {useElementIndexLoading} from '@/modules/elements/composables/useElementIndexLoading';
@@ -49,9 +49,9 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
   const elementIndex = useContentIndexData();
 
   const viewState = useElementIndexViewState(elementIndex);
-  const {conditions} = useConditionBuilder({
-    initialState: elementIndex.currentCondition ?? null,
-  });
+  const conditions = shallowRef<ConditionConfig | null>(
+    elementIndex.currentCondition ?? null
+  );
   const filters = useElementIndexFilters(
     elementIndex,
     viewState,

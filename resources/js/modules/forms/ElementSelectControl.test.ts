@@ -95,13 +95,13 @@ describe('ElementSelectControl', () => {
     stub.destroy.mockClear();
   });
 
-  let updates: Array<Array<number>>;
+  let updates: Array<number[] | number | null>;
 
   async function mount(
     options: {
       props?: Record<string, unknown>;
       editable?: boolean;
-      value?: number[];
+      value?: number[] | number | null;
     } = {}
   ): Promise<HTMLElement> {
     updates = [];
@@ -111,9 +111,10 @@ describe('ElementSelectControl', () => {
       render: () =>
         h(ElementSelectControl, {
           control: control(options.props),
-          value: options.value ?? [5],
+          value: options.value === undefined ? [5] : options.value,
           editable: options.editable ?? true,
-          'onUpdate:value': (value: number[]) => updates.push(value),
+          'onUpdate:value': (value: number[] | number | null) =>
+            updates.push(value),
         }),
     });
     app.mount(container);
@@ -138,6 +139,40 @@ describe('ElementSelectControl', () => {
       ...root.querySelectorAll('craft-chip [slot="suffix"] craft-action-menu'),
     ];
   }
+
+  it('renders scalar values with a scalar input name', async () => {
+    const root = await mount({props: {single: true, limit: 1}, value: 5});
+
+    expect(root.querySelectorAll('craft-chip')).toHaveLength(1);
+    expect(root.querySelector<HTMLInputElement>('craft-chip input')?.name).toBe(
+      'related'
+    );
+    expect(
+      root.querySelector<HTMLInputElement>('craft-chip input')?.value
+    ).toBe('5');
+    expect(addButton(root)).toBeNull();
+  });
+
+  it('emits a scalar ID when selecting one element', async () => {
+    const root = await mount({props: {single: true, limit: 1}, value: null});
+    addButton(root)!.click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    expect(settings.multiSelect).toBe(false);
+    settings.onSelect([{id: 9, label: 'Replacement', siteId: 1}]);
+
+    expect(updates).toEqual([9]);
+  });
+
+  it('clears a scalar selection to null', async () => {
+    const root = await mount({props: {single: true, limit: 1}, value: 5});
+    menus(root)[0]
+      .actions.find((action: any) => action.label === 'Remove')
+      .onClick();
+
+    expect(updates).toEqual([null]);
+  });
 
   it('renders exactly one action menu per chip, with Replace and Remove', async () => {
     const root = await mount();
@@ -187,6 +222,27 @@ describe('ElementSelectControl', () => {
     settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
 
     expect(updates).toEqual([[5, 9]]);
+  });
+
+  it('opens a photo selector with its folder restrictions', async () => {
+    await mount({
+      value: [],
+      props: {
+        sources: ['volume:photos/folder:avatars'],
+        criteria: {volumeId: 2, folderId: 7, kind: 'image'},
+        showFolders: false,
+      },
+    });
+
+    (container!.querySelector('craft-button') as HTMLElement).click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    expect(settings).toMatchObject({
+      sources: ['volume:photos/folder:avatars'],
+      criteria: {volumeId: 2, folderId: 7, kind: 'image'},
+      indexSettings: {showFolders: false},
+    });
   });
 
   it('drops Replace when there is no element type to pick from', async () => {

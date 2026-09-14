@@ -18,7 +18,7 @@ describe('input', function () {
             ->and($html)->toContain('id="site-name"')
             ->and($html)->toContain('name="siteName"')
             ->and($html)->toContain('value="Happy Lager"')
-            ->and($html)->toContain('class="text fullwidth"')
+            ->and($html)->toContain('class="text fullwidth form-control"')
             ->and($html)->toContain('autocomplete="off"')
             ->and($html)->toContain('dir="ltr"');
     });
@@ -27,7 +27,7 @@ describe('input', function () {
         $html = Input::make()->id('i')->inputSize(10)->toHtml();
 
         expect($html)->toContain('size="10"')
-            ->and($html)->toContain('class="text"')
+            ->and($html)->toContain('class="text form-control"')
             ->and($html)->not->toContain('fullwidth');
     });
 
@@ -92,7 +92,7 @@ describe('input', function () {
             ->toHtml();
 
         expect($html)->toContain('dir="rtl"')
-            ->and($html)->toContain('class="text fullwidth extra"');
+            ->and($html)->toContain('class="text fullwidth form-control extra"');
     });
 
     it('renders a configured text expander for the native input', function () {

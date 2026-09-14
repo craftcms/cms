@@ -24,6 +24,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
@@ -279,6 +280,24 @@ class FieldLayout extends Component
         return array_merge(parent::validationData(), [
             'customFields' => $this->getCustomFields(),
         ]);
+    }
+
+    #[Override]
+    public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
+    {
+        foreach ($this->getTabs() as $tabIndex => $tab) {
+            $components = ["tabs.$tabIndex" => $tab];
+
+            foreach ($tab->getElements() as $elementIndex => $element) {
+                $components["tabs.$tabIndex.elements.$elementIndex"] = $element;
+            }
+
+            foreach ($components as $path => $component) {
+                foreach ($component->validateConditions() as $attribute => $messages) {
+                    $this->errors()->merge(["$path.$attribute" => $messages]);
+                }
+            }
+        }
     }
 
     /** @param list<FieldInterface> $customFields */
@@ -1059,16 +1078,16 @@ class FieldLayout extends Component
      *
      * @param  int  $size  The maximum width and height the thumbnail should have.
      */
-    public function getThumbHtmlForElement(string $key, ElementInterface $element, int $size): ?string
+    public function getThumbHtmlForElement(string $key, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return match (true) {
-            str_starts_with($key, 'layoutElement:') => $this->thumbHtmlForLayoutElement($key, $element, $size),
-            str_starts_with($key, 'contentBlock:') => $this->thumbHtmlForContentBlock($key, $element, $size),
+            str_starts_with($key, 'layoutElement:') => $this->thumbHtmlForLayoutElement($key, $element, $size, $mode),
+            str_starts_with($key, 'contentBlock:') => $this->thumbHtmlForContentBlock($key, $element, $size, $mode),
             default => null,
         };
     }
 
-    private function thumbHtmlForLayoutElement(string $key, ElementInterface $element, int $size): ?string
+    private function thumbHtmlForLayoutElement(string $key, ElementInterface $element, int $size, ImageTransformMode $mode): ?string
     {
         $layoutElement = $this->getElementByKey($key);
 
@@ -1076,10 +1095,10 @@ class FieldLayout extends Component
             return null;
         }
 
-        return $layoutElement->thumbHtml($element, $size);
+        return $layoutElement->thumbHtml($element, $size, $mode);
     }
 
-    private function thumbHtmlForContentBlock(string $key, ElementInterface $element, int $size): ?string
+    private function thumbHtmlForContentBlock(string $key, ElementInterface $element, int $size, ImageTransformMode $mode): ?string
     {
         // the key will be in the format `contentBlock:X::[...]::layoutElement:X`
         $keyParts = explode('.', $key);
@@ -1107,6 +1126,7 @@ class FieldLayout extends Component
             implode('.', $keyParts),
             $element->getFieldValue($field->handle),
             $size,
+            $mode,
         );
     }
 

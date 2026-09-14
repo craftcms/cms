@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
@@ -260,7 +261,7 @@ describe('StatusConditionRule', function () {
         ]);
 
         $query = Entry::find()->status(null);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         foreach ($query->all() as $result) {
             expect($result->getStatus())->toBe('live');
@@ -479,7 +480,7 @@ describe('LanguageConditionRule', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThan(0);
     });
@@ -494,7 +495,7 @@ describe('LanguageConditionRule', function () {
 
         $query = Entry::find();
 
-        expect(fn () => $rule->modifyQuery($query, $query))->toThrow(InvalidArgumentException::class);
+        expect(fn () => $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query)))->toThrow(InvalidArgumentException::class);
     });
 });
 
@@ -532,7 +533,7 @@ describe('SiteConditionRule', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThan(0);
 
@@ -576,7 +577,7 @@ describe('SiteGroupConditionRule', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThan(0);
     });
@@ -611,7 +612,7 @@ describe('HasDescendantsRule', function () {
         ]);
 
         $query = Entry::find()->structureId($structure->id);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $ids = $query->ids();
 
@@ -656,7 +657,7 @@ describe('LevelConditionRule', function () {
         ]);
 
         $query = Entry::find()->structureId($structure->id);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThan(0);
 

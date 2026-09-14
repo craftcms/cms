@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions\entries;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @deprecated in 4.4.0. [[SavableConditionRule]] should be used instead.
-     */
-    class EditableConditionRule
-    {
-    }
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyLightswitchConditionRule;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Entry\Conditions\SavableConditionRule instead. */
+class EditableConditionRule extends \CraftCms\Cms\Entry\Conditions\SavableConditionRule
+{
+    use LegacyLightswitchConditionRule;
 }

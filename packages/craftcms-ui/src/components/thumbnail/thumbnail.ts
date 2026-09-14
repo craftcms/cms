@@ -42,6 +42,12 @@ export default class CraftThumbnail extends LitElement {
   /** Image source URL. When omitted, the default slot is rendered instead. */
   @property() src: string | null = null;
 
+  /** How the image fills the thumbnail box. Letterbox backgrounds come from the server. */
+  @property({reflect: true}) mode: 'crop' | 'fit' | 'stretch' | 'letterbox' =
+    'fit';
+
+  private svgAspectRatios = new Map<SVGSVGElement, string | null>();
+
   /** Candidate image sources for responsive rendering. */
   @property() srcset: string | null = null;
 
@@ -67,11 +73,59 @@ export default class CraftThumbnail extends LitElement {
   /** Whether to round the corners of the image. */
   @property({type: Boolean, reflect: true}) rounded = false;
 
+  private restoreSlottedSvgs() {
+    for (const [svg, aspectRatio] of this.svgAspectRatios) {
+      if (aspectRatio === null) {
+        svg.removeAttribute('preserveAspectRatio');
+      } else {
+        svg.setAttribute('preserveAspectRatio', aspectRatio);
+      }
+    }
+    this.svgAspectRatios.clear();
+  }
+
+  private updateSlottedSvgs() {
+    this.restoreSlottedSvgs();
+    if (this.mode !== 'crop' && this.mode !== 'stretch') {
+      return;
+    }
+
+    const slot = this.shadowRoot?.querySelector('slot');
+    for (const element of slot?.assignedElements() ?? []) {
+      if (element instanceof SVGSVGElement) {
+        this.svgAspectRatios.set(
+          element,
+          element.getAttribute('preserveAspectRatio')
+        );
+        element.setAttribute(
+          'preserveAspectRatio',
+          this.mode === 'crop' ? 'xMidYMid slice' : 'none'
+        );
+      }
+    }
+  }
+
+  override updated() {
+    this.updateSlottedSvgs();
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.updateSlottedSvgs();
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.restoreSlottedSvgs();
+  }
+
   override render() {
     const classes = {
       thumbnail: true,
       'thumbnail--checkered': this.checkered,
       'thumbnail--rounded': this.rounded,
+      'thumbnail--crop': this.mode === 'crop',
+      'thumbnail--stretch': this.mode === 'stretch',
     };
 
     return html`
@@ -90,7 +144,7 @@ export default class CraftThumbnail extends LitElement {
               decoding="async"
             />`
           : nothing}
-        <slot></slot>
+        <slot @slotchange=${this.updateSlottedSvgs}></slot>
       </div>
     `;
   }

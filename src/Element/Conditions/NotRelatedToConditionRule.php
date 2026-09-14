@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -19,7 +20,7 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
     }
 
     #[\Override]
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applyNotRelatedTo($query, $this->getElementIds(), $elementQuery);
     }

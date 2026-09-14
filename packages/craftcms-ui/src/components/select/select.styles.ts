@@ -13,7 +13,7 @@ export default css`
   }
 
   :host([small]) .input-group__input {
-    --c-input-height: calc(var(--c-size-control-sm) - 2px);
+    --c-input-height: var(--c-size-control-sm);
   }
 
   ::slotted(.form-control) {

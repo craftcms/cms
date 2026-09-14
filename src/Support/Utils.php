@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Support;
 
 use Closure;
 use Illuminate\Support\Collection;
+use PropertyHookType;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -23,6 +24,7 @@ class Utils
     public static function getPublicProperties(object|string $target, ?Closure $filter = null): array
     {
         return self::getPublicReflectionProperties($target, $filter)
+            ->reject(fn (ReflectionProperty $property) => $property->isVirtual() && ! $property->hasHook(PropertyHookType::Get))
             ->mapWithKeys(function (ReflectionProperty $property) use ($target) {
                 if (! $property->isInitialized($target)) {
                     // If a type of `array` is given with no value, let's assume users want
