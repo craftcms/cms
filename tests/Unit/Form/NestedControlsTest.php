@@ -147,6 +147,21 @@ it('writes the block identity the element clipboard reads off the DOM', function
         ->and($block->attr('data-ui-label'))->toBe('Entry 12');
 });
 
+it('declares which Controls hold nested forms', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $matrix = $payload->nodes[0]->control;
+    $contentBlock = $matrix->forms[0]->nodes[1]->control;
+    $heading = $matrix->forms[0]->nodes[0]->control;
+
+    // A change inside one of these marks the field holding it, so the browser
+    // has to be told which they are. Leaf Controls ship nothing.
+    expect($matrix->nestsForms)->toBeTrue()
+        ->and($matrix->jsonSerialize())->toHaveKey('nestsForms', true)
+        ->and($contentBlock->nestsForms)->toBeTrue()
+        ->and($heading->nestsForms)->toBeFalse()
+        ->and($heading->jsonSerialize())->not->toHaveKey('nestsForms');
+});
+
 it('uses explicit empty canonical values', function () {
     $form = Form::make([
         Field::make()->control(Matrix::make('matrix')->entryTypes(['text' => 'Text'])),

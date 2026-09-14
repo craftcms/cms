@@ -42,6 +42,17 @@ interface Control
     public function emptyValue(): mixed;
 
     /**
+     * Returns whether the control renders nested forms — Matrix blocks, a
+     * content block.
+     *
+     * A change anywhere inside one marks the control holding it as modified,
+     * the way Craft 5's element editor marks every enclosing field of a changed
+     * input. That's how an edit inside a block the server knows nothing about
+     * yet — one created in this draft — still shows on the field holding it.
+     */
+    public function nestsForms(): bool;
+
+    /**
      * Returns the Vue component registry name used to render this control.
      *
      * The component must be registered before the form is mounted and accept

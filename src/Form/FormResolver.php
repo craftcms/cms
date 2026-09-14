@@ -214,6 +214,7 @@ class FormResolver
             forms: $forms,
             reactive: $control->isReactive(),
             emptyValue: $control->emptyValue(),
+            nestsForms: $control->nestsForms(),
         );
     }
 

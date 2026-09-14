@@ -502,6 +502,103 @@ describe('FormRenderer', () => {
     ).toBeNull();
   });
 
+  /**
+   * Craft 5 marks a changed input's field and every enclosing field. That's
+   * how an edit inside a block created in this draft — which the server has no
+   * change record for — still shows on the Matrix field holding it. The field
+   * inside the block doesn't badge on its own.
+   */
+  it('badges a field holding nested forms when something inside it changes', async () => {
+    const nested = clonePayload();
+    const group = ['settings', 'matrix'];
+    const blockScope = [...group, 'entries', 'block-a'];
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'First'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: group,
+          mode: 'editable',
+          deltaGroup: group,
+          nestsForms: true,
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {
+                    label: 'Heading',
+                    instructions: null,
+                    required: false,
+                  },
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    deltaGroup: group,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(nested);
+
+    const fieldFor = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="${name}"]`)!
+        .closest('craft-field')!;
+    const matrix = () => fieldFor('settings[matrix]');
+    const heading = () =>
+      fieldFor('settings[matrix][entries][block-a][heading]');
+
+    // Nothing has changed yet, and the server reported nothing.
+    expect(matrix().getAttribute('status')).toBeNull();
+
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[matrix][entries][block-a][heading]"]'
+    )!;
+    input.value = 'Changed';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(matrix().getAttribute('status')).toBe('modified');
+    expect(heading().getAttribute('status')).toBeNull();
+
+    // Throwing the values away clears it — even though rewriting the input
+    // makes its control report a change that leaves the value where it started.
+    renderer.resetValues();
+    await nextTick();
+
+    expect(matrix().getAttribute('status')).toBeNull();
+  });
+
   it('renders the shared payload with equivalent names, values, and errors', () => {
     const placeholder = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'

@@ -153,6 +153,12 @@ abstract class Control implements ControlContract
         return null;
     }
 
+    /** Whether the control renders nested forms. See the contract. */
+    public function nestsForms(): bool
+    {
+        return false;
+    }
+
     /**
      * Returns type-specific, JSON-safe configuration for both renderers.
      *

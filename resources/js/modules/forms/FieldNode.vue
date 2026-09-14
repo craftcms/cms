@@ -7,6 +7,7 @@
   import {
     FormControlOverrides,
     FormFailure,
+    FormChangedPaths,
     FormModifiedGroups,
     formChangeFromEvent,
     pathsMatch,
@@ -87,19 +88,43 @@
     () => props.refreshable && Boolean(control.value.reactive)
   );
 
-  /**
-   * Matched on the delta group, so a field split across several controls badges
-   * as one unit.
-   *
-   * Only for controls belonging to the element this form is for. A control
-   * inside a nested form — a Matrix block, an address — answers to a different
-   * element, but inherits its owner's delta group, so it would otherwise badge
-   * whenever the field holding it changed: add one block and every field in
-   * every block lights up. A nested form's scope always runs past the group it
-   * inherited, which is what tells the two apart.
-   */
   const modifiedGroups = inject(FormModifiedGroups, undefined);
-  const modified = computed(() => {
+  const changedPaths = inject(FormChangedPaths, undefined);
+  const modified = computed(() => holdsChange() || modifiedByServer());
+
+  /**
+   * Whether something changed inside this field, for a field holding nested
+   * forms.
+   *
+   * Craft 5's element editor marks a changed input's field and every enclosing
+   * field — `parentsUntil(this.$container, '.field')`. That's what puts the
+   * badge on a Matrix field whose block was edited even when the block was
+   * created in this draft, which the server has no change record for yet. Only
+   * the enclosing fields, though: a field inside a block doesn't badge on its
+   * own, the block's field says it.
+   */
+  function holdsChange(): boolean {
+    if (!control.value.nestsForms || !changedPaths) {
+      return false;
+    }
+
+    const own = control.value.path.join('.');
+
+    for (const path of changedPaths.value) {
+      if (path === own || path.startsWith(`${own}.`)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * The server's modified groups, for controls of the element this form is
+   * for. A control inside a nested form inherits its owner's delta group, so it
+   * would otherwise badge whenever the field holding it changed.
+   */
+  function modifiedByServer(): boolean {
     if (props.scope.length > control.value.deltaGroup.length) {
       return false;
     }
@@ -107,7 +132,7 @@
     return (
       modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
     );
-  });
+  }
 
   function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);

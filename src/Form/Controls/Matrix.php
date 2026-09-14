@@ -385,6 +385,12 @@ class Matrix extends Control
     }
 
     #[\Override]
+    public function nestsForms(): bool
+    {
+        return true;
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         if ($this->entryTypes === []) {

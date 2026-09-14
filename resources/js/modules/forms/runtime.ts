@@ -26,6 +26,13 @@ export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormModifiedGroups');
 
+/**
+ * Dotted paths of every control changed since the form was last reset. A field
+ * holding nested forms badges when one lands at or below it — see FieldNode.
+ */
+export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
+  Symbol('FormChangedPaths');
+
 /** Control paths whose changes have an active Form refresh. */
 export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormRefreshingFields');

@@ -41,11 +41,13 @@ export interface FormProperties {
  */
 export type FormControlPayload<Props extends object = FormProperties> = Omit<
   GeneratedFormControlPayload,
-  'props' | 'forms' | 'reactive' | 'emptyValue'
+  'props' | 'forms' | 'reactive' | 'emptyValue' | 'nestsForms'
 > & {
   props: Props;
   forms?: NestedFormPayload[];
   reactive?: boolean;
+  /** Whether the control renders nested forms. Shipped only when true. */
+  nestsForms?: boolean;
 };
 
 export type FormNodePayload<
