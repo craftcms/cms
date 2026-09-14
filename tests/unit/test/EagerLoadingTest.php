@@ -12,6 +12,7 @@ use Craft;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
+use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
 
@@ -26,6 +27,10 @@ class EagerLoadingTest extends TestCase
     public function _fixtures(): array
     {
         return [
+            'entries' => [
+                'class' => EntryFixture::class,
+                'createRevisions' => true,
+            ],
             'entry-with-matrix' => [
                 'class' => EntryWithMatrixFixture::class,
             ],
