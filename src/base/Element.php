@@ -5752,6 +5752,7 @@ JS,
     public function addInvalidNestedElementIds(array $ids): void
     {
         array_push($this->_invalidNestedElementIds, ...$ids);
+        $this->_invalidNestedElementIds = array_unique($this->_invalidNestedElementIds);
     }
 
     /**
