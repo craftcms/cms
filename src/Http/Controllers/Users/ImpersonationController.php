@@ -13,7 +13,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
@@ -21,6 +20,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 readonly class ImpersonationController
@@ -52,7 +52,7 @@ readonly class ImpersonationController
         $this->impersonation->setImpersonatorId($this->request->craftUser()?->getCraftUserId());
 
         try {
-            if (! Auth::loginUsingId($user->id)) {
+            if (! craftAuth()->loginUsingId($user->id)) {
                 throw new RuntimeException('Unable to retrieve the user being impersonated.');
             }
         } catch (Throwable) {
@@ -105,7 +105,7 @@ readonly class ImpersonationController
         $this->impersonation->setImpersonatorId($prevUserId);
 
         try {
-            if (! Auth::loginUsingId($user->id)) {
+            if (! craftAuth()->loginUsingId($user->id)) {
                 throw new RuntimeException('Unable to retrieve the user being impersonated.');
             }
         } catch (Throwable) {

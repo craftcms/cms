@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Utility\Utilities;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,10 @@ beforeEach(function () {
     $user->shouldReceive('isAdmin')->andReturnTrue();
     $user->shouldReceive('can')->andReturnTrue();
 
-    Auth::shouldReceive('user')->andReturn($user);
+    $this->authGuard = Mockery::mock(Guard::class);
+    $this->authGuard->shouldReceive('user')->andReturn($user);
+    Auth::shouldReceive('getDefaultDriver')->andReturn('web');
+    Auth::shouldReceive('guard')->with('web')->andReturn($this->authGuard);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
 });
 

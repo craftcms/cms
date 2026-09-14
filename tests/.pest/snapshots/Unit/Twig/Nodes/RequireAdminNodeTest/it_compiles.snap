@@ -1,5 +1,5 @@
 // line 1
-if (! $user = Illuminate\Support\Facades\Auth::user()) {
+if (! $user = \CraftCms\Cms\craftAuth()->user()) {
     throw new Illuminate\Auth\AuthenticationException('Unauthenticated.');
 }
 if (! $user->isAdmin()) {
