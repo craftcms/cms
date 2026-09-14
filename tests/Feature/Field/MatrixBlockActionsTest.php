@@ -175,3 +175,29 @@ it('offers the selection’s actions from the field menu, hidden until blocks ar
         ->and(array_column($selection, 'hidden'))->toBe([false, true, true, true])
         ->and(array_map(fn (array $item): string => $item['action']['detail']['action'], $selection))->toBe(['select', 'deselect', 'collapse', 'disable']);
 });
+
+it('groups the field menu items by what they do', function () {
+    matrixActionsFixture();
+
+    /** @var Matrix $field */
+    $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
+    $items = new ReflectionMethod($field, 'blockViewActionMenuItems')->invoke($field);
+
+    $kinds = array_map(fn (array $item): string => match (true) {
+        ($item['type'] ?? null) === 'hr' => '---',
+        ($item['action']['name'] ?? null) === 'craft:copy-nested-elements' => 'copy',
+        ($item['action']['name'] ?? null) === 'craft:matrix-toggle-all' => 'fold',
+        default => match ($item['action']['detail']['action'] ?? null) {
+            'select', 'deselect' => 'select',
+            'collapse', 'expand' => 'fold',
+            'disable', 'enable' => 'enable',
+        },
+    }, $items);
+
+    expect($kinds)->toBe([
+        'select', 'select', '---',
+        'fold', 'fold', 'fold', '---',
+        'enable', '---',
+        'copy',
+    ]);
+});

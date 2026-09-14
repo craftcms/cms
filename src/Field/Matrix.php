@@ -1143,19 +1143,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     private function blockViewActionMenuItems(): array
     {
         $items = [];
+        $type = Entry::pluralLowerDisplayName();
 
-        // Expand/Collapse all. These operate on the field's input, so they're
-        // excluded from chip menus, where the input may not be present (e.g.
-        // the field layout designer's field-settings slideout).
+        // Grouped by what they do — selecting, folding, enabling, copying — with a
+        // separator between groups. Everything operates on the field's input, so
+        // it's all excluded from chip menus, where the input may not be present
+        // (e.g. the field layout designer's field-settings slideout).
         // Behavior travels with each item as a declarative action, handled by
         // the field action listeners in `resources/js/modules/fields`. The
         // listeners resolve the blocks from the invoking item's own field, so
         // no ID coordination between PHP and the Vue renderer is needed.
+        // The input decides which items apply right now, what each says, and
+        // hides the separators around a group with nothing left showing
+        // (see `resources/js/modules/matrix/selection-menu.ts`).
+
+        // Select
+        $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
+            'type' => $type,
+        ]), hidden: false);
+        $items[] = $this->selectionAction('deselect', 'xmark', t('Deselect all {type}', [
+            'type' => $type,
+        ]));
+        $items[] = ['type' => 'hr'];
+
+        // Expand/Collapse
         $items[] = [
             'id' => sprintf('expand-all-%s', mt_rand()),
             'icon' => 'expand',
             'label' => mb_ucfirst(t('Expand all blocks', [
-                'type' => Entry::pluralLowerDisplayName(),
+                'type' => $type,
             ])),
             'showInChips' => false,
             'action' => [
@@ -1168,7 +1184,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'id' => sprintf('collapse-all-%s', mt_rand()),
             'icon' => 'collapse',
             'label' => mb_ucfirst(t('Collapse all blocks', [
-                'type' => Entry::pluralLowerDisplayName(),
+                'type' => $type,
             ])),
             'showInChips' => false,
             'action' => [
@@ -1177,23 +1193,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'detail' => ['collapse' => true],
             ],
         ];
-
-        $items[] = $this->copyAction(Entry::pluralLowerDisplayName(), '.matrixblock');
-
-        // The selection's own items. Select all shows while any block is
-        // unselected; the rest stay hidden until blocks are selected. The input
-        // decides what shows, and what each says
-        // (see `resources/js/modules/matrix/selection-menu.ts`).
-        $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
-            'type' => Entry::pluralLowerDisplayName(),
-        ]), hidden: false);
-        $items[] = $this->selectionAction('deselect', 'xmark', t('Deselect all {type}', [
-            'type' => Entry::pluralLowerDisplayName(),
-        ]));
         $items[] = $this->selectionAction('collapse', 'collapse', t('Collapse selected blocks'));
+        $items[] = ['type' => 'hr'];
+
+        // Enable/Disable
         $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
-            'type' => Entry::pluralLowerDisplayName(),
+            'type' => $type,
         ]));
+        $items[] = ['type' => 'hr'];
+
+        // Copy
+        $items[] = $this->copyAction($type, '.matrixblock');
 
         return $items;
     }

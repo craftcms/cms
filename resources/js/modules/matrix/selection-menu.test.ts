@@ -3,6 +3,7 @@ import {
   MATRIX_SELECTION_ACTION,
   selectionMenuItem,
   syncSelectionMenu,
+  withoutStraySeparators,
 } from './selection-menu';
 
 const copy = {
@@ -282,5 +283,85 @@ describe('syncSelectionMenu', () => {
 
     expect(copyItem!.textContent).toBe('Copy all blocks');
     expect(collapseItem!.hasAttribute('hidden')).toBe(true);
+  });
+});
+
+describe('withoutStraySeparators', () => {
+  const hr = {type: 'hr'};
+  const shown = (label: string) => ({type: 'button', label});
+  const hidden = (label: string) => ({type: 'button', label, hidden: true});
+  const labels = (items: Array<{type: string; label?: string}>) =>
+    items.map((item) => (item.type === 'hr' ? '---' : item.label));
+
+  it('keeps a separator between groups that both show something', () => {
+    expect(
+      labels(withoutStraySeparators([shown('a'), hr, shown('b')]))
+    ).toEqual(['a', '---', 'b']);
+  });
+
+  it('drops the separator around a group with nothing showing', () => {
+    expect(
+      labels(
+        withoutStraySeparators([
+          shown('select'),
+          hr,
+          hidden('disable'),
+          hr,
+          shown('copy'),
+        ])
+      )
+    ).toEqual(['select', 'disable', '---', 'copy']);
+  });
+
+  it('never leaves a separator at either end', () => {
+    expect(
+      labels(
+        withoutStraySeparators([hidden('a'), hr, shown('b'), hr, hidden('c')])
+      )
+    ).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('syncSelectionMenu separators', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('hides the separators around a group with nothing showing', () => {
+    const action = (detail: object) =>
+      JSON.stringify({type: 'event', name: MATRIX_SELECTION_ACTION, detail});
+    document.body.innerHTML = `
+      <craft-field id="field">
+        <craft-action-menu>
+          <div slot="content">
+            <craft-action-item action='${action({action: 'select'})}'>Select all</craft-action-item>
+            <hr id="first">
+            <craft-action-item action='${action({action: 'disable'})}' hidden>Disable selected</craft-action-item>
+            <hr id="second">
+            <craft-action-item>Field settings</craft-action-item>
+          </div>
+        </craft-action-menu>
+        <div class="matrixblock"></div>
+        <div class="matrixblock"></div>
+      </craft-field>
+    `;
+    const field = document.querySelector('#field')!;
+
+    syncSelectionMenu(field);
+
+    // Nothing is selected, so "Disable selected" stays hidden: one separator.
+    expect([
+      field.querySelector<HTMLElement>('#first')!.hidden,
+      field.querySelector<HTMLElement>('#second')!.hidden,
+    ]).toEqual([true, false]);
+
+    // One of two selected: "Select all" and "Disable selected" both apply.
+    field.querySelector('.matrixblock')!.classList.add('sel');
+    syncSelectionMenu(field);
+
+    expect([
+      field.querySelector<HTMLElement>('#first')!.hidden,
+      field.querySelector<HTMLElement>('#second')!.hidden,
+    ]).toEqual([false, false]);
   });
 });

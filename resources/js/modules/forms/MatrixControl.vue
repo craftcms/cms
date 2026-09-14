@@ -36,6 +36,7 @@
   import {
     MATRIX_SELECTION_ACTION,
     selectionMenuItem,
+    withoutStraySeparators,
   } from '@/modules/matrix/selection-menu';
   import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -1338,7 +1339,9 @@
 
   if (fieldActionItems) {
     fieldActionItems.value = (items) =>
-      items.map((item) => selectionMenuItem(item, selectionState.value));
+      withoutStraySeparators(
+        items.map((item) => selectionMenuItem(item, selectionState.value))
+      );
   }
 
   onMounted(() => {

@@ -215,6 +215,8 @@ export function syncSelectionMenu(field: Element): void {
     anyExpanded: blocks.some((block) => !block.classList.contains('collapsed')),
   };
 
+  const menus = new Set<Element | null>();
+
   for (const element of field.querySelectorAll<HTMLElement>(
     'craft-action-item'
   )) {
@@ -229,5 +231,78 @@ export function syncSelectionMenu(field: Element): void {
     element.hidden = Boolean(next.hidden);
     element.textContent = next.label ?? '';
     element.setAttribute('action', JSON.stringify(next.action));
+    menus.add(element.parentElement);
+  }
+
+  for (const menu of menus) {
+    if (menu) {
+      hideStraySeparators(menu);
+    }
+  }
+}
+
+function isSeparator(item: object): boolean {
+  return (item as {type?: string}).type === 'hr';
+}
+
+/**
+ * The menu's items without the separators that no longer separate anything:
+ * the menu groups its items by what they do, and a group whose items are all
+ * hidden would leave two separators in a row, or one hanging off either end.
+ *
+ * Dropped rather than hidden — `craft-action-menu` renders an `hr` item
+ * whatever its `hidden` says.
+ */
+export function withoutStraySeparators<Item extends object>(
+  items: readonly Item[]
+): Item[] {
+  const kept: Item[] = [];
+  let pending: Item | null = null;
+
+  for (const item of items) {
+    if (isSeparator(item)) {
+      // Only once something visible has come before it.
+      pending = kept.some((keptItem) => !isHidden(keptItem)) ? item : pending;
+      continue;
+    }
+
+    if (pending && !isHidden(item)) {
+      kept.push(pending);
+      pending = null;
+    }
+
+    kept.push(item);
+  }
+
+  return kept;
+}
+
+function isHidden(item: object): boolean {
+  return Boolean((item as {hidden?: boolean}).hidden);
+}
+
+/** {@link withoutStraySeparators} for a server-rendered menu's `<hr>`s. */
+function hideStraySeparators(menu: Element): void {
+  let visibleBefore = false;
+  let pending: HTMLElement | null = null;
+
+  for (const child of menu.children) {
+    if (!(child instanceof HTMLElement)) {
+      continue;
+    }
+
+    if (child.tagName === 'HR') {
+      child.hidden = true;
+      pending = visibleBefore ? child : pending;
+      continue;
+    }
+
+    if (!child.hidden) {
+      if (pending) {
+        pending.hidden = false;
+        pending = null;
+      }
+      visibleBefore = true;
+    }
   }
 }
