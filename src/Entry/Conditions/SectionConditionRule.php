@@ -10,12 +10,12 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -71,7 +71,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
             ->all();
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $sectionIds = Sections::getAllSectionIds()->values()->all();

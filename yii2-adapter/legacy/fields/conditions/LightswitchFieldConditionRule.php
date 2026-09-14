@@ -1,17 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\fields\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Lightswitch field condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule} instead.
-     */
-    class LightswitchFieldConditionRule extends \CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule
+use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyLightswitchConditionRule;
+use RuntimeException;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule instead. */
+class LightswitchFieldConditionRule extends \CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule
+{
+    use LegacyLightswitchConditionRule {
+        inputHtml as private baseInputHtml;
+    }
+
+    protected function inputHtml(): string
     {
+        if (!$this->field() instanceof Lightswitch) {
+            throw new RuntimeException();
+        }
+
+        return $this->baseInputHtml();
     }
 }

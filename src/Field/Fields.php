@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Migrator;
@@ -1229,7 +1230,19 @@ class Fields
             return;
         }
 
-        foreach ($condition->getConditionRules() as $rule) {
+        $this->updateFieldUidInRules($condition->getConditionRules(), $replacedFields);
+    }
+
+    /** @param array<string, array{string, string}> $replacedFields */
+    private function updateFieldUidInRules(ConditionGroupInterface $group, array &$replacedFields): void
+    {
+        foreach ($group->getRules() as $rule) {
+            if ($rule instanceof ConditionGroupInterface) {
+                $this->updateFieldUidInRules($rule, $replacedFields);
+
+                continue;
+            }
+
             if (! $rule instanceof FieldConditionRuleInterface) {
                 continue;
             }

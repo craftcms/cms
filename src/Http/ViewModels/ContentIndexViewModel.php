@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -272,7 +273,7 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     public function sortOptions(): array
     {
-        [$sourceKey] = $this->sourceState();
+        [$sourceKey, $source] = $this->sourceState();
 
         if ($sourceKey === null) {
             return [];
@@ -280,6 +281,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
         $indexState = $this->indexState();
         $options = [];
+
+        if (isset($source['structureId'])) {
+            $options['structure'] = [
+                'label' => t('Structure'),
+                'value' => 'structure',
+                'defaultDir' => 'asc',
+            ];
+        }
 
         foreach ($indexState->sortOptions($this->elementType) as $option) {
             $value = self::addressableSortAttribute($option);
@@ -557,6 +566,7 @@ abstract class ContentIndexViewModel extends ViewModel
             elementType: $this->elementType,
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
+            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
         )['query'];
 
         $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
@@ -731,12 +741,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return $chip;
         }
 
-        // `:inertia`, bound — a plain `inertia => false` renders nothing at all
-        // (Html::tag drops false attributes), so the prop falls back to its
-        // `true` default and the title becomes an Inertia <Link> that navigates
-        // on click. The element edit screen isn't an Inertia page, so that
-        // visit only ends in a hard redirect anyway.
-        return Html::tag('CpLink', $chip, ['href' => $editUrl, ':inertia' => 'false']);
+        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
     }
 
     /**
@@ -794,7 +799,7 @@ abstract class ContentIndexViewModel extends ViewModel
             'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
                 ? $element->getCpEditUrl()
                 : null,
-            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE),
+            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
         ], $elements);
     }
 

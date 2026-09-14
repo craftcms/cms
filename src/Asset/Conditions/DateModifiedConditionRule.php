@@ -11,8 +11,8 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\ElementQuery;
-use Illuminate\Contracts\Database\Query\Builder;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -32,7 +32,7 @@ class DateModifiedConditionRule extends BaseDateRangeConditionRule implements El
         return t('File Modification Date');
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         AssetQuery::applyDateModified($query, $this->queryParamValue());
     }

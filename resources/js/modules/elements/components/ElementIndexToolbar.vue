@@ -7,7 +7,7 @@
   import type {CheckboxOption} from '@/common/types';
   import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';
-  import type {ConditionConfig} from '@/modules/elements/composables/useConditionBuilder';
+  import type {ConditionConfig} from '@/modules/conditions/types';
   import {ref} from 'vue';
 
   defineProps<{
@@ -38,6 +38,7 @@
   }>();
 
   const filterActive = ref(false);
+  const filterAnchor = ref<HTMLElement>();
 </script>
 
 <template>
@@ -63,7 +64,7 @@
         </CraftSelectRich>
       </div>
 
-      <div class="relative flex-1">
+      <div ref="filterAnchor" class="relative flex-1">
         <CraftInput
           name="search"
           :label="t('Search term')"
@@ -99,6 +100,7 @@
 
         <FilterHud
           v-if="filterActive"
+          :anchor="filterAnchor"
           @close="filterActive = false"
           @apply="emit('submit')"
           v-model="conditions"

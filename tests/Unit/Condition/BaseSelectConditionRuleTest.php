@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Condition\BaseSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Entry\Elements\Entry;
 
 class TestSelectConditionRule extends BaseSelectConditionRule
 {
@@ -14,6 +16,7 @@ class TestSelectConditionRule extends BaseSelectConditionRule
     protected function options(): array
     {
         return [
+            '' => 'Any',
             'option_a' => 'Option A',
             'option_b' => 'Option B',
             'option_c' => 'Option C',
@@ -81,3 +84,10 @@ describe('getConfig', function () {
         expect(callMatchValue($restored, 'option_a'))->toBeFalse();
     });
 });
+
+it('validates selectable values including an empty option', function (string $value, bool $valid) {
+    $rule = createSelectRule($value);
+    $rule->setCondition(new ElementCondition(Entry::class));
+
+    expect($rule->validate())->toBe($valid);
+})->with([['', true], ['option_a', true], ['unknown', false]]);

@@ -68,9 +68,6 @@ it('orders the Assets field settings the way Craft 5 did', function () {
         'asset-location-separator',
         'selectionCondition',
         'showUnpermittedVolumes',
-        'showUnpermittedFiles',
-        'restrictFiles',
-        'asset-file-kind-settings/allowedKinds',
         'allowUploads',
         'minRelations',
         'maxRelations',
@@ -111,6 +108,5 @@ it('leaves the shared relation field settings order untouched', function () {
         'validateRelatedElements',
         'relation-advanced-settings/allowSelfRelations',
         'showUnpermittedSections',
-        'showUnpermittedEntries',
     ]);
 });

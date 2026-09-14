@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -31,11 +31,7 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
             ->all();
     }
 
-    /**
-     * @param  ElementQueryInterface  $query
-     * @param  ElementQuery<ElementInterface>  $elementQuery  The element query
-     */
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applySiteId($query, ElementQuery::siteIdsFromLanguage($this->paramValue()));
     }

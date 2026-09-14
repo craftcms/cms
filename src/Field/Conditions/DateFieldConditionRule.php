@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Date;
+use CraftCms\Cms\Form\Contracts\Node;
 use DateTimeInterface;
 use RuntimeException;
 
@@ -16,14 +17,15 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Eleme
 {
     use FieldConditionRuleTrait;
 
+    /** @return list<Node> */
     #[\Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if (! $this->field() instanceof Date) {
             throw new RuntimeException;
         }
 
-        return parent::inputHtml();
+        return parent::inputNodes();
     }
 
     /** @return array<int, string>|string|null */

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\CurrentElementIndex;
@@ -37,19 +39,26 @@ readonly class ElementSelectorModalController
             $statuses = $elementType::statuses();
 
             if ($condition) {
-                /** @var StatusConditionRule|null $statusRule */
-                $statusRule = collect($condition->getConditionRules())
-                    ->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
+                $rules = collect($condition->getConditionRules()->getRules());
 
-                if ($statusRule) {
-                    $statusValues = $statusRule->getValues();
-                    $statuses = collect($statuses)
-                        ->filter(function ($info, string $status) use ($statusRule, $statusValues) {
-                            $inValues = in_array($status, $statusValues);
+                if (
+                    $condition->getConditionRules()->operator === GroupOperator::And &&
+                    $rules->doesntContain(fn ($rule) => $rule instanceof ConditionGroupInterface)
+                ) {
+                    /** @var StatusConditionRule|null $statusRule */
+                    $statusRule = $rules->firstWhere(fn ($rule) => $rule instanceof StatusConditionRule);
 
-                            return $statusRule->operator === 'in' ? $inValues : ! $inValues;
-                        });
+                    if ($statusRule) {
+                        $statusValues = $statusRule->getValues();
+                        $statuses = collect($statuses)
+                            ->filter(function ($info, string $status) use ($statusRule, $statusValues) {
+                                $inValues = in_array($status, $statusValues);
+
+                                return $statusRule->operator === 'in' ? $inValues : ! $inValues;
+                            });
+                    }
                 }
+
             }
         }
 

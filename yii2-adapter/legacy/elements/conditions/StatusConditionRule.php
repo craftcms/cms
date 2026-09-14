@@ -1,17 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace craft\elements\conditions;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Element status condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\StatusConditionRule} instead.
-     */
-    class StatusConditionRule extends \CraftCms\Cms\Element\Conditions\StatusConditionRule
-    {
-    }
+use CraftCms\Yii2Adapter\Form\Concerns\LegacyMultiSelectConditionRule;
+
+/** @deprecated 6.0.0 Use \CraftCms\Cms\Element\Conditions\StatusConditionRule instead. */
+class StatusConditionRule extends \CraftCms\Cms\Element\Conditions\StatusConditionRule
+{
+    use LegacyMultiSelectConditionRule;
 }

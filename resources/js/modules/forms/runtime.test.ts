@@ -35,12 +35,12 @@ describe('formChangeFromEvent', () => {
   });
 
   it('ignores a CustomEvent carrying an unrelated detail', () => {
-    // htmx puts its request context in `detail`; it is not a form change.
-    const htmxish = new CustomEvent('change', {
+    // Request context in `detail` is not a form change.
+    const requestEvent = new CustomEvent('change', {
       detail: {elt: document.createElement('div'), xhr: {}, requestConfig: {}},
     });
 
-    expect(formChangeFromEvent(htmxish)).toBeNull();
+    expect(formChangeFromEvent(requestEvent)).toBeNull();
     expect(formChangeFromEvent(new Event('change'))).toBeNull();
   });
 });

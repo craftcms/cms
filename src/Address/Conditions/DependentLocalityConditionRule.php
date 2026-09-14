@@ -11,8 +11,8 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
-use CraftCms\Cms\Element\Queries\ElementQuery;
-use Illuminate\Contracts\Database\Query\Builder;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -32,7 +32,7 @@ class DependentLocalityConditionRule extends BaseTextConditionRule implements El
         return t('Dependent Locality');
     }
 
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         AddressQuery::applyDependentLocality($query, $this->paramValue());
     }

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -88,8 +87,8 @@ it('fixes duplicate and missing field layout uids', function (bool $external, bo
     if ($external) {
         $snapshot = ProjectConfig::get();
         $snapshot['testFixture']['pending'] = true;
-        new ReflectionProperty(ProjectConfig::getFacadeRoot(), '_externalConfig')
-            ->setValue(ProjectConfig::getFacadeRoot(), new ReadOnlyProjectConfigData($snapshot, ProjectConfig::getFacadeRoot()));
+        new ReflectionProperty(ProjectConfig::getFacadeRoot(), 'external')
+            ->setValue(ProjectConfig::getFacadeRoot(), $snapshot);
         expect(ProjectConfig::areChangesPending(force: true))->toBeTrue();
     }
 

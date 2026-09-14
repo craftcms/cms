@@ -23,6 +23,7 @@ use craft\fields\Link;
 use craft\fields\Matrix;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -47,7 +48,7 @@ use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Field\LinkTypes\Url;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Event;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
@@ -441,7 +442,7 @@ trait LegacyFieldConstants
 
     // Other compatibility methods
 
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         if (!method_exists(static::class, 'queryCondition')) {
             return;

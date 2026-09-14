@@ -22,6 +22,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Generators\IconDataType;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Html;
@@ -178,7 +179,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         /** @var IconData|null $value */
         return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : null;

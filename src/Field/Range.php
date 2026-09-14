@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
@@ -23,7 +24,7 @@ use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -82,7 +83,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         $valueSql = self::valueSql($instances);
 
