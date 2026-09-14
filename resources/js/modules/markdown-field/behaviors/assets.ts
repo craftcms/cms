@@ -41,6 +41,7 @@ export type AssetController = {
 export function createAssetController(
   editor: OverTypeInstance,
   assetCriteria: AssetCriteria,
+  assetCondition: Record<string, unknown> | null,
   assetSources: string[],
   preview: PreviewController
 ): AssetController {
@@ -52,6 +53,7 @@ export function createAssetController(
         ASSET_ELEMENT_TYPE,
         {
           closeOtherModals: false,
+          condition: assetCondition,
           criteria: assetCriteria,
           hideOnSelect: true,
           modalTitle: t('Choose an asset'),
