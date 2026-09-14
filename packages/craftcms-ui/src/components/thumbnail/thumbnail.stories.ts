@@ -3,6 +3,7 @@ import type CraftThumbnail from './thumbnail.js';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import {expect} from 'storybook/test';
+import {computeAccessibleName} from 'dom-accessibility-api';
 const {events, args, argTypes, template} =
   getStorybookHelpers('craft-thumbnail');
 import './thumbnail.js';
@@ -378,6 +379,45 @@ export const Presentations: Story = {
       await expect(getComputedStyle(image).objectFit).toBe(
         crop ? 'cover' : 'contain'
       );
+    }
+  },
+};
+
+// An animated (GIF/WEBP) source is frozen to its first frame instead of
+// autoplaying, per WCAG 2.2.2 — via the server-rendered `animated`
+// attribute, or via a `.gif`/`.webp` extension when that attribute isn't
+// present. See thumbnail.a11y.md for the requirements this verifies.
+export const Animated: Story = {
+  render: () => html`
+    <craft-thumbnail
+      src="${opaqueImage}"
+      alt="Animated via attribute"
+      animated
+      style="--c-thumbnail-size: 120px;"
+    ></craft-thumbnail>
+    <craft-thumbnail
+      src="${opaqueImage}#animated.gif"
+      alt="Animated via extension"
+      style="--c-thumbnail-size: 120px;"
+    ></craft-thumbnail>
+  `,
+  play: async ({canvasElement}) => {
+    for (const thumbnail of canvasElement.querySelectorAll(
+      'craft-thumbnail'
+    )) {
+      await thumbnail.updateComplete;
+      const image = thumbnail.shadowRoot!.querySelector('img')!;
+      await image.decode();
+
+      const cover = thumbnail.shadowRoot!.querySelector(
+        'canvas[part="cover"]'
+      );
+      await expect(cover).not.toBeNull();
+      await expect(cover!.getAttribute('aria-hidden')).toBe('true');
+
+      // The image stays accessible (alt text intact) despite being visually
+      // covered by the frozen-frame canvas.
+      await expect(computeAccessibleName(image)).toBe(thumbnail.alt);
     }
   },
 };

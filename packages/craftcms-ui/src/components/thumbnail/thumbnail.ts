@@ -30,6 +30,8 @@ const defaultTrueBoolean = {
  *
  * @csspart thumbnail - The outer thumbnail wrapper.
  * @csspart image - The rendered `<img>` element (only when `src` is set).
+ * @csspart cover - The frozen-frame canvas overlay, rendered in place of an
+ *   animated source's motion (see `animated`).
  *
  * @cssproperty [--c-thumbnail-size=calc(34rem / 16)] - Overall size of the thumbnail box.
  * @cssproperty [--c-thumbnail-radius=--c-radius-full] - Corner radius applied when `rounded` is set.
@@ -72,6 +74,24 @@ export default class CraftThumbnail extends LitElement {
 
   /** Whether to round the corners of the image. */
   @property({type: Boolean, reflect: true}) rounded = false;
+
+  /**
+   * Whether the source may be an animated image (e.g. GIF/WEBP). Server-rendered
+   * element thumbnails set this via `HasThumbnails::couldHaveAnimatedThumb()`; when
+   * absent, a `.gif`/`.webp` `src`/`srcset` is treated as animated too.
+   */
+  @property({type: Boolean, reflect: true}) animated = false;
+
+  private static readonly animatedExtensionPattern =
+    /\.(?:gif|webp)(?=[?#\s,]|$)/i;
+
+  private get isAnimated(): boolean {
+    return (
+      this.animated ||
+      CraftThumbnail.animatedExtensionPattern.test(this.src ?? '') ||
+      CraftThumbnail.animatedExtensionPattern.test(this.srcset ?? '')
+    );
+  }
 
   private restoreSlottedSvgs() {
     for (const [svg, aspectRatio] of this.svgAspectRatios) {
@@ -142,11 +162,89 @@ export default class CraftThumbnail extends LitElement {
               alt="${this.alt}"
               loading="${this.loading}"
               decoding="async"
+              @load=${this.freezeFrame}
             />`
+          : nothing}
+        ${this.src && this.isAnimated
+          ? html`<canvas
+              class="thumbnail__cover"
+              part="cover"
+              aria-hidden="true"
+              role="presentation"
+            ></canvas>`
           : nothing}
         <slot @slotchange=${this.updateSlottedSvgs}></slot>
       </div>
     `;
+  }
+
+  /**
+   * Loads the just-resolved image's source into a detached `Image`, which
+   * never gets composited on screen and so never advances past its first
+   * frame — unlike the visible `<img>`, which is actively animating by the
+   * time `load` fires. That detached copy is what gets drawn onto the cover
+   * canvas, sized to the visible image's rendered box.
+   */
+  private freezeFrame(event: Event) {
+    const image = event.target as HTMLImageElement;
+
+    if (!this.isAnimated || !image.currentSrc) {
+      return;
+    }
+
+    const frame = new Image();
+    frame.decoding = 'async';
+    frame.onload = () => this.paintCover(frame, image);
+    frame.src = image.currentSrc;
+  }
+
+  private paintCover(frame: HTMLImageElement, image: HTMLImageElement) {
+    const canvas = this.shadowRoot?.querySelector<HTMLCanvasElement>(
+      'canvas.thumbnail__cover'
+    );
+    const ctx = canvas?.getContext('2d');
+
+    if (!ctx) {
+      return;
+    }
+
+    const width = image.clientWidth;
+    const height = image.clientHeight;
+    // Raster at the display's actual pixel density — sizing the canvas by
+    // CSS pixels alone leaves it soft/blurry on high-DPI screens, since a
+    // plain <img> gets that crispness for free but a canvas doesn't.
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
+
+    if (this.mode === 'crop') {
+      // Unlike fit/letterbox/stretch, crop's `object-fit: cover` means the
+      // rendered box (clientWidth/clientHeight) doesn't share the source's
+      // aspect ratio — draw only the centered region that `cover` would
+      // have shown, instead of stretching the whole frame into that box.
+      const scale = Math.max(
+        width / frame.naturalWidth,
+        height / frame.naturalHeight
+      );
+      const sWidth = width / scale;
+      const sHeight = height / scale;
+      ctx.drawImage(
+        frame,
+        (frame.naturalWidth - sWidth) / 2,
+        (frame.naturalHeight - sHeight) / 2,
+        sWidth,
+        sHeight,
+        0,
+        0,
+        width,
+        height
+      );
+    } else {
+      ctx.drawImage(frame, 0, 0, width, height);
+    }
   }
 }
 
