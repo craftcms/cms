@@ -76,12 +76,19 @@ export default class CraftButton extends LionButtonSubmit {
     this.syncLinkHostState();
     this.addEventListener('click', this.#handleActionClick);
     this.addEventListener('click', this.#handleToggleClick);
+
+    // Moved while it was still waiting to be shown: disconnecting dropped the
+    // observer, so pick the wait back up rather than never judging it.
+    if (this.hasUpdated && !this.accessibleName) {
+      this.#checkAccessibleName();
+    }
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this.#handleActionClick);
     this.removeEventListener('click', this.#handleToggleClick);
+    this.#stopAwaitingRender();
 
     if (this.announcementTimer) {
       clearTimeout(this.announcementTimer);
@@ -196,6 +203,21 @@ export default class CraftButton extends LionButtonSubmit {
       Array.from(childComponents).map((child: any) => child.updateComplete)
     );
 
+    this.#checkAccessibleName();
+  }
+
+  /**
+   * Flags a button with no accessible name, once it's in a position to be
+   * judged.
+   *
+   * A button that can't be seen -- in a closed dialog, or a tab panel that
+   * isn't selected -- has no name to compute: the algorithm skips hidden
+   * content, so the name comes back empty whatever the label says. The check
+   * only ran once, so every labelled button that started out hidden stayed
+   * flagged after it was shown. An empty name on a hidden button now waits
+   * for the button to be shown, and is computed again then.
+   */
+  #checkAccessibleName(): void {
     if (!this.accessibleName) {
       // In link mode the host is role="presentation" (name not computable on
       // it); the real accessible element is the inner anchor.
@@ -206,8 +228,50 @@ export default class CraftButton extends LionButtonSubmit {
       this.accessibleName = computeAccessibleName(nameTarget);
     }
 
-    this._hasAccessibilityError =
-      !this.accessibleName || this.accessibleName.trim() === '';
+    const unnamed = !this.accessibleName || this.accessibleName.trim() === '';
+
+    if (unnamed && !this.#isVisible()) {
+      this.#awaitRender();
+      return;
+    }
+
+    this._hasAccessibilityError = unnamed;
+  }
+
+  /**
+   * Whether the button can be seen. `visibility: hidden` counts as well as
+   * `display: none` -- it's inherited, so it hides the name as surely -- which
+   * client rects alone would miss.
+   */
+  #isVisible(): boolean {
+    return typeof this.checkVisibility === 'function'
+      ? this.checkVisibility({visibilityProperty: true})
+      : this.getClientRects().length > 0;
+  }
+
+  #awaitRender(): void {
+    if (this.#renderObserver || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    // Showing a button gives it a box, which is what this observes. A button
+    // revealed by `visibility` alone keeps the box it had, so it isn't looked
+    // at again: an unnamed one there goes unflagged, rather than a labelled
+    // one being flagged for a name it couldn't be asked for.
+    this.#renderObserver = new ResizeObserver(() => {
+      if (!this.#isVisible()) {
+        return;
+      }
+
+      this.#stopAwaitingRender();
+      this.#checkAccessibleName();
+    });
+    this.#renderObserver.observe(this);
+  }
+
+  #stopAwaitingRender(): void {
+    this.#renderObserver?.disconnect();
+    this.#renderObserver = null;
   }
 
   /** The computed accessible name */
@@ -292,6 +356,9 @@ export default class CraftButton extends LionButtonSubmit {
 
   @state()
   private _hasAccessibilityError: boolean = false;
+
+  /** Waits for a hidden button to be shown before judging its name. */
+  #renderObserver: ResizeObserver | null = null;
 
   private linkHostStateApplied = false;
 
