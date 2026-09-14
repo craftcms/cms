@@ -193,12 +193,17 @@ export default class CraftThumbnail extends LitElement {
     }
 
     const frame = new Image();
-    frame.decoding = 'async';
     frame.onload = () => this.paintCover(frame, image);
     frame.src = image.currentSrc;
   }
 
   private paintCover(frame: HTMLImageElement, image: HTMLImageElement) {
+    // A malformed source could still fire `load` with 0x0 dimensions; bail
+    // out before the crop math below turns that into a divide-by-zero.
+    if (!frame.naturalWidth || !frame.naturalHeight) {
+      return;
+    }
+
     const canvas = this.shadowRoot?.querySelector<HTMLCanvasElement>(
       'canvas.thumbnail__cover'
     );
