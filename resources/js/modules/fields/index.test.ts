@@ -275,6 +275,34 @@ describe('field input action listeners', () => {
     expect(entries[1]!.disable).not.toHaveBeenCalled();
   });
 
+  it('selects and deselects the field’s blocks through its Matrix input', () => {
+    document.body.innerHTML = `
+      <craft-field>
+        <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
+        <div class="matrixblock" data-id="1"></div>
+      </craft-field>
+    `;
+    const entrySelect = {selectAll: vi.fn(), deselectAll: vi.fn()};
+    forContainer.mockReturnValue({matrix: {entrySelect}});
+    const trigger = document.querySelector('#trigger');
+
+    window.dispatchEvent(
+      new CustomEvent('craft:matrix-selection-action', {
+        detail: {action: 'select', trigger},
+      })
+    );
+
+    expect(entrySelect.selectAll).toHaveBeenCalled();
+
+    window.dispatchEvent(
+      new CustomEvent('craft:matrix-selection-action', {
+        detail: {action: 'deselect', trigger},
+      })
+    );
+
+    expect(entrySelect.deselectAll).toHaveBeenCalled();
+  });
+
   it('does not touch the clipboard when there is nothing to copy', () => {
     document.body.innerHTML = `
       <craft-field>

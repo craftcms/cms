@@ -164,13 +164,14 @@ it('offers the selection’s actions from the field menu, hidden until blocks ar
 
     /** @var Matrix $field */
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
-    $items = ($this->blockViewActionMenuItems(...))->call($field);
+    // The block view's items, without a whole field layout to render them in.
+    $items = new ReflectionMethod($field, 'blockViewActionMenuItems')->invoke($field);
     $selection = array_values(array_filter(
         $items,
         fn (array $item): bool => ($item['action']['name'] ?? null) === 'craft:matrix-selection-action',
     ));
 
-    expect(array_column($selection, 'label'))->toBe(['Collapse selected blocks', 'Disable selected blocks'])
-        ->and(array_column($selection, 'hidden'))->toBe([true, true])
-        ->and(array_map(fn (array $item): string => $item['action']['detail']['action'], $selection))->toBe(['collapse', 'disable']);
+    expect(array_column($selection, 'label'))->toBe(['Select all entries', 'Collapse selected blocks', 'Disable selected entries'])
+        ->and(array_column($selection, 'hidden'))->toBe([false, true, true])
+        ->and(array_map(fn (array $item): string => $item['action']['detail']['action'], $selection))->toBe(['select', 'collapse', 'disable']);
 });

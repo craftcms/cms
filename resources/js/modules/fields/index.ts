@@ -169,6 +169,23 @@ window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
     return;
   }
 
+  // Selecting goes through the input's own Select, whose change callback keeps
+  // the menu in step.
+  if (action === 'select' || action === 'deselect') {
+    const [block] = ownElements(field, '.matrixblock');
+    const select = block
+      ? MatrixEntry.forContainer(block)?.matrix.entrySelect
+      : null;
+
+    if (action === 'select') {
+      select?.selectAll();
+    } else {
+      select?.deselectAll();
+    }
+
+    return;
+  }
+
   let applied = false;
 
   for (const block of ownElements(field, '.matrixblock.sel')) {

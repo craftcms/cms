@@ -1289,20 +1289,31 @@
   function onSelectionAction(event: Event): void {
     const detail = (event as CustomEvent<{action?: string; trigger?: unknown}>)
       .detail;
-    const targets = [...selection.selectedIds.value];
 
-    if (!fromOwnField(detail?.trigger) || !targets.length) {
+    if (!fromOwnField(detail?.trigger)) {
       return;
     }
 
+    const targets = [...selection.selectedIds.value];
+
     switch (detail?.action) {
+      case 'select':
+        selection.selectAll(true);
+        break;
+      case 'deselect':
+        selection.clear();
+        break;
       case 'collapse':
       case 'expand':
-        setCollapsedMany(targets, detail.action === 'collapse');
+        if (targets.length) {
+          setCollapsedMany(targets, detail.action === 'collapse');
+        }
         break;
       case 'disable':
       case 'enable':
-        setEnabledMany(targets, detail.action === 'enable');
+        if (targets.length) {
+          setEnabledMany(targets, detail.action === 'enable');
+        }
         break;
     }
   }
@@ -1316,6 +1327,7 @@
     const selected = selection.selectedIds.value;
 
     return {
+      total: props.value.sortOrder.length,
       count: selected.length,
       collapsed: selected.length > 0 && selected.every(isCollapsed),
       disabled: selected.length > 0 && selected.every(isDisabled),

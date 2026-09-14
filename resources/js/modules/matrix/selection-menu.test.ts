@@ -34,7 +34,7 @@ const disable = {
     detail: {action: 'disable'},
   },
 };
-const nothingSelected = {count: 0, collapsed: false, disabled: false};
+const nothingSelected = {count: 0, total: 3, collapsed: false, disabled: false};
 
 describe('selectionMenuItem', () => {
   it('leaves the menu as the server sent it with nothing selected', () => {
@@ -44,7 +44,11 @@ describe('selectionMenuItem', () => {
   });
 
   it('copies just the selection once blocks are selected', () => {
-    const item = selectionMenuItem(copy, {...nothingSelected, count: 2});
+    const item = selectionMenuItem(copy, {
+      ...nothingSelected,
+      count: 2,
+      total: 3,
+    });
 
     expect(item.label).toBe('Copy selected blocks');
     expect(item.action.detail).toEqual({
@@ -54,8 +58,8 @@ describe('selectionMenuItem', () => {
   });
 
   it('shows the selection items, offering what the selection needs', () => {
-    const some = {count: 2, collapsed: false, disabled: false};
-    const folded = {count: 2, collapsed: true, disabled: true};
+    const some = {count: 2, total: 3, collapsed: false, disabled: false};
+    const folded = {count: 2, total: 3, collapsed: true, disabled: true};
 
     expect(selectionMenuItem(collapse, some)).toMatchObject({
       hidden: false,
@@ -77,10 +81,52 @@ describe('selectionMenuItem', () => {
     });
   });
 
+  it('selects every block, or deselects them once all are', () => {
+    const select = {
+      type: 'button',
+      label: 'Select all blocks',
+      hidden: false,
+      action: {
+        type: 'event',
+        name: MATRIX_SELECTION_ACTION,
+        detail: {action: 'select'},
+      },
+    };
+    const state = {count: 0, total: 2, collapsed: false, disabled: false};
+
+    expect(selectionMenuItem(select, state)).toMatchObject({
+      hidden: false,
+      label: 'Select all blocks',
+      action: {detail: {action: 'select'}},
+    });
+    expect(selectionMenuItem(select, {...state, count: 2})).toMatchObject({
+      label: 'Deselect all blocks',
+      action: {detail: {action: 'deselect'}},
+    });
+    // Nothing to select in an empty field.
+    expect(selectionMenuItem(select, {...state, total: 0}).hidden).toBe(true);
+  });
+
+  it('calls the blocks what the server calls them', () => {
+    const entries = {
+      ...copy,
+      action: {
+        ...copy.action,
+        detail: {...copy.action.detail, type: 'entries'},
+      },
+    };
+
+    expect(
+      selectionMenuItem(entries, {...nothingSelected, count: 1}).label
+    ).toBe('Copy selected entries');
+  });
+
   it('leaves other items alone', () => {
     const hr = {type: 'hr'};
 
-    expect(selectionMenuItem(hr, {...nothingSelected, count: 1})).toBe(hr);
+    expect(
+      selectionMenuItem(hr, {...nothingSelected, count: 1, total: 3})
+    ).toBe(hr);
   });
 });
 

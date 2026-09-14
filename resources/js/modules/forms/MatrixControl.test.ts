@@ -936,6 +936,37 @@ describe('MatrixControl', () => {
       );
     });
 
+    it('selects every block, then offers to deselect them', async () => {
+      const trigger = await mountTwoInField();
+      const items = [
+        {
+          type: 'button',
+          label: 'Select all blocks',
+          action: {
+            type: 'event',
+            name: 'craft:matrix-selection-action',
+            detail: {action: 'select'},
+          },
+        },
+      ] as unknown as ActionItems;
+      const current = () =>
+        fieldActions!.value!(items)[0] as unknown as ResolvedItem;
+
+      expect(current().label).toBe('Select all blocks');
+
+      invokeSelection(trigger, 'select');
+      await nextTick();
+
+      expect(container!.querySelectorAll('.matrixblock.sel')).toHaveLength(2);
+      expect(current().label).toBe('Deselect all blocks');
+
+      invokeSelection(trigger, String(current().action.detail.action));
+      await nextTick();
+
+      expect(container!.querySelectorAll('.matrixblock.sel')).toHaveLength(0);
+      expect(current().label).toBe('Select all blocks');
+    });
+
     it('hands the menu back when it goes away', async () => {
       await mountTwoInField();
 

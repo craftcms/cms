@@ -17,6 +17,8 @@ export const MATRIX_SELECTION_ACTION = 'craft:matrix-selection-action';
 const COPY_ACTION = 'craft:copy-nested-elements';
 
 export type MatrixSelectionState = {
+  /** How many blocks the field holds. */
+  total: number;
   /** How many blocks are selected. */
   count: number;
   /** Whether every selected block is collapsed, so the item expands instead. */
@@ -61,6 +63,10 @@ export function selectionMenuItem<Item extends object>(
     return item;
   }
 
+  // What the field calls its blocks — "entries", unless the server says.
+  const type =
+    typeof action.detail?.type === 'string' ? action.detail.type : t('blocks');
+
   if (action.name === COPY_ACTION) {
     const selector = action.detail?.selector;
 
@@ -70,7 +76,7 @@ export function selectionMenuItem<Item extends object>(
 
     return {
       ...item,
-      label: t('Copy selected {type}', {type: t('blocks')}),
+      label: t('Copy selected {type}', {type}),
       // Both renderers mark a selected block with `sel`.
       action: {
         ...action,
@@ -86,6 +92,23 @@ export function selectionMenuItem<Item extends object>(
   const hidden = state.count === 0;
 
   switch (action.detail?.action) {
+    case 'select':
+    case 'deselect': {
+      const deselect = state.total > 0 && state.count === state.total;
+
+      return {
+        ...item,
+        hidden: state.total === 0,
+        label: deselect
+          ? t('Deselect all {type}', {type})
+          : t('Select all {type}', {type}),
+        action: {
+          ...action,
+          detail: {...action.detail, action: deselect ? 'deselect' : 'select'},
+        },
+      };
+    }
+
     case 'collapse':
     case 'expand': {
       const expand = state.collapsed;
@@ -111,8 +134,8 @@ export function selectionMenuItem<Item extends object>(
         ...item,
         hidden,
         label: enable
-          ? t('Enable selected {type}', {type: t('blocks')})
-          : t('Disable selected {type}', {type: t('blocks')}),
+          ? t('Enable selected {type}', {type})
+          : t('Disable selected {type}', {type}),
         action: {
           ...action,
           detail: {...action.detail, action: enable ? 'enable' : 'disable'},
@@ -166,11 +189,13 @@ function serverItem(element: Element): SelectionMenuItem | null {
  */
 export function syncSelectionMenu(field: Element): void {
   const own = (element: Element) => element.closest('craft-field') === field;
-  const selected = [...field.querySelectorAll('.matrixblock.sel')].filter(own);
+  const blocks = [...field.querySelectorAll('.matrixblock')].filter(own);
+  const selected = blocks.filter((block) => block.classList.contains('sel'));
   const every = (className: string) =>
     selected.length > 0 &&
     selected.every((block) => block.classList.contains(className));
   const state: MatrixSelectionState = {
+    total: blocks.length,
     count: selected.length,
     collapsed: every('collapsed'),
     disabled: every('disabled-entry'),

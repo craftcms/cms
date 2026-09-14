@@ -1121,15 +1121,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
-        if ($this->maxEntries !== 1) {
-            $items = match ($this->viewMode) {
-                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
-                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
-                default => [],
-            };
-        } else {
-            $items = [];
-        }
+        // The Form's Matrix control renders blocks whatever the view mode (see
+        // `formControl()`), and this menu only reaches that control, so it
+        // always offers the block items.
+        $items = $this->maxEntries !== 1 ? $this->blockViewActionMenuItems() : [];
 
         $parentItems = parent::fieldLayoutActionMenuItems($context);
 
@@ -1183,29 +1178,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ],
         ];
 
-        $items[] = $this->copyAction(t('blocks'), '.matrixblock');
+        $items[] = $this->copyAction(Entry::pluralLowerDisplayName(), '.matrixblock');
 
-        // The selection's own items. They stay hidden until blocks are selected:
-        // the input shows them, and says what each will do to the selection
+        // The selection's own items. Select all shows whenever there are blocks;
+        // the rest stay hidden until blocks are selected. The input says what
+        // each will do to the selection
         // (see `resources/js/modules/matrix/selection-menu.ts`).
+        $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
+            'type' => Entry::pluralLowerDisplayName(),
+        ]), hidden: false);
         $items[] = $this->selectionAction('collapse', 'collapse', t('Collapse selected blocks'));
         $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
-            'type' => t('blocks'),
+            'type' => Entry::pluralLowerDisplayName(),
         ]));
-
-        return $items;
-    }
-
-    /** @return list<array<string,mixed>> */
-    private function cardViewActionMenuItems(): array
-    {
-        $items = [];
-
-        // Copy
-        $items[] = $this->copyAction(
-            Entry::pluralLowerDisplayName(),
-            '.nested-element-cards .elements > li > .element',
-        );
 
         return $items;
     }
@@ -1230,13 +1215,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     'selector' => $entrySelector,
                     'elementType' => Entry::class,
                     'fieldId' => $this->id,
+                    // What the input calls them when it relabels this for a selection
+                    'type' => $type,
                 ],
             ],
         ];
     }
 
-    /** @return array{id:string,icon:string,label:string,showInChips:false,hidden:true,action:array<string,mixed>} */
-    private function selectionAction(string $action, string $icon, string $label): array
+    /** @return array{id:string,icon:string,label:string,showInChips:false,hidden:bool,action:array<string,mixed>} */
+    private function selectionAction(string $action, string $icon, string $label, bool $hidden = true): array
     {
         return [
             'id' => sprintf('selection-%s-%s', $action, mt_rand()),
@@ -1244,11 +1231,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'label' => mb_ucfirst($label),
             // Operates on the field's input, like the items above
             'showInChips' => false,
-            'hidden' => true,
+            'hidden' => $hidden,
             'action' => [
                 'type' => 'event',
                 'name' => 'craft:matrix-selection-action',
-                'detail' => ['action' => $action],
+                'detail' => [
+                    'action' => $action,
+                    'type' => Entry::pluralLowerDisplayName(),
+                ],
             ],
         ];
     }
