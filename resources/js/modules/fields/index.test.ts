@@ -100,11 +100,11 @@ describe('field input action listeners', () => {
         <craft-action-menu>
           <craft-action-item id="trigger"></craft-action-item>
         </craft-action-menu>
-        <div class="matrix matrix-field">
-          <div class="matrixblock" data-id="1"></div>
-          <div class="matrixblock" data-id="2">
+        <div data-matrix-field>
+          <div data-matrix-block data-id="1"></div>
+          <div data-matrix-block data-id="2">
             <craft-field>
-              <div class="matrixblock" data-id="3"></div>
+              <div data-matrix-block data-id="3"></div>
             </craft-field>
           </div>
         </div>
@@ -113,7 +113,9 @@ describe('field input action listeners', () => {
 
     return {
       trigger: document.querySelector<HTMLElement>('#trigger')!,
-      blocks: [...document.querySelectorAll<HTMLElement>('.matrixblock')],
+      blocks: [
+        ...document.querySelectorAll<HTMLElement>('[data-matrix-block]'),
+      ],
     };
   }
 
@@ -207,15 +209,15 @@ describe('field input action listeners', () => {
     document.body.innerHTML = `
       <craft-field>
         <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
-        <div class="matrixblock" data-id="uid-a" data-element-id="12" data-owner-id="9" data-site-id="1"></div>
-        <div class="matrixblock" data-id="uid:new"></div>
+        <div data-matrix-block data-id="uid-a" data-element-id="12" data-owner-id="9" data-site-id="1"></div>
+        <div data-matrix-block data-id="uid:new"></div>
       </craft-field>
     `;
 
     window.dispatchEvent(
       new CustomEvent('craft:copy-nested-elements', {
         detail: {
-          selector: '.matrixblock',
+          selector: '[data-matrix-block]',
           elementType: 'craft\\elements\\Entry',
           fieldId: 4,
           trigger: document.querySelector('#trigger'),
@@ -242,11 +244,13 @@ describe('field input action listeners', () => {
     document.body.innerHTML = `
       <craft-field>
         <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
-        <div class="matrixblock sel" data-id="1"></div>
-        <div class="matrixblock" data-id="2"></div>
+        <div data-matrix-block data-selected data-id="1"></div>
+        <div data-matrix-block data-id="2"></div>
       </craft-field>
     `;
-    const blocks = [...document.querySelectorAll<HTMLElement>('.matrixblock')];
+    const blocks = [
+      ...document.querySelectorAll<HTMLElement>('[data-matrix-block]'),
+    ];
     const entries = blocks.map(() => ({
       collapse: vi.fn(),
       expand: vi.fn(),
@@ -279,7 +283,7 @@ describe('field input action listeners', () => {
     document.body.innerHTML = `
       <craft-field>
         <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
-        <div class="matrixblock" data-id="1"></div>
+        <div data-matrix-block data-id="1"></div>
       </craft-field>
     `;
     const entrySelect = {selectAll: vi.fn(), deselectAll: vi.fn()};

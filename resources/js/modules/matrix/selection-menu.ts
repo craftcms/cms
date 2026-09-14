@@ -94,10 +94,10 @@ export function selectionMenuItem<Item extends object>(
     return {
       ...item,
       label: t('Copy selected {type}', {type}),
-      // Both renderers mark a selected block with `sel`.
+      // Every renderer marks a selected block with `data-selected`.
       action: {
         ...action,
-        detail: {...action.detail, selector: `${selector}.sel`},
+        detail: {...action.detail, selector: `${selector}[data-selected]`},
       },
     };
   }
@@ -201,18 +201,20 @@ function serverItem(element: Element): SelectionMenuItem | null {
  */
 export function syncSelectionMenu(field: Element): void {
   const own = (element: Element) => element.closest('craft-field') === field;
-  const blocks = [...field.querySelectorAll('.matrixblock')].filter(own);
-  const selected = blocks.filter((block) => block.classList.contains('sel'));
-  const every = (className: string) =>
+  const blocks = [...field.querySelectorAll('[data-matrix-block]')].filter(own);
+  const selected = blocks.filter((block) =>
+    block.hasAttribute('data-selected')
+  );
+  const every = (attribute: string) =>
     selected.length > 0 &&
-    selected.every((block) => block.classList.contains(className));
+    selected.every((block) => block.hasAttribute(attribute));
   const state: MatrixSelectionState = {
     total: blocks.length,
     count: selected.length,
-    collapsed: every('collapsed'),
-    disabled: every('disabled-entry'),
-    anyCollapsed: blocks.some((block) => block.classList.contains('collapsed')),
-    anyExpanded: blocks.some((block) => !block.classList.contains('collapsed')),
+    collapsed: every('data-collapsed'),
+    disabled: every('data-disabled'),
+    anyCollapsed: blocks.some((block) => block.hasAttribute('data-collapsed')),
+    anyExpanded: blocks.some((block) => !block.hasAttribute('data-collapsed')),
   };
 
   const menus = new Set<Element | null>();

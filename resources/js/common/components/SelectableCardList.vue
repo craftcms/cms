@@ -218,6 +218,7 @@
             getDragState(id).type === 'is-dragging-and-left-self',
         },
       ]"
+      :data-selected="selection.isSelected(id) ? '' : undefined"
       :tabindex="selectable ? 0 : undefined"
       @click="emit('item-click', id, $event)"
       @keydown="onItemKeydown(id, index, $event)"
@@ -260,6 +261,7 @@
               v-if="sortable"
               :ref="(el: unknown) => setHandleRef(el as HTMLElement, id)"
               class="drag-handle"
+              data-drag-handle
             >
               <craft-reorder-button
                 class="move-btn"

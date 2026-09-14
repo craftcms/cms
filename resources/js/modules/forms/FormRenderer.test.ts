@@ -3442,7 +3442,7 @@ describe('FormRenderer', () => {
       onMutation: (value) => (mutation = value),
     });
 
-    expect(container.querySelectorAll('.matrixblock')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-matrix-block]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-content-block]')).toHaveLength(1);
     expect(container.textContent).toContain('Body is invalid.');
     const heading = required(
@@ -3519,7 +3519,7 @@ describe('FormRenderer', () => {
     // Delete lives in the block's "⋮" menu, which dispatches on window and is
     // scoped by the invoking element.
     for (let guard = 0; guard < 10; guard++) {
-      const block = container.querySelector<HTMLElement>('.matrixblock');
+      const block = container.querySelector<HTMLElement>('[data-matrix-block]');
 
       if (!block) {
         break;
@@ -3533,7 +3533,7 @@ describe('FormRenderer', () => {
       await nextTick();
     }
 
-    expect(container.querySelector('.matrixblock')).toBeNull();
+    expect(container.querySelector('[data-matrix-block]')).toBeNull();
 
     expect(mutation).toEqual({
       settings: {matrix: {entries: {}, sortOrder: []}},
@@ -3606,7 +3606,9 @@ describe('FormRenderer', () => {
     };
     await mount(justAdded);
 
-    expect(container.querySelector('.matrixblock craft-spinner')).toBeNull();
+    expect(
+      container.querySelector('[data-matrix-block] craft-spinner')
+    ).toBeNull();
     expect(
       container.querySelector(
         `input[name="settings[matrix][entries][${uid}][heading]"]`

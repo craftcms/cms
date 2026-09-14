@@ -145,7 +145,7 @@ window.addEventListener('craft:matrix-toggle-all', ((ev: CustomEvent) => {
     return;
   }
 
-  for (const block of ownElements(field, '.matrixblock')) {
+  for (const block of ownElements(field, '[data-matrix-block]')) {
     const entry = MatrixEntry.forContainer(block);
 
     if (collapse) {
@@ -172,7 +172,7 @@ window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
   // Selecting goes through the input's own Select, whose change callback keeps
   // the menu in step.
   if (action === 'select' || action === 'deselect') {
-    const [block] = ownElements(field, '.matrixblock');
+    const [block] = ownElements(field, '[data-matrix-block]');
     const select = block
       ? MatrixEntry.forContainer(block)?.matrix.entrySelect
       : null;
@@ -188,7 +188,10 @@ window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
 
   let applied = false;
 
-  for (const block of ownElements(field, '.matrixblock.sel')) {
+  for (const block of ownElements(
+    field,
+    '[data-matrix-block][data-selected]'
+  )) {
     const entry = MatrixEntry.forContainer(block);
 
     if (!entry) {

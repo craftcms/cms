@@ -5,7 +5,7 @@
  *
  * The outer controller for a Matrix field in `blocks` view mode: owns the
  * add-entry buttons (max-entries gating, XHR block rendering), block drag-sort
- * and multi-select, copy/paste, and one {@link MatrixEntry} per `.matrixblock`.
+ * and multi-select, copy/paste, and one {@link MatrixEntry} per `[data-matrix-block]`.
  *
  * jQuery is gone from the class itself; the module still cooperates with
  * legacy-runtime widgets through `./interop` (see that file for the seams and
@@ -150,13 +150,14 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     this.form = this.container.closest('form');
-    // `.blocks` is the Twig markup's class; the Vue control styles its own
-    // container, so it marks the hook explicitly.
+    // Every renderer marks its blocks container, rather than leaving it to a
+    // class the legacy stylesheet also styles.
     this.entriesContainer = this.container.querySelector(
-      ':scope > [data-matrix-blocks], :scope > .blocks'
+      ':scope > [data-matrix-blocks]'
     );
-    this.addEntryBtnContainer =
-      this.container.querySelector(':scope > .buttons');
+    this.addEntryBtnContainer = this.container.querySelector(
+      ':scope > [data-matrix-buttons]'
+    );
     this.addEntryBtn =
       this.addEntryBtnContainer?.querySelector('.btn:not(.menubtn)') ?? null;
     this.addEntryMenuBtns = Array.from(
@@ -185,13 +186,14 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
-        handle: ':scope > .actions > .move-btn',
+        handle:
+          ':scope > [data-matrix-block-actions] > [data-matrix-block-move]',
         ignoreHandleSelector: null,
         axis: 'y',
         filter: () => {
           // Only return all the selected items if the target item is selected
           if (
-            this.entrySort?.$targetItem?.classList.contains('sel') &&
+            this.entrySort?.$targetItem?.hasAttribute('data-selected') &&
             this.entrySelect
           ) {
             return Array.from(this.entrySelect.getSelectedItems());
@@ -211,8 +213,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     } else {
       // hide the diamond icon (for drag-sort) if the device is touch-capable
-      for (const btn of document.querySelectorAll<HTMLElement>(
-        '.actions > .move-btn'
+      // Only this field's: the page can hold other Matrix fields' buttons too.
+      for (const btn of this.container.querySelectorAll<HTMLElement>(
+        '[data-matrix-block-actions] > [data-matrix-block-move]'
       )) {
         btn.style.display = 'none';
       }
@@ -229,11 +232,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         {
           multi: true,
           vertical: true,
-          handle: '> .actions > .checkbox, > .titlebar',
+          handle:
+            '> [data-matrix-block-actions] > [data-matrix-block-checkbox], > [data-matrix-block-titlebar]',
           filter: (target: HTMLElement) => !target.closest('.tab-label'),
           checkboxMode: true,
           // The field's menu offers what can be done to the selection.
-          onSelectionChange: () => this.syncFieldMenu(),
+          onSelectionChange: () => {
+            this.syncSelectedAttributes();
+            this.syncFieldMenu();
+          },
         }
       );
     }
@@ -374,13 +381,26 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     flashNewBlock(entry);
   }
 
-  /** The field's current top-level `.matrixblock` elements. */
+  /** The field's current top-level blocks. */
   entryElements(): HTMLElement[] {
     return Array.from(
       this.entriesContainer?.querySelectorAll<HTMLElement>(
-        ':scope > .matrixblock'
+        ':scope > [data-matrix-block]'
       ) ?? []
     );
+  }
+
+  /**
+   * Mirrors Garnish's selection onto the blocks as `data-selected`, which is what
+   * the rest of the Matrix code reads; Garnish itself only sets its `sel` class.
+   */
+  private syncSelectedAttributes(): void {
+    for (const entry of this.entryElements()) {
+      entry.toggleAttribute(
+        'data-selected',
+        this.entrySelect?.isSelected(entry) ?? false
+      );
+    }
   }
 
   get maxEntries(): number | null {
@@ -636,7 +656,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         // mouse events
         if (!craft().hasMousePointerEvents()) {
           for (const btn of entry.querySelectorAll<HTMLElement>(
-            '.actions > .move-btn'
+            '[data-matrix-block-actions] > [data-matrix-block-move]'
           )) {
             btn.style.display = 'none';
           }

@@ -6,7 +6,7 @@ import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/forms/types';
 
 /**
  * `<craft-matrix-input>` — boots a {@link MatrixInput} around the
- * server-rendered `.matrix-field` it wraps, so PHP/Twig can emit the element
+ * server-rendered `[data-matrix-field]` it wraps, so PHP/Twig can emit the element
  * instead of a manual `new Craft.MatrixInput(...)` boot script.
  *
  * Configuration comes from attributes:
@@ -15,11 +15,11 @@ import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/forms/types';
  * - `input-name-prefix` — the field's namespaced input name
  * - `settings` — JSON {@link MatrixInputSettings}
  *
- * The wrapped `.matrix-field` keeps its own `id`, which is what the
+ * The wrapped `[data-matrix-field]` keeps its own `id`, which is what the
  * {@link MatrixInput} constructor resolves.
  */
 export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
-  protected readonly rootSelector = '.matrix-field';
+  protected readonly rootSelector = '[data-matrix-field]';
 
   private listener?: AbortController;
 
@@ -81,7 +81,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     }
 
     if (remove && this.canRemove()) {
-      const entry = remove.closest<HTMLElement>('.matrixblock');
+      const entry = remove.closest<HTMLElement>('[data-matrix-block]');
       if (entry) {
         const controller = MatrixEntry.forContainer(entry);
 
@@ -99,7 +99,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     if (!(event instanceof CustomEvent) || !(event.target instanceof Element)) {
       return;
     }
-    const entry = event.target.closest<HTMLElement>('.matrixblock');
+    const entry = event.target.closest<HTMLElement>('[data-matrix-block]');
     const controller = entry ? MatrixEntry.forContainer(entry) : undefined;
     const direction = event.detail.direction;
 
@@ -122,7 +122,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     const minimum = Number(this.getAttribute('min-entries') ?? 0);
     const entries =
       this.instance?.entryElements().length ??
-      this.querySelectorAll('.matrixblock').length;
+      this.querySelectorAll('[data-matrix-block]').length;
 
     return entries > minimum;
   }
@@ -135,12 +135,14 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
     const name = this.getAttribute('input-name-prefix')!;
     const label =
       entryTypes.find((entryType) => entryType.handle === type)?.name ?? type;
+    // The same `craft-card` frame the server renders its blocks in.
     const entry = document.createElement('div');
-    entry.className = 'matrixblock js-deletable';
+    entry.dataset.matrixBlock = '';
     entry.dataset.id = uid;
     entry.dataset.type = type;
     entry.setAttribute('role', 'listitem');
-    entry.append(
+    const card = document.createElement('craft-card');
+    card.append(
       this.hiddenInput(`${name}[sortOrder][]`, uid),
       this.hiddenInput(`${name}[entries][${uid}][type]`, type),
       this.hiddenInput(`${name}[entries][${uid}][enabled]`, '1'),
@@ -152,18 +154,20 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
       this.actions(label),
       this.fields()
     );
+    entry.append(card);
 
     return entry;
   }
 
   private titlebar(label: string): HTMLElement {
     const titlebar = document.createElement('div');
-    titlebar.className = 'titlebar';
+    titlebar.slot = 'label';
+    titlebar.className = 'flex flex-nowrap gap-1 items-center';
+    titlebar.dataset.matrixBlockTitlebar = '';
     const type = document.createElement('div');
-    type.className = 'blocktype';
     type.textContent = label;
     const preview = document.createElement('div');
-    preview.className = 'preview';
+    preview.dataset.matrixBlockPreview = '';
     titlebar.append(type, preview);
 
     return titlebar;
@@ -171,7 +175,9 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
 
   private actions(label: string): HTMLElement {
     const actions = document.createElement('div');
-    actions.className = 'actions';
+    actions.slot = 'actions';
+    actions.className = 'flex gap-1 items-center';
+    actions.dataset.matrixBlockActions = '';
     const reorder = document.createElement('craft-reorder-button');
     const remove = document.createElement('craft-button');
     remove.dataset.formMatrixRemove = '';
@@ -184,7 +190,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
 
   private fields(): HTMLElement {
     const fields = document.createElement('div');
-    fields.className = 'fields';
+    fields.dataset.matrixBlockFields = '';
     const spinner = document.createElement('craft-spinner');
     spinner.setAttribute('label', t('Loading'));
     fields.append(spinner);

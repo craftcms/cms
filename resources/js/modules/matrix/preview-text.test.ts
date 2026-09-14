@@ -55,7 +55,7 @@ describe('blockPreviewParts', () => {
         fields(`
           <craft-field>
             <input type="text" value="Outer">
-            <div class="matrixblock">
+            <div data-matrix-block>
               <craft-field><input type="text" value="Inner"></craft-field>
             </div>
           </craft-field>

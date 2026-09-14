@@ -641,7 +641,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /**
-     * The block's identity, as `data-*` attributes on `.matrixblock`.
+     * The block's identity, as `data-*` attributes on the block (`[data-matrix-block]`).
      *
      * Craft 5's `block.twig` wrote the same set. The CP's element clipboard reads
      * it back off the DOM — copy, paste and duplicate all need an element to
@@ -1203,7 +1203,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $items[] = ['type' => 'hr'];
 
         // Copy
-        $items[] = $this->copyAction($type, '.matrixblock');
+        $items[] = $this->copyAction($type, '[data-matrix-block]');
 
         return $items;
     }

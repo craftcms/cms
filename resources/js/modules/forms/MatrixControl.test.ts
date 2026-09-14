@@ -169,7 +169,7 @@ describe('MatrixControl', () => {
     expect(() => mount({entries: {}, sortOrder: []})).not.toThrow();
     await nextTick();
 
-    expect(container!.querySelectorAll('.matrixblock').length).toBe(0);
+    expect(container!.querySelectorAll('[data-matrix-block]').length).toBe(0);
     expect(
       container!.querySelector('[data-form-matrix-add="newType"]')
     ).not.toBeNull();
@@ -210,9 +210,11 @@ describe('MatrixControl', () => {
     // kick off an autosave just for hiding some fields.
     expect(emitted).toHaveLength(0);
     expect(isBlockCollapsed('block-a')).toBe(true);
-    expect(container!.querySelector('.matrixblock')!.className).toContain(
-      'collapsed'
-    );
+    expect(
+      container!
+        .querySelector('[data-matrix-block]')!
+        .hasAttribute('data-collapsed')
+    ).toBe(true);
 
     const labels = menus
       .at(-1)!
@@ -250,14 +252,20 @@ describe('MatrixControl', () => {
     await nextTick();
 
     // Expanded, the block's own fields identify it — there's nothing to say.
-    expect(container!.querySelector('.matrixblock .preview')).toBeNull();
+    expect(
+      container!.querySelector(
+        '[data-matrix-block] [data-matrix-block-preview]'
+      )
+    ).toBeNull();
 
     invoke('block-a', 'Collapse');
     await nextTick();
 
     // A title being typed is fresher than the server's copy.
     expect(
-      container!.querySelector('.matrixblock .preview')!.textContent!.trim()
+      container!
+        .querySelector('[data-matrix-block] [data-matrix-block-preview]')!
+        .textContent!.trim()
     ).toBe('Hero');
   });
 
@@ -275,7 +283,9 @@ describe('MatrixControl', () => {
     await nextTick();
 
     expect(
-      container!.querySelector('.matrixblock .preview')!.textContent!.trim()
+      container!
+        .querySelector('[data-matrix-block] [data-matrix-block-preview]')!
+        .textContent!.trim()
     ).toBe('Saved label');
   });
 
@@ -293,7 +303,7 @@ describe('MatrixControl', () => {
     );
     await nextTick();
 
-    const block = container!.querySelector('.matrixblock')!;
+    const block = container!.querySelector('[data-matrix-block]')!;
     const icon = block.querySelector('craft-icon') as {
       name?: string;
       family?: string;
@@ -320,10 +330,10 @@ describe('MatrixControl', () => {
       entries: {'block-a': {enabled: false}},
     });
 
-    const block = container!.querySelector('.matrixblock')!;
+    const block = container!.querySelector('[data-matrix-block]')!;
 
-    expect(block.className).toContain('disabled-entry');
-    expect(block.className).toContain('collapsed');
+    expect(block.hasAttribute('data-disabled')).toBe(true);
+    expect(block.hasAttribute('data-collapsed')).toBe(true);
     expect(isBlockCollapsed('block-a')).toBe(true);
     // The card folds its own body and footer away; the class is only a hook.
     expect(
@@ -344,17 +354,19 @@ describe('MatrixControl', () => {
     await nextTick();
 
     // A block that arrives disabled starts folded away.
-    expect(container!.querySelector('.matrixblock')!.className).toContain(
-      'collapsed'
-    );
+    expect(
+      container!
+        .querySelector('[data-matrix-block]')!
+        .hasAttribute('data-collapsed')
+    ).toBe(true);
 
     invoke('block-a', 'Enable');
     await nextTick();
 
-    const block = container!.querySelector('.matrixblock')!;
+    const block = container!.querySelector('[data-matrix-block]')!;
 
-    expect(block.className).not.toContain('disabled-entry');
-    expect(block.className).not.toContain('collapsed');
+    expect(block.hasAttribute('data-disabled')).toBe(false);
+    expect(block.hasAttribute('data-collapsed')).toBe(false);
     expect(
       (block.querySelector('craft-card') as {collapsed?: boolean} | null)
         ?.collapsed
@@ -370,17 +382,19 @@ describe('MatrixControl', () => {
     await nextTick();
 
     const header = (): Element =>
-      container!.querySelector('.matrixblock [slot="header"]')!;
+      container!.querySelector('[data-matrix-block] [slot="header"]')!;
     const dblclick = (target: Element): void => {
       target.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
     };
 
-    dblclick(header().querySelector('.blocktype')!);
+    dblclick(header().querySelector('[data-matrix-block-titlebar]')!);
     await nextTick();
 
-    expect(container!.querySelector('.matrixblock')!.className).toContain(
-      'collapsed'
-    );
+    expect(
+      container!
+        .querySelector('[data-matrix-block]')!
+        .hasAttribute('data-collapsed')
+    ).toBe(true);
     expect(isBlockCollapsed('block-a')).toBe(true);
 
     // The checkbox shares the titlebar, but double-clicking it isn't a fold.
@@ -392,9 +406,31 @@ describe('MatrixControl', () => {
     dblclick(header());
     await nextTick();
 
-    expect(container!.querySelector('.matrixblock')!.className).not.toContain(
-      'collapsed'
-    );
+    expect(
+      container!
+        .querySelector('[data-matrix-block]')!
+        .hasAttribute('data-collapsed')
+    ).toBe(false);
+  });
+
+  it('keeps Craft 5 class names off its blocks', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: false}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    // The legacy stylesheet styles these, and would restyle the card frame.
+    expect(
+      container!.querySelectorAll(
+        '.matrix, .matrix-field, .matrixblock, .js-deletable, .collapsed, .disabled-entry, .blocktype, .preview, .fields, .error'
+      )
+    ).toHaveLength(0);
+
+    const block = container!.querySelector('[data-matrix-block]')!;
+    expect(block.hasAttribute('data-disabled')).toBe(true);
+    expect(block.hasAttribute('data-collapsed')).toBe(true);
+    expect(block.querySelector('[data-matrix-block-preview]')).not.toBeNull();
   });
 
   it('adds a block above the one whose menu was used', async () => {
@@ -700,7 +736,7 @@ describe('MatrixControl', () => {
     await nextTick();
     await nextTick();
 
-    const block = container!.querySelector<HTMLElement>('.matrixblock')!;
+    const block = container!.querySelector<HTMLElement>('[data-matrix-block]')!;
 
     expect(block.dataset.color).toBe('teal');
     expect(block.dataset.elementId).toBe('20');
@@ -745,15 +781,17 @@ describe('MatrixControl', () => {
         await nextTick();
       }
 
-      const block = container!.querySelector('.matrixblock')!;
+      const block = container!.querySelector('[data-matrix-block]')!;
 
-      expect(block.classList.contains('is-new')).toBe(true);
+      expect(block.hasAttribute('data-matrix-block-new')).toBe(true);
 
       vi.advanceTimersByTime(1200);
       await nextTick();
 
       expect(
-        container!.querySelector('.matrixblock')!.classList.contains('is-new')
+        container!
+          .querySelector('[data-matrix-block]')!
+          .hasAttribute('data-matrix-block-new')
       ).toBe(false);
     } finally {
       vi.useRealTimers();
@@ -879,7 +917,7 @@ describe('MatrixControl', () => {
           action: {
             type: 'event',
             name: 'craft:copy-nested-elements',
-            detail: {selector: '.matrixblock'},
+            detail: {selector: '[data-matrix-block]'},
           },
         },
         {
@@ -935,7 +973,9 @@ describe('MatrixControl', () => {
     }
 
     async function selectFirst(): Promise<void> {
-      const box = container!.querySelector('.matrixblock craft-checkbox')!;
+      const box = container!.querySelector(
+        '[data-matrix-block] craft-checkbox'
+      )!;
       Object.assign(box, {checked: true});
       box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
       box.dispatchEvent(
@@ -970,7 +1010,9 @@ describe('MatrixControl', () => {
         'Disable selected blocks',
       ]);
       expect(resolved()[1]!.hidden).toBe(false);
-      expect(resolved()[0]!.action.detail.selector).toBe('.matrixblock.sel');
+      expect(resolved()[0]!.action.detail.selector).toBe(
+        '[data-matrix-block][data-selected]'
+      );
     });
 
     it('collapses and disables just the selected blocks', async () => {
@@ -980,9 +1022,9 @@ describe('MatrixControl', () => {
       invokeSelection(trigger, 'collapse');
       await nextTick();
 
-      const blocks = container!.querySelectorAll('.matrixblock');
-      expect(blocks[0]!.className).toContain('collapsed');
-      expect(blocks[1]!.className).not.toContain('collapsed');
+      const blocks = container!.querySelectorAll('[data-matrix-block]');
+      expect(blocks[0]!.hasAttribute('data-collapsed')).toBe(true);
+      expect(blocks[1]!.hasAttribute('data-collapsed')).toBe(false);
       expect(resolved()[1]!.label).toBe('Expand selected blocks');
 
       invokeSelection(trigger, 'disable');
@@ -1004,9 +1046,11 @@ describe('MatrixControl', () => {
       invokeSelection(document.createElement('button'), 'collapse');
       await nextTick();
 
-      expect(container!.querySelector('.matrixblock')!.className).not.toContain(
-        'collapsed'
-      );
+      expect(
+        container!
+          .querySelector('[data-matrix-block]')!
+          .hasAttribute('data-collapsed')
+      ).toBe(false);
     });
 
     it('offers to expand or collapse all only when there is something to do', async () => {
@@ -1076,7 +1120,8 @@ describe('MatrixControl', () => {
           Boolean(item.hidden)
         );
       const selectedCount = () =>
-        container!.querySelectorAll('.matrixblock.sel').length;
+        container!.querySelectorAll('[data-matrix-block][data-selected]')
+          .length;
 
       expect(hidden()).toEqual([false, true]);
 
@@ -1144,21 +1189,21 @@ describe('MatrixControl', () => {
     it('folds and unfolds every block in the field', async () => {
       await mountTwo();
 
-      toggleAll(container!.querySelector('.matrixblock'), true);
+      toggleAll(container!.querySelector('[data-matrix-block]'), true);
       await nextTick();
 
       expect(
-        [...container!.querySelectorAll('.matrixblock')].map((block) =>
-          block.classList.contains('collapsed')
+        [...container!.querySelectorAll('[data-matrix-block]')].map((block) =>
+          block.hasAttribute('data-collapsed')
         )
       ).toEqual([true, true]);
 
-      toggleAll(container!.querySelector('.matrixblock'), false);
+      toggleAll(container!.querySelector('[data-matrix-block]'), false);
       await nextTick();
 
       expect(
-        [...container!.querySelectorAll('.matrixblock')].map((block) =>
-          block.classList.contains('collapsed')
+        [...container!.querySelectorAll('[data-matrix-block]')].map((block) =>
+          block.hasAttribute('data-collapsed')
         )
       ).toEqual([false, false]);
     });
@@ -1173,8 +1218,8 @@ describe('MatrixControl', () => {
 
       expect(
         container!
-          .querySelector('.matrixblock')!
-          .classList.contains('collapsed')
+          .querySelector('[data-matrix-block]')!
+          .hasAttribute('data-collapsed')
       ).toBe(false);
       other.remove();
     });
@@ -1188,7 +1233,9 @@ describe('MatrixControl', () => {
     await nextTick();
 
     // Stand in for the nested form FormNodeList would have rendered.
-    const fields = container!.querySelector('.matrixblock .fields')!;
+    const fields = container!.querySelector(
+      '[data-matrix-block] [data-matrix-block-fields]'
+    )!;
     fields.innerHTML =
       '<craft-field><input type="text" value="Hello"></craft-field>' +
       '<craft-field><input type="text" value="World"></craft-field>';
@@ -1197,7 +1244,9 @@ describe('MatrixControl', () => {
     await nextTick();
 
     expect(
-      container!.querySelector('.matrixblock .preview')!.textContent!.trim()
+      container!
+        .querySelector('[data-matrix-block] [data-matrix-block-preview]')!
+        .textContent!.trim()
     ).toBe('Hello | World');
   });
 
@@ -1228,11 +1277,10 @@ describe('MatrixControl', () => {
     app.mount(container);
     await nextTick();
 
-    const blocktype = container!.querySelector('.blocktype')!;
+    const titlebar = container!.querySelector('[data-matrix-block-titlebar]')!;
 
-    expect(blocktype.className).toContain('error');
     expect(
-      blocktype.querySelector('craft-icon[name="triangle-exclamation"]')
+      titlebar.querySelector('craft-icon[name="triangle-exclamation"]')
     ).not.toBeNull();
   });
 
@@ -1253,7 +1301,7 @@ describe('MatrixControl', () => {
     );
     await nextTick();
 
-    const block = container!.querySelector<HTMLElement>('.matrixblock')!;
+    const block = container!.querySelector<HTMLElement>('[data-matrix-block]')!;
 
     // `data-id` stays the UID — the identity the sort order and the posted value
     // are keyed by — so the element id rides alongside it.
@@ -1333,7 +1381,9 @@ describe('MatrixControl', () => {
     });
     await nextTick();
 
-    const boxes = container!.querySelectorAll('.matrixblock craft-checkbox');
+    const boxes = container!.querySelectorAll(
+      '[data-matrix-block] craft-checkbox'
+    );
     expect(boxes).toHaveLength(2);
 
     // `craft-checkbox` reports its change from the host, not an inner input.
@@ -1345,9 +1395,11 @@ describe('MatrixControl', () => {
     );
     await nextTick();
 
-    expect(container!.querySelectorAll('.matrixblock')[0]!.className).toContain(
-      'sel'
-    );
+    expect(
+      container!
+        .querySelectorAll('[data-matrix-block]')[0]!
+        .hasAttribute('data-selected')
+    ).toBe(true);
   });
 
   it('selects blocks and applies a menu action across the selection', async () => {
@@ -1361,16 +1413,16 @@ describe('MatrixControl', () => {
     });
     await nextTick();
 
-    const blocks = [...container!.querySelectorAll('.matrixblock')];
+    const blocks = [...container!.querySelectorAll('[data-matrix-block]')];
     blocks[0]!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
     blocks[1]!.dispatchEvent(
       new MouseEvent('click', {bubbles: true, shiftKey: true})
     );
     await nextTick();
 
-    expect(blocks[0]!.className).toContain('sel');
-    expect(blocks[1]!.className).toContain('sel');
-    expect(blocks[2]!.className).not.toContain('sel');
+    expect(blocks[0]!.hasAttribute('data-selected')).toBe(true);
+    expect(blocks[1]!.hasAttribute('data-selected')).toBe(true);
+    expect(blocks[2]!.hasAttribute('data-selected')).toBe(false);
 
     // Craft 5's `bulkActionMode()`: a menu action on a block that's part of a
     // multi-selection applies to the whole selection.
@@ -1495,6 +1547,6 @@ describe('MatrixControl', () => {
     });
     await nextTick();
 
-    expect(container!.querySelectorAll('.matrixblock').length).toBe(1);
+    expect(container!.querySelectorAll('[data-matrix-block]').length).toBe(1);
   });
 });

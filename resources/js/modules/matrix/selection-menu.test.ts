@@ -12,7 +12,7 @@ const copy = {
   action: {
     type: 'event',
     name: 'craft:copy-nested-elements',
-    detail: {selector: '.matrixblock', fieldId: 4},
+    detail: {selector: '[data-matrix-block]', fieldId: 4},
   },
 };
 const collapse = {
@@ -62,7 +62,7 @@ describe('selectionMenuItem', () => {
 
     expect(item.label).toBe('Copy selected blocks');
     expect(item.action.detail).toEqual({
-      selector: '.matrixblock.sel',
+      selector: '[data-matrix-block][data-selected]',
       fieldId: 4,
     });
   });
@@ -215,11 +215,11 @@ describe('syncSelectionMenu', () => {
           ${item(copy.action, copy.label)}
           ${item(collapse.action, collapse.label, true)}
         </craft-action-menu>
-        <div class="matrixblock sel collapsed"></div>
-        <div class="matrixblock"></div>
-        <div class="matrixblock">
+        <div data-matrix-block data-selected data-collapsed></div>
+        <div data-matrix-block></div>
+        <div data-matrix-block>
           <craft-field>
-            <div class="matrixblock sel"></div>
+            <div data-matrix-block data-selected></div>
           </craft-field>
         </div>
       </craft-field>
@@ -239,7 +239,7 @@ describe('syncSelectionMenu', () => {
 
     expect(copyItem!.textContent).toBe('Copy selected blocks');
     expect(JSON.parse(copyItem!.getAttribute('action')!).detail.selector).toBe(
-      '.matrixblock.sel'
+      '[data-matrix-block][data-selected]'
     );
     // Only the field's own selected block counts, and it's collapsed.
     expect(collapseItem!.hasAttribute('hidden')).toBe(false);
@@ -253,7 +253,7 @@ describe('syncSelectionMenu', () => {
           ${item({type: 'event', name: 'craft:matrix-toggle-all', detail: {collapse: false}}, 'Expand all blocks')}
           ${item({type: 'event', name: 'craft:matrix-toggle-all', detail: {collapse: true}}, 'Collapse all blocks')}
         </craft-action-menu>
-        <div class="matrixblock"></div>
+        <div data-matrix-block></div>
       </craft-field>
     `;
     const field = document.querySelector<HTMLElement>('#field')!;
@@ -264,7 +264,9 @@ describe('syncSelectionMenu', () => {
     expect(expand!.hasAttribute('hidden')).toBe(true);
     expect(collapse!.hasAttribute('hidden')).toBe(false);
 
-    field.querySelector('.matrixblock')!.classList.add('collapsed');
+    field
+      .querySelector('[data-matrix-block]')!
+      .setAttribute('data-collapsed', '');
     syncSelectionMenu(field);
 
     expect(expand!.hasAttribute('hidden')).toBe(false);
@@ -275,7 +277,9 @@ describe('syncSelectionMenu', () => {
     const field = build();
 
     syncSelectionMenu(field);
-    field.querySelector('.matrixblock.sel')!.classList.remove('sel');
+    field
+      .querySelector('[data-matrix-block][data-selected]')!
+      .removeAttribute('data-selected');
     syncSelectionMenu(field);
 
     const [copyItem, collapseItem] =
@@ -341,8 +345,8 @@ describe('syncSelectionMenu separators', () => {
             <craft-action-item>Field settings</craft-action-item>
           </div>
         </craft-action-menu>
-        <div class="matrixblock"></div>
-        <div class="matrixblock"></div>
+        <div data-matrix-block></div>
+        <div data-matrix-block></div>
       </craft-field>
     `;
     const field = document.querySelector('#field')!;
@@ -356,7 +360,9 @@ describe('syncSelectionMenu separators', () => {
     ]).toEqual([true, false]);
 
     // One of two selected: "Select all" and "Disable selected" both apply.
-    field.querySelector('.matrixblock')!.classList.add('sel');
+    field
+      .querySelector('[data-matrix-block]')!
+      .setAttribute('data-selected', '');
     syncSelectionMenu(field);
 
     expect([

@@ -29,7 +29,7 @@
   } from '@/modules/matrix/collapsed-blocks';
   import {useCopiedElements} from '@/modules/matrix/copied-elements';
   import {
-    NEW_BLOCK_CLASS,
+    NEW_BLOCK_ATTRIBUTE,
     NEW_BLOCK_HIGHLIGHT_MS,
   } from '@/modules/matrix/new-block';
   import {blockPreviewParts} from '@/modules/matrix/preview-text';
@@ -428,7 +428,7 @@
         ? event.currentTarget
         : matrixHost.value;
     const entries = [
-      ...(source?.querySelectorAll<HTMLElement>('.matrixblock') ?? []),
+      ...(source?.querySelectorAll<HTMLElement>('[data-matrix-block]') ?? []),
     ];
     value.sortOrder = entries.map((entry) => entry.dataset.id!);
     value.entries = Object.fromEntries(
@@ -472,7 +472,7 @@
     if (
       event.target instanceof Element &&
       event.target.closest(
-        'button, a, input, craft-checkbox, craft-action-menu, .drag-handle'
+        'button, a, input, craft-checkbox, craft-action-menu, [data-drag-handle]'
       )
     ) {
       return;
@@ -544,11 +544,11 @@
       return;
     }
 
-    // The first `.fields` under the block is its own; the ones after it belong
+    // The first fields container under the block is its own; the ones after it belong
     // to whatever the block nests.
     const fields = matrixHost.value
       ?.querySelector(`[data-id="${CSS.escape(uid)}"]`)
-      ?.querySelector<HTMLElement>('.fields');
+      ?.querySelector<HTMLElement>('[data-matrix-block-fields]');
 
     previews.value.set(uid, fields ? blockPreviewParts(fields) : []);
   }
@@ -914,7 +914,7 @@
   }
 
   /**
-   * `.matrixblock` stays the direct child of the blocks container: the legacy
+   * `[data-matrix-block]` stays the direct child of the blocks container: the legacy
    * `craft-matrix-input` still finds its entries through it, and `sync()` reads
    * the identity back off `data-id`.
    */
@@ -930,13 +930,13 @@
       'data-color': presentation?.color ?? undefined,
       'data-ui-label': uiLabel(uid) || undefined,
       'data-collapsed': isCollapsed(uid) ? '' : undefined,
+      'data-disabled':
+        props.value.entries[uid]?.enabled === false ? '' : undefined,
+      [NEW_BLOCK_ATTRIBUTE]: justAdded.value.has(uid) ? '' : undefined,
+      // No Craft 5 class names: the legacy stylesheet styles them, and would
+      // restyle the card. Behavior hangs off these data attributes instead.
       'data-matrix-block': '',
       role: 'listitem',
-      class: {
-        collapsed: isCollapsed(uid),
-        'disabled-entry': props.value.entries[uid]?.enabled === false,
-        [NEW_BLOCK_CLASS]: justAdded.value.has(uid),
-      },
     };
   }
 
@@ -1410,12 +1410,12 @@
     @form-change="sync"
   >
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
-    <div :id="matrixId" class="matrix matrix-field">
+    <div :id="matrixId" data-matrix-field>
       <span role="status" class="sr-only" data-status-message>{{
         statusMessage
       }}</span>
       <!-- `data-matrix-blocks` sits on the list itself: the legacy
-           `craft-matrix-input` finds its entries with `:scope > .matrixblock`,
+           `craft-matrix-input` finds its entries with `:scope > [data-matrix-block]`,
            so a wrapper between the two hides every block from it. -->
       <SelectableCardList
         role="list"
@@ -1429,7 +1429,6 @@
         tag="div"
         item-tag="div"
         list-class="grid gap-1"
-        :item-class="() => 'matrixblock js-deletable'"
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
@@ -1438,8 +1437,8 @@
       >
         <template #label="{id: uid}">
           <div
-            class="blocktype flex flex-nowrap gap-1 items-center"
-            :class="{error: hasErrors(uid)}"
+            class="flex flex-nowrap gap-1 items-center"
+            data-matrix-block-titlebar
           >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
             {{ entryType(uid)?.label ?? uid }}
@@ -1449,7 +1448,7 @@
               :aria-label="t('Error')"
             />
 
-            <div class="preview" v-if="isCollapsed(uid)">
+            <div data-matrix-block-preview v-if="isCollapsed(uid)">
               {{ previewText(uid) }}
             </div>
           </div>
@@ -1485,7 +1484,7 @@
               :value="value.entries[id]?.type ?? ''"
             />
           </template>
-          <div class="fields">
+          <div data-matrix-block-fields>
             <template v-if="forms.get(id)">
               <FormNodeList
                 :nodes="forms.get(id)!.nodes"

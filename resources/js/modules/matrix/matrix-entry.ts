@@ -1,7 +1,7 @@
 /**
  * MatrixEntry — modern TypeScript port of the legacy `Craft.MatrixInput.Entry`.
  *
- * The per-`.matrixblock` controller: collapse/expand (with the preview-text
+ * The per-block (`[data-matrix-block]`) controller: collapse/expand (with the preview-text
  * summary and localStorage persistence), the block action menu, enable/disable,
  * move/duplicate/copy/paste/delete.
  */
@@ -30,7 +30,7 @@ type JsonValue =
   | {[key: string]: JsonValue};
 
 /**
- * A part of a block, whether it sits directly under `.matrixblock` or inside the
+ * A part of a block, whether it sits directly under the block or inside the
  * `craft-card` frame both Matrix renderers now wrap their blocks in. Scoped to
  * that one level either way, so a nested Matrix inside the block keeps its own
  * titlebar, fields and inputs to itself.
@@ -45,7 +45,7 @@ function blockPart<T extends Element = HTMLElement>(
 }
 
 export class MatrixEntry extends Base {
-  /** The entry controller for a `.matrixblock` container, if one was booted. */
+  /** The entry controller for a `[data-matrix-block]` container, if one was booted. */
   static forContainer(container: Element): MatrixEntry | undefined {
     return containerMatrixEntries.get(container);
   }
@@ -71,9 +71,10 @@ export class MatrixEntry extends Base {
 
     this.matrix = matrix;
     this.container = container;
-    this.titlebar = blockPart(container, '.titlebar');
-    this.previewContainer = this.titlebar?.querySelector('.preview') ?? null;
-    this.fieldsContainer = blockPart(container, '.fields');
+    this.titlebar = blockPart(container, '[data-matrix-block-titlebar]');
+    this.previewContainer =
+      this.titlebar?.querySelector('[data-matrix-block-preview]') ?? null;
+    this.fieldsContainer = blockPart(container, '[data-matrix-block-fields]');
     const formHost =
       this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
         'craft-entry-field-layout-form'
@@ -110,7 +111,7 @@ export class MatrixEntry extends Base {
 
     const actionMenuBtn = blockPart<HTMLElement>(
       this.container,
-      '.actions > .action-btn'
+      '[data-matrix-block-actions] > [data-matrix-block-menu]'
     );
     if (actionMenuBtn) {
       this.actionDisclosure =
@@ -191,7 +192,7 @@ export class MatrixEntry extends Base {
 
     hideActions.push(this.collapsed ? 'collapse' : 'expand');
     hideActions.push(
-      this.container.classList.contains('disabled-entry') ? 'disable' : 'enable'
+      this.container.hasAttribute('data-disabled') ? 'disable' : 'enable'
     );
 
     if (!this.previousBlock()) {
@@ -269,14 +270,14 @@ export class MatrixEntry extends Base {
 
   private previousBlock(): HTMLElement | null {
     const prev = this.container.previousElementSibling;
-    return prev instanceof HTMLElement && prev.classList.contains('matrixblock')
+    return prev instanceof HTMLElement && prev.hasAttribute('data-matrix-block')
       ? prev
       : null;
   }
 
   private nextBlock(): HTMLElement | null {
     const next = this.container.nextElementSibling;
-    return next instanceof HTMLElement && next.classList.contains('matrixblock')
+    return next instanceof HTMLElement && next.hasAttribute('data-matrix-block')
       ? next
       : null;
   }
@@ -294,7 +295,8 @@ export class MatrixEntry extends Base {
       return;
     }
 
-    this.container.classList.add('collapsed');
+    this.container.setAttribute('data-collapsed', '');
+    this.toggleLegacyClass('collapsed', true);
 
     if (this.previewContainer) {
       this.previewContainer.innerHTML = this.previewHtml();
@@ -357,7 +359,8 @@ export class MatrixEntry extends Base {
       return;
     }
 
-    this.container.classList.remove('collapsed');
+    this.container.removeAttribute('data-collapsed');
+    this.toggleLegacyClass('collapsed', false);
 
     const fields = this.fieldsContainer;
 
@@ -413,6 +416,18 @@ export class MatrixEntry extends Base {
   }
 
   /**
+   * Twig-rendered blocks still carry Craft 5's state classes, which the legacy
+   * stylesheet styles them by. Card-framed blocks don't — those same styles would
+   * restyle the card — so they get only the data attributes, which is what the
+   * Matrix code reads either way.
+   */
+  private toggleLegacyClass(name: string, on: boolean): void {
+    if (!this.matrix.settings!.formControl) {
+      this.container.classList.toggle(name, on);
+    }
+  }
+
+  /**
    * Posts the collapsed state, so a block folded up before saving comes back
    * folded up.
    *
@@ -449,7 +464,8 @@ export class MatrixEntry extends Base {
     if (enabledInput) {
       enabledInput.value = '';
     }
-    this.container.classList.add('disabled-entry');
+    this.container.setAttribute('data-disabled', '');
+    this.toggleLegacyClass('disabled-entry', true);
     this.collapse(true);
   }
 
@@ -461,7 +477,8 @@ export class MatrixEntry extends Base {
     if (enabledInput) {
       enabledInput.value = '1';
     }
-    this.container.classList.remove('disabled-entry');
+    this.container.removeAttribute('data-disabled');
+    this.toggleLegacyClass('disabled-entry', false);
   }
 
   moveUp(): void {

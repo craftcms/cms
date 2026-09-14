@@ -100,14 +100,13 @@ class Matrix extends Control
                     ->label(t('{type} actions', ['type' => $label]))
                     ->toHtml()
                 ).Html::tag('span', Html::tag('craft-reorder-button', '', [
-                    'class' => 'move-btn',
                     'position' => match (true) {
                         count($order) === 1 => 'first',
                         $index === 0 => 'first',
                         $index === array_key_last($order) => 'last',
                         default => 'middle',
                     },
-                ]), ['class' => 'drag-handle'])
+                ]), ['data-drag-handle' => true])
                     // The browser stack deletes through the menu, which posts the
                     // change back; without a Vue control listening, this button is
                     // what `craft-matrix-input` acts on.
@@ -145,15 +144,12 @@ class Matrix extends Control
                         // Folded up, the block's own fields aren't there to
                         // identify it, so its UI label stands in for them.
                         .($collapsed
-                            ? Html::tag('div', Html::encode((string) ($blocks[$uid]['label'] ?? '')), ['class' => 'preview'])
+                            ? Html::tag('div', Html::encode((string) ($blocks[$uid]['label'] ?? '')), ['data-matrix-block-preview' => true])
                             : ''),
-                        ['class' => array_filter([
-                            'blocktype', 'flex', 'flex-nowrap', 'gap-1', 'items-center',
-                            ($blocks[$uid]['error'] ?? false) ? 'error' : null,
-                        ])],
+                        ['class' => ['flex', 'flex-nowrap', 'gap-1', 'items-center']],
                     ),
-                    ['class' => ['titlebar', 'flex', 'gap-2', 'items-center']],
-                ).Html::tag('div', $actions, ['class' => ['actions', 'flex', 'gap-1', 'items-center']]),
+                    ['class' => ['flex', 'gap-2', 'items-center'], 'data-matrix-block-titlebar' => true],
+                ).Html::tag('div', $actions, ['class' => ['flex', 'gap-1', 'items-center'], 'data-matrix-block-actions' => true]),
                 [
                     'slot' => 'header',
                     'class' => ['flex', 'gap-2', 'items-center', 'justify-between', 'w-full'],
@@ -161,15 +157,13 @@ class Matrix extends Control
             );
             $items .= Html::tag('div',
                 Html::tag('craft-card',
-                    $header.$hidden.Html::tag('div', $content, ['class' => 'fields']),
+                    $header.$hidden.Html::tag('div', $content, ['data-matrix-block-fields' => true]),
                     ['collapsed' => $collapsed],
                 ), [
-                    'class' => array_filter([
-                        'matrixblock',
-                        'js-deletable',
-                        $enabled ? null : 'disabled-entry',
-                        $collapsed ? 'collapsed' : null,
-                    ]),
+                    // No Craft 5 class names: the legacy stylesheet styles them,
+                    // and would restyle the card. Behavior hangs off data attributes.
+                    'data-matrix-block' => true,
+                    'data-disabled' => $enabled ? null : true,
                     'data-id' => $uid,
                     'data-type' => $type,
                     // The CP's generated colorable rules turn this into the whole
@@ -204,15 +198,16 @@ class Matrix extends Control
         $matrix = Html::tag('div',
             Html::tag('span', '', ['role' => 'status', 'class' => 'sr-only', 'data-status-message' => true])
             .Html::tag('div', $items, [
-                'class' => ['blocks', 'grid', 'gap-1'],
+                'class' => ['grid', 'gap-1'],
                 'data-matrix-blocks' => true,
                 'role' => 'list',
             ])
             .($buttons === '' ? '' : Html::tag('div', $buttons, [
-                'class' => ['buttons', 'flex', 'flex-wrap', 'gap-1', 'items-center', 'mt-3'],
+                'class' => ['flex', 'flex-wrap', 'gap-1', 'items-center', 'mt-3'],
+                'data-matrix-buttons' => true,
             ])), [
                 'id' => $attributes['id'],
-                'class' => ['matrix', 'matrix-field'],
+                'data-matrix-field' => true,
             ]);
         $entryTypes = array_map(
             fn (array $type, int $index): array => [

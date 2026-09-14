@@ -4,20 +4,23 @@
  * The blocks themselves come from two renderers — `MatrixControl.vue` and
  * `Form\Controls\Matrix::renderHtml()` — that emit the same `craft-card`
  * frame, so their styling lives here rather than scoped to the Vue component.
+ *
+ * Selected by data attributes, not Craft 5's class names: the legacy stylesheet
+ * still styles those (for Twig-rendered blocks), and would restyle the card.
  */
 
 /* A disabled block reads as a problem to fix rather than a neutral off state,
    so its dot is red. Set through the status component's own custom properties —
    they inherit into its shadow DOM — rather than repainting the shared
    `--c-status-disabled-*` tokens, which every other disabled thing uses. */
-.matrixblock.disabled-entry craft-status {
+[data-matrix-block][data-disabled] craft-status {
   --c-status-disabled-fill: var(--c-status-expired-fill);
   --c-status-disabled-border: var(--c-status-expired-border);
 }
 
 /* The UI label a folded-up block shows in place of its fields, set off from the
    entry type name by a hairline. */
-.matrixblock .preview {
+[data-matrix-block] > craft-card [data-matrix-block-preview] {
   position: relative;
   padding-inline-start: var(--c-spacing-sm);
   margin-inline-start: var(--c-spacing-sm);
@@ -39,13 +42,13 @@
  *
  * Painted by an overlay rather than the block's own background: the card paints
  * that inside its own shadow root, where this can't reach. At rest the overlay
- * is invisible, so the class is harmless if it outlives the animation.
+ * is invisible, so the attribute is harmless if it outlives the animation.
  */
-.matrixblock {
+[data-matrix-block] {
   position: relative;
 }
 
-.matrixblock::after {
+[data-matrix-block]::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -54,7 +57,7 @@
   opacity: 0;
 }
 
-.matrixblock.is-new::after {
+[data-matrix-block][data-matrix-block-new]::after {
   animation: matrix-block-added 1200ms ease-out;
 }
 
