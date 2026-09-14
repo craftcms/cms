@@ -686,16 +686,19 @@ JS, [
         }
 
         $errorCount = 0;
+        $invalidTargetIds = [];
 
         foreach ($value->all() as $i => $target) {
             if (!self::_validateRelatedElement($element, $target)) {
                 /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
+                $invalidTargetIds[] = $target->id;
                 $errorCount++;
             }
         }
 
         if ($errorCount) {
+            $element->addInvalidNestedElementIds($invalidTargetIds);
             $selectedCount = (int)$value->count();
             $element->addError($this->handle, Craft::t('app', 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
                 'relatedType' => $selectedCount === 1
