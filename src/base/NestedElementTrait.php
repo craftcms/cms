@@ -102,6 +102,17 @@ trait NestedElementTrait
     public bool $updateSearchIndexForOwner = false;
 
     /**
+     * @var bool Whether the owner element’s `dateUpdated` timestamp should be updated (recursively, up
+     * through any further ancestors) when this (canonical) element is saved.
+     *
+     * This is set to `false` when a nested element is being saved as part of its owner’s own save
+     * operation, since the owner’s `dateUpdated` will already be getting updated in that case.
+     *
+     * @since 5.12.0
+     */
+    public bool $touchOwnersOnSave = true;
+
+    /**
      * @var ElementInterface|false|null The primary owner element, or false if [[primaryOwnerId]] is invalid
      * @see getPrimaryOwner()
      * @see setPrimaryOwner()

@@ -1354,10 +1354,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toLowerCaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToLowerCase(string $expected, string $string): void
+    public function testToLowerCase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toLowerCase($string);
+        $actual = StringHelper::toLowerCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1423,10 +1424,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toTitleCaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToTitleCase(string $expected, string $string): void
+    public function testToTitleCase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toTitleCase($string);
+        $actual = StringHelper::toTitleCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1445,10 +1447,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toUppercaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToUppercase(string $expected, string $string): void
+    public function testToUppercase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toUpperCase($string);
+        $actual = StringHelper::toUpperCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1657,6 +1660,10 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 Alphan Numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Dutch "ij" is treated as a single letter, so title-casing it capitalizes both characters
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['IJsselmeer', 'ijsselmeer', 'nl'],
+            ['Ijsselmeer', 'ijsselmeer'],
         ];
     }
 
@@ -1676,6 +1683,10 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 alphan numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ıstanbul', 'Istanbul', 'tr'],
+            ['istanbul', 'Istanbul'],
         ];
     }
 
@@ -2249,6 +2260,14 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 ALPHAN NUMERIC', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['İSTANBUL', 'istanbul', 'tr'],
+            ['ISTANBUL', 'istanbul'],
+            // Greek strips accents when uppercasing
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ΑΝΘΡΩΠΟΣ', 'άνθρωπος', 'el'],
+            ['ΆΝΘΡΩΠΟΣ', 'άνθρωπος'],
         ];
     }
 

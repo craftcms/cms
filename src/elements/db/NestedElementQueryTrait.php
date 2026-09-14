@@ -197,16 +197,49 @@ trait NestedElementQueryTrait
         return $this;
     }
 
+    /**
+     * Returns whether the resulting elements will always have a field assigned to them.
+     *
+     * @since 5.12.0
+     */
+    protected function mustHaveField(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns whether the resulting elements will always have an owner assigned to them.
+     *
+     * @since 5.12.0
+     */
+    protected function mustHaveOwner(): bool
+    {
+        return true;
+    }
+
     private function applyNestedElementParams(string $fieldIdColumn, string $primaryOwnerIdColumn): void
     {
         $this->normalizeNestedElementParams();
 
-        if ($this->fieldId === false || $this->primaryOwnerId === false || $this->ownerId === false) {
+        $mustHaveField = $this->mustHaveField();
+        $mustHaveOwner = $this->mustHaveOwner();
+
+        if (
+            ($mustHaveField && $this->fieldId === false) ||
+            ($mustHaveOwner && ($this->primaryOwnerId === false || $this->ownerId === false)) ||
+            $this->fieldId === [] ||
+            $this->primaryOwnerId === [] ||
+            $this->ownerId === []
+        ) {
             throw new QueryAbortedException();
         }
 
-        if (!empty($this->fieldId) || !empty($this->ownerId) || !empty($this->primaryOwnerId)) {
+        if (isset($this->fieldId) || isset($this->ownerId) || isset($this->primaryOwnerId)) {
             // Join in the elements_owners table
+            $joinType = $mustHaveField || $this->fieldId || $this->ownerId || $this->primaryOwnerId
+                ? 'INNER JOIN'
+                : 'LEFT JOIN';
+
             $ownersCondition = [
                 'and',
                 '[[elements_owners.elementId]] = [[elements.id]]',
@@ -218,15 +251,16 @@ trait NestedElementQueryTrait
                     'elements_owners.ownerId',
                     'elements_owners.sortOrder',
                 ])
-                ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
-            $this->subQuery->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+                ->join($joinType, ['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
 
-            if ($this->fieldId) {
-                $this->subQuery->andWhere([$fieldIdColumn => $this->fieldId]);
+            $this->subQuery->join($joinType, ['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+
+            if (isset($this->fieldId)) {
+                $this->subQuery->andWhere([$fieldIdColumn => $this->fieldId ?: null]);
             }
 
-            if ($this->primaryOwnerId) {
-                $this->subQuery->andWhere([$primaryOwnerIdColumn => $this->primaryOwnerId]);
+            if (isset($this->primaryOwnerId)) {
+                $this->subQuery->andWhere([$primaryOwnerIdColumn => $this->primaryOwnerId ?: null]);
             }
 
             // Ignore revision/draft blocks by default
@@ -234,7 +268,8 @@ trait NestedElementQueryTrait
             $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
 
             if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
-                $this->subQuery->innerJoin(
+                $this->subQuery->join(
+                    $joinType,
                     ['owners' => Table::ELEMENTS],
                     $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : "[[owners.id]] = [[$primaryOwnerIdColumn]]"
                 );
@@ -245,6 +280,10 @@ trait NestedElementQueryTrait
 
                 if (!$allowOwnerRevisions) {
                     $this->subQuery->andWhere(['owners.revisionId' => null]);
+                }
+
+                if ($this->ownerId === false) {
+                    $this->subQuery->andWhere(['owners.id' => null]);
                 }
             }
 
@@ -263,7 +302,7 @@ trait NestedElementQueryTrait
     }
 
     /**
-     * Normalizes the fieldId param to an array of IDs or null
+     * Normalizes the fieldId param to an array of IDs, false, or null
      */
     private function normalizeFieldId(): void
     {
@@ -285,22 +324,29 @@ trait NestedElementQueryTrait
     }
 
     /**
-     * Normalizes the primaryOwnerId param to an array of IDs or null
+     * Normalizes the primaryOwnerId param to an array of IDs, false, or null
      *
      * @param mixed $value
      * @return int[]|null|false
      */
     private function normalizeOwnerId(mixed $value): array|null|false
     {
-        if (empty($value)) {
-            return null;
+        if ($value === false) {
+            return false;
         }
+
+        if (empty($value)) {
+            return is_array($value) ? [] : null;
+        }
+
         if (is_numeric($value)) {
             return [$value];
         }
+
         if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
             return false;
         }
+
         return $value;
     }
 
