@@ -83,9 +83,6 @@ export function useImageTransforms(
       state.scaleFactor.value = scaleFactor;
     }
 
-    // Scaled rather than resized: fabric draws an image at its natural size
-    // times its scale, so this is the displayed width the turn should land on,
-    // converted. See `getImageScaleFor()`.
     const turnedScale = geometry.getImageScaleFor(
       scaled.width * imageZoomRatio * (scaleFactor < 1 ? scaleFactor : 1)
     );
@@ -124,9 +121,6 @@ export function useImageTransforms(
       state.canvas.value?.remove(state.focalPoint.value);
     }
 
-    // An absolute angle. fabric 1.x read `'+=90'` as relative; fabric 7
-    // subtracts the start from the end outright, so the string left the
-    // viewport's angle NaN for the length of the turn.
     animate(
       viewport,
       {angle: viewport.angle + (degrees === 90 ? 90 : -90)},
@@ -177,12 +171,9 @@ export function useImageTransforms(
 
     state.animationInProgress.value = true;
 
-    // At rest a mirror lives in fabric's own `flipX`/`flipY` flags, with the
-    // scale kept positive -- every other transform writes a positive scale,
-    // and a flip held as a negative one was undone by the first of them. Only a
-    // sign change can be tweened, though, so fold the flags into the scale
-    // before the target is worked out from it; the flags are cleared below,
-    // and put back when the flip lands.
+    // Flips are held in `flipX`/`flipY` with a positive scale. Only the scale's
+    // sign can animate, so fold the flags into it first; they're restored when
+    // the flip lands.
     image.scaleX = image.flipX
       ? -Math.abs(image.scaleX)
       : Math.abs(image.scaleX);
@@ -253,12 +244,8 @@ export function useImageTransforms(
       focalPoint.storeFocalPointState(nextFocalState);
     }
 
-    // fabric normalizes a negative scale by flipping the corresponding
-    // flipX/flipY flag and making the value positive. `set()` runs on every
-    // animation frame, so each frame that passes a negative scale toggles the
-    // flag again and the final state depends on the frame count. Bypassing
-    // `_set` for the scale keys keeps the animation deterministic.
-    // Captured unbound on purpose — it's put back on the same object below.
+    // Bypass fabric's negative-scale normalization while animating, so the sign
+    // isn't turned into a flag mid-flip. Captured unbound; restored below.
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalSet = image._set;
 

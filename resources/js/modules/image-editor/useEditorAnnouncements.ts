@@ -2,12 +2,6 @@ import {t} from '@craftcms/ui';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import type {EditorState} from './useEditorState';
 
-/**
- * Screen-reader announcements for the keyboard editing flow.
- *
- * The legacy editor built these position strings as bare template literals, so
- * they stayed English in every locale. They go through `t()` here.
- */
 export function useEditorAnnouncements(state: EditorState) {
   const {announce} = useAnnouncer();
 

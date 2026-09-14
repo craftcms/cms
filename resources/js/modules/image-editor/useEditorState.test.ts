@@ -48,11 +48,8 @@ function clipperFor(
 }
 
 /**
- * The invariant the cropper depends on: the rectangle has to sit inside the
- * image quad, because every drag is tested against it. Three separate bugs —
- * a transition racing a resize, a clobbered measurement baseline, and a
- * rectangle translated instead of re-derived — all surfaced as this being
- * false, and as the cropper silently refusing to move.
+ * The rectangle must sit inside the image quad: every drag is tested against
+ * it.
  */
 function clipperFitsImage(width: number, height: number, image: number) {
   const {state, geometry} = makeEditor(width, height);
@@ -101,9 +98,8 @@ it('keeps the cropping rectangle inside the image at any editor size', () => {
 });
 
 it('keeps it inside after the editor resizes, which is what used to break', () => {
-  // The dialog opens short and settles taller. The rectangle is re-derived
-  // from the stored state, so it has to land on the image at the new size —
-  // translating it instead is what left it 30px above the image.
+  // The editor settles taller after opening; the rectangle must still land on
+  // the image.
   const before = clipperFitsImage(1168, 514, 3000);
 
   const cropperState: CropperState = {
@@ -135,8 +131,7 @@ it('keeps it inside after the editor resizes, which is what used to break', () =
 });
 
 it('leaves room around the image for the cropper handles', () => {
-  // The handles are drawn outside the rectangle; with the image flush to the
-  // canvas edge they were clipped away and half their grab area sat off-canvas.
+  // Handles are drawn outside the rectangle, so the image needs room around it.
   const {quad} = clipperFitsImage(1155, 670, 3000);
 
   expect(quad.d.x).toBeGreaterThanOrEqual(4);
@@ -146,8 +141,7 @@ it('leaves room around the image for the cropper handles', () => {
 });
 
 it('never returns a zero or NaN zoom for an unmeasured editor', () => {
-  // A dialog's container has no size until it opens; `0 / 0` used to poison
-  // every measurement downstream with NaN.
+  // An unmeasured editor is 0x0; the zoom must not come out NaN.
   const {state, geometry} = makeEditor(0, 0);
 
   state.originalWidth.value = 3000;
@@ -160,9 +154,7 @@ it('never returns a zero or NaN zoom for an unmeasured editor', () => {
 });
 
 it('frames the image the same whether or not the crop controls are open', () => {
-  // The inset that gives the cropper's handles room used to appear only while
-  // cropping, so opening the controls reframed the image on top of the zoom
-  // change — a visible lurch. The content box is the same in both views now.
+  // The content box is the same in both views.
   const {state, geometry} = makeEditor(1168, 574);
 
   state.originalWidth.value = 4032;

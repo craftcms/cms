@@ -59,15 +59,9 @@
   }
 
   /**
-   * Mirrors the editor in the URL, so it can be linked to and survives a
-   * refresh. Driven by a watcher rather than the open/close handlers, so it
-   * covers every way out — Escape, the close button, a save — not just the
-   * ones that go through a function here.
-   *
-   * `history.replaceState` rather than an Inertia visit: this is UI state, and
-   * a round-trip to re-render the page behind an open dialog to toggle a query
-   * parameter would be a lot of work for nothing. Inertia's own history entry
-   * is handed straight back so only the URL changes.
+   * Mirrors the editor's open state in `?editing`, so it can be linked to and
+   * survives a refresh. `replaceState` rather than an Inertia visit: it's UI
+   * state.
    */
   watch(imageEditorOpen, (editing) => {
     const url = new URL(window.location.href);
@@ -83,22 +77,15 @@
     }
   });
 
-  /**
-   * Saving in place changes the file behind the same asset, so the screen has
-   * to refetch to pick up the new thumbnail; saving a copy leaves this asset
-   * alone and sends us off to the copy instead. The URL comes from the server
-   * so we don't have to rebuild the `{id}{slug}` path here.
-   */
+  /** Saving in place refetches for the new thumbnail; a copy navigates to it. */
   function onImageSaved(result: SaveResult): void {
     if (result.newAssetUrl) {
       router.visit(result.newAssetUrl);
       return;
     }
 
-    // Drop `editing` here rather than leaving it to the watcher above, which
-    // doesn't flush until after this handler returns. A `reload()` refetches
-    // whatever the URL says right now, so it would come back with the editor
-    // asked to open again — and reinstate the parameter in history on the way.
+    // Drop `editing` now: the watcher flushes after this handler, and
+    // `reload()` refetches the current URL.
     const url = new URL(window.location.href);
     url.searchParams.delete('editing');
 

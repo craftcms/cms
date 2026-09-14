@@ -94,8 +94,7 @@ class AssetEditViewModel extends ElementEditViewModel
             'imageEditorRatios' => Cms::config()->imageEditorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),
-            // Drives which cropper handle gets the "left" label and which the
-            // "right" one, as `_special/image_editor.twig` did.
+            // Picks which cropper handles get the left and right labels.
             'orientation' => I18N::getLocale()->getOrientation(),
         ];
     }

@@ -90,10 +90,8 @@ interface EditorSnapshot {
 }
 
 /**
- * The part of a snapshot that is the edit itself, for telling whether a step
- * changed anything. Positions, zoom and the view are consequences of the edit
- * and of the editor's size, not the edit; offsets are taken relative to the
- * image so a resize between two snapshots doesn't read as a change.
+ * The edit itself, for comparing snapshots. Offsets are relative to the image,
+ * so a resize between snapshots isn't a change.
  */
 function editOf(snapshot: EditorSnapshot): string {
   const round = (value: number) => Math.round(value * 1000) / 1000;
@@ -193,14 +191,8 @@ export function useImageEditor(options: ImageEditorOptions) {
   const {flash} = useFlashMessages();
 
   const isReady = ref(false);
-  /**
-   * Which save is running, rather than a single flag — the two buttons post the
-   * same edits to the same asset, so only one runs at a time, but each spins on
-   * its own.
-   */
   const savingAs = ref<SaveMode | null>(null);
   const isSaving = computed(() => savingAs.value !== null);
-  /** Bumped on save so a reloaded image isn't served from cache. */
   const cacheBust = ref(Date.now());
 
   const history = useEditHistory<EditorSnapshot>({
@@ -215,11 +207,7 @@ export function useImageEditor(options: ImageEditorOptions) {
   let recordingDepth = 0;
   let uiAdapter: UiAdapter | null = null;
 
-  /**
-   * Nothing moves through the history while an edit is unfinished: a step
-   * restored underneath a running animation, or recorded after an undo, would
-   * leave the stack describing something that never happened.
-   */
+  /** The history can't move while an edit is still settling. */
   const canStep = computed(
     () =>
       isReady.value &&
@@ -362,17 +350,14 @@ export function useImageEditor(options: ImageEditorOptions) {
   }
 
   /**
-   * Puts a snapshot back exactly: every value is written as it was recorded,
-   * rather than worked out again. Straightening and rotating fit the crop to
-   * the viewport as they go, so replaying them in reverse doesn't land where
-   * the edit started.
+   * Writes a snapshot's values back rather than recomputing them: straightening
+   * and rotating don't invert exactly.
    */
   async function restoreSnapshot(snapshot: EditorSnapshot): Promise<void> {
     restoring.value = true;
 
     try {
-      // The other tab's edit is restored in its own view, never across one --
-      // rotating under the cropper is what the tabs exist to prevent.
+      // Restore in the snapshot's own view.
       if (snapshot.view !== state.currentView.value) {
         showView(snapshot.view);
         await settle();
@@ -530,11 +515,7 @@ export function useImageEditor(options: ImageEditorOptions) {
     );
   }
 
-  /**
-   * `getActionUrl()` can already carry a query string (`?site=…`), so the
-   * params go on through `searchParams` rather than being concatenated behind
-   * a second `?`.
-   */
+  /** `getActionUrl()` may already carry a query string. */
   function imageUrl(): string {
     const url = new URL(helpers.getActionUrl('assets/edit-image'));
 
@@ -581,11 +562,7 @@ export function useImageEditor(options: ImageEditorOptions) {
     canvas.repositionViewport();
     canvas.zoomImage();
 
-    // Only now that the image has taken its new position and size: both of
-    // these hold their place relative to the image, so they read it rather than
-    // being shifted by how much the editor changed. Nudging them beforehand
-    // measured them against where the image used to be, which is why they
-    // drifted away from it on every resize.
+    // After the image moves: these are positioned relative to it.
     if (cropping) {
       cropper.reposition();
     }
@@ -674,11 +651,8 @@ export function useImageEditor(options: ImageEditorOptions) {
           height: cropperState.height * scale,
         });
 
-        // The transition lifted the marker off, and it stays off while
-        // cropping. It's still positioned for the crop's zoom, though:
-        // `disableCropMode` checks it against the rectangle in these
-        // coordinates to decide whether it survives the crop, and then puts
-        // it back itself.
+        // Keep the marker hidden while cropping, but positioned: `disableCropMode`
+        // checks it against the crop.
         focalPoint.positionFromState();
       }
     );
@@ -759,27 +733,16 @@ export function useImageEditor(options: ImageEditorOptions) {
 
     const previousView = state.currentView.value;
 
-    // Flip first, so the host can show or hide whatever this view owns — the
-    // straightening rule under the image goes away while cropping — and settle
-    // at its new size before anything is measured.
+    // Switch first so the layout settles before anything is measured.
     state.currentView.value = view;
 
-    // Nothing picked up survives the switch. A crop handle has no cropper to
-    // drive on the Rotate tab, and the focal point can't be moved while
-    // cropping, so a marker picked up on Rotate is put back down here rather
-    // than left answering the arrow keys.
+    // Drop anything picked up; it can't be edited in the other view.
     editing.reset();
     focalPoint.setPickedUpStyles(false);
 
     void nextTick().then(() => {
-      // One measurement, taken once the layout has settled. Laying out against
-      // the old size and letting the resize correct it afterwards is what made
-      // the image lurch: it moved for the old size, animated towards a target
-      // computed for the old size, then moved again when the layout landed.
-      //
-      // Safe to measure without preserving the previous dimensions: both
-      // transitions set the image's position outright rather than shifting it
-      // by how much the editor changed.
+      // Measure once the layout has settled. Both transitions set the image's
+      // position outright, so the previous size isn't needed.
       canvas.measureEditor();
       canvas.resizeCanvases();
 
@@ -855,13 +818,7 @@ export function useImageEditor(options: ImageEditorOptions) {
     }
   }
 
-  /**
-   * Whether anything has been changed since the image loaded.
-   *
-   * Derived from the state rather than a flag the mutating operations have to
-   * remember to set — one missed call site and a user loses work to a
-   * confirmation that never appeared.
-   */
+  /** Whether anything has changed since the image loaded, derived from state. */
   const isDirty = computed(() => {
     if (!isReady.value) {
       return false;
@@ -916,12 +873,7 @@ export function useImageEditor(options: ImageEditorOptions) {
   });
 
   /**
-   * Puts the image back the way it loaded, discarding every edit.
-   *
-   * Deliberately doesn't refetch: the source image is already on the canvas,
-   * and everything the editor does to it lives in state that can simply be
-   * wound back. The view is left alone — resetting while cropping should show
-   * the crop reset, not drop you somewhere else.
+   * Discards every edit without refetching the image. The current view is kept.
    */
   function reset(): void {
     const image = state.image.value;
@@ -996,8 +948,7 @@ export function useImageEditor(options: ImageEditorOptions) {
     try {
       await canvas.createCanvas(imageUrl());
     } catch (error) {
-      // Surfaced as well as flashed: the flash says something went wrong, the
-      // console says what, which a bare `catch` would have thrown away.
+      // Logged as well as flashed, so the cause isn't lost.
       console.error('Image editor failed to load the image:', error);
       flash('error', t('Could not load the image for editing.'));
       return;
@@ -1076,9 +1027,7 @@ export function useImageEditor(options: ImageEditorOptions) {
         zoom: state.zoomRatio.value,
       });
 
-      // `execute` resolves whether or not the request succeeded — it reports
-      // failure through `state` and `onError` instead of throwing — so success
-      // has to be checked rather than assumed.
+      // `execute` doesn't throw on failure, so check the state.
       if (saveState.value !== 'success') {
         return null;
       }
@@ -1105,20 +1054,12 @@ export function useImageEditor(options: ImageEditorOptions) {
   let started = false;
 
   /**
-   * The editor takes every measurement from its container, so nothing can
-   * happen until that container has a size. Inside a dialog it has none at all
-   * until the dialog opens — loading before then measured zero, which put the
-   * image's centre at the origin and made the zoom ratio `NaN`.
-   *
-   * So the first real size drives the load, and every size after it drives a
-   * re-layout.
+   * The container has no size until the dialog opens, so its first real size
+   * triggers the load and later sizes trigger a re-layout.
    */
   function onEditorResized(): void {
-    // Read the element without storing the result. `updateSizeAndPosition()`
-    // shifts the image by how much the editor changed, which it works out from
-    // the previous `editorWidth`/`editorHeight` — measuring here first would
-    // overwrite those with the new size, make the delta zero, and leave the
-    // image parked where the old size put it.
+    // Don't store this: `updateSizeAndPosition()` shifts the image using the
+    // previous size.
     const el = state.editorEl.value;
 
     if (!el?.clientWidth || !el?.clientHeight) {
@@ -1134,11 +1075,7 @@ export function useImageEditor(options: ImageEditorOptions) {
       return;
     }
 
-    // A transition animates the image towards targets worked out from the
-    // editor's size when it started. Re-laying out underneath it would be
-    // undone the moment it lands — the image would keep the old geometry while
-    // the zoom and the image quad had moved on, and every containment test
-    // against that stale image would fail. So wait for it to finish.
+    // Re-laying out mid-transition would be undone when it lands, so wait.
     if (state.animationInProgress.value) {
       resizePending = true;
 
@@ -1171,12 +1108,8 @@ export function useImageEditor(options: ImageEditorOptions) {
   useEventListener(document, 'keyup', interactions.onKeyUp);
 
   /**
-   * Stands the cropping rectangle the other way up, for the orientation switch.
-   *
-   * The rectangle carries the ratio once it has turned, so an active constraint
-   * is re-read from the new shape rather than recomputed from the option — that
-   * keeps `original` (the image's own ratio) correct too, which inverting the
-   * option's value wouldn't, since it isn't a number to invert.
+   * Turns the crop on its side for the orientation switch. An active constraint
+   * is re-read from the new shape, which keeps `original` correct too.
    */
   function turnCrop(): void {
     const hadConstraint = state.croppingConstraint.value !== false;
@@ -1188,16 +1121,8 @@ export function useImageEditor(options: ImageEditorOptions) {
   }
 
   /**
-   * Begins loading, once the host confirms the editor's container has settled
-   * at its final size.
-   *
-   * Everything here is measured off that container, and a container that
-   * resizes *after* layout is what produced a run of bugs: the image ended up
-   * sized for one editor while the zoom, the image quad and the cropping
-   * rectangle were computed for another, and every containment test against
-   * that mismatch failed. Inside a dialog the container has no size until it
-   * opens and keeps changing while it animates, so the dialog waits for
-   * `craft-after-show` — opened *and* finished updating — before calling this.
+   * Starts loading. Call once the container has its final size — in a dialog,
+   * after `craft-after-show`.
    */
   function start(): void {
     started = true;

@@ -14,14 +14,8 @@ body {
 }
 
 /*
-  A themed subtree has to restate the text colour. `color` is resolved where
-  it's declared, so the value set on `body` carries the page's palette wherever
-  it inherits -- leaving dark text on a themed dark background, which is how
-  this first showed up: a contrast ratio of 1.07.
-
-  Only `color`. Backgrounds are painted deliberately by whatever owns the
-  surface, and giving every themed element one would paint a lot of boxes
-  nobody asked for.
+  A themed subtree restates the text colour: `color` resolves where it's
+  declared. Backgrounds are left to whatever owns the surface.
 */
 [data-theme] {
   color: var(--c-text-default);

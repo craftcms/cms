@@ -5,8 +5,7 @@ import {animate} from './fabric';
 const settle = () => new Promise((resolve) => setTimeout(resolve, 60));
 
 it("fires fabric's own callbacks once per property", async () => {
-  // The trap `animate()` exists for. If fabric goes back to firing once, this
-  // fails -- and the helper can go with it.
+  // fabric's own behaviour, which `animate()` works around.
   const rect = new Rect({left: 0, top: 0, width: 10, height: 10});
   const onComplete = vi.fn();
 
@@ -22,9 +21,7 @@ it("fires fabric's own callbacks once per property", async () => {
 });
 
 it('completes a multi-property animation once, after every property lands', async () => {
-  // Called once per property, the editor's completion handlers put the focal
-  // point marker back on the canvas four times over -- and `add()` doesn't
-  // check, so the copies piled up with every trip out of the crop view.
+  // Once, not once per property.
   const rect = new Rect({left: 0, top: 0, width: 10, height: 10});
   const onComplete = vi.fn(() => ({
     left: rect.left,

@@ -50,8 +50,6 @@ it('reads a square the same either way', () => {
 });
 
 it('keeps each option key stable across an orientation change', () => {
-  // The regression this guards: the selection used to be tracked by value, so
-  // flipping the orientation lost it and re-applied the previous ratio.
   const landscape = constraintOptions(ratios, 'landscape');
   const portrait = constraintOptions(ratios, 'portrait');
 

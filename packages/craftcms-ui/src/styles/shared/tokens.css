@@ -1,10 +1,6 @@
 /*
-  [data-theme] is here for the same reason as in colorable.css: these tokens are
-  built out of the raw palette with var(), and a custom property carrying a
-  var() is substituted where it is declared. Resolved only at :root they carry
-  the root's palette wherever they inherit, so re-declaring the palette on a
-  subtree cannot reach them. Repeating the block on a themed element re-resolves
-  it against that element's palette.
+  [data-theme] re-resolves these var()-based tokens against a themed subtree's
+  palette; a var() is substituted where it's declared.
 */
 :root,
 :host,

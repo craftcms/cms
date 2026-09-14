@@ -84,13 +84,6 @@ export function useEditingState() {
 
 export type EditingState = ReturnType<typeof useEditingState>;
 
-/**
- * Pointer and keyboard editing of the cropper and focal point.
- *
- * Pointer events are unified through the Pointer Events API, which covers mouse
- * and touch in one set of handlers — the legacy editor bound `mouse*` and
- * `touch*` pairs separately through jQuery.
- */
 export function useEditorInteractions(
   state: EditorState,
   editing: EditingState,
@@ -164,12 +157,9 @@ export function useEditorInteractions(
   }
 
   /**
-   * Whether the focal point can be picked up or moved.
-   *
-   * Not while cropping, where the marker is taken off the canvas. It still
-   * exists and still has a position, and hit-testing reads that position
-   * rather than whether it's drawn -- so without this an invisible marker
-   * would take presses meant for the cropper's handles.
+   * Whether the focal point can be picked up or moved. Not while cropping: the
+   * marker is hidden but still hit-tests, and would take presses meant for the
+   * crop handles.
    */
   function focalEditable(): boolean {
     return state.currentView.value !== 'crop';
@@ -213,14 +203,9 @@ export function useEditorInteractions(
       cropperClicked.value = true;
     }
 
-    // Captured *after* the drag state is set: taking capture dispatches
-    // boundary events, and `onPointerLeave` decides whether to bail by asking
-    // `isDragging()` — which has to already be true by then.
-    //
-    // Capture itself is what lets a drag stray outside the editor and keep
-    // delivering moves. Without it the gesture dies as the cursor crosses the
-    // edge, which is most drags: the handles sit on the rectangle's border and
-    // the rectangle starts at the image's.
+    // Capture after setting the drag state: capturing fires boundary events,
+    // and `onPointerLeave` checks `isDragging()`. Capture keeps a drag alive
+    // past the editor's edge.
     (event.currentTarget as Element | null)?.setPointerCapture?.(
       event.pointerId
     );

@@ -117,7 +117,6 @@ export function useCropper(
 
   /** The white L-shaped brackets at each corner of the rectangle. */
   function buildHandles(clipper: FabricObject): FabricGroup {
-    // `fill: false` meant "no fill" in fabric 1.x; v7 spells it null.
     const lineOptions = {
       strokeWidth: 4,
       stroke: state.settings.colors.white,
@@ -339,8 +338,7 @@ export function useCropper(
       return;
     }
 
-    // Replacing the canvas on the same element -- safe without awaiting, for
-    // the reason given in `hide()`.
+    // Not awaited; see `hide()`.
     void state.croppingCanvas.value?.dispose();
 
     const croppingCanvas = new StaticCanvas(canvasEl, {
@@ -418,18 +416,10 @@ export function useCropper(
       return;
     }
 
-    // Wiped before disposing, because disposing no longer does it. fabric 1.x
-    // cleared the context on the way out; fabric 7 only resets the element's
-    // width and height attributes, and a browser is free to skip that when the
-    // values haven't changed -- leaving the rectangle, its grid and the shade
-    // painted over the image after crop closes.
+    // `dispose()` doesn't clear the canvas, so clear it first.
     state.croppingCanvas.value?.clear();
 
-    // Not awaited, and it doesn't need to be: the half that matters here --
-    // unwrapping the canvas element and cancelling animations -- happens
-    // synchronously before the promise resolves. Only object teardown is
-    // deferred, and the environment hook it ends at is a no-op in the browser,
-    // so the element is safe to hand to a new canvas the next time crop opens.
+    // Safe not to await: the element is released synchronously.
     void state.croppingCanvas.value?.dispose();
     state.croppingCanvas.value = null;
     state.clipper.value = null;
@@ -441,16 +431,8 @@ export function useCropper(
   }
 
   /**
-   * Turns the rectangle on its side: width and height swap about its centre,
-   * so the crop the user framed is kept and simply stands the other way up.
-   *
-   * Swapping the two *is* the inverted ratio, so a constrained crop lands on
-   * exactly the shape the flipped constraint asks for — without `enforce()`
-   * rebuilding it from the ratio and jumping in size.
-   *
-   * A turned rectangle can stick out of the image where the original didn't (a
-   * wide crop becomes a tall one), so it shrinks about its centre until it
-   * fits. Returns the shape it settled on, or null if it couldn't turn.
+   * Turns the rectangle on its side about its centre, shrinking it to fit if
+   * needed. Returns the new shape, or null if it couldn't turn.
    */
   function transpose(): Rectangle | null {
     const clipper = state.clipper.value;
@@ -489,16 +471,7 @@ export function useCropper(
     return target;
   }
 
-  /**
-   * Re-derives the rectangle from the stored cropper state and the image's
-   * current position.
-   *
-   * `reposition()` translates the rectangle by how much the editor changed,
-   * which preserves whatever offset it already had — right for a live resize,
-   * wrong once the rectangle and the image have drifted apart. The stored state
-   * is held independently of zoom and position, so re-deriving from it puts the
-   * rectangle back onto the image whatever happened in between.
-   */
+  /** Re-derives the rectangle from the stored state and the image's position. */
   function restoreFromState(): void {
     const clipper = state.clipper.value;
     const cropperState = state.cropperState.value;
@@ -524,13 +497,8 @@ export function useCropper(
   }
 
   /**
-   * Resizes the cropping layer to the editor and puts the rectangle back where
-   * it belongs on the image.
-   *
-   * The rectangle is re-derived rather than shifted by how much the editor
-   * changed — the stored state holds it relative to the image at a zoom of 1,
-   * so it lands on the same part of the picture whatever the editor did. Must
-   * run after the image has taken its new position and size.
+   * Resizes the cropping layer to the editor and re-derives the rectangle. Must
+   * run after the image has been positioned.
    */
   function reposition(): void {
     const croppingCanvas = state.croppingCanvas.value;
@@ -626,10 +594,8 @@ export function useCropper(
       candidate.width >= MIN_CROP_SIZE &&
       arePointsInsideRectangle(getRectangleVertices(candidate), coords);
 
-    // A corner drag moves on both axes, and the rectangle starts flush with the
-    // image — so one axis is usually blocked while the other has room. Refusing
-    // the whole move makes the cropper feel dead; taking whichever axis still
-    // fits lets it slide along the edge, the way dragging the rectangle does.
+    // Fall back to whichever axis still fits, so a corner drag slides along
+    // an edge.
     const rectangle =
       [
         attempt(deltas.x, deltas.y),

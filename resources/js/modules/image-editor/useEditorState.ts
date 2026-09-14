@@ -29,17 +29,8 @@ import type {
 const RELOAD_THRESHOLD = 1.5;
 
 /**
- * Breathing room kept around the image, in every view.
- *
- * The cropper's handles are drawn a few pixels *outside* the rectangle, and
- * their keyboard focus rings reach ~18px past a corner. With the image zoomed
- * flush to the canvas edge, a full-image crop puts its handles off-canvas —
- * clipped from view, with their grab zones half outside the hit area.
- *
- * Applied everywhere rather than only while cropping: an inset that appears
- * with the crop controls reframes the image the moment they open, on top of
- * the zoom change, which reads as a lurch. Holding the same content box in
- * every view leaves the switch as one zoom and nothing else.
+ * Room around the image for the crop handles and their focus rings. Kept in
+ * every view, so switching views only changes the zoom.
  */
 const CROP_HANDLE_MARGIN = 20;
 
@@ -200,18 +191,8 @@ export function useEditorGeometry(state: EditorState) {
   }
 
   /**
-   * The size the image occupies in the editor with no straightening or rotation
-   * applied — the basis every other measurement is expressed against.
-   */
-  /**
-   * The scale that draws the image at a given width on screen.
-   *
-   * fabric sizes an image by scaling it: `width` and `height` are the natural
-   * pixel dimensions of the file that was loaded, not what ends up on screen.
-   * Everything else here works in displayed pixels, so this is the conversion
-   * between the two. In fabric 1.x the image's width *was* the displayed
-   * width, and setting it was how the editor zoomed -- do that now and the
-   * image renders at full resolution inside a box the size of the viewport.
+   * The scale that draws the image at `displayedWidth`: fabric's `width` and
+   * `height` are the file's natural size.
    */
   function getImageScaleFor(displayedWidth: number): number {
     const natural = state.originalWidth.value;
@@ -291,9 +272,8 @@ export function useEditorGeometry(state: EditorState) {
       return 1;
     }
 
-    // The inset now lives in `getScaledImageDimensions`, so the base size is
-    // already within the content box; this only has to answer whether the
-    // straightened bounding box still fits.
+    // The base size already includes the inset, so only the straightened
+    // bounds need checking.
     const {width: availableWidth, height: availableHeight} = getContentSize();
 
     if (

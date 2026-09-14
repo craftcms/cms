@@ -42,9 +42,6 @@ async function mountHidden(label: string | null): Promise<{
 }
 
 it('does not flag a labelled button that was hidden when it first rendered', async () => {
-  // Hidden content has no computable name, so judging the button then flagged
-  // every icon-only control in an unselected tab -- and the check never ran
-  // again once the tab was opened.
   const {button, container} = await mountHidden('Cropping Rectangle');
 
   expect(isFlagged(button)).toBe(false);

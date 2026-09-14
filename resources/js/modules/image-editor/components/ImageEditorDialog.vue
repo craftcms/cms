@@ -85,10 +85,6 @@ const selectedConstraint = computed(
   () => constraintOptions.value.find((option) => option.key === constraintKey.value) ?? null,
 );
 
-// Handles are named for where they sit on screen, so the pairs swap under
-// RTL. Spelled out rather than interpolated: the catalog keys on the literal
-// source strings, and `t('Left')` inside a template literal would build a
-// key that no longer matches.
 const cropHandles = computed(() =>
   rtl.value
     ? [
@@ -113,10 +109,6 @@ const cropHandles = computed(() =>
       ],
 );
 
-// Not rendered — carried over from the Twig's `directionalButtons`, which was
-// also only ever `{% set %}`. These are the RTL-aware labels for the arrow-key
-// nudge on a picked-up cropper/handle/focal point, and keeping them here keeps
-// the strings in the translation catalog for the announcements to use.
 const directionalButtons = computed(() =>
   rtl.value
     ? [
@@ -253,12 +245,7 @@ function onBeforeHide(event: Event): void {
   }
 }
 
-/**
- * `craft-tabs` owns the selection; the editor follows it.
- *
- * The tabs are the only thing that changes the view, so the editor never has
- * to push a selection back at them.
- */
+/** `craft-tabs` owns the selection; the editor follows it. */
 function onTabChanged(event: Event): void {
   const index = (event.target as { selectedIndex?: number } | null)?.selectedIndex;
   const views: EditorView[] = ["rotate", "crop"];
@@ -399,17 +386,6 @@ function onStraightenEnd(): void {
 </script>
 
 <template>
-  <!-- A native <dialog> via `showModal()`, so focus containment, the Escape
-    key and the backdrop are the platform's job rather than ours. -->
-  <!-- The editor is always dark, whatever the CP is set to: judging an image
-    against a light chrome skews how it reads. `[data-theme='dark']` is a plain
-    attribute selector, so it redefines the colour tokens from here down —
-    custom properties inherit through the slot and into each component's shadow
-    root, so everything inside follows. -->
-  <!-- `.opened` binds the property, not the `open` attribute. Vue only strips a
-    false boolean for the seven names in its `isSpecialBooleanAttr` list, and
-    `open` isn't one of them, so `:open="false"` writes `open="false"` — which
-    Lit reads as present, and the dialog opens itself on load. -->
   <craft-dialog
     data-theme="dark"
     fullscreen
@@ -422,12 +398,6 @@ function onStraightenEnd(): void {
     <div class="flex flex-col h-full">
       <div class="image-editor">
         <div class="image-editor__sidebar">
-          <!-- Rotate and Crop are separate tabs, as they were in Craft 5, so a
-          rotate or flip can't be applied while the cropping layer is up — the
-          two fight over the image's position and the crop goes wrong.
-          `craft-tabs` owns the tablist: it assigns each tab its id, role,
-          `aria-controls`/`aria-selected` and roving tabindex, pairs tabs with
-          panels by document order, and drives panel visibility. -->
           <craft-tabs ref="tabsEl" @selected-changed="onTabChanged">
             <craft-tab slot="tab">
               <div class="flex items-center gap-1">
@@ -510,10 +480,6 @@ function onStraightenEnd(): void {
               <div class="image-editor__panel crop-tools">
                 <craft-field-group>
                   <craft-field v-if="!showingCustomConstraint" :label="t('Orientation')" fieldset>
-                    <!-- The group owns the selection: with `name` set it toggles
-                `active` and `aria-pressed` on its children from its own
-                `value`, so the buttons must not set `active` themselves — the
-                group strips it again on its next sync. -->
                     <craft-button-group
                       slot="input"
                       id="orientation"
@@ -560,8 +526,6 @@ function onStraightenEnd(): void {
                         </craft-radio>
                       </craft-radio-group>
 
-                      <!-- The legacy editor injected these inputs into the constraint
-                fieldset from JS; they belong in the template. -->
                       <div
                         v-if="showingCustomConstraint"
                         class="constraint custom"
@@ -591,11 +555,8 @@ function onStraightenEnd(): void {
                 </craft-field-group>
 
                 <div role="application">
-                  <!-- Keyboard-only, and visually hidden as it was in Craft 5:
-              these buttons exist to pick up the rectangle and its handles
-              without a pointer. What they're doing is drawn on the canvas —
-              the focus ring and the move icon — so showing the controls
-              themselves would only duplicate it. -->
+                  <!-- Keyboard-only controls for the rectangle and its handles;
+              their state is drawn on the canvas. -->
                   <fieldset data-cropper-edit class="sr-only">
                     <legend>
                       {{ t("Edit {type}", { type: t("Cropping Rectangle") }) }}
@@ -745,16 +706,9 @@ function onStraightenEnd(): void {
 </template>
 
 <style scoped lang="scss">
-// The legacy rules are all scoped under `.modal.imageeditor`, so none of them
-// reach this page. Only the structural bits the canvas needs are here; the
-// rest of the styling comes with the real port.
-//
-// The chain down to `.image` is load-bearing, not cosmetic: the editor
-// measures that element to decide how big to draw, so every ancestor needs a
-// definite height or it measures zero and draws nothing.
-// The editor fills the body edge to edge — the image sits on its own dark
-// surround, and padding would frame it in the dialog's colour instead. Header
-// and footer keep theirs, so only this part is reached for.
+// Every ancestor of `.image` needs a definite height: the editor measures it
+// to size the canvas. The body is edge to edge; header and footer keep their
+// padding.
 craft-dialog::part(body) {
   padding: 0;
 }
@@ -767,23 +721,22 @@ craft-dialog::part(body) {
   block-size: 100%;
   min-block-size: 0;
   display: flex;
+  flex-direction: column;
+  max-width: 100dvw;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+  }
 }
 
-// Both tracks need stating. The sidebar holds `craft-field-group` and
-// `craft-field`, which are block-level and so fill their parent rather than
-// asking for a width of their own — left to `flex-basis: auto` it has nothing
-// to size itself from and collapses.
 .image-editor__sidebar {
-  flex: 0 0 clamp(260px, 25%, 320px);
-  border-inline-end: 1px solid var(--c-color-neutral-border-quiet);
+  flex: 0 0 clamp(calc(260rem / 16), 25%, calc(320rem / 16));
+
+  @media screen and (min-width: 768px) {
+    border-inline-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
 }
 
-// On a wrapper inside each panel rather than the slotted panel itself.
-// `craft-tabs` hides the inactive panel from inside its shadow root, and a
-// page style on the slotted element outranks that: `display: flex` there
-// kept the hidden Rotate panel's height, and pushed the Crop tab's controls
-// down under an empty gap. Hidden properly, the cropper's keyboard controls
-// also aren't tab-reachable while there is no cropper to drive.
 .image-editor__panel {
   display: flex;
   flex-direction: column;

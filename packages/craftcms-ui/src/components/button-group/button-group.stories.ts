@@ -164,13 +164,8 @@ export const WithActions: Story = {
 };
 
 /**
- * A group handed its selection in markup keeps it: with no `value` of its own,
- * the group adopts the one from whichever child is marked `active`.
- *
- * Without that it would clear `active` from every child on its first sync —
- * and a consumer setting `active` itself would find it stripped back off,
- * with nothing to say why. Drive the selection through `value` where you can;
- * this is for markup that states its own.
+ * A group keeps a selection given in markup, adopting `value` from the child
+ * marked `active`.
  */
 export const SelectionFromMarkup: Story = {
   name: 'Selection from markup',

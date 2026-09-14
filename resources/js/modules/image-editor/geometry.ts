@@ -57,25 +57,17 @@ export function getRectangleVertices(
 }
 
 /**
+ * How far past the image's edge, in pixels, a point may sit and still count as
+ * inside. The outline comes from rounded dimensions and the crop from the true
+ * aspect ratio, so a flush crop can sit a fraction of a pixel outside.
+ */
+export const CONTAINMENT_TOLERANCE = 0.5;
+
+/**
  * Whether every point falls inside a rectangle given by its corners — which may
  * be rotated, so this projects each point onto two adjacent edges rather than
  * comparing bounds.
  */
-/**
- * How far past the image's edge a point may sit, in pixels, and still count as
- * inside it.
- *
- * The image's outline and the cropping rectangle are worked out along
- * different paths -- the outline from dimensions rounded to whole pixels, the
- * rectangle from the crop's true aspect ratio -- and a straightened outline
- * goes through trigonometry on top. So a crop flush with the image regularly
- * sits a fraction of a pixel outside it. Checked exactly, that fraction failed
- * every corner of every candidate, and the cropper refused to resize or move at
- * all from a full-image crop. Half a pixel absorbs the rounding without letting
- * anything visibly escape.
- */
-export const CONTAINMENT_TOLERANCE = 0.5;
-
 export function arePointsInsideRectangle(
   points: Point[],
   rectangle: VerticeCoords

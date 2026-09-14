@@ -99,11 +99,6 @@ export default class CraftSlideRule extends LitElement {
 
   /** Slides the ruler so the current value lines up under the cursor. */
   #reposition(): void {
-    // The strip is centred against the width of its window, so an unmeasurable
-    // window puts it half its own length out — 20 degrees off for the default
-    // range. That happens whenever the rule first renders inside something not
-    // yet laid out, a closed dialog being the usual case. The resize observer
-    // calls back the moment there is a size, so waiting costs nothing.
     if (this._graduations?.offsetWidth) {
       this.#measureGraduations();
     }
@@ -125,14 +120,8 @@ export default class CraftSlideRule extends LitElement {
   }
 
   /**
-   * Lets the strip and the indicator start animating, once they have been put
-   * where they belong.
-   *
-   * Neither resting place is something to animate into. `left` never did,
-   * because a transition can't run from `auto` to a length -- but `none` to a
-   * matrix interpolates fine, so both would slide into place every time the
-   * rule first appears. The stylesheet holds their transitions off until this
-   * class lands, a frame later.
+   * Enables transitions a frame after the first placement, so the strip and
+   * indicator don't animate into place.
    */
   #markPlaced(): void {
     if (this.#placed) {
@@ -143,19 +132,7 @@ export default class CraftSlideRule extends LitElement {
     requestAnimationFrame(() => this._root?.classList.add('placed'));
   }
 
-  /**
-   * Sizes the band running from zero to the current value.
-   *
-   * The graduations can't carry this themselves: the value is continuous, so
-   * it usually falls between two of them and there is no mark to light up.
-   * The band is measured in the same pixels-per-unit the strip is positioned
-   * in, so it lands exactly on a fractional value.
-   *
-   * It grows from the middle of the window, because that is where the cursor
-   * is and so where the current value always sits. Zero is however far away
-   * the value says it is -- to the left once the value goes positive, since
-   * that is the direction the strip slides.
-   */
+  /** Sizes the band from the cursor to zero, in the strip's pixels per unit. */
   #drawIndicator(): void {
     if (!this._indicator) {
       return;
@@ -169,17 +146,8 @@ export default class CraftSlideRule extends LitElement {
   }
 
   /**
-   * Reads the rendered graduation width instead of assuming the default.
-   *
-   * The positioning maths is in units of one graduation, and
-   * `--c-slide-rule-graduation-width` can be set to anything — so a strip that
-   * doesn't match what the maths assumes puts zero nowhere near the cursor.
-   * That is the shape of two bugs already: graduations rendered as
-   * inline-blocks picked up the template's newlines as whitespace, and an
-   * unmeasurable window centred the strip against zero.
-   *
-   * Measured off the strip rather than one graduation, so a fractional width
-   * doesn't accumulate a rounding error across the whole range.
+   * Measures the rendered graduation width, since the token can change it.
+   * Taken across the whole strip to avoid rounding error.
    */
   #measureGraduations(): void {
     const count = this.#graduations().length;
@@ -191,13 +159,7 @@ export default class CraftSlideRule extends LitElement {
     }
   }
 
-  /**
-   * Where the strip is sitting right now, read back off the transform.
-   *
-   * Not the value `#reposition()` last wrote: a drag can start while the
-   * transition from a tap or a keypress is still running, and this has to be
-   * the position on screen rather than the one being animated towards.
-   */
+  /** The strip's on-screen offset, which may be mid-transition. */
   #currentOffset(): number {
     const {transform} = getComputedStyle(this._list);
 

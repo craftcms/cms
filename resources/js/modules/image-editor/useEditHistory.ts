@@ -30,16 +30,8 @@ export interface EditHistory<T> {
 }
 
 /**
- * An undo/redo stack of before-and-after states.
- *
- * It holds states rather than operations: undoing hands back the state to
- * restore, not an action to reverse. Some edits have no clean inverse --
- * straightening back to the old angle doesn't give the old crop back, because
- * straightening fits the crop to the viewport as it goes -- so putting the
- * recorded state back is the only way an undo lands exactly.
- *
- * Knows nothing about images; the editor decides what a state is and how to
- * restore one.
+ * An undo/redo stack of before-and-after states. It holds states rather than
+ * operations because some edits, like straightening, can't be inverted exactly.
  */
 export function useEditHistory<T>({
   equals,

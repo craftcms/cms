@@ -129,10 +129,7 @@ describe('craft-slide-rule positioning', () => {
 
 describe('craft-slide-rule edge fade', () => {
   it('fades the graduations with a mask rather than the page background', async () => {
-    // The fade used to be a gradient of --gray-900 painted on top, which only
-    // reads as a fade over a --gray-900 background and smears a dark band
-    // across anything lighter. Masking the window fades the graduations
-    // themselves, so the rule holds up wherever it is put.
+    // Faded by masking, not by painting the page background over it.
     const element = await createSlideRule();
     const window_ =
       element.shadowRoot!.querySelector<HTMLElement>('.graduations')!;

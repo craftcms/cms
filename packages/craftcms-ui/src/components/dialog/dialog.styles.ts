@@ -27,12 +27,6 @@ export default css`
     --_dialog-inline-size: var(--c-dialog-inline-size, 100vw);
     --_dialog-min-inline-size: var(--c-dialog-min-inline-size, 100vw);
     --_dialog-max-inline-size: var(--c-dialog-max-inline-size, 100vw);
-    /*
-      A real size, not just a cap: with \`max-block-size\` alone the surface is
-      only as tall as its content, so a fullscreen dialog came out full-width
-      but short. Its body row can then hand a definite height to whatever it
-      slots.
-    */
     --_dialog-block-size: var(--c-dialog-block-size, 100dvh);
     --_dialog-max-block-size: var(--c-dialog-max-block-size, 100dvh);
   }
@@ -45,6 +39,7 @@ export default css`
     max-width: none;
     max-height: none;
     overflow: visible;
+    margin: 0;
   }
 
   dialog::backdrop {

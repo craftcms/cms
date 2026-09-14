@@ -21,3 +21,9 @@ Vue treats tags containing a hyphen as native custom elements. Let them pass thr
 Vue only strips a `false` boolean attribute for the seven names in its `isSpecialBooleanAttr` list (itemscope, allowfullscreen, formnovalidate, ismap, nomodule, novalidate, readonly). `open`, `disabled`, `active` and friends are in the wider `isBooleanAttr` list, which `patchAttr` never consults — so `:open="false"` on a custom element writes `open="false"`, and Lit's `{type: Boolean}` converter reads attribute *presence* and turns it on.
 
 Use the property binding instead: `.opened="isOpen"` on `craft-dialog`, not `:open="isOpen"`. It also survives the element not being upgraded yet, since Lit re-applies shadowed instance properties. Regression test: `resources/js/modules/image-editor/components/dialogOpenBinding.test.ts`.
+
+## Don't comment CSS unless it's a hack
+Leave CSS uncommented — `.css`/`.scss` files, Lit `css` templates and Vue `<style>` blocks. Only comment a genuine hack, or a workaround for platform or library behaviour a reader couldn't infer, and keep it to one line about the code, not the history behind it.
+
+## Don't comment tests unless the behaviour is odd
+Leave tests uncommented; the test name and assertions say what is being checked. Only comment when the behaviour under test is decidedly odd and a reader couldn't infer why the assertion holds, and keep it to one line about the code, not the bug or history that prompted the test.

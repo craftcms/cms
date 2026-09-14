@@ -116,8 +116,6 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
 
     state.imageIsLoading.value = true;
 
-    // fabric 7 resolves rather than calling back, and hands back the same
-    // object it was called on -- so the new size is read off `image` itself.
     void image.setSrc(imageUrl).then(() => {
       state.originalWidth.value = image.width;
       state.originalHeight.value = image.height;
@@ -238,8 +236,6 @@ export function useImageCanvas(state: EditorState, geometry: EditorGeometry) {
 
   function destroy(): void {
     cancelPendingRenders();
-    // Unmounting, so there is nothing left to wait for the deferred half of
-    // these to finish tidying -- see the note in `useCropper.hide()`.
     void state.croppingCanvas.value?.dispose();
     void state.canvas.value?.dispose();
     state.croppingCanvas.value = null;

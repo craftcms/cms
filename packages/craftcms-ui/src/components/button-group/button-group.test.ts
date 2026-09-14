@@ -58,8 +58,6 @@ describe('craft-button-group', () => {
   });
 
   it('adopts its value from a child marked active in markup', async () => {
-    // A group given its selection in markup used to have it stripped: with no
-    // `value`, the first sync cleared `active` from every child.
     document.body.innerHTML = `
       <craft-button-group name="orientation">
         <craft-button value="landscape" active></craft-button>
@@ -74,9 +72,9 @@ describe('craft-button-group', () => {
       document.querySelectorAll<CraftButton>('craft-button');
 
     expect(group.value).toBe('landscape');
-    expect(landscape.hasAttribute('active')).toBe(true);
-    expect(landscape.getAttribute('aria-pressed')).toBe('true');
-    expect(portrait.hasAttribute('active')).toBe(false);
+    expect(landscape!.hasAttribute('active')).toBe(true);
+    expect(landscape!.getAttribute('aria-pressed')).toBe('true');
+    expect(portrait!.hasAttribute('active')).toBe(false);
   });
 
   it('lets an explicit value win over a child marked active', async () => {
@@ -94,8 +92,8 @@ describe('craft-button-group', () => {
       document.querySelectorAll<CraftButton>('craft-button');
 
     expect(group.value).toBe('portrait');
-    expect(landscape.hasAttribute('active')).toBe(false);
-    expect(portrait.hasAttribute('active')).toBe(true);
+    expect(landscape!.hasAttribute('active')).toBe(false);
+    expect(portrait!.hasAttribute('active')).toBe(true);
   });
 
   it('adopts only once, so a later sync cannot resurrect the old value', async () => {
@@ -116,8 +114,8 @@ describe('craft-button-group', () => {
       document.querySelectorAll<CraftButton>('craft-button');
 
     expect(group.value).toBe('portrait');
-    expect(landscape.hasAttribute('active')).toBe(false);
-    expect(portrait.hasAttribute('active')).toBe(true);
+    expect(landscape!.hasAttribute('active')).toBe(false);
+    expect(portrait!.hasAttribute('active')).toBe(true);
   });
 
   it('leaves multi-select alone, which already reads active off its children', async () => {

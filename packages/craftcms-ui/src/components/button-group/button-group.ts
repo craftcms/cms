@@ -111,18 +111,8 @@ export default class CraftButtonGroup extends LitElement {
   };
 
   /**
-   * Seeds `value` from a child already marked `active`, for a group handed its
-   * selection in markup rather than through the property.
-   *
-   * Without this a single-select group with no `value` clears `active` from
-   * every child on its first sync, silently destroying the selection instead of
-   * leaving it alone — and a consumer setting `active` itself gets it stripped
-   * back off on the next sync, with nothing to say why.
-   * `craft-radio-group` adopts its `name` from slotted inputs for the same
-   * reason.
-   *
-   * Multi-select needs none of this: it already reads `active` off the
-   * children rather than writing it.
+   * Seeds `value` from a child marked `active`, so a selection given in markup
+   * survives the first sync. Multi-select reads `active` directly.
    */
   private _adoptSlottedValue() {
     if (this.multiple || this.value !== undefined) {

@@ -105,8 +105,8 @@ export const Fullscreen: Story = {
     const surface = dialog.shadowRoot!.querySelector('.surface')!;
     const {width, height} = surface.getBoundingClientRect();
 
-    // The height is the half worth pinning: the surface used to carry only a
-    // `max-block-size`, which left it full-width but as short as its content.
+    // The height matters: `max-block-size` alone would leave it as short as
+    // its content.
     await expect(Math.round(width)).toBe(window.innerWidth);
     await expect(Math.round(height)).toBe(window.innerHeight);
   },
@@ -148,10 +148,8 @@ export const Themed: Story = {
     const inside = getComputedStyle(dialog);
     const outside = getComputedStyle(canvasElement);
 
-    // The raw palette and the semantic tokens built out of it both follow the
-    // theme. The semantic half is the one that used to stay light: a custom
-    // property carrying a `var()` is substituted where it's declared, so
-    // resolving these only at `:root` baked in the root's palette.
+    // The semantic tokens re-resolve too: `var()` is substituted where it's
+    // declared.
     await expect(inside.getPropertyValue('--color-base-50').trim()).not.toBe(
       outside.getPropertyValue('--color-base-50').trim()
     );

@@ -50,10 +50,6 @@ it('rejects a rectangle that leaves the image on any side', () => {
 });
 
 it('accepts a crop that sits a fraction of a pixel outside the image', () => {
-  // Measured in the editor: the image's outline comes from dimensions rounded
-  // to whole pixels (623 x 830), while the crop keeps the image's true 3:4
-  // ratio (623 x 830.667). Checked exactly, the crop's top and bottom corners
-  // fell a third of a pixel outside, and every resize and move was refused.
   const outline: VerticeCoords = {
     a: {x: 937, y: 20},
     b: {x: 937, y: 850},

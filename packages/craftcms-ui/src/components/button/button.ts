@@ -207,15 +207,8 @@ export default class CraftButton extends LionButtonSubmit {
   }
 
   /**
-   * Flags a button with no accessible name, once it's in a position to be
-   * judged.
-   *
-   * A button that can't be seen -- in a closed dialog, or a tab panel that
-   * isn't selected -- has no name to compute: the algorithm skips hidden
-   * content, so the name comes back empty whatever the label says. The check
-   * only ran once, so every labelled button that started out hidden stayed
-   * flagged after it was shown. An empty name on a hidden button now waits
-   * for the button to be shown, and is computed again then.
+   * Flags a button with no accessible name. A hidden button has no computable
+   * name, so the check waits until it's visible.
    */
   #checkAccessibleName(): void {
     if (!this.accessibleName) {
@@ -254,10 +247,7 @@ export default class CraftButton extends LionButtonSubmit {
       return;
     }
 
-    // Showing a button gives it a box, which is what this observes. A button
-    // revealed by `visibility` alone keeps the box it had, so it isn't looked
-    // at again: an unnamed one there goes unflagged, rather than a labelled
-    // one being flagged for a name it couldn't be asked for.
+    // Observes size, so a reveal by `visibility` alone isn't rechecked.
     this.#renderObserver = new ResizeObserver(() => {
       if (!this.#isVisible()) {
         return;
@@ -300,21 +290,9 @@ export default class CraftButton extends LionButtonSubmit {
   @property({reflect: true, type: Boolean}) override active: boolean = false;
 
   /**
-   * Makes the button a toggle: something that turns a thing on and off and
-   * stays that way, rather than firing a one-shot action.
-   *
-   * `aria-pressed` is then derived from `active`, so the pressed state a screen
-   * reader hears and the one people see can't drift apart — setting one and
-   * forgetting the other is the easy mistake here, and `active` already carries
-   * the visible state.
-   *
-   * Deliberately does *not* flip `active` itself. Selection may be owned
-   * elsewhere — `craft-button-group` writes `active` on its children, and a
-   * consumer may reject the change — so the button reports the intent through
-   * `toggle` and lets the owner decide.
-   *
-   * For an on/off setting, reach for `craft-switch` instead; a toggle button is
-   * for a control that acts on something, like a toolbar.
+   * Makes the button a toggle: `aria-pressed` follows `active`. The button
+   * doesn't change `active` itself; it fires `craft-toggle` for whoever owns it.
+   * For an on/off setting, use `craft-switch`.
    */
   @property({type: Boolean, reflect: true}) toggle: boolean = false;
 
