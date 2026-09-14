@@ -171,7 +171,7 @@ it('offers the selection’s actions from the field menu, hidden until blocks ar
         fn (array $item): bool => ($item['action']['name'] ?? null) === 'craft:matrix-selection-action',
     ));
 
-    expect(array_column($selection, 'label'))->toBe(['Select all entries', 'Collapse selected blocks', 'Disable selected entries'])
-        ->and(array_column($selection, 'hidden'))->toBe([false, true, true])
-        ->and(array_map(fn (array $item): string => $item['action']['detail']['action'], $selection))->toBe(['select', 'collapse', 'disable']);
+    expect(array_column($selection, 'label'))->toBe(['Select all entries', 'Deselect all entries', 'Collapse selected blocks', 'Disable selected entries'])
+        ->and(array_column($selection, 'hidden'))->toBe([false, true, true, true])
+        ->and(array_map(fn (array $item): string => $item['action']['detail']['action'], $selection))->toBe(['select', 'deselect', 'collapse', 'disable']);
 });

@@ -104,44 +104,37 @@ describe('selectionMenuItem', () => {
     });
   });
 
-  it('selects every block, or deselects them once all are', () => {
-    const select = {
+  it('offers select all while any block is unselected, and deselect all while any is selected', () => {
+    const item = (action: string, label: string) => ({
       type: 'button',
-      label: 'Select all blocks',
-      hidden: false,
-      action: {
-        type: 'event',
-        name: MATRIX_SELECTION_ACTION,
-        detail: {action: 'select'},
-      },
-    };
+      label,
+      hidden: action !== 'select',
+      action: {type: 'event', name: MATRIX_SELECTION_ACTION, detail: {action}},
+    });
+    const select = item('select', 'Select all entries');
+    const deselect = item('deselect', 'Deselect all entries');
     const state = {
       count: 0,
       total: 2,
-      anyCollapsed: false,
-      anyExpanded: true,
       collapsed: false,
       disabled: false,
+      anyCollapsed: false,
+      anyExpanded: true,
     };
+    const hidden = (count: number, total = 2) => [
+      selectionMenuItem(select, {...state, count, total}).hidden,
+      selectionMenuItem(deselect, {...state, count, total}).hidden,
+    ];
 
-    expect(selectionMenuItem(select, state)).toMatchObject({
-      hidden: false,
-      label: 'Select all blocks',
-      action: {detail: {action: 'select'}},
-    });
-    expect(selectionMenuItem(select, {...state, count: 2})).toMatchObject({
-      label: 'Deselect all blocks',
-      action: {detail: {action: 'deselect'}},
-    });
+    expect(hidden(0)).toEqual([false, true]);
+    expect(hidden(1)).toEqual([false, false]);
+    expect(hidden(2)).toEqual([true, false]);
     // Nothing to select in an empty field.
-    expect(
-      selectionMenuItem(select, {
-        ...state,
-        total: 0,
-        anyCollapsed: false,
-        anyExpanded: true,
-      }).hidden
-    ).toBe(true);
+    expect(hidden(0, 0)).toEqual([true, true]);
+    // The server's wording stands.
+    expect(selectionMenuItem(deselect, {...state, count: 1}).label).toBe(
+      'Deselect all entries'
+    );
   });
 
   it('calls the blocks what the server calls them', () => {

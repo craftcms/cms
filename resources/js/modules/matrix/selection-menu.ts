@@ -109,22 +109,13 @@ export function selectionMenuItem<Item extends object>(
   const hidden = state.count === 0;
 
   switch (action.detail?.action) {
+    // Separate items, so both show while some blocks are selected and some
+    // aren't.
     case 'select':
-    case 'deselect': {
-      const deselect = state.total > 0 && state.count === state.total;
+      return {...item, hidden: state.count >= state.total};
 
-      return {
-        ...item,
-        hidden: state.total === 0,
-        label: deselect
-          ? t('Deselect all {type}', {type})
-          : t('Select all {type}', {type}),
-        action: {
-          ...action,
-          detail: {...action.detail, action: deselect ? 'deselect' : 'select'},
-        },
-      };
-    }
+    case 'deselect':
+      return {...item, hidden: state.count === 0};
 
     case 'collapse':
     case 'expand': {

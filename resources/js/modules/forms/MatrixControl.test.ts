@@ -983,35 +983,45 @@ describe('MatrixControl', () => {
       expect(hidden()).toEqual([false, false]);
     });
 
-    it('selects every block, then offers to deselect them', async () => {
+    it('offers select and deselect all for what is and is not selected', async () => {
       const trigger = await mountTwoInField();
-      const items = [
-        {
-          type: 'button',
-          label: 'Select all blocks',
-          action: {
-            type: 'event',
-            name: 'craft:matrix-selection-action',
-            detail: {action: 'select'},
-          },
+      const selectionItem = (action: string, label: string) => ({
+        type: 'button',
+        label,
+        action: {
+          type: 'event',
+          name: 'craft:matrix-selection-action',
+          detail: {action},
         },
+      });
+      const items = [
+        selectionItem('select', 'Select all entries'),
+        selectionItem('deselect', 'Deselect all entries'),
       ] as unknown as ActionItems;
-      const current = () =>
-        fieldActions!.value!(items)[0] as unknown as ResolvedItem;
+      const hidden = () =>
+        (fieldActions!.value!(items) as unknown as ResolvedItem[]).map((item) =>
+          Boolean(item.hidden)
+        );
+      const selectedCount = () =>
+        container!.querySelectorAll('.matrixblock.sel').length;
 
-      expect(current().label).toBe('Select all blocks');
+      expect(hidden()).toEqual([false, true]);
+
+      // Some selected, some not: both apply.
+      await selectFirst();
+      expect(hidden()).toEqual([false, false]);
 
       invokeSelection(trigger, 'select');
       await nextTick();
 
-      expect(container!.querySelectorAll('.matrixblock.sel')).toHaveLength(2);
-      expect(current().label).toBe('Deselect all blocks');
+      expect(selectedCount()).toBe(2);
+      expect(hidden()).toEqual([true, false]);
 
-      invokeSelection(trigger, String(current().action.detail.action));
+      invokeSelection(trigger, 'deselect');
       await nextTick();
 
-      expect(container!.querySelectorAll('.matrixblock.sel')).toHaveLength(0);
-      expect(current().label).toBe('Select all blocks');
+      expect(selectedCount()).toBe(0);
+      expect(hidden()).toEqual([false, true]);
     });
 
     it('hands the menu back when it goes away', async () => {

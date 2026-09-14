@@ -1180,13 +1180,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $items[] = $this->copyAction(Entry::pluralLowerDisplayName(), '.matrixblock');
 
-        // The selection's own items. Select all shows whenever there are blocks;
-        // the rest stay hidden until blocks are selected. The input says what
-        // each will do to the selection
+        // The selection's own items. Select all shows while any block is
+        // unselected; the rest stay hidden until blocks are selected. The input
+        // decides what shows, and what each says
         // (see `resources/js/modules/matrix/selection-menu.ts`).
         $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
             'type' => Entry::pluralLowerDisplayName(),
         ]), hidden: false);
+        $items[] = $this->selectionAction('deselect', 'xmark', t('Deselect all {type}', [
+            'type' => Entry::pluralLowerDisplayName(),
+        ]));
         $items[] = $this->selectionAction('collapse', 'collapse', t('Collapse selected blocks'));
         $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
             'type' => Entry::pluralLowerDisplayName(),
