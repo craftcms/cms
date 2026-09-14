@@ -54,6 +54,12 @@ A strip too narrow for its tabs collapses the excess into a menu rather than wra
 
 <Canvas of={TabsStories.NoOverflow} sourceState="shown" />
 
+Or turn the problem around with `equal-width`, which divides the strip evenly between the tabs so they shrink to fit instead of collapsing:
+
+<Canvas of={TabsStories.EqualWidth} sourceState="shown" />
+
+The two are alternatives rather than layers. `equal-width` turns the overflow measurement off, because it makes a tab's width a fact about the container instead of about its label — there is nothing left to measure, and nothing that needs collapsing.
+
 ## External Panels
 
 Some strips cannot slot their panels — a server-rendered field layout puts the tab bar in the page header and the sections inside a pane, so the two halves live in different parts of the document.

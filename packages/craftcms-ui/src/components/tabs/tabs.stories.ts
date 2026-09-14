@@ -48,6 +48,7 @@ const meta = {
       size="${args.size}"
       selected-index="${args.selectedIndex}"
       ?collapsible="${args.collapsible}"
+      ?equal-width="${args.equalWidth}"
     >
       <craft-tab slot="tab">Tab One</craft-tab>
       <div slot="panel">
@@ -487,6 +488,82 @@ export const NoOverflow: Story = {
         t.hasAttribute('hidden')
       )
     ).toBe(false);
+  },
+};
+
+/**
+ * With `equal-width` the tabs divide the strip between them instead of each
+ * taking the width of its own label, so a one-word tab and a five-word one
+ * come out the same size.
+ *
+ * This is the other answer to the problem `Overflow` solves, and replaces it:
+ * the container here is the narrow one from that story, but nothing collapses
+ * into the menu — tabs that share the width always fit, so they shrink instead.
+ */
+export const EqualWidth: Story = {
+  render: () => html`
+    <div style="max-inline-size: 34rem;">
+      <craft-tabs equal-width>
+        ${OVERFLOW_LABELS.slice(0, 4).map(
+          (label, index) => html`
+            <craft-tab slot="tab">${label}</craft-tab>
+            <div slot="panel"><p>Panel ${index + 1}: ${label}</p></div>
+          `
+        )}
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const tabs = [...strip.querySelectorAll('craft-tab')];
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    await settle();
+
+    // Every tab is the same width, whatever its label is — within a pixel,
+    // flex having to split an odd number of them between the shares.
+    const widths = tabs.map((tab) => tab.getBoundingClientRect().width);
+
+    await expect(widths[0]).toBeGreaterThan(0);
+    widths.forEach((width) =>
+      expect(Math.abs(width - widths[0]!)).toBeLessThanOrEqual(1)
+    );
+
+    // The labels are the ones that overflow a 26rem strip in `Overflow`, and
+    // this one is not much wider — so this is the natural width being divided,
+    // not four short tabs that happened to fit.
+    const natural = widths.reduce((total, width) => total + width, 0);
+    await expect(natural).toBeLessThanOrEqual(
+      strip.getBoundingClientRect().width + 1
+    );
+
+    // Nothing collapsed: the measurement is off and the tabs shrank instead.
+    await expect(menu.hidden).toBe(true);
+    await expect(tabs.some((tab) => tab.hasAttribute('hidden'))).toBe(false);
+
+    // A label with no room left wraps, which makes that tab taller and
+    // stretches the row to match it. The single-line labels stay centred in
+    // the space they were stretched into rather than riding its top edge.
+    const wrapped = tabs.find(
+      (tab) => tab.textContent!.trim() === 'Search Engine Optimization'
+    )!;
+
+    await expect(wrapped.getBoundingClientRect().height).toBeGreaterThan(0);
+
+    tabs.forEach((tab) => {
+      const box = tab.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(tab);
+      const text = range.getBoundingClientRect();
+
+      // Within a pixel and a half of each other: half-leading lands on
+      // fractional pixels, and the bug this guards leaves a gap of twenty.
+      expect(
+        Math.abs(text.top - box.top - (box.bottom - text.bottom))
+      ).toBeLessThanOrEqual(1.5);
+    });
   },
 };
 

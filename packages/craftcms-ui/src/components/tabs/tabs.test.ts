@@ -284,6 +284,52 @@ describe('size', () => {
   });
 });
 
+describe('equal width', () => {
+  it('defaults to off and reflects the attribute', async () => {
+    const element = await createTabs();
+
+    expect(element.equalWidth).toBe(false);
+    expect(element.hasAttribute('equal-width')).toBe(false);
+
+    element.equalWidth = true;
+    await element.updateComplete;
+    expect(element.hasAttribute('equal-width')).toBe(true);
+  });
+
+  it('gives the tabs an equal share of the strip', () => {
+    // Asserted against the stylesheet: there is no cascade in this
+    // environment, so the widths themselves are covered by the EqualWidth
+    // play function in tabs.stories.ts.
+    const selector = [...rules().keys()].find(
+      (key) => key.includes('[equal-width]') && key.includes("slot='tab'")
+    );
+
+    expect(selector).toBeDefined();
+
+    const body = rules().get(selector!)!;
+
+    // A zero basis is what makes the shares equal rather than merely
+    // proportional, and the min-width override is what lets a long label
+    // shrink into its share instead of widening the row.
+    expect(body).toContain('flex: 1 1 0');
+    expect(body).toContain('min-width: 0');
+
+    // A wrapped label makes its tab taller and stretches the row with it, so
+    // the labels are centred on both axes rather than only the inline one.
+    expect(body).toContain('justify-content: center');
+    expect(body).toContain('align-items: center');
+
+    // Only the block placements divide a width.
+    expect(selector).toContain("placement='block-start'");
+    expect(selector).toContain("placement='block-end'");
+    expect(selector).not.toContain('inline-start');
+  });
+
+  it('leaves the natural widths alone when off', () => {
+    expect(rules().get("::slotted([slot='tab'])")).toContain('flex: none');
+  });
+});
+
 describe('craft-tab', () => {
   it('reflects disabled', async () => {
     const element = await createTabs();

@@ -130,6 +130,24 @@ const FIT_TOLERANCE = 1;
  * tree along with the layout and are reachable only through the menu. Strips
  * placed on the inline axis run down the block axis and are left alone.
  *
+ * ## Equal-width tabs
+ *
+ * With `equal-width`, the tabs divide the strip between them instead of each
+ * holding the width of its own label — four tabs take a quarter each, however
+ * long their labels are:
+ *
+ *     <craft-tabs equal-width>
+ *       <craft-tab slot="tab">Content</craft-tab>
+ *       <div slot="panel">…</div>
+ *       <craft-tab slot="tab">Advanced settings</craft-tab>
+ *       <div slot="panel">…</div>
+ *     </craft-tabs>
+ *
+ * This replaces the overflow behaviour rather than combining with it: tabs that
+ * share the width always fit, so nothing collapses into the menu, and a label
+ * with no room left shrinks (wrapping, then clipping) in place. Inline
+ * placements are unaffected — their tabs already span the strip.
+ *
  * ## Collapsible strips
  *
  * With `collapsible`, clicking the selected tab deselects it: `selectedIndex`
@@ -178,6 +196,10 @@ const FIT_TOLERANCE = 1;
  *   `large`. Sets the strip's font size, which the tabs and the overflow
  *   invoker size themselves from.
  *
+ * @attr equal-width - Give every tab the same share of the strip's width
+ *   rather than the width of its own label. Turns off overflow collapsing, and
+ *   does nothing on the inline placements.
+ *
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
  *   Defaults to `--c-spacing-lg`.
  * @cssproperty --c-tabs-tab-gap - Space between adjacent tabs. Defaults to
@@ -213,6 +235,21 @@ export default class CraftTabs extends LionTabs {
    * `-1` and the panel region collapsed to nothing.
    */
   @property({type: Boolean, reflect: true}) collapsible = false;
+
+  /**
+   * Whether every tab takes an equal share of the strip's width, rather than
+   * each holding the width of its own label.
+   *
+   * Turns off the overflow collapsing described above, which measures natural
+   * widths to decide what fits — widths this makes a function of the container
+   * instead of the label, leaving nothing to measure. Equal-width tabs share
+   * the space they're given, so there is never anything to collapse.
+   *
+   * Only the block placements divide a width; an inline strip runs down the
+   * block axis, where its tabs already span it, so this does nothing there.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'equal-width'})
+  equalWidth = false;
 
   /**
    * Which axis the tab strip runs along: `horizontal` or `vertical`.
@@ -373,11 +410,14 @@ export default class CraftTabs extends LionTabs {
     if (
       changedProperties.has('selectedIndex') ||
       changedProperties.has('placement') ||
-      changedProperties.has('size')
+      changedProperties.has('size') ||
+      changedProperties.has('equalWidth')
     ) {
       // The selected tab is never left in the menu, so a selection landing on
       // a collapsed tab has to redraw the strip. A size change resizes the tabs
-      // without resizing the host, so the ResizeObserver never sees it.
+      // without resizing the host, so the ResizeObserver never sees it. Turning
+      // `equalWidth` off restores the natural widths the menu is measured
+      // from, and so has to redraw the strip that was left un-collapsed.
       this.#measureOverflow();
     }
   }
@@ -648,7 +688,12 @@ export default class CraftTabs extends LionTabs {
 
     // A strip placed on the inline axis runs down the block axis, which the
     // inline measurement below doesn't describe, so it never collapses.
-    if (this.#inline || tabs.length === 0) {
+    //
+    // Equal-width tabs are left alone for a different reason: they stretch to
+    // fill the strip, so `offsetWidth` reports the share each was given rather
+    // than the width its label wants, and the comparison below would be
+    // measuring the container against itself.
+    if (this.#inline || this.equalWidth || tabs.length === 0) {
       this.#applyOverflow([]);
       return;
     }
