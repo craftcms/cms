@@ -263,6 +263,9 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->maxLength($this->charLimit)
             ->toolbarButtons($this->toolbarButtons)
             ->showToolbar($this->showToolbar)
+            ->types($this->linkPickerConfig())
+            ->showLabelField($this->linkSettingsShowLabelField)
+            ->advancedFields($this->linkSettingsAdvancedFields)
             ->value($context->value instanceof MarkdownData ? $context->value->getRaw() : $context->value);
     }
 
