@@ -337,6 +337,41 @@ describe('MatrixControl', () => {
     expect(block.querySelector('craft-status')).toBeNull();
   });
 
+  it('folds a block when its titlebar is double-clicked', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    const header = (): Element =>
+      container!.querySelector('.matrixblock [slot="header"]')!;
+    const dblclick = (target: Element): void => {
+      target.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
+    };
+
+    dblclick(header().querySelector('.blocktype')!);
+    await nextTick();
+
+    expect(container!.querySelector('.matrixblock')!.className).toContain(
+      'collapsed'
+    );
+    expect(isBlockCollapsed('block-a')).toBe(true);
+
+    // The checkbox shares the titlebar, but double-clicking it isn't a fold.
+    dblclick(header().querySelector('craft-checkbox')!);
+    await nextTick();
+
+    expect(isBlockCollapsed('block-a')).toBe(true);
+
+    dblclick(header());
+    await nextTick();
+
+    expect(container!.querySelector('.matrixblock')!.className).not.toContain(
+      'collapsed'
+    );
+  });
+
   it('adds a block above the one whose menu was used', async () => {
     mount({
       entries: {

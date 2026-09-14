@@ -436,6 +436,23 @@
     return isBlockCollapsed(uid);
   }
 
+  /**
+   * Double-clicking a block's titlebar folds it, as it did in Craft 5. The
+   * controls sharing the titlebar keep their own double-clicks.
+   */
+  function toggleFromTitlebar(uid: string, event: MouseEvent): void {
+    if (
+      event.target instanceof Element &&
+      event.target.closest(
+        'button, a, input, craft-checkbox, craft-action-menu, .drag-handle'
+      )
+    ) {
+      return;
+    }
+    event.preventDefault();
+    setCollapsed(uid, !isCollapsed(uid));
+  }
+
   function setCollapsed(uid: string, collapsed: boolean): void {
     setCollapsedMany([uid], collapsed);
   }
@@ -1308,6 +1325,7 @@
         :card-attrs="blockCardAttrs"
         @reorder="move"
         @item-click="(uid, event) => selection.handleClick(uid, event)"
+        @header-dblclick="toggleFromTitlebar"
       >
         <template #label="{id: uid}">
           <div
