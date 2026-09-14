@@ -2,9 +2,17 @@
   import '@craftcms/ui/components/field/field';
   // Leaf module, not the barrel — the barrel registers every `craft-*` element.
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
+  import {
+    computed,
+    getCurrentInstance,
+    inject,
+    onErrorCaptured,
+    provide,
+    shallowRef,
+  } from 'vue';
   import FormNodeList from './FormNodeList.vue';
   import {
+    FieldActionItems,
     FormControlOverrides,
     FormFailure,
     FormChangedPaths,
@@ -68,6 +76,8 @@
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
   const actions = computed(() => props.node.children ?? []);
+
+  provide(FieldActionItems, shallowRef());
 
   onErrorCaptured((error) => {
     invalidate(

@@ -11,6 +11,7 @@
   import {actionClient, t} from '@craftcms/ui';
   import {
     computed,
+    inject,
     onBeforeUnmount,
     nextTick,
     onMounted,
@@ -32,6 +33,10 @@
     NEW_BLOCK_HIGHLIGHT_MS,
   } from '@/modules/matrix/new-block';
   import {blockPreviewParts} from '@/modules/matrix/preview-text';
+  import {
+    MATRIX_SELECTION_ACTION,
+    selectionMenuItem,
+  } from '@/modules/matrix/selection-menu';
   import {craft, type CopiedElementInfo} from '@/modules/matrix/interop';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useElementSize} from '@vueuse/core';
@@ -50,7 +55,7 @@
     type NestedElementValue,
     type NestedFormPayload,
   } from './types';
-  import {inputName, isRecord, valueAt} from './runtime';
+  import {FieldActionItems, inputName, isRecord, valueAt} from './runtime';
 
   /** What a block is called, what it looks like, and what can be done to it. */
   type BlockPresentation = {
@@ -1137,6 +1142,31 @@
   }
 
   /**
+   * Disabling folds a block away; enabling brings it back, which is what Craft
+   * 5's enable did too.
+   */
+  function setEnabledMany(uids: readonly string[], enabled: boolean): void {
+    const next = structuredClone(toRaw(props.value));
+
+    for (const uid of uids) {
+      if (next.entries[uid]) {
+        next.entries[uid].enabled = enabled;
+
+        // Written straight onto `next` rather than through `setCollapsed`,
+        // whose own emit this one would clobber.
+        if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX)) {
+          next.entries[uid].collapsed = !enabled;
+        }
+      }
+
+      setBlockCollapsed(uid, !enabled);
+    }
+    collapsedTick.value++;
+
+    emit('update:value', next, 'discrete');
+  }
+
+  /**
    * `runAction()` dispatches `event` actions on `window`, so every Matrix on the
    * page hears every block action. Scope by the invoking element: the menu keeps
    * its content in place, so the trigger is still inside the block it belongs to.
@@ -1168,26 +1198,10 @@
         return;
 
       case 'disable':
-      case 'enable': {
-        const enabled = detail.action === 'enable';
+      case 'enable':
+        setEnabledMany(targets, detail.action === 'enable');
 
-        for (const uid of targets) {
-          if (next.entries[uid]) {
-            next.entries[uid].enabled = enabled;
-
-            // Disabling folds the block away; enabling brings it back, which is
-            // what Craft 5's enable did too. Written straight onto `next` rather
-            // than through `setCollapsed`, whose own emit this one would clobber.
-            if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX)) {
-              next.entries[uid].collapsed = !enabled;
-            }
-          }
-
-          setBlockCollapsed(uid, !enabled);
-        }
-        collapsedTick.value++;
-        break;
-      }
+        return;
 
       case 'delete': {
         const minimum = props.control.props.minEntries ?? 0;
@@ -1250,26 +1264,82 @@
     const detail = (
       event as CustomEvent<{collapse?: boolean; trigger?: unknown}>
     ).detail;
-    const field = matrixHost.value?.closest('craft-field');
 
-    if (
-      !field ||
-      !(detail?.trigger instanceof HTMLElement) ||
-      detail.trigger.closest('craft-field') !== field
-    ) {
+    if (!fromOwnField(detail?.trigger)) {
       return;
     }
 
-    setCollapsedMany(props.value.sortOrder, detail.collapse === true);
+    setCollapsedMany(props.value.sortOrder, detail?.collapse === true);
+  }
+
+  function fromOwnField(trigger: unknown): boolean {
+    const field = matrixHost.value?.closest('craft-field');
+
+    return (
+      Boolean(field) &&
+      trigger instanceof HTMLElement &&
+      trigger.closest('craft-field') === field
+    );
+  }
+
+  /**
+   * The field menu's "… selected blocks" items, which apply to the selection
+   * rather than to one block. Scoped by field, like "Collapse all blocks".
+   */
+  function onSelectionAction(event: Event): void {
+    const detail = (event as CustomEvent<{action?: string; trigger?: unknown}>)
+      .detail;
+    const targets = [...selection.selectedIds.value];
+
+    if (!fromOwnField(detail?.trigger) || !targets.length) {
+      return;
+    }
+
+    switch (detail?.action) {
+      case 'collapse':
+      case 'expand':
+        setCollapsedMany(targets, detail.action === 'collapse');
+        break;
+      case 'disable':
+      case 'enable':
+        setEnabledMany(targets, detail.action === 'enable');
+        break;
+    }
+  }
+
+  /**
+   * The field's own menu reads for the selection: its "… selected blocks" items
+   * show once there is one, and "Copy all blocks" copies just those blocks.
+   */
+  const fieldActionItems = inject(FieldActionItems, undefined);
+  const selectionState = computed(() => {
+    const selected = selection.selectedIds.value;
+
+    return {
+      count: selected.length,
+      collapsed: selected.length > 0 && selected.every(isCollapsed),
+      disabled: selected.length > 0 && selected.every(isDisabled),
+    };
+  });
+
+  if (fieldActionItems) {
+    fieldActionItems.value = (items) =>
+      items.map((item) => selectionMenuItem(item, selectionState.value));
   }
 
   onMounted(() => {
     window.addEventListener('craft:matrix-block-action', onBlockAction);
     window.addEventListener('craft:matrix-toggle-all', onToggleAll);
+    window.addEventListener(MATRIX_SELECTION_ACTION, onSelectionAction);
   });
   onBeforeUnmount(() => {
     window.removeEventListener('craft:matrix-block-action', onBlockAction);
     window.removeEventListener('craft:matrix-toggle-all', onToggleAll);
+    window.removeEventListener(MATRIX_SELECTION_ACTION, onSelectionAction);
+
+    if (fieldActionItems) {
+      fieldActionItems.value = undefined;
+    }
   });
 
   function entryType(uid: string): EntryType | undefined {

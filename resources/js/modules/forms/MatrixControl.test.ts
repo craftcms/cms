@@ -1,4 +1,4 @@
-import {createApp, h, nextTick, reactive} from 'vue';
+import {createApp, h, nextTick, reactive, shallowRef, type Ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ActionItems} from '@/common/types';
 import type {FormControlPayload} from './types';
@@ -34,6 +34,7 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
 });
 
 import MatrixControl from './MatrixControl.vue';
+import {FieldActionItems} from './runtime';
 import {isBlockCollapsed} from '@/modules/matrix/collapsed-blocks';
 
 describe('MatrixControl', () => {
@@ -71,7 +72,13 @@ describe('MatrixControl', () => {
   let emitted: Array<Record<string, unknown>>;
   const menus = menuStub.instances;
 
+  /** Provided the way FieldNode does, when a test wants the field's menu. */
+  let fieldActions:
+    | Ref<((items: ActionItems) => ActionItems) | undefined>
+    | undefined;
+
   beforeEach(() => {
+    fieldActions = undefined;
     menus.length = 0;
     localStorage.clear();
     action.post.mockReset();
@@ -104,6 +111,9 @@ describe('MatrixControl', () => {
           },
         } as never),
     });
+    if (fieldActions) {
+      app.provide(FieldActionItems, fieldActions);
+    }
     app.mount(container);
 
     return state;
@@ -784,6 +794,155 @@ describe('MatrixControl', () => {
         'Content',
       ]);
       expect(groups[0]!.items).toHaveLength(2);
+    });
+  });
+
+  describe('field menu selection', () => {
+    const serverItems = (): ActionItems =>
+      [
+        {
+          type: 'button',
+          label: 'Copy all blocks',
+          action: {
+            type: 'event',
+            name: 'craft:copy-nested-elements',
+            detail: {selector: '.matrixblock'},
+          },
+        },
+        {
+          type: 'button',
+          label: 'Collapse selected blocks',
+          hidden: true,
+          action: {
+            type: 'event',
+            name: 'craft:matrix-selection-action',
+            detail: {action: 'collapse'},
+          },
+        },
+        {
+          type: 'button',
+          label: 'Disable selected blocks',
+          hidden: true,
+          action: {
+            type: 'event',
+            name: 'craft:matrix-selection-action',
+            detail: {action: 'disable'},
+          },
+        },
+      ] as unknown as ActionItems;
+
+    type ResolvedItem = {
+      label: string;
+      hidden?: boolean;
+      action: {detail: Record<string, unknown>};
+    };
+
+    function resolved(): ResolvedItem[] {
+      return fieldActions!.value!(serverItems()) as unknown as ResolvedItem[];
+    }
+
+    async function mountTwoInField(): Promise<HTMLElement> {
+      fieldActions = shallowRef();
+      mount({
+        entries: {
+          'block-a': {type: 'newType', enabled: true},
+          'block-b': {type: 'newType', enabled: true},
+        },
+        sortOrder: ['block-a', 'block-b'],
+      });
+      await nextTick();
+
+      const field = document.createElement('craft-field');
+      container!.replaceWith(field);
+      field.append(container!);
+      const trigger = document.createElement('button');
+      field.append(trigger);
+
+      return trigger;
+    }
+
+    async function selectFirst(): Promise<void> {
+      const box = container!.querySelector('.matrixblock craft-checkbox')!;
+      Object.assign(box, {checked: true});
+      box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      box.dispatchEvent(
+        new CustomEvent('model-value-changed', {bubbles: true})
+      );
+      await nextTick();
+    }
+
+    function invokeSelection(trigger: Element, action: string): void {
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-selection-action', {
+          detail: {action, trigger},
+        })
+      );
+    }
+
+    it('relabels the field menu for the selection', async () => {
+      await mountTwoInField();
+
+      expect(resolved().map((item) => item.label)).toEqual([
+        'Copy all blocks',
+        'Collapse selected blocks',
+        'Disable selected blocks',
+      ]);
+      expect(resolved()[1]!.hidden).toBe(true);
+
+      await selectFirst();
+
+      expect(resolved().map((item) => item.label)).toEqual([
+        'Copy selected blocks',
+        'Collapse selected blocks',
+        'Disable selected blocks',
+      ]);
+      expect(resolved()[1]!.hidden).toBe(false);
+      expect(resolved()[0]!.action.detail.selector).toBe('.matrixblock.sel');
+    });
+
+    it('collapses and disables just the selected blocks', async () => {
+      const trigger = await mountTwoInField();
+      await selectFirst();
+
+      invokeSelection(trigger, 'collapse');
+      await nextTick();
+
+      const blocks = container!.querySelectorAll('.matrixblock');
+      expect(blocks[0]!.className).toContain('collapsed');
+      expect(blocks[1]!.className).not.toContain('collapsed');
+      expect(resolved()[1]!.label).toBe('Expand selected blocks');
+
+      invokeSelection(trigger, 'disable');
+      await nextTick();
+
+      expect(emitted.at(-1)).toMatchObject({
+        entries: {
+          'block-a': {enabled: false},
+          'block-b': {enabled: true},
+        },
+      });
+      expect(resolved()[2]!.label).toBe('Enable selected blocks');
+    });
+
+    it('ignores the selection items of another field', async () => {
+      await mountTwoInField();
+      await selectFirst();
+
+      invokeSelection(document.createElement('button'), 'collapse');
+      await nextTick();
+
+      expect(container!.querySelector('.matrixblock')!.className).not.toContain(
+        'collapsed'
+      );
+    });
+
+    it('hands the menu back when it goes away', async () => {
+      await mountTwoInField();
+
+      app!.unmount();
+      app = undefined;
+
+      expect(fieldActions!.value).toBeUndefined();
     });
   });
 

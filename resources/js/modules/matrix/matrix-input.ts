@@ -13,6 +13,7 @@
  * Animations API, honoring reduced-motion.
  */
 
+import {syncSelectionMenu} from './selection-menu';
 import {
   Base,
   DragSort,
@@ -231,6 +232,8 @@ export class MatrixInput extends Base<MatrixInputSettings> {
           handle: '> .actions > .checkbox, > .titlebar',
           filter: (target: HTMLElement) => !target.closest('.tab-label'),
           checkboxMode: true,
+          // The field's menu offers what can be done to the selection.
+          onSelectionChange: () => this.syncFieldMenu(),
         }
       );
     }
@@ -745,6 +748,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   ): void {
     for (const item of Array.from(this.entrySelect?.getSelectedItems() ?? [])) {
       MatrixEntry.forContainer(item)?.[fn]();
+    }
+  }
+
+  /** Keeps the field's "⋮" menu in step with the selection. */
+  syncFieldMenu(): void {
+    const field = this.container?.closest('craft-field');
+
+    if (field) {
+      syncSelectionMenu(field);
     }
   }
 

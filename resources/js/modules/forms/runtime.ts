@@ -14,6 +14,7 @@ import type {
   FormValue,
   FormValues,
 } from './types';
+import type {ActionItems} from '@/common/types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
@@ -32,6 +33,16 @@ export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
  */
 export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormChangedPaths');
+
+/**
+ * Lets a field's control rewrite the field's "⋮" menu with state only the
+ * control has — a Matrix relabels "Copy all blocks" once blocks are selected.
+ * Provided by each FieldNode, so a nested field's control reaches only its own
+ * field's menu.
+ */
+export const FieldActionItems: InjectionKey<
+  Ref<((items: ActionItems) => ActionItems) | undefined>
+> = Symbol('FieldActionItems');
 
 /** Control paths whose changes have an active Form refresh. */
 export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =

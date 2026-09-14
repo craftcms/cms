@@ -147,6 +147,7 @@ interface LegacySelectSettings {
   handle: string;
   filter(target: HTMLElement): boolean;
   checkboxMode: boolean;
+  onSelectionChange(): void;
 }
 
 interface LegacyGarnishRuntime {

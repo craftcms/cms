@@ -158,3 +158,19 @@ it('disables a block when the posted value says so', function () {
     expect(matrixActionsControl($reloaded)->getValue()['entries'][$uid]['enabled'])
         ->toBeFalse();
 });
+
+it('offers the selection’s actions from the field menu, hidden until blocks are selected', function () {
+    matrixActionsFixture();
+
+    /** @var Matrix $field */
+    $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
+    $items = ($this->blockViewActionMenuItems(...))->call($field);
+    $selection = array_values(array_filter(
+        $items,
+        fn (array $item): bool => ($item['action']['name'] ?? null) === 'craft:matrix-selection-action',
+    ));
+
+    expect(array_column($selection, 'label'))->toBe(['Collapse selected blocks', 'Disable selected blocks'])
+        ->and(array_column($selection, 'hidden'))->toBe([true, true])
+        ->and(array_map(fn (array $item): string => $item['action']['detail']['action'], $selection))->toBe(['collapse', 'disable']);
+});

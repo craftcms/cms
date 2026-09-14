@@ -1185,6 +1185,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         $items[] = $this->copyAction(t('blocks'), '.matrixblock');
 
+        // The selection's own items. They stay hidden until blocks are selected:
+        // the input shows them, and says what each will do to the selection
+        // (see `resources/js/modules/matrix/selection-menu.ts`).
+        $items[] = $this->selectionAction('collapse', 'collapse', t('Collapse selected blocks'));
+        $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
+            'type' => t('blocks'),
+        ]));
+
         return $items;
     }
 
@@ -1223,6 +1231,24 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     'elementType' => Entry::class,
                     'fieldId' => $this->id,
                 ],
+            ],
+        ];
+    }
+
+    /** @return array{id:string,icon:string,label:string,showInChips:false,hidden:true,action:array<string,mixed>} */
+    private function selectionAction(string $action, string $icon, string $label): array
+    {
+        return [
+            'id' => sprintf('selection-%s-%s', $action, mt_rand()),
+            'icon' => $icon,
+            'label' => mb_ucfirst($label),
+            // Operates on the field's input, like the items above
+            'showInChips' => false,
+            'hidden' => true,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:matrix-selection-action',
+                'detail' => ['action' => $action],
             ],
         ];
     }

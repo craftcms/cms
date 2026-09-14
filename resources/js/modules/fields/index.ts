@@ -2,6 +2,10 @@ import {createCopyTextPrompt} from '@craftcms/ui/factory';
 import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {MatrixEntry} from '@/modules/matrix/matrix-entry';
+import {
+  MATRIX_SELECTION_ACTION,
+  syncSelectionMenu,
+} from '@/modules/matrix/selection-menu';
 
 /**
  * Window listeners for the declarative actions carried by a field's "⋮" action
@@ -149,6 +153,52 @@ window.addEventListener('craft:matrix-toggle-all', ((ev: CustomEvent) => {
     } else {
       entry?.expand();
     }
+  }
+}) as EventListener);
+
+// `craft:matrix-selection-action` — the Matrix field's "Collapse/Expand selected
+// blocks" and "Disable/Enable selected blocks" items, for server-rendered
+// blocks. The Vue control applies them to its own blocks, which have no
+// MatrixEntry controller.
+// SAFETY: craft:matrix-selection-action is a registered CustomEvent with an {action} payload.
+window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
+  const {action, trigger} = ev.detail ?? {};
+  const field = fieldFor(trigger);
+
+  if (!field) {
+    return;
+  }
+
+  let applied = false;
+
+  for (const block of ownElements(field, '.matrixblock.sel')) {
+    const entry = MatrixEntry.forContainer(block);
+
+    if (!entry) {
+      continue;
+    }
+
+    applied = true;
+
+    switch (action) {
+      case 'collapse':
+        entry.collapse();
+        break;
+      case 'expand':
+        entry.expand();
+        break;
+      case 'disable':
+        entry.disable();
+        break;
+      case 'enable':
+        entry.enable();
+        break;
+    }
+  }
+
+  // The items now read for what was just done — "Expand selected blocks", say.
+  if (applied) {
+    syncSelectionMenu(field);
   }
 }) as EventListener);
 
