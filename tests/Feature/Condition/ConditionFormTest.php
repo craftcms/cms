@@ -148,3 +148,34 @@ it('omits text values for empty operators', function (string $operator) {
 
     expect($payload->values)->not->toHaveKey('value');
 })->with(['empty', 'notempty']);
+
+it('visually hides condition rule field labels', function () {
+    $rule = app(Conditions::class)->createConditionRule([
+        'class' => TitleConditionRule::class,
+        'operator' => '=',
+        'value' => 'Foo',
+    ]);
+    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $fields = array_filter($payload->nodes, fn ($node) => $node->component === 'craft:field');
+
+    expect($fields)->not->toBeEmpty();
+    expect(array_column(array_column($fields, 'props'), 'labelSrOnly'))
+        ->toBe(array_fill(0, count($fields), true));
+});
+
+it('keeps condition rule date field labels visible', function () {
+    $rule = app(Conditions::class)->createConditionRule([
+        'class' => DateCreatedConditionRule::class,
+        'rangeType' => 'range',
+    ]);
+    $rule->condition = new ElementCondition(Entry::class);
+    $payload = app(FormResolver::class)->resolve($rule->getForm(), new FormContext);
+    $labelSrOnly = fn (string $path) => array_find(
+        $payload->nodes,
+        fn ($node) => $node->control?->path === [$path],
+    )->props['labelSrOnly'] ?? false;
+
+    expect($labelSrOnly('rangeType'))->toBeTrue();
+    expect($labelSrOnly('startDate'))->toBeFalse();
+    expect($labelSrOnly('endDate'))->toBeFalse();
+});
