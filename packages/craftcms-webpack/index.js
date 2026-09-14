@@ -390,7 +390,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
         garnishjs: 'Garnish',
         'iframe-resizer': 'iFrameResize',
         picturefill: 'picturefill',
-        xregexp: 'XRegExp',
       },
     };
 

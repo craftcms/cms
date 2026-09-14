@@ -32,7 +32,11 @@ use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\Form\Contracts\Control;
 
 it('provides a Form Control for every built-in field type', function (string $fieldType) {
-    $field = $fieldType === Link::class ? new Link(['types' => ['url']]) : new $fieldType;
+    $field = match ($fieldType) {
+        Link::class => new Link(['types' => ['url']]),
+        Markdown::class => new Markdown(['linkSettingsTypes' => ['url']]),
+        default => new $fieldType,
+    };
 
     expect($field->formControl(new FieldContext('value')))->toBeInstanceOf(Control::class);
 })->with([
@@ -63,6 +67,50 @@ it('provides a Form Control for every built-in field type', function (string $fi
     'time' => Time::class,
     'users' => Users::class,
 ]);
+
+it('passes element link type settings to the link picker', function () {
+    $field = new Link([
+        'types' => ['asset'],
+        'typeSettings' => [
+            'asset' => [
+                'sources' => ['volume:test'],
+                'allowedKinds' => ['pdf'],
+                'showUnpermittedVolumes' => true,
+                'showUnpermittedFiles' => true,
+            ],
+        ],
+    ]);
+
+    $assetType = $field->formControl(new FieldContext('value'))->props()['types'][0];
+
+    expect($assetType['elementSelectConfig'])
+        ->toMatchArray([
+            'sources' => ['volume:test'],
+            'criteria' => ['kind' => ['pdf'], 'uploaderId' => null],
+        ]);
+});
+
+it('passes element link type settings to the Markdown link picker', function () {
+    $field = new Markdown([
+        'linkSettingsTypes' => ['asset'],
+        'linkSettingsTypeSettings' => [
+            'asset' => [
+                'sources' => ['volume:test'],
+                'allowedKinds' => ['pdf'],
+                'showUnpermittedVolumes' => true,
+                'showUnpermittedFiles' => true,
+            ],
+        ],
+    ]);
+
+    $assetType = $field->formControl(new FieldContext('value'))->props()['types'][0];
+
+    expect($assetType['elementSelectConfig'])
+        ->toMatchArray([
+            'sources' => ['volume:test'],
+            'criteria' => ['kind' => ['pdf'], 'uploaderId' => null],
+        ]);
+});
 
 it('preserves fixed Table column types', function () {
     $types = ['checkbox', 'color', 'date', 'select', 'email', 'heading', 'lightswitch', 'multiline', 'number', 'singleline', 'time', 'url'];

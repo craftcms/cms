@@ -3,6 +3,7 @@
     import '@craftcms/ui/components/text-expander/text-expander';
     import {useId} from 'vue';
     import '../markdown-field/markdown-field';
+    import type {LinkTypeConfig} from '../link-field/craft-link-field';
     import type {FormControlPayload} from './types';
     import {inputName} from './runtime';
 
@@ -12,6 +13,9 @@
         maxLength?: number;
         toolbarButtons?: string[];
         showToolbar?: boolean;
+        types?: LinkTypeConfig[];
+        showLabelField?: boolean;
+        advancedFields?: string[];
         textExpanderTriggers?: TextExpanderTriggers;
     };
 
@@ -38,6 +42,9 @@
         :max-length="control.props.maxLength"
         .toolbarButtons="control.props.toolbarButtons ?? []"
         :show-toolbar="control.props.showToolbar ?? true"
+        .linkTypes="control.props.types ?? []"
+        .showLinkLabelField="control.props.showLabelField ?? false"
+        .linkAdvancedFields="control.props.advancedFields ?? []"
         sanitize-html
         :disabled="!editable"
         :required="editable && required"
