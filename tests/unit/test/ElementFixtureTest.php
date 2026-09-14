@@ -72,9 +72,6 @@ class ElementFixtureTest extends TestCase
             self::assertSame($enableVersioning, $this->hasRevisions($entry));
         } finally {
             $section->enableVersioning = $originalVersioning;
-            if ($entry->id) {
-                $elements->deleteElement($entry, true);
-            }
         }
     }
 
@@ -137,9 +134,6 @@ class ElementFixtureTest extends TestCase
         } finally {
             $entry->off(Element::EVENT_BEFORE_SAVE, $handler);
             $section->enableVersioning = $originalVersioning;
-            if ($entry->id) {
-                Craft::$app->getElements()->deleteElement($entry, true);
-            }
         }
     }
 
@@ -196,9 +190,6 @@ class ElementFixtureTest extends TestCase
             self::assertTrue($this->hasRevisions($nested));
         } finally {
             $field->enableVersioning = $originalVersioning;
-            if ($entry->id) {
-                Craft::$app->getElements()->deleteElement($entry, true);
-            }
         }
     }
 
