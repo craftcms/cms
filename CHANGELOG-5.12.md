@@ -15,5 +15,6 @@
 
 ### System
 
+- Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where entry and address indexes weren’t showing any results if they had a “Field” condition rule set to “is empty”.
 - Fixed a bug where saving a deeply-nested element on its own wouldn’t update its owners’ `dateUpdated` timestamps, which could cause new revisions to reuse stale nested content. ([#19594](https://github.com/craftcms/cms/issues/19594))
