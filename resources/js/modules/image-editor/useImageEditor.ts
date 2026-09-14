@@ -532,8 +532,8 @@ export function useImageEditor(options: ImageEditorOptions) {
     state.scaleFactor.value = 1;
     state.flipData.value = {x: 0, y: 0};
 
-    // `flipX`/`flipY` are fabric's own normalization of a negative scale, so
-    // both halves have to be cleared or the image stays mirrored.
+    // A mirror is held in `flipX`/`flipY` with the scale kept positive (see
+    // `flip()`), so clearing the flags is what un-mirrors the image.
     image.flipX = false;
     image.flipY = false;
     image.set({

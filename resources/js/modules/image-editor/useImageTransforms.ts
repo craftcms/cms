@@ -177,6 +177,19 @@ export function useImageTransforms(
 
     state.animationInProgress.value = true;
 
+    // At rest a mirror lives in fabric's own `flipX`/`flipY` flags, with the
+    // scale kept positive -- every other transform writes a positive scale,
+    // and a flip held as a negative one was undone by the first of them. Only a
+    // sign change can be tweened, though, so fold the flags into the scale
+    // before the target is worked out from it; the flags are cleared below,
+    // and put back when the flip lands.
+    image.scaleX = image.flipX
+      ? -Math.abs(image.scaleX)
+      : Math.abs(image.scaleX);
+    image.scaleY = image.flipY
+      ? -Math.abs(image.scaleY)
+      : Math.abs(image.scaleY);
+
     const effectiveAxis = geometry.hasOrientationChanged()
       ? axis === 'y'
         ? 'x'
@@ -267,6 +280,14 @@ export function useImageTransforms(
       onChange: () => state.canvas.value?.renderAll(),
       onComplete: () => {
         image._set = originalSet;
+
+        // Settle the mirror back into the flags, from the record of it rather
+        // than the sign the animation happened to leave.
+        image.flipX = state.flipData.value.x === 1;
+        image.flipY = state.flipData.value.y === 1;
+        image.scaleX = Math.abs(image.scaleX);
+        image.scaleY = Math.abs(image.scaleY);
+
         state.animationInProgress.value = false;
 
         if (state.focalPoint.value) {
