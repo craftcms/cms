@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'ניתן להשתמש בקודי התאוששות כגיבוי לאימות, כאשר אין באפשרותך להשתמש בשיטה העיקרית שלך.',
     'Recovery codes generated.' => 'נוצרו קודי התאוששות.',
     'Red' => 'אדום',
+    'Redo' => 'Redo',
     'Refresh' => 'רענן',
     'Regenerate' => 'צור מחדש',
     'Regenerating project config YAML files from the loaded project config…' => 'יוצר מחדש את קבצי ה-YAML של תצורת הפרויקט מתצורת הפרויקט שנטענה…',
