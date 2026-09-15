@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Query;
@@ -124,6 +125,11 @@ readonly class SaveUserController
                     if ($user) {
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
+
+                        // clear out any existing permissions they had, if they had any
+                        if (Edition::isAtLeast(Edition::Pro)) {
+                            UserPermissions::saveUserPermissions($user->id, []);
+                        }
                     }
                 }
             }
