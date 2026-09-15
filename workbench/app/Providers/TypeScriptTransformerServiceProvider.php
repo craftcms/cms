@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
+use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Condition\ConditionBuilderPayload;
 use CraftCms\Cms\Condition\ConditionRulePayload;
 use CraftCms\Cms\Condition\Enums\GroupOperator;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Dashboard\Data\WidgetData;
 use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -61,6 +63,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->provider(new ClassListTransformedProvider(
                 [
                     AssetTransformerIndexData::class,
+                    UploadResult::class,
+                    UploadSessionData::class,
                     GqlSchema::class,
                     GqlToken::class,
                     ImageTransform::class,

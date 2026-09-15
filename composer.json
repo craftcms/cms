@@ -87,6 +87,7 @@
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
+    "league/flysystem-aws-s3-v3": "^3.35",
     "orchestra/testbench": "^11.0",
     "pestphp/pest": "^5.0",
     "pestphp/pest-plugin-agent": "^5.0",
