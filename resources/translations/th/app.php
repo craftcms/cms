@@ -1425,6 +1425,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'รหัสกู้คืนสามารถใช้เป็นรูปแบบการยืนยันสำรอง ในขณะที่คุณไม่สามารถใช้วิธีการหลักของคุณได้',
     'Recovery codes generated.' => 'สร้างรหัสกู้คืนแล้ว',
     'Red' => 'สีแดง',
+    'Redo' => 'Redo',
     'Refresh' => 'รีเฟรช',
     'Regenerate' => 'สร้างขึ้นใหม่',
     'Regenerating project config YAML files from the loaded project config…' => 'สร้างไฟล์การกำหนดค่าโครงการ YAML ของคุณใหม่จากการกำหนดค่าโครงการที่โหลดแล้ว...',
