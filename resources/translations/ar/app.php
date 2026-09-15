@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'يمكن استخدلام رموز الاستعادة كشكلٍ احتياطي من أشكال التحقق عندما يتعذَّر عليك استخدام طريقتك الأساسية للتحقق.',
     'Recovery codes generated.' => 'تم إنشاء رموز استعادة.',
     'Red' => 'أحمر',
+    'Redo' => 'Redo',
     'Refresh' => 'تحديث',
     'Regenerate' => 'إعادة إنشاء',
     'Regenerating project config YAML files from the loaded project config…' => 'جارٍ إعادة إنشاء ملفات تكوين مشروع YAML من تكوين المشروع الذي تم تحميله…',
