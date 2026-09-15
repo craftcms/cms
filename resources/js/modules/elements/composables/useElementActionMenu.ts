@@ -1,3 +1,5 @@
+import {Uploader} from '@/modules/uploader/uploader';
+import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
@@ -190,7 +192,7 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         return;
 
       case 'replaceFile':
-        replaceFile(behavior.assetId, behavior.fsType);
+        replaceFile(behavior.assetId);
 
         return;
 
@@ -259,11 +261,11 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
   }
 
   /**
-   * Swaps the asset's file for a newly uploaded one through the legacy
+   * Swaps the asset's file for a newly uploaded one through the native
    * uploader, then reloads so the filename, size, dimensions, and thumbnail all
    * come back from the server together.
    */
-  function replaceFile(assetId: number, fsType: string): void {
+  function replaceFile(assetId: number): void {
     const input = document.createElement('input');
     input.type = 'file';
     input.name = 'replaceFile';
@@ -272,16 +274,13 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
 
     const uploaderSettings = {
       dropZone: null,
-      fileInput: $(input),
+      fileInput: input,
       paramName: 'replaceFile',
       replace: true,
     };
     Object.assign(uploaderSettings, {
-      events: {
-        fileuploaddone: (event: any, data: any) => {
-          const result =
-            event instanceof CustomEvent ? event.detail : data.result;
-
+      on: {
+        done: ({result}) => {
           if (result?.error) {
             Craft.cp?.displayError?.(result.error);
 
@@ -292,20 +291,17 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
           Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
           router.reload();
         },
-        fileuploadfail: (event: any, data: any) => {
-          const response =
-            event instanceof CustomEvent
-              ? event.detail
-              : data?.jqXHR?.responseJSON;
-
-          Craft.cp?.displayError?.(
-            response?.message ?? t('Replace file failed.')
-          );
+        fail: ({error, canceled}) => {
+          if (!canceled) {
+            Craft.cp?.displayError?.(
+              error instanceof Error ? error.message : t('Replace file failed.')
+            );
+          }
         },
-        fileuploadalways: () => input.remove(),
-      },
+        settled: () => input.remove(),
+      } satisfies UploaderCallbacks,
     });
-    const uploader = Craft.createUploader(fsType, $(input), uploaderSettings);
+    const uploader = new Uploader(input, uploaderSettings);
 
     uploader.setParams({assetId});
     input.click();

@@ -1991,7 +1991,6 @@ $.extend(Craft, {
 
   _elementIndexClasses: {},
   _elementEditorClasses: {},
-  _uploaderClasses: {},
   _authFormHandlers: {},
 
   /**
@@ -2010,24 +2009,6 @@ $.extend(Craft, {
     }
 
     this._elementIndexClasses[elementType] = func;
-  },
-
-  /**
-   * Registers a file uploader class for a given filesystem type.
-   *
-   * @param {string} fsType
-   * @param {function} func
-   */
-  registerUploaderClass: function (fsType, func) {
-    if (typeof this._uploaderClasses[fsType] !== 'undefined') {
-      throw (
-        'An asset uploader class has already been registered for the filesystem type “' +
-        fsType +
-        '”.'
-      );
-    }
-
-    this._uploaderClasses[fsType] = func;
   },
 
   registerAuthFormHandler(method, func) {
@@ -2056,26 +2037,6 @@ $.extend(Craft, {
     }
 
     return new func(elementType, $container, settings);
-  },
-
-  /**
-   * Creates a file uploader for a given filesystem type.
-   *
-   * @param {string} fsType
-   * @param {jQuery} $container
-   * @param {Object} settings
-   * @returns {Uploader}
-   */
-  createUploader: function (fsType, $container, settings) {
-    const func =
-      typeof this._uploaderClasses[fsType] !== 'undefined'
-        ? this._uploaderClasses[fsType]
-        : Craft.Uploader;
-
-    const uploader = new func($container, settings);
-    uploader.fsType = fsType;
-
-    return uploader;
   },
 
   /**
