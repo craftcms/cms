@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 
-- Element queries now automatically lazy eager-load relational field values for other elements in their result set. This can be disabled with the `autoEagerLoadElements` config setting. ([#16910](https://github.com/craftcms/cms/discussions/16910))
+- Element queries now automatically lazy eager-load relational field values for other elements in their result set during site requests. This can be disabled with the `autoEagerLoadElements` config setting. ([#16910](https://github.com/craftcms/cms/discussions/16910))
 - Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))

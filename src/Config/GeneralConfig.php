@@ -413,7 +413,7 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
-     * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set.
+     * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
      * ::: code
      * ```php Static Config
@@ -3450,7 +3450,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether element queries should automatically lazy eager-load relations for the other elements in their result set.
+     * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
      * ```php
      * ->autoEagerLoadElements(false)

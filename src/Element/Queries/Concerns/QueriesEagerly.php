@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -213,6 +214,7 @@ trait QueriesEagerly
         if (
             $this->eagerly === false ||
             ($automatically && ! Cms::config()->autoEagerLoadElements) ||
+            ($automatically && (request()->isCpRequest() || TemplateMode::is(TemplateMode::Cp))) ||
             ($automatically && ($this->asArray || ! in_array($columns, ['*', ['*']], true) || $this->getResultOverride() !== null)) ||
             ! isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle) ||
             count($this->eagerLoadSourceElement->elementQueryResult) < 2

@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -29,6 +30,8 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     actingAs(User::findOne());
+    request()->attributes->set('isCpRequest', false);
+    TemplateMode::set(TemplateMode::Site);
 
     $field = Field::factory()->create([
         'handle' => 'entriesField',
@@ -217,6 +220,33 @@ test('automatic eager loading can be disabled globally and explicitly enabled pe
         Cms::config()->autoEagerLoadElements = true;
     }
 });
+
+test('automatic eager loading is disabled in control panel contexts', function (string $context) {
+    match ($context) {
+        'request' => request()->attributes->set('isCpRequest', true),
+        'template mode' => TemplateMode::set(TemplateMode::Cp),
+    };
+
+    $results = entryQuery()->section('blog')->get();
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    foreach ($results as $result) {
+        $result->entriesField->first();
+    }
+
+    expect($eagerLoadingEvents)->toBe(0);
+
+    $results = entryQuery()->section('blog')->get();
+
+    foreach ($results as $result) {
+        $result->entriesField->eagerly()->first();
+    }
+
+    expect($eagerLoadingEvents)->toBe(1);
+})->with(['request', 'template mode']);
 
 test('automatic eager loading keeps limited and complete results separate', function () {
     $sourceModels = $this->entryModels->take(2);
