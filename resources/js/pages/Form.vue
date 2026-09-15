@@ -7,6 +7,8 @@
     useAppLayout,
     type UseAppLayoutOptions,
   } from '@/common/composables/useAppLayout';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {
     FormChange,
@@ -32,6 +34,12 @@
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+    /**
+     * Server-rendered read-only metadata (e.g. Created at/Updated at) for the details
+     * column — the same {@see \CraftCms\Cms\Cp\Html\ContentHtml::metadataHtml()} markup
+     * the element editor's sidebar shows via its own `metadataHtml` payload prop.
+     */
+    metadataHtml?: string;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -153,4 +161,7 @@
       </craft-field-group>
     </craft-pane>
   </component>
+  <LayoutSlot v-if="metadataHtml" name="details">
+    <DynamicHtmlRenderer :html="metadataHtml" />
+  </LayoutSlot>
 </template>

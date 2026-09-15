@@ -55,14 +55,16 @@
    * renders on its own) live in the trailing actions column — a menu is
    * ordinary column data, not merged into it.
    *
-   * `html` is trusted, not sanitized here: the PHP `Table::rows()` that
-   * produced it already ran it through the same HTML sanitizer
-   * `TemplateContent` uses (see its Node docs), the same trust boundary
-   * `TemplateContentNode.vue` relies on for its own `v-html`. Sanitizing
-   * doesn't substitute for encoding, though — whichever server-side column
-   * builds one of these still has to `Html::encode()` any user-entered value
-   * before it goes into the string. Prefer a structured shape above when it
-   * fits; reach for `html` only when it doesn't.
+   * `html` is trusted completely, not sanitized here or on the PHP side: the
+   * PHP `Table::rows()` that produced it renders it unsanitized on purpose,
+   * so a cell can host a real working custom element (a copy-to-clipboard
+   * control, say) rather than only static display markup — unlike
+   * `TemplateContentNode.vue`'s `v-html`, which still relies on
+   * `TemplateContent`'s own sanitizer. That leaves whichever server-side
+   * column builds one of these entirely responsible for its safety —
+   * `Html::encode()`-ing any user-entered value before it goes into the
+   * string, exactly as if writing directly to the page. Prefer a structured
+   * shape above when it fits; reach for `html` only when it doesn't.
    */
   type TableCellValue =
     | string
@@ -89,6 +91,7 @@
       emptyMessage: string | null;
       createLabel: string | null;
       createUrl: string | null;
+      createMenuItems: Array<{label: string; url: string}> | null;
       reorderUrl: string | null;
       deleteUrl: string | null;
       deleteConfirmMessage: string | null;
@@ -107,6 +110,15 @@
   );
 
   const columnHelper = createCraftColumnHelper<TableRow>();
+
+  const createMenuActions = computed<ActionItemLink[]>(
+    () =>
+      props.node.props.createMenuItems?.map((item) => ({
+        type: 'link',
+        href: item.url,
+        label: item.label,
+      })) ?? []
+  );
 
   function isMenu(
     value: TableLink | TableLink[] | TableMenu | TableIcon | TableHtml
@@ -269,6 +281,21 @@
         :inertia="false"
         >{{ node.props.createLabel }}</CpLink
       >
+    </LayoutSlot>
+    <LayoutSlot v-else-if="createMenuActions.length" name="actions">
+      <ActionMenu :actions="createMenuActions">
+        <template #invoker="{attributes}">
+          <craft-button
+            type="button"
+            variant="primary"
+            icon="plus"
+            v-bind="attributes"
+          >
+            {{ node.props.createLabel }}
+            <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+          </craft-button>
+        </template>
+      </ActionMenu>
     </LayoutSlot>
 
     <craft-pane padding="0" appearance="raised">

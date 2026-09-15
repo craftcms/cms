@@ -10,9 +10,7 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use Illuminate\Support\Traits\Conditionable;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 
 /**
  * A listing of rows (e.g. product types, gateways) rendered as a Form Node, backed by the
@@ -38,6 +36,9 @@ class Table implements Node
     private ?string $createLabel = null;
 
     private ?string $createUrl = null;
+
+    /** @var list<array{label: string, url: string}>|null */
+    private ?array $createMenuItems = null;
 
     private ?string $reorderUrl = null;
 
@@ -69,40 +70,23 @@ class Table implements Node
      *   string, url: ?string}>]` to render a dropdown menu of links; `['icon' => string, 'label' =>
      *   ?string]` to render a single icon (`label` becomes its accessible name, and is what the
      *   non-JS {@see renderHtml()} fallback shows in place of the icon); or `['html' => string]`
-     *   for markup none of the above can express (a styled `<code>` value, a compound badge). The
-     *   `html` shape is run through the same sanitizer {@see TemplateContent} uses (blocking
-     *   `form`, dropping `button`/`input`/`optgroup`/`option`/`select`/`textarea`) as a
-     *   defense-in-depth backstop — but sanitizing isn't encoding: the caller is still responsible
-     *   for {@see Html::encode()}-ing any user-entered value it interpolates into the string before
-     *   it ever reaches here, exactly as for `TemplateContent`. Prefer one of the structured shapes
-     *   above when it fits; `html` exists for what doesn't. A row may set `_deletable => false` to
-     *   suppress its own delete action even when the table as a whole is {@see deletable()} (e.g. a
-     *   "primary" row that can't be removed).
+     *   for markup none of the above can express (a styled `<code>` value, a compound badge, a
+     *   working custom element like `<craft-input-copy>` that needs its own real light-DOM
+     *   `<input>`). Unlike {@see TemplateContent}, `html` here is rendered completely unsanitized
+     *   — some index tables need cells that are more than static display (a real copy-to-clipboard
+     *   control, for instance), which a sanitizer that drops `input`/`button`/etc. as defense in
+     *   depth would break. That means the caller owns this trust boundary entirely: run untrusted
+     *   values through {@see Html::encode()} (or a sanitizer, if the value is itself meant to carry
+     *   markup) before interpolating them into the string, exactly as if writing directly to the
+     *   page. Prefer one of the structured shapes above when it fits; `html` exists for what
+     *   doesn't. A row may set `_deletable => false` to suppress its own delete action even when
+     *   the table as a whole is {@see deletable()} (e.g. a "primary" row that can't be removed).
      */
     public function rows(array $rows): static
     {
-        $this->rows = array_map(
-            fn(array $row) => array_map(self::sanitizeCell(...), $row),
-            $rows,
-        );
+        $this->rows = $rows;
 
         return $this;
-    }
-
-    private static function sanitizeCell(mixed $value): mixed
-    {
-        if (!is_array($value) || !array_key_exists('html', $value)) {
-            return $value;
-        }
-
-        $config = app(HtmlSanitizerManager::class)->defaultConfig()
-            ->blockElement('form');
-
-        foreach (['button', 'input', 'optgroup', 'option', 'select', 'textarea'] as $element) {
-            $config = $config->dropElement($element);
-        }
-
-        return ['html' => new HtmlSanitizer($config)->sanitize($value['html'])];
     }
 
     public function emptyMessage(?string $emptyMessage): static
@@ -116,6 +100,23 @@ class Table implements Node
     {
         $this->createLabel = $label;
         $this->createUrl = $url;
+        $this->createMenuItems = null;
+
+        return $this;
+    }
+
+    /**
+     * Like {@see createAction()}, but for when there's more than one place a new row could come
+     * from (e.g. one per store) — renders as a single button that opens a menu of links instead
+     * of linking straight to `$url`.
+     *
+     * @param  list<array{label: string, url: string}>  $items
+     */
+    public function createActionMenu(string $label, array $items): static
+    {
+        $this->createLabel = $label;
+        $this->createUrl = null;
+        $this->createMenuItems = $items;
 
         return $this;
     }
@@ -145,11 +146,21 @@ class Table implements Node
         $columns = $node->props['columns'];
         $rows = $node->props['rows'];
 
-        $createAction = $node->props['createUrl'] !== null && $node->props['createLabel'] !== null
-            ? Html::a(Html::encode($node->props['createLabel']), $node->props['createUrl'], [
-                'class' => ['btn', 'submit', 'add', 'icon'],
-            ])
-            : '';
+        $createAction = match (true) {
+            $node->props['createUrl'] !== null && $node->props['createLabel'] !== null => Html::a(
+                Html::encode($node->props['createLabel']),
+                $node->props['createUrl'],
+                ['class' => ['btn', 'submit', 'add', 'icon']],
+            ),
+            // No sensible JS-less dropdown-button equivalent — same reasoning renderCell()'s
+            // `items` shape gives for menu cells — so this renders the label followed by its
+            // items as plain inline links instead.
+            !empty($node->props['createMenuItems']) => Html::encode($node->props['createLabel'] ?? '').': '.implode(', ', array_map(
+                fn(array $item) => Html::a(Html::encode($item['label']), $item['url']),
+                $node->props['createMenuItems'],
+            )),
+            default => '',
+        };
 
         if (empty($rows)) {
             $table = Html::tag('p', Html::encode($node->props['emptyMessage'] ?? ''), [
@@ -177,7 +188,8 @@ class Table implements Node
                 }
 
                 if (is_array($value) && array_key_exists('html', $value)) {
-                    // Already sanitized in rows() — not re-encoded, this is meant to be markup.
+                    // Not re-encoded — this is meant to be markup, and rows() no longer
+                    // sanitizes it (see its docblock); the caller owns that trust boundary.
                     return $value['html'];
                 }
 
@@ -234,6 +246,7 @@ class Table implements Node
             'emptyMessage' => $this->emptyMessage,
             'createLabel' => $this->createLabel,
             'createUrl' => $this->createUrl,
+            'createMenuItems' => $this->createMenuItems,
             'reorderUrl' => $this->reorderUrl,
             'deleteUrl' => $this->deleteUrl,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
