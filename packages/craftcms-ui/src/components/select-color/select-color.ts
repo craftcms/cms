@@ -1,6 +1,7 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
-import {colors} from '@src/constants/colors';
+import type {Validator} from '@lion/ui/form-core.js';
+import {colors as paletteColors} from '@src/constants/colors';
 import {t} from '@src/utilities/translate';
 import styles from './select-color.styles.js';
 import '../select-rich/select-rich.js';
@@ -15,7 +16,8 @@ function titleCase(value: string): string {
 
 /**
  * @summary A color picker built on top of the rich select. Renders one option
- * per color from `constants/colors`, with an optional "transparent" option.
+ * per color from `constants/colors` (or {@link CraftSelectColor.colors}, when
+ * narrowed), with an optional "transparent" option.
  *
  * @since 1.0
  */
@@ -41,10 +43,43 @@ export default class CraftSelectColor extends LitElement {
   modelValue: string | null = null;
 
   /**
-   * When enabled, a "Transparent" option is prepended to the list of colors.
+   * When enabled, a blank option (labelled {@link blankLabel}) is prepended
+   * to the list of colors.
    */
   @property({type: Boolean, reflect: true, attribute: 'allow-transparent'})
   allowTransparent = false;
+
+  /**
+   * Overrides the blank option's label (default "Transparent"). Use this
+   * when the value being picked isn't a background/opacity concept — e.g.
+   * "No color" for a category swatch.
+   */
+  @property({attribute: 'blank-label'})
+  blankLabel: string | null = null;
+
+  /**
+   * The colors offered, in order. Defaults to every color in the shared
+   * palette ({@link paletteColors}) — pass a subset to restrict the choices
+   * to whatever set a particular caller's values are actually drawn from.
+   */
+  @property({type: Array})
+  colors: string[] = [...paletteColors];
+
+  /** Forwarded to the underlying rich select. */
+  @property({type: Boolean, reflect: true})
+  disabled = false;
+
+  /** Forwarded to the underlying rich select. */
+  @property({type: Boolean, reflect: true, attribute: 'readonly'})
+  readOnly = false;
+
+  /** Forwarded to the underlying rich select. */
+  @property({type: Boolean, reflect: true})
+  required = false;
+
+  /** Forwarded to the underlying rich select. */
+  @property({attribute: false})
+  validators: Validator[] = [];
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
@@ -137,12 +172,16 @@ export default class CraftSelectColor extends LitElement {
         label=${this.label}
         name=${this.name}
         .modelValue=${this.modelValue}
+        .disabled=${this.disabled}
+        .readOnly=${this.readOnly}
+        .required=${this.required}
+        .validators=${this.validators}
         @model-value-changed=${this._handleModelValueChanged}
       >
         ${this.allowTransparent
-          ? this._optionTemplate('__blank__', t('Transparent'))
+          ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
           : ''}
-        ${colors.map((color) =>
+        ${this.colors.map((color) =>
           this._optionTemplate(color, t(titleCase(color)))
         )}
       </craft-select-rich>

@@ -7,6 +7,7 @@ import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
 import ConditionBuilderControl from './ConditionBuilderControl.vue';
 import ColorControl from './ColorControl.vue';
+import ColorSelectControl from './ColorSelectControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
 import FormRenderer from './FormRenderer.vue';
 import GroupNode from './GroupNode.vue';
@@ -76,6 +77,7 @@ export function registerFormComponents(
   components.register('craft:date-time', DateTimeControl);
   components.register('craft:time', TextControl);
   components.register('craft:color', ColorControl);
+  components.register('craft:color-select', ColorSelectControl);
   components.register('craft:money', MoneyControl);
   components.register('craft:permission-tree', PermissionTreeControl);
   components.register('craft:markdown', MarkdownControl);

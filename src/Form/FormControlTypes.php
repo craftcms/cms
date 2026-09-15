@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Controls\AssetSelect;
 use CraftCms\Cms\Form\Controls\Checkbox;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\ColorSelect;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Controls\ContentBlock;
@@ -56,6 +57,7 @@ class FormControlTypes extends TypeRegistry
         Choice::class,
         ConditionBuilder::class,
         Color::class,
+        ColorSelect::class,
         Combobox::class,
         ContentBlock::class,
         Date::class,
