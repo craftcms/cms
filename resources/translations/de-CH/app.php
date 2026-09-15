@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Wiederherstellungs-Codes können als Backup dienen, wenn du die primäre Validierungsmethode nicht verwenden kannst.',
     'Recovery codes generated.' => 'Wiederherstellungs-Codes erstellt.',
     'Red' => 'Rot',
+    'Redo' => 'Redo',
     'Refresh' => 'Aktualisieren',
     'Regenerate' => 'Regenerieren',
     'Regenerating project config YAML files from the loaded project config…' => 'YAML-Dateien der Projektkonfiguration werden aus der geladenen Projektkonfiguration wiederhergestellt…',
