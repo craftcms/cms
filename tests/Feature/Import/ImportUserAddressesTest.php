@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Import\UserImporter;
 
 beforeEach(function () {
     $this->import = app(Import::class);
 
-    $this->importer = ElementImporter::create()
-        ->className(UserElement::class)
+    $this->importer = UserImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 

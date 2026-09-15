@@ -21,9 +21,10 @@ use function CraftCms\Cms\t;
 /**
  * The ModelImporter should be used for importing data into an eloquent model.
  * For a model to support this, it has to implement the ImportableModelInterface.
- * Element types must use ElementImporter.
- * Unlike with Elements (where all elements start as importable and can opt out via `isImportable()` method,
- * ImportableModelInterface is strictly an opt-in mechanism.
+ * Element types must use an ElementImporter subclass instead (see EntryImporter, AssetImporter, UserImporter).
+ * Unlike with elements (where an element type becomes importable by having a dedicated
+ * ElementImporter subclass registered for it), ImportableModelInterface is strictly an opt-in
+ * mechanism a model implements directly.
  */
 class ModelImporter extends BaseImporter
 {

@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Events\ImportConfigSaved;
 use CraftCms\Cms\Import\Events\ImportConfigSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Json as JsonSupport;
@@ -44,6 +45,11 @@ class ImportConfig
         $importer->description($config['description']);
         $settings = JsonSupport::decode($config['settings']);
         foreach ($settings as $setting => $value) {
+            // an ElementImporter subclass's element type is fixed at construction time and its
+            // className() setter throws; 'className' is only persisted for display/introspection
+            if ($setting === 'className' && $importer instanceof ElementImporter) {
+                continue;
+            }
             if (method_exists($importer, $setting)) {
                 $importer->{$setting}($value);
             }

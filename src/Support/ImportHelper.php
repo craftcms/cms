@@ -11,24 +11,10 @@ use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Attributes\Importable;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
-use Illuminate\Support\Collection;
 
 class ImportHelper
 {
-    public static function getImportableElementTypes(?array $allElementTypes = null): Collection
-    {
-        $allElementTypes ??= Elements::getAllElementTypes();
-
-        return collect($allElementTypes)
-            ->filter(fn ($type) => $type::isImportable())
-            ->map(fn ($type) => [
-                'label' => $type::displayName(),
-                'value' => $type,
-            ]);
-    }
-
     /**
      * Builds a select-option list of field layout providers for the element class (singular or multiple layouts).
      * The list of field layout providers as label/value pairs.

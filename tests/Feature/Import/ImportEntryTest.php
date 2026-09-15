@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -36,8 +36,7 @@ beforeEach(function () {
         ['name' => 'With Required Text', 'handle' => 'withRequiredText'],
     );
 
-    $this->importer = ElementImporter::create()
-        ->className(EntryElement::class)
+    $this->importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->fieldLayout(EntryTypes::getEntryTypeById($this->typeA->id)->getFieldLayout())
         ->transformer(null);
@@ -104,7 +103,7 @@ describe('required-value validation, skipping enabled entries and allowing disab
             'enabled' => false,
         ]);
 
-        $entry = EntryElement::find()->title('imported entry')->status(null)->one();
+        $entry = EntryElement::find()->title('imported entry')->section($section->handle)->status(null)->one();
 
         expect($entry)->not->toBeNull();
     })->with('requiredValueScenarios');

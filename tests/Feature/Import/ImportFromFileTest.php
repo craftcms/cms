@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -46,8 +46,7 @@ beforeEach(function () {
 
     $this->fixturePath = fn (string $name) => dirname(__DIR__, 2).'/Fixtures/Import/'.$name;
 
-    $this->importerFor = fn (string $name) => ElementImporter::create()
-        ->className(EntryElement::class)
+    $this->importerFor = fn (string $name) => EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null)
         ->file('tests/Fixtures/Import/'.$name);
@@ -55,6 +54,15 @@ beforeEach(function () {
 
 afterEach(function () {
     Aliases::set('@root', $this->originalRoot);
+});
+
+it('creates duplicates on re-import when no match criteria is configured', function () {
+    $importer = ($this->importerFor)('entries-plain-text.json');
+
+    $this->import->import($importer);
+    $this->import->import($importer);
+
+    expect(EntryElement::find()->section($this->section->handle)->count())->toBe(6);
 });
 
 // reading and formatting
@@ -130,7 +138,7 @@ it('returns the source headings with a "Please select" option prepended', functi
 // importing whole files
 
 it('imports every row of a JSON file', function () {
-    $this->import->import(($this->importerFor)('entries-plain-text.json'));
+    $this->import->import(($this->importerFor)('entries-plain-text.json')->matchCriteria(['title' => 'title']));
 
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(3)
         ->and(EntryElement::find()->title('first file entry')->one()->getFieldValue('plainText'))->toBe('text from the file')
@@ -183,13 +191,4 @@ it('matches rows and nested blocks on re-import using the importer config’s ma
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(1)
         ->and($entry->id)->toBe($entryId)
         ->and($entry->getFieldValue('myMatrix')->ids())->toBe($blockIds);
-});
-
-it('creates duplicates on re-import when no match criteria is configured', function () {
-    $importer = ($this->importerFor)('entries-plain-text.json');
-
-    $this->import->import($importer);
-    $this->import->import($importer);
-
-    expect(EntryElement::find()->section($this->section->handle)->count())->toBe(6);
 });

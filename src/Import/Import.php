@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Asset\Import\AssetImporter;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
@@ -24,6 +26,7 @@ use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\User\Import\UserImporter;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
@@ -70,7 +73,9 @@ class Import
     public function getAllImporterTypes(): array
     {
         $importers = [
-            ElementImporter::class,
+            EntryImporter::class,
+            AssetImporter::class,
+            UserImporter::class,
             ModelImporter::class,
         ];
 
@@ -81,6 +86,23 @@ class Import
         }
 
         return $importers;
+    }
+
+    /**
+     * Returns the registered `ElementImporter` subclass (core or plugin-registered) whose
+     * `elementClass()` matches the given element type, or null if none is registered for it.
+     *
+     * @param  string  $elementClass  The element type's FQCN.
+     */
+    public function getElementImporterTypeFor(string $elementClass): ?string
+    {
+        foreach ($this->getAllImporterTypes() as $type) {
+            if (is_subclass_of($type, ElementImporter::class) && $type::elementClass() === $elementClass) {
+                return $type;
+            }
+        }
+
+        return null;
     }
 
     /**

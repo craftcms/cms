@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
@@ -12,7 +12,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
 use CraftCms\Cms\Import\ImportConfig;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -64,8 +63,7 @@ beforeEach(function () {
     EntryTypes::refreshEntryTypes();
     Fields::refreshFields();
 
-    $importer = ElementImporter::create()
-        ->className(EntryElement::class)
+    $importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
     $importer->name('Matrix in Matrix Import');

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Transformers\EntryTransformer;
@@ -169,3 +170,10 @@ it('throws for an unknown site handle', function () {
         ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->run();
 })->throws(InvalidArgumentException::class, 'No site found with handle or UID: "no-such-site".');
+
+it('fails with a clear error for an element type with no registered importer', function () {
+    ($this->command)('entries-plain-text.json', [
+        'elementType' => Address::class,
+        '--matchCriteria' => '={"title":"title"}',
+    ])->assertFailed();
+});

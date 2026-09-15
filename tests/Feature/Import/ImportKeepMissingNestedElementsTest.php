@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -33,8 +33,7 @@ describe('nested matrix pruning', function () {
         $this->matrixSection = $seed->section;
         $this->matrixEntryType = $seed->entryType;
 
-        $this->matrixImporter = ElementImporter::create()
-            ->className(EntryElement::class)
+        $this->matrixImporter = EntryImporter::create()
             ->site(Sites::getPrimarySite()->handle)
             ->transformer(null);
 
@@ -155,8 +154,7 @@ describe('matrix in matrix pruning', function () {
         $this->matrixInMatrixSection = $seed->section;
         $this->matrixInMatrixEntryType = $seed->entryType;
 
-        $this->matrixInMatrixImporter = ElementImporter::create()
-            ->className(EntryElement::class)
+        $this->matrixInMatrixImporter = EntryImporter::create()
             ->site(Sites::getPrimarySite()->handle)
             ->transformer(null);
 
@@ -291,8 +289,7 @@ describe('addresses pruning', function () {
         $this->section = $seed->section;
         $this->entryType = $seed->entryType;
 
-        $this->importer = ElementImporter::create()
-            ->className(EntryElement::class)
+        $this->importer = EntryImporter::create()
             ->site(Sites::getPrimarySite()->handle)
             ->matchCriteria(['title' => 'title'])
             ->transformer(null);
@@ -417,8 +414,7 @@ describe('matrix inside a content block pruning', function () {
         $this->section = $seed->section;
         $this->entryType = $seed->entryType;
 
-        $this->importer = ElementImporter::create()
-            ->className(EntryElement::class)
+        $this->importer = EntryImporter::create()
             ->site(Sites::getPrimarySite()->handle)
             ->matchCriteria(['title' => 'title'])
             ->transformer(null);

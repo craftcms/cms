@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\Importers\ElementImporter;
@@ -24,7 +25,7 @@ it('getSettingsRules excludes name/handle while getRules includes them', functio
 });
 
 it('validateSettings throws with settings-only errors for an ad-hoc importer missing file/site, even without a name/handle', function () {
-    $importer = ElementImporter::create()->className(EntryElement::class);
+    $importer = EntryImporter::create();
 
     try {
         $importer->validateSettings();
@@ -38,7 +39,7 @@ it('validateSettings throws with settings-only errors for an ad-hoc importer mis
 });
 
 it('validate throws for an invalid importer, including missing name/handle', function () {
-    $importer = ElementImporter::create()->className(EntryElement::class);
+    $importer = EntryImporter::create();
 
     try {
         $importer->validate();
@@ -126,10 +127,9 @@ it('validateTransformer still passes for a valid class, arrow function, and empt
 
 it('excludes an invalid file-based import config from getAllConfigs', function () {
     Config::set('craft.import', [
-        'invalidFileConfig' => fn () => ElementImporter::create()
+        'invalidFileConfig' => fn () => EntryImporter::create()
             ->name('Invalid File Config')
-            ->handle('invalidFileConfig')
-            ->className(EntryElement::class),
+            ->handle('invalidFileConfig'),
     ]);
 
     $importConfig = app(ImportConfig::class);

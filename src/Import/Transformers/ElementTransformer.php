@@ -59,7 +59,7 @@ class ElementTransformer extends BaseTransformer
         if (! $fieldLayout) {
             // if we have a typeId, try to get the field layout from the entry type - this is the case for Entry element
             if (isset($array['typeId'])) {
-                $entryType = EntryTypes::getEntryTypeById($array['typeId']);
+                $entryType = EntryTypes::getEntryTypeById((int) $array['typeId']);
                 if ($entryType) {
                     $fieldLayout = $entryType->getFieldLayout();
                 }

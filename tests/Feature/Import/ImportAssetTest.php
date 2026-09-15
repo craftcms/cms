@@ -6,11 +6,11 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
+use CraftCms\Cms\Asset\Import\AssetImporter;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -48,8 +48,7 @@ beforeEach(function () {
 
     $volumeData = Volumes::getVolumeById($this->volume->id);
 
-    $this->importer = ElementImporter::create()
-        ->className(Asset::class)
+    $this->importer = AssetImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->fieldLayout($volumeData->getFieldLayout())
         ->transformer(null);
@@ -191,7 +190,7 @@ it('throws for a local temp file path that resolves outside of all allowed roots
         $asset = new Asset;
         $asset->setVolumeId($this->volume->id);
 
-        expect(fn () => $asset->setAttributesForImport($this->importer, ['tempFilePath' => $outsidePath]))
+        expect(fn () => $this->importer->setAttributesForImport($asset, ['tempFilePath' => $outsidePath]))
             ->toThrow(FileException::class);
     } finally {
         @unlink($outsidePath);
@@ -202,7 +201,7 @@ it('throws for a local temp file path that does not exist on disk', function () 
     $asset = new Asset;
     $asset->setVolumeId($this->volume->id);
 
-    expect(fn () => $asset->setAttributesForImport($this->importer, [
+    expect(fn () => $this->importer->setAttributesForImport($asset, [
         'tempFilePath' => Path::temp('does-not-exist-'.bin2hex(random_bytes(4)).'.txt'),
     ]))->toThrow(FileException::class);
 });

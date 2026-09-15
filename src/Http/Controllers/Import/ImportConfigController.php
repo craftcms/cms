@@ -163,8 +163,8 @@ class ImportConfigController
             if (property_exists($importer, 'site') && array_key_exists('site', $settings)) {
                 $importer->site($settings['site']);
             }
-            if (array_key_exists('elementType', $settings) || array_key_exists('className', $settings)) {
-                $importer->className($settings['elementType'] ?? $settings['className']);
+            if (! $importer instanceof ElementImporter && array_key_exists('className', $settings)) {
+                $importer->className($settings['className']);
             }
             if (array_key_exists('transformer', $settings)) {
                 $importer->transformer($settings['transformer']);
@@ -221,7 +221,9 @@ class ImportConfigController
         if (property_exists($import, 'site')) {
             $import->site($this->request->input('settings.site', $import->site));
         }
-        $import->className($this->request->has('settings.elementType') ? $this->request->input('settings.elementType') : $this->request->input('settings.className'));
+        if (! $import instanceof ElementImporter) {
+            $import->className($this->request->input('settings.className'));
+        }
         $import->transformer($this->request->input('settings.transformer', $import->transformer));
         $import->map($this->request->input('settings.map', $import->map));
         $import->matchCriteria($this->request->input('settings.matchCriteria', $import->matchCriteria));

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static array getAllDataTypes()
  * @method static array getAllImporterTypes()
+ * @method static ?string getElementImporterTypeFor(string $elementClass)
  * @method static bool dispatchImport(ImportRun $run)
  * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria)
  * @method static void import(BaseImporter $importer)

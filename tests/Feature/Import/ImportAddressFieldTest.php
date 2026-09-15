@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -33,8 +33,7 @@ beforeEach(function () {
     $this->section = $seed->section;
     $this->entryType = $seed->entryType;
 
-    $this->importer = ElementImporter::create()
-        ->className(EntryElement::class)
+    $this->importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -42,8 +42,7 @@ beforeEach(function () {
     // relation field points at
     $this->relatedEntry = $seed->entry;
 
-    $this->importer = ElementImporter::create()
-        ->className(EntryElement::class)
+    $this->importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null)
         ->matchCriteria(['title' => 'title']);

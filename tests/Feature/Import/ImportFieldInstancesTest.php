@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -49,8 +49,7 @@ beforeEach(function () {
     $this->unusedFieldHandle = $unusedField->handle;
     $this->unusedMatrixHandle = $matrixField->handle;
 
-    $this->importer = ElementImporter::create()
-        ->className(EntryElement::class)
+    $this->importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null)
         ->matchCriteria(['title' => 'title']);

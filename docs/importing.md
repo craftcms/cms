@@ -2,10 +2,10 @@
 
 ## 1. What the feature does
 
-Bulk-imports data from a JSON, CSV or XML file into Craft elements (entries, assets,
-users, addresses-as-nested-content) or into opted-in Eloquent models. It can create new
-records or find and update existing ones, and it understands nested content (Matrix,
-Addresses, Content Blocks) to arbitrary depth.
+Bulk-imports data from a JSON, CSV or XML file into Craft elements (entries, assets, users,
+addresses-as-nested-content) or into opted-in Eloquent models. It can create new records or find
+and update existing ones, and it understands nested content (Matrix, Addresses, Content Blocks)
+to arbitrary depth.
 
 Three ways to drive it: the control panel, a PHP config file, or the CLI.
 
@@ -32,8 +32,7 @@ Returns an array of closures, each returning a configured importer:
 
 ```php
 return [
-    'myElementImport' => fn() => ElementImporter::create()
-        ->className(\CraftCms\Cms\Entry\Elements\Entry::class)
+    'myElementImport' => fn() => EntryImporter::create()
         ->name('file - entry with plain text')
         ->handle('fileEntryWithPlainText')
         ->site('default')
@@ -51,7 +50,10 @@ can span multiple sections and entry types in a single run.
 
 `settings` JSON holds: `file`, `className`, `transformer`, `map`, `matchCriteria`,
 `clearableItems`, `keepMissingNestedElements`, plus `site` (uid) and `fieldLayout`.
-`createImporter()` replays these through the fluent setters on load.
+`createImporter()` replays these through the fluent setters on load — except `className` on an
+`ElementImporter` subclass, whose element type is fixed at construction time and whose
+`className()` setter isn't meaningful; it's stored for display/introspection only and skipped on
+replay.
 
 ---
 
@@ -75,14 +77,21 @@ logged and skipped, not fatal.
 
 ## 4. The two importers
 
-- **`ElementImporter`** — target must be a registered element type whose
-  `isImportable()` returns true. Adds `site` (required) and `fieldLayout`.
-- **`ModelImporter`** — target must implement the marker interface
-  `ImportableModelInterface` and must *not* be an element type. This is a change in
-  emphasis: elements are importable by default and opt out; models are opt-in only.
-  Still defaults `matchCriteria` to `['id' => 'id']`; `ElementImporter` no longer does.
+- **`ElementImporter`** is abstract. Each importable element type is represented by its own
+  concrete subclass, which implements `elementClass()` to name its target type: `EntryImporter`,
+  `AssetImporter`, `UserImporter` are the built-ins (there's no `UserTransformer`, so
+  `UserImporter` uses the default `ElementTransformer`). Adds `site` (required) and `fieldLayout`.
+  An element type is importable if and only if an `ElementImporter` subclass is registered for
+  it — `Address` has none, so it's never a standalone import target, only reachable as nested
+  content (Addresses field / User addresses container). `Import::getElementImporterTypeFor(string
+  $elementClass): ?string` looks up the registered subclass for a given element FQCN, returning
+  `null` if none is registered.
+- **`ModelImporter`** — target must implement the marker interface `ImportableModelInterface` and
+  must *not* be an element type; strictly opt-in. Still defaults `matchCriteria` to
+  `['id' => 'id']`.
 
-Extra types register via the `RegisterImporterTypes` event (`$event->importers`).
+Extra importer types — including element importers for plugin-defined element types — register
+via the `RegisterImporterTypes` event (`$event->importers`).
 
 ---
 
@@ -122,16 +131,24 @@ is accepted and expanded). Behaviour:
 
 ## 6. Saving an element
 
-`ElementImporter::importItem()` (`src/Import/Importers/ElementImporter.php:513`):
+`ElementImporter::importItem()` (`src/Import/Importers/ElementImporter.php`):
 
-1. `getRootElement()` — new instance, `prepareNewElementForImport()`, then if there are
-   match criteria, query with `->drafts(null)->status(null)`, let the element adjust the
-   query (`prepareRootElementImportQuery()`), typecast criteria, and **force the config's
-   siteId** so it always wins over anything in the criteria.
+1. `getRootElement()` calls `$this->prepareNewRootElementForImport($data)` on the importer to get
+   a new element instance (per-type subclasses like `EntryImporter`/`AssetImporter` resolve the
+   entry type/volume here). If there are match criteria, it then queries with
+   `->drafts(null)->status(null)`, lets the importer adjust the query
+   (`$this->prepareRootElementImportQuery($element, $query)`) — scoping it by type/volume, for
+   example — typecasts criteria, and **forces the config's siteId** so it always wins over
+   anything in the criteria. If a match is found, the resolved element is passed back through
+   `prepareNewRootElementForImport()` so per-type subclasses can finish preparing it without
+   re-deriving the type.
 2. `markAsImporting()` — for existing and new elements alike.
 3. Transformer runs *after* the element is resolved, so it can see the existing element
    via Fractal meta.
-4. Split the result into native attributes, custom fields, and container properties.
+4. Split the result into native attributes, custom fields, and container properties. Attributes
+   are applied via `$this->setAttributesForImport($element, $attributes)` on the importer (base
+   implementation strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`;
+   `AssetImporter` overrides it to resolve filename/folder/temp-file handling and download).
 5. **Skip-unchanged optimisation**: snapshots attribute values and serialized field
    values; if nothing changed, the element is never saved. Skipped for new elements or
    when container data is present. A special case catches content blocks, whose
@@ -150,17 +167,23 @@ Container *properties* (as opposed to fields) go through
 
 ### Elements
 
-`Element` uses the `Importable` concern (`src/Component/Concerns/Importable.php`)
-implementing `ImportableInterface`:
+`Element` uses the `Importable` concern (`src/Component/Concerns/Importable.php`) implementing
+`ImportableInterface`. On the element side this is deliberately thin — it only provides
+`markAsImporting()`, which sets `public private(set) bool $importing`, read by
+`Entry::canChangeAuthor()`-adjacent logic to bypass the logged-in-user requirement.
 
-- `isImportable()` — true by default; `Address` returns false (never standalone).
-- `getDefaultTransformer()` — `ElementTransformer`; Entry → `EntryTransformer`,
-  Asset → `AssetTransformer`. There is no `UserTransformer`.
-- `prepareNewElementForImport()`, `prepareRootElementImportQuery()`,
-  `setAttributesForImport()` — per-type hooks. Entry resolves type/section, Asset does
-  the heavy filename/folder/temp-file work.
-- `markAsImporting()` sets `public private(set) bool $importing`, read by
-  `Entry::canChangeAuthor()`-adjacent logic to bypass the logged-in-user requirement.
+The hooks that customize how a type participates in import instead live on the `ElementImporter`
+subclass for that type (see §4):
+
+- `elementClass()` — abstract; names the target element type.
+- `getDefaultTransformer()` — `ElementTransformer` by default; `EntryImporter` →
+  `EntryTransformer`, `AssetImporter` → `AssetTransformer`. There is no `UserTransformer`, so
+  `UserImporter` uses the default.
+- `prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null):
+  ElementInterface`, `prepareRootElementImportQuery()`, `setAttributesForImport()` — per-type
+  hooks. `EntryImporter` resolves the entry type (from the configured `fieldLayout`, or from the
+  row's `typeId`) and scopes the match query by type; `AssetImporter` resolves the volume from
+  `fieldLayout` and does the heavy filename/folder/temp-file work in `setAttributesForImport()`.
 
 ### The `Importable` attribute
 
@@ -269,9 +292,10 @@ Screens are Vue/Inertia under `resources/js/pages/import/`:
 - `import` — hub with Configs/Runs tiles.
 - `import/configs` — two tables, editable and file-based. File-based rows get a Run
   button (synchronous) and nothing else.
-- `import/configs/new|{handle}` — name, handle, description, importer type (reactive
-  select), then the importer's own settings form: data file, site, element type,
-  transformer.
+- `import/configs/new|{handle}` — name, handle, description, importer type (reactive select),
+  then the importer's own settings form: data file, site, transformer. Choosing the importer type
+  for an element import (Entries / Assets / Users) *is* choosing the element type — there's no
+  separate "Element Type" field.
 - `import/configs/{handle}/field-layout-provider` — element imports only; redirects back
   to edit for non-element imports.
 - `import/configs/{handle}/map` — the mapping table: **Destination / Incoming data /
@@ -300,6 +324,11 @@ craft:import:element {elementType} {file}
 Alias `import/element`. Both arguments are positional and prompted if missing;
 `--site` is only prompted on multisite. `--matchCriteria` is JSON.
 
+`{elementType}` is resolved to a concrete importer via `Import::getElementImporterTypeFor()`; the
+command fails with a clear error if no importer is registered for that type. The interactive
+prompt lists options built from `Import::getAllImporterTypes()` filtered to `ElementImporter`
+subclasses (label = the importer's `displayName()`, value = its `elementClass()`).
+
 ```
 craft:import:model {className} {file} [--transformer=] [--matchCriteria=]
 ```
@@ -314,7 +343,9 @@ Neither takes a `--map`, so CLI mapping is the transformer's job.
 - `RegisterDataTypes` — `$event->dataTypes['yml'] = MyType::class;` (extension-keyed).
   Built-ins: json, csv, xml. A data type implements two **static** methods,
   `format()` and `getHeadings()`.
-- `RegisterImporterTypes` — `$event->importers[] = MyImporter::class;`
+- `RegisterImporterTypes` — `$event->importers[] = MyImporter::class;`. Registering a new
+  importable element type means contributing a concrete `ElementImporter` subclass that
+  implements `elementClass()`.
 - `DataImporting` / `DataImported`, `ImportConfigSaving` / `Saved`,
   `ImportRunSaving` / `Saved`, `ImportRunDispatching` / `Dispatched`.
   The `*ing` variants are cancellable.

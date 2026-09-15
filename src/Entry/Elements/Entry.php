@@ -31,7 +31,6 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -67,8 +66,6 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
-use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Transformers\EntryTransformer;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -3003,63 +3000,5 @@ JS;
         }
 
         return $templates;
-    }
-
-    #[Override]
-    public static function getDefaultTransformer(): ?string
-    {
-        return EntryTransformer::class;
-    }
-
-    #[Override]
-    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
-    {
-        parent::prepareNewElementForImport($importer, $data);
-
-        // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
-        // we need to ensure the typeId is set
-        if ($importer->fieldLayout) {
-            $allEntryTypes = app(\CraftCms\Cms\Entry\EntryTypes::class)->getAllEntryTypes();
-            $allFieldLayouts = $allEntryTypes->mapWithKeys(function ($entryType) {
-                $fieldLayout = $entryType->getFieldLayout();
-
-                return [$fieldLayout->id => $fieldLayout];
-            });
-            $entryType = $allFieldLayouts->firstWhere('uid', $importer->fieldLayout)?->provider;
-            if ($entryType) {
-                $this->_typeId = $entryType->id;
-                $this->_type = $entryType;
-                $this->fieldLayoutId = $entryType->getFieldLayoutId();
-
-                if (isset($data['matchCriteria']['typeId'])) {
-                    unset($data['matchCriteria']['typeId']);
-                }
-            }
-        }
-        // todo (iwona): otherwise we also have to ensure this; think whether we need to do anything about it here
-
-        return $this;
-    }
-
-    #[Override]
-    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
-    {
-        if ($this->_typeId !== null) {
-            /** @var $query EntryQuery */
-            return $query->typeId($this->_typeId);
-        }
-
-        return $query;
-    }
-
-    #[Override]
-    public function setAttributesForImport(BaseImporter $importer, array $attributes): void
-    {
-        // for UI-based import, ensure we're not changing type ID compared to what we chose in the field layout provider step
-        if (isset($importer->fieldLayout)) {
-            unset($attributes['typeId']);
-        }
-
-        parent::setAttributesForImport($importer, $attributes);
     }
 }

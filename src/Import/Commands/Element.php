@@ -46,6 +46,13 @@ class Element extends Command implements PromptsForMissingInput
      */
     public function handle(): int
     {
+        $elementType = $this->argument('elementType');
+        $importerClass = Import::getElementImporterTypeFor($elementType);
+
+        if ($importerClass === null) {
+            $this->fail("No importer is registered for element type \"$elementType\".");
+        }
+
         $fieldLayoutProviderOptions = ImportHelper::flattenLabelValueArray(
             ImportHelper::getAvailableFieldLayoutProviders($this->argument('elementType'))
         );
@@ -88,8 +95,7 @@ class Element extends Command implements PromptsForMissingInput
         }
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
-        $importConfig = (new ElementImporter)
-            ->className($this->argument('elementType'))
+        $importConfig = $importerClass::create()
             ->file($this->argument('file'))
             ->site($this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle)
             ->fieldLayout($this->option('fieldLayoutProvider') ?: $responses['fieldLayoutProvider'] ?: null)
@@ -161,7 +167,13 @@ class Element extends Command implements PromptsForMissingInput
             'elementType' => fn () => select(
                 label: 'Provide class name of the element type you want to import into, e.g. CraftCms\Cms\Entry\Elements\Entry',
                 options: ImportHelper::flattenLabelValueArray(
-                    ImportHelper::getImportableElementTypes()->all()
+                    collect(Import::getAllImporterTypes())
+                        ->filter(fn ($type) => is_subclass_of($type, ElementImporter::class))
+                        ->map(fn ($type) => [
+                            'label' => $type::displayName(),
+                            'value' => $type::elementClass(),
+                        ])
+                        ->all()
                 ),
             ),
             // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?

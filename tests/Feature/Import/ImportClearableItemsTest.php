@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -33,8 +33,7 @@ beforeEach(function () {
     $this->section = $seed->section;
     $this->entryType = $seed->entryType;
 
-    $this->importer = ElementImporter::create()
-        ->className(EntryElement::class)
+    $this->importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->matchCriteria(['title' => 'title'])
         ->transformer(null);
@@ -102,7 +101,7 @@ it('leaves a provided non-empty value alone even when the field is marked cleara
 });
 
 it('normalizes a flat list of dot-notation handles into the nested truthy-leaf shape', function () {
-    $importer = ElementImporter::create()->clearableItems(['myPlainText', 'some.nested.handle']);
+    $importer = EntryImporter::create()->clearableItems(['myPlainText', 'some.nested.handle']);
 
     expect($importer->clearableItems)->toBe([
         'myPlainText' => true,
@@ -111,7 +110,7 @@ it('normalizes a flat list of dot-notation handles into the nested truthy-leaf s
 });
 
 it('accepts an already-nested truthy-leaf shape as-is', function () {
-    $importer = ElementImporter::create()->clearableItems(['myPlainText' => 1]);
+    $importer = EntryImporter::create()->clearableItems(['myPlainText' => 1]);
 
     expect($importer->clearableItems)->toBe(['myPlainText' => 1]);
 });
@@ -177,8 +176,7 @@ describe('nested matrix clearing', function () {
         $this->matrixSection = $seed->section;
         $this->matrixEntryType = $seed->entryType;
 
-        $this->matrixImporter = ElementImporter::create()
-            ->className(EntryElement::class)
+        $this->matrixImporter = EntryImporter::create()
             ->site(Sites::getPrimarySite()->handle)
             ->matchCriteria(['title' => 'title'])
             ->clearableItems(['myMatrix' => ['blockEt' => ['fields' => ['plainText' => true]]]])
