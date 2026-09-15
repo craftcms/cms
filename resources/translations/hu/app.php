@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'A visszaállítási kódok másodlagos hitelesítési módszerként használhatók, ha az elsődleges módszer nem használható.',
     'Recovery codes generated.' => 'Visszaállítási kódok generálva.',
     'Red' => 'Piros',
+    'Redo' => 'Redo',
     'Refresh' => 'Frissítés',
     'Regenerate' => 'Újra létrehozni',
     'Regenerating project config YAML files from the loaded project config…' => 'A projektkonfigurációs YAML-fájlok visszaállítása a betöltött projektkonfigurációból…',
