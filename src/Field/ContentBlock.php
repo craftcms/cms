@@ -15,7 +15,9 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -36,6 +38,7 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
 use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -54,8 +57,10 @@ use function CraftCms\Cms\t;
 /**
  * Content Block field type
  */
-class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
+class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface, ImportableElementContainerFieldInterface
 {
+    use ImportableElementContainerField;
+
     private const string VIEW_MODE_GROUPED = 'grouped';
 
     private const string VIEW_MODE_INLINE = 'inline';
@@ -832,5 +837,27 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
 
         return $contentBlock;
+    }
+
+    /**
+     * Normalizes value so that it can be imported into a Content Block-type field.
+     * The custom field values can be nested under a "fields" key or straight in the top-level array.
+     *
+     * The value has to be an array; each item in the array represents a field inside this singular nested entry.
+     */
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        // Container fields nested in the block belong to the content block element rather than to
+        // the element this field is on, so that's the owner their match criteria has to look under.
+        // Stays null when there's no block yet, so those fields skip matching and create new
+        // elements.
+        $contentBlock = $rootOwner?->id ? $this->createContentBlockQuery($rootOwner)->one() : null;
+
+        return $this->normalizeNestedEntryForImport($value, $importer, $this->getFieldLayout(), $contentBlock);
     }
 }

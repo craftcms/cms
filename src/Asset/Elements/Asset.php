@@ -74,6 +74,7 @@ use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -194,6 +195,7 @@ class Asset extends Element
      * @var int|null Folder ID
      */
     #[AllowedInSandbox]
+    #[Importable('folderId', 'Folder ID')]
     public ?int $folderId = null;
 
     /**
@@ -218,6 +220,7 @@ class Asset extends Element
      * @var string|null Alternative text
      */
     #[AllowedInSandbox]
+    // importing is handled via native field
     public ?string $alt = null;
 
     /**
@@ -265,6 +268,7 @@ class Asset extends Element
     /**
      * @var string|null The temp file path
      */
+    #[Importable('tempFilePath', 'File Path', canBeMatchCriteria: false, canBeCleared: false)]
     public ?string $tempFilePath = null;
 
     /**
@@ -313,6 +317,7 @@ class Asset extends Element
     /**
      * @var string Filename
      */
+    #[Importable('filename', 'Filename')]
     private string $_filename;
 
     private ?string $_mimeType = null;
@@ -3393,48 +3398,20 @@ JS;
         $tempFilePath = File::normalizePath($tempFilePath);
 
         // Make sure it's within a known temp path, the project root, or storage/ folder
-        $allowedRoots = [
+        $allowedRoots = self::getAllowedTempFileRoots();
+
+        return Path::isPathWithinRoots($tempFilePath, $allowedRoots);
+    }
+
+    public static function getAllowedTempFileRoots(): array
+    {
+        return [
             [Path::temp(), true],
             [Path::tempAssetUploads(), true],
             [sys_get_temp_dir(), true],
             [Aliases::get('@root', false), false],
             [Aliases::get('@storage', false), false],
         ];
-
-        $inAllowedRoot = false;
-        foreach ($allowedRoots as [$root, $isTempDir]) {
-            $root = $this->_normalizeTempPath($root);
-            if ($root !== false && str_starts_with($tempFilePath, $root)) {
-                // If this is a known temp dir, we’re good here
-                if ($isTempDir) {
-                    return true;
-                }
-                $inAllowedRoot = true;
-                break;
-            }
-        }
-        if (! $inAllowedRoot) {
-            return false;
-        }
-
-        // Make sure it's *not* within a system directory though
-        $systemDirs = Path::system();
-        $systemDirs = array_map($this->_normalizeTempPath(...), $systemDirs);
-        $systemDirs = array_filter($systemDirs, fn ($value) => $value !== false);
-
-        return array_all($systemDirs, fn ($dir) => ! str_starts_with($tempFilePath, (string) $dir));
-    }
-
-    /**
-     * Returns a normalized temp path or false, if realpath fails.
-     */
-    private function _normalizeTempPath(string|false $path): string|false
-    {
-        if (! $path || ! ($path = realpath($path))) {
-            return false;
-        }
-
-        return File::normalizePath($path).DIRECTORY_SEPARATOR;
     }
 
     private function deleteTransformData(): void

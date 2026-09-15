@@ -114,6 +114,7 @@ class UserPermissions
         $this->entryPermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
+        $this->importPermissions($permissions);
 
         return $this->permissionGroupCatalog->apply($permissions);
     }
@@ -754,6 +755,56 @@ class UserPermissions
                     label: $class::displayName(),
                 );
             })->filter(),
+        ));
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function importPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            handle: 'import',
+            heading: t('Import'),
+            permissions: collect([
+                new Permission(
+                    key: 'viewImportConfigs',
+                    label: t('View import configs'),
+                    info: t('Allows viewing existing import configs.'),
+                    nested: collect([
+                        new Permission(
+                            key: 'saveImportConfigs',
+                            label: t('Save import configs'),
+                            info: t('Allows creating and saving import configs.'),
+                        ),
+                        new Permission(
+                            key: 'deleteImportConfigs',
+                            label: t('Delete import configs'),
+                            info: t('Allows deleting import configs.'),
+                        ),
+                    ])->filter(),
+                ),
+                new Permission(
+                    key: 'viewImportRuns',
+                    label: t('View import runs'),
+                    info: t('Allows viewing existing import runs.'),
+                    nested: collect([
+                        new Permission(
+                            key: 'saveImportRuns',
+                            label: t('Save import runs'),
+                            info: t('Allows creating and saving of import runs.'),
+                        ),
+                        new Permission(
+                            key: 'deleteImportRuns',
+                            label: t('Delete import runs'),
+                            info: t('Allows deleting import runs.'),
+                        ),
+                        new Permission(
+                            key: 'triggerImportRuns',
+                            label: t('Trigger import runs'),
+                            info: t('Allows user to trigger an Import Run.'),
+                        ),
+                    ])->filter(),
+                ),
+            ]),
         ));
     }
 

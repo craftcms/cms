@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
 use function CraftCms\Cms\t;
 
-class OrganizationField extends TextField
+class OrganizationField extends TextField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'organization';
 

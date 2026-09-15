@@ -55,6 +55,7 @@ return RectorConfig::configure()
             __DIR__.'/src/Console/PromptTask.php',
         ],
     ])
+    ->withSkipPath(__DIR__.'/tests/Fixtures/Import/*')
     ->withSets([
         LaravelSetList::LARAVEL_130_WITHOUT_ATTRIBUTES,
         LaravelSetList::LARAVEL_ARRAYACCESS_TO_METHOD_CALL,
