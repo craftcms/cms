@@ -358,6 +358,10 @@ class Config extends Component
         if ($value === false) {
             $contents = preg_replace("/\s*^\s*$qName=.*/m", '', $contents);
         } else {
+            if (StringHelper::containsNewlines($value)) {
+                throw new InvalidArgumentException("Invalid environment variable value: $value");
+            }
+
             $slashedValue = addslashes($value);
             // Only surround with quotes if the value contains a space
             if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
