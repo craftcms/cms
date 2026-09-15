@@ -63,6 +63,19 @@ export default css`
     object-fit: fill;
   }
 
+  /*
+   * The cover canvas is pre-sized and pre-cropped in JS to match the visible
+   * image's rendered box exactly (see thumbnail.ts's paintCover()), so it
+   * just needs centering here, mirroring AnimationBlocker.createCover()'s
+   * positioning of its own cover canvas.
+   */
+  .thumbnail__cover {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
   .thumbnail--checkered {
     background-image:
@@ -96,6 +109,7 @@ export default css`
   }
 
   .thumbnail--rounded .thumbnail__image,
+  .thumbnail--rounded .thumbnail__cover,
   .thumbnail--rounded ::slotted(img),
   .thumbnail--rounded ::slotted(svg) {
     border-radius: var(--c-thumbnail-radius);
