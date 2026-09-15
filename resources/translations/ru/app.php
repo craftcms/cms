@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Коды восстановления можно использовать в качестве резервного метода проверки подлинности, когда воспользоваться основным методом не получается.',
     'Recovery codes generated.' => 'Коды восстановления сгенерированы.',
     'Red' => 'Красный',
+    'Redo' => 'Redo',
     'Refresh' => 'Обновить',
     'Regenerate' => 'Восстановить',
     'Regenerating project config YAML files from the loaded project config…' => 'Восстановление YAML-файлов конфигурации проекта из загруженной конфигурации…',
