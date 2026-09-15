@@ -90,7 +90,7 @@ class HandleInertiaRequests extends Middleware
     #[Override]
     public function version(Request $request): ?string
     {
-        return parent::version($request);
+        return Cp::vite()->manifestHash();
     }
 
     /**
