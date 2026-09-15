@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Kurtarma kodları, birincil yönteminizi kullanamadığınızda yedek doğrulama biçimi olarak kullanılabilir.',
     'Recovery codes generated.' => 'Kurtarma kodları oluşturuldu.',
     'Red' => 'Kırmızı',
+    'Redo' => 'Redo',
     'Refresh' => 'Yenile',
     'Regenerate' => 'Yeniden Oluştur',
     'Regenerating project config YAML files from the loaded project config…' => 'Proje yapılandırma YAML dosyaları, yüklenen proje yapılandırmasından yeniden oluşturuluyor…',
