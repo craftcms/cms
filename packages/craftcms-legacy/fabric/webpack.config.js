@@ -13,7 +13,8 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: require.resolve('fabric/dist/fabric.js'),
+            from: require.resolve('fabric'),
+            to: 'fabric.js',
           },
         ],
       }),

@@ -23,7 +23,7 @@ it('deletes orphaned data', function () {
 
     // Invalid, deleted
     DB::table(Table::RELATIONS)->insert([
-        'targetId' => 999,
+        'targetId' => $element->id + 1,
         'fieldId' => $field->id,
         'sourceId' => 1,
         'dateCreated' => now(),

@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Field\FieldContext;
@@ -88,6 +89,12 @@ readonly class ElementAttributeRenderer
     public function renderInlineInput(ElementInterface $element, string $attribute): string|Stringable
     {
         $field = null;
+
+        if (str_starts_with($attribute, 'contentBlock:')) {
+            [$block, $nestedAttribute] = $this->resolveContentBlockAttribute($element, $attribute);
+
+            return $block ? $this->renderInlineInput($block, $nestedAttribute) : '';
+        }
 
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
@@ -395,6 +402,19 @@ readonly class ElementAttributeRenderer
 
     private function renderContentBlockAttribute(ElementInterface $element, string $attribute): string|Stringable
     {
+        [$block, $nestedAttribute] = $this->resolveContentBlockAttribute($element, $attribute);
+
+        return $block?->getAttributeHtml($nestedAttribute) ?? '';
+    }
+
+    /**
+     * Resolves a `contentBlock:` table attribute key to the referenced Content Block and its own
+     * (relative) attribute key.
+     *
+     * @return array{0: ContentBlockElement|null, 1: string}
+     */
+    private function resolveContentBlockAttribute(ElementInterface $element, string $attribute): array
+    {
         $parts = explode('.', $attribute);
         $uid = Str::after(array_shift($parts), 'contentBlock:');
 
@@ -412,12 +432,12 @@ readonly class ElementAttributeRenderer
         }
 
         if (! $field instanceof ContentBlockField) {
-            return '';
+            return [null, ''];
         }
 
         $block = $element->getFieldValue($field->handle);
 
-        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+        return [$block, implode('.', $parts)];
     }
 
     /**

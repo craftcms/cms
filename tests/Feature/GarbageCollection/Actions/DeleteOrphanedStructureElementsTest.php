@@ -28,7 +28,7 @@ it('deletes orphaned data', function () {
     ]);
 
     DB::table(Table::STRUCTUREELEMENTS)->insert([
-        'elementId' => 999,
+        'elementId' => $element->id + 1,
         'structureId' => $structureId,
         'lft' => 0,
         'rgt' => 0,
