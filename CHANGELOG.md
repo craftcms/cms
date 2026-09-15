@@ -11,6 +11,8 @@
 - Added the `authGuard` and `authPasswordBroker` general config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
+- The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
+- Added a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
