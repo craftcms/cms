@@ -83,7 +83,7 @@ class ImportConfig
                 }
 
                 return $fileConfig;
-            }, Config::get('craft.import') ?? []));
+            }, Config::get('craft.import', [])));
 
             $this->configs = new LaravelCollection($dbConfigs + $fileConfigs)
                 ->keyBy(fn (BaseImporter $item, $key) => $item->handle ?? $key)
