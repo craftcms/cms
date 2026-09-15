@@ -41,6 +41,13 @@ describe('attributes', function () {
             ->and($html)->toContain(' disabled');
     });
 
+    it('renders the toggle flag only when set', function () {
+        expect(Button::make()->toggle()->active()->toHtml())
+            ->toContain(' toggle')
+            ->toContain('active="true"')
+            ->and(Button::make()->toHtml())->not->toContain('toggle');
+    });
+
     it('renders as a link with href, dropping the type', function () {
         $html = Button::make()
             ->type('submit')
