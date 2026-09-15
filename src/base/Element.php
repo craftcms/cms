@@ -7237,7 +7237,7 @@ JS,
                 ->siteId($this->siteId);
 
             if ($criteria) {
-                Craft::configure($query, ComponentHelper::cleanseConfig($criteria));
+                Craft::configure($query, ComponentHelper::cleanseConfig(ElementHelper::cleanseQueryCriteria($criteria)));
             }
         }
 
