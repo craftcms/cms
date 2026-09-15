@@ -2179,6 +2179,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $name = $property->getName();
                 if (
                     !in_array($name, ['canSetProperties', 'hasMethods', 'owner']) &&
+                    // Skip handles that collide with one of the query’s own properties (e.g. `where`).
+                    // The query property always wins when the value is read, so including the handle
+                    // here would expose internal query state as though it were field criteria.
+                    !property_exists($this, $name) &&
                     !method_exists($this, "get$name")
                 ) {
                     $names[] = $property->getName();
