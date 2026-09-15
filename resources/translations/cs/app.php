@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Kódy pro obnovení lze použít jako záložní způsob ověření, pokud nemůžete použít primární metodu.',
     'Recovery codes generated.' => 'Kódy pro obnovu byly vygenerovány.',
     'Red' => 'Červená',
+    'Redo' => 'Redo',
     'Refresh' => 'Obnovit',
     'Regenerate' => 'Regenerovat',
     'Regenerating project config YAML files from the loaded project config…' => 'Opětovné generování YAML souborů konfigurace projektu z načtené konfigurace projektu…',
