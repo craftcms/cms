@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => '当您无法使用主要方法时，恢复代码可用作验证的备用形式。',
     'Recovery codes generated.' => '恢复代码已生成。',
     'Red' => '红色',
+    'Redo' => 'Redo',
     'Refresh' => '刷新',
     'Regenerate' => '重新生成',
     'Regenerating project config YAML files from the loaded project config…' => '正在从已加载的项目配置重新生成项目配置 YAML 文件…',
