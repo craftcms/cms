@@ -41,7 +41,7 @@ export function actionHeaders(): RawAxiosRequestHeaders {
 
 export const actionClient = axios.create();
 
-const csrf = new Csrf();
+export const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
   // Resolve the URL lazily so it reflects the runtime CP trigger; the config

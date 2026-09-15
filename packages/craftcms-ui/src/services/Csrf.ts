@@ -1,3 +1,5 @@
+import axios from 'axios';
+import {ConfigService} from './Config.js';
 import {actionClient} from '../utilities/api/actionClient.js';
 
 interface SessionInfoResponseData {
@@ -43,6 +45,25 @@ export class Csrf {
         const {csrfTokenName, csrfTokenValue} = data;
         this.tokenName = csrfTokenName ?? null;
         this.tokenValue = csrfTokenValue ?? null;
+        if (csrfTokenName && csrfTokenValue) {
+          const config = ConfigService.getInstance();
+          config.set('csrfTokenName', csrfTokenName);
+          config.set('csrfTokenValue', csrfTokenValue);
+          axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfTokenValue;
+
+          const craft = (window as {Craft?: {csrfTokenValue?: string}}).Craft;
+          if (craft) {
+            craft.csrfTokenValue = csrfTokenValue;
+          }
+
+          document
+            .querySelectorAll<HTMLInputElement>('input[type="hidden"]')
+            .forEach((input) => {
+              if (input.name === csrfTokenName) {
+                input.value = input.defaultValue = csrfTokenValue;
+              }
+            });
+        }
         return this.tokenValue;
       })
       .finally(() => {

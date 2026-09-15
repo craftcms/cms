@@ -22,7 +22,7 @@
 </script>
 
 <template>
-  <craft-card class="activity-timeline__changes">
+  <craft-card>
     <craft-disclosure
       v-if="showInline"
       :label="changeCountLabel(changes.length)"
@@ -67,10 +67,6 @@
 </template>
 
 <style scoped>
-  .activity-timeline__changes {
-    margin-block-start: var(--c-spacing-sm);
-  }
-
   .activity-timeline__change-list {
     margin-block-start: var(--c-spacing-sm);
   }

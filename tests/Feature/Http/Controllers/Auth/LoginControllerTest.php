@@ -11,6 +11,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
 use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -181,6 +182,33 @@ test('attemptLogin works with username instead of email', function () {
 
     expect(Auth::check())->toBeTrue();
 });
+
+test('modal login requires refreshing the token before resubmitting a form', function (bool $authenticated) {
+    // Laravel skips CSRF verification in the testing environment.
+    $this->app->instance('env', 'local');
+    $user = User::findOne();
+    if ($authenticated) {
+        actingAs($user);
+    }
+
+    $this->withSession(['_token' => 'before-login']);
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        '_token' => 'before-login',
+        'loginName' => $user->email,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    $confirmationUrl = action([SessionInfoController::class, 'confirmPassword']);
+    postJson($confirmationUrl, ['_token' => 'before-login'])
+        ->assertStatus(419);
+
+    $token = get(action([SessionInfoController::class, 'show']))
+        ->assertOk()->json('csrfTokenValue');
+
+    postJson($confirmationUrl, ['_token' => $token])
+        ->assertOk()->assertJson(['confirmed' => true]);
+})->with(['elevated session' => true, 'expired session' => false]);
 
 test('attemptLogin returns returnUrl on success', function () {
     $user = User::findOne();

@@ -1425,6 +1425,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.',
     'Recovery codes generated.' => 'Recovery codes generated.',
     'Red' => 'Red',
+    'Redo' => 'Redo',
     'Refresh' => 'Refresh',
     'Regenerate' => 'Regenerate',
     'Regenerating project config YAML files from the loaded project config…' => 'Regenerating project config YAML files from the loaded project config…',
