@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Herstelcodes kunnen worden gebruikt als back-up voor verificatie, wanneer u uw primaire methode niet kunt gebruiken.',
     'Recovery codes generated.' => 'Herstelcodes gegenereerd.',
     'Red' => 'Rood',
+    'Redo' => 'Redo',
     'Refresh' => 'Vernieuwen',
     'Regenerate' => 'Opnieuw genereren',
     'Regenerating project config YAML files from the loaded project config…' => 'YAML-projectconfiguratiebestanden opnieuw genereren vanuit de geladen projectconfiguratie ...',
