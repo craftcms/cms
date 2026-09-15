@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => '기본 방법을 사용할 수 없는 경우 복구 코드를 인증의 백업 형식으로 사용할 수 있습니다.',
     'Recovery codes generated.' => '복구 코드가 생성되었습니다.',
     'Red' => '빨간색',
+    'Redo' => 'Redo',
     'Refresh' => '새로 고침',
     'Regenerate' => '재생성',
     'Regenerating project config YAML files from the loaded project config…' => '로드된 프로젝트 구성에서 프로젝트 구성 YAML 파일 다시 생성 중...',
