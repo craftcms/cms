@@ -14,6 +14,7 @@
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-r56r-f696-c8w9, GHSA-f6gf-r952-rxg6)
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qj3q-j7r4-428p)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752)
 
 ## 5.11.1 - 2026-09-02
