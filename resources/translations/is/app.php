@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Hægt er að nota endurheimtarkóða sem öryggisafrit af staðfestingu þegar þú getur ekki notað aðalaðferðina þína.',
     'Recovery codes generated.' => 'Endurheimtarkóðar búnir til.',
     'Red' => 'Rauður',
+    'Redo' => 'Redo',
     'Refresh' => 'Endurnýja',
     'Regenerate' => 'Endurnýja',
     'Regenerating project config YAML files from the loaded project config…' => 'Endurgerir verkstillingar YAML skrár úr hlaðnu verkstillingu...',
