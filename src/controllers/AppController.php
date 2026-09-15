@@ -121,8 +121,14 @@ class AppController extends Controller
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
+        $icon = $this->request->getRequiredParam('icon');
+
+        if (!preg_match('/^[\w\-]+$/', $icon)) {
+            throw new BadRequestHttpException("Invalid icon: $icon");
+        }
+
         return $this->asJson([
-            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
+            'iconSvg' => Cp::iconSvg($icon),
         ]);
     }
 
