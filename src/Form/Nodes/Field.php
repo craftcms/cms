@@ -28,6 +28,8 @@ class Field implements Node
 
     private ?string $label = null;
 
+    private bool $labelSrOnly = false;
+
     private ?string $instructions = null;
 
     private bool $required = false;
@@ -76,6 +78,7 @@ class Field implements Node
         return FieldComponent::make()
             ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
             ->label($label)
+            ->labelSrOnly((bool) ($node->props['labelSrOnly'] ?? false))
             ->instructions($instructions)
             ->instructionsPosition((string) ($node->props['instructionsPosition'] ?? 'before'))
             ->tip(isset($node->props['tip']) ? (string) $node->props['tip'] : null)
@@ -110,6 +113,14 @@ class Field implements Node
     public function label(?string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /** Visually hides the label, keeping it available to screen readers. */
+    public function labelSrOnly(bool $labelSrOnly = true): static
+    {
+        $this->labelSrOnly = $labelSrOnly;
 
         return $this;
     }
@@ -224,6 +235,7 @@ class Field implements Node
             'instructions' => $this->instructions,
             'required' => $this->required,
             ...Arr::whereNotNull([
+                'labelSrOnly' => $this->labelSrOnly ?: null,
                 'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
                 'tip' => $this->tip,
                 'tipHtml' => $this->noticeHtml($this->tip),

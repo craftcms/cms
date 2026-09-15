@@ -31,6 +31,7 @@ use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -305,9 +306,10 @@ readonly class SaveUserController
             );
         }
 
-        // If this is a new user and email verification isn't required,
+        // If this is a new user and email verification isn't required, and we're not
+        // sending them an activation email (e.g. to set their deferred password),
         // go ahead and activate them now.
-        if ($isNewUser && ! $requireEmailVerification && ! $deactivateByDefault) {
+        if ($isNewUser && ! $requireEmailVerification && ! $deactivateByDefault && ! $sendActivationEmail) {
             $this->users->activateUser($user);
         }
 
@@ -530,7 +532,7 @@ readonly class SaveUserController
             return false;
         }
 
-        auth()->login(UserModel::findOrFail($user->id));
+        craftAuth()->login(UserModel::findOrFail($user->id));
 
         return true;
     }
