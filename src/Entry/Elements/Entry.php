@@ -1010,7 +1010,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $oldAuthorIds = $this->getAuthorIds();
             if (
                 $authorIds !== $oldAuthorIds &&
-                ($this->canChangeAuthor() || (property_exists($this, 'importing') && $this->importing))
+                ($this->canChangeAuthor() || $this->importing)
             ) {
                 $this->_oldAuthorIds = $oldAuthorIds;
                 $this->setAuthorIds($authorIds);

@@ -8,8 +8,6 @@ use ArrayIterator;
 use BadMethodCallException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Component\Concerns\Importable;
-use CraftCms\Cms\Component\Contracts\ImportableInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
@@ -43,7 +41,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules<static> $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements AllowableInSandbox, ElementInterface, ImportableInterface
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -73,7 +71,6 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
-    use Importable;
     use LegacyConstants;
     use Macroable {
         __call as macroCall;
@@ -190,6 +187,11 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @since 3.2.0
      */
     public bool $hardDelete = false;
+
+    /**
+     * @var bool Whether the element is currently being imported.
+     */
+    public private(set) bool $importing = false;
 
     #[Override]
     public static function displayName(): string
@@ -752,6 +754,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     public function setAttributesFromRequest(array $values): void
     {
         $this->setAttributes($values);
+    }
+
+    /**
+     * Marks the element as currently being imported.
+     */
+    public function markAsImporting(): void
+    {
+        $this->importing = true;
     }
 
     /** @return string[] */

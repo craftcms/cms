@@ -167,10 +167,9 @@ Container *properties* (as opposed to fields) go through
 
 ### Elements
 
-`Element` uses the `Importable` concern (`src/Component/Concerns/Importable.php`) implementing
-`ImportableInterface`. On the element side this is deliberately thin — it only provides
-`markAsImporting()`, which sets `public private(set) bool $importing`, read by
-`Entry::canChangeAuthor()`-adjacent logic to bypass the logged-in-user requirement.
+`Element` itself is deliberately thin here — it provides `markAsImporting()`, which sets
+`public private(set) bool $importing`, read by `Entry::canChangeAuthor()`-adjacent logic to
+bypass the logged-in-user requirement.
 
 The hooks that customize how a type participates in import instead live on the `ElementImporter`
 subclass for that type (see §4):
