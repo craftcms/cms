@@ -113,7 +113,6 @@ return [
     'Allow subfolders' => 'Tillat undermapper',
     'Allow uploading directly to the field' => 'Tillat opplasting direkte til feltet',
     'Allowed File Types' => 'Tillatte filtyper',
-    'Allowed Kinds' => 'Allowed Kinds',
     'Allowed Link Types' => 'Tillatte lenketyper',
     'Allows creating drafts of new {type}.' => 'Tillater oppretting av utkast av ny {type}.',
     'Allows deleting other users’ {type} for all sites.' => 'Tillater sletting av andre brukeres {type} for alle nettsteder.',
@@ -1483,7 +1482,6 @@ return [
     'Response:' => 'Respons:',
     'Restart' => 'Omstart',
     'Restore' => 'Gjenopprett',
-    'Restrict allowed file types' => 'Begrense tillatte filtyper',
     'Restrict assets to a single location' => 'Begrens filer til kun én plassering',
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
@@ -2249,6 +2247,9 @@ return [
     'by {creator}' => 'av {creator}',
     'categories' => 'kategorier',
     'category' => 'kategori',
+    'comment_mention_body' => "Hey {{user.friendlyName|e}},\n\n{{author|e}} mentioned you in a comment on “{{subject|e}}”:\n\n{{comment}}\n\n<{{link}}>",
+    'comment_mention_heading' => 'When someone mentions a user in a comment:',
+    'comment_mention_subject' => 'You were mentioned in a comment',
     'contains' => 'inneholder',
     'content block' => 'innholdsblokk',
     'content blocks' => 'innholdsblokker',
@@ -2317,9 +2318,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName|e}}
+    'test_email_body' => 'Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

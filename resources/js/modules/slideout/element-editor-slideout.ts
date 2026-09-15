@@ -279,27 +279,28 @@ export class ElementEditorSlideout extends CpScreenSlideout {
   override handleSubmitError(e: any): void {
     super.handleSubmitError(e);
 
-    // Update the `error` class on nested cards.
+    // Update the `error` class on nested cards and chips.
     if (e?.response?.data?.invalidNestedElementIds) {
-      const $cards = this.$content.find('.element.card').removeClass('error');
-      $cards
-        .find('craft-truncate > span[data-icon="triangle-exclamation"]')
-        .remove();
+      const $cardsAndChips = this.$content
+        .find('.element.card, craft-chip')
+        .removeClass('error');
+      $cardsAndChips.find('span[data-icon="triangle-exclamation"]').remove();
       if (e.response.data.invalidNestedElementIds.length) {
-        const $errorCards = $cards
+        const $errorCardsAndChips = $cardsAndChips
           .filter(
             e.response.data.invalidNestedElementIds
               .map((id: number) => `[data-id=${id}]`)
               .join(',')
           )
           .addClass('error');
-        for (let i = 0; i < $errorCards.length; i++) {
-          const $label = $errorCards.eq(i).find('craft-truncate');
+        for (let i = 0; i < $errorCardsAndChips.length; i++) {
+          const $item = $errorCardsAndChips.eq(i);
+          const $label = $item.find('craft-truncate');
           $('<span/>', {
             'data-icon': 'triangle-exclamation',
             'aria-label': Craft.t('app', 'Error'),
             role: 'img',
-          }).appendTo($label);
+          }).appendTo($label.length ? $label : $item);
         }
       }
     }

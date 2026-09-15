@@ -90,6 +90,63 @@ describe('ChoiceControl', () => {
     return [...container!.querySelectorAll<HTMLElement>('craft-checkbox')];
   }
 
+  const previewModes = [
+    {label: 'Show thumbnails and titles', value: 'full'},
+    {label: 'Show thumbnails only', value: 'thumbs'},
+  ];
+
+  function selectOptionLabels(): string[] {
+    return [...container!.querySelectorAll('option')].map(
+      (option) => option.textContent?.trim() ?? ''
+    );
+  }
+
+  it('leads a single select with an unlabelled blank option by default', async () => {
+    await mount(
+      {multiple: false, presentation: 'select', options: previewModes},
+      'full'
+    );
+
+    expect(selectOptionLabels()).toEqual([
+      '',
+      'Show thumbnails and titles',
+      'Show thumbnails only',
+    ]);
+  });
+
+  it('labels the blank option from the placeholder prop', async () => {
+    await mount(
+      {
+        multiple: false,
+        presentation: 'select',
+        options: previewModes,
+        placeholder: 'Select…',
+      },
+      'full'
+    );
+
+    expect(selectOptionLabels()[0]).toBe('Select…');
+  });
+
+  it('drops the blank option for a control with no empty state', async () => {
+    // `Choice::withoutPlaceholder()` — the setting always holds a value, so
+    // there's nothing for a blank option to mean.
+    await mount(
+      {
+        multiple: false,
+        presentation: 'select',
+        options: previewModes,
+        placeholder: false,
+      },
+      'full'
+    );
+
+    expect(selectOptionLabels()).toEqual([
+      'Show thumbnails and titles',
+      'Show thumbnails only',
+    ]);
+  });
+
   it('renders an icon option as an empty, labelled button', async () => {
     await mount(
       {

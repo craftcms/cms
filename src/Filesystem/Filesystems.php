@@ -189,6 +189,8 @@ class Filesystems
             : $this->resolveDiskConfig($handle);
 
         if ($diskConfig === null) {
+            $this->purgeDisk($handle);
+
             return;
         }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
@@ -57,13 +59,9 @@ describe('exists', function () {
         mkdir($this->tempDir.'/_private', 0777, true);
         file_put_contents($this->tempDir.'/_private/secret.twig', 'secret');
 
-        // publicOnly: true should not find private templates
-        expect($this->resolver->exists('_private/secret', publicOnly: true))->toBeFalse();
-
-        // publicOnly: false should find private templates
-        // Using a fresh resolver to avoid cache from the previous call
-        $resolver = new TemplateResolver;
-        expect($resolver->exists('_private/secret', publicOnly: false))->toBeTrue();
+        expect($this->resolver->exists('_private/secret'))->toBeTrue()
+            ->and($this->resolver->exists('_private/secret', publicOnly: true))->toBeFalse()
+            ->and($this->resolver->exists('_private/secret'))->toBeTrue();
     });
 });
 
@@ -95,6 +93,9 @@ describe('resolve', function () {
         $result = $this->resolver->resolve('page');
 
         expect($result)->toBe(Path::normalizePath($this->tempDir.'/page.twig'));
+
+        Cms::config()->defaultTemplateExtensions = ['html', 'twig'];
+        expect($this->resolver->resolve('page'))->toBe(Path::normalizePath($this->tempDir.'/page.html'));
     });
 
     it('resolves index template in directory', function () {
@@ -135,6 +136,20 @@ describe('resolve', function () {
         expect($this->resolver->resolve('sub///page'))->toBe(Path::normalizePath($this->tempDir.'/sub/page.twig'));
     });
 
+    it('resolves the current site after switching sites', function () {
+        Cms::setIsInstalled(true);
+        $site = new Site(['handle' => 'a']);
+        Sites::shouldReceive('getCurrentSite')->times(3)->andReturn($site);
+
+        foreach (['a', 'b', 'a'] as $handle) {
+            $site->handle = $handle;
+            File::ensureDirectoryExists($this->tempDir.'/'.$handle);
+            file_put_contents($this->tempDir.'/'.$handle.'/page.twig', $handle);
+
+            expect($this->resolver->resolve('page'))->toBe(Path::normalizePath($this->tempDir.'/'.$handle.'/page.twig'));
+        }
+    });
+
     it('caches resolved paths for the same template', function () {
         file_put_contents($this->tempDir.'/cached.twig', 'content');
 
@@ -169,9 +184,10 @@ describe('resolve', function () {
     });
 
     it('uses custom private template trigger from config', function () {
-        Cms::config()->privateTemplateTrigger = '.';
-
         file_put_contents($this->tempDir.'/.hidden.twig', 'hidden');
+        expect($this->resolver->exists('.hidden', publicOnly: true))->toBeTrue();
+
+        Cms::config()->privateTemplateTrigger = '.';
 
         expect($this->resolver->resolve('.hidden', publicOnly: true))->toBeFalse();
         expect($this->resolver->resolve('.hidden', publicOnly: false))->toBe(Path::normalizePath($this->tempDir.'/.hidden.twig'));
@@ -209,15 +225,14 @@ describe('custom index filenames', function () {
     });
 
     it('does not resolve standard index when custom filenames are set', function () {
-        Cms::config()->indexTemplateFilenames = ['default'];
-
         mkdir($this->tempDir.'/section', 0777, true);
         file_put_contents($this->tempDir.'/section/index.twig', 'index content');
 
-        // New resolver to avoid cache
-        $resolver = new TemplateResolver;
+        Cms::config()->indexTemplateFilenames = ['index'];
+        expect($this->resolver->resolve('section'))->not->toBeFalse();
 
-        expect($resolver->resolve('section'))->toBeFalse();
+        Cms::config()->indexTemplateFilenames = ['default'];
+        expect($this->resolver->resolve('section'))->toBeFalse();
     });
 });
 
@@ -249,6 +264,13 @@ describe('template roots', function () {
         $resolver = new TemplateResolver;
 
         expect($resolver->resolve('fallback'))->toBe(Path::normalizePath($rootDir.'/fallback.twig'));
+
+        $overrideDir = $this->tempDir.'/override-root';
+        mkdir($overrideDir);
+        file_put_contents($overrideDir.'/index.twig', 'override');
+        app(TemplateRoots::class)->register(TemplateMode::Cp, 'fallback', $overrideDir);
+
+        expect($resolver->resolve('fallback'))->toBe(Path::normalizePath($overrideDir.'/index.twig'));
     });
 });
 

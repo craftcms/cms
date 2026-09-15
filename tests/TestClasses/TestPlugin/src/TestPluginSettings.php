@@ -13,6 +13,20 @@ class TestPluginSettings extends PluginSettings
 
     public ?string $bar = null;
 
+    public function foo(?string $value): static
+    {
+        $this->foo = $value;
+
+        return $this;
+    }
+
+    public function bar(?string $value): static
+    {
+        $this->bar = $value;
+
+        return $this;
+    }
+
     #[Override]
     public function getRules(): array
     {

@@ -181,7 +181,7 @@ class LinkData implements Arrayable, Serializable, Stringable
     /**
      * Returns the attributes that should be added to `<a>` tags for this link.
      *
-     * @return array{href: string, target: string|null, title: string|null, class: string|null, id: string|null, rel: string|null, aria: array{label: string|null}, download: bool}|null
+     * @return array{href: string, target: string|null, title: string|null, class: string|null, id: string|null, rel: string|null, aria: array{label: string|null}, download: bool|string}|null
      */
     #[AllowedInSandbox]
     public function getAttributes(): ?array
@@ -202,7 +202,7 @@ class LinkData implements Arrayable, Serializable, Stringable
             'aria' => [
                 'label' => $this->ariaLabel,
             ],
-            'download' => $this->download && (bool) ($this->filename ?? true),
+            'download' => $this->download && $this->filename !== '' ? ($this->filename ?? true) : false,
         ];
     }
 

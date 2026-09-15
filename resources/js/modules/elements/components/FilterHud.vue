@@ -1,18 +1,19 @@
 <script setup lang="ts">
   import {t, appendBodyHtml, appendHeadHtml, ButtonVariant} from '@craftcms/ui';
   import {useHttp, usePage} from '@inertiajs/vue3';
-  import {onMounted, onUnmounted, ref, useTemplateRef} from 'vue';
+  import {computed, onMounted, ref, shallowRef, toRef} from 'vue';
   import ElementIndexController from '@actions/Elements/ElementIndex/ElementIndexController';
   import type {SourceItem} from '@/modules/elements/types/sources';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
-  import {onKeyStroke} from '@vueuse/core';
-  import {
-    conditionsFromForm,
-    type ConditionConfig,
-  } from '@/modules/elements/composables/useConditionBuilder';
+  import {onKeyStroke, useElementBounding} from '@vueuse/core';
+  import ConditionBuilder from '@/modules/conditions/ConditionBuilder.vue';
+  import type {
+    BuilderPayload,
+    ConditionConfig,
+  } from '@/modules/conditions/types';
 
   type FilterHudResponse = {
-    hudHtml: string;
+    builder: BuilderPayload;
     headHtml: string;
     bodyHtml: string;
   };
@@ -26,11 +27,15 @@
       label: string;
     };
     id: string;
-    conditionConfig?: {
-      class: string;
-      conditionRules?: Array<{class: string}>;
-    };
   };
+
+  const props = defineProps<{anchor?: HTMLElement}>();
+  const {left, bottom, width} = useElementBounding(toRef(props, 'anchor'));
+  const position = computed(() => ({
+    top: `${bottom.value + 4}px`,
+    left: `${left.value}px`,
+    width: `${width.value}px`,
+  }));
 
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -50,15 +55,20 @@
     context: page.props.context ?? 'index',
     source: page.props.source,
     id: `filters`,
-    // Re-render the builder with the currently-applied rules, so reopening
-    // the HUD picks up where the last Apply left off.
-    conditionConfig: conditions.value ?? undefined,
   });
 
-  const hudForm = useTemplateRef<HTMLFormElement>('hudForm');
+  http.transform((data) => ({
+    ...data,
+    conditionConfig: conditions.value ?? undefined,
+  }));
+
   const {announce} = useAnnouncer();
 
-  const hudHtml = ref<string | null>();
+  const builder = shallowRef<BuilderPayload>();
+  const editor = ref<InstanceType<typeof ConditionBuilder>>();
+  const draft = shallowRef<ConditionConfig>();
+  const valid = ref(true);
+
   onKeyStroke('Escape', () => {
     emit('close');
   });
@@ -67,7 +77,8 @@
     http.post(ElementIndexController.filterHud().url, {
       onSuccess: async (data) => {
         announce(t('Loading complete'));
-        hudHtml.value = data?.hudHtml;
+        builder.value = data.builder;
+        draft.value = data.builder.value;
 
         if (data.headHtml) {
           await appendHeadHtml(data.headHtml);
@@ -80,47 +91,75 @@
     });
   });
 
-  onUnmounted(() => {
-    hudHtml.value = null;
-  });
-
-  function handleSubmit() {
-    if (!hudHtml.value || !hudForm.value) {
-      return;
+  function clearOrClose(): void {
+    if (conditions.value) {
+      conditions.value = null;
+      emit('apply');
     }
 
-    conditions.value = conditionsFromForm(hudForm.value);
+    emit('close');
+  }
+
+  async function handleSubmit() {
+    if (!draft.value || !valid.value) return;
+
+    if (!(await editor.value?.validate())) return;
+
+    const rules = draft.value.conditionRules;
+    conditions.value = (
+      Array.isArray(rules) ? rules.length : rules?.rules.length
+    )
+      ? draft.value
+      : null;
+
     emit('apply');
     emit('close');
   }
 </script>
 
 <template>
-  <div class="absolute w-full z-10" style="inset-block-start: calc(100% + 4px)">
-    <div
-      class="bg-white p-4 border-neutral-quiet shadow-lg rounded w-full min-h-20"
+  <Teleport to="body">
+    <form
+      class="fixed z-50 overflow-y-auto"
+      :style="position"
+      @submit.prevent.stop="handleSubmit"
     >
-      <!-- .stop keeps the submit from bubbling to the toolbar's own form,
-        which would trigger a second index submit alongside @apply -->
-      <form @submit.prevent.stop="handleSubmit" ref="hudForm">
+      <craft-pane appearance="raised" padding="lg" class="w-full min-h-20">
         <craft-spinner v-if="http.processing"></craft-spinner>
-        <template v-else-if="hudHtml">
-          <div v-html="hudHtml" />
-          <div class="mt-4 flex justify-end gap-2">
-            <craft-button
-              type="button"
-              :variant="ButtonVariant.Fill"
-              @click="() => emit('close')"
-              >{{ t('Cancel') }}</craft-button
-            >
-            <craft-button type="submit" :variant="ButtonVariant.Primary">{{
-              t('Apply')
-            }}</craft-button>
-          </div>
+        <template v-else-if="builder">
+          <ConditionBuilder
+            ref="editor"
+            slot="body"
+            class="filter-condition-builder"
+            :payload="builder"
+            @change="draft = $event"
+            @valid="valid = $event"
+          />
+
+          <craft-button
+            slot="secondary-action"
+            type="button"
+            :variant="ButtonVariant.Fill"
+            @click="clearOrClose"
+            >{{ conditions ? t('Clear') : t('Cancel') }}</craft-button
+          >
+
+          <craft-button
+            slot="primary-action"
+            type="submit"
+            :disabled="!valid"
+            :variant="ButtonVariant.Primary"
+            >{{ t('Apply') }}</craft-button
+          >
         </template>
-      </form>
-    </div>
-  </div>
+      </craft-pane>
+    </form>
+  </Teleport>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  .filter-condition-builder > :deep(div > .condition-group::part(base)) {
+    border: 0;
+    border-radius: 0;
+  }
+</style>

@@ -233,6 +233,9 @@
 
 <style scoped lang="scss">
   .element-chips {
+    margin: 0;
+    padding: 0;
+    list-style: none;
     display: grid;
     gap: var(--c-spacing-xs);
     align-items: start;

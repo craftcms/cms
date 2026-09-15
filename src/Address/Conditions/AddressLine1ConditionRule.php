@@ -6,29 +6,35 @@ namespace CraftCms\Cms\Address\Conditions;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseTextConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class AddressLine1ConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class AddressLine1ConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof AddressCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('Address Line 1');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        return ['addressLine1'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AddressQuery $query */
-        $query->addressLine1($this->paramValue());
+        AddressQuery::applyAddressLine1($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool

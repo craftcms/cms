@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 
 $routes = app(CraftRoutes::class);
 $sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpActionTriggerRoutePrefix()
-    ? [[$routes->cpActionTriggerRoutePrefix(), ['craft.cp']]]
+    ? [[$routes->cpActionTriggerRoutePrefix(), ['web', 'craft.cp']]]
     : [
         [$routes->actionTriggerRoutePrefix(), ['craft.web']],
-        [$routes->cpActionTriggerRoutePrefix(), ['craft.cp']],
+        [$routes->cpActionTriggerRoutePrefix(), ['web', 'craft.cp']],
     ];
 
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {

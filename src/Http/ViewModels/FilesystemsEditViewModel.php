@@ -15,6 +15,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Arr;
@@ -56,7 +57,7 @@ class FilesystemsEditViewModel extends ViewModel
             HiddenField::make('oldHandle'),
             Field::make(t('Name'), Text::make('name')->autocomplete(false)->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
-            Field::make(t('Filesystem Type'), Choice::make('type')->options($this->filesystemOptions()))
+            Field::make(t('Filesystem Type'), Choice::make('type')->options($this->filesystemOptions())->reactive())
                 ->instructions(t('What type of filesystem is this?')),
         ]), new FormContext(
             values: $values,
@@ -71,10 +72,11 @@ class FilesystemsEditViewModel extends ViewModel
             mode: $mode,
             refreshable: true,
         );
-        $settings = $this->formResolver->resolve(
-            $this->filesystem->settingsForm($settingsContext) ?? Form::make(),
-            $settingsContext,
-        );
+        $settingsForm = $this->filesystem->settingsForm($settingsContext);
+        $settings = $this->formResolver->resolve(Form::make([
+            Group::make('filesystem-settings', $settingsForm?->nodes() ?? [])
+                ->dependsOn('type'),
+        ]), $settingsContext);
 
         return new FormPayload(
             scope: [],

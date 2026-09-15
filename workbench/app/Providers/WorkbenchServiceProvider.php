@@ -6,6 +6,7 @@ namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Str;
@@ -13,6 +14,7 @@ use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Forms\FormKitchenSink;
+use Workbench\App\Widgets\HtmlExample;
 
 use function Orchestra\Testbench\package_path;
 
@@ -20,6 +22,10 @@ class WorkbenchServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        if (! $this->app->runningUnitTests()) {
+            app(WidgetTypes::class)->register(HtmlExample::class);
+        }
+
         Event::listen(function (CommandStarting $event): void {
             if (! str_starts_with($event->command, 'boost:')) {
                 return;

@@ -363,7 +363,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   getAddElementsBtn(): any {
-    return this.$container.find('[command="--add-element"]');
+    return this.$container.find('[command="--add-element"], .btn.add');
   }
 
   getSpinner(): any {

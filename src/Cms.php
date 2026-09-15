@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +29,7 @@ readonly class Cms
 
     public const string VERSION = '6.0.0-alpha.18';
 
-    public const string SCHEMA_VERSION = '6.0.0.10';
+    public const string SCHEMA_VERSION = '6.0.0.13';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
@@ -65,7 +64,7 @@ readonly class Cms
 
         // If the user is logged in *and* has a preferred time zone, use that
         // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-        if (request()->isCpRequest() && Auth::hasUser() && $id = Auth::id()) {
+        if (request()->isCpRequest() && craftAuth()->hasUser() && ($id = craftAuth()->id())) {
             $timezone = Users::getUserPreference($id, 'timeZone');
         }
 
@@ -92,6 +91,9 @@ readonly class Cms
 
     private static function validatedTimezone(?string $timezone): string
     {
+        static $validatedTimezone = null;
+        static $validatedLocale = null;
+
         $timezone = Env::parse($timezone);
 
         if (! $timezone) {
@@ -99,11 +101,20 @@ readonly class Cms
         }
 
         if ($timezone !== 'UTC') {
+            $locale = app()->getLocale();
+
+            if ($timezone === $validatedTimezone && $locale === $validatedLocale) {
+                return $timezone;
+            }
+
             // Make sure that ICU supports this timezone
             try {
-                $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                $formatter = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
                 if (! $formatter->setTimeZone($timezone)) {
                     $timezone = 'UTC';
+                } else {
+                    $validatedTimezone = $timezone;
+                    $validatedLocale = $locale;
                 }
             } catch (IntlException) {
                 Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());

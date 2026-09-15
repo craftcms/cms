@@ -47,7 +47,7 @@ if (Edition::get()->registersFrontendUserRoutes()) {
         }
 
         foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
-            Route::allowDuringMaintenance()->any($path, [LoginController::class, 'logout'])->middleware('auth');
+            Route::allowDuringMaintenance()->match(['get', 'post'], $path, [LoginController::class, 'logout']);
         }
     }
 }

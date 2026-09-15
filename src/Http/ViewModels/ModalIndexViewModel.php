@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 
 /**
  * The index payload for the element selector modal.
@@ -62,7 +63,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
                 'url' => $element->getUrl(),
                 // Per element, not per type: an asset with no preview renders no
                 // thumb even though its element type has them.
-                'hasThumb' => $element->getThumbHtml(30) !== null,
+                'hasThumb' => $element->getThumbHtml(30, ImageTransformMode::Fit) !== null,
                 ...$this->typeSpecificRowData($element),
             ],
         ];
@@ -103,7 +104,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
     #[\Override]
     public function sources(): array
     {
-        return $this->indexState()->sources(
+        return $this->resolvedSources ??= $this->indexState()->sources(
             $this->elementType,
             static::RENDER_CONTEXT,
             withDisabled: true,

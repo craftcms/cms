@@ -58,9 +58,7 @@
 <template>
   <LayoutSlot name="actions">
     <CpLink
-      :inertia="false"
       :href="create().url"
-      class="btn submit add icon"
       icon="plus"
       appearance="button"
       variant="accent"
@@ -72,14 +70,9 @@
     <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
-          <CpLink
-            :inertia="false"
-            :href="create().url"
-            class="btn submit add icon"
-            icon="plus"
-            appearance="button"
-            >{{ t('New user group') }}</CpLink
-          >
+          <CpLink :href="create().url" icon="plus" appearance="button">{{
+            t('New user group')
+          }}</CpLink>
         </Empty>
       </template>
     </AdminTable>

@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Query\Builder;
 
 use function Pest\Laravel\actingAs;
 
@@ -140,7 +141,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -158,7 +159,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -174,7 +175,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(2);
     });
@@ -187,7 +188,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
     });
@@ -200,7 +201,7 @@ describe('modifyQuery', function () {
         ]);
 
         $query = Entry::find();
-        $rule->modifyQuery($query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         // Entries without expiry dates should be returned
         expect($query->count())->toBeGreaterThanOrEqual(1);

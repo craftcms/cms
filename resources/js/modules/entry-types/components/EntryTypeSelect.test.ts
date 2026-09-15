@@ -1,5 +1,5 @@
 import type {EntryType} from '@/common/types';
-import {createApp, nextTick} from 'vue';
+import {computed, createApp, nextTick} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import EntryTypeSelect from './EntryTypeSelect.vue';
 
@@ -23,7 +23,7 @@ vi.mock('@actions/Settings/EntryTypesController', () => ({
   renderOverrideSettings: () => ({url: '/render'}),
 }));
 vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => ({readOnly: state.readOnly}),
+  default: () => ({readOnly: computed(() => state.readOnly)}),
 }));
 vi.mock('@/common/composables/useReorderableItems', () => ({
   useReorderableItems: () => ({

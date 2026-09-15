@@ -217,7 +217,7 @@ it('returns image dimensions from supported stream signatures', function (array|
         fclose($stream);
     }
 })->with(fn () => [
-    [[400, 300], 'example-gif.gif'],
+    [[32, 24], 'example-gif.gif'],
     [[960, 640], 'background.jpg'],
     [[200, 200], 'google.png'],
     [[320, 240], 'example-webp.webp'],

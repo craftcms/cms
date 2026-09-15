@@ -5,19 +5,26 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\web\assets\xregexp;
 
 use craft\web\AssetBundle;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
- * Xregexp asset bundle.
+ * XRegExp asset bundle.
+ *
  * @deprecated 6.0.0
  */
 class XregexpAsset extends AssetBundle
 {
-    public function registerAssetFiles($view)
+    public function init(): void
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\XregexpAsset::class);
+        $this->sourcePath = __DIR__ . '/dist';
+        $this->js = [
+            'xregexp-all.js',
+        ];
+
+        parent::init();
     }
 }

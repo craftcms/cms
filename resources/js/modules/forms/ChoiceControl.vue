@@ -7,12 +7,12 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
-  import {computed, ref, watch} from 'vue';
+  import {computed, inject, ref, watch} from 'vue';
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FormControlPayload, FormValue} from './types';
   import type {Slots} from 'vue';
-  import {inputName, serverErrorValidators} from './runtime';
+  import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Form.Enums.ChoicePresentation;
@@ -44,6 +44,11 @@
     allValue?: string;
     allMode?: 'singleValue' | 'eachValue';
     sortable?: boolean;
+    /**
+     * Label for the leading blank option. Absent leaves it unlabelled; `false`
+     * means the control has no valid empty state and shouldn't offer one.
+     */
+    placeholder?: string | false;
   };
 
   const props = defineProps<{
@@ -57,6 +62,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: string | string[]): void;
   }>();
+  const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
   /**
    * A single select needs somewhere to represent "nothing chosen".
@@ -70,20 +76,25 @@
    * required control has no valid empty state to offer. Options that already
    * carry an empty value supply their own.
    *
+   * `Choice::placeholder()` labels it and `Choice::withoutPlaceholder()` drops
+   * it for a setting that has no valid empty state.
+   *
    * `Form\Controls\Choice::selectOptions()` mirrors this for the HTML fallback.
    */
   const selectOptions = computed<ChoiceOption[]>(() => {
     const options = props.control.props.options;
+    const placeholder = props.control.props.placeholder;
 
     if (
       props.control.props.multiple ||
       props.required ||
+      placeholder === false ||
       options.some((option) => inputValue(option.value) === '')
     ) {
       return options;
     }
 
-    return [{label: '', value: ''}, ...options];
+    return [{label: placeholder ?? '', value: ''}, ...options];
   });
 
   function inputValue(value: FormValue): string {
@@ -286,6 +297,7 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
+    :label-sr-only="fieldLabelSrOnly || undefined"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`

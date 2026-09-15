@@ -50,23 +50,6 @@ trait QueriesEagerly
     /** @var string[] */
     private array $eagerLoadCriteriaExclusions = [];
 
-    protected function initQueriesEagerly(): void
-    {
-        $this->afterQuery(function (mixed $result) {
-            if (! $result instanceof Collection) {
-                return $result;
-            }
-
-            if (! $this->with) {
-                return $result;
-            }
-
-            Elements::eagerLoadElements($this->elementType, $result->all(), $this->with);
-
-            return $result;
-        });
-    }
-
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
      *

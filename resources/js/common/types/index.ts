@@ -103,11 +103,22 @@ export interface ActionItemLink {
   iconColor?: string;
 }
 
+/**
+ * A labelled set of items, rendered as a heading followed by its members. One
+ * level deep — `items` may not hold further groups.
+ */
+export interface ActionItemGroup {
+  type: 'group';
+  heading?: string;
+  items: Array<ActionItemHr | ActionItemButton | ActionItemLink>;
+}
+
 export type ActionItem =
   | ActionItemDisplay
   | ActionItemHr
   | ActionItemButton
-  | ActionItemLink;
+  | ActionItemLink
+  | ActionItemGroup;
 
 export type ActionItems = Array<ActionItem>;
 

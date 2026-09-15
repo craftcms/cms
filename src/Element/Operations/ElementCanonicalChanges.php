@@ -81,7 +81,7 @@ readonly class ElementCanonicalChanges
                 );
                 $element->duplicateOf = $duplicateOf;
 
-                $element->afterPropagate(false);
+                $this->elementWrites->afterPropagate($element, false, [...$siteElements, $element]);
             });
 
             $element->mergingCanonicalChanges = false;

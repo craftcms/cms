@@ -2,6 +2,10 @@ import {createCopyTextPrompt} from '@craftcms/ui/factory';
 import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {MatrixEntry} from '@/modules/matrix/matrix-entry';
+import {
+  MATRIX_SELECTION_ACTION,
+  syncSelectionMenu,
+} from '@/modules/matrix/selection-menu';
 
 /**
  * Window listeners for the declarative actions carried by a field's "⋮" action
@@ -67,6 +71,33 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
   slideout.on('submit', ({response}: any) => announceSaved(response?.data));
 }) as EventListener);
 
+// `craft:edit-entry-type` — the "Entry type settings" item on a Matrix block.
+// Admin-only; the server only emits the item when admin changes are allowed.
+// SAFETY: craft:edit-entry-type is a registered CustomEvent with an {entryTypeId} payload.
+window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
+  const {entryTypeId, trigger} = ev.detail ?? {};
+
+  if (!entryTypeId) {
+    return;
+  }
+
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
+
+  const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);
+
+  if (canUseVueSlideout()) {
+    void openSlideout(url, {
+      opener: trigger instanceof HTMLElement ? trigger : null,
+    });
+
+    return;
+  }
+
+  new Craft.CpScreenSlideout(url);
+}) as EventListener);
+
 // `craft:copy-text-prompt` — the "Copy field handle" / "Copy attribute name"
 // items. Shows the value in a read-only field with a copy button, matching what
 // the legacy `Craft.ui.createCopyTextPrompt` handler did.
@@ -114,7 +145,7 @@ window.addEventListener('craft:matrix-toggle-all', ((ev: CustomEvent) => {
     return;
   }
 
-  for (const block of ownElements(field, '.matrixblock')) {
+  for (const block of ownElements(field, '[data-matrix-block]')) {
     const entry = MatrixEntry.forContainer(block);
 
     if (collapse) {
@@ -122,6 +153,72 @@ window.addEventListener('craft:matrix-toggle-all', ((ev: CustomEvent) => {
     } else {
       entry?.expand();
     }
+  }
+}) as EventListener);
+
+// `craft:matrix-selection-action` — the Matrix field's "Collapse/Expand selected
+// blocks" and "Disable/Enable selected blocks" items, for server-rendered
+// blocks. The Vue control applies them to its own blocks, which have no
+// MatrixEntry controller.
+// SAFETY: craft:matrix-selection-action is a registered CustomEvent with an {action} payload.
+window.addEventListener(MATRIX_SELECTION_ACTION, ((ev: CustomEvent) => {
+  const {action, trigger} = ev.detail ?? {};
+  const field = fieldFor(trigger);
+
+  if (!field) {
+    return;
+  }
+
+  // Selecting goes through the input's own Select, whose change callback keeps
+  // the menu in step.
+  if (action === 'select' || action === 'deselect') {
+    const [block] = ownElements(field, '[data-matrix-block]');
+    const select = block
+      ? MatrixEntry.forContainer(block)?.matrix.entrySelect
+      : null;
+
+    if (action === 'select') {
+      select?.selectAll();
+    } else {
+      select?.deselectAll();
+    }
+
+    return;
+  }
+
+  let applied = false;
+
+  for (const block of ownElements(
+    field,
+    '[data-matrix-block][data-selected]'
+  )) {
+    const entry = MatrixEntry.forContainer(block);
+
+    if (!entry) {
+      continue;
+    }
+
+    applied = true;
+
+    switch (action) {
+      case 'collapse':
+        entry.collapse();
+        break;
+      case 'expand':
+        entry.expand();
+        break;
+      case 'disable':
+        entry.disable();
+        break;
+      case 'enable':
+        entry.enable();
+        break;
+    }
+  }
+
+  // The items now read for what was just done — "Expand selected blocks", say.
+  if (applied) {
+    syncSelectionMenu(field);
   }
 }) as EventListener);
 
@@ -138,22 +235,28 @@ window.addEventListener('craft:copy-nested-elements', ((ev: CustomEvent) => {
   }
 
   // `dataset` reads are strings; the legacy `$.data()` calls these replace
-  // returned numbers. `id` stays as-is — an unsaved Matrix block is keyed by
-  // its uid, which the legacy code also passed through untouched.
+  // returned numbers.
   const numeric = (value: string | undefined): number | null =>
     value === undefined || value === '' || Number.isNaN(Number(value))
       ? null
       : Number(value);
 
-  const elements = ownElements(field, selector).map((el) => ({
-    type: String(elementType),
-    fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
-    id: el.dataset.id!,
-    draftId: numeric(el.dataset.draftId),
-    revisionId: numeric(el.dataset.revisionId),
-    ownerId: numeric(el.dataset.ownerId),
-    siteId: numeric(el.dataset.siteId),
-  }));
+  const elements = ownElements(field, selector)
+    // A Matrix block's `data-id` is its UID — the identity everything else in
+    // the field is keyed by — so its element id rides on `data-element-id`.
+    // Cards elsewhere put the element id on `data-id` and have no `element-id`.
+    .map((el) => ({
+      type: String(elementType),
+      fieldId: numeric(fieldId === undefined ? undefined : String(fieldId)),
+      id: el.dataset.elementId ?? el.dataset.id!,
+      draftId: numeric(el.dataset.draftId),
+      revisionId: numeric(el.dataset.revisionId),
+      ownerId: numeric(el.dataset.ownerId),
+      siteId: numeric(el.dataset.siteId),
+    }))
+    // A block the browser minted has no element behind it yet, so there's
+    // nothing for the clipboard to point at — its `data-id` is still a UID.
+    .filter((element) => numeric(element.id) !== null);
 
   if (!elements.length) {
     return;

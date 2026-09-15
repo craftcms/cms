@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Element\BulkOp\BulkOps as BulkOpsService;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -41,6 +42,7 @@ beforeEach(function () {
         Mockery::mock(ElementCaches::class),
         Mockery::mock(Search::class),
         Mockery::mock(Sites::class),
+        Mockery::mock(ElementWriteActivity::class),
     );
     $this->saveElementAction = $this->action;
 });

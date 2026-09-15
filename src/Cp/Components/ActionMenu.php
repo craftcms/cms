@@ -319,6 +319,7 @@ class ActionMenu extends ViewComponent
                 'icon' => $this->resolveIcon($item['icon'] ?? null),
                 'iconColor' => $color ?: null,
                 'href' => $type === MenuItemType::Link->value ? Url::url((string) ($item['url'] ?? '')) : null,
+                'target' => $type === MenuItemType::Link->value ? ($item['target'] ?? null) : null,
                 'disabled' => ($item['disabled'] ?? false) ?: null,
                 'hidden' => ($item['hidden'] ?? false) ?: null,
                 'variant' => ($item['destructive'] ?? false) ? 'danger' : null,

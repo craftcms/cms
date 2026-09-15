@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
@@ -126,6 +125,7 @@ class ElementIndexes
         if ($source['type'] === ElementSources::TYPE_CUSTOM) {
             /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Conditions::createCondition($source['condition']);
+            $sourceCondition->forQuery = true;
             $sourceCondition->modifyQuery($query);
         } else {
             $applyCriteria($source['criteria'] ?? []);
@@ -149,6 +149,7 @@ class ElementIndexes
         if ($filterConditionConfig) {
             /** @var ElementConditionInterface $filterCondition */
             $filterCondition = Conditions::createCondition($filterConditionConfig);
+            $filterCondition->forQuery = true;
             $filterCondition->modifyQuery($query);
 
             $hasFilters = true;
@@ -221,45 +222,5 @@ class ElementIndexes
         }
 
         return ElementExporters::availableExporters($elementType, $sourceKey);
-    }
-
-    /**
-     * Scopes a filter-HUD condition's selectable rules to the query params the
-     * source and current condition already claim exclusively.
-     *
-     * @param  array<string,mixed>|null  $source
-     */
-    public function populateFilterHudQueryParams(
-        ElementConditionInterface $condition,
-        ?array $source,
-        ?string $sourceKey,
-        ?ElementConditionInterface $currentCondition,
-    ): void {
-        if ($source !== null) {
-            if ($source['type'] === ElementSources::TYPE_NATIVE) {
-                $condition->queryParams = array_keys($source['criteria'] ?? []);
-                $condition->sourceKey = $sourceKey;
-            } else {
-                /** @var ElementConditionInterface $sourceCondition */
-                $sourceCondition = Conditions::createCondition($source['condition']);
-                $condition->queryParams = [];
-
-                foreach ($sourceCondition->getConditionRules() as $rule) {
-                    /** @var ElementConditionRuleInterface $rule */
-                    array_push($condition->queryParams, ...$rule->getExclusiveQueryParams());
-                }
-            }
-        }
-
-        if ($currentCondition) {
-            foreach ($currentCondition->getConditionRules() as $rule) {
-                /** @var ElementConditionRuleInterface $rule */
-                array_push($condition->queryParams, ...$rule->getExclusiveQueryParams());
-            }
-        }
-
-        $condition->queryParams[] = 'site';
-        $condition->queryParams[] = 'status';
-        $condition->queryParams = array_values(array_unique($condition->queryParams));
     }
 }

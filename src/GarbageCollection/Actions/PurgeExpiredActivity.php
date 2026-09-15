@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\GarbageCollection\Actions;
+
+use CraftCms\Cms\Activity\Contracts\ShouldBeRetained;
+use CraftCms\Cms\Database\Table;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+class PurgeExpiredActivity extends GarbageCollectionAction
+{
+    public function __invoke(): void
+    {
+        if ($this->generalConfig->activityRetentionDuration === 0) {
+            return;
+        }
+
+        $this->components->task(
+            'purging expired activity',
+            function () {
+                DB::table(Table::ACTIVITYEVENTS)
+                    ->select(['id', 'eventType'])
+                    ->whereNull('rootEventId')
+                    ->where('occurredAt', '<', now()->subSeconds($this->generalConfig->activityRetentionDuration))
+                    ->orderBy('id')
+                    ->chunkById(
+                        $this->garbageCollection::CHUNK_SIZE,
+                        fn (Collection $events) => DB::table(Table::ACTIVITYEVENTS)
+                            ->whereIn('id', $events
+                                ->reject(fn (object $event): bool => is_a(
+                                    $event->eventType,
+                                    ShouldBeRetained::class,
+                                    true,
+                                ))
+                                ->pluck('id'))
+                            ->delete(),
+                    );
+            },
+        );
+    }
+}

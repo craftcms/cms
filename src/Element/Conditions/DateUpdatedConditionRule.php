@@ -6,26 +6,24 @@ namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
     public function getLabel(): string
     {
         return t('Date Updated');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        return ['dateUpdated'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $query->dateUpdated($this->queryParamValue());
+        ElementQuery::applyDateUpdated($query, $this->queryParamValue());
     }
 
     public function matchElement(ElementInterface $element): bool

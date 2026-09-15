@@ -158,6 +158,8 @@
   {% endfor %}
 {% endif %}
 
+{# The classes are for the legacy stylesheet; the Matrix JS reads the data
+   attributes, which every renderer emits. #}
 {% tag 'div' with {
   class: [
     'matrixblock',
@@ -172,6 +174,8 @@
     '--custom-border-color': entryType.color.cssVar(200) ?? null,
   }|filter,
   data: {
+    'matrix-block': true,
+    disabled: not entry.enabled,
     id: entry.id,
     'draft-id': entry.isProvisionalDraft ? null : entry.draftId,
     'revision-id': entry.revisionId,
@@ -203,6 +207,7 @@
 
   {% tag 'div' with {
     class: 'titlebar',
+    data: {'matrix-block-titlebar': true},
   } %}
     {% tag 'div' with {
       class: {
@@ -222,10 +227,10 @@
       <div>{{ entryTypeName }}</div>
       {% if not static and entry.errors.isNotEmpty() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
     {% endtag %}
-    <div class="preview"></div>
+    <div class="preview" data-matrix-block-preview></div>
   {% endtag %}{# /.titlebar #}
 
-  <div class="actions">
+  <div class="actions" data-matrix-block-actions>
     <div class="status off" title="{{ 'Disabled'|t('app') }}">
       {{ tag('span', {
         class: 'visually-hidden',
@@ -234,7 +239,7 @@
     </div>
 
     {% if actionMenuItems is not empty %}
-      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
+      <div class="checkbox" data-matrix-block-checkbox title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
       {{ disclosureMenu(actionMenuItems, {
         hiddenLabel: 'Actions'|t('app'),
         buttonAttributes: {
@@ -242,6 +247,7 @@
           title: 'Actions'|t('app'),
           data: {
             'disclosure-trigger': true,
+            'matrix-block-menu': true,
           },
         },
       }) }}
@@ -251,6 +257,7 @@
         class: ['chromeless', 'small', 'move-btn'],
         icon: 'move',
         attributes: {
+          data: {'matrix-block-move': true},
           title: 'Reorder'|t('app'),
           aria: {label: 'Reorder'|t('app')},
           role: 'none',
@@ -259,7 +266,7 @@
       }) }}
     {% endif %}
   </div>
-  <div class="fields">
+  <div class="fields" data-matrix-block-fields>
     {{ tag('craft-entry-field-layout-form', {
       data: {payload: formPayload|json_encode},
     }) }}

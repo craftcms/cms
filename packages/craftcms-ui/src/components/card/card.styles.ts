@@ -24,7 +24,7 @@ export default css`
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
       transparent 70%
     );
-    border: 1px solid
+    border: var(--c-card-border-width, 1px) solid
       var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
@@ -46,6 +46,19 @@ export default css`
 
   .card__footer {
     border-block-start-width: 1px;
+    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
+    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
+  }
+
+  /* Collapsed: only the header is left, so it takes the whole card's shape —
+     otherwise its bottom border hangs under nothing and its corners stay square. */
+  :host([collapsed]) .card-body,
+  :host([collapsed]) .card__footer {
+    display: none;
+  }
+
+  :host([collapsed]) .card__header {
+    border-block-end-width: 0;
     border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
     border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
   }

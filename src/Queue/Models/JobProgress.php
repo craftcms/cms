@@ -70,6 +70,8 @@ class JobProgress extends BaseModel
     public function prunable(): Builder
     {
         return static::query()
+            // Cancelled jobs may still be delayed or reserved on an external queue.
+            ->where('status', '!=', JobStatus::Cancelled->value)
             ->where('dateCreated', '<', now()->subDays(7));
     }
 }

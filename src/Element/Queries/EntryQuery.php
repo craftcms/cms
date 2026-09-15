@@ -14,13 +14,13 @@ use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesRef;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesSections;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
-use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
@@ -67,14 +67,24 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         'entries.id' => SORT_DESC,
     ];
 
-    public function getFieldIdColumn(): string
+    public static function getFieldIdColumn(): string
     {
         return 'entries.fieldId';
     }
 
-    public function getPrimaryOwnerIdColumn(): string
+    public static function getPrimaryOwnerIdColumn(): string
     {
         return 'entries.primaryOwnerId';
+    }
+
+    public static function mustHaveField(): bool
+    {
+        return false;
+    }
+
+    public static function mustHaveOwner(): bool
+    {
+        return false;
     }
 
     /**
@@ -114,9 +124,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $this->query->addSelect(['entries.status as status']);
         }
 
-        $this->beforeQuery(function (self $query) {
-            $this->applyAuthParam($query, $query->editable, 'viewEntries', 'viewPeerEntries', 'viewPeerEntryDrafts');
-            $this->applyAuthParam($query, $query->savable, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
+        $this->beforeQuery(static function (self $query) {
+            static::applyEditable($query, $query->editable, $query);
+            static::applySavable($query, $query->savable, $query);
         });
     }
 
@@ -228,13 +238,26 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         return parent::status($value);
     }
 
+    /** @param EntryQuery<Entry> $entryQuery */
+    public static function applyEditable(BuilderContract $query, ?bool $value, EntryQuery $entryQuery): void
+    {
+        self::applyAuthParam($query, $value, $entryQuery, 'viewEntries', 'viewPeerEntries', 'viewPeerEntryDrafts');
+    }
+
+    /** @param EntryQuery<Entry> $entryQuery */
+    public static function applySavable(BuilderContract $query, ?bool $value, EntryQuery $entryQuery): void
+    {
+        self::applyAuthParam($query, $value, $entryQuery, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
+    }
+
     /**
-     * @throws QueryAbortedException
+     * @param  self<T>  $query
+     * @param  EntryQuery<Entry>  $entryQuery
      */
-    /** @param self<T> $query */
-    private function applyAuthParam(
-        self $query,
+    private static function applyAuthParam(
+        BuilderContract $query,
         ?bool $value,
+        EntryQuery $entryQuery,
         string $permissionPrefix,
         string $peerPermissionPrefix,
         string $peerDraftPermissionPrefix,
@@ -246,7 +269,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         $user = currentUser();
 
         if (! $user) {
-            throw new QueryAbortedException;
+            $query->whereRaw('0 = 1');
+
+            return;
         }
 
         $sections = Sections::getAllSections();
@@ -255,7 +280,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $query->where(function (Builder $query) use ($value, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
+        $outerQuery = $query;
+
+        $query->where(function (Builder $query) use ($outerQuery, $value, $entryQuery, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
             $partialAccessSections = [];
 
             foreach ($sections as $section) {
@@ -264,7 +291,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 }
 
                 $excludePeerEntries = $section->type !== SectionType::Single && ! $user->can("$peerPermissionPrefix:$section->uid");
-                $excludePeerDrafts = $this->drafts !== false && ! $user->can("$peerDraftPermissionPrefix:$section->uid");
+                $excludePeerDrafts = $entryQuery->drafts !== false && ! $user->can("$peerDraftPermissionPrefix:$section->uid");
 
                 if ($excludePeerEntries || $excludePeerDrafts) {
                     $partialAccessSections[] = $section->id;
@@ -298,7 +325,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 if (count($fullyAuthorizedSectionIds) === count($sections)) {
                     // They have access to everything
                     if (! $value) {
-                        throw new QueryAbortedException;
+                        $outerQuery->whereRaw('0 = 1');
+
+                        return;
                     }
 
                     return;
@@ -309,7 +338,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
             // They don't have access to anything
             if (empty($partialAccessSections) && $value) {
-                throw new QueryAbortedException;
+                $outerQuery->whereRaw('0 = 1');
+
+                return;
             }
         }, boolean: $value ? 'and' : 'and not');
     }

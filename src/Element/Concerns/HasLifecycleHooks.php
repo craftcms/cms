@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 
 /**
  * HasLifecycleHooks provides the lifecycle hooks for the element.
@@ -67,6 +68,8 @@ trait HasLifecycleHooks
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementPropagate($this, $isNew);
         }
+
+        app(ElementWrites::class)->completeGeneratedFields($this);
 
         event(new ElementLifecyclePropagated($this, $isNew));
 

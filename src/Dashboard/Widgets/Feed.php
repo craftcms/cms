@@ -9,16 +9,12 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\View\LegacyAssets\FeedAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\Cache;
 use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class Feed extends Widget
 {
@@ -72,49 +68,21 @@ class Feed extends Widget
         return $this->title;
     }
 
-    #[Override]
-    public function getBodyHtml(): string
+    public function component(): ?string
     {
-        // See if it's already cached
-        $userId = currentUser()?->getCraftUserId();
-
-        if ($userId) {
-            $key = sprintf('feed:%s:%s', $userId, $this->url);
-            $data = Cache::get($key);
-        } else {
-            $data = null;
-        }
-
-        if ($data) {
-            $data['items'] = array_slice($data['items'] ?? [], 0, $this->limit);
-
-            return $this->render($data);
-        }
-
-        // Fake it for now and fetch it later
-        $data = [
-            'direction' => 'ltr',
-            'items' => [],
-        ];
-
-        for ($i = 0; $i < $this->limit; $i++) {
-            $data['items'][] = [];
-        }
-
-        app(InternalAssetRegistry::class)->register(FeedAsset::class);
-        HtmlStack::js(
-            "new Craft.FeedWidget($this->id, ".
-            Json::encode($this->url).', '.
-            Json::encode($this->limit).');'
-        );
-
-        return $this->render($data);
+        return 'craft:widget-feed';
     }
 
-    private function render(mixed $data): string
+    /** @return array{url: ?string, limit: int, feed: mixed, formattingLocale: string} */
+    public function props(): array
     {
-        return template('_components/widgets/Feed/body', [
-            'feed' => $data,
-        ]);
+        $userId = currentUser()?->getCraftUserId();
+
+        return [
+            'url' => $this->url,
+            'limit' => $this->limit,
+            'formattingLocale' => str_replace('_', '-', I18N::getFormattingLocale()->id),
+            'feed' => $userId ? Cache::get(sprintf('feed:%s:%s', $userId, $this->url)) : null,
+        ];
     }
 }

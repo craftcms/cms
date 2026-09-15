@@ -419,6 +419,186 @@ describe('FormRenderer', () => {
     expect(field('uiMode').getAttribute('status')).toBeNull();
   });
 
+  /**
+   * A control inside a nested form belongs to a different element, and inherits
+   * its owner's delta group. Badging on that would mean adding one Matrix block
+   * lit up every field in every block, since all of them answer to the field
+   * that holds them.
+   */
+  it('leaves a nested form’s fields clean when their owner’s field is modified', async () => {
+    const nested = clonePayload();
+    const group = ['settings', 'matrix'];
+    const blockScope = [...group, 'entries', 'block-a'];
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'First'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: group,
+          mode: 'editable',
+          deltaGroup: group,
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {
+                    label: 'Heading',
+                    instructions: null,
+                    required: false,
+                  },
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    // The owner's group, inherited — which is the whole point.
+                    deltaGroup: group,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(nested, {modified: ['settings.matrix']});
+
+    const fieldFor = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="${name}"]`)!
+        .closest('craft-field')!;
+
+    expect(fieldFor('settings[matrix]').getAttribute('status')).toBe(
+      'modified'
+    );
+    expect(
+      fieldFor('settings[matrix][entries][block-a][heading]').getAttribute(
+        'status'
+      )
+    ).toBeNull();
+  });
+
+  /**
+   * Craft 5 marks a changed input's field and every enclosing field. That's
+   * how an edit inside a block created in this draft — which the server has no
+   * change record for — still shows on the Matrix field holding it. The field
+   * inside the block doesn't badge on its own.
+   */
+  it('badges a field holding nested forms when something inside it changes', async () => {
+    const nested = clonePayload();
+    const group = ['settings', 'matrix'];
+    const blockScope = [...group, 'entries', 'block-a'];
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'First'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: group,
+          mode: 'editable',
+          deltaGroup: group,
+          nestsForms: true,
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {
+                    label: 'Heading',
+                    instructions: null,
+                    required: false,
+                  },
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    deltaGroup: group,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(nested);
+
+    const fieldFor = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="${name}"]`)!
+        .closest('craft-field')!;
+    const matrix = () => fieldFor('settings[matrix]');
+    const heading = () =>
+      fieldFor('settings[matrix][entries][block-a][heading]');
+
+    // Nothing has changed yet, and the server reported nothing.
+    expect(matrix().getAttribute('status')).toBeNull();
+
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[matrix][entries][block-a][heading]"]'
+    )!;
+    input.value = 'Changed';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(matrix().getAttribute('status')).toBe('modified');
+    expect(heading().getAttribute('status')).toBeNull();
+
+    // Throwing the values away clears it — even though rewriting the input
+    // makes its control report a change that leaves the value where it started.
+    renderer.resetValues();
+    await nextTick();
+
+    expect(matrix().getAttribute('status')).toBeNull();
+  });
+
   it('renders the shared payload with equivalent names, values, and errors', () => {
     const placeholder = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'
@@ -454,6 +634,49 @@ describe('FormRenderer', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(
       'The settings could not be saved.'
     );
+  });
+
+  it('visually hides field labels the server marks screen-reader-only', async () => {
+    const field = (
+      name: string,
+      props: FormPayload['nodes'][number]['props']
+    ): FormPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: name, ...props},
+      control: {
+        type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+        component: 'craft:choice',
+        props: {
+          options: [{label: 'is one of', value: 'in'}],
+          multiple: false,
+          presentation: 'select',
+        },
+        path: ['settings', name],
+        mode: 'editable',
+        deltaGroup: ['settings', name],
+      },
+    });
+    app.unmount();
+    await mount({
+      scope: ['settings'],
+      refreshable: false,
+      nodes: [field('hidden', {labelSrOnly: true}), field('visible', {})],
+      values: {settings: {hidden: 'in', visible: 'in'}},
+      errors: [],
+      globalErrors: [],
+    });
+
+    // The select's own label chrome follows the field's.
+    const labelSrOnly = (name: string, selector: string) =>
+      container
+        .querySelector(`select[name="settings[${name}]"]`)!
+        .closest(selector)!
+        .hasAttribute('label-sr-only');
+    expect(labelSrOnly('hidden', 'craft-field')).toBe(true);
+    expect(labelSrOnly('hidden', 'craft-select')).toBe(true);
+    expect(labelSrOnly('visible', 'craft-field')).toBe(false);
+    expect(labelSrOnly('visible', 'craft-select')).toBe(false);
   });
 
   it('displays a combobox option label for its initial value', async () => {
@@ -658,13 +881,22 @@ describe('FormRenderer', () => {
       onMutation: (current) => (mutation = current),
     });
 
-    const [name] = container.querySelectorAll<
-      HTMLElement & {modelValue: string}
-    >('craft-combobox');
-    name!.modelValue = 'My Site';
-    name!.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
+    const name = required(
+      container.querySelector<HTMLElement & {updateComplete: Promise<void>}>(
+        'craft-combobox'
+      ),
+      'Expected the name combobox.'
     );
+    await name.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+    const input = required(
+      name.querySelector<HTMLInputElement>('input'),
+      'Expected the combobox input.'
+    );
+    input.value = 'My Site';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await name.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
     await nextTick();
 
     expect(onChange).toHaveBeenCalledOnce();
@@ -863,10 +1095,12 @@ describe('FormRenderer', () => {
 
   it('renders collapsible groups with the shared disclosure component', async () => {
     const collapsible = clonePayload();
-    required(
+    const group = required(
       collapsible.nodes[2],
       'Expected the field group node.'
-    ).props.collapsible = true;
+    );
+    group.props.collapsible = true;
+    group.props.width = 25;
     app.unmount();
     await mount(collapsible);
 
@@ -875,106 +1109,51 @@ describe('FormRenderer', () => {
     );
 
     expect(disclosure?.label).toBe('Field Limit');
+    expect(disclosure?.classList).toContain('width-25');
     expect(
       disclosure?.querySelector('craft-field-group[slot="content"]')
     ).not.toBeNull();
   });
 
-  it('initializes and reads server-rendered condition builder updates', async () => {
+  it('keeps nested condition changes in the surrounding Form values', async () => {
     const condition = clonePayload();
-    condition.nodes = [
-      required(condition.nodes[0], 'Expected the first field node.'),
-    ];
-    required(condition.nodes[0], 'Expected the condition field node.').control =
-      {
-        type: 'CraftCms\\Cms\\Form\\Controls\\ConditionBuilder',
-        component: 'craft:condition-builder',
-        props: {
-          conditionClass: 'CraftCms\\Cms\\Entry\\Conditions\\EntryCondition',
-          queryParams: ['site'],
-          forProjectConfig: true,
-        },
-        path: ['settings', 'selectionCondition'],
-        mode: 'editable',
-        deltaGroup: ['settings', 'selectionCondition'],
-      };
-    condition.values = {
-      settings: {selectionCondition: {conditionRules: []}},
+    condition.nodes = [required(condition.nodes[0], 'Expected a field.')];
+    const value = {
+      class: 'EntryCondition',
+      conditionRules: {operator: 'and', rules: []},
     };
-    let finishFirstRead!: () => void;
-    const firstRead = new Promise<void>((resolve) => {
-      finishFirstRead = resolve;
-    });
-    let reads = 0;
-    const request = vi
-      .spyOn(actionClient, 'post')
-      .mockImplementation(async (url) => {
-        if (url === 'fields/render-condition-builder') {
-          return {
-            data: {
-              html: '<div class="condition-container"><span class="legacy-vue-template">{{ suggestion.item.name }}</span><input name="settings[selectionCondition][conditionRules][1][class]" value="Title"></div>',
-              headHtml: '<style data-condition-builder></style>',
-              bodyHtml: '<script data-condition-builder></script>',
-            },
-          };
-        }
-
-        reads++;
-        if (reads === 1) {
-          await firstRead;
-        }
-
-        return {
-          data: {
-            value:
-              reads === 1
-                ? {conditionRules: []}
-                : {conditionRules: [{class: 'Title'}]},
-          },
-        };
-      });
+    condition.nodes[0]!.control = {
+      type: 'CraftCms\\Cms\\Form\\Controls\\ConditionBuilder',
+      component: 'craft:condition-builder',
+      props: {
+        builder: {
+          config: {class: 'EntryCondition'},
+          value,
+          rules: {},
+          ruleTypes: [],
+          addRuleLabel: 'Add a rule',
+        },
+      },
+      path: ['settings', 'selectionCondition'],
+      mode: 'editable',
+      deltaGroup: ['settings', 'selectionCondition'],
+    };
+    condition.values = {settings: {selectionCondition: value}};
     app.unmount();
     await mount(condition);
 
-    await vi.waitFor(() =>
-      expect(
-        document.head.querySelector('[data-condition-builder]')
-      ).not.toBeNull()
-    );
-    expect(
-      document.body.querySelector('script[data-condition-builder]')
-    ).not.toBeNull();
+    const operator = container.querySelector<HTMLSelectElement>(
+      '.condition-group__operator select'
+    )!;
+    operator.value = 'or';
+    operator.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
 
-    const builder = required(
-      container.querySelector('.condition-container'),
-      'Expected the condition builder fixture.'
-    );
-    builder.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    await new Promise(requestAnimationFrame);
-    expect(reads).toBe(0);
-    expect(
-      builder.querySelector('.legacy-vue-template')?.textContent
-    ).toContain('{{ suggestion.item.name }}');
-    builder.dispatchEvent(new InputEvent('input', {bubbles: true}));
-    await vi.waitFor(() => expect(reads).toBe(1));
-    builder.dispatchEvent(new CustomEvent('htmx:afterSwap', {bubbles: true}));
-    await new Promise(requestAnimationFrame);
-    finishFirstRead();
-    await vi.waitFor(() =>
-      expect(renderer.currentValues()).toMatchObject({
-        settings: {
-          selectionCondition: {conditionRules: [{class: 'Title'}]},
-        },
-      })
-    );
-    expect(request).toHaveBeenCalledWith(
-      'fields/normalize-condition-builder',
-      expect.any(Object)
-    );
-    request.mockRestore();
-    document
-      .querySelectorAll('[data-condition-builder]')
-      .forEach((element) => element.remove());
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        selectionCondition: {conditionRules: {operator: 'or', rules: []}},
+      },
+    });
   });
 
   it('renders a reactive payload', async () => {
@@ -1450,7 +1629,7 @@ describe('FormRenderer', () => {
     });
   });
 
-  it('refreshes with the complete current scope after typing settles', async () => {
+  it('only refreshes when a reactive control changes', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn(
       async (values: FormPayload['values']): Promise<FormPayload> => ({
@@ -1461,7 +1640,24 @@ describe('FormRenderer', () => {
     app.unmount();
     const refreshable = clonePayload();
     Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.reactive = true;
     await mount(refreshable, {refresh});
+
+    const mode = required(
+      container.querySelector<HTMLSelectElement>(
+        'select[name="settings[uiMode]"]'
+      ),
+      'Expected the UI mode input.'
+    );
+    mode.value = 'normal';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(refresh).not.toHaveBeenCalled();
 
     const placeholder = required(
       container.querySelector<HTMLInputElement>(
@@ -1490,11 +1686,281 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('refreshes immediately when a reactive combobox option is selected', async () => {
+    const refresh = vi.fn(() => new Promise<FormPayload>(() => {}));
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    const mode = required(
+      refreshable.nodes[0],
+      'Expected the UI mode field node.'
+    );
+    mode.control!.reactive = true;
+    Object.assign(mode.control!, {
+      component: 'craft:combobox',
+      props: {
+        options: [
+          {label: 'Normal', value: 'normal'},
+          {label: 'Enlarged', value: 'enlarged'},
+        ],
+      },
+    });
+    await mount(refreshable, {refresh});
+
+    const combobox = required(
+      container.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-combobox'
+      ),
+      'Expected the UI mode combobox.'
+    );
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('enlarged');
+      expect(container.querySelectorAll('craft-option')).toHaveLength(2);
+    });
+    await new Promise((resolve) => setTimeout(resolve));
+    const normal = required(
+      [...container.querySelectorAll<HTMLElement>('craft-option')].find(
+        (option) => option.textContent?.trim() === 'Normal'
+      ),
+      'Expected the Normal option.'
+    );
+    normal.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+
+    expect(refresh.mock.calls).toEqual([
+      [expect.objectContaining({uiMode: 'normal'}), ['settings']],
+    ]);
+  });
+
+  it('uses the combobox change source instead of event timing', async () => {
+    const onChange = vi.fn();
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    const mode = required(
+      refreshable.nodes[0],
+      'Expected the UI mode field node.'
+    );
+    mode.control!.reactive = true;
+    Object.assign(mode.control!, {
+      component: 'craft:combobox',
+      props: {options: []},
+    });
+    await mount(refreshable, {onChange});
+
+    const combobox = required(
+      container.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-combobox'
+      ),
+      'Expected the UI mode combobox.'
+    );
+    onChange.mockClear();
+    combobox.modelValue = 'custom';
+    await Promise.resolve();
+    combobox.dispatchEvent(
+      new CustomEvent('model-value-changed', {
+        bubbles: true,
+        detail: {changeSource: 'input'},
+      })
+    );
+    await nextTick();
+
+    expect(onChange).toHaveBeenCalledWith(
+      {
+        kind: 'typing',
+        path: ['settings', 'uiMode'],
+        scope: ['settings'],
+        refreshable: true,
+      },
+      expect.objectContaining({
+        settings: expect.objectContaining({uiMode: 'custom'}),
+      })
+    );
+  });
+
+  it.each([
+    ['reactive action under a non-reactive field', false, true, 1],
+    ['non-reactive action under a reactive field', true, false, 0],
+  ] as const)(
+    'uses the action control reactivity for a %s',
+    async (_, fieldReactive, actionReactive, expectedRefreshes) => {
+      const refresh = vi.fn(() => new Promise<FormPayload>(() => {}));
+      app.unmount();
+      const refreshable = clonePayload();
+      Object.assign(refreshable, {refreshable: true});
+      const field = required(
+        refreshable.nodes[0],
+        'Expected the UI mode field node.'
+      );
+      field.control!.reactive = fieldReactive;
+      field.children = [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Action',
+          component: 'craft:action',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Lightswitch',
+            component: 'craft:lightswitch',
+            props: {},
+            path: ['settings', 'hidden'],
+            mode: 'editable',
+            deltaGroup: ['settings', 'hidden'],
+            reactive: actionReactive,
+          },
+        },
+      ];
+      Object.assign(refreshable.values.settings as FormValues, {
+        hidden: false,
+      });
+      await mount(refreshable, {refresh});
+      refresh.mockClear();
+
+      const lightswitch = required(
+        container.querySelector<HTMLElement & {checked: boolean}>(
+          'craft-switch[name="settings[hidden]"]'
+        ),
+        'Expected the action lightswitch.'
+      );
+      lightswitch.checked = true;
+      lightswitch.dispatchEvent(
+        new CustomEvent('model-value-changed', {bubbles: true})
+      );
+      await nextTick();
+
+      expect(refresh).toHaveBeenCalledTimes(expectedRefreshes);
+    }
+  );
+
+  it('renders a Hidden control nested in an Action node', async () => {
+    app.unmount();
+    const withHiddenAction = clonePayload();
+    const field = required(
+      withHiddenAction.nodes[0],
+      'Expected the UI mode field node.'
+    );
+    field.children = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Action',
+        component: 'craft:action',
+        props: {},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Hidden',
+          component: 'craft:hidden',
+          props: {},
+          path: ['settings', 'operator'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'operator'],
+        },
+      },
+    ];
+    Object.assign(withHiddenAction.values.settings as FormValues, {
+      operator: 'in',
+    });
+    await mount(withHiddenAction);
+
+    expect(
+      container.querySelector('input[type="hidden"][name="settings[operator]"]')
+    ).toHaveProperty('value', 'in');
+  });
+
+  it('shows a loading state on the group linked to the refreshing field', async () => {
+    vi.useFakeTimers();
+    let completeRefresh: (payload: FormPayload) => void = () => {};
+    const refresh = vi.fn(
+      () =>
+        new Promise<FormPayload>((resolve) => {
+          completeRefresh = resolve;
+        })
+    );
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.reactive = true;
+    required(
+      refreshable.nodes[2],
+      'Expected the field limit group.'
+    ).props.dependsOn = ['settings', 'placeholder'];
+    required(
+      refreshable.nodes[3],
+      'Expected the behavior group.'
+    ).props.dependsOn = ['settings', 'uiMode'];
+    await mount(refreshable, {refresh});
+
+    const placeholder = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      ),
+      'Expected the placeholder input.'
+    );
+    placeholder.value = 'Changed in Vue';
+    placeholder.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    const linkedGroup = required(
+      container.querySelector<HTMLElement>(
+        '[data-form-node="plain-text-field-limit"]'
+      ),
+      'Expected the linked group.'
+    );
+    const otherGroup = required(
+      container.querySelector<HTMLElement>(
+        '[data-form-node="plain-text-behavior"]'
+      ),
+      'Expected the other group.'
+    );
+
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+    expect(otherGroup.querySelector('craft-spinner')).toBeNull();
+    expect(refresh).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(refresh).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(199);
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+
+    completeRefresh(structuredClone(refreshable));
+    await Promise.resolve();
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+
+    placeholder.value = 'Changed again';
+    placeholder.dispatchEvent(new Event('input', {bubbles: true}));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+
+    await vi.advanceTimersByTimeAsync(200);
+    expect(linkedGroup.getAttribute('aria-busy')).toBe('true');
+    expect(linkedGroup.querySelector('craft-spinner')).not.toBeNull();
+
+    completeRefresh(structuredClone(refreshable));
+    await Promise.resolve();
+    await nextTick();
+
+    expect(linkedGroup.hasAttribute('aria-busy')).toBe(false);
+    expect(linkedGroup.querySelector('craft-spinner')).toBeNull();
+    vi.useRealTimers();
+  });
+
   it('keeps the active text expander suggestion across a form refresh', async () => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(1);
     vi.useFakeTimers();
     const refreshable = clonePayload();
     Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.reactive = true;
     refreshable.nodes[1]!.control!.props.textExpanderTriggers = [
       {
         trigger: '@',
@@ -1554,7 +2020,7 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
-  it('waits 100 milliseconds for discrete refreshes', async () => {
+  it('refreshes discrete changes immediately', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn(
       async (values: FormPayload['values']): Promise<FormPayload> => ({
@@ -1565,6 +2031,11 @@ describe('FormRenderer', () => {
     app.unmount();
     const refreshable = clonePayload();
     Object.assign(refreshable, {refreshable: true});
+    required(
+      required(refreshable.nodes[3], 'Expected the behavior field group.')
+        .children?.[0],
+      'Expected the code field node.'
+    ).control!.reactive = true;
     await mount(refreshable, {refresh});
 
     const lightswitch = required(
@@ -1577,9 +2048,6 @@ describe('FormRenderer', () => {
     );
     await nextTick();
 
-    await vi.advanceTimersByTimeAsync(99);
-    expect(refresh).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1);
     expect(refresh).toHaveBeenCalledOnce();
     vi.useRealTimers();
   });
@@ -1598,6 +2066,10 @@ describe('FormRenderer', () => {
     );
     const refreshable = clonePayload();
     Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.reactive = true;
     app.unmount();
     await mount(refreshable, {refresh});
 
@@ -1636,6 +2108,10 @@ describe('FormRenderer', () => {
     required(
       newest.nodes[1],
       'Expected the placeholder field node.'
+    ).control!.reactive = true;
+    required(
+      newest.nodes[1],
+      'Expected the placeholder field node.'
     ).props.label = 'Newest presentation';
     required(requests[1], 'Expected the newest refresh request.').resolve(
       newest
@@ -1655,6 +2131,60 @@ describe('FormRenderer', () => {
     await Promise.resolve();
     await nextTick();
     expect(container.textContent).toContain('Newest presentation');
+    vi.useRealTimers();
+  });
+
+  it('applies an active reactive refresh after a non-reactive edit', async () => {
+    vi.useFakeTimers();
+    let completeRefresh: (payload: FormPayload) => void = () => {};
+    const refresh = vi.fn(
+      () =>
+        new Promise<FormPayload>((resolve) => {
+          completeRefresh = resolve;
+        })
+    );
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.reactive = true;
+    app.unmount();
+    await mount(refreshable, {refresh});
+
+    const placeholder = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      ),
+      'Expected the placeholder input.'
+    );
+    placeholder.value = 'Changed';
+    placeholder.dispatchEvent(new Event('input', {bubbles: true}));
+    await vi.advanceTimersByTimeAsync(1000);
+
+    const mode = required(
+      container.querySelector<HTMLSelectElement>(
+        'select[name="settings[uiMode]"]'
+      ),
+      'Expected the UI mode input.'
+    );
+    mode.value = 'normal';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    const refreshed = clonePayload();
+    required(
+      refreshed.nodes[1],
+      'Expected the placeholder field node.'
+    ).props.label = 'Updated presentation';
+    completeRefresh(refreshed);
+    await Promise.resolve();
+    await nextTick();
+
+    expect(container.textContent).toContain('Updated presentation');
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {placeholder: 'Changed', uiMode: 'normal'},
+    });
     vi.useRealTimers();
   });
 
@@ -2243,11 +2773,11 @@ describe('FormRenderer', () => {
         'select[name="settings[choice]"]'
       )?.value
     ).toBe('1');
-    expect(
-      container
-        .querySelector('select[name="settings[choice]"]')
-        ?.closest('craft-select')
-    ).not.toBeNull();
+    const choiceSelect = container
+      .querySelector('select[name="settings[choice]"]')
+      ?.closest('craft-select');
+    expect(choiceSelect).not.toBeNull();
+    expect(choiceSelect!.hasAttribute('label-sr-only')).toBe(false);
     expect(
       container.querySelectorAll(
         'input[type="checkbox"][name="settings[tags][]"]'
@@ -2387,6 +2917,19 @@ describe('FormRenderer', () => {
             placeholder: 'Write <Markdown>',
             toolbarButtons: ['bold', 'link'],
             showToolbar: true,
+            types: [
+              {
+                id: 'asset',
+                label: 'Asset',
+                kind: 'element',
+                elementSelectConfig: {
+                  sources: ['volume:documents'],
+                  criteria: {kind: ['pdf']},
+                },
+              },
+            ],
+            showLabelField: true,
+            advancedFields: ['title'],
           },
           '<script>alert(1)</script> **Safe**',
         ],
@@ -2522,6 +3065,27 @@ describe('FormRenderer', () => {
         .querySelector('craft-markdown-field')
         ?.hasAttribute('sanitize-html')
     ).toBe(true);
+    expect(
+      container.querySelector<
+        HTMLElement & {
+          linkTypes: unknown[];
+          showLinkLabelField: boolean;
+          linkAdvancedFields: string[];
+        }
+      >('craft-markdown-field')
+    ).toMatchObject({
+      linkTypes: [
+        {
+          id: 'asset',
+          elementSelectConfig: {
+            sources: ['volume:documents'],
+            criteria: {kind: ['pdf']},
+          },
+        },
+      ],
+      showLinkLabelField: true,
+      linkAdvancedFields: ['title'],
+    });
     expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
     expect(
       container.querySelector<HTMLInputElement>(
@@ -2856,6 +3420,10 @@ describe('FormRenderer', () => {
       ).forms?.[0],
       'Expected the first nested form.'
     );
+    required(
+      firstForm.nodes[0],
+      'Expected the first nested field.'
+    ).control!.reactive = true;
     const refresh = vi.fn(
       async (_values: FormPayload['values'], scope?: string[]) => {
         if (!scope) throw new Error('Expected the nested refresh scope.');
@@ -2874,7 +3442,7 @@ describe('FormRenderer', () => {
       onMutation: (value) => (mutation = value),
     });
 
-    expect(container.querySelectorAll('.matrixblock')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-matrix-block]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-content-block]')).toHaveLength(1);
     expect(container.textContent).toContain('Body is invalid.');
     const heading = required(
@@ -2948,19 +3516,24 @@ describe('FormRenderer', () => {
       },
     });
 
-    while (
-      container.querySelector<HTMLElement>(
-        '.matrixblock craft-button[data-form-matrix-remove]'
-      )
-    ) {
-      required(
-        container.querySelector<HTMLElement>(
-          '.matrixblock craft-button[data-form-matrix-remove]'
-        ),
-        'Expected a Matrix remove button while entries remain.'
-      ).click();
+    // Delete lives in the block's "⋮" menu, which dispatches on window and is
+    // scoped by the invoking element.
+    for (let guard = 0; guard < 10; guard++) {
+      const block = container.querySelector<HTMLElement>('[data-matrix-block]');
+
+      if (!block) {
+        break;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {action: 'delete', uid: block.dataset.id, trigger: block},
+        })
+      );
       await nextTick();
     }
+
+    expect(container.querySelector('[data-matrix-block]')).toBeNull();
 
     expect(mutation).toEqual({
       settings: {matrix: {entries: {}, sortOrder: []}},
@@ -3033,7 +3606,9 @@ describe('FormRenderer', () => {
     };
     await mount(justAdded);
 
-    expect(container.querySelector('.matrixblock craft-spinner')).toBeNull();
+    expect(
+      container.querySelector('[data-matrix-block] craft-spinner')
+    ).toBeNull();
     expect(
       container.querySelector(
         `input[name="settings[matrix][entries][${uid}][heading]"]`
@@ -3255,6 +3830,28 @@ describe('FormRenderer', () => {
     });
   });
 
+  it('disables controls and preserves edits when re-enabled', async () => {
+    const disabled = ref(false);
+    app.unmount();
+    await mount(clonePayload(), {disabled});
+    renderer.setValue(['settings', 'placeholder'], 'Unsaved edit');
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[placeholder]"]'
+    )!;
+
+    disabled.value = true;
+    await nextTick();
+    expect(input.disabled).toBe(true);
+    expect(Array.from(new FormData(form))).toEqual([]);
+
+    disabled.value = false;
+    await nextTick();
+    expect(input.disabled).toBe(false);
+    expect(new FormData(form).get('settings[placeholder]')).toBe(
+      'Unsaved edit'
+    );
+  });
+
   it.each(['readOnly', 'disabled'] as const)(
     'displays values without names in %s mode',
     async (mode) => {
@@ -3272,6 +3869,50 @@ describe('FormRenderer', () => {
     }
   );
 
+  /**
+   * The guarantee that replaced every control guarding itself: a control whose
+   * path isn't in the values tree is handed the empty value its Control
+   * declared, so it renders empty instead of reaching into nothing.
+   *
+   * A throw during render is what "Failed to render Form Control" is — the
+   * renderer swaps the control for the error and the field is gone until the
+   * page is reloaded.
+   */
+  it('hands a control its empty value when the values have no path for it', async () => {
+    const missing = clonePayload();
+    missing.values = {};
+    missing.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'When', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\DateTime',
+          component: 'craft:date-time',
+          props: {
+            showDate: true,
+            showTime: true,
+            showTimeZone: true,
+            locale: 'en-US',
+            minuteIncrement: 15,
+          },
+          path: ['settings', 'when'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'when'],
+          // What `Control::emptyValue()` ships for a control whose value is a
+          // shape. Every part of a date is dereferenced on the way to the input.
+          emptyValue: {},
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(missing);
+
+    expect(container.textContent).not.toContain('Failed to render');
+    expect(container.querySelector('craft-input-date-time')).not.toBeNull();
+  });
+
   async function mount(
     formPayload: FormPayload,
     options: {
@@ -3282,6 +3923,7 @@ describe('FormRenderer', () => {
       onMutation?: (mutation: FormPayload['values']) => void;
       onChange?: (change: FormChange, values: FormPayload['values']) => void;
       modified?: string[];
+      disabled?: Ref<boolean>;
       components?: Record<string, CpComponentRegistration>;
       registerComponents?: (
         components: Pick<
@@ -3305,6 +3947,7 @@ describe('FormRenderer', () => {
             ref: rendererRef,
             payload: currentPayload.value,
             modified: options.modified,
+            disabled: options.disabled?.value,
             refresh: options.refresh,
             'onUpdate:mutation': options.onMutation,
             onChange: options.onChange,

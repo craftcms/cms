@@ -350,6 +350,8 @@ class Url extends \Illuminate\Support\Facades\URL
             return $path;
         }
 
+        $baseUrl = null;
+
         // Does this URL point to a different site?
         if ($siteId !== null && $siteId != Sites::getCurrentSite()->id) {
             // Get the site
@@ -359,20 +361,12 @@ class Url extends \Illuminate\Support\Facades\URL
                 throw new Exception('Invalid site ID: '.$siteId);
             }
 
-            // Swap the current site
-            $currentSite = Sites::getCurrentSite();
-            Sites::setCurrentSite($site);
+            $baseUrl = $site->getBaseUrl() ?? url('/');
         }
 
         $path = trim($path, '/');
-        $url = self::_createUrl($path, $params, $scheme, false);
 
-        if (isset($currentSite)) {
-            // Restore the original current site
-            Sites::setCurrentSite($currentSite);
-        }
-
-        return $url;
+        return self::_createUrl($path, $params, $scheme, false, baseUrl: $baseUrl);
     }
 
     /**
@@ -585,6 +579,7 @@ class Url extends \Illuminate\Support\Facades\URL
         bool $cpUrl,
         bool $useRequestHostInfo = false,
         bool $addToken = true,
+        ?string $baseUrl = null,
     ): string {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -637,7 +632,7 @@ class Url extends \Illuminate\Support\Facades\URL
             $baseUrl = self::fallbackBaseUrl();
         } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
-        } else {
+        } elseif ($baseUrl === null) {
             $baseUrl = static::baseSiteUrl();
         }
 

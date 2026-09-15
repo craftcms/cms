@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
+use Locale as IntlLocale;
 use NumberFormatter;
 use RuntimeException;
 use Stringable;
@@ -147,14 +148,21 @@ class Locale implements Stringable
         return $this->id;
     }
 
+    /**
+     * Returns a locale's language ID.
+     */
+    public static function languageId(string $locale): string
+    {
+        $pos = strpos($locale, '-');
+        $lang = $pos !== false ? substr($locale, 0, $pos) : $locale;
+
+        return strtolower($lang);
+    }
+
     #[AllowedInSandbox]
     public function getLanguageID(): string
     {
-        if (($pos = strpos($this->id, '-')) !== false) {
-            return substr($this->id, 0, $pos);
-        }
-
-        return $this->id;
+        return static::languageId($this->id);
     }
 
     /**
@@ -223,7 +231,7 @@ class Locale implements Stringable
         // If no target locale is specified, default to this locale
         $inLocale ??= $this->id;
 
-        return \Locale::getDisplayName($this->id, $inLocale);
+        return IntlLocale::getDisplayName($this->id, $inLocale);
     }
 
     public function setDisplayName(?string $displayName): self
@@ -568,6 +576,9 @@ class Locale implements Stringable
      */
     private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): string
     {
+        static $context = null;
+        static $patterns = [];
+
         // Convert length to IntlDateFormatter constants
         $length = match ($length) {
             self::LENGTH_FULL => IntlDateFormatter::FULL,
@@ -579,11 +590,23 @@ class Locale implements Stringable
 
         $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
         $timeType = ($withTime ? $length : IntlDateFormatter::NONE);
-        $formatter = new IntlDateFormatter($this->aliasOf ?? $this->id, $dateType, $timeType);
+        $locale = $this->aliasOf ?? $this->id;
+        $currentContext = [$locale, IntlLocale::getDefault(), date_default_timezone_get()];
+
+        if ($context !== $currentContext) {
+            $context = $currentContext;
+            $patterns = [];
+        }
+
+        if (isset($patterns[$dateType][$timeType])) {
+            return $patterns[$dateType][$timeType];
+        }
+
+        $formatter = new IntlDateFormatter($locale, $dateType, $timeType);
         $pattern = $formatter->getPattern();
 
         // Use 4-digit years
-        return strtr($pattern, [
+        return $patterns[$dateType][$timeType] = strtr($pattern, [
             'yyyy' => 'yyyy',
             'yy' => 'yyyy',
         ]);

@@ -17,6 +17,7 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Support\Arr;
@@ -60,7 +61,7 @@ class AssetTransformerEditViewModel extends ViewModel
             Field::make(t('Handle'), $handle)->required(),
             Field::make(
                 t('Driver'),
-                Choice::make('driver')->options($this->driverOptions())->mode($identityMode),
+                Choice::make('driver')->options($this->driverOptions())->mode($identityMode)->reactive(),
             )->required(),
         ]), new FormContext(
             values: $values,
@@ -124,20 +125,25 @@ class AssetTransformerEditViewModel extends ViewModel
 
         if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
             return $this->formResolver->resolve(Form::make([
-                Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
-                Field::make(
-                    t('Stored settings'),
-                    Textarea::make('unavailableSettings')
-                        ->value(Json::encode($this->transformer->settings, JSON_PRETTY_PRINT))
-                        ->mode(ControlMode::ReadOnly),
-                ),
+                Group::make('asset-transformer-settings', [
+                    Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
+                    Field::make(
+                        t('Stored settings'),
+                        Textarea::make('unavailableSettings')
+                            ->value(Json::encode($this->transformer->settings, JSON_PRETTY_PRINT))
+                            ->mode(ControlMode::ReadOnly),
+                    ),
+                ])->dependsOn('driver'),
             ]), new FormContext(mode: $mode));
         }
 
         $definition = $this->assetTransformDrivers->driver($driver)->definition();
 
         return $this->formResolver->resolve(
-            Form::make($definition->settingsFields),
+            Form::make([
+                Group::make('asset-transformer-settings', $definition->settingsFields)
+                    ->dependsOn('driver'),
+            ]),
             new FormContext(
                 namespace: 'settings',
                 values: $values,

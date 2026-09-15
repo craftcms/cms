@@ -16,9 +16,9 @@ function sourcesProps(string $type, array $settings = []): array
     $context = new FormContext(namespace: 'settings');
     $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
 
-    foreach ($payload->nodes as $node) {
-        if ($node->control?->path === ['settings', 'sources']) {
-            return $node->control->props;
+    foreach (flattenFormNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)) as $node) {
+        if (($node['control']['path'] ?? null) === ['settings', 'sources']) {
+            return $node['control']['props'];
         }
     }
 
@@ -67,9 +67,9 @@ it('leaves single-source fields alone', function () {
     $context = new FormContext(namespace: 'settings');
     $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
 
-    $source = collect($payload->nodes)
-        ->first(fn ($node): bool => $node->control?->path === ['settings', 'source']);
+    $source = collect(flattenFormNodes(array_map(fn ($node): array => $node->jsonSerialize(), $payload->nodes)))
+        ->first(fn (array $node): bool => ($node['control']['path'] ?? null) === ['settings', 'source']);
 
     expect($source)->not->toBeNull()
-        ->and($source->control->props)->not->toHaveKey('allLabel');
+        ->and($source['control']['props'])->not->toHaveKey('allLabel');
 });

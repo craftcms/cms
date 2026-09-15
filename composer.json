@@ -82,13 +82,14 @@
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
     "intervention/image-driver-vips": "^4.1",
-    "larastan/larastan": "^3.4",
+    "larastan/larastan": "^3.12",
     "laravel/boost": "^2.6",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
     "orchestra/testbench": "^11.0",
     "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-agent": "^5.0",
     "pestphp/pest-plugin-arch": "^5.0",
     "pestphp/pest-plugin-laravel": "^5.0",
     "phpstan/phpstan": "^2.1",
@@ -184,6 +185,7 @@
         "CraftCms\\Cms\\Providers\\CraftServiceProvider"
       ],
       "aliases": {
+        "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",

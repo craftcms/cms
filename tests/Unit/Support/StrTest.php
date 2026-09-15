@@ -200,6 +200,15 @@ test('lines', function (int $expected, string $string) {
     ],
 ]);
 
+test('lower', function (string $expected, string $string, ?string $language = null) {
+    expect(Str::lower($string, $language))->toBe($expected);
+})->with([
+    // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+    // (https://github.com/craftcms/cms/discussions/19555)
+    ['ıstanbul', 'Istanbul', 'tr'],
+    ['istanbul', 'Istanbul'],
+]);
+
 test('random', function (int $length = 36, bool $extendedChars = false) {
     $random = Str::random($length, $extendedChars);
     $len = strlen($random);
@@ -224,6 +233,15 @@ test('shortcodesToEmoji', function (string $expected, string $str) {
 })->with([
     ['Baby you light my 🔥! 😃', 'Baby you light my :fire:! :smiley:'],
     ['Test — em – en - dashes 🤞', 'Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:'],
+]);
+
+test('title', function (string $expected, string $string, ?string $language = null) {
+    expect(Str::title($string, $language))->toBe($expected);
+})->with([
+    // Dutch "ij" is treated as a single letter, so title-casing it capitalizes both characters
+    // (https://github.com/craftcms/cms/discussions/19555)
+    ['IJsselmeer', 'ijsselmeer', 'nl'],
+    ['Ijsselmeer', 'ijsselmeer'],
 ]);
 
 test('toHandle', function (string $expected, string $str) {
@@ -257,6 +275,19 @@ test('unescapeShortcodes', function (string $expected, string $str) {
     expect(Str::unescapeShortcodes($str))->toBe($expected);
 })->with([
     [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],
+]);
+
+test('upper', function (string $expected, string $string, ?string $language = null) {
+    expect(Str::upper($string, $language))->toBe($expected);
+})->with([
+    // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+    // (https://github.com/craftcms/cms/discussions/19555)
+    ['İSTANBUL', 'istanbul', 'tr'],
+    ['ISTANBUL', 'istanbul'],
+    // Greek strips accents when uppercasing
+    // (https://github.com/craftcms/cms/discussions/19555)
+    ['ΑΝΘΡΩΠΟΣ', 'άνθρωπος', 'el'],
+    ['ΆΝΘΡΩΠΟΣ', 'άνθρωπος'],
 ]);
 
 test('uuidPattern', function () {

@@ -3,13 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
-use CraftCms\Cms\Asset\Data\AssetTransformRequest;
-use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
@@ -25,11 +18,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -76,6 +70,17 @@ it('can get total assets', function () {
     expect($this->assets->getTotalAssets())->toBe(3);
 });
 
+it('resolves thumbnail dimensions for table and card sizes', function (?int $width, ?int $height, int $size, array $expected) {
+    $asset = AssetModel::factory()->createElement(['width' => $width, 'height' => $height]);
+
+    expect($this->assets->getThumbDimensions($asset, $size))->toBe($expected);
+})->with([
+    'landscape' => [800, 400, 30, [30, 15]],
+    'portrait' => [400, 600, 60, [40, 60]],
+    'card' => [800, 400, 128, [128, 128]],
+    'missing dimensions' => [null, null, 30, [30, 30]],
+]);
+
 it('dispatches ThumbUrlResolving event in getThumbUrl', function () {
     Event::fake([ThumbUrlResolving::class]);
 
@@ -92,7 +97,8 @@ it('dispatches ThumbUrlResolving event in getThumbUrl', function () {
 
     Event::assertDispatched(fn (ThumbUrlResolving $event) => $event->asset->id === $asset->id
         && $event->width === 100
-        && $event->height === 100);
+        && $event->height === 100
+        && $event->mode === ImageTransformMode::Crop);
 });
 
 it('uses ThumbUrlResolving event url when set', function () {
@@ -116,7 +122,7 @@ it('uses ThumbUrlResolving event url when set', function () {
 
 it('renders non-image thumbnails and previews through the selected driver', function () {
     $driver = new ControlPanelAssetTransformDriver;
-    registerControlPanelTransformer($driver);
+    $driver->register();
     Cms::config()->defaultAssetTransformer('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -138,9 +144,9 @@ it('renders non-image thumbnails and previews through the selected driver', func
 });
 
 it('uses file-kind images only when the selected driver does not support the source', function () {
-    registerControlPanelTransformer(new ControlPanelAssetTransformDriver(
+    new ControlPanelAssetTransformDriver(
         new NotSupportedException('unsupported'),
-    ));
+    )->register();
     Cms::config()->defaultAssetTransformer('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -325,41 +331,34 @@ it('resets caches', function () {
     expect(true)->toBeTrue();
 });
 
-function registerControlPanelTransformer(ControlPanelAssetTransformDriver $driver): void
-{
-    app(AssetTransformDrivers::class)->extend('test', fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'Test',
-        'handle' => 'test',
-        'driver' => 'test',
-    ]), false);
-}
+it('passes explicit modes and bounds to the driver without treating event mode as a control', function (ImageTransformMode $mode) {
+    $driver = new ControlPanelAssetTransformDriver;
+    $driver->register();
+    Cms::config()->defaultAssetTransformer('test');
+    $asset = AssetModel::factory()->createElement();
+    $requests = [];
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests) {
+        $requests[] = [$event->asset, $event->width, $event->height, $event->mode];
+        $event->mode = ImageTransformMode::Crop;
+    });
 
-class ControlPanelAssetTransformDriver implements AssetTransformDriver
-{
-    public array $requests = [];
+    expect($this->assets->getThumbUrl($asset, 120, 80, mode: $mode))->toBe('/transforms/120x80.webp')
+        ->and($requests)->toBe([[$asset, 120, 80, $mode]])
+        ->and($driver->requests[0]->parameters)->toBe(['height' => 80, 'mode' => $mode->value, 'width' => 120])
+        ->and(new ThumbUrlResolving($asset, 120, 80)->mode)->toBe(ImageTransformMode::Crop);
+})->with([
+    'crop' => ImageTransformMode::Crop,
+    'fit' => ImageTransformMode::Fit,
+    'stretch' => ImageTransformMode::Stretch,
+    'letterbox' => ImageTransformMode::Letterbox,
+]);
 
-    public function __construct(
-        private readonly ?Throwable $failure = null,
-    ) {}
+it('honors empty thumbnail URL overrides without calling the driver', function () {
+    Cms::config()->defaultAssetTransformer('missing');
+    $asset = AssetModel::factory()->createElement();
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
+        $event->url = '';
+    });
 
-    public function definition(): AssetTransformDriverDefinition
-    {
-        return new AssetTransformDriverDefinition('Control panel test');
-    }
-
-    public function transform(AssetTransformRequest $request): AssetTransformResult
-    {
-        if ($this->failure !== null) {
-            throw $this->failure;
-        }
-
-        $this->requests[] = $request;
-
-        return new AssetTransformResult(
-            url: sprintf('/transforms/%sx%s.webp', $request->parameters['width'], $request->parameters['height']),
-            mimeType: 'image/webp',
-        );
-    }
-}
+    expect($this->assets->getThumbUrl($asset, 120, mode: ImageTransformMode::Fit))->toBe('');
+});

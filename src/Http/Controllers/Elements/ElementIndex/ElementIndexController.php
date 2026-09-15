@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
+use CraftCms\Cms\Condition\ConditionBuilder;
+use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -68,9 +70,9 @@ class ElementIndexController
     {
         $elementType = $request->elementType();
         $context = $request->context();
-        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key'), $context);
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key', $request->input('source')), $context);
         $fieldLayouts = $request->fieldLayouts();
-        $currentCondition = $request->condition();
+        $request->condition();
         $id = $request->input('id');
 
         abort_if($id === null || $id === '', 400, 'Request missing required body param');
@@ -85,8 +87,10 @@ class ElementIndexController
 
         /** @var ElementConditionInterface $condition */
         $condition = $conditionConfig
-            ? $this->conditions->createCondition($conditionConfig)
+            ? $this->conditions->createCondition([...$conditionConfig, 'conditionRules' => []])
             : $elementType::createCondition();
+
+        $condition->forQuery = true;
 
         if (! empty($fieldLayouts)) {
             $condition->setFieldLayouts($fieldLayouts);
@@ -96,11 +100,16 @@ class ElementIndexController
         $condition->id = (string) $id;
         $condition->addRuleLabel = t('Add a filter');
 
-        $this->elementIndexes->populateFilterHudQueryParams($condition, $source, $sourceKey, $currentCondition);
+        if ($source && $source['type'] === ElementSources::TYPE_NATIVE) {
+            $condition->sourceKey = $sourceKey;
+        }
+
+        $condition->setConditionRules($conditionConfig['conditionRules'] ?? []);
         $currentElementIndex->activate();
 
         return new JsonResponse([
-            'hudHtml' => $condition->getBuilderHtml(),
+            'builder' => app(ConditionBuilder::class)->resolve($condition),
+            'hudHtml' => new ConditionBuilderRenderer($condition)->render(),
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);

@@ -5,9 +5,11 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function () {
     Cms::config()->tempAssetUploadFs = null;
@@ -274,6 +276,10 @@ it('propagates invalid field layout errors to fieldLayout prefixed keys', functi
 
     expect($volume->validate(['fieldLayout']))->toBeFalse()
         ->and($volume->errors()->has('fieldLayout.customFields'))->toBeTrue();
+
+    $html = app(FieldLayoutDesigner::class)->generatedFieldsTableHtml($fieldLayout);
+    expect(new Crawler($html)->filter('td.error [name="generatedFields[0][handle]"]')->count())->toBe(1)
+        ->and($fieldLayout->getConfig()['generatedFields'][0]['handle'])->toBe('alt');
 });
 
 function insertVolumeValidationRow(array $overrides = []): void

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;
@@ -90,4 +91,36 @@ test('serialize', function (?\Money\Money $value, ?string $expected) {
 })->with([
     [null, null],
     [new \Money\Money('100', new Currency('USD')), '100'],
+]);
+
+test('conditions compare exact amounts in the currency units', function (?string $amount, string $operator, string $value, string $maxValue, bool $expected, string $currency) {
+    $rule = Mockery::mock(MoneyFieldConditionRule::class)->makePartial()->shouldAllowMockingProtectedMethods();
+    $rule->shouldReceive('field')->andReturn(new Money(['currency' => $currency]));
+    $rule->operator = $operator;
+    $rule->value = $value;
+    $rule->maxValue = $maxValue;
+
+    $money = $amount === null ? null : new \Money\Money($amount, new Currency($currency));
+
+    expect(new ReflectionMethod($rule, 'matchFieldValue')->invoke($rule, $money))->toBe($expected);
+})->with([
+    ['100', '=', '1', '', true, 'USD'],
+    ['100', '!=', '1', '', false, 'USD'],
+    ['9007199254740993', '=', '90071992547409.93', '', true, 'USD'],
+    ['9007199254740993', '=', '90071992547409.92', '', false, 'USD'],
+    ['9007199254740993', '<', '90071992547409.94', '', true, 'USD'],
+    ['9007199254740993', '>', '90071992547409.92', '', true, 'USD'],
+    ['100', '<=', '1', '', true, 'USD'],
+    ['100', '>=', '1', '', true, 'USD'],
+    ['-1', 'between', '0', '1', false, 'USD'],
+    ['100', 'between', '', '1', true, 'USD'],
+    ['100', 'between', '1', '', true, 'USD'],
+    ['9007199254740993', 'between', '90071992547409.92', '90071992547409.94', true, 'USD'],
+    ['100', 'between', '', '', true, 'USD'],
+    ['100', '=', '', '', true, 'USD'],
+    [null, 'empty', '', '', true, 'USD'],
+    ['0', 'empty', '', '', true, 'USD'],
+    ['1', 'notempty', '', '', true, 'USD'],
+    ['100', '=', '100', '', true, 'JPY'],
+    ['1001', '=', '1.001', '', true, 'KWD'],
 ]);

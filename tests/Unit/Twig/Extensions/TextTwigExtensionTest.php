@@ -32,6 +32,10 @@ describe('TextTwigExtension', function () {
             'snake',
             'replace',
             'hash',
+            'capitalize',
+            'lower',
+            'title',
+            'upper',
         );
         expect(textFilterNames($extension->getFilters()))->not->toContain('ucfirst', 'ucwords');
         expect(textFunctionNames($extension->getFunctions()))->toContain('randomString', 'uuid', 'uuid7');
@@ -44,6 +48,24 @@ describe('TextTwigExtension', function () {
         expect($extension->pascalFilter('foo bar'))->toBe('FooBar');
         expect($extension->snakeFilter('foo bar'))->toBe('foo_bar');
         expect($extension->truncateFilter('Hello world', 8))->toStartWith('Hello');
+    });
+
+    it('supports language-aware case transforms', function () {
+        $extension = new TextTwigExtension($this->pageLifecycle, $this->env);
+
+        // Dutch title-cases the "ij" digraph as a single letter, capitalizing both characters
+        expect($extension->titleFilter('ijsselmeer'))->toBe('Ijsselmeer');
+        expect($extension->titleFilter('ijsselmeer', 'nl'))->toBe('IJsselmeer');
+
+        // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+        expect($extension->capitalizeFilter('UTF-8', 'istanbul'))->toBe('Istanbul');
+        expect($extension->capitalizeFilter('UTF-8', 'istanbul', 'tr'))->toBe('İstanbul');
+        expect($extension->upperFilter('istanbul'))->toBe('ISTANBUL');
+        expect($extension->upperFilter('istanbul', 'tr'))->toBe('İSTANBUL');
+
+        // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+        expect($extension->lowerFilter('Istanbul'))->toBe('istanbul');
+        expect($extension->lowerFilter('Istanbul', 'tr'))->toBe('ıstanbul');
     });
 
     it('supports replace and hash helpers', function () {

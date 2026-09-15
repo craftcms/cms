@@ -22,9 +22,11 @@ readonly class IndexController
         // global request, which is a separate instance from this FormRequest.
         request()->merge(['showFolders' => true]);
 
-        return Inertia::render('assets/Index', new AssetIndexViewModel(
-            $request,
-            defaultSource: $request->input('defaultSource', $defaultSource),
-        ));
+        return Inertia::render('assets/Index', [
+            new AssetIndexViewModel(
+                $request,
+                defaultSource: $request->input('defaultSource', $defaultSource),
+            ),
+        ]);
     }
 }

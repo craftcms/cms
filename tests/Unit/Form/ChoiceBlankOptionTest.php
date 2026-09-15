@@ -51,6 +51,16 @@ function volumeChoice(): Choice
     ]);
 }
 
+it('serializes keyed options as a JSON list', function () {
+    $options = [
+        1 => ['label' => 'Images', 'value' => 'volume:images'],
+        3 => ['label' => 'Documents', 'value' => 'volume:docs'],
+    ];
+
+    expect(Choice::make('volume')->options($options)->props()['options'])
+        ->toBe(array_values($options));
+});
+
 it('offers a blank option so an unset value is visible as unset', function () {
     $crawler = choiceCrawler(volumeChoice());
 

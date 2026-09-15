@@ -113,7 +113,6 @@ return [
     'Allow subfolders' => 'Tillad undermapper',
     'Allow uploading directly to the field' => 'Tillad overført direkte til feltet',
     'Allowed File Types' => 'Tilladte filtyper',
-    'Allowed Kinds' => 'Allowed Kinds',
     'Allowed Link Types' => 'Tilladte linktyper',
     'Allows creating drafts of new {type}.' => 'Tillader oprettelse af kladder af ny {type}.',
     'Allows deleting other users’ {type} for all sites.' => 'Tillader sletning af andre brugeres {type} for alle sites.',
@@ -1483,7 +1482,6 @@ return [
     'Response:' => 'Løsning:',
     'Restart' => 'Genstart',
     'Restore' => 'Gendan',
-    'Restrict allowed file types' => 'Begræns tilladte filtyper',
     'Restrict assets to a single location' => 'Begræns aktiver til en enkelt placering',
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
@@ -2234,11 +2232,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => 'Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2253,6 +2251,9 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'by {creator}' => 'af {creator}',
     'categories' => 'kategorier',
     'category' => 'kategori',
+    'comment_mention_body' => "Hey {{user.friendlyName|e}},\n\n{{author|e}} mentioned you in a comment on “{{subject|e}}”:\n\n{{comment}}\n\n<{{link}}>",
+    'comment_mention_heading' => 'When someone mentions a user in a comment:',
+    'comment_mention_subject' => 'You were mentioned in a comment',
     'contains' => 'indeholder',
     'content block' => 'indholdsblok',
     'content blocks' => 'indholdsblokke',
@@ -2332,11 +2333,11 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'user' => 'bruger',
     'users' => 'brugere',
     'validation.required' => 'validation.required',
-    'verify_new_email_body' => "Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+    'verify_new_email_body' => 'Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',

@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
+use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -55,7 +57,6 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -63,6 +64,7 @@ use Illuminate\Validation\Validator;
 use Override;
 use Symfony\Component\Mime\MimeTypes;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -154,27 +156,9 @@ class Assets extends BaseRelationField
     public bool $allowUploads = true;
 
     /**
-     * @var bool Whether the available assets should be restricted to
-     *           [[allowedKinds]]
-     */
-    public bool $restrictFiles = false;
-
-    /**
-     * @var list<string>|null The file kinds that the field should be restricted to
-     *                        (only used if [[restrictFiles]] is true)
-     */
-    public ?array $allowedKinds = null;
-
-    /**
      * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
      */
     public bool $showUnpermittedVolumes = false;
-
-    /**
-     * @var bool Whether to show files the user doesn’t have permission to view, per the
-     *           “View files uploaded by other users” permission.
-     */
-    public bool $showUnpermittedFiles = false;
 
     /**
      * @var string How related assets should be presented within element index views.
@@ -219,14 +203,19 @@ class Assets extends BaseRelationField
         }
 
         parent::__construct($config);
+
+        // Add the “Viewable” rule by default
+        if (! isset($config['id']) && is_null($this->getSelectionCondition())) {
+            $condition = static::createSelectionCondition();
+            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
+            $this->setSelectionCondition($condition);
+        }
     }
 
     #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'restrictFiles' => 'boolean',
-            'allowedKinds' => Rule::when(fn ($input) => $input->restrictFiles, ['required'], ['nullable']),
             'previewMode' => Rule::in([self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS]),
         ]);
     }
@@ -246,6 +235,7 @@ class Assets extends BaseRelationField
             'label' => (string) $option['label'],
             'value' => $option['value'],
         ], $this->getSourceOptions());
+        $sourcesPath = $this->allowMultipleSources ? 'sources' : 'source';
 
         $subpath = fn (string $name, ?string $value): Text => Text::make($name)
             ->placeholder(t('path/to/subfolder'))
@@ -259,62 +249,58 @@ class Assets extends BaseRelationField
         // “Maintain hierarchy”, so it was permanently hidden here.
         return Form::make(array_values(array_filter([
             FormField::make(t('Restrict assets to a single location'))
-                ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
-            Group::make('restricted-location', [
-                FormField::make()
-                    ->label(t('Source'))
-                    ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
-                    ->width(FieldWidth::Third),
-                FormField::make()
-                    ->label(t('Subpath'))
-                    ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
-                    ->width(FieldWidth::TwoThirds),
-            ])
-                ->asField()
-                ->label(t('Asset Location'))
-                ->instructions(t('The location where assets can be selected from.'))
-                ->tip($objectTemplateTip)
-                ->visible($this->restrictLocation),
-            FormField::make(t('Allow subfolders'))
-                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders))
-                ->visible($this->restrictLocation),
-            FormField::make(t('Default Upload Subpath'))
-                ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
-                ->tip($objectTemplateTip)
-                ->visible($this->restrictLocation && $this->allowSubfolders),
-            $this->sourcesField()->visible(! $this->restrictLocation),
-
-            Group::make('default-upload-location', [
-                FormField::make()
-                    ->label(t('Source'))
-                    ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
-                    ->width(FieldWidth::Third),
-                FormField::make()
-                    ->label(t('Subpath'))
-                    ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                ->control(Lightswitch::make('restrictLocation')
+                    ->value($this->restrictLocation)
+                    ->reactive()),
+            Group::make('asset-location-settings', [
+                Group::make('restricted-location', [
+                    FormField::make()
+                        ->label(t('Source'))
+                        ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
+                        ->width(FieldWidth::Third),
+                    FormField::make()
+                        ->label(t('Subpath'))
+                        ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
+                        ->width(FieldWidth::TwoThirds),
+                ])
+                    ->asField()
+                    ->label(t('Asset Location'))
+                    ->instructions(t('The location where assets can be selected from.'))
                     ->tip($objectTemplateTip)
-                    ->width(FieldWidth::TwoThirds),
-            ])
-                ->asField()
-                ->label(t('Default Upload Location'))
-                ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
-                ->visible(! $this->restrictLocation),
+                    ->visible($this->restrictLocation),
+                FormField::make(t('Allow subfolders'))
+                    ->control(Lightswitch::make('allowSubfolders')
+                        ->value($this->allowSubfolders)
+                        ->reactive())
+                    ->visible($this->restrictLocation),
+                Group::make('asset-subfolder-settings', [
+                    FormField::make(t('Default Upload Subpath'))
+                        ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
+                        ->tip($objectTemplateTip)
+                        ->visible($this->restrictLocation && $this->allowSubfolders),
+                ])->dependsOn('settings.allowSubfolders'),
+                $this->sourcesField(reactive: true)->visible(! $this->restrictLocation),
+                Group::make('default-upload-location', [
+                    FormField::make()
+                        ->label(t('Source'))
+                        ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
+                        ->width(FieldWidth::Third),
+                    FormField::make()
+                        ->label(t('Subpath'))
+                        ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                        ->tip($objectTemplateTip)
+                        ->width(FieldWidth::TwoThirds),
+                ])
+                    ->asField()
+                    ->label(t('Default Upload Location'))
+                    ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
+                    ->visible(! $this->restrictLocation),
+            ])->dependsOn('settings.restrictLocation'),
             Separator::make('asset-location-separator'),
             $this->selectionConditionField(),
             FormField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-            FormField::make(t('Show unpermitted files'))
-                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
-            FormField::make(t('Restrict allowed file types'))
-                ->control(Lightswitch::make('restrictFiles')->value($this->restrictFiles)),
-            FormField::make(t('Allowed Kinds'))
-                ->control(Choice::make('allowedKinds')
-                    ->multiple()
-                    ->options($this->getFileKindOptions())
-                    ->value($this->allowedKinds ?? []))
-                ->visible($this->restrictFiles),
             FormField::make(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
                 ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
@@ -322,7 +308,9 @@ class Assets extends BaseRelationField
             $this->defaultPlacementField(),
             $this->viewModeField(),
             $this->selectionLabelField(),
-            $this->showSearchInputField()->visible($this->canSearchWithinSources()),
+            Group::make('asset-search-settings', [
+                $this->showSearchInputField()->visible($this->canSearchWithinSources()),
+            ])->dependsOn("settings.{$sourcesPath}"),
             $this->validateRelatedElementsField(),
             Separator::make('preview-mode-separator'),
             FormField::make(t('Preview Mode'))
@@ -332,7 +320,7 @@ class Assets extends BaseRelationField
                 ->control(Choice::make('previewMode')->options([
                     ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
                     ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
-                ])->value($this->previewMode)),
+                ])->value($this->previewMode)->withoutPlaceholder()),
             $this->advancedSettingsGroup(),
         ])));
     }
@@ -380,18 +368,6 @@ class Assets extends BaseRelationField
         return $sourceOptions;
     }
 
-    /** @return list<array{value:string, label:string}> */
-    public function getFileKindOptions(): array
-    {
-        $fileKindOptions = [];
-
-        foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
-            $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
-        }
-
-        return $fileKindOptions;
-    }
-
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -428,8 +404,9 @@ class Assets extends BaseRelationField
      */
     public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
-        // Make sure the field restricts file types
-        if (! $this->restrictFiles) {
+        $allowedExtensions = $this->_getAllowedExtensions();
+
+        if (empty($allowedExtensions)) {
             return;
         }
 
@@ -448,7 +425,6 @@ class Assets extends BaseRelationField
         }
 
         // Now make sure that they all check out
-        $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                 $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
@@ -585,14 +561,8 @@ class Assets extends BaseRelationField
         $asset = new Asset;
         $asset->title = t('Related {type} Title', ['type' => $asset->displayName()]);
 
-        if ($this->restrictFiles) {
-            $extensions = $this->_getAllowedExtensions();
-            $filename = 'test.'.$extensions[0];
-        } else {
-            $filename = 'test.txt';
-        }
-
-        $asset->filename = $filename;
+        $extensions = $this->_getAllowedExtensions();
+        $asset->filename = sprintf('test.%s', $extensions[0] ?? 'txt');
         $collection = new ElementCollection([$asset]);
 
         return $this->previewHtml($collection);
@@ -646,7 +616,7 @@ class Assets extends BaseRelationField
                         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = Auth::id();
+                        $asset->uploaderId = craftAuth()->id();
                         $asset->avoidFilenameConflicts = true;
                         $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
@@ -961,21 +931,16 @@ class Assets extends BaseRelationField
     public function getInputSelectionCriteria(): array
     {
         $criteria = parent::getInputSelectionCriteria();
-        $criteria['kind'] = ($this->restrictFiles && ! empty($this->allowedKinds)) ? $this->allowedKinds : [];
 
-        if ($this->showUnpermittedFiles) {
-            $criteria['uploaderId'] = null;
-        }
+        // Let the selection condition determine whether they can view unpermitted files
+        $criteria['uploaderId'] = null;
 
         return $criteria;
     }
 
     protected function createSelectionCondition(): ElementCondition
     {
-        $condition = Asset::createCondition();
-        $condition->queryParams = ['volume', 'volumeId', 'kind'];
-
-        return $condition;
+        return Asset::createCondition();
     }
 
     #[Override]
@@ -1098,23 +1063,48 @@ class Assets extends BaseRelationField
         return $folder;
     }
 
-    /** @return list<string> */
+    /** @return string[] */
     private function _getAllowedExtensions(): array
     {
-        if (! is_array($this->allowedKinds)) {
+        $allowedKinds = $this->_getAllowedKinds();
+
+        if (empty($allowedKinds)) {
             return [];
         }
 
         $extensions = [];
         $allKinds = AssetsHelper::getFileKinds();
 
-        foreach ($this->allowedKinds as $allowedKind) {
+        foreach ($allowedKinds as $allowedKind) {
             foreach ($allKinds[$allowedKind]['extensions'] as $ext) {
                 $extensions[] = $ext;
             }
         }
 
         return $extensions;
+    }
+
+    /** @return string[] */
+    private function _getAllowedKinds(): array
+    {
+        $condition = $this->getSelectionCondition();
+
+        if (! $condition) {
+            return [];
+        }
+
+        $kinds = [];
+
+        /** @var FileTypeConditionRule[] $rules */
+        $rules = $condition->getConditionRules()->findRules(fn ($rule) => $rule instanceof FileTypeConditionRule);
+
+        foreach ($rules as $rule) {
+            foreach ($rule->getValues() as $kind) {
+                $kinds[$kind] = true;
+            }
+        }
+
+        return array_keys($kinds);
     }
 
     /**

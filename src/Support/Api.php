@@ -19,13 +19,13 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Imagick;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\normalizeVersion;
 
 /**
@@ -157,7 +157,7 @@ class Api
             }
         }
 
-        if ($user = Auth::getUser()) {
+        if ($user = craftAuth()->getUser()) {
             /** @var User $user */
             $headers['X-Craft-User-Email'] = $user->email;
         }

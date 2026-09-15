@@ -96,7 +96,7 @@ it('preserves animated GIF frames and timing', function () {
     $sourcePath = $this->sandboxPath.'/example-gif.gif';
     $targetPath = $this->sandboxPath.'/animated.gif';
 
-    (new Raster)->loadImage($sourcePath)->resize(100, 75)->saveAs($targetPath);
+    (new Raster)->loadImage($sourcePath)->resize(16, 12)->saveAs($targetPath);
 
     $source = new Imagick($sourcePath);
     $target = new Imagick($targetPath);
@@ -110,9 +110,14 @@ it('preserves animated GIF frames and timing', function () {
         $targetDelays[] = $frame->getImageDelay();
     }
 
+    expect($source->getNumberImages())->toBe(3)
+        ->and($source->getImageIterations())->toBe(3)
+        ->and($sourceDelays)->toBe([7, 13, 23]);
+
     expect($target->getNumberImages())->toBe($source->getNumberImages())
         ->and($target->getImageIterations())->toBe($source->getImageIterations())
-        ->and($targetDelays)->toBe($sourceDelays);
+        ->and($targetDelays)->toBe($sourceDelays)
+        ->and($target->getImagePage())->toMatchArray(['width' => 16, 'height' => 12]);
 });
 
 it('accounts for rotation in text bounds', function () {

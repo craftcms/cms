@@ -13,8 +13,8 @@ use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
+use CraftCms\Cms\Element\Operations\ResaveMutation;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Event;
 use Throwable;
 
 use function CraftCms\Cms\normalizeValue;
-use function CraftCms\Cms\renderObjectTemplate;
 
 /**
  * Base class for resave commands.
@@ -79,39 +78,6 @@ abstract class ResaveCommand extends Command
      * @var array<int, FieldInterface>
      */
     protected array $resolvedWithFields = [];
-
-    /**
-     * Returns [[to]] normalized to a callable.
-     *
-     * @return callable(ElementInterface): mixed
-     */
-    public static function normalizeTo(?string $to): callable
-    {
-        if ($to === ':empty:') {
-            return fn () => '';
-        }
-
-        if (str_starts_with((string) $to, '=')) {
-            $template = substr((string) $to, 1);
-
-            return fn (ElementInterface $element) => renderObjectTemplate($template, $element);
-        }
-
-        if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', (string) $to, $match)) {
-            $var = $match[1];
-            $php = sprintf('return %s;', Str::chopStart(rtrim($match[2], ';'), 'return '));
-
-            return function (ElementInterface $element) use ($var, $php) {
-                if ($var) {
-                    ${$var} = $element;
-                }
-
-                return eval($php);
-            };
-        }
-
-        return static fn (ElementInterface $element) => $element->$to;
-    }
 
     /**
      * Validates and normalizes shared resave options.
@@ -359,7 +325,7 @@ abstract class ResaveCommand extends Command
             return self::SUCCESS;
         }
 
-        $to = $this->option('set') ? self::normalizeTo($this->option('to')) : null;
+        $to = $this->option('to');
 
         $label = isset($this->resolvedPropagateTo) ? 'Propagating' : 'Resaving';
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
@@ -400,56 +366,15 @@ abstract class ResaveCommand extends Command
                 }
 
                 try {
-                    if ($this->option('to-default')) {
-                        if ($set) {
-                            $fields = [$element->getFieldLayout()?->getFieldByHandle($set)];
-                        } else {
-                            $fields = array_map(
-                                fn (FieldInterface $field) => $element->getFieldLayout()?->getFieldByUid($field->uid),
-                                $this->resolvedWithFields,
-                            );
-                        }
-
-                        $fields = array_filter($fields, fn (?FieldInterface $field) => $field instanceof DefaultableFieldInterface);
-
-                        foreach ($fields as $field) {
-                            $set = true;
-                            if ($this->option('if-empty')) {
-                                if (! ElementHelper::isAttributeEmpty($element, $field->handle)) {
-                                    $set = false;
-                                }
-                            } elseif ($this->option('if-invalid')) {
-                                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-
-                                if ($element->validate("field:$field->handle")) {
-                                    $set = false;
-                                }
-                            }
-
-                            if ($set) {
-                                /** @var DefaultableFieldInterface $field */
-                                $element->setFieldValue($field->handle, $field->getDefaultValue());
-                            }
-                        }
-                    } elseif (isset($set)) {
-                        $shouldSet = true;
-
-                        if ($ifEmpty) {
-                            if (! ElementHelper::isAttributeEmpty($element, $set)) {
-                                $shouldSet = false;
-                            }
-                        } elseif ($ifInvalid) {
-                            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-
-                            if ($element->validate($set) && $element->validate("field:$set")) {
-                                $shouldSet = false;
-                            }
-                        }
-
-                        if ($shouldSet) {
-                            $element->{$set} = $to($element);
-                        }
-                    }
+                    ResaveMutation::apply(
+                        $element,
+                        $set,
+                        $to,
+                        (bool) $this->option('to-default'),
+                        $this->resolvedWithFields,
+                        $ifEmpty,
+                        $ifInvalid,
+                    );
                 } catch (Throwable $e) {
                     throw new InvalidElementException($element, $e->getMessage());
                 }

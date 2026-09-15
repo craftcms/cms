@@ -160,6 +160,11 @@ class ElementDraftsController
             'creator' => $element->getDraftCreator()?->getName(),
             'draftName' => $element->draftName,
             'draftNotes' => $element->draftNotes,
+            // Attributes only, the way Craft 5 sends them: an attribute is its
+            // own delta group, so the editor can badge it by name. A custom
+            // field's badge is decided per element when its layout is compiled
+            // — see `BaseField::formNode()` — which is what keeps a block's
+            // fields answering to the block rather than to its owner.
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
@@ -415,7 +420,7 @@ class ElementDraftsController
 
         Gate::authorize('delete', $element);
 
-        if (! $this->elements->deleteElement($element, true)) {
+        if (! $this->drafts->discardDraft($element)) {
             return new ElementResponse()->failure($element, t('Couldn’t delete {type}.', [
                 'type' => t('draft'),
             ]));

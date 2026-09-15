@@ -25,7 +25,6 @@ use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
-use Symfony\Component\Finder\Finder;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -163,44 +162,29 @@ class ImageTransformHelper
                     $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.delimiter.';
                     $extension = $asset->getExtension();
                     $tempFilename = uniqid($prefix, true).'.'.$extension;
-                    $tempPath = Path::temp();
                     $tempFilePath = Path::temp($tempFilename);
 
-                    // Fetch existing temp files for this image and clean them up.
-                    $finder = Finder::create()
-                        ->ignoreDotFiles(false)
-                        ->ignoreVCS(false)
-                        ->files()
-                        ->in($tempPath)
-                        ->name($prefix.'*'.'.'.$extension);
+                    try {
+                        AssetsHelper::downloadFile($disk, $asset->getPath(), $tempFilePath);
 
-                    foreach ($finder as $file) {
-                        File::delete($file->getPathname());
-                    }
+                        if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
+                            throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                                'file' => $asset->getFilename(),
+                            ]));
+                        }
 
-                    AssetsHelper::downloadFile($disk, $asset->getPath(), $tempFilePath);
+                        self::storeLocalSource($tempFilePath, $imageSourcePath);
 
-                    if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
+                        // And delete it after the request, if nobody wants it.
+                        if (Cms::config()->maxCachedCloudImageSize === 0) {
+                            app()->terminating(function () use ($imageSourcePath) {
+                                File::delete($imageSourcePath);
+                            });
+                        }
+                    } finally {
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
-                        throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
-                            'file' => $asset->getFilename(),
-                        ]));
-                    }
-
-                    // we've downloaded the file, now store it
-                    self::storeLocalSource($tempFilePath, $imageSourcePath);
-
-                    // And delete it after the request, if nobody wants it.
-                    if (Cms::config()->maxCachedCloudImageSize === 0) {
-                        app()->terminating(function () use ($imageSourcePath) {
-                            File::delete($imageSourcePath);
-                        });
-                    }
-
-                    if (! File::delete($tempFilePath)) {
-                        Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                     }
                 }
             }

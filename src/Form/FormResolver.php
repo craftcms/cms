@@ -212,6 +212,9 @@ class FormResolver
             mode: $mode,
             deltaGroup: $deltaGroup,
             forms: $forms,
+            reactive: $control->isReactive(),
+            emptyValue: $control->emptyValue(),
+            nestsForms: $control->nestsForms(),
         );
     }
 

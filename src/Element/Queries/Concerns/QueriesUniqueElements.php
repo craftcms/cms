@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -69,36 +69,24 @@ trait QueriesUniqueElements
 
         $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
 
-        $subQuery = $elementQuery->getQuery()->clone()
-            ->select(['elements_sites.id'])
-            ->orderBy($caseGroup)
-            ->orderBy('elements_sites.id')
-            ->offset(0)
+        $siteRows = $elementQuery->getQuery()
+            ->cloneWithout(['orders', 'limit', 'offset'])
+            ->cloneWithoutBindings(['order'])
+            ->select([
+                'elements_sites.id',
+                'elements_sites.elementId',
+                new Alias($caseGroup, 'sitePriority'),
+            ]);
+
+        $preferredSite = DB::query()
+            ->fromSub($siteRows, 'uniqueSites')
+            ->select('uniqueSites.id')
+            ->whereColumn('uniqueSites.elementId', 'elements.id')
+            ->orderBy('uniqueSites.sitePriority')
+            ->orderBy('uniqueSites.id')
             ->limit(1);
 
-        if ($elementQuery->from === Table::ELEMENTS) {
-            $subQuery
-                ->from(Table::ELEMENTS, 'subElements')
-                ->whereColumn('subElements.id', 'tmpElements.id');
-        } else {
-            $subQuery->whereColumn('elements.id', 'tmpElements.id');
-        }
-
-        $subSelectSql = $subQuery->toRawSql();
-
-        $qElements = DB::getQueryGrammar()->wrapTable('elements');
-        $qSubElements = DB::getQueryGrammar()->wrapTable('subElements');
-        $qTmpElements = DB::getQueryGrammar()->wrapTable('tmpElements');
-        $q = $qElements[0];
-
-        if ($elementQuery->from === Table::ELEMENTS) {
-            $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
-            $subSelectSql = str_replace("{$q}{$qElements}", "{$q}{$qSubElements}", $subSelectSql);
-        }
-
-        $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
-
-        $elementQuery->whereRaw('elements_sites.id = ('.$subSelectSql.')');
+        $elementQuery->where('elements_sites.id', '=', $preferredSite);
     }
 
     /**

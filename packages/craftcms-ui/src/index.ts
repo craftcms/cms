@@ -88,6 +88,7 @@ export {default as CraftSwitch} from './components/switch/switch.js';
 export {default as CraftTabs} from './components/tabs/tabs.js';
 export {default as CraftTab} from './components/tab/tab.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
+export {default as CraftTimelineItem} from './components/timeline-item/timeline-item.js';
 export {
   default as CraftTextExpander,
   type TextExpanderErrorDetail,

@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
@@ -26,6 +27,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 it('resolves the Craft transformer without writing project config', function () {
@@ -251,6 +253,91 @@ it('uses driver rules in place of conflicting core rules', function () {
         ))->toThrow(InvalidAssetTransformException::class);
 });
 
+it('passes complex custom parameters through without serializing or reusing them', function () {
+    $driver = registerTransformer('remote');
+    $asset = Asset::factory()->createElement();
+    $transformers = app(AssetTransformers::class);
+    $first = fn () => 'first';
+    $second = fn () => 'second';
+
+    $transformers->transform($asset, ['callback' => $first], transformer: 'remote');
+    expect($driver->request->parameters['callback'])->toBe($first);
+
+    $transformers->transform($asset, ['callback' => $second], transformer: 'remote');
+    expect($driver->request->parameters['callback'])->toBe($second);
+});
+
+it('reuses validated Craft transform definitions across assets', function () {
+    $transformers = app(AssetTransformers::class);
+    $assets = [Asset::factory()->createElement(), Asset::factory()->createElement()];
+    $driver = Mockery::mock(CraftAssetTransformDriver::class);
+    $driver->shouldReceive('definition')->once()->andReturn(new AssetTransformDriverDefinition('Craft'));
+    $driver->shouldReceive('transform')->twice()->andReturn(new AssetTransformResult('/thumbnail.jpg', 'image/jpeg'));
+    app(AssetTransformDrivers::class)->extend('craft', fn () => $driver);
+
+    $transformers->transform($assets[0], ['width' => 24, 'height' => 24, 'mode' => 'crop']);
+    $transformers->transform($assets[1], ['mode' => 'crop', 'height' => 24, 'width' => 24]);
+});
+
+it('validates each normalized definition once across preloading and rendering', function () {
+    $driver = new TestPreloadingAssetTransformDriver;
+    registerTransformer('remote', driver: $driver);
+    Cms::config()->defaultAssetTransformer('remote');
+    $assets = [Asset::factory()->createElement(), Asset::factory()->createElement()];
+    $transformers = app(AssetTransformers::class);
+    $validator = Validator::getFacadeRoot();
+    Validator::shouldReceive('make')->twice()->andReturnUsing($validator->make(...));
+
+    $transformers->preload($assets, [['width' => 100], '2x']);
+
+    foreach ($assets as $asset) {
+        $transformers->transform($asset, ['width' => 100]);
+        $transformers->transform($asset, ['width' => 200]);
+    }
+
+    expect($driver->requests)->toHaveCount(4)
+        ->and($driver->request->parameters)->toBe(['width' => 200]);
+});
+
+it('revalidates definitions after resetting transformers or replacing a driver', function () {
+    registerTransformer('remote');
+    $asset = Asset::factory()->createElement();
+    $transformers = app(AssetTransformers::class);
+    $validator = Validator::getFacadeRoot();
+    Validator::shouldReceive('make')->times(3)->andReturnUsing($validator->make(...));
+
+    $transformers->transform($asset, ['width' => 100], transformer: 'remote');
+    $transformers->reset();
+    $transformers->transform($asset, ['width' => 100], transformer: 'remote');
+
+    app(AssetTransformDrivers::class)->forgetDrivers()->extend('remote', fn () => new TestAssetTransformDriver(
+        new AssetTransformDriverDefinition('Remote', parameterRules: ['width' => ['integer', 'max:50']]),
+    ));
+
+    expect(fn () => $transformers->transform($asset, ['width' => 100], transformer: 'remote'))
+        ->toThrow(InvalidAssetTransformException::class);
+});
+
+it('preserves parameter rules declared by a custom Craft driver definition', function () {
+    $driver = new class(new ImageTransformer) extends CraftAssetTransformDriver
+    {
+        public function definition(): AssetTransformDriverDefinition
+        {
+            return new AssetTransformDriverDefinition('Custom Craft', parameterRules: [
+                'width' => [Rule::in(['auto'])],
+            ]);
+        }
+    };
+    app(AssetTransformDrivers::class)->extend('custom-craft', fn () => $driver);
+    $transformer = new AssetTransformer(['driver' => 'custom-craft']);
+    $transformers = app(AssetTransformers::class);
+
+    expect($transformers->validateParameters($transformer, ['width' => 'auto']))
+        ->toBe(['width' => 'auto'])
+        ->and(fn () => $transformers->validateParameters($transformer, ['width' => 24]))
+        ->toThrow(InvalidAssetTransformException::class);
+});
+
 it('rejects invalid parameters and missing transformer handles', function () {
     registerTransformer('remote');
     $asset = Asset::factory()->createElement();
@@ -267,7 +354,7 @@ it('rejects invalid parameters and missing transformer handles', function () {
         ))->toThrow(AssetTransformerNotFoundException::class);
 });
 
-it('preloads requests grouped by driver', function () {
+it('preloads requests grouped by driver', function (bool $perAsset) {
     $firstDriver = new TestPreloadingAssetTransformDriver;
     $secondDriver = new TestPreloadingAssetTransformDriver;
     registerTransformer('first', driver: $firstDriver);
@@ -282,18 +369,28 @@ it('preloads requests grouped by driver', function () {
             'assetTransformer' => $handle,
         ]);
 
-        return Asset::factory()->createElement(['volumeId' => $volume->id]);
+        return Asset::factory()->createElement([
+            'volumeId' => $volume->id,
+            'filename' => 'source.jpg',
+            'kind' => 'image',
+            'width' => $handle === 'first' ? 320 : 640,
+            'height' => 200,
+        ]);
     })->all();
 
-    app(AssetTransformers::class)->preload($assets, [['width' => 320]]);
+    app(AssetTransformers::class)->preload($assets, $perAsset
+        ? fn (AssetElement $asset): array => [['width' => $asset->getWidth()]]
+        : [['width' => 320]]);
 
     expect($firstDriver->requests)->toHaveCount(1)
         ->and($firstDriver->requests[0]->asset)->toBe($assets[0])
         ->and($firstDriver->requests[0]->transformer->handle)->toBe('first')
+        ->and($firstDriver->requests[0]->parameters)->toBe(['width' => 320])
         ->and($secondDriver->requests)->toHaveCount(1)
         ->and($secondDriver->requests[0]->asset)->toBe($assets[1])
-        ->and($secondDriver->requests[0]->transformer->handle)->toBe('second');
-});
+        ->and($secondDriver->requests[0]->transformer->handle)->toBe('second')
+        ->and($secondDriver->requests[0]->parameters)->toBe(['width' => $perAsset ? 640 : 320]);
+})->with(['shared definitions' => false, 'asset-specific definitions' => true]);
 
 it('redacts transformer settings from debug output', function () {
     $request = new AssetTransformRequest(

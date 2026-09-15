@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4cbc75dfba221e3fc791d08652e2b08b",
+    "content-hash": "9a8774429f940b079aca332eeb71dafc",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -476,7 +476,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "b10f5e610ee0f146eb164995a34a379b352dfd93"
+                "reference": "69502271cd43bb9e4da546c818528c2ed78430fd"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
@@ -490,7 +490,7 @@
                 "craftcms/server-check": "~6.0.0",
                 "craftcms/url-validator": "^1.0",
                 "elvanto/litemoji": "^5.2.0",
-                "enshrined/svg-sanitize": "~0.22.0",
+                "enshrined/svg-sanitize": "^1.0.0",
                 "ext-bcmath": "*",
                 "ext-curl": "*",
                 "ext-dom": "*",
@@ -522,7 +522,7 @@
                 "symfony/yaml": "^7.0|^8.0",
                 "theiconic/name-parser": "^1.2",
                 "tpetry/laravel-query-expressions": "^1.5",
-                "twig/twig": "~3.27.0",
+                "twig/twig": "~3.28.0",
                 "voku/portable-ascii": "^2.0",
                 "web-auth/webauthn-lib": "~5.3.5",
                 "webonyx/graphql-php": "~15.33.1",
@@ -538,13 +538,14 @@
                 "driftingly/rector-laravel": "^2.1",
                 "fakerphp/faker": "^1.19.0",
                 "intervention/image-driver-vips": "^4.1",
-                "larastan/larastan": "^3.4",
+                "larastan/larastan": "^3.12",
                 "laravel/boost": "^2.6",
                 "laravel/pao": "^1.0",
                 "laravel/pint": "^1.22",
                 "laravel/socialite": "^5.23",
                 "orchestra/testbench": "^11.0",
                 "pestphp/pest": "^5.0",
+                "pestphp/pest-plugin-agent": "^5.0",
                 "pestphp/pest-plugin-arch": "^5.0",
                 "pestphp/pest-plugin-laravel": "^5.0",
                 "phpstan/phpstan": "^2.1",
@@ -565,8 +566,8 @@
                         "CraftCms\\Cms\\Providers\\CraftServiceProvider"
                     ],
                     "aliases": {
+                        "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
                         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
-                        "Announcements": "CraftCms\\Cms\\Support\\Facades\\Announcements",
                         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
                         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
                         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
@@ -651,7 +652,7 @@
                 ],
                 "tests": [
                     "Composer\\Config::disableProcessTimeout",
-                    "./vendor/bin/pest --compact"
+                    "./vendor/bin/pest --parallel --compact"
                 ],
                 "tests-adapter": [
                     "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel"
@@ -1730,16 +1731,16 @@
         },
         {
             "name": "enshrined/svg-sanitize",
-            "version": "0.22.0",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/darylldoyle/svg-sanitizer.git",
-                "reference": "0afa95ea74be155a7bcd6c6fb60c276c39984500"
+                "reference": "f3300fcd1bbf67d205b52217c75d0f7d6a8c47ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/0afa95ea74be155a7bcd6c6fb60c276c39984500",
-                "reference": "0afa95ea74be155a7bcd6c6fb60c276c39984500",
+                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/f3300fcd1bbf67d205b52217c75d0f7d6a8c47ff",
+                "reference": "f3300fcd1bbf67d205b52217c75d0f7d6a8c47ff",
                 "shasum": ""
             },
             "require": {
@@ -1769,9 +1770,9 @@
             "description": "An SVG sanitizer for PHP",
             "support": {
                 "issues": "https://github.com/darylldoyle/svg-sanitizer/issues",
-                "source": "https://github.com/darylldoyle/svg-sanitizer/tree/0.22.0"
+                "source": "https://github.com/darylldoyle/svg-sanitizer/tree/1.0.0"
             },
-            "time": "2025-08-12T10:13:48+00:00"
+            "time": "2026-09-01T09:35:47+00:00"
         },
         {
             "name": "ezyang/htmlpurifier",
@@ -9450,16 +9451,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v3.27.1",
+            "version": "v3.28.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "ae2071bffb38f04847fc0864d730c94b9cb8ab74"
+                "reference": "597c12ed286fb9d1701a36684ce6e0cbe28ebc8b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/ae2071bffb38f04847fc0864d730c94b9cb8ab74",
-                "reference": "ae2071bffb38f04847fc0864d730c94b9cb8ab74",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/597c12ed286fb9d1701a36684ce6e0cbe28ebc8b",
+                "reference": "597c12ed286fb9d1701a36684ce6e0cbe28ebc8b",
                 "shasum": ""
             },
             "require": {
@@ -9514,7 +9515,7 @@
             ],
             "support": {
                 "issues": "https://github.com/twigphp/Twig/issues",
-                "source": "https://github.com/twigphp/Twig/tree/v3.27.1"
+                "source": "https://github.com/twigphp/Twig/tree/v3.28.0"
             },
             "funding": [
                 {
@@ -9526,7 +9527,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-30T17:09:26+00:00"
+            "time": "2026-07-03T20:44:34+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -12609,20 +12610,19 @@
         },
         {
             "name": "larastan/larastan",
-            "version": "v3.10.0",
+            "version": "v3.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/larastan/larastan.git",
-                "reference": "2970f83398154178a739609c244577267c7ee8eb"
+                "reference": "ab26fdf90d84877061388109e1e251f67ca3ff7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/larastan/larastan/zipball/2970f83398154178a739609c244577267c7ee8eb",
-                "reference": "2970f83398154178a739609c244577267c7ee8eb",
+                "url": "https://api.github.com/repos/larastan/larastan/zipball/ab26fdf90d84877061388109e1e251f67ca3ff7a",
+                "reference": "ab26fdf90d84877061388109e1e251f67ca3ff7a",
                 "shasum": ""
             },
             "require": {
-                "ext-json": "*",
                 "iamcal/sql-parser": "^0.7.0",
                 "illuminate/console": "^11.44.2 || ^12.4.1 || ^13",
                 "illuminate/container": "^11.44.2 || ^12.4.1 || ^13",
@@ -12632,7 +12632,7 @@
                 "illuminate/pipeline": "^11.44.2 || ^12.4.1 || ^13",
                 "illuminate/support": "^11.44.2 || ^12.4.1 || ^13",
                 "php": "^8.2",
-                "phpstan/phpstan": "^2.2.0"
+                "phpstan/phpstan": "^2.2.2"
             },
             "require-dev": {
                 "doctrine/coding-standard": "^14",
@@ -12642,7 +12642,7 @@
                 "orchestra/canvas": "^v9.2.2 || ^10.0.1 || ^11",
                 "orchestra/testbench-core": "^9.12.0 || ^10.1 || ^11",
                 "phpstan/phpstan-deprecation-rules": "^2.0.1",
-                "phpunit/phpunit": "^10.5.35 || ^11.5.15 || ^12.5.8 || ^13.1.8"
+                "phpunit/phpunit": "^10.5.35 || ^11.5.15 || ^12.5.8 || ^13.3.0"
             },
             "suggest": {
                 "orchestra/testbench": "Using Larastan for analysing a package needs Testbench",
@@ -12687,7 +12687,7 @@
             ],
             "support": {
                 "issues": "https://github.com/larastan/larastan/issues",
-                "source": "https://github.com/larastan/larastan/tree/v3.10.0"
+                "source": "https://github.com/larastan/larastan/tree/v3.12.0"
             },
             "funding": [
                 {
@@ -12695,7 +12695,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-28T08:00:58+00:00"
+            "time": "2026-09-10T09:06:54+00:00"
         },
         {
             "name": "laravel/pail",

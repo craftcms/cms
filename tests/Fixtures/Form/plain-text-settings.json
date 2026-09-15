@@ -125,27 +125,39 @@
             "props": [],
             "path": ["settings", "multiline"],
             "mode": "editable",
-            "deltaGroup": ["settings", "multiline"]
+            "deltaGroup": ["settings", "multiline"],
+            "reactive": true
           }
         }
       ]
     },
     {
-      "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
-      "component": "craft:field",
+      "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
+      "component": "craft:group",
       "props": {
-        "label": "Initial Rows",
-        "instructions": null,
-        "required": false
+        "label": null,
+        "dependsOn": ["settings", "multiline"]
       },
-      "control": {
-        "type": "CraftCms\\Cms\\Form\\Controls\\Number",
-        "component": "craft:number",
-        "props": {"inputType": "number", "min": 1},
-        "path": ["settings", "initialRows"],
-        "mode": "editable",
-        "deltaGroup": ["settings", "initialRows"]
-      }
+      "uid": "plain-text-multiline-settings",
+      "children": [
+        {
+          "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+          "component": "craft:field",
+          "props": {
+            "label": "Initial Rows",
+            "instructions": null,
+            "required": false
+          },
+          "control": {
+            "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+            "component": "craft:number",
+            "props": {"inputType": "number", "min": 1},
+            "path": ["settings", "initialRows"],
+            "mode": "editable",
+            "deltaGroup": ["settings", "initialRows"]
+          }
+        }
+      ]
     }
   ],
   "values": {

@@ -5,7 +5,7 @@
     formChangeFromEvent,
     pathsMatch,
     setValue as setPathValue,
-    valueAt,
+    controlValueAt,
   } from './runtime';
   import type {
     FormChange,
@@ -55,7 +55,10 @@
       pathsMatch(error.path, control.value.path) ? error.messages : []
     )
   );
-  const value = computed(() => valueAt(props.values, control.value.path));
+  const value = computed(() => controlValueAt(props.values, control.value));
+  const refreshable = computed(
+    () => props.refreshable && Boolean(control.value.reactive)
+  );
 
   function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
@@ -64,7 +67,7 @@
       kind,
       path: control.value.path,
       scope: props.scope,
-      refreshable: props.refreshable,
+      refreshable: refreshable.value,
     });
   }
 

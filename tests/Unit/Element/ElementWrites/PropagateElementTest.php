@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -39,6 +41,7 @@ beforeEach(function () {
         Mockery::mock(ElementCaches::class),
         Mockery::mock(Search::class),
         $this->sites,
+        Mockery::mock(ElementWriteActivity::class),
     );
 
     $this->primarySite = new Site([
@@ -296,7 +299,10 @@ it('adds a linked validation error when the current user can fix the propagated 
 
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
     request()->attributes->set('isCpRequest', true);
-    Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);
+    $guard = Mockery::mock(Guard::class);
+    $guard->shouldReceive('user')->andReturn(new AuthorizedAuthUser);
+    Auth::shouldReceive('getDefaultDriver')->andReturn('web');
+    Auth::shouldReceive('guard')->with('web')->andReturn($guard);
     SitesFacade::shouldReceive('isMultiSite')->andReturnFalse();
     SitesFacade::shouldReceive('getPrimarySite')->andReturn($this->primarySite);
 
@@ -444,6 +450,7 @@ readonly class TestPropagateElementWrites extends ElementWrites
         bool $saveContent = false,
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
+        bool $recordActivity = true,
     ): bool {
         $this->saveCalls[] = [
             'siteElement' => $element,

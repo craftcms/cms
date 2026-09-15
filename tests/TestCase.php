@@ -16,13 +16,14 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -30,8 +31,11 @@ use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Testing\CachedState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Foundation\Testing\WithCachedRoutes;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
@@ -47,11 +51,31 @@ use ReflectionProperty;
 
 class TestCase extends Orchestra
 {
+    use IsolatesParallelFiles;
     use RefreshDatabase;
     use RegistersPackageAliases;
+    use WithCachedRoutes;
     use WithWorkbench;
 
     private static bool $parallelDatabaseCreated = false;
+
+    #[Override]
+    protected function resolveApplicationResolvingCallback($app): void
+    {
+        parent::resolveApplicationResolvingCallback($app);
+
+        if (CachedState::$cachedRoutes !== null) {
+            $app->booting(fn () => $this->markRoutesCached($app));
+            $app->booted(fn () => $this->restoreCachedMaintenanceRouteExceptions());
+        }
+    }
+
+    protected function restoreCachedMaintenanceRouteExceptions(): void
+    {
+        CraftMaintenanceMiddleware::registerRouteExceptions(
+            CachedState::$cachedRoutes['craftMaintenanceExceptions'] ??= CraftMaintenanceMiddleware::routeExceptionTemplates(app(Router::class)->getRoutes()->getRoutes()),
+        );
+    }
 
     #[Override]
     public static function setUpBeforeClass(): void
@@ -71,7 +95,17 @@ class TestCase extends Orchestra
         // This is so route registration in tests work
         $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
 
+        $databaseNeedsMigration = ! RefreshDatabaseState::$migrated;
+
+        if ($databaseNeedsMigration) {
+            CachedState::$cachedRoutes = null;
+        }
+
         parent::setUp();
+
+        if ($databaseNeedsMigration) {
+            CachedState::$cachedRoutes = null;
+        }
 
         config()->set('app.debug', true);
 
@@ -167,21 +201,6 @@ class TestCase extends Orchestra
             [FieldLayoutComponent::class, 'defaultElementConditions', []],
             [CustomField::class, 'defaultElementEditConditions', []],
         ];
-
-        // Reset ProjectConfig "processed" flags
-        $projectConfigFlags = [
-            '_processedFilesystems',
-            '_processedFields',
-            '_processedSites',
-            '_processedUserGroups',
-            '_processedEntryTypes',
-            '_processedSections',
-            '_processedGqlSchemas',
-        ];
-
-        foreach ($projectConfigFlags as $flag) {
-            $resets[] = [ProjectConfigHelper::class, $flag, false];
-        }
 
         foreach ($resets as [$class, $property, $default]) {
             new ReflectionProperty($class, $property)->setValue(null, $default);

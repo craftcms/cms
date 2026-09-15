@@ -3,33 +3,27 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
-    $this->markTestSkippedWhen(
-        DB::isSqlite(),
-        'SQLite cannot change PRAGMA foreign_keys inside a transaction, making it impossible to set up orphaned rows for this test.'
-    );
-
-    $this->markTestSkippedWhen(
-        DB::connection()->getDriverName() === 'pgsql',
-        'Postgres checks foreign key constraints differently.'
-    );
-
-    // Create test tables
-    Schema::create('test_authors', function ($table) {
-        $table->id();
-        $table->string('name');
+    Schema::create('test_authors', function (Blueprint $table) {
+        $table->unsignedBigInteger('id')->primary();
+        $table->unsignedInteger('region');
+        $table->unique(['id', 'region']);
     });
-
-    Schema::create('test_posts', function ($table) {
-        $table->id();
-        $table->unsignedBigInteger('author_id');
+    Schema::create('test_posts', function (Blueprint $table) {
+        $table->unsignedBigInteger('author_id')->nullable();
+        $table->unsignedInteger('region')->nullable();
         $table->string('title');
     });
 
-    Schema::disableForeignKeyConstraints();
+    if (DB::isSqlite()) {
+        DB::statement('PRAGMA defer_foreign_keys = ON');
+    } else {
+        Schema::disableForeignKeyConstraints();
+    }
 });
 
 afterEach(function () {
@@ -39,53 +33,35 @@ afterEach(function () {
 });
 
 test('it deletes orphaned child rows when parent is missing', function () {
-    // Create author + post
-    $authorId = DB::table('test_authors')->insertGetId(['name' => 'Jane']);
+    Schema::table('test_posts', fn (Blueprint $table) => $table->unsignedBigInteger('id'));
+    DB::table('test_authors')->insert(['id' => 2, 'region' => 1]);
     DB::table('test_posts')->insert([
-        'author_id' => $authorId,
-        'title' => 'Post 1',
+        ['id' => 99, 'author_id' => 1, 'title' => 'orphan'],
+        ['id' => 1, 'author_id' => 2, 'title' => 'valid'],
+        ['id' => 2, 'author_id' => null, 'title' => 'null'],
     ]);
-
-    // Delete the parent manually
-    DB::table('test_authors')->delete($authorId);
-
-    expect(DB::table('test_posts')->count())->toBe(1);
-
-    // Add the constraint after
-    Schema::table('test_posts', function ($table) {
-        $table->foreign('author_id')->references('id')->on('test_authors')->onDelete('cascade');
+    Schema::table('test_posts', function (Blueprint $table) {
+        $table->foreign('author_id')->references('id')->on('test_authors')->cascadeOnDelete()->notValid();
     });
 
-    // Run the cascade cleaner manually (simulating Craft’s behavior)
     app(DeleteOrphanedForeignKeyRows::class)();
 
-    // Assert orphaned posts are deleted
-    expect(DB::table('test_posts')->count())->toBe(0);
+    expect(DB::table('test_posts')->orderBy('id')->pluck('title')->all())->toBe(['valid', 'null']);
 });
 
-test('it keeps non-orphaned child rows', function () {
-    // Create two authors
-    $author1 = DB::table('test_authors')->insertGetId(['name' => 'Alice']);
-    $author2 = DB::table('test_authors')->insertGetId(['name' => 'Bob']);
-
-    // Posts for both
+test('it keeps valid and nullable composite keys without a child id', function () {
+    DB::table('test_authors')->insert([['id' => 1, 'region' => 10], ['id' => 2, 'region' => 20]]);
     DB::table('test_posts')->insert([
-        ['author_id' => $author1, 'title' => 'A1'],
-        ['author_id' => $author2, 'title' => 'B1'],
+        ['author_id' => 1, 'region' => 20, 'title' => 'missing tuple'],
+        ['author_id' => 1, 'region' => 10, 'title' => 'valid'],
+        ['author_id' => null, 'region' => 99, 'title' => 'null author'],
+        ['author_id' => 99, 'region' => null, 'title' => 'null region'],
     ]);
-
-    // Delete one author
-    DB::table('test_authors')->delete($author1);
-
-    // Add the constraint after
-    Schema::table('test_posts', function ($table) {
-        $table->foreign('author_id')->references('id')->on('test_authors')->onDelete('cascade');
+    Schema::table('test_posts', function (Blueprint $table) {
+        $table->foreign(['author_id', 'region'])->references(['id', 'region'])->on('test_authors')->cascadeOnDelete()->notValid();
     });
 
-    // Run cleaner
     app(DeleteOrphanedForeignKeyRows::class)();
 
-    // Only Bob’s post should remain
-    $remainingPosts = DB::table('test_posts')->pluck('title');
-    expect($remainingPosts)->toContain('B1')->not->toContain('A1');
+    expect(DB::table('test_posts')->orderBy('title')->pluck('title')->all())->toBe(['null author', 'null region', 'valid']);
 });

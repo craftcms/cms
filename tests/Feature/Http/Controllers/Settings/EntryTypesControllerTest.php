@@ -115,7 +115,7 @@ it('refreshes fields that depend on the entry type settings', function () {
         'values' => $values,
         'scope' => [],
     ])->assertOk();
-    $paths = collect($response->json('form.nodes'))->pluck('control.path')->filter()->values();
+    $paths = collect(flattenFormNodes($response->json('form.nodes')))->pluck('control.path')->filter()->values();
 
     expect($paths)
         ->toContain(['titleTranslationKeyFormat'])
@@ -125,7 +125,7 @@ it('refreshes fields that depend on the entry type settings', function () {
         'values' => [...$values, 'showSlugField' => true],
         'scope' => [],
     ])->assertOk();
-    $paths = collect($response->json('form.nodes'))->pluck('control.path')->filter()->values();
+    $paths = collect(flattenFormNodes($response->json('form.nodes')))->pluck('control.path')->filter()->values();
 
     expect($paths)
         ->toContain(['slugTranslationMethod'])
@@ -190,17 +190,19 @@ function validEntryTypeData(array $overrides = []): array
 it('can save an entry type', function () {
     expect(EntryType::count())->toBe(1);
 
-    post(action([EntryTypesController::class, 'store']), validEntryTypeData([
-        'fieldLayout' => [
-            'generatedFields' => [[
-                'name' => 'Summary',
-                'handle' => 'summary',
-                'template' => '{title}',
-            ]],
-        ],
-    ]))
-        ->assertSessionDoesntHaveErrors()
-        ->assertRedirectBack();
+    $response = postJson(
+        action([EntryTypesController::class, 'store']),
+        validEntryTypeData([
+            'fieldLayout' => [
+                'generatedFields' => [[
+                    'name' => 'Summary',
+                    'handle' => 'summary',
+                    'template' => '{title}',
+                ]],
+            ],
+        ]),
+        ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+    );
 
     expect(EntryType::count())->toBe(2);
     /** @var CraftCms\Cms\Entry\Data\EntryType $entryType */
@@ -209,6 +211,7 @@ it('can save an entry type', function () {
     expect($entryType->handle)->toBe('a_new_entry_type');
     expect($entryType->getFieldLayout()->getGeneratedFields()[0])
         ->toMatchArray(['name' => 'Summary', 'handle' => 'summary', 'template' => '{title}']);
+    $response->assertRedirect($entryType->getCpEditUrl());
 });
 
 test('values are validated', function (string $attribute, string $value = '') {

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\ImageTransforms;
+
+use function Pest\Laravel\mock;
 
 describe('defaults', function () {
     test('has sensible defaults', function () {
@@ -99,9 +102,10 @@ describe('getTransform and setTransform', function () {
         expect($index->getTransform())->toBe($transform);
     });
 
-    test('getTransform normalizes from transformString', function () {
+    test('getTransform normalizes from transformString and format', function (?string $format) {
         $index = new ImageTransformIndex([
             'transformString' => '_800x600_crop_center-center_none',
+            'format' => $format,
         ]);
 
         $transform = $index->getTransform();
@@ -109,7 +113,23 @@ describe('getTransform and setTransform', function () {
         expect($transform)->toBeInstanceOf(ImageTransform::class)
             ->and($transform->width)->toBe(800)
             ->and($transform->height)->toBe(600)
-            ->and($transform->mode)->toBe('crop');
+            ->and($transform->mode)->toBe('crop')
+            ->and($transform->format)->toBe($format);
+    })->with([null, 'webp']);
+
+    test('hydrating indexes does not change the shared named transform', function () {
+        $namedTransform = new ImageTransform(['handle' => 'thumb', 'width' => 100, 'format' => 'jpg']);
+        mock(ImageTransforms::class)->shouldReceive('getTransformByHandle')->with('thumb')->andReturn($namedTransform);
+
+        $webpIndex = new ImageTransformIndex(['transformString' => '_thumb', 'format' => 'webp']);
+        $autoIndex = new ImageTransformIndex(['transformString' => '_thumb', 'format' => null]);
+
+        expect($webpIndex->transform->format)->toBe('webp');
+        expect($autoIndex->transform->format)->toBeNull();
+        expect($webpIndex->transform->format)->toBe('webp');
+        expect($namedTransform->format)->toBe('jpg');
+        expect($webpIndex->transform)->not->toBe($namedTransform);
+        expect($autoIndex->transform)->not->toBe($namedTransform);
     });
 
     test('getTransform memoizes result', function () {

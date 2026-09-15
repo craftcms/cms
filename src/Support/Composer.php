@@ -101,21 +101,23 @@ class Composer
 
         // Create a backup of composer.json in case something goes wrong
         $backup = File::get($jsonPath);
+        $config = Json::decode($backup);
 
         // Ensure composer.craftcms.com is listed as a repository
-        $this->ensurePluginStoreRepo($jsonPath);
+        $this->ensurePluginStoreRepo($config);
 
         // Ensure craftcms/plugin-installer is allowed
-        $this->ensurePluginInstallerIsAllowed($jsonPath);
+        $this->ensurePluginInstallerIsAllowed($config);
 
         if ($requirements !== null) {
-            $this->updateRequirements($jsonPath, $requirements);
+            $this->updateRequirements($config, $requirements);
             $command = array_merge(['update'], array_keys($requirements), ['--with-dependencies']);
         } else {
             $command = ['install'];
         }
 
         try {
+            Json::encodeToFile($jsonPath, $config);
             $this->runComposerCommand($jsonPath, $command, $callback);
         } catch (Throwable $e) {
             File::put($jsonPath, $backup);
@@ -142,14 +144,16 @@ class Composer
         $jsonPath = $this->getJsonPath();
 
         // Create a backup of composer.json in case something goes wrong
-        $backup = file_get_contents($jsonPath);
+        $backup = File::get($jsonPath);
+        $config = Json::decode($backup);
 
         // Ensure craftcms/plugin-installer is allowed
-        $this->ensurePluginInstallerIsAllowed($jsonPath);
+        $this->ensurePluginInstallerIsAllowed($config);
 
         $command = array_merge(['remove'], $packages);
 
         try {
+            Json::encodeToFile($jsonPath, $config);
             $this->runComposerCommand($jsonPath, $command, $callback);
         } catch (Throwable $e) {
             File::put($jsonPath, $backup);
@@ -209,11 +213,11 @@ class Composer
 
     /**
      * Ensures composer.craftcms.com is listed as a repository in composer.json
+     *
+     * @param  array<string, mixed>  $config
      */
-    private function ensurePluginStoreRepo(string $jsonPath): void
+    private function ensurePluginStoreRepo(array &$config): void
     {
-        $json = File::get($jsonPath);
-        $config = Json::decode($json);
         $craftRepoKey = $this->findCraftRepo($config);
 
         // If it already exists and is marked as non-canonical, we're done
@@ -236,17 +240,15 @@ class Composer
         } else {
             $config['repositories'][] = $repoConfig;
         }
-
-        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
      * Ensures composer.json has the craftcms/plugin-installer plugin marked as allowed.
+     *
+     * @param  array<string, mixed>  $config
      */
-    private function ensurePluginInstallerIsAllowed(string $jsonPath): void
+    private function ensurePluginInstallerIsAllowed(array &$config): void
     {
-        $json = File::get($jsonPath);
-        $config = Json::decode($json);
         $allowPlugins = $config['config']['allow-plugins'] ?? [];
 
         if ($allowPlugins === true) {
@@ -274,20 +276,16 @@ class Composer
         foreach ($plugins as $plugin) {
             $config['config']['allow-plugins'][$plugin] = true;
         }
-
-        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
-     * Updates the composer.json file with new requirements
+     * Updates the Composer config with new requirements
      *
+     * @param  array<string, mixed>  $config
      * @param  array<string, string|false>  $requirements
      */
-    private function updateRequirements(string $jsonPath, array $requirements): void
+    private function updateRequirements(array &$config, array $requirements): void
     {
-        $json = File::get($jsonPath);
-        $config = Json::decode($json);
-
         foreach ($requirements as $package => $constraint) {
             if ($constraint === false) {
                 unset($config['require'][$package]);
@@ -302,8 +300,6 @@ class Composer
         if ($config['config']['sort-packages'] ?? false) {
             $this->sortPackages($config['require']);
         }
-
-        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
