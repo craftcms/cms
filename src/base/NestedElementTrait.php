@@ -12,7 +12,9 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
@@ -326,6 +328,7 @@ trait NestedElementTrait
                 if (!empty($ownerIds)) {
                     $query = $ownerType::find()
                         ->id($ownerIds);
+                    $criteria = ComponentHelper::cleanseConfig(ElementHelper::cleanseQueryCriteria($criteria));
                     Craft::configure($query, $criteria + $this->ownerCriteria());
                     $this->_owners = $query->all();
                 }
