@@ -58,6 +58,7 @@ use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -5594,7 +5595,7 @@ abstract class Element extends Component implements ElementInterface, AllowableI
                 ->siteId($this->siteId);
 
             if ($criteria) {
-                Craft::configure($query, $criteria);
+                Craft::configure($query, ComponentHelper::cleanseConfig(ElementHelper::cleanseQueryCriteria($criteria)));
             }
         }
 

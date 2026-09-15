@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-f6gf-r952-rxg6)
 
 ## 4.18.8 - 2026-09-01
 
