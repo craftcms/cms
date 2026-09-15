@@ -10,6 +10,7 @@
 - Fixed a bug where public registration could fail when sending the activation email, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 - Fixed a bug where custom fields nested within Content Block fields weren’t editable from element indexes. ([#19602](https://github.com/craftcms/cms/discussions/19602))
 - Fixed a bug where nested relational fields weren’t enforcing their “Validate related {type}” setting. ([#19625](https://github.com/craftcms/cms/pull/19625))
+- Fixed a bug where relational fields nested within Matrix fields could fail validation, if the install had a custom field whose handle collided with an element query property (such as `where`).
 
 ## 5.11.1 - 2026-09-02
 

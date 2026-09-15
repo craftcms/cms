@@ -51,6 +51,33 @@ class ElementQueryTest extends TestCase
     }
 
     /**
+     * Field handles that collide with one of the query’s own properties (e.g. `where`) shouldn’t be
+     * treated as criteria attributes, or internal query state gets exposed as though it were field criteria.
+     */
+    public function testCriteriaAttributesSkipQueryPropertyCollisions(): void
+    {
+        $query = Entry::find();
+        $query->attachBehavior('customFields', new CollidingCustomFieldBehavior());
+
+        $attributes = $query->criteriaAttributes();
+
+        self::assertNotContains('where', $attributes);
+        self::assertContains('myFieldHandle', $attributes);
+    }
+
+    /**
+     * @see testCriteriaAttributesSkipQueryPropertyCollisions()
+     */
+    public function testGetCriteriaDoesntLeakQueryState(): void
+    {
+        $query = Entry::find();
+        $query->attachBehavior('customFields', new CollidingCustomFieldBehavior());
+        $query->andWhere(['elements.id' => [1, 2, 3]]);
+
+        self::assertArrayNotHasKey('where', $query->getCriteria());
+    }
+
+    /**
      * @return array
      */
     public static function relatedToDataProvider(): array
