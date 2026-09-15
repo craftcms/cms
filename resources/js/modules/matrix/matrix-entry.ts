@@ -1,16 +1,17 @@
 /**
  * MatrixEntry — modern TypeScript port of the legacy `Craft.MatrixInput.Entry`.
  *
- * The per-`.matrixblock` controller: collapse/expand (with the preview-text
+ * The per-block (`[data-matrix-block]`) controller: collapse/expand (with the preview-text
  * summary and localStorage persistence), the block action menu, enable/disable,
  * move/duplicate/copy/paste/delete.
  */
 
-import {Base, getInputPostVal, hasAttr} from '@craftcms/garnish';
+import {Base, hasAttr} from '@craftcms/garnish';
 import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
 import {animationDuration, MatrixInput} from './matrix-input';
+import {blockPreviewParts} from './preview-text';
 import {containerMatrixEntries} from './support';
 import {
   type LegacyDisclosureMenu,
@@ -28,8 +29,23 @@ type JsonValue =
   | JsonValue[]
   | {[key: string]: JsonValue};
 
+/**
+ * A part of a block, whether it sits directly under the block or inside the
+ * `craft-card` frame both Matrix renderers now wrap their blocks in. Scoped to
+ * that one level either way, so a nested Matrix inside the block keeps its own
+ * titlebar, fields and inputs to itself.
+ */
+function blockPart<T extends Element = HTMLElement>(
+  container: HTMLElement,
+  selector: string
+): T | null {
+  return container.querySelector<T>(
+    `:scope > ${selector}, :scope > craft-card > ${selector}`
+  );
+}
+
 export class MatrixEntry extends Base {
-  /** The entry controller for a `.matrixblock` container, if one was booted. */
+  /** The entry controller for a `[data-matrix-block]` container, if one was booted. */
   static forContainer(container: Element): MatrixEntry | undefined {
     return containerMatrixEntries.get(container);
   }
@@ -55,10 +71,10 @@ export class MatrixEntry extends Base {
 
     this.matrix = matrix;
     this.container = container;
-    this.titlebar = container.querySelector(':scope > .titlebar');
+    this.titlebar = blockPart(container, '[data-matrix-block-titlebar]');
     this.previewContainer =
-      this.titlebar?.querySelector(':scope > .preview') ?? null;
-    this.fieldsContainer = container.querySelector(':scope > .fields');
+      this.titlebar?.querySelector('[data-matrix-block-preview]') ?? null;
+    this.fieldsContainer = blockPart(container, '[data-matrix-block-fields]');
     const formHost =
       this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
         'craft-entry-field-layout-form'
@@ -93,8 +109,9 @@ export class MatrixEntry extends Base {
     this.id = container.dataset.id ?? null;
     this.isNew = !this.id || this.id.startsWith('new');
 
-    const actionMenuBtn = this.container.querySelector<HTMLElement>(
-      ':scope > .actions > .action-btn'
+    const actionMenuBtn = blockPart<HTMLElement>(
+      this.container,
+      '[data-matrix-block-actions] > [data-matrix-block-menu]'
     );
     if (actionMenuBtn) {
       this.actionDisclosure =
@@ -175,7 +192,7 @@ export class MatrixEntry extends Base {
 
     hideActions.push(this.collapsed ? 'collapse' : 'expand');
     hideActions.push(
-      this.container.classList.contains('disabled-entry') ? 'disable' : 'enable'
+      this.container.hasAttribute('data-disabled') ? 'disable' : 'enable'
     );
 
     if (!this.previousBlock()) {
@@ -253,14 +270,14 @@ export class MatrixEntry extends Base {
 
   private previousBlock(): HTMLElement | null {
     const prev = this.container.previousElementSibling;
-    return prev instanceof HTMLElement && prev.classList.contains('matrixblock')
+    return prev instanceof HTMLElement && prev.hasAttribute('data-matrix-block')
       ? prev
       : null;
   }
 
   private nextBlock(): HTMLElement | null {
     const next = this.container.nextElementSibling;
-    return next instanceof HTMLElement && next.classList.contains('matrixblock')
+    return next instanceof HTMLElement && next.hasAttribute('data-matrix-block')
       ? next
       : null;
   }
@@ -278,7 +295,8 @@ export class MatrixEntry extends Base {
       return;
     }
 
-    this.container.classList.add('collapsed');
+    this.container.setAttribute('data-collapsed', '');
+    this.toggleLegacyClass('collapsed', true);
 
     if (this.previewContainer) {
       this.previewContainer.innerHTML = this.previewHtml();
@@ -315,19 +333,11 @@ export class MatrixEntry extends Base {
     // Remember that?
     if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.rememberCollapsedEntryId(this.id!);
-    } else if (!this.matrix.settings!.formControl) {
-      if (!this.collapsedInput) {
-        this.collapsedInput = document.createElement('input');
-        this.collapsedInput.type = 'hidden';
-        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
-        this.collapsedInput.value = '1';
-        this.container.append(this.collapsedInput);
-      } else {
-        this.collapsedInput.value = '1';
-      }
     }
 
+    this.setCollapsedInput('1');
     this.collapsed = true;
+    this.syncFieldMenu();
   }
 
   previewHtml(): string {
@@ -335,100 +345,13 @@ export class MatrixEntry extends Base {
       return escapeHtml(this.uiLabel);
     }
 
-    let previewHtml = '';
-    const fields = Array.from(
-      this.fieldsContainer?.querySelectorAll<HTMLElement>(':scope > * > *') ??
-        []
-    );
-
-    for (const field of fields) {
-      const inputs = Array.from(
-        field.querySelectorAll<HTMLElement>(
-          ':scope > .input select, :scope > .input input:not([type="hidden"]), :scope > .input textarea, :scope > .input .label'
-        )
-      );
-      let inputPreviewText = '';
-
-      for (const input of inputs) {
-        let value: unknown;
-
-        if (input.classList.contains('label')) {
-          const lightswitch = input.closest('.lightswitch');
-          if (
-            lightswitch &&
-            ((lightswitch.classList.contains('on') &&
-              input.classList.contains('off')) ||
-              (!lightswitch.classList.contains('on') &&
-                input.classList.contains('on')))
-          ) {
-            continue;
-          }
-
-          if (input.closest('button[aria-pressed=false]')) {
-            continue;
-          }
-
-          value = input.textContent;
-        } else {
-          const previewText = this.inputPreviewText(input);
-          value = Array.isArray(previewText)
-            ? previewText.map((text) => craft().getText(text))
-            : previewText
-              ? craft().getText(previewText)
-              : null;
-        }
-
-        if (Array.isArray(value)) {
-          value = value.join(', ');
-        }
-
-        if (value) {
-          const escaped = escapeHtml(String(value)).trim();
-          if (escaped) {
-            if (inputPreviewText) {
-              inputPreviewText += ', ';
-            }
-            inputPreviewText += escaped;
-          }
-        }
-      }
-
-      if (inputPreviewText) {
-        previewHtml +=
-          (previewHtml ? ' <span>|</span> ' : '') + inputPreviewText;
-      }
+    if (!this.fieldsContainer) {
+      return '';
     }
 
-    return previewHtml;
-  }
-
-  private inputPreviewText(input: HTMLElement): string | string[] | null {
-    if (input instanceof HTMLSelectElement) {
-      return Array.from(input.selectedOptions).map((option) => option.text);
-    }
-
-    if (
-      input instanceof HTMLInputElement &&
-      (input.type === 'checkbox' || input.type === 'radio') &&
-      input.checked
-    ) {
-      const label = input.id
-        ? document.querySelector(`label[for="${input.id}"]`)
-        : null;
-      if (label) {
-        return label.textContent;
-      }
-    }
-
-    if (!(input instanceof HTMLInputElement)) {
-      return null;
-    }
-    const value = getInputPostVal(input);
-    return Array.isArray(value)
-      ? value.map(String)
-      : value == null
-        ? null
-        : String(value);
+    return blockPreviewParts(this.fieldsContainer)
+      .map((part) => escapeHtml(part))
+      .join(' <span>|</span> ');
   }
 
   expand(): void {
@@ -436,7 +359,8 @@ export class MatrixEntry extends Base {
       return;
     }
 
-    this.container.classList.remove('collapsed');
+    this.container.removeAttribute('data-collapsed');
+    this.toggleLegacyClass('collapsed', false);
 
     const fields = this.fieldsContainer;
 
@@ -474,32 +398,87 @@ export class MatrixEntry extends Base {
     // Remember that?
     if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.forgetCollapsedEntryId(this.id!);
-    } else if (!this.matrix.settings!.formControl && this.collapsedInput) {
-      this.collapsedInput.value = '';
     }
 
+    this.setCollapsedInput('');
     this.collapsed = false;
+    this.syncFieldMenu();
+  }
+
+  /**
+   * The field's "⋮" menu offers "Expand/Collapse all blocks" only when there's
+   * something to expand or collapse. The Vue control keeps its own menu.
+   */
+  private syncFieldMenu(): void {
+    if (!this.matrix.settings!.formControl) {
+      this.matrix.syncFieldMenu();
+    }
+  }
+
+  /**
+   * Twig-rendered blocks still carry Craft 5's state classes, which the legacy
+   * stylesheet styles them by. Card-framed blocks don't — those same styles would
+   * restyle the card — so they get only the data attributes, which is what the
+   * Matrix code reads either way.
+   */
+  private toggleLegacyClass(name: string, on: boolean): void {
+    if (!this.matrix.settings!.formControl) {
+      this.container.classList.toggle(name, on);
+    }
+  }
+
+  /**
+   * Posts the collapsed state, so a block folded up before saving comes back
+   * folded up.
+   *
+   * The Form Control renderers write the input themselves, so this only updates
+   * what it finds. The legacy Twig stack writes one for a saved block but not for
+   * a new one — whose id isn't stable enough to remember in storage — so that one
+   * is created on demand, the way Craft 5 did it.
+   */
+  private setCollapsedInput(value: string): void {
+    this.collapsedInput ??= blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[collapsed]"]'
+    );
+
+    if (!this.collapsedInput) {
+      if (!this.matrix.settings!.formControl) {
+        this.collapsedInput = document.createElement('input');
+        this.collapsedInput.type = 'hidden';
+        this.collapsedInput.name = `${this.matrix.inputNamePrefix}[entries][${this.id}][collapsed]`;
+        this.container.append(this.collapsedInput);
+      } else {
+        return;
+      }
+    }
+
+    this.collapsedInput.value = value;
   }
 
   override disable(): void {
-    const enabledInput = this.container.querySelector<HTMLInputElement>(
-      ':scope > input[name$="[enabled]"]'
+    const enabledInput = blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[enabled]"]'
     );
     if (enabledInput) {
       enabledInput.value = '';
     }
-    this.container.classList.add('disabled-entry');
+    this.container.setAttribute('data-disabled', '');
+    this.toggleLegacyClass('disabled-entry', true);
     this.collapse(true);
   }
 
   override enable(): void {
-    const enabledInput = this.container.querySelector<HTMLInputElement>(
-      ':scope > input[name$="[enabled]"]'
+    const enabledInput = blockPart<HTMLInputElement>(
+      this.container,
+      'input[name$="[enabled]"]'
     );
     if (enabledInput) {
       enabledInput.value = '1';
     }
-    this.container.classList.remove('disabled-entry');
+    this.container.removeAttribute('data-disabled');
+    this.toggleLegacyClass('disabled-entry', false);
   }
 
   moveUp(): void {

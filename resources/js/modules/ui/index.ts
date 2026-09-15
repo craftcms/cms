@@ -24,7 +24,7 @@ declare const $: any;
  * - the element carries a slotted `<span class="label">`, so
  *   `.find('.label').text(…)` keeps working;
  * - legacy **style classes** call sites toggle (`disabled`, `loading`,
- *   `submit`, `secondary`, `small`, `big`) are bridged onto the component's
+ *   `submit`, `secondary`, `chromeless`, `small`, `big`) are bridged onto the component's
  *   properties by a `class`-attribute observer, so chains like
  *   `.addClass('loading')` / `.removeClass('disabled')` still take effect.
  *
@@ -60,6 +60,13 @@ const CLASS_SYNCS: Array<(button: CraftButton, classes: DOMTokenList) => void> =
     (button, classes) => {
       if (classes.contains('secondary')) {
         button.variant = 'solid';
+      }
+    },
+    (button, classes) => {
+      // Legacy `.chromeless` buttons have no fill or border of their own —
+      // the notification close button, a chip's move handle.
+      if (classes.contains('chromeless')) {
+        button.variant = 'plain';
       }
     },
     (button, classes) => {

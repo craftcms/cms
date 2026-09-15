@@ -23,7 +23,12 @@
 
   const props = defineProps<{
     control: FormControlPayload<ContentBlockProps>;
-    value: FormValues | null;
+    /**
+     * Null when the block has no content, and undefined for the beat before the
+     * value arrives — see {@link controlValue}. Both mean "nothing to show", so
+     * this one tests loosely rather than standing a value in.
+     */
+    value: FormValues | null | undefined;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
@@ -62,7 +67,7 @@
     :empty-label="control.props.emptyLabel"
   >
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
-    <craft-empty v-if="value === null" :label="control.props.emptyLabel">
+    <craft-empty v-if="value == null" :label="control.props.emptyLabel">
       <craft-button
         v-if="editable"
         type="button"

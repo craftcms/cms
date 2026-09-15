@@ -174,6 +174,19 @@ function ensureLegacyNotificationContainer() {
     document.body.appendChild(container);
   }
 
+  // Which corner notifications stack in — the user's preference, which the
+  // Twig layout writes onto `<body>` as the same class.
+  const position = (Craft as {notificationPosition?: string})
+    .notificationPosition;
+
+  if (
+    ![...document.body.classList].some((name) =>
+      name.startsWith('notifications--')
+    )
+  ) {
+    document.body.classList.add(`notifications--${position ?? 'end-start'}`);
+  }
+
   if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
     Craft.cp.$notificationContainer = $('#notifications');
   }
