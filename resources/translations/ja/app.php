@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'プライマリの方法を使用することができない場合、リカバリコードを確認のバックアップの形式として使用できます。',
     'Recovery codes generated.' => 'リカバリコードが生成されました。',
     'Red' => 'レッド',
+    'Redo' => 'Redo',
     'Refresh' => '更新',
     'Regenerate' => '再生成',
     'Regenerating project config YAML files from the loaded project config…' => 'ロードされたプロジェクト構成からプロジェクト構成YAMLファイルを再生成中…',
