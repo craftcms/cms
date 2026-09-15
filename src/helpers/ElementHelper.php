@@ -1240,6 +1240,11 @@ class ElementHelper
             $criteria['with'],
             $criteria['withQueries'],
         );
+
+        if (isset($criteria['search']) && !is_string($criteria['search'])) {
+            unset($criteria['search']);
+        }
+
         return $criteria;
     }
 }
