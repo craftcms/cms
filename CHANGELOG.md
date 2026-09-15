@@ -4,7 +4,7 @@
 
 - Added `craft\helpers\StringHelper::containsNewlines()`.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-f6gf-r952-rxg6)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-f6gf-r952-rxg6, GHSA-qcvp-ggx3-97r6)
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-9hp6-3565-gvh5)
 
