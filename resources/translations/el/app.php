@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Οι κωδικοί ανάκτησης μπορούν να χρησιμοποιηθούν ως εφεδρική μορφή επαλήθευσης, όταν δεν μπορείτε να χρησιμοποιήσετε την κύρια μέθοδό σας.',
     'Recovery codes generated.' => 'Οι κωδικοί ανάκτησης δημιουργήθηκαν.',
     'Red' => 'Red',
+    'Redo' => 'Redo',
     'Refresh' => 'Ανανέωση',
     'Regenerate' => 'Αναδημιουργία',
     'Regenerating project config YAML files from the loaded project config…' => 'Αναδημιουργία αρχείων YAML project config από το φορτωμένο project config…',
