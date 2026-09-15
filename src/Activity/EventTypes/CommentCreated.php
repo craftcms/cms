@@ -4,4 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity\EventTypes;
 
-class CommentCreated extends CommentEvent {}
+use CraftCms\Cms\Activity\Contracts\ShouldBeRetained;
+
+class CommentCreated extends CommentEvent implements ShouldBeRetained {}
