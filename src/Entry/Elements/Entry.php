@@ -2245,6 +2245,7 @@ JS, [
         $parent = self::find()
             ->site('*')
             ->preferSites([$this->siteId])
+            ->unique()
             ->drafts(null)
             ->draftOf(false)
             ->status(null)
@@ -2304,6 +2305,7 @@ JS, [
                 $parentQuery = self::find()
                     ->site('*')
                     ->preferSites([$this->siteId])
+                    ->unique()
                     ->drafts(null)
                     ->draftOf(false)
                     ->status(null);

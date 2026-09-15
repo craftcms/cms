@@ -696,6 +696,19 @@ readonly class ElementWrites
                     }
                 }
 
+                // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
+                // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
+                // something changed, even if this nested element was saved independently of its owner.
+                if (
+                    ! $element->propagating &&
+                    $element instanceof NestedElementInterface &&
+                    $element->getIsCanonical() &&
+                    isset($element->touchOwnersOnSave) &&
+                    $element->touchOwnersOnSave
+                ) {
+                    $this->touchOwners($element);
+                }
+
                 if ($trackChanges) {
                     $userId = currentUser()?->getCraftUserId();
                     $timestamp = now();
@@ -1046,6 +1059,34 @@ readonly class ElementWrites
             }
 
             $element->afterAssignedId();
+        }
+    }
+
+    /**
+     * Updates the `dateUpdated` timestamp of a nested element’s owner, and its owner’s owner, and so on up
+     * the ownership chain, so that anything checking an ancestor’s `dateUpdated` to determine whether it’s
+     * changed (e.g. revision creation deciding whether a new revision needs to be created) will notice
+     * that it has, even though the ancestor itself wasn’t directly modified.
+     *
+     * @param  NestedElementInterface  $element  The (canonical) nested element that was just saved
+     *
+     * @see https://github.com/craftcms/cms/issues/19594
+     */
+    private function touchOwners(NestedElementInterface $element): void
+    {
+        $timestamp = Query::prepareDateForDb($element->dateUpdated ?? now());
+        $owner = $element->getOwner();
+
+        while ($owner !== null) {
+            DB::table(Table::ELEMENTS)
+                ->where('id', $owner->id)
+                ->update(['dateUpdated' => $timestamp]);
+
+            if (! $owner instanceof NestedElementInterface) {
+                return;
+            }
+
+            $owner = $owner->getOwner();
         }
     }
 
