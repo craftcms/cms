@@ -41,7 +41,7 @@ Craft.GeneratedFieldsTable.Row = Craft.EditableTable.Row.extend({
     this.addListener($nameInput, 'input', () => {
       const name = Craft.trim($nameInput.val());
       const cvd = this.table.cvd;
-      const value = `generatedField:${this.uid}`;
+      const value = this.getCheckboxValue();
 
       if (name !== '') {
         const $draggable = cvd.findCheckboxByValue(value);
@@ -58,13 +58,17 @@ Craft.GeneratedFieldsTable.Row = Craft.EditableTable.Row.extend({
           });
         }
       } else {
-        cvd.removeCheckbox(this.uid);
+        cvd.removeCheckbox(value);
       }
     });
   },
 
+  getCheckboxValue: function () {
+    return `generatedField:${this.uid}`;
+  },
+
   destroy: function () {
-    this.table.cvd.removeCheckbox(this.uid);
+    this.table.cvd.removeCheckbox(this.getCheckboxValue());
     this.base();
   },
 });
