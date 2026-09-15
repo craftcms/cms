@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
+- Added `craft\helpers\StringHelper::containsNewlines()`.
 - Added `craft\services\ElementSources::CONTEXT_RESTRICTED_MODAL`.
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
 - Fixed a bug where Money and Number fields’ currency labels didn't line up with their inputs. ([#19547](https://github.com/craftcms/cms/pull/19547))
@@ -13,7 +14,7 @@
 - Fixed a bug where nested relational fields weren’t enforcing their “Validate related {type}” setting. ([#19625](https://github.com/craftcms/cms/pull/19625))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-r56r-f696-c8w9, GHSA-f6gf-r952-rxg6)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qj3q-j7r4-428p)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-qj3q-j7r4-428p, GHSA-9hp6-3565-gvh5)
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752)
 

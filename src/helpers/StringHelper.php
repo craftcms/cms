@@ -372,6 +372,17 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Returns true if the string contains any newlines.
+     *
+     * @param string $str
+     * @since 5.11.2
+     */
+    public static function containsNewlines(string $str): bool
+    {
+        return (bool)preg_match('/[\r\n]/', $str);
+    }
+
+    /**
      * Returns true if the string contains all $needles, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
