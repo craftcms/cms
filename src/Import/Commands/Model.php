@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
@@ -16,7 +15,6 @@ use Illuminate\Validation\ValidationException;
 use Override;
 
 use function Laravel\Prompts\form;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
 class Model extends Command implements PromptsForMissingInput

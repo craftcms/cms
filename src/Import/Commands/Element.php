@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Import\Importers\ElementImporter;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Import\Transformers;
+namespace CraftCms\Cms\Element\Import;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Support\Attributes\Importable;
+use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\ImportHelper;
 

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;

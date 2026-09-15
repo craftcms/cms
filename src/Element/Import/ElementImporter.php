@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Import\Importers;
+namespace CraftCms\Cms\Element\Import;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,8 +18,8 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
-use CraftCms\Cms\Import\Transformers\ElementTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;

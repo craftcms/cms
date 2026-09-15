@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\ImportHelper;
 
 use function CraftCms\Cms\t;

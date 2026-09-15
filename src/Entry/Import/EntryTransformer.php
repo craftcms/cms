@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Import\Transformers;
+namespace CraftCms\Cms\Entry\Import;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;

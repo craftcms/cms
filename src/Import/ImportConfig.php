@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Events\ImportConfigSaved;
 use CraftCms\Cms\Import\Events\ImportConfigSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Json as JsonSupport;

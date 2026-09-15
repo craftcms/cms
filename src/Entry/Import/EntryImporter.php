@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Import;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Import\Transformers\EntryTransformer;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use Override;
 

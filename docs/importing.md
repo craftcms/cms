@@ -131,7 +131,7 @@ is accepted and expanded). Behaviour:
 
 ## 6. Saving an element
 
-`ElementImporter::importItem()` (`src/Import/Importers/ElementImporter.php`):
+`ElementImporter::importItem()` (`src/Element/Import/ElementImporter.php`):
 
 1. `getRootElement()` calls `$this->prepareNewRootElementForImport($data)` on the importer to get
    a new element instance (per-type subclasses like `EntryImporter`/`AssetImporter` resolve the

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Import\Transformers;
+namespace CraftCms\Cms\Asset\Import;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Support\Facades\Folders;
 
 class AssetTransformer extends ElementTransformer

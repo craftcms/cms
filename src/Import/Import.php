@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Asset\Import\AssetImporter;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
@@ -18,7 +19,6 @@ use CraftCms\Cms\Import\Events\RegisterDataTypes;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;

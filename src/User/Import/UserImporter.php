@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Import;
 
-use CraftCms\Cms\Import\Importers\ElementImporter;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 

@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\ImportConfig;
-use CraftCms\Cms\Import\Importers\ElementImporter;
-use CraftCms\Cms\Import\Transformers\ElementTransformer;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
