@@ -6,8 +6,10 @@
   import ResolveUploadConflictController from '@/actions/CraftCms/Cms/Http/Controllers/Assets/ResolveUploadConflictController';
   import {deleteAsset} from '@/actions/CraftCms/Cms/Http/Controllers/Assets/ActionController';
   import {store} from '@/routes/craft/actions/craft/cp/uploads';
+  import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
   import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
   import {PromptHandler} from '@/modules/prompt-handler/prompt-handler';
+  import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
   import {Uploader as FileUploader} from '@/modules/uploader/uploader';
 
@@ -40,6 +42,8 @@
       folderId?: number;
       fsType?: string;
       allowedKinds?: string[];
+      /** Assets index uploads belong to the application queue when a destination is supplied. */
+      destination?: AssetUploadDestination;
       /** The Assets page or relation-field container that accepts dropped files. */
       dropZone?: HTMLElement | null;
       /**
@@ -144,12 +148,19 @@
     }
 
     const input = fileInput.value;
+    const destination = props.destination ? {...props.destination} : null;
 
     uploader = new FileUploader(input, {
       fileInput: input,
       allowedKinds: props.allowedKinds,
       ...(props.dropZone ? {dropZone: props.dropZone} : {}),
       url: store.url(),
+      ...(destination
+        ? {
+            enqueueUpload: (file: File, selection: File[]) =>
+              assetUploadQueue.enqueue(file, destination, selection),
+          }
+        : {}),
       on: {
         start: () => promptHandler.resetPrompts(),
         done: ({result}: {result: UploadResult}) => {
@@ -198,6 +209,9 @@
       () => props.folderId,
       () => props.allowedKinds,
       () => props.dropZone,
+      () => props.destination?.folderId,
+      () => props.destination?.url,
+      () => props.destination?.label,
     ],
     createUploader
   );
