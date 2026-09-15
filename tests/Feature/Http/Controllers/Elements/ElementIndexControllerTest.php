@@ -14,7 +14,6 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
-use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -248,6 +247,12 @@ it('reopens an author filter with its selected user', function () {
         ],
     ])->assertOk();
 
-    $crawler = new Crawler($response->json('hudHtml'));
-    expect($crawler->filter('input[name="condition[conditionRules][1][elementIds][]"]')->attr('value'))->toBe((string) $author->id);
+    expect($response->json('builder.value.conditionRules.rules.0.elementIds'))->toBe([$author->id]);
+});
+
+it('accepts the modern filter HUD source descriptor', function () {
+    ($this->postIndexAction)('filter-hud', [
+        'id' => 'filters',
+        'source' => ['type' => 'native', 'key' => '*', 'label' => 'All entries'],
+    ])->assertOk()->assertJsonPath('builder.config.sourceKey', '*');
 });

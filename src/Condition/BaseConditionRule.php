@@ -9,8 +9,10 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\Hidden;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Str;
@@ -136,7 +138,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return null;
     }
 
-    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [
@@ -206,12 +207,26 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             ->all();
     }
 
-    public function getForm(): Form
+    /**
+     * Rule fields sit inline beside the rule picker, which already names what's
+     * being matched, so their labels are only announced to screen readers.
+     * Date fields keep theirs visible, since “From” and “To” are otherwise
+     * indistinguishable.
+     */
+    public function getForm(FormContext $context = new FormContext): Form
     {
-        return Form::make([
+        $nodes = [
             ...$this->operatorNodes(),
             ...$this->inputNodes(),
-        ]);
+        ];
+
+        foreach ($nodes as $node) {
+            if ($node instanceof Field && ! $node->getControl() instanceof DateTime) {
+                $node->labelSrOnly();
+            }
+        }
+
+        return Form::make($nodes);
     }
 
     /** @return list<Node> */

@@ -396,7 +396,7 @@ class FieldsController
                         return ['settings.fieldLimit' => $messages];
                     }
 
-                    return in_array($attribute, $settingAttributes, true)
+                    return in_array(explode('.', $attribute)[0], $settingAttributes, true)
                         ? ["settings.{$attribute}" => $messages]
                         : [$attribute => $messages];
                 })->all();
@@ -540,6 +540,10 @@ class FieldsController
         /** @var FieldLayoutTab $tab */
         $tab = $this->fieldLayoutComponent($request);
 
+        if ($errors = $tab->validateConditions()) {
+            throw ValidationException::withMessages($errors);
+        }
+
         return new JsonResponse([
             'config' => $tab->toArray(),
             'labelHtml' => $tab->labelHtml(),
@@ -550,6 +554,10 @@ class FieldsController
     {
         /** @var FieldLayoutElement $element */
         $element = $this->fieldLayoutComponent($request, $settings);
+
+        if ($errors = $element->validateConditions()) {
+            throw ValidationException::withMessages($errors);
+        }
 
         if (! empty($settings)) {
             $validateAttributes = array_intersect(

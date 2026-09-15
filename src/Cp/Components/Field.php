@@ -36,6 +36,8 @@ class Field extends ViewComponent
 
     protected string|Htmlable|Stringable|ViewComponent|null $label = null;
 
+    protected bool $labelSrOnly = false;
+
     protected string|Htmlable|Stringable|ViewComponent|null $input = null;
 
     protected string|Stringable|null $instructions = null;
@@ -84,6 +86,14 @@ class Field extends ViewComponent
     public function label(string|Htmlable|Stringable|ViewComponent|null $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /** Visually hides the label, keeping it available to screen readers. */
+    public function labelSrOnly(bool $labelSrOnly = true): static
+    {
+        $this->labelSrOnly = $labelSrOnly;
 
         return $this;
     }
@@ -255,6 +265,7 @@ class Field extends ViewComponent
             || ($this->label instanceof Stringable && ! $this->label instanceof Htmlable && ! $this->label instanceof Markup)
                 ? $this->label
                 : null,
+            'label-sr-only' => $this->labelSrOnly,
             'required' => $this->required,
             'translatable' => $this->translatable,
             'translation-description' => $this->translationDescription,

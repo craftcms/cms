@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -69,6 +73,14 @@ abstract class BaseElementLinkType extends BaseLinkType
     /** @var list<string>|null The element sources elements can be linked from */
     public ?array $sources = null;
 
+    /**
+     * @phpstan-var ElementConditionInterface|array{class:class-string<ElementConditionInterface>}|null
+     *
+     * @see getSelectionCondition()
+     * @see setSelectionCondition()
+     */
+    private array|null|ElementConditionInterface $_selectionCondition = null;
+
     /** @param array<string, bool|list<string>|null> $config */
     public function __construct($config = [])
     {
@@ -111,7 +123,27 @@ abstract class BaseElementLinkType extends BaseLinkType
                     ->presentation(ChoicePresentation::Checkboxes)
                     ->options($sources)
                     ->value($this->sources ?? ['*'])),
+            $this->selectionConditionField($prefix),
         ];
+    }
+
+    /**
+     * Returns the selection condition builder setting.
+     */
+    protected function selectionConditionField(string $prefix): FormField
+    {
+        $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
+        $elementType = static::elementType();
+
+        return FormField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
+            ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
+                'type' => $elementType::pluralLowerDisplayName(),
+            ])))
+            ->control(ConditionBuilder::make($this->settingPath($prefix, 'selectionCondition'))
+                ->conditionClass($selectionCondition::class)
+                ->queryParams(['site'])
+                ->forProjectConfig()
+                ->value($selectionCondition->getConfig()));
     }
 
     #[Override]
@@ -160,6 +192,8 @@ JS, [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
+                // The Twig template resolves the condition’s config itself, so give it the object
+                'condition' => $this->getSelectionCondition(),
                 'modalSettings' => [
                     'matchSiteBeforeDisablingElement' => true,
                     'siteId' => app(RequestedSite::class)->get()?->id,
@@ -207,6 +241,7 @@ JS, [
      *     single: bool,
      *     sources: string|array<int, string>,
      *     criteria: array<string, bool|list<string>|string|null>,
+     *     condition: array<string, mixed>|null,
      * }
      */
     protected function elementSelectConfig(): array
@@ -217,6 +252,7 @@ JS, [
             'single' => true,
             'sources' => $this->sources ?? '*',
             'criteria' => $this->selectionCriteria(),
+            'condition' => $this->getSelectionCondition()?->getConfig(),
         ];
     }
 
@@ -226,6 +262,57 @@ JS, [
         return [
             'uri' => 'not :empty:',
         ];
+    }
+
+    /**
+     * Returns the element condition that should be used to determine which elements are selectable by this link type.
+     */
+    public function getSelectionCondition(): ?ElementConditionInterface
+    {
+        if ($this->_selectionCondition !== null && ! $this->_selectionCondition instanceof ConditionInterface) {
+            /** @var ElementConditionInterface $condition */
+            $condition = Conditions::createCondition($this->_selectionCondition);
+            if (! empty($condition->getConditionRules()->getRules())) {
+                $this->_selectionCondition = $condition;
+            } else {
+                $this->_selectionCondition = null;
+            }
+        }
+
+        return $this->_selectionCondition;
+    }
+
+    /**
+     * Sets the element condition that should be used to determine which elements are selectable by this link type.
+     *
+     * @param  ElementConditionInterface|string|array|null  $condition
+     *
+     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
+     */
+    public function setSelectionCondition(mixed $condition): void
+    {
+        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
+            $condition = null;
+        }
+
+        // Don't instantiate it unless we actually end up needing it.
+        $this->_selectionCondition = $condition;
+    }
+
+    /**
+     * Creates an element condition that should be used to determine which elements are selectable by this link type.
+     */
+    protected function createSelectionCondition(): ElementConditionInterface
+    {
+        return static::elementType()::createCondition();
+    }
+
+    /**
+     * Returns whether the link type is configured with a selection condition.
+     */
+    protected function hasSelectionCondition(): bool
+    {
+        return isset($this->_selectionCondition);
     }
 
     /**
@@ -241,6 +328,7 @@ JS, [
      *         single: bool,
      *         sources: string|array<int, string>,
      *         criteria: array<string, bool|list<string>|string|null>,
+     *         condition: array<string, mixed>|null,
      *     },
      * }
      */

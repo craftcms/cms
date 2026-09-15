@@ -28,7 +28,7 @@ use Symfony\Component\DomCrawler\Crawler;
 it('uses each built-in relation settings template through legacy parent hooks', function(string $class, string $template) {
     $field = Mockery::mock($class)->makePartial()->shouldAllowMockingProtectedMethods();
     $condition = Mockery::mock(ElementCondition::class)->makePartial();
-    $condition->setConditionRules([]);
+    $condition->__construct();
     $condition->shouldReceive('getSelectableConditionRules')->andReturn([]);
     $field->shouldReceive('getSelectionCondition')->andReturn($condition);
     Template::shouldReceive('renderTemplate')->once()->withArgs(function($name, $variables) use ($template, $field) {
@@ -70,7 +70,7 @@ it('renders the legacy relation templates with overridable settings HTML', funct
     Sites::partialMock()->shouldReceive('isMultiSite')->andReturn(false);
     Sites::shouldReceive('getEditableSiteIds')->andReturn(collect());
     $condition = Mockery::mock(ElementCondition::class)->makePartial();
-    $condition->setConditionRules([]);
+    $condition->__construct();
     $condition->shouldReceive('getSelectableConditionRules')->andReturn([]);
     $field = Mockery::mock($class)->makePartial();
     $field->shouldReceive('getSelectionCondition')->andReturn($condition);

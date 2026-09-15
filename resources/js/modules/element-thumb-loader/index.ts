@@ -24,5 +24,6 @@ class ElementThumbLoader extends ThumbnailLoader {
 }
 
 registerCraftGlobals({ElementThumbLoader});
+window.dispatchEvent(new Event('craft:element-thumb-loader-ready'));
 
 export {ElementThumbLoader};

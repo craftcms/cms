@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Condition\BaseCondition;
+use CraftCms\Cms\Condition\BaseConditionGroup;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
@@ -221,6 +223,11 @@ it('ignores non-element conditions', function () {
 
             return new class extends BaseCondition
             {
+                public static function createGroup(): ConditionGroupInterface
+                {
+                    return new class extends BaseConditionGroup {};
+                }
+
                 protected function selectableConditionRules(): array
                 {
                     return [];

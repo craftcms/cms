@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -10,18 +11,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn('info', 'maintenance')) {
+        if (! Schema::hasColumn(Table::INFO, 'maintenance')) {
             return;
         }
 
-        Schema::table('info', function (Blueprint $table) {
+        Schema::table(Table::INFO, function (Blueprint $table) {
             $table->dropColumn('maintenance');
         });
     }
 
     public function down(): void
     {
-        Schema::table('info', function (Blueprint $table) {
+        Schema::table(Table::INFO, function (Blueprint $table) {
             $table->boolean('maintenance')->default(false)->after('schemaVersion');
         });
     }

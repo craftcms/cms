@@ -28,6 +28,8 @@ export default class CraftDisclosure extends LionCollapsible {
       css`
         ::slotted([slot='content']) {
           margin-block-start: var(--c-spacing-lg);
+          padding-inline-start: var(--c-spacing-lg);
+          border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
         }
       `,
     ];

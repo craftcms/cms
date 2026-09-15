@@ -37,6 +37,8 @@ uses(UnitTestCase::class)->in('Unit');
 ## Core Rules
 
 - Read nearby tests first and follow their declaration and organization conventions.
+- Before writing a test, identify the smallest regression it must catch and reuse an existing fixture, factory, or mount helper. For a small behavior change, prefer extending an existing test or adding one focused case.
+- Keep setup and assertions proportional to the change's complexity and risk. If a short change needs a much larger test, simplify the setup before adding custom payloads or nested scenarios; retain extra coverage only for a distinct regression the change could cause.
 - Use Boost's `search-docs` for version-specific Pest and Laravel testing syntax. Confirm an assertion or feature before using it.
 - Test observable behavior and application contracts. Cover each changed decision and applicable high-value failure path, but leave framework behavior to framework tests.
 - Run the narrowest relevant test file or filter. Rerun a test after changing it.

@@ -8,6 +8,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
@@ -152,7 +153,10 @@ it('determines if the edition can be upgraded', function () {
     $admin = Mockery::mock(CraftUser::class);
     $admin->shouldReceive('isAdmin')->andReturnTrue();
 
-    Auth::shouldReceive('user')->andReturn(null, $user, $admin, $admin, $admin);
+    $guard = Mockery::mock(Guard::class);
+    $guard->shouldReceive('user')->andReturn(null, $user, $admin, $admin, $admin);
+    Auth::shouldReceive('getDefaultDriver')->andReturn('web');
+    Auth::shouldReceive('guard')->with('web')->andReturn($guard);
 
     // Not logged in
     expect(Edition::canUpgrade())->toBefalse();

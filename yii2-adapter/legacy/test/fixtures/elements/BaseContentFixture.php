@@ -7,6 +7,7 @@
 
 namespace craft\test\fixtures\elements;
 
+use craft\test\ElementFixtureTrait;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -34,6 +35,7 @@ use yii\test\FileFixtureTrait;
 abstract class BaseContentFixture extends DbFixture
 {
     use FileFixtureTrait;
+    use ElementFixtureTrait;
 
     /**
      * @var class-string<ElementInterface> The element type this is for
@@ -141,16 +143,5 @@ abstract class BaseContentFixture extends DbFixture
         if (isset($data['fields'])) {
             $element->setFieldValues($data['fields']);
         }
-    }
-
-    /**
-     * Saves an element.
-     *
-     * @param ElementInterface $element The element to be saved
-     * @return bool Whether the save was successful
-     */
-    protected function saveElement(ElementInterface $element): bool
-    {
-        return Elements::saveElement($element, true, true, false);
     }
 }

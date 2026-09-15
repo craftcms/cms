@@ -8,6 +8,7 @@ use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
+use CraftCms\Cms\Http\Middleware\AuthenticateCraftSession;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
@@ -27,19 +28,20 @@ use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
+use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
-use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -58,6 +60,7 @@ class RouteServiceProvider extends ServiceProvider
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
@@ -156,7 +159,9 @@ class RouteServiceProvider extends ServiceProvider
 
     private function bootMiddleware(Router $router): void
     {
-        $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
+        if (Cms::config()->authGuard === null) {
+            $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
+        }
 
         collect([
             UseWriteConnection::class,
@@ -172,6 +177,8 @@ class RouteServiceProvider extends ServiceProvider
             CraftMaintenanceMiddleware::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
+        $router->prependMiddlewareToGroup('craft', UseCraftAuthGuard::class);
+
         collect([
             RequireCpRequest::class,
             CheckRequirements::class,
@@ -182,7 +189,7 @@ class RouteServiceProvider extends ServiceProvider
 
         collect([
             'web',
-            AuthenticateSession::class,
+            AuthenticateCraftSession::class,
             RunQueue::class,
             HandleTemplateRequest::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));

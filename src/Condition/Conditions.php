@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Arr;
@@ -18,6 +19,31 @@ use ReflectionProperty;
 #[Singleton]
 readonly class Conditions
 {
+    /** @return array<string, list<string>> Errors indexed by rule UUID and attribute. */
+    public function validate(ConditionInterface $condition): array
+    {
+        $errors = [];
+        $groups = [$condition->getConditionRules()];
+
+        while ($group = array_pop($groups)) {
+            foreach ($group->getRules() as $rule) {
+                if ($rule instanceof ConditionGroupInterface) {
+                    $groups[] = $rule;
+
+                    continue;
+                }
+
+                if ($rule instanceof ConditionRuleInterface && ! $rule->validate()) {
+                    foreach ($rule->errors()->getMessages() as $attribute => $messages) {
+                        $errors["{$rule->uid}.$attribute"] = $messages;
+                    }
+                }
+            }
+        }
+
+        return $errors;
+    }
+
     /**
      * Creates a condition instance.
      *
@@ -103,7 +129,7 @@ readonly class Conditions
             }
 
             $class = $newClass;
-            $config += $newConfig;
+            $config = [...$config, ...$newConfig];
         }
 
         if (! is_subclass_of($class, ConditionRuleInterface::class)) {

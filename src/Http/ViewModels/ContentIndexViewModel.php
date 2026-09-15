@@ -273,7 +273,7 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     public function sortOptions(): array
     {
-        [$sourceKey] = $this->sourceState();
+        [$sourceKey, $source] = $this->sourceState();
 
         if ($sourceKey === null) {
             return [];
@@ -281,6 +281,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
         $indexState = $this->indexState();
         $options = [];
+
+        if (isset($source['structureId'])) {
+            $options['structure'] = [
+                'label' => t('Structure'),
+                'value' => 'structure',
+                'defaultDir' => 'asc',
+            ];
+        }
 
         foreach ($indexState->sortOptions($this->elementType) as $option) {
             $value = self::addressableSortAttribute($option);
@@ -733,12 +741,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return $chip;
         }
 
-        // `:inertia`, bound — a plain `inertia => false` renders nothing at all
-        // (Html::tag drops false attributes), so the prop falls back to its
-        // `true` default and the title becomes an Inertia <Link> that navigates
-        // on click. The element edit screen isn't an Inertia page, so that
-        // visit only ends in a hard redirect anyway.
-        return Html::tag('CpLink', $chip, ['href' => $editUrl, ':inertia' => 'false']);
+        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
     }
 
     /**

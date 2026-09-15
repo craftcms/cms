@@ -960,7 +960,12 @@ class NestedElementManager extends Component
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
                     $element->resaving = $owner->resaving && $element->id;
+                    // $owner is already being saved, so it (and its own ancestors, if any) will get its
+                    // `dateUpdated` timestamp updated on its own; no need to do that here as well.
+                    // see https://github.com/craftcms/cms/issues/19594
+                    $element->touchOwnersOnSave = false;
                     Elements::saveElement($element, false);
+                    $element->touchOwnersOnSave = true;
 
                     if (
                         $element->getPrimaryOwnerId() === $owner->id &&
