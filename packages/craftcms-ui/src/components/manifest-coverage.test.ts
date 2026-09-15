@@ -10,7 +10,7 @@ import {describe, expect, it} from 'vite-plus/test';
  * lands undocumented by default and nothing complains.
  *
  * These checks hold the line at fully described. They read the built manifest,
- * so run `npm run build:manifest` first — the `pretest` and `prestorybook`
+ * so run `pnpm run build:manifest` first — the `pretest` and `prestorybook`
  * hooks already do.
  */
 
@@ -67,13 +67,13 @@ describe('the manifest is built', () => {
   it('exists', () => {
     expect(
       manifest,
-      `${MANIFEST} is missing — run \`npm run build:manifest\``
+      `${MANIFEST} is missing — run \`pnpm run build:manifest\``
     ).not.toBeNull();
   });
 
   /**
    * Every check below reads the built manifest, so a stale one fails all of
-   * them at once and blames the components rather than the build. `npm test`
+   * them at once and blames the components rather than the build. `pnpm test`
    * rebuilds it first; running vitest directly does not, which is exactly when
    * this happens.
    */
@@ -84,7 +84,7 @@ describe('the manifest is built', () => {
 
     expect(
       statSync(MANIFEST).mtimeMs,
-      'the manifest is older than a component — run `npm run build:manifest`'
+      'the manifest is older than a component — run `pnpm run build:manifest`'
     ).toBeGreaterThan(newest);
   });
 

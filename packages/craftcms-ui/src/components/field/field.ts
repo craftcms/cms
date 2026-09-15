@@ -9,6 +9,9 @@ import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {FormControlMixin} from '@lion/ui/form-core.js';
+// Named explicitly so the emitted .d.ts can reference Lion's mixin
+// constructor by package specifier instead of a pnpm store path (TS2883).
+import type {} from '@open-wc/dedupe-mixin';
 // Registers <craft-callout> globally for the tip/warning notices.
 import '../callout/callout.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
@@ -441,7 +444,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
         title=${ifDefined(this.statusLabel)}
         aria-hidden="true"
       >
-        <span class="cp-visually-hidden">${this.statusLabel}</span>
+        <craft-visually-hidden>${this.statusLabel}</craft-visually-hidden>
       </div>
     `;
   }
@@ -606,8 +609,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     }
 
     if (this.required) {
-      const srLabel = document.createElement('span');
-      srLabel.className = 'visually-hidden';
+      const srLabel = document.createElement('craft-visually-hidden');
       srLabel.textContent = t('Required');
       srLabel.setAttribute('data-craft-field-decoration', '');
 

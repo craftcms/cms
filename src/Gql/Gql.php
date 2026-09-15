@@ -68,13 +68,13 @@ use GraphQL\Validator\Rules\QueryDepth;
 use GraphQL\Validator\Rules\ValidationRule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -260,7 +260,7 @@ class Gql
             }
         }
 
-        if (! $generalConfig->enableGraphqlIntrospection && Auth::guest()) {
+        if (! $generalConfig->enableGraphqlIntrospection && craftAuth()->guest()) {
             $validationRules[DisableIntrospection::class] = new DisableIntrospection(0);
         }
 

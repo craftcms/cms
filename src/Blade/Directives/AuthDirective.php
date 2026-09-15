@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Blade\Directives;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL as LaravelUrl;
 use Illuminate\View\Compilers\BladeCompiler;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 
 class AuthDirective
@@ -27,14 +27,14 @@ class AuthDirective
 
     public static function requireLogin(): void
     {
-        if (Auth::guest()) {
+        if (craftAuth()->guest()) {
             throw new AuthenticationException('Unauthenticated.');
         }
     }
 
     public static function requireGuest(): void
     {
-        if (Auth::check()) {
+        if (craftAuth()->check()) {
             redirect(LaravelUrl::returnUrl())->throwResponse();
         }
     }

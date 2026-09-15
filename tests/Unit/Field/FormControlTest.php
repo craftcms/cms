@@ -86,7 +86,8 @@ it('passes element link type settings to the link picker', function () {
     expect($assetType['elementSelectConfig'])
         ->toMatchArray([
             'sources' => ['volume:test'],
-            'criteria' => ['kind' => ['pdf'], 'uploaderId' => null],
+            'criteria' => ['uploaderId' => null],
+            'condition' => null,
         ]);
 });
 
@@ -108,7 +109,8 @@ it('passes element link type settings to the Markdown link picker', function () 
     expect($assetType['elementSelectConfig'])
         ->toMatchArray([
             'sources' => ['volume:test'],
-            'criteria' => ['kind' => ['pdf'], 'uploaderId' => null],
+            'criteria' => ['uploaderId' => null],
+            'condition' => null,
         ]);
 });
 
