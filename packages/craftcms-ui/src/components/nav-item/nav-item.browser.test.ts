@@ -103,3 +103,53 @@ it('draws the chevron at the same size as the icon it replaces', async () => {
   expect(chevron.height).toBeCloseTo(icon.height, 1);
   expect(chevron.width).toBeCloseTo(icon.width, 1);
 });
+
+/**
+ * An expanded parent with an icon, open on a subnav of two icon-less children:
+ * one plain, one the page you're on.
+ */
+async function subnavFixture() {
+  const list = document.createElement('craft-nav-list');
+  list.style.width = '300px';
+  const parent = document.createElement('craft-nav-item') as CraftNavItem;
+  parent.setAttribute('icon', 'newspaper');
+  parent.setAttribute('href', '/admin/entries');
+  parent.setAttribute('active', '');
+  parent.append(document.createTextNode('Entries'));
+
+  const subnav = document.createElement('craft-nav-list');
+  subnav.slot = 'subnav';
+  const plain = document.createElement('craft-nav-item') as CraftNavItem;
+  plain.setAttribute('href', '/admin/entries/all');
+  plain.textContent = 'All entries';
+  const current = document.createElement('craft-nav-item') as CraftNavItem;
+  current.setAttribute('href', '/admin/entries/singles');
+  current.setAttribute('active', '');
+  current.setAttribute('current', '');
+  current.textContent = 'Singles';
+  subnav.append(plain, current);
+  parent.append(subnav);
+
+  list.append(parent);
+  document.body.append(list);
+  await Promise.all(
+    [parent, plain, current].map((item) => item.updateComplete)
+  );
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+  return {parent, plain, current};
+}
+
+const labelLeft = (item: CraftNavItem) =>
+  item
+    .shadowRoot!.querySelector('.nav-item__action-item')!
+    .getBoundingClientRect().left;
+
+it('lines a subnav label up with its parent label', async () => {
+  const {parent, plain, current} = await subnavFixture();
+
+  // A selected row draws a border and an unselected one doesn't, so a
+  // difference of a pixel here would move with the selection.
+  expect(labelLeft(plain)).toBeCloseTo(labelLeft(parent), 0);
+  expect(labelLeft(current)).toBeCloseTo(labelLeft(parent), 0);
+});

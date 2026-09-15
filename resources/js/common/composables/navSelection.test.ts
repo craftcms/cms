@@ -1,6 +1,6 @@
 import {expect, it} from 'vite-plus/test';
 
-import {withNavBadges, withNavSelection} from './navSelection';
+import {navItemContains, withNavBadges, withNavSelection} from './navSelection';
 import {node} from '@/common/components/nav.fixture';
 
 const tree = () => [
@@ -136,4 +136,19 @@ it('fills badge counts in by id', function () {
 
   expect(utilities?.badgeCount).toBe(3);
   expect(graphql?.badgeCount).toBe(0);
+});
+
+it('treats an item as containing the pages beneath it, by whole segment', () => {
+  expect(navItemContains('/admin/assets', '/admin/assets')).toBe(true);
+  // A query string or an absolute URL is still the same page.
+  expect(
+    navItemContains(
+      '/admin/assets',
+      'http://example.test/admin/assets/uploads?x=1'
+    )
+  ).toBe(true);
+  // Sharing leading characters isn't containing.
+  expect(navItemContains('/admin/assets', '/admin/assetsettings')).toBe(false);
+  // A group heading has no href, so it contains nothing.
+  expect(navItemContains(null, '/admin/assets')).toBe(false);
 });

@@ -32,6 +32,14 @@ function matches(path: string, itemPath: string): boolean {
   );
 }
 
+/**
+ * Whether a nav item's href is, or is an ancestor of, the given URL — the rule
+ * selection uses, for anything else that needs the item a page belongs to.
+ */
+export function navItemContains(itemHref: string | null, url: string): boolean {
+  return matches(pathOf(url), pathOf(itemHref));
+}
+
 /** `subnav` is `false` when the server hasn't resolved a branch yet. */
 function childrenOf(item: NavNode): Array<NavNode> {
   return Array.isArray(item.subnav) ? item.subnav : [];

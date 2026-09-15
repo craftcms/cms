@@ -1,8 +1,9 @@
-import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
-import {createApp, nextTick} from 'vue';
+import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
+import {createApp, effectScope, nextTick} from 'vue';
 
 import ActionList from './ActionList.vue';
 import {navItemActions} from '@/common/composables/navActions';
+import {useNavItemAction} from '@/common/composables/useNavItemActions';
 import {navFixture, node, selectFixtureItem} from './nav.fixture';
 
 let container: HTMLElement;
@@ -185,6 +186,23 @@ it('shows a collapsed branch’s children only when you’re in it', async () =>
   expect(item('Uploads')?.hasAttribute('icon-only')).toBe(false);
 });
 
+it('makes every branch expandable when floating, but not expanded', async () => {
+  await mount({mode: 'inline'});
+
+  // A floating sidebar overlays the page, so there's nowhere for a flyout to
+  // go — every branch indents in place instead.
+  expect(display('Content')).toBe('inline');
+  expect(display('Administration')).toBe('inline');
+  expect(display('Settings')).toBe('inline');
+
+  // Expandable, not expanded: only the branch you're in starts open, or the
+  // drawer would open as the whole tree at once.
+  expect(item('Content')?.getAttribute('initial-state')).toBe('open');
+  expect(item('Entries')?.getAttribute('initial-state')).toBe('open');
+  expect(item('Administration')?.getAttribute('initial-state')).toBe('closed');
+  expect(item('Settings')?.getAttribute('initial-state')).toBe('closed');
+});
+
 it('collapses a heading inside a collapsed branch too', async () => {
   await mount({
     iconOnly: true,
@@ -223,4 +241,94 @@ it('renders a destination-less branch as a static item', async () => {
   expect(administration).toBeTruthy();
   expect(administration?.getAttribute('href')).toBeNull();
   expect(item('Users')?.getAttribute('href')).toBe('/admin/users');
+});
+
+describe('lent actions', () => {
+  const tree = () => [
+    node('Entries', {
+      href: '/admin/content/entries',
+      icon: 'newspaper',
+      selected: true,
+      subnav: [
+        node('All Entries', {href: '/admin/content/entries'}),
+        node('Blog', {href: '/admin/content/entries/blog'}),
+      ],
+    }),
+    node('Assets', {
+      href: '/admin/assets',
+      icon: 'image',
+      subnav: [node('Uploads', {href: '/admin/assets/uploads'})],
+    }),
+  ];
+
+  const lent = (label: string) =>
+    item(label)?.querySelector(':scope > [slot="actions"]');
+
+  let scope: ReturnType<typeof effectScope>;
+
+  beforeEach(() => {
+    scope = effectScope();
+    scope.run(() =>
+      useNavItemAction(() => '/admin/content/entries/blog', {
+        label: 'Customize sources',
+        icon: 'gear',
+        onClick: () => {},
+      })
+    );
+  });
+
+  // The registry is global; an action left lent would turn up in other tests.
+  afterEach(() => scope.stop());
+
+  it('draws an action a page lends beside the branch it belongs to', async () => {
+    await mount({items: tree()});
+
+    expect(lent('Entries')?.getAttribute('aria-label')).toBe(
+      'Customize sources'
+    );
+    // Shares the branch's href, but it's a leaf — the gear belongs by the
+    // chevron, and a leaf hasn't got one.
+    expect(lent('All Entries')).toBeNull();
+    // A branch the page isn't inside.
+    expect(lent('Assets')).toBeNull();
+  });
+
+  it('takes it away again when the page goes', async () => {
+    await mount({items: tree()});
+    expect(lent('Entries')).not.toBeNull();
+
+    scope.stop();
+    await nextTick();
+
+    expect(lent('Entries')).toBeNull();
+  });
+});
+
+it('tells the page you are on apart from the parents on the way to it', async () => {
+  await mount({
+    items: [
+      node('Entries', {
+        href: '/admin/content/entries',
+        icon: 'newspaper',
+        selected: true,
+        subnav: [
+          node('All Entries', {href: '/admin/content/entries'}),
+          node('Blog', {href: '/admin/content/entries/blog', selected: true}),
+        ],
+      }),
+    ],
+  });
+
+  type Selectable = Element & {active?: boolean; current?: boolean};
+  const entries = item('Entries') as Selectable | undefined;
+  const blog = item('Blog') as Selectable | undefined;
+  const all = item('All Entries') as Selectable | undefined;
+
+  // Selection marks the whole trail, so both are active — but only the end of
+  // the trail is the page, which is what lets the two be styled apart.
+  expect(entries?.active).toBe(true);
+  expect(entries?.current).toBe(false);
+  expect(blog?.active).toBe(true);
+  expect(blog?.current).toBe(true);
+  expect(all?.current).toBe(false);
 });

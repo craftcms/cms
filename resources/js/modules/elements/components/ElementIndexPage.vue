@@ -14,12 +14,19 @@
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import {ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
+  import {useNavItemAction} from '@/common/composables/useNavItemActions';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
     route: ElementIndexRoute;
     /** Overrides the pinned first column (defaults to the element's title). */
     pinnedColumn?: {key: string; label: string};
+    /**
+     * Offers Customize Sources from the nav item this index lives under. Opt-in
+     * rather than automatic, since not every index that uses this page should
+     * offer it.
+     */
+    customizableSources?: boolean;
   }>();
 
   const page = useElementIndexPage({
@@ -58,27 +65,22 @@
   });
 
   const customizeSourcesActive = ref(false);
+
+  // The sources are edited from the nav now rather than from a sidebar on the
+  // page, so the page lends the nav the gear that opens the editor.
+  if (props.customizableSources) {
+    useNavItemAction(() => props.route.url(), {
+      label: t('Customize sources'),
+      icon: 'gear',
+      onClick: () => (customizeSourcesActive.value = true),
+    });
+  }
 </script>
 
 <template>
   <LayoutSlot name="actions">
     <!-- Type-specific page actions (e.g. a New Entry or Upload button). -->
     <slot name="actions" :element-index="elementIndex" />
-  </LayoutSlot>
-
-  <LayoutSlot name="content-sidebar">
-    <SecondaryNav
-      :items="sourceActions"
-      :actions="[
-        {
-          icon: 'gear',
-          label: t('Customize sources'),
-          onClick: () => (customizeSourcesActive = true),
-        },
-      ]"
-    />
-
-    <slot name="sidebar-after" :element-index="elementIndex" />
   </LayoutSlot>
 
   <BaseElementIndex

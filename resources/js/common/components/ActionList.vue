@@ -23,6 +23,7 @@
    */
   import {computed, type Component} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import {useNavItemActions} from '@/common/composables/useNavItemActions';
   import type {
     ActionItem,
     ActionItemButton,
@@ -213,6 +214,23 @@
     return action.type !== 'group' && Boolean(action.selected);
   }
 
+  /**
+   * Whether this is the page you're on rather than an ancestor of it.
+   * Selection marks the whole trail, so the page is the selected item with
+   * nothing selected beneath it.
+   */
+  function isCurrent(action: NavItem): boolean {
+    return (
+      isSelected(action) &&
+      !childrenOf(action).some(
+        (child) =>
+          child.type !== 'hr' &&
+          child.type !== 'display' &&
+          onTrail(child as NavItem)
+      )
+    );
+  }
+
   /** Whether the selection is this item or anywhere beneath it. */
   function onTrail(action: NavItem): boolean {
     return (
@@ -226,25 +244,33 @@
     );
   }
 
-  function expanded(action: NavItem): boolean {
-    if (isGroup(action)) {
-      return true;
+  /**
+   * Where a branch keeps its children: indented in place, or in a flyout.
+   *
+   * A group is a heading over a run of siblings, so it always indents. Past
+   * that it's the mode's call — `trail` indents the branch you're in and flies
+   * the rest out, which needs the room a docked sidebar has.
+   */
+  function subnavDisplay(action: NavItem): 'inline' | 'flyout' {
+    if (isGroup(action) || mode === 'inline') {
+      return 'inline';
     }
 
-    return mode === 'inline' || (mode === 'trail' && onTrail(action));
-  }
-
-  function subnavDisplay(action: NavItem): 'inline' | 'flyout' {
-    return expanded(action) ? 'inline' : 'flyout';
+    return mode === 'trail' && onTrail(action) ? 'inline' : 'flyout';
   }
 
   /**
-   * Expanded branches start open. A group has no toggle, so this is ignored
-   * there; `craft-nav-item` re-reads it when it changes, which is what lets
-   * the open branch follow the selection across an Inertia visit.
+   * Whether a branch starts open — only the one you're in does, whatever the
+   * mode. Deliberately separate from where it renders: `inline` makes every
+   * branch expandable, not expanded, or a floating nav would open as the whole
+   * tree at once.
+   *
+   * A flyout has no toggle, so this is ignored there; `craft-nav-item` re-reads
+   * it when it changes, which is what lets the open branch follow the selection
+   * across an Inertia visit.
    */
   function initialState(action: NavItem): 'open' | 'closed' {
-    return expanded(action) ? 'open' : 'closed';
+    return isGroup(action) || onTrail(action) ? 'open' : 'closed';
   }
 
   /**
@@ -253,6 +279,17 @@
    */
   function iconSvgOf(action: NavItem): string | undefined {
     return isGroup(action) ? undefined : action.iconSvg;
+  }
+
+  const actionsLentTo = useNavItemActions();
+
+  /**
+   * Whatever the page you're on has lent this item — the gear that opens
+   * Customize Sources, on an index. Branches only: a gear belongs beside the
+   * chevron, and the leaf that shares its branch's href hasn't got one.
+   */
+  function lentActions(action: NavItem): Array<ActionItemButton> {
+    return childrenOf(action).length ? actionsLentTo(hrefOf(action)) : [];
   }
 
   /**
@@ -290,6 +327,7 @@
       ...navAttrs(action),
       href: hrefOf(action),
       '.active': isSelected(action),
+      '.current': isCurrent(action),
       '.indicator': Boolean(action.indicator),
     };
 
@@ -356,12 +394,24 @@
 
       {{ labelOf(action) }}
 
+      <craft-button
+        v-for="lent in lentActions(action)"
+        :key="lent.label"
+        slot="actions"
+        type="button"
+        size="small"
+        :icon="lent.icon"
+        variant="plain"
+        :aria-label="lent.label"
+        @click="lent.onClick"
+      ></craft-button>
+
       <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
         <ActionList
           :actions="childrenOf(action)"
           as="craft-nav-item"
           :mode="mode"
-          :icon-only="iconOnly && expanded(action)"
+          :icon-only="iconOnly && subnavDisplay(action) === 'inline'"
         />
       </craft-nav-list>
     </component>

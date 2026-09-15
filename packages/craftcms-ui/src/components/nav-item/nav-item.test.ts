@@ -740,3 +740,61 @@ describe('craft-nav-item flyout accessibility', () => {
     expect(action.getAttribute('aria-expanded')).toBe('false');
   });
 });
+
+describe('craft-nav-item lent actions', () => {
+  it('makes room for them just ahead of the chevron', async () => {
+    const item = await createFixture({iconOnly: false});
+    const slots = Array.from(
+      item.shadowRoot!.querySelectorAll('.nav-item__suffix slot')
+    ).map((slot) => (slot as HTMLSlotElement).name);
+
+    // A slot of their own before the suffix slot, rather than filling that
+    // one — its fallback is the chevron, so filling it would replace it.
+    expect(slots).toContain('actions');
+    expect(slots.indexOf('actions')).toBeLessThan(slots.indexOf('suffix'));
+  });
+
+  it('has nowhere to put them when collapsed', async () => {
+    const item = await createFixture();
+
+    // The rail draws its suffix inside the row's own link, and a button can't
+    // live inside one.
+    expect(item.shadowRoot!.querySelector('slot[name="actions"]')).toBeNull();
+  });
+});
+
+describe('craft-nav-item selection', () => {
+  it('announces only the page itself as the page', async () => {
+    const item = await createFixture({iconOnly: false, subnav: false});
+    const link = () =>
+      item.shadowRoot!.querySelector('.nav-item__action-item')!;
+
+    expect(link().getAttribute('aria-current')).toBe('false');
+
+    // On the trail but not the page: an ancestor of where you are.
+    item.active = true;
+    await item.updateComplete;
+    expect(link().getAttribute('aria-current')).toBe('true');
+
+    item.current = true;
+    await item.updateComplete;
+    expect(link().getAttribute('aria-current')).toBe('page');
+  });
+
+  it('leaves the page you are on without a hover effect', () => {
+    // Against the stylesheet: :hover can't be driven from a test. The selected
+    // fill is the state to show there, so the hover rule steps around it.
+    expect(navItemStyles.cssText).toMatch(
+      /:host\(:not\(\[current\]\)\)\s+\.nav-item:not\(\.nav-item--static\):hover/
+    );
+  });
+
+  it('reflects current, so a selected child can be styled apart', async () => {
+    const item = await createFixture({iconOnly: false, subnav: false});
+
+    item.current = true;
+    await item.updateComplete;
+
+    expect(item.hasAttribute('current')).toBe(true);
+  });
+});

@@ -70,8 +70,42 @@ export const WithChildren: Story = {
           GraphQL
           <craft-nav-list slot="subnav">
             <craft-nav-item>Schemas</craft-nav-item>
-            <craft-nav-item active>Tokens</craft-nav-item>
+            <craft-nav-item active current>Tokens</craft-nav-item>
             <craft-nav-item external>GraphiQL</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
+/**
+ * The actions slot sits just ahead of the chevron, for controls a page lends
+ * the item — the gear that opens Customize Sources on an index, say. Filling
+ * the suffix slot instead would replace the chevron, which is that slot's
+ * fallback. Collapsed to a rail there's no room beside the icon, so the slot
+ * isn't rendered there at all.
+ */
+export const WithActions: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list style="max-width: 300px">
+        <craft-nav-item icon="newspaper" href="#entries" active>
+          Entries
+          <craft-button
+            slot="actions"
+            type="button"
+            size="small"
+            icon="gear"
+            variant="plain"
+            aria-label="Customize sources"
+          ></craft-button>
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="#all" active current
+              >All entries</craft-nav-item
+            >
+            <craft-nav-item href="#blog">Blog</craft-nav-item>
           </craft-nav-list>
         </craft-nav-item>
       </craft-nav-list>
@@ -93,7 +127,7 @@ export const Group: Story = {
         <craft-nav-item group>
           Account Security
           <craft-nav-list slot="subnav">
-            <craft-nav-item href="#password" active
+            <craft-nav-item href="#password" active current
               >Password &amp; Verification</craft-nav-item
             >
             <craft-nav-item href="#passkeys">Passkeys</craft-nav-item>
@@ -178,7 +212,7 @@ export const IconOnlyInline: Story = {
         >
           Entries
           <craft-nav-list slot="subnav">
-            <craft-nav-item href="#all" icon-only active>
+            <craft-nav-item href="#all" icon-only active current>
               All Entries
             </craft-nav-item>
             <craft-nav-item href="#singles" icon-only>Singles</craft-nav-item>
@@ -208,7 +242,7 @@ export const TogglePositionPrefix: Story = {
           GraphQL
           <craft-nav-list slot="subnav">
             <craft-nav-item>Schemas</craft-nav-item>
-            <craft-nav-item active>Tokens</craft-nav-item>
+            <craft-nav-item active current>Tokens</craft-nav-item>
             <craft-nav-item external>GraphiQL</craft-nav-item>
           </craft-nav-list>
         </craft-nav-item>
@@ -226,7 +260,7 @@ export const SubnavWithoutLabel: Story = {
         <craft-nav-item>
           <craft-nav-list slot="subnav">
             <craft-nav-item>Schemas</craft-nav-item>
-            <craft-nav-item active>Tokens</craft-nav-item>
+            <craft-nav-item active current>Tokens</craft-nav-item>
             <craft-nav-item external>GraphiQL</craft-nav-item>
           </craft-nav-list>
         </craft-nav-item>

@@ -4,6 +4,10 @@ export default css`
   :host {
     --_padding-inline: var(--c-spacing-md);
     --_padding-block: var(--c-spacing-sm);
+    /* The icon column of a row with a prefix. */
+    --_prefix-size: calc(24rem / 16);
+    /* The rule down the side of an inline subnav. */
+    --_subnav-rule: 2px;
     /* The square a collapsed row reserves for its icon, and the box that
        square actually occupies — the row draws a transparent border to keep
        room for its focus state, so anything covering it has to match the
@@ -11,6 +15,8 @@ export default css`
     --_rail-border: 1px;
     --_rail-size: calc(var(--c-size-touch-target) - var(--c-spacing-sm));
     --_rail-box: calc(var(--_rail-size) + var(--_rail-border) * 2);
+
+    border-radius: var(--c-radius-md);
   }
 
   .nav-item {
@@ -23,6 +29,7 @@ export default css`
     color: inherit;
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
+    border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     position: relative;
 
@@ -78,14 +85,17 @@ export default css`
   }
 
   .nav-item__prefix craft-button,
-  .nav-item__suffix craft-button {
+  /* Above the label's full-row click target, or a click meant for a control
+     would follow the link instead. */
+  .nav-item__suffix craft-button,
+  ::slotted([slot='actions']) {
     position: relative;
     z-index: 1;
   }
 
   .nav-item--prefixed {
     padding-inline: var(--c-spacing-sm);
-    grid-template-columns: calc(24rem / 16) 1fr auto;
+    grid-template-columns: var(--_prefix-size) 1fr auto;
   }
 
   .nav-item--flush {
@@ -120,7 +130,23 @@ export default css`
     padding-block: var(--_padding-block) var(--c-spacing-xs);
   }
 
+  :host([active]) {
+    background-color: var(--c-surface-raised);
+  }
+
   :host([active]) .nav-item {
+    background-color: var(--c-color-accent-fill-quiet);
+    border: 1px solid var(--c-color-accent-border-quiet);
+  }
+
+  /*
+   * Selected parent: on the trail to the page you're on, but not the page
+   * itself. Stub values — a quieter treatment than the child's.
+   */
+  :host([active]:not([current])) .nav-item {
+    background-color: transparent;
+    border-color: transparent;
+
     &:before {
       content: '';
       position: absolute;
@@ -129,12 +155,23 @@ export default css`
       width: calc(3rem / 16);
       height: 76%;
       border-radius: calc(2rem / 16);
-      background-color: currentColor;
+      background-color: var(--c-color-accent-fill-loud);
       transform: translateX(-150%);
     }
   }
 
-  .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
+  /*
+   * Selected child: the page you're on. Stub values.
+   */
+  :host([current]) .nav-item {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+    color: var(--c-color-accent-on-quiet);
+  }
+
+  /* Not on the page you're on: its selected fill is the state to show. */
+  :host(:not([current]))
+    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
 
@@ -154,6 +191,9 @@ export default css`
 
   .nav-item__suffix {
     justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
   }
 
   .active-indicator {
@@ -168,13 +208,22 @@ export default css`
     }
   }
 
+  /*
+   * A child's label lines up with its parent's. The parent's label sits past
+   * its padding, its icon column and the gap after it; a child's sits past this
+   * margin, the rule, this padding and the child's own padding. The margin is
+   * whatever makes the two add up. Both rows carry the same border, so it
+   * cancels out.
+   */
   :host(:not([group])) .subnav {
     margin-block-start: var(--c-spacing-sm);
     margin-inline-start: calc(
-      (var(--c-size-icon-md) / 2) + var(--c-spacing-sm) + 1px
+      var(--c-spacing-sm) + var(--_prefix-size) + var(--c-spacing-md) -
+        var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
     );
     padding-inline: var(--c-spacing-sm);
-    border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);
+    border-left: var(--_subnav-rule) solid transparent;
+    /*border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);*/
   }
 
   /*
@@ -224,6 +273,9 @@ export default css`
       justify-content: center;
       align-items: center;
     }
+  }
+
+  :host([icon-only]) {
   }
 
   :host([icon-only]) li {
@@ -317,15 +369,22 @@ export default css`
     opacity: 0;
   }
 
-  /* A heading's stand-in: the rule between one run of icons and the next. */
+  /* A heading's stand-in: the rule between one run of icons and the next. The
+     space above belongs to the rule itself, not a margin carried over from the
+     expanded heading. */
   :host([group][icon-only]) {
+    margin-block-start: 0;
     padding-block-start: var(--c-spacing-sm);
   }
 
   .rail-separator {
-    margin: 0;
+    position: relative;
     border: 0;
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    width: 60%;
+    margin: 0 auto;
+    inset-block-start: calc(var(--c-spacing-sm) * -1);
+    border-block-start: 1px solid
+      color-mix(transparent, var(--c-color-neutral-border-quiet));
   }
 
   /*

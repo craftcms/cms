@@ -34,16 +34,25 @@
     )
   );
 
-  // `ActionList` draws the levels: the branch you're in expands in place, and
-  // everything else opens in a flyout on hover. Collapsed to a rail there's no
-  // room to indent at all, so every branch flyouts.
-  const {iconOnly = false} = defineProps<{iconOnly?: boolean}>();
+  // `ActionList` draws the levels. Under `trail` the branch you're in expands
+  // in place and everything else opens in a flyout on hover; `inline` makes
+  // every branch expandable instead, for a floating sidebar, where a flyout
+  // would open off the edge of a screen the drawer already covers.
+  const {iconOnly = false, mode = 'trail'} = defineProps<{
+    iconOnly?: boolean;
+    mode?: 'trail' | 'flyout' | 'inline';
+  }>();
   const queue = computed(() => page.props.queue);
 </script>
 
 <template>
   <craft-nav-list>
-    <ActionList :actions="nav" as="craft-nav-item" :icon-only="iconOnly" />
+    <ActionList
+      :actions="nav"
+      as="craft-nav-item"
+      :icon-only="iconOnly"
+      :mode="mode"
+    />
     <cp-queue-indicator
       :displayed-job.prop="queue.displayedJob"
       :has-reserved-jobs.prop="queue.hasReservedJobs"

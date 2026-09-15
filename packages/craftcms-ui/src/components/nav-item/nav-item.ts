@@ -41,9 +41,17 @@ export default class CraftNavItem extends LitElement {
   @property()
   href: string;
 
-  /** Displays the item as active. */
+  /** On the trail to the page you're on: the page itself, or an ancestor. */
   @property({type: Boolean, reflect: true})
   active: boolean = false;
+
+  /**
+   * The page you're on, as opposed to an ancestor of it. Every item on the
+   * trail is `active`; only the end of it is also `current`, so a selected
+   * parent and a selected child can be styled apart.
+   */
+  @property({type: Boolean, reflect: true})
+  current: boolean = false;
 
   /** Opens the item in a new tab and displays an external link icon in the suffix. */
   @property({type: Boolean})
@@ -169,6 +177,19 @@ export default class CraftNavItem extends LitElement {
    */
   private get subnavId(): string {
     return `${this.id}-subnav`;
+  }
+
+  /**
+   * `page` only for the page you're on; an ancestor on the trail to it is
+   * `true`, which reads as "current item in this set" rather than claiming to
+   * be the page itself.
+   */
+  private get ariaCurrentState(): 'page' | 'true' | 'false' {
+    if (this.current) {
+      return 'page';
+    }
+
+    return this.active ? 'true' : 'false';
   }
 
   constructor() {
@@ -361,7 +382,7 @@ export default class CraftNavItem extends LitElement {
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
+        aria-current="${this.href ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         aria-label="${
@@ -516,9 +537,18 @@ export default class CraftNavItem extends LitElement {
       : nothing;
   }
 
+  /**
+   * The row's trailing controls. The actions slot comes first, so anything a
+   * page lends the item — a gear for its settings, say — sits just before the
+   * chevron rather than displacing it the way filling the suffix slot would.
+   *
+   * Not collapsed: the rail renders this inside the row's own link, and a
+   * button can't live inside one.
+   */
   renderSuffix(showToggle: boolean = false, showFlyoutToggle = false) {
     return html`
       <div class="nav-item__suffix">
+        ${this.iconOnly ? nothing : html`<slot name="actions"></slot>`}
         <slot name="suffix">
           ${showToggle && this.togglePosition === 'suffix'
             ? this.renderSubnavToggle()
@@ -554,7 +584,7 @@ export default class CraftNavItem extends LitElement {
         class="nav-item__action-item"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
+        aria-current="${this.href ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         @click="${this.href ? nothing : this.#toggleFlyout}"

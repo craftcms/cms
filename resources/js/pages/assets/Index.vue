@@ -82,7 +82,7 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage :route="route" customizable-sources>
     <template #navbar>
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>

@@ -57,7 +57,12 @@
       </craft-button>
     </div>
     <div class="cp-sidebar__body">
-      <MainNav :icon-only="collapsed" />
+      <!-- Floating, the sidebar overlays the page and there's nowhere for a
+        flyout to go, so every branch expands in place instead. -->
+      <MainNav
+        :icon-only="collapsed"
+        :mode="sidebar.mode === 'floating' ? 'inline' : 'trail'"
+      />
     </div>
     <div class="cp-sidebar__footer">
       <EditionInfo v-if="!collapsed" />
@@ -96,10 +101,11 @@
     inset-inline-start: 0;
     inset-inline-end: auto;
     border-radius: 0 var(--c-radius-md) var(--c-radius-md) 0;
-    box-shadow: var(--c-shadow-lg);
     transform: translateX(0);
-    max-width: 90%;
+    width: clamp(calc(240rem / 16), 60dvw, calc(320rem / 16));
     transition: transform 200ms cubic-bezier(0, 0.55, 0.45, 1);
+    background-color: var(--c-surface-overlay);
+    box-shadow: var(--c-shadow-overlay);
   }
 
   /* Only a floating sidebar leaves; a docked one narrows to the icon rail. */

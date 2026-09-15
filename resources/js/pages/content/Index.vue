@@ -34,7 +34,7 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage :route="route" customizable-sources>
     <template #actions="{elementIndex}">
       <NewEntryButton
         :sources="elementIndex.sources"
