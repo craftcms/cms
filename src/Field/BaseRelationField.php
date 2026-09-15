@@ -972,17 +972,18 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ->eagerly();
         }
 
-        $errorCount = 0;
+        $invalidTargetIds = [];
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
                 /** @var Element $target */
                 $element->addModelErrors($target, "$this->handle[$i]");
-                $errorCount++;
+                $invalidTargetIds[] = $target->id;
             }
         }
 
-        if ($errorCount) {
+        if (! empty($invalidTargetIds)) {
+            $element->addInvalidNestedElementIds($invalidTargetIds);
             $selectedCount = $value->count();
             $fail(t('The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
                 'relatedType' => $selectedCount === 1
