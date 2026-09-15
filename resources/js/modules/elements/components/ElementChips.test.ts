@@ -133,12 +133,12 @@ describe('ElementChips', () => {
       const {root, selection} = mount();
 
       chips(root)[0]!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );
       chips(root)[2]!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: true},
         })
       );
@@ -168,7 +168,7 @@ describe('ElementChips', () => {
 
       chips(root)[0]!.dispatchEvent(clickEvent('click'));
       chips(root)[1]!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );

@@ -154,10 +154,10 @@ describe('craft-chip selection', () => {
     );
   });
 
-  it('emits selected-change with the new state', async () => {
+  it('emits craft-selection-change with the new state', async () => {
     const element = await createChip({selectable: ''});
     const events: Array<CustomEvent> = [];
-    element.addEventListener('selected-change', (event) =>
+    element.addEventListener('craft-selection-change', (event) =>
       events.push(event as CustomEvent)
     );
 
@@ -174,7 +174,7 @@ describe('craft-chip selection', () => {
   it('carries the shift key from the click that preceded the change', async () => {
     const element = await createChip({selectable: ''});
     const events: Array<CustomEvent> = [];
-    element.addEventListener('selected-change', (event) =>
+    element.addEventListener('craft-selection-change', (event) =>
       events.push(event as CustomEvent)
     );
 

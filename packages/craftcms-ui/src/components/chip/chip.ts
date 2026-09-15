@@ -48,7 +48,7 @@ import {
  * @slot suffix - Trailing content, shown after the label. Typically an action
  *   button or menu.
  *
- * @event selected-change - The selection checkbox was toggled.
+ * @event craft-selection-change - The selection checkbox was toggled.
  *   `detail.selected` is the new state, and `detail.shiftKey` whether Shift
  *   was held on the click before it, for range selection.
  *
@@ -165,7 +165,7 @@ export default class CraftChip extends LitElement {
 
     this.selected = checked;
     this.dispatchEvent(
-      new CustomEvent('selected-change', {
+      new CustomEvent('craft-selection-change', {
         detail: {selected: checked, shiftKey: this.#selectShiftKey},
         bubbles: true,
         composed: true,

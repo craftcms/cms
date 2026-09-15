@@ -165,7 +165,7 @@
         :selected="selection.isSelected(element.id) || undefined"
         :select-label="t('Select {label}', {label: labelFor(element)})"
         :show-status="!!element.status || undefined"
-        @selected-change="
+        @craft-selection-change="
           (event: CustomEvent<{selected: boolean; shiftKey: boolean}>) =>
             onSelectedChange(element, event.detail)
         "

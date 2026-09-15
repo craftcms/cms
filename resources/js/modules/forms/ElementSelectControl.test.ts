@@ -381,7 +381,7 @@ describe('ElementSelectControl', () => {
   /**
    * Stands in for `craft-chip`'s own checkbox reporting a new state. The chip
    * owns the control and the shift capture, so the field only ever sees the
-   * `selected-change` it emits.
+   * `craft-selection-change` it emits.
    */
   function selectChip(
     chip: HTMLElement,
@@ -389,7 +389,7 @@ describe('ElementSelectControl', () => {
     shiftKey = false
   ): void {
     chip.dispatchEvent(
-      new CustomEvent('selected-change', {detail: {selected, shiftKey}})
+      new CustomEvent('craft-selection-change', {detail: {selected, shiftKey}})
     );
   }
 
@@ -756,7 +756,7 @@ describe('ElementSelectControl', () => {
 
     function selectFirstChip(root: HTMLElement): void {
       root.querySelector('craft-chip')!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );
@@ -928,7 +928,7 @@ describe('ElementSelectControl', () => {
       });
 
       root.querySelector('craft-chip')!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );
@@ -1447,7 +1447,7 @@ describe('ElementSelectControl', () => {
       const root = await mount({props: {limit: 3}, value: [5, 6]});
 
       root.querySelector('craft-chip')!.dispatchEvent(
-        new CustomEvent('selected-change', {
+        new CustomEvent('craft-selection-change', {
           detail: {selected: true, shiftKey: false},
         })
       );
