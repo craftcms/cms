@@ -7,13 +7,16 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
+use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-abstract class Filesystem extends Component implements FsInterface
+abstract class Filesystem extends Component implements CpEditable, FsInterface
 {
     use ConfigurableComponent;
     use SavableComponent;
@@ -39,6 +42,15 @@ abstract class Filesystem extends Component implements FsInterface
     public function getRootUrl(): ?string
     {
         return null;
+    }
+
+    public function getCpEditUrl(): ?string
+    {
+        if (! $this->handle || ! currentUser()?->isAdmin()) {
+            return null;
+        }
+
+        return Url::cpUrl("settings/filesystems/{$this->handle}");
     }
 
     abstract public function getDiskConfig(): array;

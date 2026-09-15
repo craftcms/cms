@@ -16,7 +16,6 @@ import {
   flyoutHoverIntent,
   type HoverIntentMember,
 } from '@src/utilities/hover-intent.js';
-import {dispatchNavigateEvent} from '@src/utilities/navigate-event.js';
 
 /**
  * One row of a navigation: a link, a heading over a run of them, or a branch
@@ -319,13 +318,6 @@ export default class CraftNavItem extends LitElement {
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
-  #handleLinkClick = (event: MouseEvent) => {
-    if (!this.href) {
-      return;
-    }
-    dispatchNavigateEvent(this, this.href, event);
-  };
-
   /**
    * The tag the item's own row is built from. An item that goes somewhere is a
    * link; one that only discloses a flyout is a button, so it can be reached by
@@ -375,7 +367,7 @@ export default class CraftNavItem extends LitElement {
         aria-label="${
           (this.href || hasSubnav) && this.labelText ? this.labelText : nothing
         }"
-        @click="${this.href ? this.#handleLinkClick : this.#toggleFlyout}"
+        @click="${this.href ? nothing : this.#toggleFlyout}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
@@ -565,7 +557,7 @@ export default class CraftNavItem extends LitElement {
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
-        @click="${this.href ? this.#handleLinkClick : this.#toggleFlyout}"
+        @click="${this.href ? nothing : this.#toggleFlyout}"
       >
         <slot
           id="${this.id}-label"

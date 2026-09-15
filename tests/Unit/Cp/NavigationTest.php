@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Utility\Utilities;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +47,10 @@ beforeEach(function () {
     // The nav caches per user, so building one asks who's asking.
     $user->shouldReceive('getCraftUserId')->andReturn(1);
 
-    Auth::shouldReceive('user')->andReturn($user);
+    $this->authGuard = Mockery::mock(Guard::class);
+    $this->authGuard->shouldReceive('user')->andReturn($user);
+    Auth::shouldReceive('getDefaultDriver')->andReturn('web');
+    Auth::shouldReceive('guard')->with('web')->andReturn($this->authGuard);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
 
     // The tree is cached, and the key can't see a mocked service — so without

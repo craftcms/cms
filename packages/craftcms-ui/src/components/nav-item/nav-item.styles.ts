@@ -19,6 +19,7 @@ export default css`
     /* Two tracks: an item with no icon has no prefix to leave room for. */
     grid-template-columns: 1fr auto;
     align-items: center;
+    text-decoration: none;
     color: inherit;
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);

@@ -48,12 +48,17 @@ class MarkdownField extends LitElement {
   private editor: OverTypeInstance | null = null;
   private linkPopoverController: LinkPopoverController | null = null;
   private previewController: PreviewController | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  private observedWidth = 0;
   private resolvedInputId: string | null = null;
   private formValue: string | null = null;
   private updateCharCounter: (() => void) | null = null;
 
   @property({attribute: 'asset-any-uploader', type: Boolean})
   assetAnyUploader = false;
+
+  @property({attribute: 'asset-condition', type: Object})
+  assetCondition: Record<string, unknown> | null = null;
 
   @property({attribute: 'asset-sources', type: Array})
   assetSources: string[] = [];
@@ -203,6 +208,7 @@ class MarkdownField extends LitElement {
     this.assetController = createAssetController(
       editor,
       this.assetAnyUploader ? {uploaderId: null} : {},
+      this.assetCondition,
       this.assetSources,
       previewController
     );
@@ -216,12 +222,34 @@ class MarkdownField extends LitElement {
     ];
 
     this.syncEditorState();
+    this.observeWidth(editor);
     requestAnimationFrame(() => {
       if (this.editor === editor) {
         editor.setValue(editor.getValue());
       }
     });
     this.syncInitialFormValue(editor.textarea.name);
+  }
+
+  private observeWidth(editor: OverTypeInstance): void {
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(([entry]) => {
+      const width = entry?.contentRect.width ?? 0;
+
+      if (width <= 0 || width === this.observedWidth) {
+        return;
+      }
+
+      this.observedWidth = width;
+
+      if (this.editor === editor) {
+        editor.setValue(editor.getValue());
+      }
+    });
+    this.resizeObserver.observe(this);
   }
 
   private releaseInputIdToTextarea(): string {
@@ -437,6 +465,7 @@ class MarkdownField extends LitElement {
 
   private destroy(): void {
     this.formValue = this.editor?.getValue() ?? this.formValue;
+    this.resizeObserver?.disconnect();
 
     for (const cleanup of this.cleanups) {
       cleanup();
@@ -447,7 +476,9 @@ class MarkdownField extends LitElement {
     this.cleanups = [];
     this.editor = null;
     this.linkPopoverController = null;
+    this.observedWidth = 0;
     this.previewController = null;
+    this.resizeObserver = null;
   }
 
   private syncEditorState(): void {

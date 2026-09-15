@@ -42,6 +42,10 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  * @csspart suffix - The button's suffix slot.
  * @csspart spinner - Spinner that shows when the button is in a loading state.
  * @csspart link - The anchor element rendered when the button has an href.
+ *
+ * @event craft-toggle - Fired when a `toggle` button is activated. `detail.active`
+ *   is the state being asked for. Cancelable — `active` is owned by whoever set
+ *   it, and the button never changes it itself.
  */
 export default class CraftButton extends Actionable(LionButtonSubmit) {
   static override get styles() {
@@ -71,16 +75,46 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     }
     super.connectedCallback();
     this.syncLinkHostState();
+    this.addEventListener('click', this.#handleToggleClick);
+
+    // Moved while it was still waiting to be shown: disconnecting dropped the
+    // observer, so pick the wait back up rather than never judging it.
+    if (this.hasUpdated && !this.accessibleName) {
+      this.#checkAccessibleName();
+    }
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener('click', this.#handleToggleClick);
+    this.#stopAwaitingRender();
 
     if (this.announcementTimer) {
       clearTimeout(this.announcementTimer);
       this.announcementTimer = null;
     }
   }
+
+  /**
+   * Reports that a toggle was activated, for the owner of `active` to act on.
+   *
+   * Cancelable, so a consumer can refuse the change; `active` is left alone
+   * either way.
+   */
+  #handleToggleClick = (event: Event) => {
+    if (!this.toggle || this.disabled || this.loading) {
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('craft-toggle', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {active: !this.active, sourceEvent: event},
+      })
+    );
+  };
 
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
@@ -98,6 +132,16 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
       changedProperties.get('actionState') !== undefined
     ) {
       this.loading = this.actionState === AsyncStates.Loading;
+    }
+
+    // Only while `toggle` is set: a plain button may carry an `aria-pressed`
+    // its owner manages (`craft-button-group` sets one on every child), and
+    // overwriting that would be worse than leaving it alone.
+    if (
+      this.toggle &&
+      (changedProperties.has('active') || changedProperties.has('toggle'))
+    ) {
+      this.setAttribute('aria-pressed', String(this.active));
     }
 
     if (changedProperties.has('loading')) {
@@ -150,6 +194,14 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
       Array.from(childComponents).map((child: any) => child.updateComplete)
     );
 
+    this.#checkAccessibleName();
+  }
+
+  /**
+   * Flags a button with no accessible name. A hidden button has no computable
+   * name, so the check waits until it's visible.
+   */
+  #checkAccessibleName(): void {
     if (!this.accessibleName) {
       // In link mode the host is role="presentation" (name not computable on
       // it); the real accessible element is the inner anchor.
@@ -160,8 +212,47 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
       this.accessibleName = computeAccessibleName(nameTarget);
     }
 
-    this._hasAccessibilityError =
-      !this.accessibleName || this.accessibleName.trim() === '';
+    const unnamed = !this.accessibleName || this.accessibleName.trim() === '';
+
+    if (unnamed && !this.#isVisible()) {
+      this.#awaitRender();
+      return;
+    }
+
+    this._hasAccessibilityError = unnamed;
+  }
+
+  /**
+   * Whether the button can be seen. `visibility: hidden` counts as well as
+   * `display: none` -- it's inherited, so it hides the name as surely -- which
+   * client rects alone would miss.
+   */
+  #isVisible(): boolean {
+    return typeof this.checkVisibility === 'function'
+      ? this.checkVisibility({visibilityProperty: true})
+      : this.getClientRects().length > 0;
+  }
+
+  #awaitRender(): void {
+    if (this.#renderObserver || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    // Observes size, so a reveal by `visibility` alone isn't rechecked.
+    this.#renderObserver = new ResizeObserver(() => {
+      if (!this.#isVisible()) {
+        return;
+      }
+
+      this.#stopAwaitingRender();
+      this.#checkAccessibleName();
+    });
+    this.#renderObserver.observe(this);
+  }
+
+  #stopAwaitingRender(): void {
+    this.#renderObserver?.disconnect();
+    this.#renderObserver = null;
   }
 
   /** The computed accessible name */
@@ -188,6 +279,13 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
   /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
   @property({reflect: true, type: Boolean}) override active: boolean = false;
+
+  /**
+   * Makes the button a toggle: `aria-pressed` follows `active`. The button
+   * doesn't change `active` itself; it fires `craft-toggle` for whoever owns it.
+   * For an on/off setting, use `craft-switch`.
+   */
+  @property({type: Boolean, reflect: true}) toggle: boolean = false;
 
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
@@ -218,6 +316,9 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
   @state()
   private _hasAccessibilityError: boolean = false;
+
+  /** Waits for a hidden button to be shown before judging its name. */
+  #renderObserver: ResizeObserver | null = null;
 
   private linkHostStateApplied = false;
 

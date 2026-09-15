@@ -66,7 +66,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -75,6 +74,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -786,6 +786,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function afterValidate(?Validator $validator = null): void
     {
         $this->validateSources();
+
+        if ($condition = $this->getSelectionCondition()) {
+            foreach (Conditions::validate($condition) as $path => $messages) {
+                $this->errors()->merge(["selectionCondition.$path" => $messages]);
+            }
+        }
     }
 
     /**
@@ -966,17 +972,18 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ->eagerly();
         }
 
-        $errorCount = 0;
+        $invalidTargetIds = [];
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
                 /** @var Element $target */
                 $element->addModelErrors($target, "$this->handle[$i]");
-                $errorCount++;
+                $invalidTargetIds[] = $target->id;
             }
         }
 
-        if ($errorCount) {
+        if (! empty($invalidTargetIds)) {
+            $element->addInvalidNestedElementIds($invalidTargetIds);
             $selectedCount = $value->count();
             $fail(t('The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
                 'relatedType' => $selectedCount === 1
@@ -1559,7 +1566,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 );
                 $siteIds = Arr::where($siteIds, fn ($siteId) => $siteId !== $element->siteId);
                 if (! empty($siteIds)) {
-                    $userId = Auth::id();
+                    $userId = craftAuth()->id();
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
@@ -1793,7 +1800,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if ($this->_selectionCondition !== null && ! $this->_selectionCondition instanceof ConditionInterface) {
             /** @var ElementConditionInterface $condition */
             $condition = Conditions::createCondition($this->_selectionCondition);
-            if (! empty($condition->getConditionRules())) {
+            if (! empty($condition->getConditionRules()->getRules())) {
                 $this->_selectionCondition = $condition;
             } else {
                 $this->_selectionCondition = null;
@@ -1812,7 +1819,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      */
     public function setSelectionCondition(mixed $condition): void
     {
-        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()) {
+        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
             $condition = null;
         }
 

@@ -64,11 +64,7 @@
         trackSize: '1.5fr',
       },
       cell: ({row, getValue}) =>
-        h(
-          CpLink,
-          {href: row.original.url, inertia: false, class: 'font-bold'},
-          getValue
-        ),
+        h(CpLink, {href: row.original.url, class: 'font-bold'}, getValue),
     }),
     columnHelper.accessor('searchable', {
       header: t('Searchable'),
@@ -207,13 +203,7 @@
 
 <template>
   <LayoutSlot name="actions">
-    <CpLink
-      :inertia="false"
-      appearance="button"
-      variant="accent"
-      :href="create()"
-      icon="plus"
-    >
+    <CpLink appearance="button" variant="accent" :href="create()" icon="plus">
       {{ t('New field') }}
     </CpLink>
   </LayoutSlot>

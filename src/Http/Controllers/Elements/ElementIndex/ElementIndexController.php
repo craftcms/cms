@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
+use CraftCms\Cms\Condition\ConditionBuilder;
 use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -69,7 +70,7 @@ class ElementIndexController
     {
         $elementType = $request->elementType();
         $context = $request->context();
-        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key'), $context);
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key', $request->input('source')), $context);
         $fieldLayouts = $request->fieldLayouts();
         $request->condition();
         $id = $request->input('id');
@@ -86,7 +87,7 @@ class ElementIndexController
 
         /** @var ElementConditionInterface $condition */
         $condition = $conditionConfig
-            ? $this->conditions->createCondition($conditionConfig)
+            ? $this->conditions->createCondition([...$conditionConfig, 'conditionRules' => []])
             : $elementType::createCondition();
 
         $condition->forQuery = true;
@@ -103,9 +104,11 @@ class ElementIndexController
             $condition->sourceKey = $sourceKey;
         }
 
+        $condition->setConditionRules($conditionConfig['conditionRules'] ?? []);
         $currentElementIndex->activate();
 
         return new JsonResponse([
+            'builder' => app(ConditionBuilder::class)->resolve($condition),
             'hudHtml' => new ConditionBuilderRenderer($condition)->render(),
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),

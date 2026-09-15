@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Announcement\Jobs;
 
 use craft\services\Announcements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
@@ -52,8 +53,9 @@ class SendAnnouncement extends Job
 
         $totalUsers = $userQuery->count();
         $batchSize = 100;
+        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->getAuthGuard()));
         /** @var class-string<Model> $userModel */
-        $userModel = config('auth.providers.users.model');
+        $userModel = config("auth.providers.$provider.model");
 
         $userQuery->chunk($batchSize, function(Collection $users, int $batchIndex) use ($totalUsers, $batchSize, $byline, $userModel): void {
             $this->setProgress((int) ((($batchIndex * $batchSize) / max($totalUsers, 1)) * 100));

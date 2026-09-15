@@ -20,6 +20,7 @@ async function createFixture({
   iconOnly?: boolean;
   subnav?: boolean;
   group?: boolean;
+  /** Off for the rows that aren't links: a disclosure button, or a label. */
   href?: boolean;
 } = {}): Promise<CraftNavItem> {
   const item = document.createElement('craft-nav-item') as CraftNavItem;
@@ -737,67 +738,5 @@ describe('craft-nav-item flyout accessibility', () => {
     // Hover and focus both open it, so a click on it can only mean dismiss.
     expect(item.flyoutOpen).toBe(false);
     expect(action.getAttribute('aria-expanded')).toBe('false');
-  });
-});
-
-describe('craft-nav-item navigation', () => {
-  it('dispatches craft-navigate with the href when the expanded link is clicked', async () => {
-    const item = await createFixture({iconOnly: false, subnav: false});
-    const actionItem = item.shadowRoot!.querySelector(
-      '.nav-item__action-item'
-    )!;
-    let detail: {href: string} | null = null;
-    item.addEventListener('craft-navigate', (event) => {
-      detail = (event as CustomEvent<{href: string}>).detail;
-    });
-
-    actionItem.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-
-    expect(detail).toEqual({href: '/admin/graphql'});
-  });
-
-  it('dispatches craft-navigate with the href when the collapsed icon is clicked', async () => {
-    const item = await createFixture({subnav: false});
-    const iconAnchor = item.shadowRoot!.querySelector('.nav-item--icon')!;
-    let detail: {href: string} | null = null;
-    item.addEventListener('craft-navigate', (event) => {
-      detail = (event as CustomEvent<{href: string}>).detail;
-    });
-
-    iconAnchor.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-
-    expect(detail).toEqual({href: '/admin/graphql'});
-  });
-
-  it('prevents the click when a listener handles craft-navigate itself', async () => {
-    const item = await createFixture({iconOnly: false, subnav: false});
-    const actionItem = item.shadowRoot!.querySelector(
-      '.nav-item__action-item'
-    )!;
-    item.addEventListener('craft-navigate', (event) => event.preventDefault());
-    const click = new MouseEvent('click', {bubbles: true, cancelable: true});
-
-    actionItem.dispatchEvent(click);
-
-    expect(click.defaultPrevented).toBe(true);
-  });
-
-  it("doesn't dispatch craft-navigate for a hrefless item", async () => {
-    const item = await createFixture({
-      iconOnly: false,
-      subnav: false,
-      href: false,
-    });
-    const actionItem = item.shadowRoot!.querySelector(
-      '.nav-item__action-item'
-    )!;
-    let dispatched = false;
-    item.addEventListener('craft-navigate', () => {
-      dispatched = true;
-    });
-
-    actionItem.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-
-    expect(dispatched).toBe(false);
   });
 });

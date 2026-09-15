@@ -24,6 +24,7 @@ use Override;
  * @method static void removeCredentials(\CraftCms\Cms\User\Elements\User $user)
  * @method static void saveUserPhoto(string $fileLocation, \CraftCms\Cms\User\Elements\User $user, string|null $filename = null, string|null $mimeType = null)
  * @method static void relocateUserPhoto(\CraftCms\Cms\User\Elements\User $user)
+ * @method static \CraftCms\Cms\Asset\Data\VolumeFolder userPhotoFolder(\CraftCms\Cms\User\Elements\User $user)
  * @method static bool deleteUserPhoto(\CraftCms\Cms\User\Elements\User $user)
  * @method static void handleValidLogin(\CraftCms\Cms\User\Elements\User $user)
  * @method static void handleInvalidLogin(\CraftCms\Cms\User\Elements\User $user)

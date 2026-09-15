@@ -6,8 +6,6 @@ namespace CraftCms\Cms\View\LegacyAssets;
 
 use CraftCms\Cms\View\HtmlStack;
 
-use function CraftCms\Cms\craftAsset;
-
 /**
  * @deprecated
  *
@@ -16,11 +14,8 @@ use function CraftCms\Cms\craftAsset;
 class ConditionBuilderAsset implements LegacyAssetInterface
 {
     public array $depends = [
-        HtmxAsset::class,
+        CpAsset::class,
     ];
 
-    public function register(HtmlStack $htmlStack): void
-    {
-        $htmlStack->jsFile(craftAsset('legacy/conditionbuilder/dist/ConditionBuilder.js'));
-    }
+    public function register(HtmlStack $htmlStack): void {}
 }

@@ -198,18 +198,23 @@ describe('create / edit', function () {
 
 describe('store', function () {
     test('store creates volume with valid data', function () {
-        postJson(action([VolumesController::class, 'store']), [
-            'name' => 'New Volume',
-            'handle' => 'newVolume',
-            'fsHandle' => 'disk:test-disk',
-            'assetTransformer' => 'craft',
-        ])->assertOk();
+        $response = postJson(
+            action([VolumesController::class, 'store']),
+            [
+                'name' => 'New Volume',
+                'handle' => 'newVolume',
+                'fsHandle' => 'disk:test-disk',
+                'assetTransformer' => 'craft',
+            ],
+            ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+        );
 
         app()->forgetInstance(Volumes::class);
         $volume = app(Volumes::class)->getVolumeByHandle('newVolume');
         expect($volume)->not()->toBeNull();
         expect($volume->name)->toBe('New Volume')
             ->and($volume->getAssetTransformerHandle(false))->toBe('craft');
+        $response->assertRedirect(Url::cpUrl("settings/assets/volumes/{$volume->id}"));
     });
 
     test('store updates existing volume', function () {

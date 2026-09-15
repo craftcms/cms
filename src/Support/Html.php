@@ -58,9 +58,7 @@ class Html
     public static array $dataAttributes = [
         'aria',
         'data',
-        'data-hx',
         'data-ng',
-        'hx',
         'ng',
     ];
 

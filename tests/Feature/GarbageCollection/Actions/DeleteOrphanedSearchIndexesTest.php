@@ -23,7 +23,7 @@ it('deletes orphaned data', function () {
     ]));
 
     DB::table(Table::SEARCHINDEX)->insert(array_filter([
-        'elementId' => 999,
+        'elementId' => $element->id + 1,
         'attribute' => 'foo',
         'fieldId' => $field->id,
         'siteId' => Sites::getCurrentSite()->id,

@@ -20,6 +20,13 @@ export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormModifiedGroups');
 
+/**
+ * Whether the surrounding field's label is visually hidden, so controls with
+ * their own label chrome (e.g. `craft-select`) can hide theirs too.
+ */
+export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('FieldLabelSrOnly');
+
 /** Control paths whose changes have an active Form refresh. */
 export const FormRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormRefreshingFields');
@@ -63,7 +70,7 @@ export function formChangeFromEvent(
   const detail = change instanceof CustomEvent ? change.detail : null;
 
   // Only a Control's own CustomEvent carries a FormChange. Plenty of other
-  // CustomEvents bubble through a form — htmx's request lifecycle puts
+  // CustomEvents bubble through a form — request lifecycle events put
   // `{elt, xhr, …}` in `detail` — and forwarding one as a change hands
   // listeners an object with no `path`.
   return isFormChange(detail) ? detail : null;

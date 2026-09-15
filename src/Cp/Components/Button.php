@@ -45,6 +45,8 @@ class Button extends ViewComponent
 
     protected bool $active = false;
 
+    protected bool $toggle = false;
+
     protected ?string $accessibleName = null;
 
     protected ?string $align = null;
@@ -153,6 +155,17 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /**
+     * Makes the button a toggle: `aria-pressed` follows `active`, and activating
+     * it fires a cancelable `craft-toggle` for whoever owns `active` to act on.
+     */
+    public function toggle(bool $toggle = true): static
+    {
+        $this->toggle = $toggle;
+
+        return $this;
+    }
+
     /** Accessible name override, for icon-only buttons. */
     public function accessibleName(?string $accessibleName): static
     {
@@ -243,6 +256,7 @@ class Button extends ViewComponent
             'icon-position' => $this->iconPosition,
             'loading' => $this->loading,
             'active' => $this->active ? 'true' : null,
+            'toggle' => $this->toggle,
             'value' => $this->value,
             'disabled' => $this->isDisabled(),
             'accessible-name' => $this->accessibleName,

@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
@@ -24,12 +26,13 @@ return new class extends Migration
             return;
         }
 
+        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->getAuthGuard()));
         /** @var class-string<Model> $authModel */
-        $authModel = config('auth.providers.users.model');
+        $authModel = config("auth.providers.$provider.model");
         $notifiableType = (new $authModel)->getMorphClass();
 
         DB::table('announcements')
-            ->leftJoin('plugins', 'announcements.pluginId', '=', 'plugins.id')
+            ->leftJoin(Table::PLUGINS, 'announcements.pluginId', '=', 'plugins.id')
             ->select([
                 'announcements.id',
                 'announcements.userId',
