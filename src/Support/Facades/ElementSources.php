@@ -43,6 +43,8 @@ class ElementSources extends Facade
 
     public const string CONTEXT_MODAL = \CraftCms\Cms\Element\ElementSources::CONTEXT_MODAL;
 
+    public const string CONTEXT_RESTRICTED_MODAL = \CraftCms\Cms\Element\ElementSources::CONTEXT_RESTRICTED_MODAL;
+
     public const string CONTEXT_SETTINGS = \CraftCms\Cms\Element\ElementSources::CONTEXT_SETTINGS;
 
     #[Override]

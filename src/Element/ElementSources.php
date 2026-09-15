@@ -48,6 +48,8 @@ class ElementSources
 
     public const string CONTEXT_MODAL = 'modal';
 
+    public const string CONTEXT_RESTRICTED_MODAL = 'restricted-modal';
+
     public const string CONTEXT_SETTINGS = 'settings';
 
     public const string CONTEXT_EMBEDDED_INDEX = 'embeddedIndex';

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -313,6 +314,7 @@ trait NestedElement
 
                 if (! empty($ownerIds)) {
                     $query = $ownerType::find()->id($ownerIds);
+                    $criteria = ElementHelper::cleanseQueryCriteria($criteria);
                     Typecast::configure($query, $criteria + $this->ownerCriteria());
                     $this->_owners = $query->all();
                 }

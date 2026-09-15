@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Jobs\ReplaceReferences;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
@@ -142,6 +143,7 @@ readonly class DeleteElementsController
         /** @var class-string<ElementInterface> $sourceElementType */
         $sourceElementType = $this->request->input('sourceElementType');
         $targetElementIds = $this->elements->ids();
+        $supportsEditable = method_exists($this->elementType::find(), 'editable');
 
         return new CpModalResponse()
             ->action('delete-elements/replace-relations')
@@ -150,7 +152,11 @@ readonly class DeleteElementsController
                     'type' => $this->elementType::lowerDisplayName(),
                 ]), ElementSelect::make('newTargetId')
                     ->elementType($this->elementType)
-                    ->criteria(['id' => ['not', ...$targetElementIds->all()]])
+                    ->context(ElementSources::CONTEXT_RESTRICTED_MODAL)
+                    ->criteria(array_filter([
+                        'id' => ['not', ...$targetElementIds->all()],
+                        'editable' => $supportsEditable ? true : null,
+                    ]))
                     ->single()),
                 HiddenField::make('elementType'),
                 ...$targetElementIds->keys()->map(fn (int $index) => HiddenField::make(['elementIds', (string) $index]))->all(),
@@ -209,6 +215,7 @@ readonly class DeleteElementsController
     public function replaceReferencesModal(): CpModalResponse
     {
         $targetElementIds = $this->elements->ids();
+        $supportsEditable = method_exists($this->elementType::find(), 'editable');
 
         return new CpModalResponse()
             ->action('delete-elements/replace-references')
@@ -217,7 +224,11 @@ readonly class DeleteElementsController
                     'type' => $this->elementType::lowerDisplayName(),
                 ]), ElementSelect::make('newTargetId')
                     ->elementType($this->elementType)
-                    ->criteria(['id' => ['not', ...$targetElementIds->all()]])
+                    ->context(ElementSources::CONTEXT_RESTRICTED_MODAL)
+                    ->criteria(array_filter([
+                        'id' => ['not', ...$targetElementIds->all()],
+                        'editable' => $supportsEditable ? true : null,
+                    ]))
                     ->single()),
                 HiddenField::make('elementType'),
                 ...$targetElementIds->keys()->map(fn (int $index) => HiddenField::make(['elementIds', (string) $index]))->all(),

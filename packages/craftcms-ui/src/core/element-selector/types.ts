@@ -64,6 +64,13 @@ export interface ElementSelectorOptions {
   elementType: string;
 
   // — Query —
+  /**
+   * The element source context, which determines which sources are shown.
+   * Defaults to `'modal'`. Pass `'restricted-modal'` to limit sources to ones
+   * the current user can edit (e.g. when the selection will replace relations
+   * to an element the user is deleting).
+   */
+  context?: string;
   sources?: string[] | null;
   condition?: unknown;
   criteria?: Record<string, unknown> | null;
