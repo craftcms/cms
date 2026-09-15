@@ -2,7 +2,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import type CraftThumbnail from './thumbnail.js';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
-import {expect} from 'storybook/test';
+import {expect, waitFor} from 'storybook/test';
 import {computeAccessibleName} from 'dom-accessibility-api';
 const {events, args, argTypes, template} =
   getStorybookHelpers('craft-thumbnail');
@@ -389,6 +389,15 @@ export const Presentations: Story = {
 // present. See thumbnail.a11y.md for the requirements this verifies.
 export const Animated: Story = {
   render: () => html`
+    <style>
+      /* Mirrors Edit.vue's real-world override for a non-square preview. */
+      craft-thumbnail.auto-sized::part(thumbnail) {
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 120px;
+      }
+    </style>
     <craft-thumbnail
       src="${opaqueImage}"
       alt="Animated via attribute"
@@ -400,24 +409,39 @@ export const Animated: Story = {
       alt="Animated via extension"
       style="--c-thumbnail-size: 120px;"
     ></craft-thumbnail>
+    <craft-thumbnail
+      class="auto-sized"
+      src="${opaqueImage}"
+      alt="Animated with an auto-sized wrapper"
+      animated
+    ></craft-thumbnail>
   `,
   play: async ({canvasElement}) => {
-    for (const thumbnail of canvasElement.querySelectorAll(
-      'craft-thumbnail'
-    )) {
+    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
       await thumbnail.updateComplete;
       const image = thumbnail.shadowRoot!.querySelector('img')!;
       await image.decode();
 
-      const cover = thumbnail.shadowRoot!.querySelector(
-        'canvas[part="cover"]'
-      );
+      const cover = thumbnail.shadowRoot!.querySelector('canvas[part="cover"]');
       await expect(cover).not.toBeNull();
       await expect(cover!.getAttribute('aria-hidden')).toBe('true');
 
-      // The image stays accessible (alt text intact) despite being visually
-      // covered by the frozen-frame canvas.
+      // Once the frame is actually captured, the real <img> is visually
+      // hidden — otherwise a source with transparent pixels would leave it
+      // still playing underneath, visible through the cover's transparent
+      // areas. It stays in the accessibility tree throughout (alt intact).
+      await waitFor(() =>
+        expect(image.classList.contains('cp-visually-hidden')).toBe(true)
+      );
       await expect(computeAccessibleName(image)).toBe(thumbnail.alt);
+
+      // Regression check: the wrapper must not collapse to 0x0 once the
+      // image is hidden and the cover takes over.
+      const wrapperRect = thumbnail
+        .shadowRoot!.querySelector('[part="thumbnail"]')!
+        .getBoundingClientRect();
+      await expect(wrapperRect.width).toBeGreaterThan(0);
+      await expect(wrapperRect.height).toBeGreaterThan(0);
     }
   },
 };

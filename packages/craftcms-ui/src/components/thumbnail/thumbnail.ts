@@ -1,8 +1,9 @@
-import {property} from 'lit/decorators.js';
-import type {CSSResultGroup} from 'lit';
+import {property, state} from 'lit/decorators.js';
+import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './thumbnail.styles.js';
 
 /**
@@ -39,7 +40,7 @@ const defaultTrueBoolean = {
  * @cssproperty [--c-thumbnail-checker-color=hsl(211 13% 65% / 0.25)] - Color of the checker squares.
  */
 export default class CraftThumbnail extends LitElement {
-  static override styles: CSSResultGroup = [styles];
+  static override styles: CSSResultGroup = [visuallyHiddenStyles, styles];
 
   /** Image source URL. When omitted, the default slot is rendered instead. */
   @property() src: string | null = null;
@@ -93,6 +94,15 @@ export default class CraftThumbnail extends LitElement {
     );
   }
 
+  /**
+   * Whether the cover canvas has actually been painted yet. Kept separate
+   * from `isAnimated` so the real `<img>` stays normally visible (and
+   * measurable) up through the moment it's captured — only hiding it once
+   * there's a frozen frame to show instead, so nothing is ever left
+   * playing underneath the cover for its transparent pixels to reveal.
+   */
+  @state() private frozen = false;
+
   private restoreSlottedSvgs() {
     for (const [svg, aspectRatio] of this.svgAspectRatios) {
       if (aspectRatio === null) {
@@ -125,8 +135,12 @@ export default class CraftThumbnail extends LitElement {
     }
   }
 
-  override updated() {
+  override updated(changedProperties: PropertyValues<this>) {
     this.updateSlottedSvgs();
+
+    if (changedProperties.has('src')) {
+      this.frozen = false;
+    }
   }
 
   override connectedCallback() {
@@ -152,7 +166,10 @@ export default class CraftThumbnail extends LitElement {
       <div class="${classMap(classes)}" part="thumbnail">
         ${this.src
           ? html`<img
-              class="thumbnail__image"
+              class="${classMap({
+                thumbnail__image: true,
+                'cp-visually-hidden': this.frozen,
+              })}"
               part="image"
               src="${this.src}"
               srcset="${ifDefined(this.srcset ?? undefined)}"
@@ -167,7 +184,10 @@ export default class CraftThumbnail extends LitElement {
           : nothing}
         ${this.src && this.isAnimated
           ? html`<canvas
-              class="thumbnail__cover"
+              class="${classMap({
+                thumbnail__cover: true,
+                'thumbnail__cover--pending': !this.frozen,
+              })}"
               part="cover"
               aria-hidden="true"
               role="presentation"
@@ -250,6 +270,8 @@ export default class CraftThumbnail extends LitElement {
     } else {
       ctx.drawImage(frame, 0, 0, width, height);
     }
+
+    this.frozen = true;
   }
 }
 

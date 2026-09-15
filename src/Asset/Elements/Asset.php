@@ -2131,7 +2131,6 @@ JS, [
             'width' => $width,
             'height' => $height,
             'alt' => $this->thumbAlt(),
-            'checkered' => 'false',
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
         ]);
     }
