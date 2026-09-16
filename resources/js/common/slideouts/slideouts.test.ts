@@ -1,4 +1,11 @@
-import {createApp, defineComponent, h, nextTick, type Component} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  isProxy,
+  nextTick,
+  type Component,
+} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import type {FormPayload} from '@/modules/forms/types';
@@ -579,6 +586,65 @@ describe('SlideoutPanel', () => {
     await nextTick();
 
     expect(stackedPanels()).toHaveLength(0);
+  });
+
+  /**
+   * Browsers refuse `aria-hidden` on an ancestor of the focused element, so
+   * the page behind can only be hidden once focus has left the opener — which,
+   * for a nested slideout, lives in the panel being hidden.
+   */
+  it('moves focus off its opener before hiding the page behind it', async () => {
+    const outer = document.createElement('div');
+    const opener = document.createElement('button');
+    outer.appendChild(opener);
+    document.body.appendChild(outer);
+    opener.focus();
+
+    let focusedWhenHidden: Element | null | undefined;
+    const {value: setAttribute} = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      'setAttribute'
+    )!;
+    const spy = vi
+      .spyOn(Element.prototype, 'setAttribute')
+      .mockImplementation(function (this: Element, name, value) {
+        if (name === 'aria-hidden' && value === 'true' && this === outer) {
+          focusedWhenHidden = document.activeElement;
+        }
+        Reflect.apply(setAttribute, this, [name, value]);
+      });
+
+    let root: HTMLElement;
+    try {
+      ({root} = await mountPanel(defineComponent({render: () => h('div')})));
+    } finally {
+      spy.mockRestore();
+    }
+
+    expect(outer.getAttribute('aria-hidden')).toBe('true');
+    expect(focusedWhenHidden).not.toBe(opener);
+    // Browsers won't focus a plain div at all without one, so the panel
+    // couldn't take focus until its screen loaded.
+    expect(
+      root.querySelector('.slideout-panel')?.getAttribute('tabindex')
+    ).toBe('-1');
+  });
+
+  it('gives announcements a live region inside the panel', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const region = root.querySelector(
+      '.slideout-panel > [data-slideout-live-region]'
+    );
+
+    expect(region?.getAttribute('role')).toBe('status');
+  });
+
+  it('keeps the page component out of the reactive store', async () => {
+    const {instance} = await mountPanel(
+      defineComponent({render: () => h('div')})
+    );
+
+    expect(isProxy(instance.component)).toBe(false);
   });
 
   it('presents itself to assistive technology as a modal dialog', async () => {
