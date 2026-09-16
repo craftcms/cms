@@ -75,7 +75,9 @@
   const availableWidth = computed(
     () => props.availableWidth ?? shellWidth?.value
   );
-  const tabs = useTemplateRef<HTMLElement & {selectedIndex: number}>('tabs');
+  const tabs = useTemplateRef<
+    HTMLElement & {selectedIndex: number; open(): void; close(): void}
+  >('tabs');
   const selectedTabId = shallowRef<string | null>('info');
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
   let collapsedByWidth = false;
@@ -136,6 +138,14 @@
     };
   }
 
+  function toggleDetails(): void {
+    if (selectedTabId.value) {
+      tabs.value?.close();
+    } else {
+      tabs.value?.open();
+    }
+  }
+
   function onSelectedChanged(event: Event): void {
     const selectedIndex = (event.target as {selectedIndex?: number} | null)
       ?.selectedIndex;
@@ -163,21 +173,39 @@
       <craft-icon :name="tab.icon" :label="tab.label" />
     </craft-tab>
     <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
+      <div
+        class="py-md px-lg border-b border-b-quiet flex justify-between items-center"
+      >
+        <h3 class="text-md/4">{{ tab.label }}</h3>
+
+        <craft-button
+          type="button"
+          icon="x"
+          :aria-label="t('Close {tab}', {tab: tab.label})"
+          variant="plain"
+          size="small"
+          @click="tabs?.close()"
+          flush="inline-end"
+        ></craft-button>
+      </div>
       <slot v-if="tab.slot" :name="tab.slot" />
-      <div v-else>
-        <div slot="header" class="py-md px-lg border-b border-b-quiet">
-          <h3 slot="title" class="text-md/4">{{ tab.label }}</h3>
-        </div>
-        <div class="p-lg">
-          <component
-            v-if="tab.component"
-            :is="tab.component"
-            v-bind="componentProps()"
-          />
-        </div>
+      <div v-else class="p-lg">
+        <component
+          v-if="tab.component"
+          :is="tab.component"
+          v-bind="componentProps()"
+        />
       </div>
     </div>
   </craft-tabs>
+
+  <craft-button
+    type="button"
+    class="fixed bottom-1 right-1"
+    icon="arrow-right-to-line"
+    aria-label="Expand details"
+    @click="toggleDetails"
+  ></craft-button>
 </template>
 
 <style scoped>
@@ -200,7 +228,8 @@
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     aspect-ratio: 1;
-    background-color: white;
+    background-color: var(--c-surface-raised);
+    border: 1px solid var(--c-color-border-quiet);
   }
 
   craft-tab[selected='true'] {
