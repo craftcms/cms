@@ -362,6 +362,10 @@
 
   .cp-content--details:has(.cp-content__details craft-tabs[collapsed]) {
     --cp-content-details-track: auto;
+
+    .cp-content__details {
+      border-inline-start: none;
+    }
   }
 
   .cp-content__details {
