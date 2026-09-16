@@ -1,7 +1,10 @@
 <script setup lang="ts">
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
   import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
+  import SecondaryNav from '@/common/components/SecondaryNav.vue';
+  import {navItemActions} from '@/common/composables/navActions';
   import {useIsSlideout} from '@/common/composables/screen';
+  import {usePage} from '@inertiajs/vue3';
 
   // Full pages render `ElementEditScreen`, which fills the shell's `page-main` slot
   // and so owns the whole main region. A slideout panel brings its own header,
@@ -17,7 +20,11 @@
     redirectUrl: string | null;
   }>();
 
-  const editor = useIsSlideout() ? ElementEditor : ElementEditScreen;
+  const isSlideout = useIsSlideout();
+  const editor = isSlideout ? ElementEditor : ElementEditScreen;
+  const page = usePage<{
+    subnav: Array<CraftCms.Cms.Cp.Data.NavItem>;
+  }>();
 
   // What `users/save-user` resolves the account from. Everything else — the
   // native fields (username, email, full name, photo) and any custom fields —
@@ -28,5 +35,9 @@
 </script>
 
 <template>
-  <component :is="editor" :save-data="saveData" />
+  <component :is="editor" :save-data="saveData">
+    <template v-if="!isSlideout" #sidebar>
+      <SecondaryNav :items="navItemActions(page.props.subnav)" />
+    </template>
+  </component>
 </template>

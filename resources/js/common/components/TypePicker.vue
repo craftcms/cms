@@ -1,10 +1,17 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import type {ActionMenuItem} from '@craftcms/ui';
-  import type {BuilderPayload} from './types';
+
+  export type TypePickerOption = {
+    value: string;
+    label: string;
+    hint?: string | null;
+    showHint?: boolean;
+    group?: string | null;
+  };
 
   const props = defineProps<{
-    types: BuilderPayload['ruleTypes'];
+    types: TypePickerOption[];
     label: string;
     disabled?: boolean;
     adding?: boolean;

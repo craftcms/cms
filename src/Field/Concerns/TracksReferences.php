@@ -30,7 +30,7 @@ trait TracksReferences
             return false;
         }
 
-        $element->setFieldValue($this->handle, $newValue);
+        $element->setFieldValue($this->handle, $this->serializeValue($newValue, $element));
 
         return true;
     }

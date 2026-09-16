@@ -37,6 +37,7 @@ use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Controls\Time;
+use CraftCms\Cms\Form\Controls\UserGroupSelect;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -81,5 +82,6 @@ class FormControlTypes extends TypeRegistry
         Text::class,
         Textarea::class,
         Time::class,
+        UserGroupSelect::class,
     ];
 }

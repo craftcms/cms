@@ -12,11 +12,14 @@
       label?: string | null;
       actions: ActionItems;
       buttonVariant?: ButtonVariant;
+      /** Puts a filter box at the top — worth it once the list is long. */
+      searchable?: boolean;
     }>(),
     {
       icon: 'ellipsis',
       label: t('Actions'),
       buttonVariant: ButtonVariant.Plain,
+      searchable: false,
     }
   );
 
@@ -60,7 +63,11 @@
 </script>
 
 <template>
-  <craft-action-menu :icon="icon" :label="label ?? undefined">
+  <craft-action-menu
+    :icon="icon"
+    :label="label ?? undefined"
+    :searchable="searchable"
+  >
     <span slot="invoker" style="display: inline-flex" v-once>
       <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
         <craft-button
@@ -68,6 +75,7 @@
           size="small"
           :icon="icon"
           :aria-label="label"
+          inherit
           :variant="buttonVariant"
         >
         </craft-button>

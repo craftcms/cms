@@ -121,6 +121,7 @@ export interface ActionItemButton {
    */
   iconSvg?: string;
   disabled?: boolean;
+  disabledReason?: string | null;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   action?: BaseAction;

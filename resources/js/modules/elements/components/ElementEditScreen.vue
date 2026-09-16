@@ -6,7 +6,8 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, ref, useSlots} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -18,6 +19,7 @@
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
+  import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
   import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
@@ -33,6 +35,8 @@
     default?: (props: {payload: Record<string, unknown>}) => any;
     /** Above the meta fields, e.g. an asset's file preview. */
     'details-header'?: (props: {payload: Record<string, unknown>}) => any;
+    /** Navigation alongside the editor content. */
+    sidebar?: () => any;
   }>();
 
   const {
@@ -99,12 +103,19 @@
     ...headerButtons.value,
   ]);
 
+  /** Measured here because this component owns the body; see ElementDetailsTabs. */
+  const editorBody = ref<HTMLElement | null>(null);
+  const {width: bodyWidth} = useElementSize(editorBody);
+  const slots = useSlots();
+
   const hasDetails = computed(
     () =>
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
-      Boolean(payload.activityTimelineUrl)
+      Boolean(payload.activityTimelineUrl) ||
+      elementDetailsTabRegistry.hasVisible(payload)
   );
+  const hasSidebar = computed(() => Boolean(slots.sidebar));
 
   // Mirrors the legacy wording: a changed draft names the draft, anything else
   // names the element type.
@@ -257,13 +268,24 @@
           </div>
 
           <div v-if="form.hasErrors" class="px-4">
-            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+            <ErrorSummary
+              v-if="form.hasErrors"
+              :errors="form.errors"
+              :title="t('Couldn’t save changes')"
+            />
           </div>
 
           <div
+            ref="editorBody"
             class="element-editor__body"
-            :class="{'element-editor__body--details': hasDetails}"
+            :class="{
+              'element-editor__body--details': hasDetails,
+              'element-editor__body--sidebar': hasSidebar,
+            }"
           >
+            <aside v-if="hasSidebar" class="element-editor__sidebar">
+              <slot name="sidebar" />
+            </aside>
             <div class="element-editor__content">
               <craft-pane appearance="plain">
                 <div class="py-4">
@@ -274,6 +296,7 @@
                       ref="renderer"
                       :payload="formPayload"
                       :errors="errors"
+                      :modified="autosave.modified.value"
                       @update:mutation="onMutation"
                     />
 
@@ -290,6 +313,7 @@
               <ElementDetailsTabs
                 :payload="payload"
                 :activity-timeline-version="activityTimelineVersion"
+                :available-width="bodyWidth"
                 pane
               >
                 <template #info>
@@ -310,6 +334,7 @@
                             ref="sidebarRenderer"
                             :payload="sidebarPayload"
                             :errors="sidebarErrors"
+                            :modified="autosave.modified.value"
                             @update:mutation="onSidebarMutation"
                           />
                         </craft-field-group>
@@ -394,8 +419,22 @@
     height: 100%;
   }
 
+  .element-editor__sidebar {
+    position: sticky;
+    top: 60px;
+    align-self: start;
+  }
+
+  .element-editor__body.element-editor__body--sidebar {
+    grid-template-columns: 12rem minmax(0, 1fr);
+  }
+
   .element-editor__body.element-editor__body--details {
     grid-template-columns: minmax(0, 1fr) clamp(21rem, 25%, 25rem);
+  }
+
+  .element-editor__body.element-editor__body--sidebar.element-editor__body--details {
+    grid-template-columns: 12rem minmax(0, 1fr) clamp(21rem, 25%, 25rem);
   }
 
   /* Closing the details tabs shrinks the element to just its rail, but the
@@ -415,6 +454,29 @@
      so it costs nothing to drop it while closed. */
     .element-editor__details {
       container-type: normal;
+    }
+  }
+
+  .element-editor__body.element-editor__body--sidebar.element-editor__body--details:has(
+      craft-tabs[collapsed]
+    ) {
+    grid-template-columns: 12rem minmax(0, 1fr) auto;
+  }
+
+  @container (width < 768px) {
+    .element-editor__body,
+    .element-editor__body.element-editor__body--details,
+    .element-editor__body.element-editor__body--sidebar,
+    .element-editor__body.element-editor__body--sidebar.element-editor__body--details,
+    .element-editor__body.element-editor__body--sidebar.element-editor__body--details:has(
+        craft-tabs[collapsed]
+      ) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .element-editor__sidebar,
+    .element-editor__details {
+      position: static;
     }
   }
 

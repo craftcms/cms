@@ -1,5 +1,11 @@
 import {Validator} from '@lion/ui/form-core.js';
-import type {InjectionKey, Ref, Slots} from 'vue';
+import {
+  computed,
+  type ComputedRef,
+  type InjectionKey,
+  type Ref,
+  type Slots,
+} from 'vue';
 import type {
   CanonicalFormValue,
   FormChange,
@@ -8,6 +14,7 @@ import type {
   FormValue,
   FormValues,
 } from './types';
+import type {ActionItems} from '@/common/types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
@@ -19,6 +26,23 @@ export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
 /** Modified delta groups as dotted paths, provided to every field beneath. */
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormModifiedGroups');
+
+/**
+ * Dotted paths of every control changed since the form was last reset. A field
+ * holding nested forms badges when one lands at or below it — see FieldNode.
+ */
+export const FormChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
+  Symbol('FormChangedPaths');
+
+/**
+ * Lets a field's control rewrite the field's "⋮" menu with state only the
+ * control has — a Matrix relabels "Copy all blocks" once blocks are selected.
+ * Provided by each FieldNode, so a nested field's control reaches only its own
+ * field's menu.
+ */
+export const FieldActionItems: InjectionKey<
+  Ref<((items: ActionItems) => ActionItems) | undefined>
+> = Symbol('FieldActionItems');
 
 /**
  * Whether the surrounding field's label is visually hidden, so controls with
@@ -37,6 +61,40 @@ class ServerError extends Validator {
   override execute(): boolean {
     return true;
   }
+}
+
+/**
+ * The value a control should render with.
+ *
+ * {@link valueAt} returns undefined when the path isn't in the tree, which
+ * happens for a beat inside a nested form: the payload describing a control can
+ * arrive an emit ahead of the values filling it — a Matrix block the server has
+ * just minted, a repeater whose identity the server has just rewritten. A
+ * control whose value is a shape would reach into nothing and throw, and a
+ * throw during render takes the whole field down with it.
+ *
+ * So the control's own declared empty value stands in until the real one lands.
+ * `Control::emptyValue()` decides what empty means for each control, and ships
+ * it in the payload; a control whose value is a scalar declares nothing and
+ * still reads undefined, which is what those coerce anyway.
+ *
+ * Every path that hands a value to a control goes through here, so no control
+ * has to remember to guard itself.
+ */
+export function controlValueAt(
+  values: FormValue,
+  // `emptyValue` is typed here and nowhere else: `FormControlPayload` omits it
+  // on purpose — see the note there — and this is the only thing that reads it.
+  control: {path: string[]; emptyValue?: unknown}
+): FormValue {
+  const value = valueAt(values, control.path);
+
+  if (value !== undefined) {
+    return value;
+  }
+
+  // SAFETY: what a Control ships as its empty value is a form value.
+  return control.emptyValue as FormValue;
 }
 
 export function serverErrorValidators(invalid: boolean): Validator[] {
