@@ -153,3 +153,56 @@ it('lines a subnav label up with its parent label', async () => {
   expect(labelLeft(plain)).toBeCloseTo(labelLeft(parent), 0);
   expect(labelLeft(current)).toBeCloseTo(labelLeft(parent), 0);
 });
+
+const pressEvents = ['mousedown', 'mouseup', 'click', 'keydown', 'keyup'];
+
+async function lentActionFixture() {
+  const item = document.createElement('craft-nav-item') as CraftNavItem;
+  item.setAttribute('icon', 'newspaper');
+  item.setAttribute('href', '/admin/entries');
+  item.append(document.createTextNode('Entries'));
+  const gear = document.createElement('button');
+  gear.type = 'button';
+  gear.slot = 'actions';
+  gear.setAttribute('aria-label', 'Customize sources');
+  item.append(gear);
+  document.body.append(item);
+  await item.updateComplete;
+
+  let opened = 0;
+  const reachedRow: string[] = [];
+  gear.addEventListener('click', () => opened++);
+  for (const type of pressEvents) {
+    item.addEventListener(type, (event) =>
+      reachedRow.push(
+        event instanceof KeyboardEvent ? `${type}:${event.key}` : type
+      )
+    );
+  }
+
+  return {gear, reachedRow, opened: () => opened};
+}
+
+it("keeps a lent control's pointer press from reaching the row", async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const {gear, reachedRow, opened} = await lentActionFixture();
+
+  await userEvent.click(gear);
+
+  expect(opened()).toBe(1);
+  expect(document.activeElement).toBe(gear);
+  expect(reachedRow).toEqual([]);
+});
+
+it("keeps a lent control's keyboard activation from reaching the row", async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const {gear, reachedRow, opened} = await lentActionFixture();
+
+  gear.focus();
+  await userEvent.keyboard('{Enter}');
+  await userEvent.keyboard(' ');
+  await userEvent.keyboard('{Escape}');
+
+  expect(opened()).toBe(2);
+  expect(reachedRow).toEqual(['keydown:Escape', 'keyup:Escape']);
+});

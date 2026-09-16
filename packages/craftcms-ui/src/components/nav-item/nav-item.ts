@@ -357,6 +357,32 @@ export default class CraftNavItem extends LitElement {
     return !this.href && useFlyout ? 'button' : nothing;
   }
 
+  /**
+   * A control lent to the row sits inside the row's own element, so pressing
+   * it would bubble on to the row — and when the row is a link, that's a
+   * navigation. CpLink puts Inertia's handlers on the host, and with
+   * `prefetch="click"` those aren't on `click` at all: `mousedown` prefetches
+   * (and cancels the press, so the control never takes focus), `mouseup`
+   * visits, and Enter does the same on `keydown`/`keyup` — cancelling the
+   * keydown stops the button activating at all. A gear that opens a dialog
+   * would visit the page, which re-renders it out from under the dialog.
+   *
+   * Only activation is kept in: other keys still bubble, so Escape and the
+   * like reach whatever listens above. The control's own handlers have
+   * already run by the time an event reaches its slot.
+   */
+  #stopActionPressAtRow = (event: Event) => {
+    if (
+      event instanceof KeyboardEvent &&
+      event.key !== 'Enter' &&
+      event.key !== ' '
+    ) {
+      return;
+    }
+
+    event.stopPropagation();
+  };
+
   #toggleFlyout = (event: Event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -548,7 +574,16 @@ export default class CraftNavItem extends LitElement {
   renderSuffix(showToggle: boolean = false, showFlyoutToggle = false) {
     return html`
       <div class="nav-item__suffix">
-        ${this.iconOnly ? nothing : html`<slot name="actions"></slot>`}
+        ${this.iconOnly
+          ? nothing
+          : html`<slot
+              name="actions"
+              @mousedown="${this.#stopActionPressAtRow}"
+              @mouseup="${this.#stopActionPressAtRow}"
+              @click="${this.#stopActionPressAtRow}"
+              @keydown="${this.#stopActionPressAtRow}"
+              @keyup="${this.#stopActionPressAtRow}"
+            ></slot>`}
         <slot name="suffix">
           ${showToggle && this.togglePosition === 'suffix'
             ? this.renderSubnavToggle()
