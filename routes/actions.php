@@ -32,6 +32,9 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
@@ -87,6 +90,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
@@ -213,8 +217,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Conditions
         Route::post('conditions/render', [ConditionsController::class, 'show']);
-        Route::post('conditions/add-rule', [ConditionsController::class, 'store']);
-        Route::post('conditions/remove-rule', [ConditionsController::class, 'destroy']);
+        Route::post('conditions/render-rule', [ConditionsController::class, 'rule']);
+        Route::post('conditions/validate', [ConditionsController::class, 'validate']);
 
         // Edition
         Route::middleware([RequireAdmin::class])->group(function () {
@@ -242,6 +246,13 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
         Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
         Route::post('elements/validate', ValidateElementController::class);
+        Route::post('elements/activity', ActivityTimelineController::class);
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('elements/activity/comments', [ActivityCommentsController::class, 'store']);
+            Route::patch('elements/activity/comments', [ActivityCommentsController::class, 'update']);
+            Route::delete('elements/activity/comments', [ActivityCommentsController::class, 'destroy']);
+        });
+        Route::get('elements/activity/mentions', ActivityMentionSuggestionsController::class)->middleware('throttle:120,1');
         Route::post('elements/recent-activity', ElementActivityController::class);
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
@@ -366,12 +377,12 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
-        Route::middleware('password.confirm')->group(function () {
+        Route::middleware(RequireConfirmedPassword::class)->group(function () {
             Route::post('users/save-password', [PasswordController::class, 'store']);
         });
 
         Route::middleware([RequireEdition::class.':'.Edition::Team->value, 'can:editUsers'])->group(function () {
-            Route::middleware('password.confirm')->group(function () {
+            Route::middleware(RequireConfirmedPassword::class)->group(function () {
                 Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
                 Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
             });

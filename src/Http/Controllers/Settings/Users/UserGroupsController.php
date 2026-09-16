@@ -141,16 +141,7 @@ class UserGroupsController extends BaseUserSettingsController
             $group = $userGroupData;
         }
 
-        $group->name = $userGroupData->name;
-        $group->handle = $userGroupData->handle;
-        $group->description = $userGroupData->description;
-
         $isNewGroup = ! $group->id;
-
-        if (! $this->userGroups->saveGroup($group)) {
-            throw ValidationException::withMessages($group->errors()->getMessages());
-        }
-
         $permissions = $request->array('permissions');
 
         if (! $isNewGroup) {
@@ -163,6 +154,14 @@ class UserGroupsController extends BaseUserSettingsController
                 $this->requireConfirmedPassword();
                 break;
             }
+        }
+
+        $group->name = $userGroupData->name;
+        $group->handle = $userGroupData->handle;
+        $group->description = $userGroupData->description;
+
+        if (! $this->userGroups->saveGroup($group)) {
+            throw ValidationException::withMessages($group->errors()->getMessages());
         }
 
         if (Edition::get() === Edition::Team) {
@@ -181,7 +180,13 @@ class UserGroupsController extends BaseUserSettingsController
             ? t('Permissions saved.')
             : t('Group saved.');
 
-        return $this->asSuccess($message);
+        return $this->asSuccess($message, ['group' => [
+            'id' => $group->id,
+            'uid' => $group->uid,
+            'name' => $group->name,
+            'handle' => $group->handle,
+            'description' => $group->description,
+        ]]);
     }
 
     public function destroy(Request $request, int $groupId): Response

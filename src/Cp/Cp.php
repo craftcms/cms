@@ -67,7 +67,7 @@ readonly class Cp
                 'cpTrigger' => $generalConfig->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
-                'rememberedUserSessionDuration' => (int) config('auth.guards.craft.remember', 20160) * 60,
+                'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 20160) * 60,
                 'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             ]);
     }
@@ -87,6 +87,25 @@ readonly class Cp
      * Served from the dev server while it's running, and from the published
      * build directory otherwise.
      */
+    /**
+     * The illustration for a view mode option, for a Choice Control's `thumbnail`.
+     *
+     * @return array{src: string, width: int, height: int, aspectRatio: string}
+     */
+    public static function viewModeThumbnail(string $viewMode): array
+    {
+        // The list illustration is narrower than the rest, as in Craft 5.
+        $width = $viewMode === 'list' ? 48 : 80;
+
+        return [
+            // Illustrations live in Vite's publicDir; see publicAssetUrl().
+            'src' => static::publicAssetUrl("images/view-modes/$viewMode.svg"),
+            'width' => $width,
+            'height' => 60,
+            'aspectRatio' => "$width / 60",
+        ];
+    }
+
     public static function publicAssetUrl(string $path): string
     {
         $path = ltrim($path, '/');

@@ -6,7 +6,8 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, ref, useSlots} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -16,8 +17,8 @@
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
-  import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
+  import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
@@ -33,10 +34,13 @@
     default?: (props: {payload: Record<string, unknown>}) => any;
     /** Above the meta fields, e.g. an asset's file preview. */
     'details-header'?: (props: {payload: Record<string, unknown>}) => any;
+    /** Navigation alongside the editor content. */
+    sidebar?: () => any;
   }>();
 
   const {
     activity,
+    activityTimelineVersion,
     autosave,
     discardDraft,
     errors,
@@ -98,9 +102,18 @@
     ...headerButtons.value,
   ]);
 
+  /** Measured here because this component owns the body; see ElementDetailsTabs. */
+  const editorBody = ref<HTMLElement | null>(null);
+  const {width: bodyWidth} = useElementSize(editorBody);
+  const slots = useSlots();
+
   const hasDetails = computed(
-    () => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml)
+    () =>
+      Boolean(sidebarPayload.value) ||
+      Boolean(payload.metadataHtml) ||
+      Boolean(payload.activityTimelineUrl)
   );
+  const hasSidebar = computed(() => Boolean(slots.sidebar));
 
   // Mirrors the legacy wording: a changed draft names the draft, anything else
   // names the element type.
@@ -132,7 +145,10 @@
         tab in the details column is that list now. -->
 
         <form method="post" @submit.prevent="save()">
-          <div class="sticky top-0 z-1000 pb-2">
+          <!-- Below the overlay band (slideout shade 99, panels and modal
+            shade 100) so the header never paints over a slideout or the image
+            editor modal, which stack above the page. -->
+          <div class="sticky top-0 z-10 pb-2">
             <header
               class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
             >
@@ -250,13 +266,24 @@
           </div>
 
           <div v-if="form.hasErrors" class="px-4">
-            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+            <ErrorSummary
+              v-if="form.hasErrors"
+              :errors="form.errors"
+              :title="t('Couldn’t save changes')"
+            />
           </div>
 
           <div
+            ref="editorBody"
             class="element-editor__body"
-            :class="{'element-editor__body--details': hasDetails}"
+            :class="{
+              'element-editor__body--details': hasDetails,
+              'element-editor__body--sidebar': hasSidebar,
+            }"
           >
+            <aside v-if="hasSidebar" class="element-editor__sidebar">
+              <slot name="sidebar" />
+            </aside>
             <div class="element-editor__content">
               <craft-pane appearance="plain">
                 <div class="py-4">
@@ -267,6 +294,7 @@
                       ref="renderer"
                       :payload="formPayload"
                       :errors="errors"
+                      :modified="autosave.modified.value"
                       @update:mutation="onMutation"
                     />
 
@@ -280,15 +308,14 @@
               v-if="hasDetails || $slots['details-header']"
               class="element-editor__details"
             >
-              <craft-tabs size="small" placement="inline-end" collapsible>
-                <craft-tab slot="tab">
-                  <craft-icon
-                    name="circle-info"
-                    :label="t('Info')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
+              <ElementDetailsTabs
+                :payload="payload"
+                :activity-timeline-version="activityTimelineVersion"
+                :available-width="bodyWidth"
+                pane
+              >
+                <template #info>
+                  <craft-pane appearance="plain" padding="none">
                     <div
                       slot="header"
                       class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
@@ -305,6 +332,7 @@
                             ref="sidebarRenderer"
                             :payload="sidebarPayload"
                             :errors="sidebarErrors"
+                            :modified="autosave.modified.value"
                             @update:mutation="onSidebarMutation"
                           />
                         </craft-field-group>
@@ -319,48 +347,8 @@
                       </div>
                     </div>
                   </craft-pane>
-                </div>
-
-                <craft-tab slot="tab" id="tab-1">
-                  <craft-icon
-                    name="wave-pulse"
-                    :label="t('Activity')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
-                    <div
-                      slot="header"
-                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-                    >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Activity') }}
-                      </h3>
-                    </div>
-                    @TODO
-                  </craft-pane>
-                </div>
-
-                <craft-tab slot="tab">
-                  <craft-icon
-                    name="clock-rotate-left"
-                    :label="t('Revisions')"
-                  ></craft-icon>
-                </craft-tab>
-                <div slot="panel">
-                  <craft-pane appearance="plain">
-                    <div
-                      slot="header"
-                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-                    >
-                      <h3 slot="title" class="text-xs/4">
-                        {{ t('Revisions') }}
-                      </h3>
-                    </div>
-                    <RevisionsList :items="payload.contextMenu?.items ?? []" />
-                  </craft-pane>
-                </div>
-              </craft-tabs>
+                </template>
+              </ElementDetailsTabs>
             </div>
           </div>
         </form>
@@ -388,7 +376,7 @@
     border-block-end: 1px solid var(--color-neutral-border-quiet);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 10;
     background-color: white;
   }
 
@@ -429,8 +417,22 @@
     height: 100%;
   }
 
+  .element-editor__sidebar {
+    position: sticky;
+    top: 60px;
+    align-self: start;
+  }
+
+  .element-editor__body.element-editor__body--sidebar {
+    grid-template-columns: 12rem minmax(0, 1fr);
+  }
+
   .element-editor__body.element-editor__body--details {
     grid-template-columns: minmax(0, 1fr) clamp(21rem, 25%, 25rem);
+  }
+
+  .element-editor__body.element-editor__body--sidebar.element-editor__body--details {
+    grid-template-columns: 12rem minmax(0, 1fr) clamp(21rem, 25%, 25rem);
   }
 
   /* Closing the details tabs shrinks the element to just its rail, but the
@@ -453,38 +455,32 @@
     }
   }
 
-  @container (width >= 768px) {
-    .element-editor__body {
-      align-items: start;
+  .element-editor__body.element-editor__body--sidebar.element-editor__body--details:has(
+      craft-tabs[collapsed]
+    ) {
+    grid-template-columns: 12rem minmax(0, 1fr) auto;
+  }
+
+  @container (width < 768px) {
+    .element-editor__body,
+    .element-editor__body.element-editor__body--details,
+    .element-editor__body.element-editor__body--sidebar,
+    .element-editor__body.element-editor__body--sidebar.element-editor__body--details,
+    .element-editor__body.element-editor__body--sidebar.element-editor__body--details:has(
+        craft-tabs[collapsed]
+      ) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .element-editor__sidebar,
+    .element-editor__details {
+      position: static;
     }
   }
 
-  craft-tabs::part(base) {
-    gap: var(--c-spacing-sm);
-  }
-
-  craft-tabs::part(strip) {
-    border: 0;
-  }
-
-  craft-tab {
-    padding: 0;
-    width: var(--c-size-touch-target);
-    background-color: white;
-    aspect-ratio: 1;
-    display: grid;
-    place-items: center;
-    border-radius: var(--c-radius-md);
-    border: 1px solid transparent;
-  }
-
-  craft-tab[selected='true'] {
-    background-color: var(--c-color-neutral-fill-normal);
-    border-color: var(--c-color-neutral-border-normal);
-    color: var(--c-color-neutral-on-normal);
-
-    &:after {
-      display: none;
+  @container (width >= 768px) {
+    .element-editor__body {
+      align-items: start;
     }
   }
 </style>

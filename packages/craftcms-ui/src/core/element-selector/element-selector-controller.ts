@@ -299,6 +299,7 @@ export class ElementSelectorController<
       elementType: this.elementType,
       sources: options.sources,
       condition: options.condition,
+      criteria: {...options.criteria},
     };
 
     // `null` and `'auto'` both mean "server decides", so the key is omitted.
@@ -308,6 +309,14 @@ export class ElementSelectorController<
 
     if (options.siteIds) {
       params.siteIds = options.siteIds;
+    }
+
+    if (options.criteria) {
+      params.criteria = {...options.criteria};
+    }
+
+    if (typeof options.indexSettings.showFolders === 'boolean') {
+      params.showFolders = options.indexSettings.showFolders;
     }
 
     return params;

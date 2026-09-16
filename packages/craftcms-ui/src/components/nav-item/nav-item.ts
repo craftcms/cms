@@ -268,12 +268,12 @@ export default class CraftNavItem extends LitElement {
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
         ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
-        <slot
+         <slot
           id="${this.id}-label"
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
         ${this.renderSuffix(showToggle)}
-      </${tag}>
+      </div>
     `;
   }
 

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -21,22 +24,25 @@ use function CraftCms\Cms\t;
  *
  * @since 4.4.0
  */
-class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof EntryCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('Savable');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        return ['savable'];
-    }
-
-    /** @param EntryQuery<Entry> $query */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $query->savable($this->value);
+        EntryQuery::applySavable($query, $this->value, $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

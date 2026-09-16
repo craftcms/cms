@@ -7,13 +7,8 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue';
-import type {
-  FormChangeKind,
-  FormNodePayload,
-  FormPayload,
-  FormValue,
-} from './types';
-import {pathsMatch} from './runtime';
+import type {FormChangeKind, FormPayload, FormValue} from './types';
+import {pathsMatch, visitControls} from './runtime';
 
 interface FormRendererInstance {
   advanceBaseline(): void;
@@ -150,7 +145,8 @@ function defaultErrorPath(
   const withinScope = scope.every(
     (segment, index) => segments[index] === segment
   );
-  const paths = controlPaths(payload?.nodes);
+  const paths: string[][] = [];
+  visitControls(payload?.nodes ?? [], (control) => paths.push(control.path));
 
   if (
     withinScope &&
@@ -178,14 +174,6 @@ function defaultErrorPath(
   // Unowned keys stay as they are, so they surface as global errors rather
   // than being dropped.
   return withinScope ? segments : null;
-}
-
-/** Every control path in a payload, nested ones included. */
-function controlPaths(nodes: FormNodePayload[] | undefined): string[][] {
-  return (nodes ?? []).flatMap((node) => [
-    ...(node.control ? [node.control.path] : []),
-    ...controlPaths(node.children),
-  ]);
 }
 
 function clone<T>(value: T): T {

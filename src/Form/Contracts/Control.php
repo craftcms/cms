@@ -28,6 +28,31 @@ interface Control
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string;
 
     /**
+     * Returns what the control should read when its value is missing.
+     *
+     * A control renders as soon as the payload describing it does, and inside a
+     * nested form that can be a beat ahead of the values filling it — a Matrix
+     * block the server has just minted, say. A control whose value is a shape
+     * would otherwise reach into nothing and throw, which takes the whole field
+     * down; the renderer stands this in for that beat instead.
+     *
+     * Null for a control whose value is a scalar: those coerce on their own, and
+     * null keeps it out of the payload.
+     */
+    public function emptyValue(): mixed;
+
+    /**
+     * Returns whether the control renders nested forms — Matrix blocks, a
+     * content block.
+     *
+     * A change anywhere inside one marks the control holding it as modified,
+     * the way Craft 5's element editor marks every enclosing field of a changed
+     * input. That's how an edit inside a block the server knows nothing about
+     * yet — one created in this draft — still shows on the field holding it.
+     */
+    public function nestsForms(): bool;
+
+    /**
      * Returns the Vue component registry name used to render this control.
      *
      * The component must be registered before the form is mounted and accept
@@ -77,6 +102,10 @@ interface Control
     public function getMode(): ControlMode;
 
     public function mode(ControlMode|string $mode): static;
+
+    public function reactive(bool $reactive = true): static;
+
+    public function isReactive(): bool;
 
     /**
      * Returns control-specific configuration for the resolved value and both renderers.

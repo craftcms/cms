@@ -79,7 +79,7 @@ trait CraftUserTrait
 
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this->asElement())));
+        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this->asElement()), $this->getEmailForVerification()));
     }
 
     public function getEmailForVerification(): string

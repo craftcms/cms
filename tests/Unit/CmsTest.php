@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,10 @@ use Illuminate\Support\Facades\Schema;
 beforeEach(function () {
     Context::forgetHidden('craft.info');
     Context::forgetHidden('craft.isInstalled');
+
+    $this->authGuard = Mockery::mock(Guard::class);
+    Auth::shouldReceive('getDefaultDriver')->andReturn('web');
+    Auth::shouldReceive('guard')->with('web')->andReturn($this->authGuard);
 });
 
 function createInfoTable(): void
@@ -72,7 +77,7 @@ it('uses the logged-in CP user timezone preference first', function () {
     Cms::config()->cpTrigger = 'admin';
     app()->instance('request', Request::create('/admin'));
 
-    Auth::shouldReceive('hasUser')->andReturnTrue()
+    $this->authGuard->shouldReceive('hasUser')->andReturnTrue()
         ->shouldReceive('id')->once()->andReturn(42);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'timeZone')->andReturn('Europe/Brussels');
 
@@ -139,6 +144,42 @@ it('falls back to UTC when ICU rejects the timezone', function () {
     expect(Cms::timezone())->toBe('UTC');
 });
 
+it('resolves timezone changes after successful ICU validation', function () {
+    Cms::config()->timezone = '$CRAFT_TEST_TIMEZONE';
+
+    try {
+        foreach (['Europe/Paris', 'Asia/Tokyo', 'Not/A_Timezone', 'Europe/Paris'] as $timezone) {
+            $_SERVER['CRAFT_TEST_TIMEZONE'] = $timezone;
+
+            foreach (['en', 'nl-BE'] as $locale) {
+                app()->setLocale($locale);
+
+                expect(Cms::systemTimezone())->toBe($timezone === 'Not/A_Timezone' ? 'UTC' : $timezone);
+            }
+        }
+    } finally {
+        unset($_SERVER['CRAFT_TEST_TIMEZONE']);
+    }
+});
+
+it('resolves CP timezone preferences after switching users and request context', function () {
+    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->timezone = 'Europe/Paris';
+    app()->instance('request', Request::create('/admin'));
+
+    $this->authGuard->shouldReceive('hasUser')->andReturnTrue();
+    $this->authGuard->shouldReceive('id')->twice()->andReturn(42, 43);
+    Users::shouldReceive('getUserPreference')->once()->with(42, 'timeZone')->andReturn('Asia/Tokyo');
+    Users::shouldReceive('getUserPreference')->once()->with(43, 'timeZone')->andReturn('America/New_York');
+
+    expect(Cms::timezone())->toBe('Asia/Tokyo')
+        ->and(Cms::timezone())->toBe('America/New_York');
+
+    app()->instance('request', Request::create('/site'));
+
+    expect(Cms::timezone())->toBe('Europe/Paris');
+});
+
 it('uses the accepted language while Craft is not installed', function () {
     Cms::setIsInstalled(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['fr', 'en']));
@@ -174,7 +215,7 @@ it('uses a valid CP user language preference', function () {
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
-    Auth::shouldReceive('user')->once()->andReturn($user);
+    $this->authGuard->shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('pt-BR');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('pt-BR')->andReturn(true);
 
@@ -186,7 +227,7 @@ it('falls back to the configured default CP language', function () {
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = 'es';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('user')->once()->andReturnNull();
+    $this->authGuard->shouldReceive('user')->once()->andReturnNull();
 
     expect(Cms::targetLanguage(Request::create('/admin')))->toBe('es');
 });
@@ -198,7 +239,7 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
-    Auth::shouldReceive('user')->once()->andReturn($user);
+    $this->authGuard->shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('not-real')->andReturn(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['it', 'en']));

@@ -58,12 +58,15 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
@@ -102,7 +105,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -116,6 +118,7 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -1247,19 +1250,28 @@ class Asset extends Element
      */
     protected function cpEditUrl(): ?string
     {
+        $path = $this->cpEditPath();
+
+        return $path ? Url::cpUrl($path) : null;
+    }
+
+    /**
+     * The CP path this asset is edited at, shared by the edit screen and the
+     * image editor nested beneath it.
+     */
+    private function cpEditPath(): ?string
+    {
         if ($this->isFolder) {
             return null;
         }
 
-        $volume = $this->getVolume();
-        if ($volume->isTemporary()) {
+        if ($this->getVolume()->isTemporary()) {
             return null;
         }
 
         $filename = preg_replace('/\s+/', '-', $this->getFilename(false));
-        $path = "assets/edit/$this->id-$filename";
 
-        return Url::cpUrl($path);
+        return "assets/edit/$this->id-$filename";
     }
 
     public function getPostEditUrl(): string
@@ -2061,21 +2073,13 @@ JS, [
         return Html::encodeSpaces(AssetsHelper::generateUrl($this));
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($this->isFolder) {
             return null;
         }
 
-        $forCard = $size % 128 === 0;
-
-        if (! $forCard && $this->getWidth() && $this->getHeight()) {
-            [$width, $height] = AssetsHelper::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $size, $size);
-        } else {
-            $width = $height = $size;
-        }
-
-        return AssetsService::getThumbUrl($this, $width, $height, false);
+        return AssetsService::getThumbUrl($this, $size, $size, false, $mode);
     }
 
     protected function thumbSvg(): string
@@ -2576,15 +2580,11 @@ JS, [
     }
 
     #[Override]
-    protected function inlineAttributeInputHtml(string $attribute): string
+    protected function inlineAttributeInputForm(string $attribute): ?Form
     {
-        return match ($attribute) {
-            'alt' => FormFields::textareaHtml([
-                'name' => 'alt',
-                'value' => $this->alt,
-            ]),
-            default => parent::inlineAttributeInputHtml($attribute),
-        };
+        return $attribute === 'alt'
+            ? Form::make([Field::make(control: Textarea::make('alt')->value($this->alt))])
+            : parent::inlineAttributeInputForm($attribute);
     }
 
     /**
@@ -2673,35 +2673,14 @@ JS;
                     HtmlStack::js($js);
                 }
 
+                // The edit screen delegates on this attribute to open its
+                // image editor dialog; no behavior is wired here.
                 if ($editable) {
                     $imageButtonHtml .= Html::button(t('Edit Image'), [
                         'id' => 'edit-btn',
                         'class' => ['btn', 'edit-btn'],
+                        'data' => ['image-editor' => true],
                     ]);
-
-                    $editBtnId = InputNamespace::namespaceId('edit-btn');
-                    $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
-                    $js = <<<JS
-$('#$editBtnId').on('activate', () => {
-    new Craft.AssetImageEditor($this->id, {
-        allowDegreeFractions: Craft.isImagick,
-        onSave: data => {
-            if (data.newAssetId) {
-                // If this is within an Assets field’s editor slideout, replace the selected asset
-                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                if (slideout && slideout.settings.elementSelectInput) {
-                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                        .catch(() => {});
-                }
-                return;
-            }
-
-            $updatePreviewThumbJs
-        },
-    })
-});
-JS;
-                    HtmlStack::js($js);
                 }
 
                 $imageButtonHtml .= Html::endTag('div'); // .image-actions
@@ -3204,7 +3183,7 @@ JS;
         $volume = $this->getVolume();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume->isTemporary() || Auth::id() === $this->uploaderId) {
+        if ($volume->isTemporary() || craftAuth()->id() === $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {

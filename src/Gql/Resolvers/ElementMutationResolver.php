@@ -16,7 +16,6 @@ use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\WrappingType;
 use Illuminate\Support\Facades\Cache;
 
@@ -31,11 +30,6 @@ abstract class ElementMutationResolver extends MutationResolver
      * @var string[]
      */
     protected array $immutableAttributes = ['id', 'uid'];
-
-    /**
-     * @var Type[] Argument type definitions by name.
-     */
-    protected array $argumentTypeDefsByName = [];
 
     /**
      * @template T of ElementInterface
@@ -152,6 +146,7 @@ abstract class ElementMutationResolver extends MutationResolver
     private function _traverseAndNormalizeArguments(array $argumentDefinitions, array $mutationArguments): array
     {
         $normalized = [];
+        $argumentTypeDefsByName = [];
 
         // Keep track of known argument names and the corresponding input types.
         /** @var Argument $argumentDefinition */
@@ -162,7 +157,7 @@ abstract class ElementMutationResolver extends MutationResolver
                 $typeDef = $typeDef->getInnermostType();
             }
 
-            $this->argumentTypeDefsByName[$argumentDefinition->name] = $typeDef;
+            $argumentTypeDefsByName[$argumentDefinition->name] = $typeDef;
         }
 
         // Now look at the actual provided arguments
@@ -172,7 +167,7 @@ abstract class ElementMutationResolver extends MutationResolver
                 $normalized[$argumentName] = $this->_traverseAndNormalizeArguments($argumentDefinitions, $value);
             } else {
                 // Find the relevant type def
-                $argumentTypeDef = $this->argumentTypeDefsByName[$argumentName];
+                $argumentTypeDef = $argumentTypeDefsByName[$argumentName];
 
                 // If it's an input object, traverse that
                 if ($argumentTypeDef instanceof InputObjectType) {

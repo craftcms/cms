@@ -12,15 +12,18 @@ use craft\auth\sso\ProviderInterface;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\SessionGuard;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -256,7 +259,7 @@ class Sso extends Component
      */
     public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false): bool
     {
-        if (Auth::check()) {
+        if (craftAuth()->check()) {
             return true;
         }
 
@@ -268,7 +271,9 @@ class Sso extends Component
 
         // Try logging them in
         try {
-            Auth::setRememberDuration($sessionDuration ?? config('auth.guards.craft.remember', 576000))->login($user, $rememberMe);
+            /** @var SessionGuard $guard */
+            $guard = craftAuth();
+            $guard->setRememberDuration($sessionDuration ?? config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 576000))->login($user, $rememberMe);
         } catch (Throwable $e) {
             throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'), previous: $e);
         }

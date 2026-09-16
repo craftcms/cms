@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseTextConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use Stringable;
 
-class TextFieldConditionRule extends BaseTextConditionRule implements FieldConditionRuleInterface
+class TextFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 

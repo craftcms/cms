@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Tools, dependencies, and generated assets are restored from the snapshot.
+# SQLite needs no service restart; do not install or rebuild anything on wake.

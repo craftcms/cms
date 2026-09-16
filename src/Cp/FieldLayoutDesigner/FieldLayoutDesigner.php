@@ -274,6 +274,9 @@ class FieldLayoutDesigner
             'name' => $name,
             'cols' => $cols,
             'rows' => $rows,
+            'errors' => array_map(fn (array $field) => [
+                'handle' => $fieldLayout->errors()->has("generatedFields.{$field['uid']}.handle"),
+            ], $fieldLayout->getGeneratedFields()),
             'addRowLabel' => t('Add a field'),
             'static' => $config['disabled'],
             'initJs' => false,

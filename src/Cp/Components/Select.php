@@ -147,6 +147,7 @@ class Select extends ViewComponent
 
         return Html::tag('select', $options, Arr::merge([
             'slot' => 'input',
+            'class' => ['form-control'],
             'id' => $this->getId(),
             'name' => $this->name,
             'multiple' => $this->multiple,

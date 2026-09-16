@@ -1,4 +1,4 @@
-import {createApp, defineComponent, h, nextTick} from 'vue';
+import {computed, createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {Source} from '@/modules/elements/types/sources';
 
@@ -10,7 +10,7 @@ const router = vi.hoisted(() => ({
 vi.mock('@inertiajs/vue3', () => ({router}));
 
 vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => ({site: {handle: 'default'}}),
+  default: () => ({site: computed(() => ({handle: 'default'}))}),
 }));
 
 const SOURCES: Source[] = [

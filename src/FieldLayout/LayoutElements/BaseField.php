@@ -24,6 +24,7 @@ use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\ActionMenu;
 use CraftCms\Cms\Form\Nodes\CopyAttribute;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -376,9 +377,10 @@ abstract class BaseField extends FieldLayoutElement
         return Field::make(t('Label'), Text::make('label')
             ->value($labelHidden ? null : $this->label)
             ->placeholder($this->defaultLabel())
-            ->mode($labelHidden ? ControlMode::Disabled : ControlMode::Editable))
+            ->mode($labelHidden ? ControlMode::Disabled : ControlMode::Editable)
+            ->reactive())
             ->actions(Action::make(
-                Checkbox::make('labelHidden')->label(t('Hide'))->value($labelHidden),
+                Checkbox::make('labelHidden')->label(t('Hide'))->value($labelHidden)->reactive(),
             ));
     }
 
@@ -419,6 +421,8 @@ abstract class BaseField extends FieldLayoutElement
         if ($context->mode !== ControlMode::Editable) {
             $control->mode($context->mode);
         }
+
+        $control->reactive();
 
         $static = $context->mode !== ControlMode::Editable;
         $status = $this->showStatus() ? $this->statusClass($context->element, $static) : null;
@@ -531,8 +535,9 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface  $element  The element the field is associated with
      * @param  int  $size  The maximum width and height the thumbnail should have.
+     * @param  ImageTransformMode  $mode  How the image should fit within the thumbnail bounds.
      */
-    public function thumbHtml(ElementInterface $element, int $size): ?string
+    public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return null;
     }

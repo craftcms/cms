@@ -13,10 +13,12 @@ readonly class ContentIndexController
 {
     public function __invoke(ElementIndexRequest $request, string $page, ?string $sectionHandle = null): Response
     {
-        return Inertia::render('content/Index', new EntryIndexViewModel(
-            request: $request,
-            page: $page,
-            sectionHandle: $sectionHandle,
-        ));
+        return Inertia::render('content/Index', [
+            new EntryIndexViewModel(
+                request: $request,
+                page: $page,
+                sectionHandle: $sectionHandle,
+            ),
+        ]);
     }
 }

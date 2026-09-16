@@ -6,7 +6,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
-use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -51,6 +50,7 @@ describe('modifyQuery with multiple rules', function () {
         $entry2 = createEntryForTest(title: 'Beta');
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $titleRule = $condition->createConditionRule(TitleConditionRule::class);
         $titleRule->operator = '=';
@@ -75,6 +75,7 @@ describe('modifyQuery with multiple rules', function () {
         $entry2 = createEntryForTest(title: 'Beta');
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $titleRule = $condition->createConditionRule(TitleConditionRule::class);
         $titleRule->operator = '=';
@@ -156,6 +157,7 @@ describe('empty condition (no rules)', function () {
         createEntryForTest(title: 'Beta');
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
         $queryWithout = Entry::find();
         $totalCount = $queryWithout->count();
@@ -175,53 +177,20 @@ describe('empty condition (no rules)', function () {
     });
 });
 
-describe('exclusive query params', function () {
-    it('prevents selecting a rule whose exclusive param is already taken', function () {
-        $condition = createCondition();
-
-        $titleRule = $condition->createConditionRule(TitleConditionRule::class);
-        $titleRule->operator = '=';
-        $titleRule->value = 'Alpha';
-        $condition->addConditionRule($titleRule);
-
-        $selectable = $condition->getSelectableConditionRules();
-        $selectableClasses = array_map(fn ($rule) => $rule::class, $selectable);
-
-        expect($selectableClasses)->not->toContain(TitleConditionRule::class);
-    });
-
-    it('allows selecting rules with different exclusive params', function () {
-        $condition = createCondition();
-
-        $titleRule = $condition->createConditionRule(TitleConditionRule::class);
-        $titleRule->operator = '=';
-        $titleRule->value = 'Alpha';
-        $condition->addConditionRule($titleRule);
-
-        $selectable = $condition->getSelectableConditionRules();
-        $selectableClasses = array_map(fn ($rule) => $rule::class, $selectable);
-
-        expect($selectableClasses)->toContain(IdConditionRule::class)
-            ->and($selectableClasses)->toContain(SlugConditionRule::class);
-    });
-});
-
 describe('modifyQuery with status + title rules', function () {
     it('combines different rule types to narrow results', function () {
         EntryModel::factory()->count(3)->create();
 
         $condition = createCondition();
+        $condition->forQuery = true;
 
-        $statusRule = $condition->createConditionRule(StatusConditionRule::class);
-        $statusRule->operator = 'in';
-        $statusRule->values = ['live'];
-        $condition->addConditionRule($statusRule);
-
+        // StatusConditionRule isn't selectable for query-mode conditions (status is
+        // already a first-class query param), so apply it directly on the query.
         $titleRule = $condition->createConditionRule(TitleConditionRule::class);
         $titleRule->operator = 'not empty';
         $condition->addConditionRule($titleRule);
 
-        $query = Entry::find()->status(null);
+        $query = Entry::find()->status('live');
         $condition->modifyQuery($query);
 
         foreach ($query->all() as $entry) {
@@ -242,7 +211,8 @@ describe('getConfig', function () {
             ->toHaveKey('class', ElementCondition::class)
             ->toHaveKey('elementType', Entry::class)
             ->toHaveKey('conditionRules')
-            ->and($config['conditionRules'])->toBeArray()->toBeEmpty();
+            ->and($config['conditionRules'])->toHaveKey('operator', 'and')
+            ->and($config['conditionRules']['rules'])->toBeArray()->toBeEmpty();
     });
 
     it('includes configured rules in config output', function () {
@@ -260,12 +230,12 @@ describe('getConfig', function () {
 
         $config = $condition->getConfig();
 
-        expect($config['conditionRules'])->toHaveCount(2)
-            ->and($config['conditionRules'][0])->toHaveKey('class', TitleConditionRule::class)
-            ->and($config['conditionRules'][0])->toHaveKey('value', 'Test Title')
-            ->and($config['conditionRules'][0])->toHaveKey('operator', '=')
-            ->and($config['conditionRules'][1])->toHaveKey('class', SlugConditionRule::class)
-            ->and($config['conditionRules'][1])->toHaveKey('value', 'test-slug');
+        expect($config['conditionRules']['rules'])->toHaveCount(2)
+            ->and($config['conditionRules']['rules'][0])->toHaveKey('class', TitleConditionRule::class)
+            ->and($config['conditionRules']['rules'][0])->toHaveKey('value', 'Test Title')
+            ->and($config['conditionRules']['rules'][0])->toHaveKey('operator', '=')
+            ->and($config['conditionRules']['rules'][1])->toHaveKey('class', SlugConditionRule::class)
+            ->and($config['conditionRules']['rules'][1])->toHaveKey('value', 'test-slug');
     });
 
     it('preserves rule UIDs in config', function () {
@@ -278,7 +248,7 @@ describe('getConfig', function () {
 
         $config = $condition->getConfig();
 
-        expect($config['conditionRules'][0])->toHaveKey('uid')
-            ->and($config['conditionRules'][0]['uid'])->toBe($titleRule->uid);
+        expect($config['conditionRules']['rules'][0])->toHaveKey('uid')
+            ->and($config['conditionRules']['rules'][0]['uid'])->toBe($titleRule->uid);
     });
 });

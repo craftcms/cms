@@ -18,12 +18,15 @@
     canonical,
     FormFailure,
     FormControlOverrides,
+    FormChangedPaths,
     FormModifiedGroups,
+    FormRefreshingFields,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
     unsetValue,
     valueAt,
+    visitControls,
   } from './runtime';
   import type {
     FormChange,
@@ -37,6 +40,7 @@
 
   const props = defineProps<{
     payload: FormPayload;
+    disabled?: boolean;
     refresh?: (
       values: FormPayload['values'],
       scope?: string[]
@@ -55,6 +59,17 @@
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
+  const nodes = computed(() => {
+    if (!props.disabled) return payload.value.nodes;
+
+    const nodes = cloneRaw(payload.value.nodes);
+    visitControls(nodes, (control) =>
+      Object.assign(control, {mode: 'disabled'})
+    );
+
+    return nodes;
+  });
+
   const root = ref<HTMLElement>();
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
@@ -62,6 +77,8 @@
   let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const refreshVersions = new Map<string, number>();
+  const activeRefreshes = new Map<string, {field: string; request: number}>();
+  const refreshingFields = reactive(new Set<string>());
   const lastRefreshValues = new Map([
     [
       JSON.stringify(props.payload.scope),
@@ -70,6 +87,13 @@
   ]);
   const knownControlPaths = new Map<string, string[]>();
   const touchedPaths = new Set<string>();
+  /**
+   * Dotted paths of every control changed since the form was last reset.
+   * Reactive, unlike `touchedPaths`, because a field holding nested forms badges
+   * from it. Kept through a save, the way Craft 5's badges stay put, and dropped
+   * only when the values are thrown away.
+   */
+  const changedPaths = ref(new Set<string>());
   const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
@@ -77,6 +101,11 @@
   provide(
     FormModifiedGroups,
     computed(() => new Set(props.modified ?? []))
+  );
+  provide(FormChangedPaths, changedPaths);
+  provide(
+    FormRefreshingFields,
+    computed(() => refreshingFields)
   );
 
   useEventListener(hostForm, 'submit', (event) => {
@@ -95,6 +124,11 @@
     () => props.payload,
     (refreshed) => reconcile(refreshed)
   );
+
+  watch(
+    () => props.disabled,
+    () => emitMutation()
+  );
   onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
 
   function onControlChange(change: FormChange): void {
@@ -104,28 +138,46 @@
 
   function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
+
+    // A control can report a change that leaves its value where it started —
+    // rewriting an input's value on reset makes it re-emit, for one. That isn't
+    // a change, and recording it would badge a field nobody touched.
+    if (
+      canonical(valueAt(values, change.path)) !==
+      canonical(valueAt(baseline, change.path))
+    ) {
+      changedPaths.value.add(change.path.join('.'));
+    }
     emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
-    const refreshable = change.refreshable ?? payload.value.refreshable;
     const key = JSON.stringify(scope);
-    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
 
-    if (!props.refresh || !refreshable) {
+    if (props.disabled || !props.refresh || !change.refreshable) {
       return;
     }
 
+    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
     clearTimeout(refreshTimers.get(key));
+
+    if (change.kind === 'discrete') {
+      void requestRefresh(scope, change.path);
+
+      return;
+    }
+
     refreshTimers.set(
       key,
-      setTimeout(
-        () => requestRefresh(scope),
-        change.kind === 'typing' ? 1000 : 100
-      )
+      setTimeout(() => requestRefresh(scope, change.path), 1000)
     );
   }
 
-  async function requestRefresh(scope: string[]): Promise<void> {
+  async function requestRefresh(
+    scope: string[],
+    fieldPath: string[]
+  ): Promise<void> {
+    if (props.disabled) return;
+
     const snapshot = cloneRaw(valueAt(values, scope));
 
     if (!isRecord(snapshot)) {
@@ -144,6 +196,15 @@
     lastRefreshValues.set(key, serialized);
     const request = (refreshVersions.get(key) ?? 0) + 1;
     refreshVersions.set(key, request);
+    const field = JSON.stringify(fieldPath);
+    const activeRefresh = activeRefreshes.get(key);
+
+    if (activeRefresh) {
+      refreshingFields.delete(activeRefresh.field);
+    }
+
+    activeRefreshes.set(key, {field, request});
+    refreshingFields.add(field);
 
     try {
       const refreshed = await props.refresh!(snapshot, scope);
@@ -154,6 +215,11 @@
     } catch {
       lastRefreshValues.delete(key);
       // The current presentation and values are already the last valid state.
+    } finally {
+      if (activeRefreshes.get(key)?.request === request) {
+        activeRefreshes.delete(key);
+        refreshingFields.delete(field);
+      }
     }
   }
 
@@ -243,12 +309,15 @@
     // Dropping the versions abandons any refresh still in flight: it was asked
     // for with the values being discarded, so its answer describes them too.
     refreshVersions.clear();
+    activeRefreshes.clear();
+    refreshingFields.clear();
     lastRefreshValues.clear();
     lastRefreshValues.set(
       JSON.stringify(source.scope),
       canonical(valueAt(source.values, source.scope))
     );
     touchedPaths.clear();
+    changedPaths.value.clear();
     knownControlPaths.clear();
 
     // Replaced in place rather than reassigned: the reactive object is handed
@@ -268,7 +337,7 @@
     const groups = new Map<string, string[]>();
     const editablePaths = new Set<string>();
 
-    visitControls(payload.value.nodes, (control) => {
+    visitControls(nodes.value, (control) => {
       if (control.mode === 'editable') {
         groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
         editablePaths.add(JSON.stringify(control.path));
@@ -309,15 +378,29 @@
   }
 
   function currentValues(): FormPayload['values'] {
-    const result: FormPayload['values'] = {};
+    const groups = new Map<string, string[]>();
+    const controlPaths = new Set<string>();
 
     visitControls(payload.value.nodes, (control) => {
-      const value = valueAt(values, control.path);
+      groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+      controlPaths.add(JSON.stringify(control.path));
+    });
+
+    const result: FormPayload['values'] = {};
+
+    for (const path of groups.values()) {
+      const value = groupValue(values, path, controlPaths);
+
+      if (path.length === 0 && isRecord(value)) {
+        Object.assign(result, value);
+
+        continue;
+      }
 
       if (value !== undefined) {
-        setPathValue(result, control.path, cloneRaw(value));
+        setPathValue(result, path, value);
       }
-    });
+    }
 
     return result;
   }
@@ -331,23 +414,13 @@
     recordChange({kind, path});
   }
 
-  defineExpose({advanceBaseline, currentValues, resetValues, setValue});
-
-  function visitControls(
-    nodes: FormNodePayload[],
-    visit: (control: FormControlPayload) => void
-  ): void {
-    for (const node of nodes) {
-      if (node.control) {
-        visit(node.control);
-        node.control.forms?.forEach((form) => visitControls(form.nodes, visit));
-      }
-
-      if (node.children) {
-        visitControls(node.children, visit);
-      }
-    }
-  }
+  defineExpose({
+    advanceBaseline,
+    currentValues,
+    resetValues,
+    setValue,
+    canSubmit: () => !renderError.value,
+  });
 
   function rememberControlPaths(nodes: FormNodePayload[]): void {
     visitControls(nodes, (control) =>
@@ -450,7 +523,7 @@
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
     <FormNodeList
-      :nodes="payload.nodes"
+      :nodes="nodes"
       :values="values"
       :errors="effectiveErrors"
       :touched-paths="touchedPaths"

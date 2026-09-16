@@ -12,6 +12,7 @@ use CraftCms\Cms\Search\Events\SearchScoresResolving;
 use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -280,6 +281,29 @@ describe('searchElements', function () {
         expect(Search::searchElements(entryQuery()->search('Alpha')))->toBe($alphaScores)
             ->and(Search::searchElements(entryQuery()->search('Beta')))->toBe($betaScores);
     });
+
+    test('search normalization follows the effective language', function (bool $reverse) {
+        $entries = [
+            'de' => createIndexedEntry('maedchen', 'neutral'),
+            'en' => createIndexedEntry('madchen', 'neutral'),
+        ];
+        $site = Site::find(Sites::getCurrentSite()->id);
+        $languages = $reverse ? ['en', 'de', 'en'] : ['de', 'en', 'de'];
+
+        foreach ($languages as $language) {
+            $site->update(['language' => $language]);
+            Sites::refreshSites();
+            app()->setLocale($language === 'de' ? 'en' : 'de');
+            $expected = ["{$entries[$language]->id}-{$site->id}" => 10000];
+
+            expect(Search::searchElements(entryQuery()->siteId($site->id)->search('Mädchen')))->toBe($expected);
+            app()->setLocale($language);
+
+            foreach ([null, [$site->id]] as $siteId) {
+                expect(Search::searchElements(entryQuery()->siteId($siteId)->search('Mädchen')))->toBe($expected);
+            }
+        }
+    })->with([false, true]);
 
     test('failed nested searches do not clear outer scoring terms', function () {
         createIndexedEntry('Alpha');

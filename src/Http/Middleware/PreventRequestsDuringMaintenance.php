@@ -82,11 +82,27 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
         });
     }
 
-    public static function registerRouteExceptions(): void
+    /**
+     * @param  iterable<Route>  $routes
+     * @return list<string>
+     */
+    public static function routeExceptionTemplates(iterable $routes): array
     {
-        self::$routeExceptions = collect(app(Router::class)->getRoutes()->getRoutes())
+        return collect($routes)
             ->filter(fn (Route $route) => $route->getMetadata(self::ALLOW_DURING_MAINTENANCE_METADATA) === true)
-            ->map(fn (Route $route) => self::exceptionPath($route))
+            ->map(fn (Route $route) => $route->uri())
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  list<string>|null  $templates
+     */
+    public static function registerRouteExceptions(?array $templates = null): void
+    {
+        self::$routeExceptions = collect($templates ?? self::routeExceptionTemplates(app(Router::class)->getRoutes()->getRoutes()))
+            ->map(fn (string $template) => self::exceptionPath($template))
             ->unique()
             ->values()
             ->all();
@@ -124,12 +140,12 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
         return in_array('craft', $route->middleware(), true);
     }
 
-    private static function exceptionPath(Route $route): string
+    private static function exceptionPath(string $template): string
     {
         $path = str_replace(
             ['{cpTrigger}', '{actionTrigger}'],
             [trim((string) Cms::config()->cpTrigger, '/'), trim(Cms::config()->actionTrigger, '/')],
-            $route->uri(),
+            $template,
         );
 
         return preg_replace('/\{[^}]+}/', '*', $path) ?? $path;

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
@@ -24,30 +22,21 @@ use function CraftCms\Cms\t;
  */
 class Asset extends BaseElementLinkType
 {
-    /** @var list<string>|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true). */
-    public ?array $allowedKinds = null;
-
     /**
      * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
      */
     public bool $showUnpermittedVolumes = false;
 
-    /**
-     * @var bool Whether to show files the user doesn’t have permission to view, per the “View files uploaded by other
-     *           users” permission.
-     */
-    public bool $showUnpermittedFiles = false;
-
     public function __construct($config = [])
     {
-        if (
-            isset($config['allowedKinds']) &&
-            (! is_array($config['allowedKinds']) || empty($config['allowedKinds']) || $config['allowedKinds'] === ['*'])
-        ) {
-            unset($config['allowedKinds']);
-        }
-
         parent::__construct($config);
+
+        // Add the “Viewable” rule by default
+        if (empty($config) && is_null($this->getSelectionCondition())) {
+            $condition = $this->createSelectionCondition();
+            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
+            $this->setSelectionCondition($condition);
+        }
     }
 
     protected static function elementType(): string
@@ -60,24 +49,9 @@ class Asset extends BaseElementLinkType
     {
         return [
             ...parent::settingsNodes($prefix),
-            FormField::make(t('Allowed File Types'))
-                ->control(Choice::make($this->settingPath($prefix, 'allowedKinds'))
-                    ->multiple()
-                    ->presentation(ChoicePresentation::Checkboxes)
-                    ->options(Collection::make(AssetsHelper::getAllowedFileKinds())
-                        ->map(fn (array $kind, string $value): array => [
-                            'value' => $value,
-                            'label' => $kind['label'],
-                        ])
-                        ->values()
-                        ->all())
-                    ->value($this->allowedKinds ?? [])),
             FormField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedVolumes'))->value($this->showUnpermittedVolumes)),
-            FormField::make(t('Show unpermitted files'))
-                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedFiles'))->value($this->showUnpermittedFiles)),
         ];
     }
 
@@ -100,16 +74,11 @@ class Asset extends BaseElementLinkType
     #[Override]
     protected function selectionCriteria(): array
     {
-        // Ignore the parent value since asset URLs don't get saved to the element
-        $criteria = [
-            'kind' => $this->allowedKinds,
+        // Ignore the parent value since asset URLs don't get saved to the element,
+        // and let the selection condition determine whether they can view unpermitted files
+        return [
+            'uploaderId' => null,
         ];
-
-        if ($this->showUnpermittedFiles) {
-            $criteria['uploaderId'] = null;
-        }
-
-        return $criteria;
     }
 
     /**
@@ -119,6 +88,7 @@ class Asset extends BaseElementLinkType
      *     single: bool,
      *     sources: string|array<int, string>,
      *     criteria: array<string, bool|list<string>|string|null>,
+     *     condition: array<string, mixed>|null,
      *     jsClass: string,
      * }
      */

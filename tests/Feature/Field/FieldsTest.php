@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -22,10 +23,15 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Symfony\Component\DomCrawler\Crawler;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->fields = app(Fields::class);
@@ -389,11 +395,37 @@ it('allows nesting a different content block field', function () {
         ->and(FieldModel::count())->toBe(2);
 });
 
-it('can find field usages', function () {
-    expect($this->fields->findFieldUsages(new PlainText))->toBeEmpty();
+it('can find field usages and render provider links', function (bool $unresolved) {
+    actingAs(User::findOne());
+    $fieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $this->fields->refreshFields();
+    $field = $this->fields->getFieldById($fieldModel->id);
+    expect($this->fields->findFieldUsages($field))->toBeEmpty();
+    expect(app(FieldHtml::class)->metadataHtml($field))->toContain('<i>No usages</i>');
 
-    $this->markTestIncomplete('Add test with field usage');
-});
+    $links = [];
+    foreach (['Zulu', 'Alpha & Beta'] as $name) {
+        $type = EntryType::factory()->withFieldLayout(FieldLayoutModel::factory()->forField($fieldModel))->create(['name' => $name]);
+        EntryTypes::refreshEntryTypes();
+        $links[$name] = EntryTypes::getEntryTypeById($type->id)->getCpEditUrl();
+    }
+    if ($unresolved) {
+        FieldLayoutModel::factory()->forField($fieldModel)->create();
+    }
+    $this->fields->refreshFields();
+
+    expect($this->fields->findFieldUsages($field))->toHaveCount($unresolved ? 3 : 2);
+    $html = app(FieldHtml::class)->metadataHtml($field);
+    $crawler = new Crawler($html);
+    $labels = ['Alpha & Beta', 'Zulu'];
+    if ($unresolved) {
+        $labels[] = '1 entry field layout';
+    }
+
+    expect($crawler->filter('li')->each(fn (Crawler $item) => $item->text()))->toBe($labels)
+        ->and($crawler->filter('li a')->extract(['href']))->toBe([$links['Alpha & Beta'], $links['Zulu']])
+        ->and($html)->toContain('Alpha &amp; Beta');
+})->with([false, true]);
 
 it('can merge fields', function () {
     $this->fields->saveField($this->fields->createField([
@@ -419,6 +451,9 @@ it('can merge fields', function () {
         'fieldLayoutId' => $layoutModel->id,
     ]);
 
+    $warmLayout = $this->fields->getLayoutById($layoutModel->id);
+    expect($warmLayout->getFieldByHandle('outgoingText')->uid)->toBe($outgoingField->uid);
+
     $migrationPath = null;
 
     try {
@@ -427,6 +462,9 @@ it('can merge fields', function () {
 
         $layout = $this->fields->getLayoutById($layoutModel->id);
         $layoutElement = $layout->getCustomFieldElements()[0];
+
+        expect($warmLayout->getFieldByHandle('outgoingText')->uid)->toBe($persistingField->uid)
+            ->and($warmLayout->getFieldByUid($outgoingField->uid))->toBeNull();
 
         expect($result->updatedLayouts)->toBe(1)
             ->and($this->fields->getFieldByHandle('outgoingText'))->toBeNull()

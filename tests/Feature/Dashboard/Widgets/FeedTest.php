@@ -16,5 +16,5 @@ it('can render', function () {
     $dashboard = app(Dashboard::class);
     $widget = $dashboard->createWidget(Feed::class);
 
-    expect($widget->getBodyHtml())->not()->toBeNull();
+    expect($widget->props())->not()->toBeNull();
 });

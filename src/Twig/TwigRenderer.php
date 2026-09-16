@@ -9,8 +9,6 @@ use CraftCms\Cms\Twig\Contracts\TwigRendererInterface;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Arrayable;
 use Twig\Extension\SandboxExtension;
-use Twig\Template;
-use Twig\TemplateWrapper;
 use Yiisoft\Arrays\ArrayableInterface;
 
 /**
@@ -18,8 +16,8 @@ use Yiisoft\Arrays\ArrayableInterface;
  */
 class TwigRenderer implements TwigRendererInterface
 {
-    /** @var TemplateWrapper[] Object template cache */
-    private array $objectTemplates = [];
+    /** @var array<string, string> */
+    private array $normalizedObjectTemplates = [];
 
     public function __construct(
         private readonly Twig $twig,
@@ -143,14 +141,9 @@ class TwigRenderer implements TwigRendererInterface
 
         $twig->setDefaultEscaperStrategy($escaperStrategy);
         try {
-            // Is this the first time we've parsed this template?
             $cacheKey = md5($templateMode->value.':'.$template);
-
-            if (! isset($this->objectTemplates[$cacheKey])) {
-                // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-                $template = $this->normalizeObjectTemplate($template);
-                $this->objectTemplates[$cacheKey] = $twig->createTemplate($template);
-            }
+            $normalizedTemplate = $this->normalizedObjectTemplates[$cacheKey] ??= $this->normalizeObjectTemplate($template);
+            $templateObj = $twig->createTemplate($normalizedTemplate);
 
             // Get the variables to pass to the template
             if ($object instanceof ArrayableInterface) {
@@ -173,9 +166,6 @@ class TwigRenderer implements TwigRendererInterface
 
             $variables['object'] = $object;
             $variables['_variables'] = $variables;
-
-            /** @var Template $templateObj */
-            $templateObj = $this->objectTemplates[$cacheKey];
 
             return trim($templateObj->render($variables));
         } finally {

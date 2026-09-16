@@ -359,7 +359,9 @@ it('stores normalized source settings for multi-page sources', function () {
             'condition' => [
                 'elementType' => TestElementSourcesElement::class,
                 'fieldContext' => 'global',
+                'forQuery' => false,
                 'class' => ElementCondition::class,
+                'conditionRules' => ['operator' => 'and'],
             ],
             'sites' => false,
             'userGroups' => ['group-editors'],

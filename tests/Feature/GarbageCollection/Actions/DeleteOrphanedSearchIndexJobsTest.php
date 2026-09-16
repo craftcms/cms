@@ -19,7 +19,7 @@ it('deletes orphaned search index jobs', function () {
 
     // Invalid, deleted
     DB::table(Table::SEARCHINDEXQUEUE)->insert([
-        'elementId' => 999,
+        'elementId' => $element->id + 1,
         'siteId' => 1,
         'reserved' => false,
     ]);

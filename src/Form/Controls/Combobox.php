@@ -21,6 +21,8 @@ class Combobox extends Control
 
     private bool $clearable = false;
 
+    private bool $multiple = false;
+
     private bool $requireOptionMatch = false;
 
     private bool $showAllOnEmpty = false;
@@ -34,7 +36,8 @@ class Combobox extends Control
         return static::htmlComponent($control)
             ->id($attributes['id'])
             ->name($attributes['name'])
-            ->value($value === null ? null : (string) $value)
+            ->multiple((bool) ($control->props['multiple'] ?? false))
+            ->value(($control->props['multiple'] ?? false) ? (array) $value : ($value === null ? null : (string) $value))
             ->options($control->props['options'])
             ->placeholder($control->props['placeholder'] ?? null)
             ->limit($control->props['limit'] ?? 150)
@@ -89,6 +92,13 @@ class Combobox extends Control
         return $this;
     }
 
+    public function multiple(bool $multiple = true): static
+    {
+        $this->multiple = $multiple;
+
+        return $this;
+    }
+
     public function clearable(bool $clearable = true): static
     {
         $this->clearable = $clearable;
@@ -132,6 +142,7 @@ class Combobox extends Control
             'placeholder' => $this->placeholder,
             'limit' => $this->limit,
             'clearable' => $this->clearable ?: null,
+            'multiple' => $this->multiple ?: null,
             'requireOptionMatch' => $this->requireOptionMatch ?: null,
             'showAllOnEmpty' => $this->showAllOnEmpty ?: null,
             'showSelectedHint' => $this->showSelectedHint ?: null,

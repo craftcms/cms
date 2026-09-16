@@ -71,6 +71,20 @@ it('does not require the current Craft user to be an Eloquent model', function (
     expect(app(NotificationCenter::class)->get())->toBe([]);
 });
 
+it('serializes closure values', function () {
+    $user = User::query()->firstOrFail();
+    $notification = new CpNotification(
+        static fn (CraftUser $notifiable): string => "Hello {$notifiable->asElement()->username}",
+    )->title(static fn (CraftUser $notifiable): string => "For {$notifiable->asElement()->email}");
+
+    $notification = unserialize(serialize($notification));
+
+    expect($notification->toDatabase($user))->toMatchArray([
+        'message' => "Hello {$user->username}",
+        'title' => "For {$user->email}",
+    ]);
+});
+
 class ConfiguredNotificationUser extends User
 {
     #[Override]

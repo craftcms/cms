@@ -24,6 +24,12 @@ class Custom extends Widget
     }
 
     #[Override]
+    public function component(): ?string
+    {
+        return $this->definition() === null ? null : 'craft:html-widget';
+    }
+
+    #[Override]
     public function getType(): string
     {
         return $this->definition()?->type() ?? static::class;
@@ -80,15 +86,11 @@ class Custom extends Widget
     }
 
     #[Override]
-    public function getBodyHtml(): ?string
+    public function props(): array
     {
         $definition = $this->definition();
 
-        if (! $definition) {
-            return null;
-        }
-
-        return Markdown::parse($this->render($definition->body, 'html'));
+        return $definition === null ? [] : ['html' => Markdown::parse($this->render($definition->body, 'html'))];
     }
 
     private function definition(): ?CustomWidgetDefinition

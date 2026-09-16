@@ -55,7 +55,7 @@
   function sourceUrl(key: string) {
     return props.route.url({
       source: key,
-      site: site?.handle,
+      site: site.value?.handle,
       viewMode: props.viewMode || undefined,
     });
   }

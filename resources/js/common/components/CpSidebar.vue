@@ -99,7 +99,7 @@
      — but below modals (10001+). The sidebar is chrome: a floating drawer
      overlays the page, and a collapsed rail's label tooltips overflow across
      it. Both get sliced by a sticky header otherwise. */
-    z-index: 10;
+    z-index: var(--global-sidebar-z-index);
     height: 100dvh;
     width: var(--global-sidebar-width);
     display: flex;

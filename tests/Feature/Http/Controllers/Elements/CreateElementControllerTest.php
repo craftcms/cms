@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -70,7 +71,7 @@ it('forbids creating an element when the user cannot save it', function () {
 });
 
 it('returns a failure response when saving the draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class)) extends Drafts
     {
         public function saveElementAsDraft(
             ElementInterface $element,

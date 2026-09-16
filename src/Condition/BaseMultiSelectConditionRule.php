@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Override;
 use RuntimeException;
@@ -105,25 +106,15 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     abstract protected function options(): array;
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
-        if (! in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
-            return '';
+        if (! in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
+            return [];
         }
 
-        $multiSelectId = 'multiselect';
-
-        return
-            Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId).
-            FormFields::selectizeHtml([
-                'id' => $multiSelectId,
-                'class' => 'flex-grow',
-                'name' => 'values',
-                'values' => $this->_values,
-                'options' => $this->options(),
-                'multi' => true,
-            ]);
+        return [Field::make($this->getLabel(), Combobox::make('values')->multiple()->requireOptionMatch()->showAllOnEmpty()->options($this->formOptions($this->options()))->value(array_map(strval(...), $this->getValues())))];
     }
 
     #[Override]

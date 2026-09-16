@@ -35,7 +35,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -43,6 +42,7 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\maxPowerCaptain;
 
@@ -364,6 +364,12 @@ class Sites
 
     public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
     {
+        $site = $this->allSitesById[$siteId] ?? null;
+
+        if ($site === ($this->enabledSitesById[$siteId] ?? null)) {
+            return $site;
+        }
+
         return $this->allSites($withDisabled)[$siteId] ?? null;
     }
 
@@ -875,7 +881,7 @@ class Sites
     {
         $withDisabled ??= (
             app()->runningInConsole() ||
-            (request()->isCpRequest() && Auth::check())
+            (request()->isCpRequest() && craftAuth()->check())
         );
 
         return $withDisabled ? $this->allSitesById : $this->enabledSitesById;

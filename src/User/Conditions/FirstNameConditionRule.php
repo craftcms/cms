@@ -5,30 +5,36 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Conditions;
 
 use CraftCms\Cms\Condition\BaseTextConditionRule;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
-class FirstNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class FirstNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface
 {
+    public static function isSelectableForCondition(ConditionInterface $condition): bool
+    {
+        if (! $condition instanceof UserCondition) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getLabel(): string
     {
         return t('First Name');
     }
 
-    public function getExclusiveQueryParams(): array
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        return ['firstName'];
-    }
-
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        $query->firstName($this->paramValue());
+        UserQuery::applyFirstName($query, $this->paramValue());
     }
 
     public function matchElement(ElementInterface $element): bool

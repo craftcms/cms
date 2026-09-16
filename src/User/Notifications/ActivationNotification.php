@@ -14,6 +14,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Password;
 use SensitiveParameter;
 
 class ActivationNotification extends Notification implements ShouldQueue
@@ -23,6 +24,7 @@ class ActivationNotification extends Notification implements ShouldQueue
     public function __construct(
         #[SensitiveParameter]
         public string $token,
+        public ?string $recipient = null,
     ) {
         $this->queue = Cms::config()->queueName;
     }
@@ -33,16 +35,25 @@ class ActivationNotification extends Notification implements ShouldQueue
         return [MailChannel::class];
     }
 
+    public function shouldSend(CraftUser $user, string $channel): bool
+    {
+        return (($this->recipient ?? null) === null || $this->recipient === $user->getEmailForVerification())
+            && Password::tokenExists($user, $this->token);
+    }
+
     public function toMail(CraftUser $user): SystemMessageMailable
     {
         $user = $user->asElement();
 
         $url = Users::getActivationUrl($user, $this->token);
 
-        return app(SystemMessages::class)->mailable(
+        $mailable = app(SystemMessages::class)->mailable(
             key: 'account_activation',
             user: $user,
             variables: ['link' => Template::raw($url)],
         );
+        $mailable->to = [];
+
+        return $mailable->to($this->recipient ?? $user->email, $user->fullName);
     }
 }

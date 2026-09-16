@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -74,41 +76,32 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'maxValue' => ['nullable', 'numeric'],
+            'maxValue' => [Rule::excludeIf($this->operator !== self::OPERATOR_BETWEEN), 'nullable', 'numeric'],
             'step' => ['nullable', 'numeric'],
         ]);
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         if ($this->operator !== self::OPERATOR_BETWEEN) {
-            return parent::inputHtml();
+            $nodes = parent::inputNodes();
+            foreach ($nodes as $node) {
+                $control = $node->getControl();
+                if ($control instanceof Text) {
+                    $control->step($this->step ?? 'any');
+                }
+            }
+
+            return $nodes;
         }
 
-        return Html::tag('div',
-            Html::hiddenLabel(t('Min Value'), 'min').
-            FormFields::textHtml([
-                'type' => $this->inputType(),
-                'id' => 'min',
-                'name' => 'value',
-                'value' => $this->value,
-                'autocomplete' => false,
-                'class' => 'flex-grow flex-shrink',
-            ]).
-            Html::tag('span', t('and')).
-            Html::hiddenLabel(t('Max Value'), 'max').
-            FormFields::textHtml([
-                'type' => $this->inputType(),
-                'id' => 'max',
-                'name' => 'maxValue',
-                'value' => $this->maxValue,
-                'autocomplete' => false,
-                'class' => 'flex-grow flex-shrink',
-            ]).
-            Html::tag('craft-info-icon', t('The values are matched inclusively.')),
-            ['class' => 'flex flex-center']
-        );
+        return [
+            Field::make(t('Min Value'), Text::make('value')->inputType('number')->step($this->step ?? 'any')->value($this->value)),
+            Field::make(t('Max Value'), Text::make('maxValue')->inputType('number')->step($this->step ?? 'any')->value($this->maxValue))
+                ->tip(t('The values are matched inclusively.')),
+        ];
     }
 
     /** @return string|string[]|null */
@@ -119,15 +112,15 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             return parent::paramValue();
         }
 
-        if (empty($this->value) && empty($this->maxValue)) {
+        if ($this->value === '' && $this->maxValue === '') {
             return null;
         }
 
-        if (empty($this->maxValue)) {
+        if ($this->maxValue === '') {
             return '>= '.Query::escapeParam($this->value);
         }
 
-        if (empty($this->value)) {
+        if ($this->value === '') {
             return '<= '.Query::escapeParam($this->maxValue);
         }
 
@@ -141,27 +134,18 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             return parent::matchValue($value);
         }
 
-        if (empty($this->value) && empty($this->maxValue)) {
+        if ($this->value === '' && $this->maxValue === '') {
             return true;
         }
 
-        if (! empty($this->value) && $value < $this->value) {
+        if ($this->value !== '' && $value < $this->value) {
             return false;
         }
 
-        if (! empty($this->maxValue) && $value > $this->maxValue) {
+        if ($this->maxValue !== '' && $value > $this->maxValue) {
             return false;
         }
 
         return true;
-    }
-
-    /** @return array<string, mixed> */
-    #[Override]
-    protected function inputOptions(): array
-    {
-        return array_merge(parent::inputOptions(), [
-            'step' => $this->step ?? 'any',
-        ]);
     }
 }

@@ -21,6 +21,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -31,11 +32,11 @@ class Folders
     /** @var array<int, VolumeFolder|null> */
     private array $foldersById = [];
 
-    /** @var array<string, VolumeFolder|null> */
-    private array $foldersByUid = [];
+    /** @var array<string, int|null> */
+    private array $folderIdsByUid = [];
 
-    /** @var array<int, VolumeFolder|null> */
-    private array $rootFolders = [];
+    /** @var array<int, int|null> */
+    private array $rootFolderIds = [];
 
     public function getFolderById(int $folderId): ?VolumeFolder
     {
@@ -44,7 +45,7 @@ class Folders
                 ->where('id', $folderId)
                 ->first();
 
-            $this->foldersById[$folderId] = $result ? new VolumeFolder((array) $result) : null;
+            $this->foldersById[$folderId] = $result ? $this->hydrateFolder($result) : null;
         }
 
         return $this->foldersById[$folderId];
@@ -52,15 +53,17 @@ class Folders
 
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
-        if (! array_key_exists($folderUid, $this->foldersByUid)) {
+        if (! array_key_exists($folderUid, $this->folderIdsByUid)) {
             $result = $this->createFolderQuery()
                 ->where('uid', $folderUid)
                 ->first();
 
-            $this->foldersByUid[$folderUid] = $result ? new VolumeFolder((array) $result) : null;
+            $this->folderIdsByUid[$folderUid] = $result ? $this->hydrateFolder($result)->id : null;
         }
 
-        return $this->foldersByUid[$folderUid];
+        $folderId = $this->folderIdsByUid[$folderUid];
+
+        return $folderId !== null ? $this->getFolderById($folderId) : null;
     }
 
     /**
@@ -100,8 +103,7 @@ class Folders
         }
 
         return $query->get()
-            ->map(fn ($result) => new VolumeFolder((array) $result))
-            ->each(fn (VolumeFolder $folder) => $this->foldersById[$folder->id] = $folder)
+            ->map(fn ($result) => $this->hydrateFolder($result))
             ->keyBy('id');
     }
 
@@ -146,8 +148,7 @@ class Folders
         $descendantFolders = [];
 
         foreach ($results as $result) {
-            $folder = new VolumeFolder((array) $result);
-            $this->foldersById[$folder->id] = $folder;
+            $folder = $this->hydrateFolder($result);
             $descendantFolders[$folder->id] = $folder;
         }
 
@@ -160,11 +161,11 @@ class Folders
 
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
-        if (! array_key_exists($volumeId, $this->rootFolders)) {
+        if (! array_key_exists($volumeId, $this->rootFolderIds)) {
             $volume = Volumes::getVolumeById($volumeId);
 
             if (! $volume) {
-                return $this->rootFolders[$volumeId] = null;
+                return $this->rootFolderIds[$volumeId] = null;
             }
 
             $folder = $this->findFolder([
@@ -179,12 +180,16 @@ class Folders
                 $folder->name = $volume->name;
                 $folder->path = '';
                 $this->storeFolderModel($folder);
+                $this->foldersById[$folder->id] = $folder;
+                $this->folderIdsByUid[$folder->uid] = $folder->id;
             }
 
-            $this->rootFolders[$volumeId] = $folder;
+            $this->rootFolderIds[$volumeId] = $folder->id;
         }
 
-        return $this->rootFolders[$volumeId];
+        $folderId = $this->rootFolderIds[$volumeId];
+
+        return $folderId !== null ? $this->getFolderById($folderId) : null;
     }
 
     public function getTotalFolders(mixed $criteria): int
@@ -338,6 +343,7 @@ class Folders
             });
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
+        $this->reset();
     }
 
     /**
@@ -399,6 +405,8 @@ class Folders
 
         $folder->id = $model->id;
         $folder->uid = $model->uid;
+
+        $this->reset();
     }
 
     public function createFolderQuery(): Builder
@@ -410,8 +418,17 @@ class Folders
     public function reset(): void
     {
         $this->foldersById = [];
-        $this->foldersByUid = [];
-        $this->rootFolders = [];
+        $this->folderIdsByUid = [];
+        $this->rootFolderIds = [];
+    }
+
+    private function hydrateFolder(stdClass $result): VolumeFolder
+    {
+        $folder = new VolumeFolder((array) $result);
+        $this->foldersById[$folder->id] = $folder;
+        $this->folderIdsByUid[$folder->uid] = $folder->id;
+
+        return $folder;
     }
 
     private function applyFolderConditions(Builder $query, FolderCriteria $criteria): void

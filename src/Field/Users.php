@@ -108,9 +108,6 @@ class Users extends BaseRelationField
 
     protected function createSelectionCondition(): ElementCondition
     {
-        $condition = User::createCondition();
-        $condition->queryParams = ['group', 'groupId'];
-
-        return $condition;
+        return User::createCondition();
     }
 }

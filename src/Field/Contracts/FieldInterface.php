@@ -10,9 +10,12 @@ use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\FieldContext;
@@ -25,8 +28,8 @@ use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Query\Builder;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -168,17 +171,12 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Applies a condition to the query builder for the given field instances, for a user-provided param value.
      *
-     * If `false` is returned, an always-false condition will be used.
-     *
-     * @param  Builder  $query  The query instance to modify
+     * @param  Builder  $query  The query builder to modify
      * @param  static[]  $instances  The field instances to search
      * @param  mixed  $value  The user-supplied param value
+     * @param  ElementQueryInterface  $elementQuery  The element query being executed
      */
-    public static function modifyQuery(
-        Builder $query,
-        array $instances,
-        mixed $value,
-    ): Builder;
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -400,7 +398,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the element condition rule class that should be used for this field.
      *
-     * The rule class must be an instance of [[\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface]].
+     * The rule class must be an instance of {@see FieldConditionRuleInterface} and {@see ElementConditionRuleInterface} and/or {@see ElementQueryConditionRuleInterface}.
      *
      * @phpstan-return string|array{class:string}|null
      */

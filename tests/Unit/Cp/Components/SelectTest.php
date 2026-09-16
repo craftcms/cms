@@ -18,7 +18,7 @@ it('renders a selected native option in the web component', function () {
         ->toHtml());
 
     expect($crawler->filter('craft-select[name="language"][required]'))->toHaveCount(1)
-        ->and($crawler->filter('select#language[name="language"][required][slot="input"]'))->toHaveCount(1)
+        ->and($crawler->filter('select#language.form-control[name="language"][required][slot="input"]'))->toHaveCount(1)
         ->and($crawler->filter('option[value="en"][selected]')->text())->toBe('English');
 });
 

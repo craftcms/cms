@@ -22,7 +22,6 @@ use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
@@ -36,6 +35,8 @@ use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
+
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 /**
@@ -188,7 +189,7 @@ class Application extends \yii\web\Application
                     ($firstSeg = $request->getSegment(1)) !== null &&
                     ($plugin = app(Plugins::class)->getPlugin($firstSeg)) !== null
                 ) {
-                    if (Auth::guest()) {
+                    if (craftAuth()->guest()) {
                         return $userSession->loginRequired();
                     }
 

@@ -23,12 +23,12 @@ if (false) {
     {
         use QueriesNestedElements;
 
-        public function getFieldIdColumn(): string
+        public static function getFieldIdColumn(): string
         {
             return '';
         }
 
-        public function getPrimaryOwnerIdColumn(): string
+        public static function getPrimaryOwnerIdColumn(): string
         {
             return '';
         }

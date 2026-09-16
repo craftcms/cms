@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
@@ -16,6 +17,8 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
@@ -237,8 +240,47 @@ it('creates a new matrix entry draft and renders its block html', function () {
         ->toBe(['testNamespace', 'matrixField', 'entries', "uid:{$entry->uid}"]);
 });
 
+it('returns the new block as form nodes when given a control path', function () {
+    // The Form control renders blocks with FormNodeList, so it asks for nodes
+    // rather than the rendered block HTML the legacy stack splices in.
+    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'namespace' => null,
+        'path' => ['fields', 'matrixField'],
+    ]))
+        ->assertOk()
+        ->assertJsonStructure(['uid', 'type', 'form' => ['scope', 'refreshable', 'nodes'], 'values']);
+
+    $entry = matrixControllerNestedEntries($this->fixture)->sole();
+
+    // The server minted the identity, and it is the bare UUID the Control keys
+    // blocks by — no `uid:` prefix, nothing for the browser to reconcile.
+    expect($response->json('uid'))->toBe($entry->uid)
+        ->and($response->json('type'))->toBe($this->fixture['entryType']->handle)
+        ->and($response->json('form.scope'))
+        ->toBe(['fields', 'matrixField', 'entries', $entry->uid])
+        ->and($response->json('form.nodes'))->not->toBeEmpty()
+        ->and($response->json('values'))->not->toBeEmpty();
+    ;
+});
+
+it('refuses an entry type the field does not offer', function () {
+    // It would save happily, and then the field couldn't render what it got back:
+    // the Matrix Control rejects a block whose type it doesn't offer, which takes
+    // the whole edit screen down with it.
+    $other = EntryType::factory()->create([
+        'name' => 'Not On This Field',
+        'handle' => 'notOnThisField',
+    ]);
+
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'entryTypeId' => $other->id,
+    ]))->assertBadRequest();
+
+    expect(matrixControllerNestedEntries($this->fixture))->toHaveCount(0);
+});
+
 it('returns a failure response when saving a new matrix draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class)) extends Drafts
     {
         public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
         {
@@ -468,4 +510,119 @@ it('renders matrix blocks in the requested order', function () {
         ->and($secondPosition)->not->toBeFalse()
         ->and($firstPosition)->not->toBeFalse()
         ->and($secondPosition)->toBeLessThan($firstPosition);
+});
+
+it('saves a draft owner that holds a block minted before the draft existed', function () {
+    // `matrix/create-entry` persists the new block as a draft of its own, owned
+    // by whichever element the form was compiled against. Edit the owner
+    // afterwards and it becomes a provisional draft — leaving a block that is
+    // already a draft and still primarily owned by the canonical.
+    $response = postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture))
+        ->assertOk();
+
+    $block = matrixControllerNestedEntries($this->fixture)->sole();
+
+    expect($block->getIsDraft())->toBeTrue()
+        ->and($block->getPrimaryOwnerId())->toBe($this->fixture['owner']->id);
+
+    $draft = app(Drafts::class)->createDraft($this->fixture['owner'], provisional: true);
+    $draft->setFieldValueFromRequest($this->fixture['field']->handle, [
+        'entries' => ["uid:{$block->uid}" => [
+            'type' => $this->fixture['entryType']->handle,
+            'title' => 'Block title',
+            'enabled' => true,
+            'fields' => ['innerText' => 'Typed after the draft appeared'],
+        ]],
+        'sortOrder' => [$block->uid],
+    ]);
+
+    expect(ElementsFacade::saveElement($draft))->toBeTrue();
+    expect($response->json('blockHtml'))->toBeString();
+});
+
+it('badges a block’s own field when that block was edited through a draft', function () {
+    // A block that exists on the canonical owner, then edited through a
+    // provisional draft, is duplicated as a draft with a canonical behind it —
+    // which is what gives it something to be "modified" against.
+    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+        'title' => 'Block',
+        'innerText' => 'Original',
+    ]]);
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $canonicalBlock = matrixControllerNestedEntries($this->fixture)->sole();
+
+    $draft = app(Drafts::class)->createDraft($this->fixture['owner'], provisional: true);
+    $draft->setFieldValueFromRequest($this->fixture['field']->handle, [
+        'entries' => ["uid:{$canonicalBlock->uid}" => [
+            'type' => $this->fixture['entryType']->handle,
+            'title' => 'Block',
+            'enabled' => true,
+            'fields' => ['innerText' => 'Changed in the draft'],
+        ]],
+        'sortOrder' => [$canonicalBlock->uid],
+    ]);
+    expect(ElementsFacade::saveElement($draft))->toBeTrue();
+
+    $block = collect(EntryElement::find()
+        ->fieldId($this->fixture['field']->id)
+        ->ownerId($draft->id)
+        ->siteId($this->fixture['siteId'])
+        ->drafts(null)
+        ->status(null)
+        ->all())->sole();
+
+    expect($block->getIsCanonical())->toBeFalse()
+        ->and($block->isFieldModified('innerText'))->toBeTrue();
+
+    // What `Matrix::formControl()` actually compiles each block against.
+    $value = $draft->getFieldValue($this->fixture['field']->handle);
+    $compiled = (clone $value)
+        ->drafts(null)
+        ->canonicalsOnly()
+        ->status(null)
+        ->limit(null)
+        ->all();
+
+    expect($compiled)->toHaveCount(1)
+        ->and($compiled[0]->id)->toBe($block->id)
+        ->and($compiled[0]->getIsCanonical())->toBeFalse()
+        ->and($compiled[0]->isFieldModified('innerText'))->toBeTrue();
+
+    // And the compiled form says so, which is what puts the badge on screen.
+    $payload = app(FieldLayoutCompiler::class)->compile(
+        $draft->getFieldLayout(),
+        $draft,
+        new FormContext,
+    );
+    $statuses = [];
+    $collect = function (array $node) use (&$collect, &$statuses): void {
+        if (! empty($node['props']['status'])) {
+            $statuses[implode('.', $node['control']['path'] ?? ['?'])] = $node['props']['status'];
+        }
+
+        foreach ($node['control']['forms'] ?? [] as $form) {
+            foreach ($form['nodes'] ?? [] as $child) {
+                $collect($child);
+            }
+        }
+
+        foreach ($node['children'] ?? [] as $child) {
+            $collect($child);
+        }
+    };
+
+    foreach (json_decode(json_encode($payload), true)['nodes'] as $node) {
+        $collect($node);
+    }
+
+    // The block's own field carries a badge of its own — that's what makes an
+    // edit inside a block visible without the owner's field claiming it. Blocks
+    // are keyed by their canonical identity here, not the derivative's uid.
+    $handle = $this->fixture['field']->handle;
+    $keys = array_keys($statuses);
+
+    expect($statuses)->toHaveCount(2)
+        ->and($keys[0])->toBe("fields.{$handle}")
+        ->and($keys[1])->toMatch("/^fields\\.{$handle}\\.entries\\.[-a-f0-9]+\\.fields\\.innerText$/")
+        ->and(array_values($statuses))->toBe(['modified', 'modified']);
 });

@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Data\Update;
-use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
@@ -225,24 +224,9 @@ class UpdateCommand extends Command
             Str::plural('update', $total),
         )));
 
-        $lines = [];
-
-        foreach ($info as [$handle, $from, $to, $critical, $status, $phpConstraint]) {
-            $lines[] = $this->formatLine($handle, $from, new Update(
-                status: $status,
-                releases: [
-                    new UpdateRelease(
-                        version: $to,
-                        critical: $critical,
-                    ),
-                ],
-                phpConstraint: $phpConstraint,
-            ));
-        }
-
         table(
             [Str::padRight('Handle', 10), Str::padRight('From', 10),  Str::padRight('To', 10), Str::padRight('Status', 10)],
-            array_map(array_values(...), $lines),
+            array_map(array_values(...), $info),
         );
 
         return $requirements;
@@ -270,7 +254,7 @@ class UpdateCommand extends Command
 
     /**
      * @param  array<string, string|false>  $requirements
-     * @param  list<array{string, string, string, bool, UpdateStatus, string|null}>  $info
+     * @param  list<array{handle: string, from: string, to: string, status: string}>  $info
      */
     private function updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update): void
     {
@@ -295,7 +279,7 @@ class UpdateCommand extends Command
         }
 
         $requirements[$update->packageName] = "^$to";
-        $info[] = [$handle, $from, $to, $update->hasCritical(), $update->status, $update->phpConstraint];
+        $info[] = $this->formatLine($handle, $from, $update, $to);
 
         // Has the package name changed?
         if ($update->packageName !== $oldPackageName) {

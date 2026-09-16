@@ -14,6 +14,14 @@ body {
 }
 
 /*
+  A themed subtree restates the text colour: `color` resolves where it's
+  declared. Backgrounds are left to whatever owns the surface.
+*/
+[data-theme] {
+  color: var(--c-text-default);
+}
+
+/*
   Global keyboard-focus indicator: any focusable element gets a visible ring
   when focused via the keyboard. Uses :focus-visible so it stays off during
   pointer interaction. Placeholder treatment — adjust as needed.

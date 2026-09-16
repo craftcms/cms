@@ -130,6 +130,7 @@ export function useSettingsSave<T extends object>(
         });
 
         form.processing = false;
+        options.onSuccess?.();
 
         // An opener that registered `onSaved` refreshes itself, and knows
         // better than we do what actually needs refreshing. Before the close:

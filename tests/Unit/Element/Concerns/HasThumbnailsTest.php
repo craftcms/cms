@@ -3,9 +3,22 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use Symfony\Component\DomCrawler\Crawler;
 
 class TestThumbnailElement extends Element
 {
+    public array $thumbRequests = [];
+
+    public ?FieldLayout $thumbnailLayout = null;
+
+    #[Override]
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return $this->thumbnailLayout;
+    }
+
     protected ?string $customThumbUrl = null;
 
     protected ?string $customThumbSvg = null;
@@ -55,8 +68,10 @@ class TestThumbnailElement extends Element
     }
 
     #[Override]
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        $this->thumbRequests[] = [$size, $mode];
+
         return $this->customThumbUrl;
     }
 
@@ -92,6 +107,84 @@ class TestThumbnailElement extends Element
 }
 
 describe('getThumbHtml', function () {
+    test('preserves field precedence and only uses native URLs for empty field HTML', function (ImageTransformMode $mode, ?string $fieldHtml) {
+        $element = new TestThumbnailElement;
+        $element->setCustomThumbUrl('/native.jpg');
+        $layout = Mockery::mock(FieldLayout::class);
+        $layout->thumbFieldKey = 'layoutElement:thumbnail';
+        $layout->shouldReceive('getThumbHtmlForElement')->once()
+            ->with('layoutElement:thumbnail', $element, 120, $mode)->andReturn($fieldHtml);
+        $element->thumbnailLayout = $layout;
+
+        $html = $element->getThumbHtml(120, $mode);
+
+        if ($fieldHtml) {
+            expect($html)->toBe($fieldHtml)
+                ->and($element->thumbRequests)->toBeEmpty();
+        } else {
+            expect($html)->toContainTag('craft-thumbnail', ['src' => '/native.jpg', 'mode' => $mode->value])
+                ->and($element->thumbRequests)->toBe([[120, $mode], [240, $mode]]);
+        }
+    })->with([
+        'crop' => ImageTransformMode::Crop,
+        'fit' => ImageTransformMode::Fit,
+        'stretch' => ImageTransformMode::Stretch,
+        'letterbox' => ImageTransformMode::Letterbox,
+    ])->with([
+        'field HTML' => '<b>Field thumbnail</b>',
+        'empty string fallback' => '',
+        'null fallback' => [null],
+    ]);
+
+    test('defaults to fit for both responsive URLs', function () {
+        $element = new TestThumbnailElement;
+        $element->setCustomThumbUrl('/thumbnail.jpg');
+
+        $thumbnail = new Crawler($element->getThumbHtml(120))->filter('craft-thumbnail');
+
+        expect($thumbnail->attr('mode'))->toBe('fit')
+            ->and($element->thumbRequests)->toBe([[120, ImageTransformMode::Fit], [240, ImageTransformMode::Fit]]);
+    });
+
+    test('forwards and serializes explicit modes at both resolutions', function (ImageTransformMode $mode) {
+        $element = new TestThumbnailElement;
+        $element->setCustomThumbUrl('/thumbnail.jpg');
+
+        $thumbnail = new Crawler($element->getThumbHtml(128, $mode))->filter('craft-thumbnail');
+
+        expect($thumbnail->attr('mode'))->toBe($mode->value)
+            ->and($thumbnail->attr('srcset'))->toBe('/thumbnail.jpg 128w, /thumbnail.jpg 256w')
+            ->and($element->thumbRequests)->toBe([[128, $mode], [256, $mode]]);
+    })->with([
+        'crop' => ImageTransformMode::Crop,
+        'fit' => ImageTransformMode::Fit,
+        'stretch' => ImageTransformMode::Stretch,
+        'letterbox' => ImageTransformMode::Letterbox,
+    ]);
+
+    test('does not apply image modes to SVG or null fallbacks', function (ImageTransformMode $mode) {
+        $element = new TestThumbnailElement;
+        expect($element->getThumbHtml(120, $mode))->toBeNull();
+
+        $element->setCustomThumbSvg('<svg viewBox="0 0 40 20" preserveAspectRatio="xMinYMin meet"><circle r="10"/></svg>');
+        $element->setCustomThumbAlt('Fallback');
+        $svg = new Crawler($element->getThumbHtml(120, $mode));
+
+        expect($svg->filter('craft-thumbnail')->count())->toBe(0)
+            ->and($svg->filter('[mode]')->count())->toBe(0)
+            ->and($svg->filter('svg')->count())->toBe(1)
+            ->and($svg->filter('svg')->attr('viewBox'))->toBe('0 0 40 20')
+            ->and($svg->filter('svg')->attr('preserveAspectRatio'))->toBe('xMinYMin meet')
+            ->and($svg->filter('svg circle')->attr('r'))->toBe('10')
+            ->and($svg->filter('svg')->attr('role'))->toBe('img')
+            ->and($svg->filter('svg title')->text())->toBe('Fallback');
+    })->with([
+        'crop' => ImageTransformMode::Crop,
+        'fit' => ImageTransformMode::Fit,
+        'stretch' => ImageTransformMode::Stretch,
+        'letterbox' => ImageTransformMode::Letterbox,
+    ]);
+
     test('returns null when no thumb URL or SVG', function () {
         $element = new TestThumbnailElement;
 

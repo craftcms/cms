@@ -18,11 +18,15 @@ import SystemMessages from '@/modules/utilities/components/system-messages/Syste
 import CpLink from '@/common/components/CpLink.vue';
 import {cpComponentRegistry} from './components';
 import {registerFormComponents} from '@/modules/forms/register';
+import {registerWidgetComponents} from '@/modules/dashboard/register';
+import {registerActivityComponents} from '@/modules/activity/register';
 
 export const config = ConfigService.getInstance();
 export const queue = QueueService.getInstance();
 
 registerFormComponents(cpComponentRegistry);
+registerWidgetComponents(cpComponentRegistry);
+registerActivityComponents(cpComponentRegistry);
 
 export function installCpApp(app: App): void {
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');

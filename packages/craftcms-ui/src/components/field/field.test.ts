@@ -97,11 +97,11 @@ describe('craft-field label association', () => {
 });
 
 describe('craft-field required indicator', () => {
-  it('renders the required spans inside the label', async () => {
+  it('renders the required text inside the label', async () => {
     const element = await createField({label: 'My field', required: ''});
 
     const label = labelNode(element)!;
-    const srOnly = label.querySelector('span.visually-hidden');
+    const srOnly = label.querySelector('craft-visually-hidden');
     const indicator = label.querySelector('craft-icon[name="asterisk"]');
     expect(srOnly?.textContent).toBe('Required');
     expect(indicator).not.toBeNull();
@@ -119,7 +119,7 @@ describe('craft-field required indicator', () => {
       labelNode(element)!.querySelector('craft-icon[name="asterisk"]')
     ).toBeNull();
     expect(
-      labelNode(element)!.querySelector('span.visually-hidden')
+      labelNode(element)!.querySelector('craft-visually-hidden')
     ).toBeNull();
   });
 
@@ -248,7 +248,7 @@ describe('craft-field status badge', () => {
     expect(element.getAttribute('status')).toBe('modified');
     expect(badge!.getAttribute('title')).toBe('This field has been modified.');
     expect(badge!.getAttribute('aria-hidden')).toBe('true');
-    expect(badge!.querySelector('.cp-visually-hidden')?.textContent).toBe(
+    expect(badge!.querySelector('craft-visually-hidden')?.textContent).toBe(
       'This field has been modified.'
     );
   });
@@ -468,6 +468,131 @@ describe('craft-field instructions position', () => {
         '.form-field__group-two .form-field__help-text'
       )
     ).not.toBeNull();
+  });
+});
+
+describe('craft-field empty label and instructions', () => {
+  function heading(element: CraftField): Element | null {
+    return element.shadowRoot!.querySelector('.form-field__label');
+  }
+
+  function helpText(element: CraftField): Element | null {
+    return element.shadowRoot!.querySelector('.form-field__help-text');
+  }
+
+  it('renders no heading without a label', async () => {
+    const element = await createField();
+    expect(heading(element)).toBeNull();
+  });
+
+  it('renders no instructions without help text', async () => {
+    const element = await createField({label: 'My field'});
+    expect(helpText(element)).toBeNull();
+  });
+
+  it('renders a slotted label and instructions', async () => {
+    const element = await createField(
+      {},
+      '<label slot="label">Custom label</label><div slot="help-text">Custom instructions</div><input slot="input" type="text">'
+    );
+
+    expect(
+      heading(element)!.querySelector('slot[name="label"]')
+    ).not.toBeNull();
+    expect(helpText(element)).not.toBeNull();
+  });
+
+  it('renders the heading and instructions once they are set', async () => {
+    const element = await createField();
+
+    element.label = 'My field';
+    element.helpText = 'Some instructions';
+    await element.updateComplete;
+
+    expect(heading(element)).not.toBeNull();
+    expect(helpText(element)).not.toBeNull();
+  });
+
+  it('drops the heading and instructions once they are cleared', async () => {
+    const element = await createField({
+      label: 'My field',
+      'help-text': 'Some instructions',
+    });
+
+    element.label = '';
+    element.helpText = '';
+    await element.updateComplete;
+
+    expect(heading(element)).toBeNull();
+    expect(helpText(element)).toBeNull();
+  });
+
+  it('keeps the heading for other heading content without a label', async () => {
+    const element = await createField(
+      {},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    expect(heading(element)).not.toBeNull();
+    expect(heading(element)!.querySelector('slot[name="label"]')).toBeNull();
+    expect(
+      heading(element)!.querySelector('slot[name="actions"]')
+    ).not.toBeNull();
+  });
+
+  it('keeps the heading for the read-only badge without a label', async () => {
+    const element = await createField({readonly: ''});
+    expect(heading(element)!.querySelector('.read-only-badge')).not.toBeNull();
+  });
+
+  it('renders the heading once heading content is slotted later', async () => {
+    const element = await createField();
+
+    const action = document.createElement('button');
+    action.slot = 'actions';
+    element.append(action);
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(heading(element)).not.toBeNull();
+  });
+});
+
+describe('craft-field label-sr-only', () => {
+  it('visually hides the whole heading when the label is all it has', async () => {
+    const element = await createField({
+      label: 'My field',
+      'label-sr-only': '',
+    });
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    expect(heading.classList.contains('cp-visually-hidden')).toBe(true);
+    expect(heading.querySelector('slot[name="label"]')).not.toBeNull();
+  });
+
+  it('visually hides only the label when the heading has other content', async () => {
+    const element = await createField(
+      {label: 'My field', 'label-sr-only': ''},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    expect(heading.classList.contains('cp-visually-hidden')).toBe(false);
+    expect(
+      heading.querySelector('.cp-visually-hidden > slot[name="label"]')
+    ).not.toBeNull();
+  });
+
+  it('shows the label again when label-sr-only is unset', async () => {
+    const element = await createField({
+      label: 'My field',
+      'label-sr-only': '',
+    });
+
+    element.labelSrOnly = false;
+    await element.updateComplete;
+
+    expect(element.shadowRoot!.querySelector('.cp-visually-hidden')).toBeNull();
   });
 });
 

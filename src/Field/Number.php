@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -29,7 +30,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -80,11 +81,11 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         $valueSql = self::valueSql($instances);
 
-        return $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
+        $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
     }
 
     #[Override]

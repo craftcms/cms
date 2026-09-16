@@ -198,7 +198,6 @@ export function useElementAutosave<T extends object>(
 
   // Re-armed per call, so a pending save always waits out the newest change.
   const delay = ref(delays.discrete);
-
   // `useDebounceFn` hands back no reference to the timer it arms, so there is
   // nothing to clear when a save is called off mid-debounce. The callback is
   // gated instead: `cancel()` disarms it and the timer fires into a no-op.

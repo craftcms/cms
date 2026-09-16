@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
@@ -110,7 +111,7 @@ readonly class Query
      *
      * @param  Builder  $query  The query builder to apply the param to.
      * @param  string|Expression  $column  The database column that the param is targeting.
-     * @param  string|int|array<array-key, mixed>  $param  The param value(s).
+     * @param  string|int|array<array-key, mixed>  $value  The param value(s).
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param  bool  $caseInsensitive  Whether the resulting condition should be case-insensitive
@@ -119,13 +120,17 @@ readonly class Query
     public static function whereParam(
         Builder $query,
         string|Expression $column,
-        mixed $param,
+        mixed $value,
         string $defaultOperator = '=',
         bool $caseInsensitive = false,
         ?string $columnType = null,
         string $boolean = 'and',
     ): Builder {
-        $parsed = QueryParam::parse($param);
+        if (is_null($value)) {
+            return $query;
+        }
+
+        $parsed = QueryParam::parse($value);
 
         if (empty($parsed->values)) {
             return $query;
@@ -339,6 +344,10 @@ readonly class Query
         string $defaultOperator = '=',
         string $boolean = 'and',
     ): Builder {
+        if (is_null($value)) {
+            return $query;
+        }
+
         $param = QueryParam::parse($value);
 
         if (empty($param->values)) {
@@ -388,6 +397,10 @@ readonly class Query
         string $defaultOperator = '=',
         string $boolean = 'and',
     ): Builder {
+        if (is_null($value)) {
+            return $query;
+        }
+
         $param = QueryParam::parse($value);
 
         if (empty($param->values)) {
@@ -835,5 +848,30 @@ readonly class Query
         $date->setTimezone('UTC');
 
         return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Returns whether a query has a join for the given table name.
+     */
+    public static function joinsTable(Builder $query, Expression|string $table): bool
+    {
+        if (! $query->joins) {
+            return false;
+        }
+
+        if ($table instanceof Expression) {
+            $table = $table->getValue($query->getGrammar());
+        }
+
+        foreach ($query->joins as $join) {
+            /** @var JoinClause $join */
+            $joinTable = $join->table instanceof Expression ? $join->table->getValue($query->getGrammar()) : $join->table;
+
+            if ($joinTable === $table) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

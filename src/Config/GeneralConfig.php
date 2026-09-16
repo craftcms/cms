@@ -11,6 +11,8 @@ use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
@@ -86,6 +88,70 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public string $actionTrigger = 'actions';
+
+    /**
+     * @var string|null The Laravel authentication guard Craft should use.
+     *
+     * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
+     * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authGuard('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_GUARD=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthGuard()
+     */
+    public ?string $authGuard = null;
+
+    /**
+     * @var string|null The Laravel password broker Craft should use.
+     *
+     * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
+     * and token table in `config/auth.php`, and set this to the broker name.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authPasswordBroker('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_PASSWORD_BROKER=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthPasswordBroker()
+     */
+    public ?string $authPasswordBroker = null;
+
+    /**
+     * @var mixed The maximum age of activity events before garbage collection deletes them.
+     *
+     * Set to `0` to retain activity indefinitely.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->activityRetentionDuration('P90D')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ACTIVITY_RETENTION_DURATION=P90D
+     * ```
+     * :::
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt Unlimited
+     */
+    public mixed $activityRetentionDuration = 0;
 
     /**
      * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
@@ -345,6 +411,22 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public bool $allowUppercaseInSlug = false;
+
+    /**
+     * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->autoEagerLoadElements(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTO_EAGER_LOAD_ELEMENTS=false
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $autoEagerLoadElements = true;
 
     /**
      * @var bool Whether users should automatically be logged in after activating their account.
@@ -3057,6 +3139,7 @@ class GeneralConfig extends BaseConfig
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
             // durations
+            ->activityRetentionDuration($this->activityRetentionDuration)
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
@@ -3119,6 +3202,36 @@ class GeneralConfig extends BaseConfig
     public function actionTrigger(string $value): self
     {
         $this->actionTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The maximum age of activity events before garbage collection deletes them.
+     *
+     * Set to `0` to retain activity indefinitely.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ```php
+     * ->activityRetentionDuration('P90D')
+     * ```
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt Unlimited
+     *
+     * @see $activityRetentionDuration
+     */
+    public function activityRetentionDuration(mixed $value): self
+    {
+        $duration = ConfigHelper::durationInSeconds($value);
+
+        if ($duration < 0) {
+            throw new InvalidArgumentException('Activity retention duration must be zero or greater.');
+        }
+
+        $this->activityRetentionDuration = $duration;
 
         return $this;
     }
@@ -3332,6 +3445,24 @@ class GeneralConfig extends BaseConfig
     public function allowUppercaseInSlug(bool $value = true): self
     {
         $this->allowUppercaseInSlug = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ```php
+     * ->autoEagerLoadElements(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $autoEagerLoadElements
+     */
+    public function autoEagerLoadElements(bool $value = true): self
+    {
+        $this->autoEagerLoadElements = $value;
 
         return $this;
     }
@@ -6130,6 +6261,36 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the Laravel authentication guard Craft should use.
+     *
+     * @see authGuard
+     */
+    public function getAuthGuard(): string
+    {
+        return $this->authGuard ?? Auth::getDefaultDriver();
+    }
+
+    /**
+     * Returns the Laravel password broker Craft should use.
+     *
+     * @see authPasswordBroker
+     */
+    public function getAuthPasswordBroker(): string
+    {
+        return $this->authPasswordBroker ?? Password::getDefaultDriver();
+    }
+
+    /**
+     * Returns the session key used to store the password confirmation timestamp.
+     */
+    public function getPasswordConfirmationKey(): string
+    {
+        return $this->authGuard === null
+            ? 'auth.password_confirmed_at'
+            : sprintf('auth.%s.password_confirmed_at', $this->authGuard);
     }
 
     /**

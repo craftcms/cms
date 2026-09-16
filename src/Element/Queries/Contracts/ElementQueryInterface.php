@@ -1147,8 +1147,8 @@ interface ElementQueryInterface extends Builder
     public function andWith(array|string|null $value): static;
 
     /**
-     * Causes the query to be used to eager-load results for the query’s source element
-     * and any other elements in its collection.
+     * Controls whether the query should eager-load results for the query’s source element
+     * and any other elements in its collection. Pass `false` to disable automatic eager loading.
      *
      * @param  string|bool  $value  The property value. If a string, the value will be used as the eager-loading alias.
      */

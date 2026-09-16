@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 
@@ -122,4 +126,31 @@ it('gives each slideout its own input namespace', function () {
     ])->getJson(editUrl())->json('namespace');
 
     expect($namespaceFor('slideout-1'))->not->toBe($namespaceFor('slideout-2'));
+});
+
+it('resolves matching action menu props and HTML once per render', function () {
+    $calls = 0;
+    $prepared = false;
+    $screen = new CpScreenResponse;
+    $screen->inertiaPage('settings/entry-types/Edit')
+        ->prepareScreen(function () use (&$prepared) {
+            $prepared = true;
+        })
+        ->actionMenuItems(function () use (&$calls, &$prepared) {
+            expect($prepared)->toBeTrue();
+            $calls++;
+            $id = 'action-'.Str::random(10);
+            HtmlStack::js("document.getElementById('$id').onclick = () => {};");
+
+            return [['id' => $id, 'label' => 'Test action']];
+        });
+    $request = Request::create('/', server: ['HTTP_X_INERTIA' => 'true', 'HTTP_ACCEPT' => 'text/html']);
+
+    foreach ([1, 2] as $render) {
+        $props = $screen->toResponse($request)->getData(true)['props'];
+        $id = $props['actionMenuItems'][0]['id'];
+        expect($calls)->toBe($render)
+            ->and($props['actionMenu'])->toContain('id="'.$id.'"')
+            ->and($props['bodyHtml'])->toContain($id);
+    }
 });

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -13,7 +14,29 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
+
+it('selects thumbnail modes for each relationship presentation', function (string $viewMode, string $key, string $mode, int $size) {
+    $asset = AssetModel::factory()->createElement();
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
+        $event->url = '/thumbnail.jpg';
+    });
+
+    $element = ElementSelect::make('related')->elementType($asset::class)->viewMode($viewMode)
+        ->props([$asset->id])['elements'][0];
+
+    expect($element[$key])->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
+    if ($key === 'cardThumbHtml') {
+        expect($element['cardContentHtml'])->not->toContainTag('craft-thumbnail');
+    }
+})->with([
+    'list' => ['list', 'thumbHtml', 'fit', 30],
+    'inline list' => ['list-inline', 'thumbHtml', 'fit', 30],
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
+    'cards' => ['cards', 'cardThumbHtml', 'crop', 120],
+    'card grid' => ['cards-grid', 'cardThumbHtml', 'crop', 120],
+]);
 
 it('resolves and renders ordered element relationships', function () {
     $first = Entry::factory()->title('First entry')->create();
@@ -135,3 +158,25 @@ it('resolves JSON-safe props for every element type', function (Closure $createE
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);
+
+it('renders a scalar element selection without changing list selection semantics', function (bool $single) {
+    $entry = Entry::factory()->createElement();
+    $control = ElementSelect::make('replacement')->elementType(EntryElement::class)->limit(1);
+    if ($single) {
+        $control->single();
+    }
+
+    $value = $single ? $entry->id : [$entry->id];
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Field::make('Replacement', $control),
+    ]), new FormContext(values: ['replacement' => $value]));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $settings = json_decode($crawler->filter('craft-entry-select-input')->attr('settings'), true);
+    $name = $single ? 'replacement' : 'replacement[]';
+
+    expect($payload->values['replacement'])->toBe($value)
+        ->and($settings['single'])->toBe($single)
+        ->and($settings['limit'])->toBe(1)
+        ->and($crawler->filter('craft-field > [slot="input"] craft-entry-select-input'))->toHaveCount(1)
+        ->and($crawler->filter("craft-chip input[name=\"{$name}\"]")->attr('value'))->toBe((string) $entry->id);
+})->with([false, true]);
