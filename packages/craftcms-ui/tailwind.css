@@ -111,6 +111,22 @@
   --color-border-strong: var(--c-color-neutral-border-loud);
   --color-border-form: var(--c-form-control-border-color);
 
+  /* ——— Border colors that follow the surrounding data-color ———
+     The border-color namespace only feeds border-* and divide-*, so these
+     give border-quiet, border-b-quiet, … without a bg-quiet or text-quiet. */
+  --border-color-quiet: var(
+    --c-color-border-quiet,
+    var(--c-color-neutral-border-quiet)
+  );
+  --border-color-normal: var(
+    --c-color-border-normal,
+    var(--c-color-neutral-border-normal)
+  );
+  --border-color-loud: var(
+    --c-color-border-loud,
+    var(--c-color-neutral-border-loud)
+  );
+
   /* ——— Fill utilities ——— */
   --color-fill-quiet: var(
     --c-color-fill-quiet,
