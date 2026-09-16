@@ -55,7 +55,7 @@ abstract class ModelImporter extends BaseImporter
     #[Override]
     public function getDestinationCols(): array
     {
-        $columns = Schema::getColumns((static::targetClass())->getTable());
+        $columns = Schema::getColumns((new (static::targetClass()))->getTable());
 
         return array_map(fn ($col) => [
             'handle' => $col['name'],
