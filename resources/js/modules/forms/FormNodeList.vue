@@ -86,6 +86,7 @@
 </script>
 
 <template>
+  <!-- FormNodeList -->
   <craft-tabs v-if="tabs.length > 1" @selected-changed="onSelectionChanged">
     <craft-tab
       v-for="tab in tabs"

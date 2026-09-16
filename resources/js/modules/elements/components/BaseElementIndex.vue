@@ -8,6 +8,7 @@
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import VarDump from '@/common/components/VarDump.vue';
 
   const props = withDefaults(
     defineProps<{
