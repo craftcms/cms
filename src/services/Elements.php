@@ -3577,6 +3577,10 @@ class Elements extends Component
                             $query->siteId = $siteId;
                         }
 
+                        if (isset($plan->siteIds)) {
+                            $query->siteId = array_intersect((array)$query->siteId, $plan->siteIds);
+                        }
+
                         if (!$query->id) {
                             $query->id = array_keys($uniqueTargetElementIds);
                         } else {

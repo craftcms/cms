@@ -5,6 +5,7 @@
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
 - Added `craft\helpers\StringHelper::containsNewlines()`.
 - Added `craft\services\ElementSources::CONTEXT_RESTRICTED_MODAL`.
+- Added `craft\elements\db\EagerLoadPlan::$siteIds`.
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
 - Fixed a bug where Money and Number fields’ currency labels didn't line up with their inputs. ([#19547](https://github.com/craftcms/cms/pull/19547))
 - Fixed a bug where Structure entries’ “Parent” field could be populated with the parent entry from a different site than the one being edited. ([#19576](https://github.com/craftcms/cms/issues/19576))
@@ -17,7 +18,7 @@
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-qj3q-j7r4-428p, GHSA-9hp6-3565-gvh5)
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-v25r-wr32-jfg7)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-xpg7-m6gm-4xfh)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-xpg7-m6gm-4xfh, GHSA-mp59-9rf5-93wr)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-5v62-pcq7-fxj9)
 
