@@ -4,6 +4,7 @@ import {
   reactive,
   type Component,
   type InjectionKey,
+  type Ref,
 } from 'vue';
 import {usePage} from '@inertiajs/vue3';
 import type {FormSaveOptions} from '@/common/types';
@@ -120,6 +121,19 @@ export const ScreenPagePropsKey: InjectionKey<() => ScreenPageProps> =
  */
 export const ScreenContentReadyKey: InjectionKey<() => void> =
   Symbol('screenContentReady');
+
+/**
+ * How wide the shell's content area is, in px — the content and details
+ * columns together. Only a full page provides it; a slideout panel is narrow
+ * enough that nothing should fold away on its account.
+ */
+export const ScreenContentWidthKey: InjectionKey<Readonly<Ref<number>>> =
+  Symbol('screenContentWidth');
+
+/** `null` outside a shell that measures. See {@link ScreenContentWidthKey}. */
+export function useScreenContentWidth(): Readonly<Ref<number>> | null {
+  return inject(ScreenContentWidthKey, null);
+}
 
 /** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */
 export function useScreenContentReady(): () => void {

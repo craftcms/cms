@@ -9,6 +9,7 @@
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+  import {useScreenContentWidth} from '@/common/composables/screen';
 
   type ElementDetailsTab = Omit<ElementDetailsTabDescriptor, 'component'> & {
     component?: Component;
@@ -21,7 +22,8 @@
     pane?: boolean;
     /**
      * How much room the editor body has. The column folds itself away when
-     * that runs short — see {@link COLLAPSE_WIDTH}.
+     * that runs short — see {@link COLLAPSE_WIDTH}. Defaults to the width the
+     * shell reports.
      */
     availableWidth?: number;
   }>();
@@ -64,18 +66,21 @@
    * narrow, so it folds down to its rail and hands the width back.
    *
    * `collapsed` on `craft-tabs` is reflected output, not an input — selection
-   * is what drives it, so this sets `selectedIndex`. The width is measured on
-   * the body rather than the viewport, because the global sidebar and a
-   * slideout both take from the same space; the parent owns that element, so
-   * it does the measuring and passes the number down.
+   * is what drives it, so this sets `selectedIndex`. The width is the shell's
+   * content area rather than the viewport, because the global sidebar takes
+   * from the same space. A slideout reports none, so its tabs stay put.
    */
   const COLLAPSE_WIDTH = 880;
+  const shellWidth = useScreenContentWidth();
+  const availableWidth = computed(
+    () => props.availableWidth ?? shellWidth?.value
+  );
   const tabs = useTemplateRef<HTMLElement & {selectedIndex: number}>('tabs');
   const selectedTabId = shallowRef<string | null>('info');
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
   let collapsedByWidth = false;
 
-  watch([() => props.availableWidth, tabs], ([width, element]) => {
+  watch([availableWidth, tabs], ([width, element]) => {
     // 0 while the element is still being measured — not a real narrow body.
     if (!element || !width) {
       return;

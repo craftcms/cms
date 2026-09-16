@@ -2,10 +2,8 @@
   import {ref, watch} from 'vue';
   import {router} from '@inertiajs/vue3';
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
-  import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import ImageEditorDialog from '@/modules/image-editor/components/ImageEditorDialog.vue';
-  import {useIsSlideout} from '@/common/composables/screen';
   import type {SaveResult} from '@/modules/image-editor/useImageEditor';
   import type {RelativeFocalPoint} from '@/modules/image-editor/types';
 
@@ -19,13 +17,6 @@
     allowDegreeFractions: boolean;
     orientation: 'ltr' | 'rtl';
   }
-
-  // Full pages render `ElementEditScreen`, which fills the shell's `page-main` slot
-  // and so owns the whole main region. A slideout panel brings its own header,
-  // form and footer, so this stays on the layout-slot editor there.
-  //
-  // Inline `<AppLayout>` (inside `ElementEditScreen`), so no ambient layout.
-  defineOptions({layout: []});
 
   // The shared edit payload comes from the ElementEditor pipeline; only the
   // Asset-specific keys (AssetEditViewModel) remain props, alongside the
@@ -96,8 +87,6 @@
     });
   }
 
-  const editor = useIsSlideout() ? ElementEditor : ElementEditScreen;
-
   // Assets have no store action of their own, so the generic element save
   // reads the identity attributes every element carries.
   const saveData = () => ({
@@ -108,7 +97,7 @@
 </script>
 
 <template>
-  <component :is="editor" :save-data="saveData">
+  <ElementEditor :save-data="saveData">
     <!-- The file preview sits above the meta fields, as in the legacy
       editor's sidebar. -->
     <template v-if="previewFragment" #details-header>
@@ -118,7 +107,7 @@
         @ready="onPreviewReady"
       />
     </template>
-  </component>
+  </ElementEditor>
 
   <ImageEditorDialog
     v-if="imageEditor"

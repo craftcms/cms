@@ -1,14 +1,5 @@
 <script setup lang="ts">
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
-  import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
-  import {useIsSlideout} from '@/common/composables/screen';
-
-  // Full pages render `ElementEditScreen`, which fills the shell's `page-main` slot
-  // and so owns the whole main region. A slideout panel brings its own header,
-  // form and footer, so this stays on the layout-slot editor there.
-  //
-  // Inline `<AppLayout>` (inside `ElementEditScreen`), so no ambient layout.
-  defineOptions({layout: []});
 
   // The shared edit payload comes from the ElementEditor pipeline; only the
   // Entry-specific keys (EntryEditViewModel) remain props.
@@ -18,8 +9,6 @@
     entryTypeId: number | null;
     sectionHandle: string | null;
   }>();
-
-  const editor = useIsSlideout() ? ElementEditor : ElementEditScreen;
 
   // What `entries/save-entry` needs to resolve the entry it's saving. The
   // field layout and meta fields are collected by the pipeline itself.
@@ -31,5 +20,5 @@
 </script>
 
 <template>
-  <component :is="editor" :save-data="saveData" />
+  <ElementEditor :save-data="saveData" />
 </template>

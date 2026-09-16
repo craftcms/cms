@@ -1,9 +1,9 @@
 <script setup lang="ts">
   /**
-   * The element editor without page chrome: it configures the surrounding
-   * layout through `useAppLayout()` and `LayoutSlot` rather than rendering one,
-   * so a host owns the header, form and footer. `ElementEditScreen` is the
-   * full-page counterpart.
+   * The element editor, for full pages and slideouts alike. It renders no
+   * chrome of its own: it configures the surrounding shell through
+   * `useAppLayout()` and `LayoutSlot`, so the shell decides where the header,
+   * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
@@ -152,6 +152,24 @@
     <ElementContextMenu
       :label="payload.contextMenu.label"
       :items="payload.contextMenu.items"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot
+    v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
+    name="title-badge"
+  >
+    <craft-badge
+      v-if="payload.isProvisionalDraft"
+      fill="info"
+      class="relative text-sm font-normal inline-flex"
+    >
+      <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+      {{ t('Edited') }}
+    </craft-badge>
+    <DynamicHtmlRenderer
+      v-else-if="payload.statusLabelHtml"
+      :html="payload.statusLabelHtml"
     />
   </LayoutSlot>
 
