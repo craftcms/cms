@@ -131,6 +131,8 @@ class ActivityTimelinePresenter
 
         return [
             'id' => $root->id,
+            'component' => $event->eventType::component(),
+            'props' => $event->eventType::props($event),
             'icon' => $this->activities->icon($event),
             'occurredAt' => $root->occurredAt->toIso8601String(),
             'formattedOccurredAt' => [
