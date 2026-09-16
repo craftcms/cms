@@ -38,15 +38,15 @@ describe('FormActions', () => {
     const applyButton = [...container.querySelectorAll('craft-button')].find(
       (button) => button.textContent?.trim() === 'Apply draft'
     ) as HTMLElementTagNameMap['craft-button'];
-    const tooltip =
-      container.querySelector<HTMLElementTagNameMap['craft-tooltip']>(
-        'craft-tooltip'
+    const infoIcon =
+      container.querySelector<HTMLElementTagNameMap['craft-info-icon']>(
+        'craft-info-icon'
       )!;
 
     expect(applyButton.disabled).toBe(true);
-    expect(tooltip.textContent).toContain(
+    expect(infoIcon.textContent).toContain(
       'This draft must be approved before it can be applied.'
     );
-    expect(tooltip.for).toBe(applyButton.parentElement?.id);
+    expect(infoIcon.label).toBe('Why “Apply draft” is unavailable');
   });
 });
