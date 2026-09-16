@@ -19,13 +19,12 @@ class SystemMessageImporter extends ModelImporter
     {
         parent::__construct($config);
 
-        $this->className = SystemMessage::class;
-        // incoming data won't carry Craft's IDs, so match on what identifies a message instead
+        // match incoming data on key and language combination
         $this->matchCriteria = ['key' => 'key', 'language' => 'language'];
     }
 
     #[Override]
-    public static function modelClass(): string
+    public static function targetClass(): string
     {
         return SystemMessage::class;
     }

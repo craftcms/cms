@@ -92,7 +92,7 @@ abstract class ElementImporter extends BaseImporter
     /**
      * Returns the fixed element type FQCN this importer subclass targets.
      */
-    abstract public static function elementClass(): string;
+    abstract public static function targetClass(): string;
 
     /**
      * Returns the class name of the default transformer for the component.
@@ -224,6 +224,12 @@ abstract class ElementImporter extends BaseImporter
         }
 
         return Import::getDataHeadings($filePath);
+    }
+
+    #[Override]
+    public static function isElementImporter(): bool
+    {
+        return true;
     }
 
     #[Override]
@@ -549,7 +555,7 @@ abstract class ElementImporter extends BaseImporter
     private function usesDefaultTransformer(): bool
     {
         $currentTransformer = $this->transformer;
-        $defaultTransformer = $this->className ? static::getDefaultTransformer() : null;
+        $defaultTransformer = static::getDefaultTransformer();
 
         // if they're simply the same - they're the same
         if ($currentTransformer === $defaultTransformer) {

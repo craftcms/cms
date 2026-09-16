@@ -17,15 +17,8 @@ use function CraftCms\Cms\t;
  */
 class EntryImporter extends ElementImporter
 {
-    public function __construct(?array $config = null)
-    {
-        parent::__construct($config);
-
-        $this->className = Entry::class;
-    }
-
     #[Override]
-    public static function elementClass(): string
+    public static function targetClass(): string
     {
         return Entry::class;
     }
@@ -77,7 +70,7 @@ class EntryImporter extends ElementImporter
                 }
             }
 
-            $element = new $this->className;
+            $element = new ($this::targetClass());
             if ($entryType) {
                 $element->setTypeId($entryType->id);
                 $element->fieldLayoutId = $entryType->getFieldLayoutId();

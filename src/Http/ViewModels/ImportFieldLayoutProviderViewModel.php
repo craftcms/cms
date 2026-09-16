@@ -39,7 +39,7 @@ class ImportFieldLayoutProviderViewModel extends ViewModel
             HiddenField::make('uid'),
             Field::make(
                 t('Choose the field layout provider to import into (e.g. entry type, volume)'),
-                Choice::make('fieldLayout')->options(ImportHelper::getAvailableFieldLayoutProviders($this->importer->className)),
+                Choice::make('fieldLayout')->options(ImportHelper::getAvailableFieldLayoutProviders($this->importer::targetClass())),
             ),
         ]), new FormContext(
             values: $values,

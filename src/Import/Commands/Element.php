@@ -108,7 +108,7 @@ class Element extends Command implements PromptsForMissingInput
         $this->components->info('Importing data into:');
 
         $list = [
-            "Element Type: `{$importConfig->className}`",
+            "Element Type: `{$importConfig::targetClass()}`",
             "File: `$importConfig->file`",
             "Site: `{$importConfig->site->name}`",
             'Field Layout Provider: '.($importConfig->fieldLayout ? "`$importConfig->fieldLayout`" : 'NULL'),

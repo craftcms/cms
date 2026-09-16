@@ -44,11 +44,6 @@ class ImportConfig
         $importer->description($config['description']);
         $settings = JsonSupport::decode($config['settings']);
         foreach ($settings as $setting => $value) {
-            // an importer's target class is fixed at construction time and has no setter;
-            // 'className' is only persisted for display/introspection
-            if ($setting === 'className') {
-                continue;
-            }
             if (method_exists($importer, $setting)) {
                 $importer->{$setting}($value);
             }
@@ -208,7 +203,6 @@ class ImportConfig
             $configRecord->description = $importer->description;
             $settings = [
                 'file' => $importer->file,
-                'className' => $importer->className,
                 'transformer' => $importer->transformer ? $importer->transformer::class : null,
                 'map' => $importer->map,
                 'matchCriteria' => $importer->matchCriteria,

@@ -24,7 +24,7 @@ class Model extends Command implements PromptsForMissingInput
 
     #[Override]
     protected $signature = 'craft:import:model
-        {className : The fully qualified class name of the Eloquent Model you want to import into.}
+        {targetClass : The fully qualified class name of the Eloquent Model you want to import into.}
         {file : `@root`-relative path to the file containing data you want to import.}
         {--transformer= : The fully qualified class name of the transformer you want to use to manipulate the data on import.}
         {--matchCriteria= : An array of key-value pairs that will be used to match existing elements when importing.}
@@ -41,7 +41,7 @@ class Model extends Command implements PromptsForMissingInput
      */
     public function handle(): int
     {
-        $modelClass = $this->argument('className');
+        $modelClass = $this->argument('targetClass');
         $importerClass = Import::getModelImporterTypeFor($modelClass);
 
         if ($importerClass === null) {
@@ -86,7 +86,7 @@ class Model extends Command implements PromptsForMissingInput
         $this->components->info('Importing data into:');
 
         $list = [
-            "Class Name: `{$importConfig->className}`",
+            "Class Name: `{$importConfig::targetClass()}`",
             "File: `$importConfig->file`",
             'Transformer: '.($importConfig->transformer ? "`{$importConfig->transformerAsString()}`" : 'NULL'),
             'Match Criteria: '.($importConfig->matchCriteria ? json_encode($importConfig->matchCriteria) : 'NULL'),
@@ -140,7 +140,7 @@ class Model extends Command implements PromptsForMissingInput
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            'className' => fn () => select(
+            'targetClass' => fn () => select(
                 label: 'Which model do you want to import into?',
                 options: ImportHelper::flattenLabelValueArray(
                     collect(Import::getAllImporterTypes())

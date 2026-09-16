@@ -103,7 +103,7 @@ class ImportHelper
     public static function getImportableProperties(BaseImporter $importer): array
     {
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
-        $class = new \ReflectionClass($importer->className);
+        $class = new \ReflectionClass($importer::targetClass());
         $properties = $class->getProperties();
 
         // now walk up and getParentClass() so that we can get all the props for classes that this one extends (e.g. Element class for Entry)

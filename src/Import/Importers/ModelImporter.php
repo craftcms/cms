@@ -48,25 +48,14 @@ abstract class ModelImporter extends BaseImporter
     ];
 
     /**
-     * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
-     *
-     * @param  array|null  $config  Optional config array, potentially containing a `uid` key.
-     */
-    public function __construct(?array $config = null)
-    {
-        parent::__construct($config);
-        $this->matchCriteria = ['id' => 'id'];
-    }
-
-    /**
      * Returns the fixed model FQCN this importer subclass targets.
      */
-    abstract public static function modelClass(): string;
+    abstract public static function targetClass(): string;
 
     #[Override]
     public function getDestinationCols(): array
     {
-        $columns = Schema::getColumns((new $this->className)->getTable());
+        $columns = Schema::getColumns((static::targetClass())->getTable());
 
         return array_map(fn ($col) => [
             'handle' => $col['name'],
@@ -131,7 +120,7 @@ abstract class ModelImporter extends BaseImporter
      */
     private function getModel(array $data): BaseModel
     {
-        $model = new $this->className;
+        $model = new (static::targetClass());
 
         // if null then return a brand new model
         if (! isset($data['matchCriteria'])) {

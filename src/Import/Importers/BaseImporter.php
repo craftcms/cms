@@ -33,8 +33,6 @@ abstract class BaseImporter
 
     public protected(set) ?string $description = null;
 
-    public protected(set) ?string $className = null;
-
     public protected(set) ?string $file = null;
 
     public protected(set) string|BaseTransformer|null $transformer = null;
@@ -116,14 +114,6 @@ abstract class BaseImporter
     }
 
     /**
-     * Determines if the current importer is for an Element.
-     */
-    public function isElementImport(): bool
-    {
-        return is_subclass_of($this->className, ElementInterface::class);
-    }
-
-    /**
      * Defines the validation rules for the importer, including its persistable metadata.
      */
     public static function getRules(): array
@@ -188,7 +178,6 @@ abstract class BaseImporter
             'handle' => $this->handle,
             'settings' => [
                 'file' => $this->file,
-                'className' => $this->className,
                 'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
                 'map' => $this->map,
             ],
@@ -519,5 +508,10 @@ abstract class BaseImporter
     public function importItem(array $data): void
     {
         // by default, this doesn't do anything
+    }
+
+    public static function isElementImporter(): bool
+    {
+        return false;
     }
 }

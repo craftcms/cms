@@ -23,8 +23,8 @@
     handle: string;
     file: string | null;
     site: string | null;
-    isElementImport: boolean;
-    className: string | null;
+    isElementImporter: boolean;
+    targetClass: string | null;
     editUrl: string;
     mapUrl: string | null;
   }
@@ -33,8 +33,8 @@
     handle: string;
     name: string;
     site: string | null;
-    isElementImport: boolean;
-    className: string | null;
+    isElementImporter: boolean;
+    targetClass: string | null;
     transformer: string | null;
     hasMap: boolean;
   }
@@ -65,13 +65,13 @@
       header: t('Site'),
       cell: ({getValue}) => getValue() ?? t('n/a'),
     }),
-    editableColumnHelper.accessor('isElementImport', {
+    editableColumnHelper.accessor('isElementImporter', {
       header: t('Element import?'),
       cell: ({getValue}) =>
         getValue() ? h('craft-icon', {name: 'check'}) : '',
     }),
-    editableColumnHelper.accessor('className', {
-      header: t('Class name'),
+    editableColumnHelper.accessor('targetClass', {
+      header: t('Target class'),
     }),
     editableColumnHelper.actions(({row}) => {
       const actions: ActionItems = [
@@ -150,13 +150,13 @@
       header: t('Site'),
       cell: ({getValue}) => getValue() ?? t('n/a'),
     }),
-    nonEditableColumnHelper.accessor('isElementImport', {
+    nonEditableColumnHelper.accessor('isElementImporter', {
       header: t('Element import?'),
       cell: ({getValue}) =>
         getValue() ? h('craft-icon', {name: 'check'}) : '',
     }),
-    nonEditableColumnHelper.accessor('className', {
-      header: t('Class name'),
+    nonEditableColumnHelper.accessor('targetClass', {
+      header: t('Target class'),
     }),
     nonEditableColumnHelper.accessor('transformer', {
       header: t('Transformer'),

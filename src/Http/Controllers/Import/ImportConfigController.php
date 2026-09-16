@@ -87,10 +87,10 @@ class ImportConfigController
             'handle' => $config->handle,
             'file' => $config->file,
             'site' => property_exists($config, 'site') ? $config->site?->name : null,
-            'isElementImport' => $config->isElementImport(),
-            'className' => $config->className,
+            'isElementImporter' => $config::isElementImporter(),
+            'targetClass' => $config::targetClass(),
             'editUrl' => Url::cpUrl('import/configs/'.$config->handle),
-            'mapUrl' => ! $config->isElementImport() || (property_exists($config, 'fieldLayout') && ! empty($config->fieldLayout))
+            'mapUrl' => ! $config::isElementImporter() || (property_exists($config, 'fieldLayout') && ! empty($config->fieldLayout))
                 ? Url::cpUrl('import/configs/'.$config->handle.'/map')
                 : null,
         ];
@@ -103,8 +103,8 @@ class ImportConfigController
             'handle' => $config->handle,
             'name' => $config->name,
             'site' => property_exists($config, 'site') ? $config->site?->name : null,
-            'isElementImport' => $config->isElementImport(),
-            'className' => $config->className,
+            'isElementImporter' => $config::isElementImporter(),
+            'targetClass' => $config::targetClass(),
             'transformer' => $config->transformerAsString(),
             'hasMap' => $config->map !== [],
         ];
@@ -242,7 +242,7 @@ class ImportConfigController
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
         // if it's not an element import, redirect to the config edit page
-        if (! $found->isElementImport()) {
+        if (! $found->isElementImporter()) {
             return redirect()->action([self::class, 'edit'], ['handle' => $handle]);
         }
 
@@ -346,7 +346,7 @@ class ImportConfigController
                 },
             );
 
-        if ($importer->isElementImport()) {
+        if ($importer::isElementImporter()) {
             $response->addCrumb(t('Field Layout Provider'), 'import/configs/'.$importer->handle.'/field-layout-provider');
         }
 
@@ -564,7 +564,7 @@ class ImportConfigController
                         ]);
                     }
 
-                    if ($importer?->isElementImport()) {
+                    if ($importer::isElementImporter()) {
                         // TODO (iwona): this doesn't work, but I don't fully know why;
                         //      ideally we want to use this action and not "just" a link to the next step
                         //                        $response->addAltAction(t('Save and go to field layout provider'), [
@@ -581,7 +581,7 @@ class ImportConfigController
                             'href' => action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle]),
                         ]);
                     }
-                    if ($importer?->isElementImport() === false) {
+                    if ($importer::isElementImporter() === false) {
                         // TODO (iwona): ideally we want to use save+redirect action and not "just" a link to the next step
                         $response->addAltAction(t('Go to mapping configuration'), [
                             'href' => action([self::class, 'editMap'], ['handle' => $importer->handle]),
