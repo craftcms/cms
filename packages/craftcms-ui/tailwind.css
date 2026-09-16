@@ -127,6 +127,39 @@
     var(--c-color-neutral-border-loud)
   );
 
+  /* ——— Spacing ———
+     The named --c-spacing-* steps, for p-sm, mx-md, gap-lg, space-y-xs, …
+     Per-utility namespaces rather than --spacing-*: w-*, max-w-* and min-w-*
+     read --spacing-* before --container-*, so --spacing-sm would turn
+     max-w-sm into 4px. */
+  --padding-xs: var(--c-spacing-xs);
+  --padding-sm: var(--c-spacing-sm);
+  --padding-md: var(--c-spacing-md);
+  --padding-lg: var(--c-spacing-lg);
+  --padding-xl: var(--c-spacing-xl);
+  --padding-2xl: var(--c-spacing-2xl);
+
+  --margin-xs: var(--c-spacing-xs);
+  --margin-sm: var(--c-spacing-sm);
+  --margin-md: var(--c-spacing-md);
+  --margin-lg: var(--c-spacing-lg);
+  --margin-xl: var(--c-spacing-xl);
+  --margin-2xl: var(--c-spacing-2xl);
+
+  --gap-xs: var(--c-spacing-xs);
+  --gap-sm: var(--c-spacing-sm);
+  --gap-md: var(--c-spacing-md);
+  --gap-lg: var(--c-spacing-lg);
+  --gap-xl: var(--c-spacing-xl);
+  --gap-2xl: var(--c-spacing-2xl);
+
+  --space-xs: var(--c-spacing-xs);
+  --space-sm: var(--c-spacing-sm);
+  --space-md: var(--c-spacing-md);
+  --space-lg: var(--c-spacing-lg);
+  --space-xl: var(--c-spacing-xl);
+  --space-2xl: var(--c-spacing-2xl);
+
   /* ——— Fill utilities ——— */
   --color-fill-quiet: var(
     --c-color-fill-quiet,
