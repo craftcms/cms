@@ -298,6 +298,33 @@ export default class CraftTabs extends LionTabs {
     this.#measureOverflow();
   }
 
+  /**
+   * Closes a collapsible strip, as clicking the selected tab does — for a
+   * close button inside a panel. Focus moves to the tab that was selected,
+   * since the button goes away with its panel. Does nothing when the strip
+   * isn't collapsible or is already closed.
+   */
+  close() {
+    if (!this.collapsible || this.#collapsed) {
+      return;
+    }
+
+    this.#collapse(true);
+  }
+
+  /**
+   * Reopens a closed strip on the tab it was last on — for a control outside
+   * the strip that brings the panel back. Focus moves to that tab. Does
+   * nothing when a tab is already selected.
+   */
+  open() {
+    if (!this.#collapsed) {
+      return;
+    }
+
+    this.#select(this.#entryTab(), true);
+  }
+
   override firstUpdated(changedProperties: PropertyValues) {
     // Decided from an explicit author signal rather than an absent panel
     // count, so a strip that simply hasn't been filled in yet doesn't quietly
@@ -483,21 +510,25 @@ export default class CraftTabs extends LionTabs {
    * still reachable by keyboard.
    */
   #syncTabindex() {
+    const entry = this.#collapsed ? this.#entryTab() : this.selectedIndex;
+
+    this.#tabs.forEach((tab, index) => {
+      tab.setAttribute('tabindex', index === entry ? '0' : '-1');
+    });
+  }
+
+  /**
+   * The tab a closed strip keeps in the tab order and reopens on: the one the
+   * selection was last on, or the first usable tab if that one's gone.
+   */
+  #entryTab(): number {
     const tabs = this.#tabs;
     const focusable = (index: number) =>
       !!tabs[index] && !tabs[index].disabled && !tabs[index].hidden;
 
-    let entry = this.selectedIndex;
-
-    if (entry < 0) {
-      entry = focusable(this.#entryIndex)
-        ? this.#entryIndex
-        : tabs.findIndex((_, index) => focusable(index));
-    }
-
-    tabs.forEach((tab, index) => {
-      tab.setAttribute('tabindex', index === entry ? '0' : '-1');
-    });
+    return focusable(this.#entryIndex)
+      ? this.#entryIndex
+      : tabs.findIndex((_, index) => focusable(index));
   }
 
   /**
