@@ -739,11 +739,14 @@ abstract class ContentIndexViewModel extends ViewModel
     {
         $attributes = array_values(array_unique(['title', ...$this->resolveVisibleColumns()]));
         $elementHtml = app(ElementHtml::class);
+        $descendantFlags = $this->mode() === ElementIndexViewMode::Structure->value
+            ? $this->descendantFlags(array_values($elements))
+            : [];
 
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             ...$this->extraRowData($element),
-            ...$this->structureRowData($element),
+            ...$this->structureRowData($element, $descendantFlags[$element->id] ?? false),
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
@@ -756,16 +759,12 @@ abstract class ContentIndexViewModel extends ViewModel
 
     /**
      * Per-row structure metadata, present only in structure mode: `level`
-     * drives the row's indentation, and `descendants` decides whether the row
-     * gets an expand/collapse toggle.
-     *
-     * The descendant count comes from the nested-set bounds already selected
-     * alongside the element, so it costs no extra queries — a subtree spans
-     * `rgt - lft` and each descendant occupies two of those bounds.
+     * drives the row's indentation, and `hasDescendants` decides whether the
+     * row gets an expand/collapse toggle.
      *
      * @return array<string, mixed>
      */
-    private function structureRowData(ElementInterface $element): array
+    private function structureRowData(ElementInterface $element, bool $hasDescendants): array
     {
         if ($this->mode() !== ElementIndexViewMode::Structure->value || ! isset($element->level)) {
             return [];
@@ -773,15 +772,60 @@ abstract class ContentIndexViewModel extends ViewModel
 
         return [
             'level' => (int) $element->level,
-            'descendants' => isset($element->lft, $element->rgt)
-                ? (int) (($element->rgt - $element->lft - 1) / 2)
-                : 0,
+            'hasDescendants' => $hasDescendants,
             // Required by `structures/move-element`, which validates
             // structureId/elementId/siteId before it will move anything.
             'siteId' => $element->siteId,
             // Plain-text name for the row's expand/collapse toggle.
             'label' => $element->getUiLabel(),
         ];
+    }
+
+    /**
+     * Whether each row has descendants this index would list, keyed by
+     * element ID.
+     *
+     * The nested set alone can't answer that: its bounds also span trashed
+     * and otherwise hidden elements, which would leave a toggle on a parent
+     * with nothing to show. Craft 5 queried every row; here the page answers
+     * for an expanded row whose next row follows it in tree order, so only
+     * collapsed rows and the page's last row — whose descendants aren't
+     * loaded — are queried, and only when the nested set says they could
+     * have any.
+     *
+     * @param  list<ElementInterface>  $elements
+     * @return array<int, bool>
+     */
+    private function descendantFlags(array $elements): array
+    {
+        $baseQuery = $this->resolveIndexData()['elementQuery'] ?? null;
+        $collapsedIds = array_map(intval(...), $this->request->collapsedElementIds());
+        $flags = [];
+
+        foreach ($elements as $index => $element) {
+            if (! isset($element->lft, $element->rgt, $element->level) || $element->rgt <= $element->lft + 1) {
+                $flags[$element->id] = false;
+
+                continue;
+            }
+
+            $next = $elements[$index + 1] ?? null;
+
+            if ($next !== null && ! in_array($element->id, $collapsedIds, true)) {
+                $flags[$element->id] = $next->level > $element->level;
+
+                continue;
+            }
+
+            $flags[$element->id] = $baseQuery instanceof ElementQueryInterface && (clone $baseQuery)
+                ->offset(null)
+                ->limit(null)
+                ->structureId($element->structureId)
+                ->descendantOf($element)
+                ->exists();
+        }
+
+        return $flags;
     }
 
     /**

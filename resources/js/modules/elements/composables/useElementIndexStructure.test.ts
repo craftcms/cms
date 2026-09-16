@@ -91,11 +91,11 @@ describe('deselectDescendants', () => {
 
 describe('resolveStructureMove', () => {
   const tree = [
-    {id: 1, level: 1, descendants: 3},
-    {id: 2, level: 2, descendants: 1},
-    {id: 3, level: 3, descendants: 0},
-    {id: 4, level: 2, descendants: 0},
-    {id: 5, level: 1, descendants: 0},
+    {id: 1, level: 1, hasDescendants: true},
+    {id: 2, level: 2, hasDescendants: true},
+    {id: 3, level: 3, hasDescendants: false},
+    {id: 4, level: 2, hasDescendants: false},
+    {id: 5, level: 1, hasDescendants: false},
   ];
   const onFirstPage = {startsAtTop: true};
   const onLaterPage = {startsAtTop: false};
@@ -184,9 +184,9 @@ describe('resolveStructureMove', () => {
 
 describe('loadedBranchDepth', () => {
   const tree = [
-    {id: 1, level: 1, descendants: 3},
-    {id: 2, level: 2, descendants: 1},
-    {id: 3, level: 3, descendants: 0},
+    {id: 1, level: 1, hasDescendants: true},
+    {id: 2, level: 2, hasDescendants: true},
+    {id: 3, level: 3, hasDescendants: false},
   ];
 
   it('measures the loaded branch', () => {

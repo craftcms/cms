@@ -16,7 +16,7 @@ interface ElementIndexStructureContext {
 export interface StructureRow {
   id: string | number;
   level?: number;
-  descendants?: number;
+  hasDescendants?: boolean;
 }
 
 const levelOf = (row: StructureRow): number => row.level ?? 1;
@@ -428,9 +428,9 @@ export function loadedBranchDepth(
   const descendants = descendantIndexes(rows, index);
 
   if (
-    (isCollapsed(row.id) && (row.descendants ?? 0) > 0) ||
+    (isCollapsed(row.id) && !!row.hasDescendants) ||
     descendants.some(
-      (i) => isCollapsed(rows[i]!.id) && (rows[i]!.descendants ?? 0) > 0
+      (i) => isCollapsed(rows[i]!.id) && !!rows[i]!.hasDescendants
     )
   ) {
     return null;

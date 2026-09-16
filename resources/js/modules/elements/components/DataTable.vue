@@ -554,7 +554,7 @@
           </template>
           <td v-if="structure" class="cp-table-cell cp-table-cell--structure">
             <craft-button
-              v-if="(row.original.descendants ?? 0) > 0"
+              v-if="row.original.hasDescendants"
               class="cp-table-structure-toggle"
               type="button"
               variant="plain"

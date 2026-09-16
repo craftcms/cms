@@ -21,8 +21,8 @@ export interface ElementIndexRow extends IndexQueryParams {
   canMoveTo?: boolean;
   /** The row's depth in the tree (1-based). Structure mode only. */
   level?: number;
-  /** How many elements sit beneath this row; 0 means no toggle. */
-  descendants?: number;
+  /** Whether the row has descendants the index would list (its toggle). */
+  hasDescendants?: boolean;
   /** The element's site, as `structures/move-element` requires. */
   siteId?: number;
   /** The element's plain-text name, for the row's toggle label. */
