@@ -42,6 +42,8 @@
     sortField,
     sortDirection,
     mode,
+    structureView,
+    toggleStructure,
     loading,
     visibleViewModes,
     onActionPerformed,
@@ -139,6 +141,10 @@
             :selectable="true"
             :loading="loading"
             :spacing="TableSpacing.Spacious"
+            :structure="mode === 'structure'"
+            :is-row-collapsed="structureView.isCollapsed"
+            :is-row-pending="structureView.isPending"
+            @toggle-structure="toggleStructure"
           />
         </div>
       </template>

@@ -19,6 +19,14 @@ export interface ElementIndexRow extends IndexQueryParams {
   folderUrl?: string;
   folderId?: string | number;
   canMoveTo?: boolean;
+  /** The row's depth in the tree (1-based). Structure mode only. */
+  level?: number;
+  /** How many elements sit beneath this row; 0 means no toggle. */
+  descendants?: number;
+  /** The element's site, as `structures/move-element` requires. */
+  siteId?: number;
+  /** The element's plain-text name, for the row's toggle label. */
+  label?: string;
 }
 
 /**

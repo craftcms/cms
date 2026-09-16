@@ -1,5 +1,10 @@
 <script setup lang="ts">
-  import {type Column, FlexRender, type Table} from '@tanstack/vue-table';
+  import {
+    type Column,
+    FlexRender,
+    type Row,
+    type Table,
+  } from '@tanstack/vue-table';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -30,6 +35,14 @@
       loading?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
+      /**
+       * Indents rows by their `level` and adds a leading column of
+       * expand/collapse toggles for rows with descendants.
+       */
+      structure?: boolean;
+      isRowCollapsed?: (id: string | number) => boolean;
+      /** Whether a row's expand/collapse request is still in flight. */
+      isRowPending?: (id: string | number) => boolean;
     }>(),
 
     {
@@ -37,11 +50,15 @@
       selectable: false,
       loading: false,
       layout: 'auto',
+      structure: false,
+      isRowCollapsed: () => false,
+      isRowPending: () => false,
     }
   );
 
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
+    toggleStructure: [id: string | number];
   }>();
 
   const page = usePage<{readOnly: boolean}>();
@@ -183,6 +200,10 @@
       columnCount += 1;
     }
 
+    if (props.structure) {
+      columnCount += 1;
+    }
+
     if (props.selectable) {
       columnCount += 1;
     }
@@ -206,8 +227,13 @@
       []
     );
 
-    // Leading utility columns, in render order: reorder handle, then select.
+    // Leading utility columns, in render order: reorder handle, structure
+    // toggle, then select.
     if (props.selectable) {
+      gridDef.unshift('44px');
+    }
+
+    if (props.structure) {
       gridDef.unshift('44px');
     }
 
@@ -220,6 +246,10 @@
       '--table-template-columns': gridDef.join(' '),
     };
   });
+
+  function rowLabel(row: Row<any>): string {
+    return row.original.label ?? String(row.original.id);
+  }
 
   function getRowPosition(index: number) {
     if (index === 0) {
@@ -310,6 +340,13 @@
           </th>
         </template>
         <th
+          v-if="structure"
+          class="cp-table-cell cp-table-cell--header cp-table-cell--structure"
+          scope="col"
+        >
+          <span class="sr-only">{{ t('Expand or collapse') }}</span>
+        </th>
+        <th
           v-if="selectable"
           class="cp-table-cell cp-table-cell--header cp-table-cell--select"
           scope="col"
@@ -389,6 +426,11 @@
           :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
           :tabindex="selectable ? 0 : undefined"
           v-bind="rowMoveAttrs(row.original)"
+          :style="
+            structure
+              ? {'--structure-level': row.original.level ?? 1}
+              : undefined
+          "
           :class="{
             row: true,
             'cp-table-row': true,
@@ -423,6 +465,32 @@
               <DropIndicator :edge="getClosestEdge(row.id)" />
             </td>
           </template>
+          <td v-if="structure" class="cp-table-cell cp-table-cell--structure">
+            <craft-button
+              v-if="(row.original.descendants ?? 0) > 0"
+              class="cp-table-structure-toggle"
+              type="button"
+              variant="plain"
+              size="small"
+              icon
+              :loading="isRowPending(row.original.id)"
+              :aria-expanded="String(!isRowCollapsed(row.original.id))"
+              @click.stop="emit('toggleStructure', row.original.id)"
+            >
+              <craft-icon
+                :name="
+                  isRowCollapsed(row.original.id)
+                    ? 'chevron-right'
+                    : 'chevron-down'
+                "
+                :label="
+                  isRowCollapsed(row.original.id)
+                    ? t('Expand {title}', {title: rowLabel(row)})
+                    : t('Collapse {title}', {title: rowLabel(row)})
+                "
+              ></craft-icon>
+            </craft-button>
+          </td>
           <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
             <craft-checkbox
               label-sr-only
@@ -440,7 +508,7 @@
             </craft-checkbox>
           </td>
           <component
-            v-for="cell in row.getVisibleCells()"
+            v-for="(cell, cellIdx) in row.getVisibleCells()"
             :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
             :key="cell.id"
             :class="[
@@ -453,7 +521,28 @@
               resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
             ]"
           >
+            <div v-if="structure && cellIdx === 0" class="cp-table-structure">
+              <span class="sr-only"
+                >{{ t('Level {level}', {level: row.original.level ?? 1}) }}
+              </span>
+              <FlexRender
+                :render="cell.column.columnDef.cell"
+                :props="cell.getContext()"
+              />
+              <craft-badge
+                v-if="
+                  isRowCollapsed(row.original.id) &&
+                  (row.original.descendants ?? 0) > 0
+                "
+                size="small"
+                no-prefix
+              >
+                {{ row.original.descendants }}
+                <span class="sr-only">{{ t('hidden children') }}</span>
+              </craft-badge>
+            </div>
             <FlexRender
+              v-else
               :render="cell.column.columnDef.cell"
               :props="cell.getContext()"
             />
@@ -514,6 +603,37 @@
   :deep(.cp-table-cell--title) {
     width: 45%;
     min-width: 14rem;
+  }
+
+  .cp-table-row {
+    --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
+  }
+
+  :deep(.cp-table-cell--structure) {
+    width: 1px;
+  }
+
+  :deep(.cp-table-cell--structure),
+  :deep(.cp-table-cell--structure + .cp-table-cell--select) {
+    overflow: visible;
+  }
+
+  :deep(.cp-table-structure-toggle),
+  :deep(.cp-table-cell--structure + .cp-table-cell--select > craft-checkbox) {
+    position: relative;
+    z-index: 1;
+    inset-inline-start: var(--_structure-indent);
+  }
+
+  :deep(.cp-table-structure-toggle:dir(rtl) craft-icon[name='chevron-right']) {
+    transform: scaleX(-1);
+  }
+
+  :deep(.cp-table-structure) {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    padding-inline-start: var(--_structure-indent);
   }
 
   :deep(.cell--drag-handle) {

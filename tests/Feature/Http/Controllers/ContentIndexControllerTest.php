@@ -263,6 +263,90 @@ it('orders a structure source by its structure rather than a literal column', fu
         );
 });
 
+it('emits a level and descendant count per row in structure mode', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $parent = EntryModel::factory()->forSection($section)->create();
+    $child = EntryModel::factory()->forSection($section)->create();
+
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $parent->id)
+            ->where('data.0.level', 1)
+            ->where('data.0.descendants', 1)
+            ->where('data.1.id', $child->id)
+            ->where('data.1.level', 2)
+            ->where('data.1.descendants', 0)
+            ->where('data.0.siteId', $parentElement->siteId)
+            ->where('data.0.label', $parentElement->getUiLabel())
+            ->where('structure.maxLevels', null)
+        );
+});
+
+it('excludes the descendants of collapsed elements in structure mode', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $parent = EntryModel::factory()->forSection($section)->create();
+    $child = EntryModel::factory()->forSection($section)->create();
+
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+        'collapsedElementIds' => [$parent->id],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('data', 1)
+            ->where('data.0.id', $parent->id)
+            ->where('pagination.total', 1)
+        );
+});
+
+it('keeps a flat table unfiltered when collapsed ids are sent outside structure mode', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $parent = EntryModel::factory()->forSection($section)->create();
+    $child = EntryModel::factory()->forSection($section)->create();
+
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'cards',
+        'collapsedElementIds' => [$parent->id],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.total', 2)
+        );
+});
+
 it('shows disabled entries by default, matching Craft 5 status handling', function () {
     // The index must default to *all* statuses (Craft 5 seeds
     // baseCriteria.status = null on every load), so a disabled entry still

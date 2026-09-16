@@ -4,7 +4,7 @@ import {
   type RowSelectionState,
   useVueTable,
 } from '@tanstack/vue-table';
-import {computed, onMounted, onScopeDispose, ref, shallowRef} from 'vue';
+import {computed, onMounted, onScopeDispose, ref, shallowRef, watch} from 'vue';
 import {
   type ElementIndexRow,
   useContentIndexData,
@@ -16,6 +16,12 @@ import {useElementIndexFilters} from '@/modules/elements/composables/useElementI
 import {useElementIndexLoading} from '@/modules/elements/composables/useElementIndexLoading';
 import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
 import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
+import {
+  cascadeStructureSelection,
+  deselectDescendants,
+  selectDescendantsOfSelected,
+  useElementIndexStructure,
+} from '@/modules/elements/composables/useElementIndexStructure';
 import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
 import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
 import {
@@ -89,6 +95,11 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     options.route,
     viewState
   );
+  const structureView = useElementIndexStructure(
+    elementIndex,
+    viewState,
+    options.route
+  );
   const {loading} = useElementIndexLoading();
 
   // The server renders the initial page for its defaults — it can't see the
@@ -104,6 +115,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
       restoreColumns(),
       restoreSort(),
       restoreViewMode(),
+      structureView.restore(),
     ].filter((restore): restore is IndexRestore => restore !== null);
 
     if (restores.length === 0) {
@@ -157,9 +169,43 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     refreshResults();
   }
 
+  // Structure mode hides collapsed branches straight away, ahead of the
+  // server's response.
+  const tableData = computed(() =>
+    structureView.visibleRows(elementIndex.data ?? [])
+  );
+
+  // A selected parent stands for its whole branch, so children that arrive
+  // later (an expand, a reload) join the selection too.
+  watch(tableData, (rows) => {
+    if (structureView.isStructure.value) {
+      rowSelection.value = selectDescendantsOfSelected(
+        rowSelection.value,
+        rows
+      );
+    }
+  });
+
+  /**
+   * Expands or collapses a structure row. Collapsing releases the rows it
+   * hides from the selection, so a bulk action never reaches rows the user
+   * can no longer see.
+   */
+  function toggleStructure(id: string | number) {
+    if (!structureView.isCollapsed(id)) {
+      rowSelection.value = deselectDescendants(
+        rowSelection.value,
+        tableData.value,
+        id
+      );
+    }
+
+    structureView.toggle(id);
+  }
+
   const elementTable = useVueTable<ElementIndexRow>({
     get data() {
-      return elementIndex.data ?? [];
+      return tableData.value;
     },
     get columns() {
       return columns.value;
@@ -186,8 +232,11 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     // selection and bulk actions.
     enableRowSelection: (row) => !row.original?.isFolder,
     onRowSelectionChange: (updater) => {
-      rowSelection.value =
+      const next =
         updater instanceof Function ? updater(rowSelection.value) : updater;
+      rowSelection.value = structureView.isStructure.value
+        ? cascadeStructureSelection(rowSelection.value, next, tableData.value)
+        : next;
     },
     getCoreRowModel: getCoreRowModel<ElementIndexRow>(),
     ...sortingConfig,
@@ -219,6 +268,8 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     sortField,
     sortDirection,
     mode,
+    structureView,
+    toggleStructure,
     loading,
     visibleViewModes,
     rowSelection,
