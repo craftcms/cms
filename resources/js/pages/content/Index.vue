@@ -35,7 +35,7 @@
 
 <template>
   <ElementIndexPage :route="route" customizable-sources>
-    <template #actions="{elementIndex}">
+    <template #toolbar-actions="{elementIndex}">
       <NewEntryButton
         :sources="elementIndex.sources"
         :source="elementIndex.source ?? undefined"

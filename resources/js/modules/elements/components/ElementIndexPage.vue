@@ -113,7 +113,13 @@
         v-model:table-columns="tableColumns"
         @submit="filters.submit"
         @reorder="reorder"
-      />
+      >
+        <template #actions>
+          <!-- Type-specific actions that belong with the list itself, such
+            as the entries index's New Entry button. -->
+          <slot name="toolbar-actions" :element-index="elementIndex" />
+        </template>
+      </ElementIndexToolbar>
     </template>
     <template #navbar><slot name="navbar"></slot></template>
     <template #body="{selection}">
