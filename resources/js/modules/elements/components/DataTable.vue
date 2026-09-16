@@ -16,7 +16,13 @@
     useTemplateRef,
     watch,
   } from 'vue';
+  import type {NestedReorderDirection} from '@craftcms/ui';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
+  import type {StructureMove} from '@/modules/elements/composables/useElementIndexStructure';
+  import {
+    type StructureDropType,
+    useStructureDrag,
+  } from '@/modules/elements/composables/useStructureDrag';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
@@ -43,6 +49,11 @@
       isRowCollapsed?: (id: string | number) => boolean;
       /** Whether a row's expand/collapse request is still in flight. */
       isRowPending?: (id: string | number) => boolean;
+      /**
+       * Whether a structure row can make a given move. With `reorderable`,
+       * structure rows reorder as a tree and emit `moveStructureRow`.
+       */
+      canMoveRow?: (id: string | number, move: StructureMove) => boolean;
     }>(),
 
     {
@@ -53,12 +64,14 @@
       structure: false,
       isRowCollapsed: () => false,
       isRowPending: () => false,
+      canMoveRow: () => false,
     }
   );
 
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
     toggleStructure: [id: string | number];
+    moveStructureRow: [id: string | number, move: StructureMove];
   }>();
 
   const page = usePage<{readOnly: boolean}>();
@@ -112,8 +125,60 @@
       onReorder: (startIndex, finishIndex) => {
         emit('reorder', startIndex, finishIndex);
       },
-      enabled: () => !props.readOnly && props.reorderable,
+      enabled: () => !props.readOnly && props.reorderable && !props.structure,
     });
+
+  const structureDropMoves: Partial<
+    Record<StructureDropType, StructureMove['type']>
+  > = {
+    'reorder-above': 'before',
+    'reorder-below': 'after',
+    'make-child': 'child',
+  };
+
+  const structureDrag = useStructureDrag({
+    getRows: () =>
+      props.table.getRowModel().rows.map((row: any) => row.original),
+    enabled: () => !readOnly.value && props.reorderable && props.structure,
+    onMove: (id, move) => emit('moveStructureRow', id, move),
+    blockedDrops: (sourceId, targetId) =>
+      (
+        Object.entries(structureDropMoves) as Array<
+          [StructureDropType, 'before' | 'after' | 'child']
+        >
+      )
+        .filter(([, type]) => !props.canMoveRow(sourceId, {type, targetId}))
+        .map(([dropType]) => dropType),
+  });
+
+  function structureDropEdge(rowId: string | number) {
+    const instruction = structureDrag.instructionFor(rowId);
+    switch (instruction?.type) {
+      case 'reorder-above':
+        return 'top';
+      case 'reorder-below':
+      case 'reparent':
+        return 'bottom';
+      default:
+        return null;
+    }
+  }
+
+  function structurePosition(id: string | number) {
+    const up = props.canMoveRow(id, {type: 'up'});
+    const down = props.canMoveRow(id, {type: 'down'});
+    if (!up && !down) return 'only';
+    if (!up) return 'first';
+    if (!down) return 'last';
+    return 'middle';
+  }
+
+  function onStructureReorder(
+    id: string | number,
+    event: CustomEvent<{direction: NestedReorderDirection}>
+  ) {
+    emit('moveStructureRow', id, {type: event.detail.direction});
+  }
 
   function getClosestEdge(rowId: string) {
     const state = getDropState(rowId);
@@ -423,7 +488,12 @@
         <tr
           v-for="(row, rowIdx) in table.getRowModel().rows"
           :key="row.id"
-          :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
+          :ref="
+            (el) => {
+              setRowRef(el as HTMLTableRowElement, row.id);
+              structureDrag.setRowRef(el as Element | null, row.id);
+            }
+          "
           :tabindex="selectable ? 0 : undefined"
           v-bind="rowMoveAttrs(row.original)"
           :style="
@@ -437,12 +507,29 @@
             'cp-table-row--folder': isFolderRow(row.original),
             sel: row.getIsSelected(),
             'row--dragging':
-              !readOnly && getDragState(row.id).type === 'is-dragging',
+              !readOnly &&
+              (getDragState(row.id).type === 'is-dragging' ||
+                structureDrag.isDragging(row.id)),
+            'row--drop-child':
+              structureDrag.instructionFor(row.id)?.type === 'make-child',
           }"
           @click="onRowClick(row, $event)"
           @keydown="onRowKeydown(row, rowIdx, $event)"
         >
-          <template v-if="reorderable && !readOnly">
+          <td v-if="reorderable && !readOnly && structure">
+            <div>
+              <craft-reorder-button
+                nested
+                :position="structurePosition(row.original.id)"
+                .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
+                .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
+                :ref="(el: any) => structureDrag.setHandleRef(el, row.id)"
+                @reorder="onStructureReorder(row.original.id, $event)"
+              ></craft-reorder-button>
+            </div>
+            <DropIndicator :edge="structureDropEdge(row.id)" />
+          </td>
+          <template v-else-if="reorderable && !readOnly">
             <td>
               <div>
                 <craft-reorder-button
@@ -529,17 +616,6 @@
                 :render="cell.column.columnDef.cell"
                 :props="cell.getContext()"
               />
-              <craft-badge
-                v-if="
-                  isRowCollapsed(row.original.id) &&
-                  (row.original.descendants ?? 0) > 0
-                "
-                size="small"
-                no-prefix
-              >
-                {{ row.original.descendants }}
-                <span class="sr-only">{{ t('hidden children') }}</span>
-              </craft-badge>
             </div>
             <FlexRender
               v-else
@@ -645,6 +721,10 @@
 
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  :deep(.row--drop-child > td) {
+    background-color: var(--c-color-accent-fill-quiet);
   }
 
   .cp-table-row--folder {

@@ -177,6 +177,271 @@ export function deselectDescendants(
   return result;
 }
 
+/** The index of the row's parent, or -1 when it's a root (or off-page). */
+export function parentIndex(
+  rows: ReadonlyArray<StructureRow>,
+  index: number
+): number {
+  return ancestorIndexes(rows, index)[0] ?? -1;
+}
+
+/** The index of the sibling directly before the row, or -1. */
+export function previousSiblingIndex(
+  rows: ReadonlyArray<StructureRow>,
+  index: number
+): number {
+  const level = levelOf(rows[index]!);
+
+  for (let i = index - 1; i >= 0; i--) {
+    const rowLevel = levelOf(rows[i]!);
+
+    if (rowLevel === level) {
+      return i;
+    }
+
+    if (rowLevel < level) {
+      return -1;
+    }
+  }
+
+  return -1;
+}
+
+/** The index of the sibling directly after the row (past its subtree), or -1. */
+export function nextSiblingIndex(
+  rows: ReadonlyArray<StructureRow>,
+  index: number
+): number {
+  const descendants = descendantIndexes(rows, index);
+  const next = (descendants.at(-1) ?? index) + 1;
+
+  return next < rows.length && levelOf(rows[next]!) === levelOf(rows[index]!)
+    ? next
+    : -1;
+}
+
+/**
+ * A request to reposition a row: the keyboard/menu moves, or a drop relative
+ * to another row (`before`/`after` it, as its first `child`, or `after` its
+ * ancestor at `level` — the tree hitbox's "reparent").
+ */
+export type StructureMove =
+  | {type: 'up' | 'down' | 'indent' | 'outdent'}
+  | {type: 'before' | 'after' | 'child'; targetId: string | number}
+  | {type: 'reparent'; targetId: string | number; level: number};
+
+/** Where a moved row lands, in `structures/move-element` terms. */
+export interface StructurePlacement {
+  /** Move after this element (as its next sibling)… */
+  prevId?: string | number;
+  /** …or prepend to this element's children; neither means the root's start. */
+  parentId?: string | number;
+  /** The row's level once moved. */
+  level: number;
+  /** The new parent, if any — so a collapsed one can be opened. */
+  newParentId?: string | number;
+}
+
+export interface ResolveStructureMoveOptions {
+  /**
+   * Whether the loaded rows begin at the top of the tree. Only then can a row
+   * be placed at the start of the root level, since off-page roots may exist.
+   */
+  startsAtTop: boolean;
+}
+
+/**
+ * Resolves a move into a placement, or `null` when it can't be made from the
+ * rows at hand (no sibling to swap with, a neighbour on another page) or
+ * wouldn't change anything.
+ *
+ * Positions are worked out against the rows with the moved branch removed,
+ * so "before the row after me" and similar moves resolve correctly.
+ */
+export function resolveStructureMove(
+  rows: ReadonlyArray<StructureRow>,
+  sourceId: string | number,
+  move: StructureMove,
+  {startsAtTop}: ResolveStructureMoveOptions
+): StructurePlacement | null {
+  const sourceIndex = rows.findIndex(
+    (row) => String(row.id) === String(sourceId)
+  );
+
+  if (sourceIndex === -1) {
+    return null;
+  }
+
+  const branch = new Set([
+    sourceIndex,
+    ...descendantIndexes(rows, sourceIndex),
+  ]);
+  const rest = rows.filter((_, index) => !branch.has(index));
+  const indexIn = (id: string | number) =>
+    rest.findIndex((row) => String(row.id) === String(id));
+  const idAt = (index: number) => rest[index]!.id;
+  const level = levelOf(rows[sourceIndex]!);
+
+  // Places the row at the start of `parent`'s children (or of the root).
+  const firstUnder = (
+    parent: number,
+    newLevel: number
+  ): StructurePlacement | null => {
+    if (parent !== -1) {
+      return {
+        parentId: idAt(parent),
+        newParentId: idAt(parent),
+        level: newLevel,
+      };
+    }
+
+    return startsAtTop && newLevel === 1 ? {level: 1} : null;
+  };
+
+  // Places the row directly before `target` in `rest`.
+  const before = (target: number): StructurePlacement | null => {
+    const targetLevel = levelOf(rest[target]!);
+    const previous = previousSiblingIndex(rest, target);
+
+    if (previous !== -1) {
+      const parent = parentIndex(rest, target);
+      return {
+        prevId: idAt(previous),
+        newParentId: parent === -1 ? undefined : idAt(parent),
+        level: targetLevel,
+      };
+    }
+
+    return firstUnder(parentIndex(rest, target), targetLevel);
+  };
+
+  // Places the row as the next sibling of `target` in `rest`.
+  const after = (target: number): StructurePlacement => {
+    const parent = parentIndex(rest, target);
+    return {
+      prevId: idAt(target),
+      newParentId: parent === -1 ? undefined : idAt(parent),
+      level: levelOf(rest[target]!),
+    };
+  };
+
+  let placement: StructurePlacement | null;
+
+  switch (move.type) {
+    case 'up': {
+      const previous = previousSiblingIndex(rows, sourceIndex);
+      placement = previous === -1 ? null : before(indexIn(rows[previous]!.id));
+      break;
+    }
+    case 'down': {
+      const next = nextSiblingIndex(rows, sourceIndex);
+      placement = next === -1 ? null : after(indexIn(rows[next]!.id));
+      break;
+    }
+    case 'indent': {
+      const previous = previousSiblingIndex(rows, sourceIndex);
+
+      if (previous === -1) {
+        placement = null;
+        break;
+      }
+
+      // Become the last child of the sibling above: after its last loaded
+      // child, or first (and possibly only) child when none are loaded.
+      const newParent = indexIn(rows[previous]!.id);
+      const lastChild = descendantIndexes(rest, newParent)
+        .filter((index) => levelOf(rest[index]!) === level + 1)
+        .at(-1);
+
+      placement =
+        lastChild === undefined
+          ? firstUnder(newParent, level + 1)
+          : {
+              prevId: idAt(lastChild),
+              newParentId: idAt(newParent),
+              level: level + 1,
+            };
+      break;
+    }
+    case 'outdent': {
+      const parent = parentIndex(rows, sourceIndex);
+      placement = parent === -1 ? null : after(indexIn(rows[parent]!.id));
+      break;
+    }
+    default: {
+      const target = indexIn(move.targetId);
+
+      if (target === -1) {
+        placement = null;
+      } else if (move.type === 'reparent') {
+        const desiredLevel = move.level;
+        const ancestor = [target, ...ancestorIndexes(rest, target)].find(
+          (index) => levelOf(rest[index]!) === desiredLevel
+        );
+        placement = ancestor === undefined ? null : after(ancestor);
+      } else if (move.type === 'before') {
+        placement = before(target);
+      } else if (move.type === 'after') {
+        placement = after(target);
+      } else {
+        placement = firstUnder(target, levelOf(rest[target]!) + 1);
+      }
+    }
+  }
+
+  if (placement === null) {
+    return null;
+  }
+
+  // A no-op: the row already sits exactly there.
+  const currentPrevious = previousSiblingIndex(rows, sourceIndex);
+  const currentParent = parentIndex(rows, sourceIndex);
+  const unchanged =
+    placement.prevId !== undefined
+      ? currentPrevious !== -1 &&
+        String(rows[currentPrevious]!.id) === String(placement.prevId)
+      : currentPrevious === -1 &&
+        (placement.parentId !== undefined
+          ? currentParent !== -1 &&
+            String(rows[currentParent]!.id) === String(placement.parentId)
+          : currentParent === -1);
+
+  return unchanged ? null : placement;
+}
+
+/**
+ * How many levels the row's branch extends below it, from the loaded rows —
+ * or `null` when the branch is collapsed and its depth is unknown.
+ */
+export function loadedBranchDepth(
+  rows: ReadonlyArray<StructureRow>,
+  id: string | number,
+  isCollapsed: (id: string | number) => boolean
+): number | null {
+  const index = rows.findIndex((row) => String(row.id) === String(id));
+
+  if (index === -1) {
+    return null;
+  }
+
+  const row = rows[index]!;
+  const descendants = descendantIndexes(rows, index);
+
+  if (
+    (isCollapsed(row.id) && (row.descendants ?? 0) > 0) ||
+    descendants.some(
+      (i) => isCollapsed(rows[i]!.id) && (rows[i]!.descendants ?? 0) > 0
+    )
+  ) {
+    return null;
+  }
+
+  return Math.max(
+    0,
+    ...descendants.map((i) => levelOf(rows[i]!) - levelOf(row))
+  );
+}
+
 /**
  * Expand/collapse state for the structure view mode.
  *

@@ -44,6 +44,9 @@
     mode,
     structureView,
     toggleStructure,
+    canReorderStructure,
+    canMoveRow,
+    moveStructureRow,
     loading,
     visibleViewModes,
     onActionPerformed,
@@ -144,7 +147,10 @@
             :structure="mode === 'structure'"
             :is-row-collapsed="structureView.isCollapsed"
             :is-row-pending="structureView.isPending"
+            :reorderable="canReorderStructure"
+            :can-move-row="canMoveRow"
             @toggle-structure="toggleStructure"
+            @move-structure-row="moveStructureRow"
           />
         </div>
       </template>

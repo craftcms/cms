@@ -114,6 +114,8 @@ export function useContentIndexData<
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
+    drafts: computed(() => props().drafts),
+    trashed: computed(() => props().trashed),
 
     // View state
     viewState: computed(() => props().viewState),

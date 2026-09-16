@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
@@ -28,6 +29,7 @@ use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -293,6 +295,42 @@ it('emits a level and descendant count per row in structure mode', function () {
             ->where('data.0.label', $parentElement->getUiLabel())
             ->where('structure.maxLevels', null)
         );
+});
+
+it('authorizes structure moves once the structure index has loaded', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $a = EntryModel::factory()->forSection($section)->create();
+    $b = EntryModel::factory()->forSection($section)->create();
+
+    foreach ([$a, $b] as $entry) {
+        Structures::appendToRoot($structure->id, EntryElement::find()->id($entry->id)->one());
+    }
+
+    $moveRequest = [
+        'structureId' => $structure->id,
+        'elementId' => $a->id,
+        'siteId' => Sites::getPrimarySite()->id,
+        'prevId' => $b->id,
+    ];
+
+    postJson(action([StructuresController::class, 'moveElement']), $moveRequest)->assertForbidden();
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('structure.editable', true));
+
+    postJson(action([StructuresController::class, 'moveElement']), $moveRequest)->assertOk();
+
+    expect(EntryElement::find()->structureId($structure->id)->orderBy('lft')->ids())
+        ->toBe([$b->id, $a->id]);
 });
 
 it('excludes the descendants of collapsed elements in structure mode', function () {

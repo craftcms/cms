@@ -1,4 +1,4 @@
-import {html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './reorder-button.styles.js';
 import {t} from '@src/utilities/translate';
@@ -7,8 +7,10 @@ import '../action-item/action-item.js';
 import '../button/button.js';
 import '../icon/icon.js';
 
-export type ReorderPosition = 'first' | 'middle' | 'last';
+export type ReorderPosition = 'first' | 'middle' | 'last' | 'only';
 export type ReorderDirection = 'up' | 'down';
+/** The directions a `nested` reorder button can emit. */
+export type NestedReorderDirection = ReorderDirection | 'indent' | 'outdent';
 export type ReorderOrientation = 'vertical' | 'horizontal';
 
 /**
@@ -25,7 +27,8 @@ export type ReorderOrientation = 'vertical' | 'horizontal';
  * @fires {CustomEvent<{direction: ReorderDirection}>} reorder - Emitted when the
  *   user chooses a move action. `event.detail.direction` is `'up'` or `'down'`
  *   regardless of orientation: `'up'` always means toward the start of the list
- *   ("Move forward" when horizontal) and `'down'` toward the end.
+ *   ("Move forward" when horizontal) and `'down'` toward the end. A `nested`
+ *   button can also emit `'indent'` and `'outdent'`.
  */
 export default class CraftReorderButton extends LitElement {
   static override styles = [styles];
@@ -59,6 +62,18 @@ export default class CraftReorderButton extends LitElement {
    */
   @property({reflect: true, type: Boolean}) disabled = false;
 
+  /**
+   * Adds "Indent" and "Outdent" actions, for items in a tree. Off by default,
+   * so flat lists only ever receive `'up'`/`'down'`.
+   */
+  @property({reflect: true, type: Boolean}) nested = false;
+
+  /** Whether the item can become a child of the item before it. */
+  @property({attribute: 'can-indent', type: Boolean}) canIndent = false;
+
+  /** Whether the item can move out to its parent's level. */
+  @property({attribute: 'can-outdent', type: Boolean}) canOutdent = false;
+
   override updated(changed: PropertyValues<this>) {
     super.updated(changed);
     if (changed.has('disabled')) {
@@ -70,20 +85,26 @@ export default class CraftReorderButton extends LitElement {
     }
   }
 
-  private _reorder(direction: ReorderDirection) {
-    if (this.disabled) {
-      return;
+  private _canMove(direction: NestedReorderDirection): boolean {
+    switch (direction) {
+      case 'up':
+        return this.position !== 'first' && this.position !== 'only';
+      case 'down':
+        return this.position !== 'last' && this.position !== 'only';
+      case 'indent':
+        return this.nested && this.canIndent;
+      case 'outdent':
+        return this.nested && this.canOutdent;
     }
+  }
 
-    if (
-      (direction === 'up' && this.position === 'first') ||
-      (direction === 'down' && this.position === 'last')
-    ) {
+  private _reorder(direction: NestedReorderDirection) {
+    if (this.disabled || !this._canMove(direction)) {
       return;
     }
 
     this.dispatchEvent(
-      new CustomEvent<{direction: ReorderDirection}>('reorder', {
+      new CustomEvent<{direction: NestedReorderDirection}>('reorder', {
         detail: {direction},
         bubbles: true,
         composed: true,
@@ -142,7 +163,7 @@ export default class CraftReorderButton extends LitElement {
         <div slot="content">
           <craft-action-item
             icon="${upIcon}"
-            ?disabled="${this.position === 'first'}"
+            ?disabled="${!this._canMove('up')}"
             @click="${() => this._reorder('up')}"
             data-action="moveUp"
             command="--move-up"
@@ -150,12 +171,30 @@ export default class CraftReorderButton extends LitElement {
           >
           <craft-action-item
             icon="${downIcon}"
-            ?disabled="${this.position === 'last'}"
+            ?disabled="${!this._canMove('down')}"
             @click="${() => this._reorder('down')}"
             data-action="moveDown"
             command="--move-down"
             >${downLabel}</craft-action-item
           >
+          ${this.nested
+            ? html`
+                <craft-action-item
+                  icon="${this._isRtl() ? 'arrow-left' : 'arrow-right'}"
+                  ?disabled="${!this._canMove('indent')}"
+                  @click="${() => this._reorder('indent')}"
+                  data-action="indent"
+                  >${t('Indent')}</craft-action-item
+                >
+                <craft-action-item
+                  icon="${this._isRtl() ? 'arrow-right' : 'arrow-left'}"
+                  ?disabled="${!this._canMove('outdent')}"
+                  @click="${() => this._reorder('outdent')}"
+                  data-action="outdent"
+                  >${t('Outdent')}</craft-action-item
+                >
+              `
+            : nothing}
         </div>
       </craft-action-menu>
     `;
