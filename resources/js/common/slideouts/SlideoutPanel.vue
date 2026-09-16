@@ -225,7 +225,7 @@
     box-shadow: 0 0 16px rgb(0 0 0 / 15%);
     overflow: hidden;
     /* Same as the legacy `.slideout-container`. */
-    z-index: 100;
+    z-index: var(--c-layer-overlay);
     /* Leading corners only — the trailing edge meets the viewport. */
     border-start-start-radius: var(--c-radius-lg, 0.5rem);
     border-end-start-radius: var(--c-radius-lg, 0.5rem);

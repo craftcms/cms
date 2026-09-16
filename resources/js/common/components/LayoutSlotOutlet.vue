@@ -80,7 +80,7 @@
   .layout-slot-debug-layer {
     position: fixed;
     inset: 0;
-    z-index: 2147483000;
+    z-index: var(--c-layer-debug);
     pointer-events: none;
     overflow: hidden;
   }

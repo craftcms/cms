@@ -10,6 +10,25 @@ import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
 
+/** Lion's own default, for pages that don't load the CP tokens. */
+const DEFAULT_POPOVER_LAYER = 9999;
+
+/**
+ * The popover layer from `--c-layer-popover`. Lion writes the overlay's
+ * z-index as an inline number, so the token has to be read rather than
+ * referenced.
+ */
+function popoverLayer(): number {
+  const value = parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue(
+      '--c-layer-popover'
+    ),
+    10
+  );
+
+  return Number.isNaN(value) ? DEFAULT_POPOVER_LAYER : value;
+}
+
 /**
  * A non-modal popover component built on Lion's overlay system.
  *
@@ -89,6 +108,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   _defineOverlayConfig() {
     return {
       ...withDropdownConfig(),
+      zIndex: popoverLayer(),
       handlesAccessibility: !this.withoutInvokerAria,
       inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
       popperConfig: {

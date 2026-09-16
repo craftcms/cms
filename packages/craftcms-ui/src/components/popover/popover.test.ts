@@ -36,6 +36,22 @@ describe('craft-popover', () => {
     expect(content!.textContent).toContain('Popover content');
   });
 
+  it('stacks at the popover layer token', async () => {
+    document.documentElement.style.setProperty('--c-layer-popover', '4321');
+
+    try {
+      const {popover} = await createFixture();
+      expect(popover._overlayCtrl.config.zIndex).toBe(4321);
+    } finally {
+      document.documentElement.style.removeProperty('--c-layer-popover');
+    }
+  });
+
+  it("falls back to Lion's layer without the token", async () => {
+    const {popover} = await createFixture();
+    expect(popover._overlayCtrl.config.zIndex).toBe(9999);
+  });
+
   it('resolves the invoker from the for attribute', async () => {
     const {popover, button} = await createFixture();
     expect(popover._overlayInvokerNode).toBe(button);

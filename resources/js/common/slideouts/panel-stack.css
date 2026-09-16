@@ -21,7 +21,7 @@
      module can rely on to keep the shade underneath — the z-index does it
      instead. Nothing else in the CP occupies 99 but tooltips, which belong
      under the shade anyway. */
-  z-index: 99;
+  z-index: var(--c-layer-shade);
 }
 
 .cp-slideout-shade.is-visible {
@@ -50,7 +50,7 @@
   position: absolute;
   display: none;
   inset-block-start: 0;
-  z-index: 100;
+  z-index: var(--c-layer-overlay);
   box-sizing: border-box;
   border: var(--modal-border, none);
   border-radius: var(--modal-border-radius, var(--c-radius-lg));
@@ -63,7 +63,7 @@
 }
 
 .hud-shade {
-  z-index: 100;
+  z-index: var(--c-layer-overlay);
   position: fixed;
   inset-block-start: 0;
   inset-inline-start: 0;

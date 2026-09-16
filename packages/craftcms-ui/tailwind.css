@@ -160,6 +160,19 @@
   --space-xl: var(--c-spacing-xl);
   --space-2xl: var(--c-spacing-2xl);
 
+  /* ——— Layers ——— */
+  --z-index-raised: var(--c-layer-raised);
+  --z-index-sticky: var(--c-layer-sticky);
+  --z-index-sidebar: var(--c-layer-sidebar);
+  --z-index-shade: var(--c-layer-shade);
+  --z-index-overlay: var(--c-layer-overlay);
+  --z-index-notification: var(--c-layer-notification);
+  --z-index-drag: var(--c-layer-drag);
+  --z-index-popover: var(--c-layer-popover);
+  --z-index-dialog-shade: var(--c-layer-dialog-shade);
+  --z-index-dialog: var(--c-layer-dialog);
+  --z-index-debug: var(--c-layer-debug);
+
   /* ——— Fill utilities ——— */
   --color-fill-quiet: var(
     --c-color-fill-quiet,
