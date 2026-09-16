@@ -5,15 +5,15 @@
   {{ hiddenInput(name, '') }}
 {% endif %}
 
-<div class="matrix matrix-field" id="{{ id }}">
+<div class="matrix matrix-field" id="{{ id }}" data-matrix-field>
   <span role="status" class="visually-hidden" data-status-message></span>
-  <div class="blocks" role="list">
+  <div class="blocks" role="list" data-matrix-blocks>
     {% for entry in entries %}
       {% include '_components/fieldtypes/Matrix/block.twig' with forms[entry.uid] %}
     {% endfor %}
   </div>
   {% if not static and not staticEntries %}
-    <div class="buttons">
+    <div class="buttons" data-matrix-buttons>
       {% include '_components/fieldtypes/Matrix/create-button.twig' %}
     </div>
   {% endif %}

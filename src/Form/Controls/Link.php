@@ -37,6 +37,13 @@ class Link extends Control
         return 'craft:link';
     }
 
+    /** @return array<string, mixed> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {

@@ -58,6 +58,9 @@ function releasePageScroll(): void {
  * @slot footer - Footer content, typically buttons.
  * @csspart dialog - The native `<dialog>` element.
  * @csspart surface - The visible panel inside it.
+ *
+ * @cssproperty --c-dialog-block-size - The surface's height. Defaults to
+ *   `auto`, and to `100dvh` under `fullscreen`.
  * @csspart header - The header row.
  * @csspart title - The heading.
  * @csspart close - The header close button.
@@ -65,6 +68,10 @@ function releasePageScroll(): void {
  * @csspart footer - The footer row.
  *
  * @fires craft-show - The dialog has opened.
+ * @fires craft-before-hide - A dismissal was asked for, by the close button,
+ *   Escape or the backdrop. Cancelable: call `preventDefault()` to keep the
+ *   dialog open — for confirming away unsaved work, say. Does not fire when
+ *   `opened` is set to false directly, which is a decision already made.
  * @fires craft-hide - The dialog has closed.
  * @fires craft-after-show - The dialog has opened and finished updating.
  * @fires craft-after-hide - The dialog has closed and finished updating.
@@ -248,7 +255,7 @@ export default class CraftDialog extends LitElement {
   protected renderFooter(): TemplateResult {
     return html`
       <footer class="footer" part="footer" ?hidden=${!this.hasFooter}>
-        <slot name="footer"></slot>
+        <slot name="footer"> </slot>
       </footer>
     `;
   }
@@ -337,7 +344,20 @@ export default class CraftDialog extends LitElement {
    * intercepting four listeners and the platform's own Escape handling.
    */
   protected requestClose(): void {
-    this.opened = false;
+    // Every dismissal — the close button, Escape, the backdrop — comes through
+    // here, so asking once covers all of them. Cancelable, for a dialog holding
+    // work that would be lost.
+    const allowed = this.dispatchEvent(
+      new CustomEvent('craft-before-hide', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+
+    if (allowed) {
+      this.opened = false;
+    }
   }
 
   /**

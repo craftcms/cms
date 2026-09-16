@@ -8,17 +8,20 @@
     inject,
     onErrorCaptured,
     provide,
+    shallowRef,
   } from 'vue';
   import FormNodeList from './FormNodeList.vue';
   import {
+    FieldActionItems,
     FieldLabelSrOnly,
     FormControlOverrides,
     FormFailure,
+    FormChangedPaths,
     FormModifiedGroups,
     formChangeFromEvent,
     pathsMatch,
     setValue as setPathValue,
-    valueAt,
+    controlValueAt,
   } from './runtime';
   import type {
     FormChange,
@@ -81,6 +84,8 @@
   const override = computed(() => overrides[control.value.path.join('.')]);
   const actions = computed(() => props.node.children ?? []);
 
+  provide(FieldActionItems, shallowRef());
+
   onErrorCaptured((error) => {
     invalidate(
       `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: ${error instanceof Error ? error.message : String(error)}`
@@ -95,17 +100,56 @@
       pathsMatch(error.path, control.value.path) ? error.messages : []
     )
   );
-  const value = computed(() => valueAt(props.values, control.value.path));
+  const value = computed(() => controlValueAt(props.values, control.value));
   const refreshable = computed(
     () => props.refreshable && Boolean(control.value.reactive)
   );
 
-  // Matched on the delta group, so a field split across several controls badges
-  // as one unit.
   const modifiedGroups = inject(FormModifiedGroups, undefined);
-  const modified = computed(
-    () => modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
-  );
+  const changedPaths = inject(FormChangedPaths, undefined);
+  const modified = computed(() => holdsChange() || modifiedByServer());
+
+  /**
+   * Whether something changed inside this field, for a field holding nested
+   * forms.
+   *
+   * Craft 5's element editor marks a changed input's field and every enclosing
+   * field — `parentsUntil(this.$container, '.field')`. That's what puts the
+   * badge on a Matrix field whose block was edited even when the block was
+   * created in this draft, which the server has no change record for yet. Only
+   * the enclosing fields, though: a field inside a block doesn't badge on its
+   * own, the block's field says it.
+   */
+  function holdsChange(): boolean {
+    if (!control.value.nestsForms || !changedPaths) {
+      return false;
+    }
+
+    const own = control.value.path.join('.');
+
+    for (const path of changedPaths.value) {
+      if (path === own || path.startsWith(`${own}.`)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * The server's modified groups, for controls of the element this form is
+   * for. A control inside a nested form inherits its owner's delta group, so it
+   * would otherwise badge whenever the field holding it changed.
+   */
+  function modifiedByServer(): boolean {
+    if (props.scope.length > control.value.deltaGroup.length) {
+      return false;
+    }
+
+    return (
+      modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
+    );
+  }
 
   function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);

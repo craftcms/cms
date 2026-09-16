@@ -54,6 +54,8 @@ export interface LegacySelect {
   $selectedItems: {length: number; eq(i: number): HTMLElement};
   getSelectedItems(): ArrayLike<HTMLElement>;
   isSelected(item: HTMLElement): boolean;
+  selectAll(): void;
+  deselectAll(): void;
   addItems(items: HTMLElement | HTMLElement[]): void;
   resetItemOrder(): void;
   destroy(): void;
@@ -147,6 +149,7 @@ interface LegacySelectSettings {
   handle: string;
   filter(target: HTMLElement): boolean;
   checkboxMode: boolean;
+  onSelectionChange(): void;
 }
 
 interface LegacyGarnishRuntime {

@@ -19,6 +19,7 @@ export default css`
       --c-dialog-max-inline-size,
       min(90vw, 40rem)
     );
+    --_dialog-block-size: var(--c-dialog-block-size, auto);
     --_dialog-max-block-size: var(--c-dialog-max-block-size, 85dvh);
   }
 
@@ -26,6 +27,7 @@ export default css`
     --_dialog-inline-size: var(--c-dialog-inline-size, 100vw);
     --_dialog-min-inline-size: var(--c-dialog-min-inline-size, 100vw);
     --_dialog-max-inline-size: var(--c-dialog-max-inline-size, 100vw);
+    --_dialog-block-size: var(--c-dialog-block-size, 100dvh);
     --_dialog-max-block-size: var(--c-dialog-max-block-size, 100dvh);
   }
 
@@ -37,6 +39,7 @@ export default css`
     max-width: none;
     max-height: none;
     overflow: visible;
+    margin: 0;
   }
 
   dialog::backdrop {
@@ -68,6 +71,7 @@ export default css`
     inline-size: var(--_dialog-inline-size);
     min-inline-size: var(--_dialog-min-inline-size);
     max-inline-size: var(--_dialog-max-inline-size);
+    block-size: var(--_dialog-block-size);
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
     border-radius: var(--c-radius-md);

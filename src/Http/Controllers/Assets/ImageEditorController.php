@@ -249,6 +249,7 @@ readonly class ImageEditorController
         $elements->saveElement($newAsset);
 
         $output['newAssetId'] = $newAsset->id;
+        $output['newAssetUrl'] = $newAsset->getCpEditUrl();
 
         return $this->asSuccess(data: $output);
     }

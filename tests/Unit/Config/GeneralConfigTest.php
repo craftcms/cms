@@ -36,6 +36,13 @@ it('can set compiledTemplatesPath via fluent setter', function () {
     expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
 });
 
+it('automatically eager loads elements by default', function () {
+    $config = GeneralConfig::create();
+
+    expect($config->autoEagerLoadElements)->toBeTrue()
+        ->and($config->autoEagerLoadElements(false)->autoEagerLoadElements)->toBeFalse();
+});
+
 it('normalizes activity retention durations and rejects negative values', function () {
     $config = GeneralConfig::create();
 

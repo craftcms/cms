@@ -30,7 +30,7 @@ it('leaves activity intact when retention is unlimited', function () {
     expect(ActivityEvent::query()->whereKey($event->id)->exists())->toBeTrue();
 });
 
-it('purges eligible standalone events and complete comment groups', function () {
+it('retains expired comment trees while purging ordinary expired activity', function () {
     Cms::config()->activityRetentionDuration(3600);
     $activities = app(Activities::class);
     $comments = app(ActivityComments::class);
@@ -42,13 +42,23 @@ it('purges eligible standalone events and complete comment groups', function () 
     $expired = $activities->record(new ElementCreated(subject: $entry));
     $comment = $comments->create($entry, $author, $site, 'Original comment');
 
+    Date::setTestNow('2026-08-26 10:15:00');
+    $edit = $comments->edit($comment, $author, 'Edited comment', $entry);
+
+    Date::setTestNow('2026-08-26 10:30:00');
+    $deletion = $comments->delete($comment, $author);
+
     Date::setTestNow('2026-08-26 12:00:00');
-    $comments->edit($comment, $author, 'Edited comment', $entry);
     $retained = $activities->record(new ElementUpdated(subject: $entry));
 
     app(PurgeExpiredActivity::class)();
 
-    expect(ActivityEvent::query()->pluck('id')->all())->toBe([$retained->id])
+    expect(ActivityEvent::query()->orderBy('id')->pluck('id')->all())->toBe([
+        $comment->id,
+        $edit->id,
+        $deletion->id,
+        $retained->id,
+    ])
         ->and(ActivityEvent::query()->whereKey($expired->id)->exists())->toBeFalse();
 });
 

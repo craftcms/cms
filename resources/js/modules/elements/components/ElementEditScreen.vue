@@ -6,7 +6,8 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -99,6 +100,10 @@
     ...headerButtons.value,
   ]);
 
+  /** Measured here because this component owns the body; see ElementDetailsTabs. */
+  const editorBody = ref<HTMLElement | null>(null);
+  const {width: bodyWidth} = useElementSize(editorBody);
+
   const hasDetails = computed(
     () =>
       Boolean(sidebarPayload.value) ||
@@ -136,7 +141,10 @@
         tab in the details column is that list now. -->
 
         <form method="post" @submit.prevent="save()">
-          <div class="sticky top-0 z-1000 pb-2">
+          <!-- Below the overlay band (slideout shade 99, panels and modal
+            shade 100) so the header never paints over a slideout or the image
+            editor modal, which stack above the page. -->
+          <div class="sticky top-0 z-10 pb-2">
             <header
               class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
             >
@@ -254,10 +262,15 @@
           </div>
 
           <div v-if="form.hasErrors" class="px-4">
-            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+            <ErrorSummary
+              v-if="form.hasErrors"
+              :errors="form.errors"
+              :title="t('Couldn’t save changes')"
+            />
           </div>
 
           <div
+            ref="editorBody"
             class="element-editor__body"
             :class="{'element-editor__body--details': hasDetails}"
           >
@@ -271,6 +284,7 @@
                       ref="renderer"
                       :payload="formPayload"
                       :errors="errors"
+                      :modified="autosave.modified.value"
                       @update:mutation="onMutation"
                     />
 
@@ -287,6 +301,7 @@
               <ElementDetailsTabs
                 :payload="payload"
                 :activity-timeline-version="activityTimelineVersion"
+                :available-width="bodyWidth"
                 pane
               >
                 <template #info>
@@ -307,6 +322,7 @@
                             ref="sidebarRenderer"
                             :payload="sidebarPayload"
                             :errors="sidebarErrors"
+                            :modified="autosave.modified.value"
                             @update:mutation="onSidebarMutation"
                           />
                         </craft-field-group>
@@ -350,7 +366,7 @@
     border-block-end: 1px solid var(--color-neutral-border-quiet);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 10;
     background-color: white;
   }
 
