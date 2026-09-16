@@ -41,6 +41,24 @@ Each entry is a `- ` prefixed line. No blank lines between entries within a sect
 > Important note about breaking changes.
 ```
 
+## Entry Ordering
+
+Within a section (`## Unreleased` or a version header, and within each `###` subheader if the release uses them), order entries highest-priority-first:
+
+1. Blockquote notes ([GitHub callout syntax](https://github.com/orgs/community/discussions/16925): `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) — these sit above the `- ` entry list itself, not interleaved with it.
+2. Changes affecting a wide range of users.
+3. Changes affecting most control panel users.
+4. Changes affecting administrators.
+5. Changes affecting front-end developers (Twig, Blade, etc.).
+6. Changes affecting plugin/module development (PHP, Laravel, control panel Inertia/Vue/web components, etc.).
+7. Bug fixes.
+8. Security fixes, ordered by severity, high to low.
+
+Within each of those tiers, order entries by popularity/impact, highest first, judging by:
+- The referenced GitHub issue/discussion's apparent popularity (reactions, comments, how long-standing or frequently-requested it is).
+- Whether it's new functionality (ranks higher) versus a minor tweak.
+- How niche the change sounds — broadly-applicable changes outrank edge-case ones.
+
 ## Writing Rules
 
 1. **Start with a past-tense verb** — capitalize it:
@@ -75,5 +93,5 @@ For the full set of templates and examples, see `references/entry-templates.md`.
 
 1. Identify what changed (from conversation context, git diff, or user description).
 2. Determine the target file and section/insertion point.
-3. Write entries following the format rules above.
-4. Insert entries in the appropriate location in the file.
+3. Write entries following the format and writing rules above.
+4. Insert entries into the section, positioned per the Entry Ordering rules above.
