@@ -88,7 +88,7 @@ class ImportConfigController
             'file' => $config->file,
             'site' => property_exists($config, 'site') ? $config->site?->name : null,
             'isElementImporter' => $config::isElementImporter(),
-            'targetClass' => $config::targetClass(),
+            'importType' => $config::displayName(),
             'editUrl' => Url::cpUrl('import/configs/'.$config->handle),
             'mapUrl' => ! $config::isElementImporter() || (property_exists($config, 'fieldLayout') && ! empty($config->fieldLayout))
                 ? Url::cpUrl('import/configs/'.$config->handle.'/map')
@@ -104,7 +104,7 @@ class ImportConfigController
             'name' => $config->name,
             'site' => property_exists($config, 'site') ? $config->site?->name : null,
             'isElementImporter' => $config::isElementImporter(),
-            'targetClass' => $config::targetClass(),
+            'importType' => $config::displayName(),
             'transformer' => $config->transformerAsString(),
             'hasMap' => $config->map !== [],
         ];

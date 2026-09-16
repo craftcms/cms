@@ -24,7 +24,7 @@
     file: string | null;
     site: string | null;
     isElementImporter: boolean;
-    targetClass: string | null;
+    importType: string | null;
     editUrl: string;
     mapUrl: string | null;
   }
@@ -34,7 +34,7 @@
     name: string;
     site: string | null;
     isElementImporter: boolean;
-    targetClass: string | null;
+    importType: string | null;
     transformer: string | null;
     hasMap: boolean;
   }
@@ -70,8 +70,8 @@
       cell: ({getValue}) =>
         getValue() ? h('craft-icon', {name: 'check'}) : '',
     }),
-    editableColumnHelper.accessor('targetClass', {
-      header: t('Target class'),
+    editableColumnHelper.accessor('importType', {
+      header: t('Import type'),
     }),
     editableColumnHelper.actions(({row}) => {
       const actions: ActionItems = [
@@ -155,8 +155,8 @@
       cell: ({getValue}) =>
         getValue() ? h('craft-icon', {name: 'check'}) : '',
     }),
-    nonEditableColumnHelper.accessor('targetClass', {
-      header: t('Target class'),
+    nonEditableColumnHelper.accessor('importType', {
+      header: t('Import type'),
     }),
     nonEditableColumnHelper.accessor('transformer', {
       header: t('Transformer'),
