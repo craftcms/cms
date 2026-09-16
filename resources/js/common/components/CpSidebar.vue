@@ -116,6 +116,7 @@
   }
 
   .cp-sidebar[data-mode='floating'] {
+    z-index: var(--c-layer-overlay);
     position: fixed;
     inset-block-start: 0;
     inset-block-end: 0;
