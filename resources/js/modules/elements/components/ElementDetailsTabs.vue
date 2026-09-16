@@ -1,9 +1,19 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {ref, watch} from 'vue';
-  import ActivityTimeline from '@/modules/activity/components/ActivityTimeline.vue';
+  import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
+  import type {Component} from 'vue';
+  import {
+    elementDetailsTabRegistry,
+    type ElementDetailsTabDescriptor,
+  } from '@/bootstrap/element-details-tabs';
+  import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+
+  type ElementDetailsTab = Omit<ElementDetailsTabDescriptor, 'component'> & {
+    component?: Component;
+    slot?: string;
+  };
 
   const props = defineProps<{
     payload: ElementEditPayload;
@@ -16,7 +26,38 @@
     availableWidth?: number;
   }>();
 
-  const activityTabOpen = ref(false);
+  const coreTabs: ElementDetailsTab[] = [
+    {
+      id: 'info',
+      label: t('Info'),
+      icon: 'circle-info',
+      order: 0,
+      slot: 'info',
+    },
+    {
+      id: 'activity',
+      label: t('Activity'),
+      icon: 'wave-pulse',
+      component: ElementActivityTimeline,
+      order: 10,
+      visible: (payload) => payload.activityTimelineUrl !== null,
+    },
+    {
+      id: 'revisions',
+      label: t('Revisions'),
+      icon: 'clock-rotate-left',
+      component: RevisionsList,
+      order: 20,
+    },
+  ];
+
+  const visibleTabs = computed<ElementDetailsTab[]>(() =>
+    ([...coreTabs, ...elementDetailsTabRegistry.tabs] as ElementDetailsTab[])
+      .filter((tab) => tab.visible?.(props.payload) ?? true)
+      .sort(
+        (firstTab, secondTab) => (firstTab.order ?? 0) - (secondTab.order ?? 0)
+      )
+  );
 
   /**
    * The details column stops being worth its track once the editor body gets
@@ -29,7 +70,8 @@
    * it does the measuring and passes the number down.
    */
   const COLLAPSE_WIDTH = 880;
-  const tabs = ref<(HTMLElement & {selectedIndex: number}) | null>(null);
+  const tabs = useTemplateRef<HTMLElement & {selectedIndex: number}>('tabs');
+  const selectedTabId = shallowRef<string | null>('info');
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
   let collapsedByWidth = false;
 
@@ -55,9 +97,47 @@
     collapsedByWidth = false;
   });
 
+  watch(
+    [tabs, visibleTabs],
+    async ([element, tabs]) => {
+      if (!element || !selectedTabId.value) {
+        return;
+      }
+
+      const selectedIndex = tabs.findIndex(
+        (tab) => tab.id === selectedTabId.value
+      );
+      const fallbackIndex = 0;
+      const nextSelectedIndex =
+        selectedIndex < 0 ? fallbackIndex : selectedIndex;
+
+      if (selectedIndex < 0) {
+        selectedTabId.value = tabs[fallbackIndex]?.id ?? null;
+      }
+
+      await nextTick();
+      if (element.selectedIndex !== nextSelectedIndex) {
+        element.selectedIndex = nextSelectedIndex;
+      }
+    },
+    {flush: 'post'}
+  );
+
+  function componentProps(): Record<string, unknown> {
+    return {
+      payload: props.payload,
+      activeTabId: selectedTabId.value,
+      refreshToken: props.activityTimelineVersion,
+    };
+  }
+
   function onSelectedChanged(event: Event): void {
-    activityTabOpen.value =
-      (event.target as {selectedIndex?: number} | null)?.selectedIndex === 1;
+    const selectedIndex = (event.target as {selectedIndex?: number} | null)
+      ?.selectedIndex;
+    selectedTabId.value =
+      selectedIndex === undefined || selectedIndex < 0
+        ? null
+        : (visibleTabs.value[selectedIndex]?.id ?? null);
   }
 </script>
 
@@ -69,18 +149,18 @@
     collapsible
     @selected-changed="onSelectedChanged"
   >
-    <craft-tab slot="tab">
-      <craft-icon name="circle-info" :label="t('Info')" />
+    <craft-tab
+      v-for="tab in visibleTabs"
+      :id="`element-details-tab-${tab.id}`"
+      :key="tab.id"
+      slot="tab"
+    >
+      <craft-icon :name="tab.icon" :label="tab.label" />
     </craft-tab>
-    <div slot="panel">
-      <slot name="info" />
-    </div>
-
-    <craft-tab v-if="payload.activityTimelineUrl" slot="tab">
-      <craft-icon name="wave-pulse" :label="t('Activity')" />
-    </craft-tab>
-    <div v-if="payload.activityTimelineUrl" slot="panel">
+    <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
+      <slot v-if="tab.slot" :name="tab.slot" />
       <component
+        v-else
         :is="pane ? 'craft-pane' : 'div'"
         :appearance="pane ? 'plain' : undefined"
       >
@@ -89,36 +169,13 @@
           slot="header"
           class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
         >
-          <h3 slot="title" class="text-xs/4">{{ t('Activity') }}</h3>
+          <h3 slot="title" class="text-xs/4">{{ tab.label }}</h3>
         </div>
-        <ActivityTimeline
-          :active="activityTabOpen"
-          :url="payload.activityTimelineUrl"
-          :element-type="payload.elementType"
-          :element-id="payload.canonicalId"
-          :site-id="payload.siteId"
-          :page-url="payload.activityPageUrl"
-          :refresh-token="activityTimelineVersion"
+        <component
+          v-if="tab.component"
+          :is="tab.component"
+          v-bind="componentProps()"
         />
-      </component>
-    </div>
-
-    <craft-tab slot="tab">
-      <craft-icon name="clock-rotate-left" :label="t('Revisions')" />
-    </craft-tab>
-    <div slot="panel">
-      <component
-        :is="pane ? 'craft-pane' : 'div'"
-        :appearance="pane ? 'plain' : undefined"
-      >
-        <div
-          v-if="pane"
-          slot="header"
-          class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-        >
-          <h3 slot="title" class="text-xs/4">{{ t('Revisions') }}</h3>
-        </div>
-        <RevisionsList :items="payload.contextMenu?.items ?? []" />
       </component>
     </div>
   </craft-tabs>
