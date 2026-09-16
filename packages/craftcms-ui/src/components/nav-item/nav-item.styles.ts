@@ -130,10 +130,6 @@ export default css`
     padding-block: var(--_padding-block) var(--c-spacing-xs);
   }
 
-  :host([active]) {
-    background-color: var(--c-surface-raised);
-  }
-
   :host([active]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
     border: 1px solid var(--c-color-accent-border-quiet);

@@ -28,16 +28,18 @@
 
 <template>
   <aside v-show="visible" class="cp-content__details">
-    <ResizeHandle
-      class="cp-details-resize-handle"
-      :resizer="resizer"
-      :label="t('Resize details')"
-      :controls="detailsId"
-    />
-    <div :id="detailsId" class="cp-details">
-      <LayoutSlotOutlet name="content-details">
-        <slot name="content-details"></slot>
-      </LayoutSlotOutlet>
+    <div class="relative h-full">
+      <ResizeHandle
+        class="cp-details-resize-handle"
+        :resizer="resizer"
+        :label="t('Resize details')"
+        :controls="detailsId"
+      />
+      <div :id="detailsId" class="cp-details sticky top-0">
+        <LayoutSlotOutlet name="content-details">
+          <slot name="content-details"></slot>
+        </LayoutSlotOutlet>
+      </div>
     </div>
   </aside>
 </template>
@@ -51,6 +53,5 @@
     display: grid;
     gap: var(--c-spacing-md);
     height: 100%;
-    position: relative;
   }
 </style>

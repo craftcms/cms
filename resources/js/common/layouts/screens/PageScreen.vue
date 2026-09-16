@@ -235,7 +235,7 @@
                     <div class="flex-1">
                       <slot></slot>
                     </div>
-                    <div class="sticky bottom-0">
+                    <div class="sticky bottom-0 z-sticky bg-default">
                       <ContentFooter
                         :read-only="readOnly"
                         :form="form"
@@ -289,6 +289,7 @@
 <style scoped lang="css">
   .cp {
     display: grid;
+    background-color: var(--c-surface-sunken);
 
     @media screen and (min-width: 768px) {
       grid-template-columns: auto minmax(0, 1fr);
@@ -333,6 +334,7 @@
 
     display: grid;
     height: 100%;
+    background-color: var(--c-surface-default);
 
     @container (width >= 768px) {
       &.cp-content--details {

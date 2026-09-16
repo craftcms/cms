@@ -165,17 +165,16 @@
     <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
       <slot v-if="tab.slot" :name="tab.slot" />
       <div v-else>
-        <div
-          slot="header"
-          class="px-md py-sm border-b border-b-(--c-color-neutral-border-quiet)"
-        >
-          <h3 slot="title" class="text-lg/4">{{ tab.label }}</h3>
+        <div slot="header" class="py-md px-lg border-b border-b-quiet">
+          <h3 slot="title" class="text-md/4">{{ tab.label }}</h3>
         </div>
-        <component
-          v-if="tab.component"
-          :is="tab.component"
-          v-bind="componentProps()"
-        />
+        <div class="p-lg">
+          <component
+            v-if="tab.component"
+            :is="tab.component"
+            v-bind="componentProps()"
+          />
+        </div>
       </div>
     </div>
   </craft-tabs>
@@ -190,6 +189,7 @@
   craft-tabs::part(strip) {
     padding: var(--c-spacing-sm);
     border-inline-start: 1px solid var(--c-color-border-quiet);
+    background-color: var(--c-surface-sunken);
   }
 
   craft-tab {

@@ -320,11 +320,11 @@
       :activity-timeline-version="activityTimelineVersion"
     >
       <template #info>
-        <div class="px-3 py-2 border-b border-b-quiet">
-          <h3 class="text-lg m-0">{{ t('Info') }}</h3>
+        <div class="py-md px-lg border-b border-b-quiet">
+          <h3 class="text-md/4">{{ t('Info') }}</h3>
         </div>
 
-        <div class="p-3">
+        <div class="p-lg">
           <!-- Anything the element type shows above its meta fields, e.g. an
           asset's file preview. -->
           <slot name="details-header" :payload="payload" />
