@@ -1919,8 +1919,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'icon' => 'gear',
                 'behavior' => [
                     'type' => 'slideout',
-                    'action' => 'sections/edit-section',
-                    'params' => ['sectionId' => $this->sectionId],
+                    'url' => Url::cpUrl("settings/sections/$this->sectionId"),
                 ],
             ];
         }

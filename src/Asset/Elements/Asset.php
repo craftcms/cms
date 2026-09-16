@@ -1372,8 +1372,7 @@ class Asset extends Element
                 'icon' => 'gear',
                 'behavior' => [
                     'type' => 'slideout',
-                    'action' => 'volumes/edit-volume',
-                    'params' => ['volumeId' => $this->volumeId],
+                    'url' => Url::cpUrl("settings/assets/volumes/$this->volumeId"),
                 ],
             ];
 
