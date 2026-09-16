@@ -2,6 +2,7 @@
   import {computed, inject, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
+  import TypePicker from '@/common/components/TypePicker.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {valueAt} from '@/modules/forms/runtime';
   import type {
@@ -10,7 +11,6 @@
     FormValues,
   } from '@/modules/forms/types';
   import {ConditionEditor, type RuleDraft} from './types';
-  import ConditionRulePicker from './ConditionRulePicker.vue';
   import {useConditionRuleRequest} from './useConditionRuleRequest';
 
   const props = defineProps<{rule: RuleDraft}>();
@@ -103,7 +103,7 @@
       :aria-label="payload.label"
     >
       <div class="flex flex-wrap items-start gap-2">
-        <ConditionRulePicker
+        <TypePicker
           :key="payload.label"
           :types="editor.payload().ruleTypes"
           :label="payload.label"
