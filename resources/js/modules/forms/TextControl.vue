@@ -25,6 +25,7 @@
     size?: number;
     dir?: string;
     monospace?: boolean;
+    suffix?: string;
     textExpanderTriggers?: TextExpanderTriggers;
   };
 
@@ -95,6 +96,9 @@
     @model-value-changed="onModelValueChanged"
   >
     <input :id="inputId" slot="input" />
+    <span v-if="control.props.suffix" slot="suffix">{{
+      control.props.suffix
+    }}</span>
   </craft-input>
   <craft-text-expander
     v-if="editable && control.props.textExpanderTriggers"
