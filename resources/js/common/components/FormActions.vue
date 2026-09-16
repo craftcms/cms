@@ -44,6 +44,10 @@
   }
 
   function handleAdditionalButtonClick(button: ActionItemButton, event: Event) {
+    if (button.disabled) {
+      return;
+    }
+
     activeButton.value = button.label;
     button.onClick?.(event);
     // Release the claim if the click didn't start a submission.
@@ -61,22 +65,38 @@
   </div>
 
   <div v-if="!readOnly" class="flex items-center justify-end gap-2">
-    <craft-button
-      v-for="button in additionalButtons"
-      :key="button.label"
-      type="button"
-      :variant="button.variant ?? ButtonVariant.Solid"
-      :loading="isButtonProcessing(button.label)"
-      :disabled="form.processing || button.disabled"
-      @click="handleAdditionalButtonClick(button, $event)"
-    >
-      <craft-icon
-        v-if="button.icon"
-        :name="button.icon"
-        slot="prefix"
-      ></craft-icon>
-      {{ button.label }}
-    </craft-button>
+    <template v-for="(button, index) in additionalButtons" :key="button.label">
+      <craft-button
+        :id="
+          button.disabled && button.disabledReason
+            ? `disabled-form-action-${index}`
+            : undefined
+        "
+        type="button"
+        :variant="button.variant ?? ButtonVariant.Solid"
+        :loading="isButtonProcessing(button.label)"
+        :disabled="
+          form.processing || (button.disabled && !button.disabledReason)
+        "
+        :aria-disabled="
+          button.disabled && button.disabledReason ? 'true' : undefined
+        "
+        @click="handleAdditionalButtonClick(button, $event)"
+      >
+        <craft-icon
+          v-if="button.icon"
+          :name="button.icon"
+          slot="prefix"
+        ></craft-icon>
+        {{ button.label }}
+      </craft-button>
+      <craft-tooltip
+        v-if="button.disabled && button.disabledReason"
+        :for="`disabled-form-action-${index}`"
+      >
+        {{ button.disabledReason }}
+      </craft-tooltip>
+    </template>
 
     <craft-button-group v-if="actionItems?.length">
       <slot name="submit-button">
@@ -117,3 +137,10 @@
     <ActionMenu v-if="additionalActions?.length" :actions="additionalActions" />
   </div>
 </template>
+
+<style scoped lang="scss">
+  craft-button[aria-disabled='true'] {
+    cursor: default;
+    opacity: 0.25;
+  }
+</style>

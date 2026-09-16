@@ -137,6 +137,8 @@ it('returns the requested site timeline oldest first with safe formatted details
         ->assertJson(fn (AssertableJson $json) => $json
             ->has('events', 2)
             ->where('events.0.id', $neutral->id)
+            ->where('events.0.component', 'craft:activity-timeline-event')
+            ->where('events.0.props', [])
             ->where('events.0.icon', 'plus')
             ->where('events.0.actor.label', 'Ada Lovelace')
             ->whereType('events.0.actor.url', 'string')
@@ -304,6 +306,7 @@ it('lets a collaborator with view access post a safe Markdown comment without sa
         'markdown' => '**Ship it.** <script>bad()</script>',
     ])
         ->assertOk()
+        ->assertJsonPath('event.component', 'craft:activity-timeline-comment')
         ->assertJsonPath('event.description.text', 'Commented.')
         ->assertJsonPath('event.actor.label', 'Grace Hopper')
         ->assertJsonPath('event.comment.edited', false)

@@ -39,6 +39,7 @@ import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import PermissionTreeControl from './PermissionTreeControl.vue';
 import SeparatorNode from './SeparatorNode.vue';
+import UserGroupSelectControl from './UserGroupSelectControl.vue';
 import './content-block-input';
 
 export function registerFormComponents(
@@ -77,6 +78,7 @@ export function registerFormComponents(
   components.register('craft:color', ColorControl);
   components.register('craft:money', MoneyControl);
   components.register('craft:permission-tree', PermissionTreeControl);
+  components.register('craft:user-group-select', UserGroupSelectControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
   components.register('craft:link', LinkControl);

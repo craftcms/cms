@@ -25,6 +25,8 @@ export interface ActivityComment {
 
 export interface ActivityEvent {
   id: string;
+  component: string;
+  props: Record<string, unknown>;
   icon: string | null;
   occurredAt: string;
   formattedOccurredAt: {

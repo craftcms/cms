@@ -82,6 +82,7 @@ export interface ActionItemButton {
   variant?: VariantKey | string;
   icon?: string;
   disabled?: boolean;
+  disabledReason?: string | null;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   action?: BaseAction;
