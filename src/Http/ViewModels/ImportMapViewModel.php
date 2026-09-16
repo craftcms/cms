@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 
@@ -50,7 +51,9 @@ class ImportMapViewModel extends ViewModel
             'map' => $this->importer->map,
             'matchCriteria' => $this->importer->matchCriteria ?? [],
             'clearableItems' => $this->importer->clearableItems ?? [],
-            'keepMissingNestedElements' => $this->importer->keepMissingNestedElements ?? [],
+            'keepMissingNestedElements' => $this->importer instanceof ElementImporter
+                ? $this->importer->keepMissingNestedElements ?? []
+                : [],
         ];
     }
 

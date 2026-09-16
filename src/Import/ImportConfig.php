@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Events\ImportConfigSaved;
 use CraftCms\Cms\Import\Events\ImportConfigSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -45,9 +44,9 @@ class ImportConfig
         $importer->description($config['description']);
         $settings = JsonSupport::decode($config['settings']);
         foreach ($settings as $setting => $value) {
-            // an ElementImporter subclass's element type is fixed at construction time and its
-            // className() setter throws; 'className' is only persisted for display/introspection
-            if ($setting === 'className' && $importer instanceof ElementImporter) {
+            // an importer's target class is fixed at construction time and has no setter;
+            // 'className' is only persisted for display/introspection
+            if ($setting === 'className') {
                 continue;
             }
             if (method_exists($importer, $setting)) {
@@ -214,8 +213,10 @@ class ImportConfig
                 'map' => $importer->map,
                 'matchCriteria' => $importer->matchCriteria,
                 'clearableItems' => $importer->clearableItems,
-                'keepMissingNestedElements' => $importer->keepMissingNestedElements,
             ];
+            if (property_exists($importer, 'keepMissingNestedElements')) {
+                $settings['keepMissingNestedElements'] = $importer->keepMissingNestedElements;
+            }
             if (property_exists($importer, 'site')) {
                 $settings['site'] = $importer->site->uid;
             }

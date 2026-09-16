@@ -110,8 +110,6 @@ abstract class BaseImporter
             FormField::make(t('Data File'), Text::make('file')->value($this->file)->placeholder('@root/resources/my-data.json'))
                 ->instructions(t('The absolute path to the file containing the data you want to import.'))
                 ->required(),
-            FormField::make(t('Model Class'), Text::make('className')->value($this->className)->placeholder('my\\namespace\\Model'))
-                ->instructions(t('The fully qualified class of the model you’d like to import the data into.')),
             FormField::make(t('Transformer'), Text::make('transformer')->value($this->transformerAsString())->placeholder('App\\Import\\Transformers\\MyCustomTransformer'))
                 ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
         ]);
@@ -166,10 +164,6 @@ abstract class BaseImporter
                 'string',
                 'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateFile($value, $attribute, $fail, $validator),
-            ],
-            'settings.className' => [
-                'required',
-                'string',
             ],
             'settings.transformer' => [
                 'nullable',
@@ -253,18 +247,6 @@ abstract class BaseImporter
     public function description(?string $description): self
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    /**
-     * Sets the class we're importing into, e.g. Entry
-     *
-     * @param  string  $className  The name of the class to set.
-     */
-    public function className(string $className): self
-    {
-        $this->className = $className;
 
         return $this;
     }

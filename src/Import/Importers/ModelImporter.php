@@ -4,29 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Importers;
 
-use Closure;
 use CraftCms\Cms\Shared\BaseModel;
-use CraftCms\Cms\Shared\Contracts\ImportableModelInterface;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Validator;
 use Override;
-
-use function CraftCms\Cms\t;
 
 /**
  * The ModelImporter should be used for importing data into an eloquent model.
- * For a model to support this, it has to implement the ImportableModelInterface.
+ * It's abstract - each importable model is represented by its own concrete subclass, which
+ * implements modelClass() to name its target model (see SystemMessageImporter).
+ * A model is importable if and only if a ModelImporter subclass is registered for it, via the
+ * RegisterImporterTypes event.
  * Element types must use an ElementImporter subclass instead (see EntryImporter, AssetImporter, UserImporter).
- * Unlike with elements (where an element type becomes importable by having a dedicated
- * ElementImporter subclass registered for it), ImportableModelInterface is strictly an opt-in
- * mechanism a model implements directly.
  */
-class ModelImporter extends BaseImporter
+abstract class ModelImporter extends BaseImporter
 {
     /**
      * Maps driver-specific `type_name` values, as reported by `Schema::getColumns()` for
@@ -64,64 +58,10 @@ class ModelImporter extends BaseImporter
         $this->matchCriteria = ['id' => 'id'];
     }
 
-    #[Override]
-    public static function displayName(): string
-    {
-        return t('Model Importer');
-    }
-
-    #[Override]
-    public static function getSettingsRules(): array
-    {
-        return array_merge(parent::getSettingsRules(), [
-            'settings.className' => fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateModel($value, $attribute, $fail, $validator),
-        ]);
-    }
-
     /**
-     * Validates that the given class is not an element type and does extend BaseModel.
-     *
-     * @param  mixed  $value  The value of the model class being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
+     * Returns the fixed model FQCN this importer subclass targets.
      */
-    public static function validateModel(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        // can't be empty
-        if (empty($value)) {
-            $fail($attribute, t('Model must be provided.'));
-
-            return false;
-        }
-
-        // can't be for an element type - in that case the ElementImporter should be used
-        $allElementTypes = Elements::getAllElementTypes();
-        if (in_array($value, $allElementTypes)) {
-            $fail($attribute, t('Model “{elementType}” is a valid element type. Use ElementImporter to handle it.', [
-                'elementType' => $value,
-            ]));
-
-            return false;
-        }
-
-        // has to implement ImportableModel interface
-        if (! is_subclass_of($value, ImportableModelInterface::class)) {
-            $fail($attribute, t('Class name must implement Craft\'s ImportableModelInterface.'));
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Convenience factory returning a new instance.
-     */
-    public static function create(): self
-    {
-        return new self;
-    }
+    abstract public static function modelClass(): string;
 
     #[Override]
     public function getDestinationCols(): array

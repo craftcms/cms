@@ -162,9 +162,6 @@ class ImportConfigController
             if (property_exists($importer, 'site') && array_key_exists('site', $settings)) {
                 $importer->site($settings['site']);
             }
-            if (! $importer instanceof ElementImporter && array_key_exists('className', $settings)) {
-                $importer->className($settings['className']);
-            }
             if (array_key_exists('transformer', $settings)) {
                 $importer->transformer($settings['transformer']);
             }
@@ -219,9 +216,6 @@ class ImportConfigController
         $import->file($this->request->input('settings.file', $import->file));
         if (property_exists($import, 'site')) {
             $import->site($this->request->input('settings.site', $import->site));
-        }
-        if (! $import instanceof ElementImporter) {
-            $import->className($this->request->input('settings.className'));
         }
         $import->transformer($this->request->input('settings.transformer', $import->transformer));
         $import->map($this->request->input('settings.map', $import->map));
@@ -402,7 +396,9 @@ class ImportConfigController
         $import->map(ImportHelper::decodeRecursive($this->request->input('map', $import->map)));
         $import->matchCriteria(ImportHelper::decodeRecursive($this->request->input('matchCriteria', $import->matchCriteria)));
         $import->clearableItems(ImportHelper::decodeRecursive($this->request->input('clearableItems', $import->clearableItems ?? [])));
-        $import->keepMissingNestedElements(ImportHelper::decodeRecursive($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? [])));
+        if ($import instanceof ElementImporter) {
+            $import->keepMissingNestedElements(ImportHelper::decodeRecursive($this->request->input('keepMissingNestedElements', $import->keepMissingNestedElements ?? [])));
+        }
 
         if (! $this->importConfigService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));

@@ -50,10 +50,9 @@ can span multiple sections and entry types in a single run.
 
 `settings` JSON holds: `file`, `className`, `transformer`, `map`, `matchCriteria`,
 `clearableItems`, `keepMissingNestedElements`, plus `site` (uid) and `fieldLayout`.
-`createImporter()` replays these through the fluent setters on load — except `className` on an
-`ElementImporter` subclass, whose element type is fixed at construction time and whose
-`className()` setter isn't meaningful; it's stored for display/introspection only and skipped on
-replay.
+`createImporter()` replays these through the fluent setters on load — except `className`, whose
+target class is fixed at construction time by the importer subclass and has no setter at all; it's
+stored for display/introspection only and skipped on replay.
 
 ---
 
@@ -86,11 +85,16 @@ logged and skipped, not fatal.
   content (Addresses field / User addresses container). `Import::getElementImporterTypeFor(string
   $elementClass): ?string` looks up the registered subclass for a given element FQCN, returning
   `null` if none is registered.
-- **`ModelImporter`** — target must implement the marker interface `ImportableModelInterface` and
-  must *not* be an element type; strictly opt-in. Still defaults `matchCriteria` to
-  `['id' => 'id']`.
+- **`ModelImporter`** is abstract too, and works exactly the same way: each importable Eloquent
+  model is represented by its own concrete subclass, which implements `modelClass()` to name its
+  target. `SystemMessageImporter` is the only built-in. A model is importable if and only if a
+  `ModelImporter` subclass is registered for it — there's no marker interface. `ModelImporter`
+  still defaults `matchCriteria` to `['id' => 'id']`, though a subclass can override that in its
+  constructor (`SystemMessageImporter` matches on `key` + `language`, since incoming data won't
+  carry Craft's IDs). `Import::getModelImporterTypeFor(string $modelClass): ?string` looks up the
+  registered subclass for a given model FQCN, returning `null` if none is registered.
 
-Extra importer types — including element importers for plugin-defined element types — register
+Extra importer types — including importers for plugin-defined element types and models — register
 via the `RegisterImporterTypes` event (`$event->importers`).
 
 ---
@@ -331,7 +335,11 @@ subclasses (label = the importer's `displayName()`, value = its `elementClass()`
 ```
 craft:import:model {className} {file} [--transformer=] [--matchCriteria=]
 ```
-Alias `import/model`.
+Alias `import/model`. `{className}` is resolved to a concrete importer via
+`Import::getModelImporterTypeFor()`; the command fails with a clear error if no importer is
+registered for that model. The interactive prompt lists options built from
+`Import::getAllImporterTypes()` filtered to `ModelImporter` subclasses (label = the importer's
+`displayName()`, value = its `modelClass()`).
 
 Neither takes a `--map`, so CLI mapping is the transformer's job.
 
@@ -344,7 +352,8 @@ Neither takes a `--map`, so CLI mapping is the transformer's job.
   `format()` and `getHeadings()`.
 - `RegisterImporterTypes` — `$event->importers[] = MyImporter::class;`. Registering a new
   importable element type means contributing a concrete `ElementImporter` subclass that
-  implements `elementClass()`.
+  implements `elementClass()`; registering a new importable model means contributing a concrete
+  `ModelImporter` subclass that implements `modelClass()`.
 - `DataImporting` / `DataImported`, `ImportConfigSaving` / `Saved`,
   `ImportRunSaving` / `Saved`, `ImportRunDispatching` / `Dispatched`.
   The `*ing` variants are cancellable.

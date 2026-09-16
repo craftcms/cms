@@ -16,6 +16,8 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -164,4 +166,34 @@ it('still decodes JSON-encoded container branches on save', function () {
     expect($saved->map)->toBe([
         'outerMatrix' => ['outerEt' => ['title' => 'Title']],
     ]);
+});
+
+it('saves and maps a model import config', function () {
+    // ModelImporter has no site, fieldLayout or keepMissingNestedElements, so this is the
+    // path that has to stay clear of the ElementImporter-only properties
+    $importer = SystemMessageImporter::create()->transformer(null);
+    $importer->name('System Messages Import');
+    $importer->handle('systemMessagesImport');
+
+    expect(app(ImportConfig::class)->saveConfig($importer))->toBeTrue();
+
+    $this->get(action([ImportConfigController::class, 'editMap'], ['handle' => $importer->handle]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('import/configs/Map')
+            ->where('config.handle', $importer->handle)
+            ->where('values.keepMissingNestedElements', [])
+            ->has('destinationCols')
+        );
+
+    $this->postJson(action([ImportConfigController::class, 'storeMap']), [
+        'importUid' => $importer->uid,
+        'map' => ['subject' => 'incomingSubject'],
+        'matchCriteria' => ['key' => 'key'],
+    ])->assertOk();
+
+    $saved = app(ImportConfig::class)->getConfigByHandle($importer->handle);
+    expect($saved)->toBeInstanceOf(SystemMessageImporter::class)
+        ->and($saved->className)->toBe(SystemMessage::class)
+        ->and($saved->map)->toBe(['subject' => 'incomingSubject']);
 });

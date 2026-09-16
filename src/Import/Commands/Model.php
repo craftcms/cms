@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use Override;
 
 use function Laravel\Prompts\form;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
 class Model extends Command implements PromptsForMissingInput
@@ -36,10 +37,17 @@ class Model extends Command implements PromptsForMissingInput
     protected $aliases = ['import/model'];
 
     /**
-     * Builds an interactive prompt form for missing CLI options, normalizes match criteria, constructs an ElementImporter config from options/prompt answers, and dispatches the import.
+     * Builds an interactive prompt form for missing CLI options, normalizes match criteria, constructs a ModelImporter config from options/prompt answers, and dispatches the import.
      */
     public function handle(): int
     {
+        $modelClass = $this->argument('className');
+        $importerClass = Import::getModelImporterTypeFor($modelClass);
+
+        if ($importerClass === null) {
+            $this->fail("No importer is registered for model \"$modelClass\".");
+        }
+
         $responses = form()
             // todo (iwona): maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
             ->addIf(! $this->option('transformer'), fn () => text(
@@ -67,8 +75,7 @@ class Model extends Command implements PromptsForMissingInput
         }
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
-        $importConfig = (new ModelImporter)
-            ->className($this->argument('className'))
+        $importConfig = $importerClass::create()
             ->file($this->argument('file'))
             ->transformer($this->option('transformer') ?: $responses['transformer'] ?: null);
 
@@ -133,12 +140,17 @@ class Model extends Command implements PromptsForMissingInput
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            'className' => fn () => text(
-                label: 'Provide class name of the Eloquent Model you want to import into, e.g. App\Models\MyModel',
-                required: true,
-                validate: [
-                    'string',
-                ],
+            'className' => fn () => select(
+                label: 'Which model do you want to import into?',
+                options: ImportHelper::flattenLabelValueArray(
+                    collect(Import::getAllImporterTypes())
+                        ->filter(fn ($type) => is_subclass_of($type, ModelImporter::class))
+                        ->map(fn ($type) => [
+                            'label' => $type::displayName(),
+                            'value' => $type::modelClass(),
+                        ])
+                        ->all()
+                ),
             ),
             // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
             'file' => fn () => text(

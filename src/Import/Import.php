@@ -26,6 +26,7 @@ use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\User\Import\UserImporter;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -76,7 +77,7 @@ class Import
             EntryImporter::class,
             AssetImporter::class,
             UserImporter::class,
-            ModelImporter::class,
+            SystemMessageImporter::class,
         ];
 
         if (Event::hasListeners(RegisterImporterTypes::class)) {
@@ -98,6 +99,23 @@ class Import
     {
         foreach ($this->getAllImporterTypes() as $type) {
             if (is_subclass_of($type, ElementImporter::class) && $type::elementClass() === $elementClass) {
+                return $type;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the registered `ModelImporter` subclass (core or plugin-registered) whose
+     * `modelClass()` matches the given model, or null if none is registered for it.
+     *
+     * @param  string  $modelClass  The model's FQCN.
+     */
+    public function getModelImporterTypeFor(string $modelClass): ?string
+    {
+        foreach ($this->getAllImporterTypes() as $type) {
+            if (is_subclass_of($type, ModelImporter::class) && $type::modelClass() === $modelClass) {
                 return $type;
             }
         }
