@@ -1,5 +1,6 @@
 import {computed, nextTick, reactive, ref, watch, type Ref} from 'vue';
 import {createGlobalState, useMediaQuery} from '@vueuse/core';
+import useCraftData from '@/common/composables/useCraftData';
 import {useLocalStorage} from '@/common/composables/useStorage';
 
 export interface GlobalSidebarState {
@@ -132,11 +133,19 @@ export const useGlobalSidebar = createGlobalState((): GlobalSidebar => {
     () => sidebar.mode === 'docked' && sidebar.visibility === 'hidden'
   );
 
-  const icon = computed(() =>
-    sidebar.visibility === 'visible'
-      ? 'arrow-left-to-line'
-      : 'arrow-right-from-line'
-  );
+  // The sidebar sits at the inline start, so its arrows point the other way in
+  // a right-to-left language.
+  const {orientation} = useCraftData();
+
+  const icon = computed(() => {
+    const rtl = orientation.value === 'rtl';
+
+    if (sidebar.visibility === 'visible') {
+      return rtl ? 'arrow-right-to-line' : 'arrow-left-to-line';
+    }
+
+    return rtl ? 'arrow-left-from-line' : 'arrow-right-from-line';
+  });
 
   const width = computed(() => {
     if (sidebar.mode === 'docked') {

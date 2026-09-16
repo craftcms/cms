@@ -53,6 +53,8 @@ export interface CraftData {
    * come with every response.
    */
   navBadges: Record<string, number>;
+  /** The CP language's writing direction. */
+  orientation: 'ltr' | 'rtl';
   actionUrl: string;
   cpUrl: string;
   baseApiUrl: string;

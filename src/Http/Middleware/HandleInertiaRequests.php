@@ -16,6 +16,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
@@ -170,6 +171,7 @@ class HandleInertiaRequests extends Middleware
                 'maintenanceMode' => app()->isDownForMaintenance(),
                 'devMode' => app()->hasDebugModeEnabled(),
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
+                'orientation' => I18N::getLocale()->getOrientation(),
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),

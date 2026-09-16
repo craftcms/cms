@@ -1,4 +1,9 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {reactive} from 'vue';
+
+const page = vi.hoisted(() => ({current: null as any}));
+
+vi.mock('@inertiajs/vue3', () => ({usePage: () => page.current}));
 
 /**
  * The composable is global state, so each test imports it fresh — otherwise the
@@ -8,11 +13,12 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
  * state is built on first call rather than at module scope. The stub has to be
  * in place before the import for the same reason.
  */
-async function freshSidebar() {
+async function freshSidebar(orientation: 'ltr' | 'rtl' = 'ltr') {
   vi.resetModules();
   localStorage.clear();
 
   (globalThis as {Craft?: {systemUid: string}}).Craft = {systemUid: 'test'};
+  page.current = reactive({props: {craft: {orientation}}});
 
   const {useGlobalSidebar} = await import('./useGlobalSidebar');
 
@@ -51,6 +57,17 @@ describe('useGlobalSidebar', () => {
         ? 'arrow-left-to-line'
         : 'arrow-right-from-line'
     );
+  });
+
+  it('points its arrows the other way in a right-to-left language', async () => {
+    const useGlobalSidebar = await freshSidebar('rtl');
+    const {sidebar, icon} = useGlobalSidebar();
+
+    sidebar.visibility = 'visible';
+    expect(icon.value).toBe('arrow-right-to-line');
+
+    sidebar.visibility = 'hidden';
+    expect(icon.value).toBe('arrow-left-from-line');
   });
 
   it('only remembers the collapse preference while docked', async () => {
