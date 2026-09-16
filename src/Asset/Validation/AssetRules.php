@@ -84,7 +84,7 @@ class AssetRules extends ElementRules
 
         $rules['tempFilePath'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(self::SCENARIO_CREATE, self::SCENARIO_REPLACE)),
+            Rule::requiredIf($this->subject->uploadSource === null && $this->inScenarios(self::SCENARIO_CREATE, self::SCENARIO_REPLACE)),
         ];
 
         return $rules;

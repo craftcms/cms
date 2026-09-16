@@ -1,6 +1,7 @@
 import type {ConfigService} from '@craftcms/ui';
 import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
+import type {ElementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 import type {AxiosRequestConfig, AxiosResponse} from 'axios';
 
@@ -87,6 +88,7 @@ interface CpServices {
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
+  $elementDetailsTabs: ElementDetailsTabRegistry;
   $inertia: InertiaPageRegistry;
 }
 

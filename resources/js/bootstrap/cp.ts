@@ -10,6 +10,7 @@ import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
+import {elementDetailsTabRegistry} from './element-details-tabs.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
 
 type TranslationStore = Record<string, Record<string, string>>;
@@ -68,6 +69,10 @@ const Cp = {
 
   get $components() {
     return cpComponentRegistry;
+  },
+
+  get $elementDetailsTabs() {
+    return elementDetailsTabRegistry;
   },
 
   booted(callback: (instance: typeof window.Cp) => void) {

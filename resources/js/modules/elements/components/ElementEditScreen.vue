@@ -19,6 +19,7 @@
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
+  import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
   import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
@@ -111,7 +112,8 @@
     () =>
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
-      Boolean(payload.activityTimelineUrl)
+      Boolean(payload.activityTimelineUrl) ||
+      elementDetailsTabRegistry.hasVisible(payload)
   );
   const hasSidebar = computed(() => Boolean(slots.sidebar));
 
