@@ -137,13 +137,18 @@ test('store validates on unique handle and name', function () {
         'handle' => 'anewgroup',
     ])->assertOk();
 
-    postJson(action([UserGroupsController::class, 'store']), [
+    $response = postJson(action([UserGroupsController::class, 'store']), [
         'name' => 'Another group',
         'handle' => 'anotherGroup',
         'permissions' => ['viewUsers', 'editUsers', 'assignNewUserGroup'],
-    ])->assertOk();
+    ]);
 
     $newGroup = UserGroup::where('handle', 'anotherGroup')->firstOrFail();
+    $response->assertOk()
+        ->assertJsonPath('group.id', $newGroup->id)
+        ->assertJsonPath('group.uid', $newGroup->uid)
+        ->assertJsonPath('group.name', 'Another group')
+        ->assertJsonPath('group.handle', 'anotherGroup');
     expect(UserPermissions::getPermissionsByGroupId($newGroup->id)->all())->toEqualCanonicalizing(['viewUsers', 'editUsers', "assignUserGroup:$newGroup->uid"]);
 });
 

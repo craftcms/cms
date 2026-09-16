@@ -35,6 +35,7 @@ use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Controls\Time;
+use CraftCms\Cms\Form\Controls\UserGroupSelect;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormControlTypes;
@@ -100,6 +101,7 @@ it('registers core and plugin Node and Control types separately', function () {
             Text::class,
             Textarea::class,
             Time::class,
+            UserGroupSelect::class,
         ]);
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
