@@ -290,6 +290,15 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
+  /**
+   * Pulls the button out by the space around its content, so its label or
+   * icon lines up with the text beside it. Meant for buttons with no
+   * background, like `plain`. Present with no value, it applies on every
+   * side. Otherwise a space-separated list of `inline`, `block`,
+   * `inline-start`, `inline-end`, `block-start` and `block-end`.
+   */
+  @property({reflect: true}) flush?: string;
+
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';
 
