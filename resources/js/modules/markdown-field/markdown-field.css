@@ -11,6 +11,9 @@
 craft-markdown-field {
   display: block;
   min-height: 0;
+  /* OverType stacks its own parts as high as 10001, which would otherwise
+     cover the nav flyouts and dialogs. */
+  isolation: isolate;
 
   --markdown-field-bg: var(
     --c-input-fill,
