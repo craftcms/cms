@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
   import type {InertiaForm} from '@inertiajs/vue3';
-  import {ref, watch} from 'vue';
+  import {ref, useId, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import type {ActionItem, ActionItemButton} from '@/common/types';
@@ -24,6 +24,7 @@
   // Which button owns the in-flight submission, so only it shows a spinner
   // while every button is disabled.
   const primaryButton = 'primary';
+  const id = useId();
   const activeButton = ref<string | null>(null);
 
   watch(
@@ -61,22 +62,30 @@
   </div>
 
   <div v-if="!readOnly" class="flex items-center justify-end gap-2">
-    <craft-button
-      v-for="button in additionalButtons"
-      :key="button.label"
-      type="button"
-      :variant="button.variant ?? ButtonVariant.Solid"
-      :loading="isButtonProcessing(button.label)"
-      :disabled="form.processing || button.disabled"
-      @click="handleAdditionalButtonClick(button, $event)"
-    >
-      <craft-icon
-        v-if="button.icon"
-        :name="button.icon"
-        slot="prefix"
-      ></craft-icon>
-      {{ button.label }}
-    </craft-button>
+    <template v-for="(button, index) in additionalButtons" :key="button.label">
+      <span :id="`${id}-additional-button-${index}`" class="inline-flex">
+        <craft-button
+          type="button"
+          :variant="button.variant ?? ButtonVariant.Solid"
+          :loading="isButtonProcessing(button.label)"
+          :disabled="form.processing || button.disabled"
+          @click="handleAdditionalButtonClick(button, $event)"
+        >
+          <craft-icon
+            v-if="button.icon"
+            :name="button.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ button.label }}
+        </craft-button>
+      </span>
+      <craft-tooltip
+        v-if="button.disabled && button.disabledReason"
+        :for="`${id}-additional-button-${index}`"
+      >
+        {{ button.disabledReason }}
+      </craft-tooltip>
+    </template>
 
     <craft-button-group v-if="actionItems?.length">
       <slot name="submit-button">
