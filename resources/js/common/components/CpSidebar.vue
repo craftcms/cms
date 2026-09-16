@@ -168,5 +168,6 @@
     position: sticky;
     inset-block-end: var(--cp-debug-bar-height, 0px);
     background-color: var(--c-surface-sunken);
+    border-block-start: 1px solid var(--c-color-border-quiet);
   }
 </style>
