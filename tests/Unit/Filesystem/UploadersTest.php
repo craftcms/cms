@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploaders;
 use CraftCms\Cms\Filesystem\Uploaders\TusUploader;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -16,6 +18,16 @@ beforeEach(function () {
     }
 
     Cms::config()->tempAssetUploadFs = 'disk:upload-first';
+});
+
+it('automatically selects the uploader for the supplied disk instead of the configured disk', function () {
+    Cms::config()->uploader = null;
+    $filesystems = Mockery::mock(Filesystems::class);
+    $filesystems->shouldReceive('disk')->once()->with('disk:upload-s3')
+        ->andReturn(Mockery::mock(AwsS3V3Adapter::class));
+    app()->instance(Filesystems::class, $filesystems);
+
+    expect(app(Uploaders::class)->getDefaultDriver('disk:upload-s3'))->toBe('s3');
 });
 
 it('routes custom uploader operations to each sessions disk', function () {

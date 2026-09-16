@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
+use CraftCms\Cms\Filesystem\Events\UploadSessionStarting;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -38,8 +39,10 @@ class Uploads
             throw new RuntimeException('uploadSessionDuration must be greater than zero.');
         }
 
-        $diskReference = Cms::config()->getTempAssetUploadFs();
-        $name = $this->uploaders->getDefaultDriver();
+        event($event = new UploadSessionStarting($request, $handler, $filename, $size, $parameters));
+
+        $diskReference = $event->filesystem ?? Cms::config()->getTempAssetUploadFs();
+        $name = $event->uploader ?? $this->uploaders->getDefaultDriver($diskReference);
         $uploader = $this->uploaders->driver($name);
 
         $session = UploadSession::create([

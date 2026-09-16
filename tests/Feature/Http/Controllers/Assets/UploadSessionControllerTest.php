@@ -14,9 +14,11 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Data\UploadSetup;
+use CraftCms\Cms\Filesystem\Events\UploadSessionStarting;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploaders;
 use CraftCms\Cms\Filesystem\Uploaders\S3Uploader;
+use CraftCms\Cms\Filesystem\Uploaders\TusUploader;
 use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
 use CraftCms\Cms\User\Elements\User;
@@ -56,6 +58,7 @@ it('requires authentication before creating an upload', function () {
 });
 
 it('authorizes the destination before accepting bytes', function () {
+    Event::fake([UploadSessionStarting::class]);
     Gate::partialMock()->shouldReceive('authorize')->andThrow(new AuthorizationException);
 
     postJson(action([UploadSessionController::class, 'store']), [
@@ -63,6 +66,58 @@ it('authorizes the destination before accepting bytes', function () {
     ])->assertForbidden();
 
     expect(UploadSession::count())->toBe(0);
+    Event::assertNotDispatched(UploadSessionStarting::class);
+});
+
+it('allows per-upload storage and uploader selection without changing config', function (?string $uploader) {
+    app(Uploaders::class)->extend('custom', fn () => app(TusUploader::class));
+    Cms::config()->uploader = $uploader === null ? null : 'invalid-configured-uploader';
+    $calls = 0;
+
+    Event::listen(UploadSessionStarting::class, function (UploadSessionStarting $event) use ($uploader, &$calls) {
+        $calls++;
+        expect($event->request->user())->not->toBeNull()
+            ->and($event->handler)->toBe(AssetUploads::class)
+            ->and($event->filename)->toBe('example.txt')
+            ->and($event->size)->toBe(6)
+            ->and($event->parameters['folderId'])->toBe($this->folder->id);
+
+        $event->filesystem = 'disk:upload-destination';
+        $event->uploader = $uploader;
+    });
+
+    $session = postJson(action([UploadSessionController::class, 'store']), [
+        'filename' => 'example.txt', 'size' => 6, 'folderId' => $this->folder->id,
+    ])->assertCreated()->assertJsonPath('transport.type', 'tus')->json();
+
+    $stored = UploadSession::findOrFail($session['id']);
+    expect($stored->disk)->toBe('disk:upload-destination')
+        ->and($stored->uploader)->toBe($uploader ?? 'tus')
+        ->and(Cms::config()->tempAssetUploadFs)->toBe('disk:upload-parts');
+
+    $this->call('PATCH', $session['transport']['options']['url'], server: [
+        'CONTENT_TYPE' => 'application/offset+octet-stream',
+        'HTTP_TUS_RESUMABLE' => '1.0.0', 'HTTP_UPLOAD_OFFSET' => 0,
+    ], content: 'abc')->assertNoContent();
+
+    Storage::disk('upload-destination')->assertExists("upload-sessions/{$session['id']}/parts/0");
+    Storage::disk('upload-parts')->assertDirectoryEmpty('/');
+    expect($calls)->toBe(1);
+})->with(['automatic uploader' => [null], 'custom uploader' => ['custom']]);
+
+it('preserves configured upload defaults when the event does not override them', function () {
+    Event::fake([UploadSessionStarting::class]);
+    app(Uploaders::class)->extend('custom', fn () => app(TusUploader::class));
+    Cms::config()->uploader = 'custom';
+
+    $session = postJson(action([UploadSessionController::class, 'store']), [
+        'filename' => 'example.txt', 'size' => 6, 'folderId' => $this->folder->id,
+    ])->assertCreated()->json();
+
+    $stored = UploadSession::findOrFail($session['id']);
+    expect($stored->disk)->toBe('disk:upload-parts')
+        ->and($stored->uploader)->toBe('custom');
+    Event::assertDispatchedTimes(UploadSessionStarting::class, 1);
 });
 
 it('negotiates tus, resumes short requests, and completes idempotently', function () {

@@ -16,14 +16,14 @@ use Override;
 #[Singleton]
 class Uploaders extends Manager
 {
-    public function getDefaultDriver(): string
+    public function getDefaultDriver(?string $diskReference = null): string
     {
         if (Cms::config()->uploader !== null) {
             return Cms::config()->uploader;
         }
 
         $disk = $this->container->make(Filesystems::class)->disk(
-            Cms::config()->getTempAssetUploadFs(),
+            $diskReference ?? Cms::config()->getTempAssetUploadFs(),
         );
 
         return $disk instanceof AwsS3V3Adapter ? 's3' : 'tus';
