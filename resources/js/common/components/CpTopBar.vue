@@ -47,12 +47,12 @@
 
 <template>
   <div class="cp-top-bar" data-theme="dark">
-    <div class="cp-top-bar__start">
+    <div class="cp-top-bar__start" v-if="!isLarge">
       <craft-button
         id="sidebar-toggle"
         type="button"
         size="small"
-        :icon="isLarge ? toggleIcon : 'bars'"
+        icon="bars"
         :variant="ButtonVariant.Outline"
         @click="toggleSidebar"
         :aria-label="t('Toggle menu')"
@@ -117,13 +117,13 @@
 
 <style scoped lang="scss">
   .cp-top-bar {
-    padding-block: calc(var(--spacing) * 1);
-    padding-inline: calc(var(--spacing) * 1);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-sm);
     display: grid;
     gap: var(--spacing);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
     grid-template-columns:
-      calc(var(--global-sidebar-collapsed-width) - (var(--spacing) * 1))
+      var(--c-size-touch-target)
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
@@ -131,9 +131,11 @@
 
     // TODO: consolidate breakpoints
     @media screen and (min-width: 768px) {
+      padding-inline: var(--c-spacing-md);
       gap: calc(var(--spacing) * 3);
-      grid-template-areas: 'start breadcrumbs indicators end';
+      grid-template-areas: 'breadcrumbs indicators end';
       grid-template-rows: auto;
+      grid-template-columns: 1fr auto auto;
     }
   }
 
