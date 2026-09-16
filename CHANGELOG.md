@@ -7,10 +7,17 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 
+- Added `Cp.$elementDetailsTabs`, allowing plugins to register Control Panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
+- Fixed a bug where the account navigation sidebar was missing when editing a user. ([#19643](https://github.com/craftcms/cms/pull/19643))
+- Improved disabled secondary form actions with explanatory tooltips.
+- Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
+- Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 - Added the `authGuard` and `authPasswordBroker` general config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
+- The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
+- Added a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
@@ -19,6 +26,7 @@
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Improved the accessibility of element indexes. ([#19520](https://github.com/craftcms/cms/pull/19520))
 - Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Improved the styling for collapsible field groups.
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
 - Replaced core inline element editing inputs with Form API controls rendered by Vue, with plugin field HTML compatibility handled by the Yii adapter. ([#19590](https://github.com/craftcms/cms/pull/19590))
@@ -50,6 +58,8 @@
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed HTMX.
+- Fixed a bug where submitting a form after signing in through an elevated or expired session modal could fail CSRF validation.
+- Fixed a bug where Markdown fields could collapse when initialized inside hidden containers. ([#19635](https://github.com/craftcms/cms/pull/19635))
 - Fixed a bug where Asset link type settings were ignored by Link and Markdown fields. ([#19623](https://github.com/craftcms/cms/pull/19623))
 - Fixed duplicate plus icons on user management actions. ([#19627](https://github.com/craftcms/cms/pull/19627))
 - Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.

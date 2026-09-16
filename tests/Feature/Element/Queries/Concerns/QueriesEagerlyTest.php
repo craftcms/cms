@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -28,6 +30,8 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     actingAs(User::findOne());
+    request()->attributes->set('isCpRequest', false);
+    TemplateMode::set(TemplateMode::Site);
 
     $field = Field::factory()->create([
         'handle' => 'entriesField',
@@ -161,32 +165,271 @@ test('andWith eager loads entry authors for hydrated query results', function ()
         ->and($result->getAuthors()[0]->id)->toBe($author->id);
 });
 
-test('eagerly', function () {
+test('relation queries eagerly load automatically', function () {
     $results = entryQuery()->section('blog')->get();
 
-    $queryCountWithoutEagerly = 0;
-    $queryCountWithEagerly = 0;
+    $queryCountWithoutAutomaticEagerLoading = 0;
+    $queryCountWithAutomaticEagerLoading = 0;
 
-    DB::listen(function ($query) use (&$queryCountWithoutEagerly, &$queryCountWithEagerly) {
-        $queryCountWithoutEagerly++;
-        $queryCountWithEagerly++;
+    DB::listen(function ($query) use (&$queryCountWithoutAutomaticEagerLoading, &$queryCountWithAutomaticEagerLoading) {
+        $queryCountWithoutAutomaticEagerLoading++;
+        $queryCountWithAutomaticEagerLoading++;
+    });
+
+    foreach ($results as $result) {
+        $result->entriesField->eagerly(false)->all();
+    }
+
+    $queryCountWithoutAutomaticEagerLoadingResults = $queryCountWithoutAutomaticEagerLoading;
+
+    $results = entryQuery()->section('blog')->get();
+
+    $queryCountWithAutomaticEagerLoading = 0;
+
+    foreach ($results as $result) {
+        $result->entriesField->all();
+    }
+
+    expect($queryCountWithAutomaticEagerLoading)->toBeLessThan($queryCountWithoutAutomaticEagerLoadingResults);
+});
+
+test('automatic eager loading can be disabled globally and explicitly enabled per query', function () {
+    Cms::config()->autoEagerLoadElements = false;
+
+    try {
+        $results = entryQuery()->section('blog')->get();
+        $eagerLoadingEvents = 0;
+        Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+            $eagerLoadingEvents++;
+        });
+
+        foreach ($results as $result) {
+            $result->entriesField->first();
+        }
+
+        expect($eagerLoadingEvents)->toBe(0);
+
+        $results = entryQuery()->section('blog')->get();
+
+        foreach ($results as $result) {
+            $result->entriesField->eagerly()->first();
+        }
+
+        expect($eagerLoadingEvents)->toBe(1);
+    } finally {
+        Cms::config()->autoEagerLoadElements = true;
+    }
+});
+
+test('automatic eager loading is disabled in control panel contexts', function (string $context) {
+    match ($context) {
+        'request' => request()->attributes->set('isCpRequest', true),
+        'template mode' => TemplateMode::set(TemplateMode::Cp),
+    };
+
+    $results = entryQuery()->section('blog')->get();
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
     });
 
     foreach ($results as $result) {
         $result->entriesField->first();
     }
 
-    $queryCountWithoutEagerlyResults = $queryCountWithoutEagerly;
+    expect($eagerLoadingEvents)->toBe(0);
 
     $results = entryQuery()->section('blog')->get();
-
-    $queryCountWithEagerly = 0;
 
     foreach ($results as $result) {
         $result->entriesField->eagerly()->first();
     }
 
-    expect($queryCountWithEagerly)->toBeLessThan($queryCountWithoutEagerlyResults);
+    expect($eagerLoadingEvents)->toBe(1);
+})->with(['request', 'template mode']);
+
+test('automatic eager loading keeps limited and complete results separate', function () {
+    $sourceModels = $this->entryModels->take(2);
+
+    foreach ($sourceModels as $sourceModel) {
+        $source = entryQuery()->id($sourceModel->id)->firstOrFail();
+        $relatedIds = $source->entriesField->eagerly(false)->ids();
+        $additionalRelated = EntryModel::factory()
+            ->forSection($sourceModel->section)
+            ->forEntryType($sourceModel->entryType)
+            ->create();
+
+        $source->setFieldValue('entriesField', [...$relatedIds, $additionalRelated->id]);
+        Elements::saveElement($source);
+    }
+
+    ElementCaches::invalidateAll();
+
+    $sources = entryQuery()
+        ->id($sourceModels->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+
+    expect($sources[0]->entriesField->one())->not->toBeNull()
+        ->and($sources[1]->entriesField->all())->toHaveCount(2);
+});
+
+test('automatic eager loading keeps different criteria separate', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+
+    expect($sources[0]->entriesField->title('Does not exist')->all())->toBe([])
+        ->and($sources[1]->entriesField->all())->toHaveCount(1);
+});
+
+test('automatic eager loading falls back for direct query builder changes', function (string $mode) {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+    $query = $sources[0]->entriesField;
+
+    match ($mode) {
+        'where' => $query->where('elements.id', -1),
+        'orderBy' => $query->orderByDesc('elements.id'),
+        'limit' => $query->limit(1),
+        'callback' => $query->beforeQuery(fn (ElementQuery $query) => $query->where('elements.id', -1)),
+    };
+
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    expect($query->all())->toHaveCount(in_array($mode, ['where', 'callback'], true) ? 0 : 1)
+        ->and($eagerLoadingEvents)->toBe(0);
+})->with(['where', 'orderBy', 'limit', 'callback']);
+
+test('automatic eager loading preserves result overrides', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+    $query = $sources[0]->entriesField;
+    $related = (clone $query)->eagerly(false)->one();
+    $query->setResultOverride([$related]);
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    expect($query->all())->toBe([$related])
+        ->and($eagerLoadingEvents)->toBe(0);
+});
+
+test('automatic eager loading preserves array results', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    $related = $sources[0]->entriesField->asArray()->all();
+
+    expect($related)->not->toBeEmpty()
+        ->and($related[0])->toBeArray()
+        ->and($eagerLoadingEvents)->toBe(0);
+});
+
+test('automatic eager loading preserves custom selected columns', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    $related = $sources[0]->entriesField->all(['elements.id', 'elements_sites.siteId']);
+
+    expect($related)->not->toBeEmpty()
+        ->and($eagerLoadingEvents)->toBe(0);
+});
+
+test('automatic eager loading applies after-query callbacks', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+    $afterQueryCalls = 0;
+
+    $related = $sources[0]->entriesField
+        ->afterQuery(function ($result) use (&$afterQueryCalls) {
+            $afterQueryCalls++;
+
+            return $result;
+        })
+        ->one();
+
+    expect($related)->not->toBeNull()
+        ->and($afterQueryCalls)->toBe(1);
+});
+
+test('automatic eager loading applies limits to each source', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+
+    $relatedIds = collect($sources)
+        ->map(fn (Entry $source) => $source->entriesField->one()?->id)
+        ->all();
+
+    expect($relatedIds)->not->toContain(null)
+        ->and(array_unique($relatedIds))->toHaveCount(2);
+});
+
+test('automatic eager loading keeps counts and elements separate', function () {
+    $sources = entryQuery()
+        ->id($this->entryModels->take(2)->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+
+    expect($sources[0]->entriesField->count())->toBe(1)
+        ->and($sources[1]->entriesField->all())->toHaveCount(1);
+});
+
+test('automatic eager loading stores empty results for the cohort', function () {
+    $sourceModels = $this->entryModels->take(2);
+    $sourceWithoutRelations = entryQuery()->id($sourceModels->last()->id)->firstOrFail();
+    $sourceWithoutRelations->setFieldValue('entriesField', []);
+    Elements::saveElement($sourceWithoutRelations);
+    ElementCaches::invalidateAll();
+
+    $sources = entryQuery()
+        ->id($sourceModels->pluck('id')->all())
+        ->fixedOrder()
+        ->all();
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    expect($sources[0]->entriesField->all())->toHaveCount(1)
+        ->and($sources[1]->entriesField->all())->toBe([])
+        ->and($eagerLoadingEvents)->toBe(1);
+});
+
+test('automatic eager loading skips single-element cohorts', function () {
+    $source = entryQuery()->id($this->entryModels->first()->id)->firstOrFail();
+    $eagerLoadingEvents = 0;
+    Event::listen(ElementsEagerLoading::class, function () use (&$eagerLoadingEvents) {
+        $eagerLoadingEvents++;
+    });
+
+    expect($source->entriesField->all())->toHaveCount(1)
+        ->and($eagerLoadingEvents)->toBe(0);
 });
 
 test('eagerly lazy loads nested entry fields for each owner', function () {
@@ -261,7 +504,7 @@ test('eagerly lazy loads nested entry fields for each owner', function () {
         ->all();
 
     $nestedTitles = collect($owners)
-        ->map(fn ($owner) => $owner->matrixField->eagerly()->one()?->title)
+        ->map(fn ($owner) => $owner->matrixField->one()?->title)
         ->all();
 
     expect($nestedTitles)->toBe([

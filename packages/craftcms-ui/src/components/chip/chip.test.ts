@@ -45,6 +45,15 @@ describe('craft-chip slots', () => {
     expect(slot(element, 'suffix')).not.toBeNull();
   });
 
+  it('ignores slotted content that belongs to a nested chip', async () => {
+    const element = await createChip(
+      {},
+      'Label<span><craft-chip><div slot="suffix">…</div></craft-chip></span>'
+    );
+
+    expect(slot(element, 'suffix')).toBeNull();
+  });
+
   it('renders the prefix for the icon attribute alone', async () => {
     const element = await createChip({icon: 'star'});
 

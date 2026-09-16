@@ -11,6 +11,7 @@ import {
   visuallyHiddenStyles,
   ConfigService,
 } from '@craftcms/ui';
+import {csrf} from '@craftcms/ui/utilities/api/actionClient';
 import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
@@ -105,6 +106,7 @@ export default class CraftLoginForm extends LitElement {
     this._loginBusy = true;
 
     try {
+      await csrf.refreshToken();
       const response = await fetch(this.action, {
         method: 'post',
         headers: {
@@ -133,7 +135,7 @@ export default class CraftLoginForm extends LitElement {
         this._view = 'challenge';
         this._loginBusy = false;
       } else {
-        this.#handleSuccess(data.returnUrl);
+        await this.#handleSuccess(data.returnUrl);
         this._loginBusy = false;
       }
     } catch (e: any) {
@@ -160,7 +162,7 @@ export default class CraftLoginForm extends LitElement {
         authResponse: JSON.stringify(authResponse),
       });
 
-      this.#handleSuccess(data.returnUrl);
+      await this.#handleSuccess(data.returnUrl);
       this._passkeyBusy = false;
     } catch (e: any) {
       this._passkeyBusy = false;
@@ -188,8 +190,12 @@ export default class CraftLoginForm extends LitElement {
     });
   }
 
-  #onLoginSuccess(event: CustomEvent<{returnUrl: string}>) {
-    this.#handleSuccess(event.detail.returnUrl);
+  async #onLoginSuccess(event: CustomEvent<{returnUrl: string}>) {
+    try {
+      await this.#handleSuccess(event.detail.returnUrl);
+    } catch (error: any) {
+      this.#setError(error.message);
+    }
   }
 
   #onLoginError(event: CustomEvent<{message: string}>) {
@@ -212,7 +218,10 @@ export default class CraftLoginForm extends LitElement {
     announce(this._error);
   }
 
-  #handleSuccess(returnUrl: string) {
+  async #handleSuccess(returnUrl: string) {
+    // Login rotates the session token. Refresh forms before modal listeners
+    // resume a pending submission, including after two-factor authentication.
+    await csrf.refreshToken();
     const event = new CustomEvent('craft:login:success', {
       bubbles: true,
       composed: true,

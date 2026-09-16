@@ -414,6 +414,22 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
+     * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->autoEagerLoadElements(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTO_EAGER_LOAD_ELEMENTS=false
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $autoEagerLoadElements = true;
+
+    /**
      * @var bool Whether users should automatically be logged in after activating their account.
      *
      * ::: code
@@ -3452,6 +3468,24 @@ class GeneralConfig extends BaseConfig
     public function allowUppercaseInSlug(bool $value = true): self
     {
         $this->allowUppercaseInSlug = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ```php
+     * ->autoEagerLoadElements(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $autoEagerLoadElements
+     */
+    public function autoEagerLoadElements(bool $value = true): self
+    {
+        $this->autoEagerLoadElements = $value;
 
         return $this;
     }

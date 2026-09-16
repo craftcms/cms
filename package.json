@@ -71,9 +71,9 @@
     "stylelint-use-logical-spec": "catalog:",
     "typescript": "catalog:",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
+    "vite-plus": "catalog:",
     "vitest": "4.1.10",
-    "vue-tsc": "^3.2.7",
-    "vite-plus": "catalog:"
+    "vue-tsc": "^3.2.7"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.74"
@@ -99,6 +99,7 @@
     "@vueuse/shared": "^14.3.0",
     "axios": "catalog:",
     "d3": "catalog:",
+    "fabric": "^7.4.0",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "catalog:",
     "overtype": "^2.4.0",
