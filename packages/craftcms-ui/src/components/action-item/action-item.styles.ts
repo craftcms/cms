@@ -10,7 +10,6 @@ export default css`
   }
 
   .action-item {
-    border-color: var(--c-color-border-quiet, transparent);
     color: var(--c-color-on-quiet, inherit);
     background-color: transparent;
 
@@ -24,8 +23,7 @@ export default css`
     padding-block: var(--c-spacing-sm);
     border-radius: var(--c-radius-md);
     position: relative;
-    border-width: 0;
-    border-style: solid;
+    border: 1px solid transparent;
   }
 
   @media (hover: hover) {
@@ -38,9 +36,11 @@ export default css`
     }
   }
 
+  /* Matches the main navigation's current item. */
   :host([active]) .action-item {
-    background-color: var(--c-color-fill-loud);
-    color: var(--c-color-on-loud);
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+    color: var(--c-color-accent-on-quiet);
   }
 
   .action-item:disabled {
