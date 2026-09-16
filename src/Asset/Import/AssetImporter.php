@@ -31,15 +31,8 @@ use function CraftCms\Cms\t;
  */
 class AssetImporter extends ElementImporter
 {
-    public function __construct(?array $config = null)
-    {
-        parent::__construct($config);
-
-        $this->className = Asset::class;
-    }
-
     #[Override]
-    public static function elementClass(): string
+    public static function targetClass(): string
     {
         return Asset::class;
     }

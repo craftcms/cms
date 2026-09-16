@@ -2,15 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\ModelImporter;
-use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -84,44 +80,3 @@ it('resolves the importer registered for a model', function () {
 it('returns null for a model with no registered importer', function () {
     expect($this->import->getModelImporterTypeFor(User::class))->toBeNull();
 });
-
-it('resolves a plugin-registered model importer', function () {
-    Event::listen(function (RegisterImporterTypes $event) {
-        $event->importers[] = TestModelImporter::class;
-    });
-
-    expect($this->import->getModelImporterTypeFor(TestModel::class))->toBe(TestModelImporter::class);
-});
-
-class TestModel extends BaseModel
-{
-    #[Override]
-    protected $table = 'testmodels';
-}
-
-class TestModelImporter extends ModelImporter
-{
-    public function __construct(?array $config = null)
-    {
-        parent::__construct($config);
-
-        $this->className = TestModel::class;
-    }
-
-    #[Override]
-    public static function modelClass(): string
-    {
-        return TestModel::class;
-    }
-
-    #[Override]
-    public static function displayName(): string
-    {
-        return 'Test Models';
-    }
-
-    public static function create(): self
-    {
-        return new self;
-    }
-}

@@ -15,15 +15,8 @@ use function CraftCms\Cms\t;
  */
 class UserImporter extends ElementImporter
 {
-    public function __construct(?array $config = null)
-    {
-        parent::__construct($config);
-
-        $this->className = User::class;
-    }
-
     #[Override]
-    public static function elementClass(): string
+    public static function targetClass(): string
     {
         return User::class;
     }

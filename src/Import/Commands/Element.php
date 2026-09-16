@@ -171,7 +171,7 @@ class Element extends Command implements PromptsForMissingInput
                         ->filter(fn ($type) => is_subclass_of($type, ElementImporter::class))
                         ->map(fn ($type) => [
                             'label' => $type::displayName(),
-                            'value' => $type::elementClass(),
+                            'value' => $type::targetClass(),
                         ])
                         ->all()
                 ),

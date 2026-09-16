@@ -116,12 +116,12 @@ it('resolves fieldLayout() with an arbitrary string to a new unsaved layout for 
 
 it('registers a concrete ElementImporter subclass per core importable element type', function (string $importerClass, string $elementClass) {
     expect(is_subclass_of($importerClass, ElementImporter::class))->toBeTrue()
-        ->and($importerClass::elementClass())->toBe($elementClass)
+        ->and($importerClass::targetClass())->toBe($elementClass)
         ->and($importerClass::displayName())->toBeString()->not->toBe('');
 
     $importer = $importerClass::create();
 
-    expect($importer->className)->toBe($elementClass);
+    expect($importer::targetClass())->toBe($elementClass);
 })->with([
     'Entry' => [EntryImporter::class, EntryElement::class],
     'Asset' => [AssetImporter::class, AssetElement::class],

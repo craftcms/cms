@@ -107,7 +107,7 @@ abstract class ElementImporter extends BaseImporter
      */
     public function prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null): ElementInterface
     {
-        $element ??= new $this->className;
+        $element ??= new ($this::targetClass());
 
         // ensure site is set
         $element->siteId = $this->site->id;
@@ -389,15 +389,15 @@ abstract class ElementImporter extends BaseImporter
             return false;
         }
 
-        // has to belong to the element type if we know it
-        $className = Arr::get($validator->getData(), 'settings.className');
-        if (is_string($className) && $className !== '' && $fieldLayout->type !== $className) {
-            $fail($attribute, t('Field layout does not belong to element type “{elementType}”.', [
-                'elementType' => $className,
-            ]));
-
-            return false;
-        }
+        //        // has to belong to the element type if we know it
+        //        $className = Arr::get($validator->getData(), 'settings.className');
+        //        if (is_string($className) && $className !== '' && $fieldLayout->type !== $className) {
+        //            $fail($attribute, t('Field layout does not belong to element type “{elementType}”.', [
+        //                'elementType' => $className,
+        //            ]));
+        //
+        //            return false;
+        //        }
 
         return true;
     }

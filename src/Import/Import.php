@@ -98,7 +98,7 @@ class Import
     public function getElementImporterTypeFor(string $elementClass): ?string
     {
         foreach ($this->getAllImporterTypes() as $type) {
-            if (is_subclass_of($type, ElementImporter::class) && $type::elementClass() === $elementClass) {
+            if (is_subclass_of($type, ElementImporter::class) && $type::targetClass() === $elementClass) {
                 return $type;
             }
         }
@@ -115,7 +115,7 @@ class Import
     public function getModelImporterTypeFor(string $modelClass): ?string
     {
         foreach ($this->getAllImporterTypes() as $type) {
-            if (is_subclass_of($type, ModelImporter::class) && $type::modelClass() === $modelClass) {
+            if (is_subclass_of($type, ModelImporter::class) && $type::targetClass() === $modelClass) {
                 return $type;
             }
         }
