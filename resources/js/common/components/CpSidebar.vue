@@ -83,8 +83,7 @@
     flex-direction: column;
     inset-block-start: 0;
     flex: 0 0 auto;
-    border-inline-end: 1px solid
-      color-mix(transparent 75%, var(--c-color-border-quiet));
+    border-inline-end: 1px solid var(--c-color-border-quiet);
     overflow: clip;
   }
 
