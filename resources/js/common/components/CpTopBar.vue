@@ -46,7 +46,7 @@
 </script>
 
 <template>
-  <div class="cp-top-bar">
+  <div class="cp-top-bar" data-theme="dark">
     <div class="cp-top-bar__start">
       <craft-button
         id="sidebar-toggle"
@@ -119,7 +119,6 @@
   .cp-top-bar {
     padding-block: calc(var(--spacing) * 1);
     padding-inline: calc(var(--spacing) * 1);
-    color: var(--c-color-on-quiet);
     display: grid;
     gap: var(--spacing);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
@@ -128,11 +127,7 @@
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
-
-    background-color: color-mix(
-      var(--c-color-fill-quiet),
-      var(--c-color-fill-loud) 20%
-    );
+    background-color: var(--c-surface-default);
 
     // TODO: consolidate breakpoints
     @media screen and (min-width: 768px) {
