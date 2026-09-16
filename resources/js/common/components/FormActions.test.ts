@@ -1,5 +1,5 @@
 import {createApp, h} from 'vue';
-import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import FormActions from './FormActions.vue';
 
 describe('FormActions', () => {
@@ -11,7 +11,8 @@ describe('FormActions', () => {
     container?.remove();
   });
 
-  it('explains why an additional action is disabled', () => {
+  it('keeps an unavailable additional action focusable with an explanation', () => {
+    const onClick = vi.fn();
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
@@ -28,6 +29,7 @@ describe('FormActions', () => {
               disabled: true,
               disabledReason:
                 'This draft must be approved before it can be applied.',
+              onClick,
             },
           ],
         }),
@@ -38,15 +40,21 @@ describe('FormActions', () => {
     const applyButton = [...container.querySelectorAll('craft-button')].find(
       (button) => button.textContent?.trim() === 'Apply draft'
     ) as HTMLElementTagNameMap['craft-button'];
-    const infoIcon =
-      container.querySelector<HTMLElementTagNameMap['craft-info-icon']>(
-        'craft-info-icon'
+    const tooltip =
+      container.querySelector<HTMLElementTagNameMap['craft-tooltip']>(
+        'craft-tooltip'
       )!;
 
-    expect(applyButton.disabled).toBe(true);
-    expect(infoIcon.textContent).toContain(
+    expect(applyButton.disabled).toBe(false);
+    expect(applyButton.getAttribute('aria-disabled')).toBe('true');
+    expect(applyButton.id).toBe('disabled-form-action-0');
+    expect(tooltip.for).toBe(applyButton.id);
+    expect(tooltip.textContent).toContain(
       'This draft must be approved before it can be applied.'
     );
-    expect(infoIcon.label).toBe('Why “Apply draft” is unavailable');
+
+    applyButton.click();
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 });
