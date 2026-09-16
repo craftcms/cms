@@ -2,7 +2,7 @@
   /**
    * Maps an import config's destination columns onto the headings in its source file.
    *
-   * The page owns all four mapping trees, so a container column's nested mapping is
+   * The section owns all four mapping trees, so a container column's nested mapping is
    * edited in a panel over the same state rather than relayed through the server —
    * see `modules/import/mapping/nested-mapping.ts`.
    */
@@ -10,7 +10,7 @@
   import {useForm} from '@inertiajs/vue3';
   import {provide, reactive, watch} from 'vue';
   import {t} from '@craftcms/ui';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import FormActions from '@/common/components/FormActions.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import MappingTable from '@/modules/import/mapping/MappingTable.vue';
   import {toObjectTree} from '@/modules/import/mapping/paths';
@@ -61,8 +61,6 @@
     transform: () => ({importUid: props.config.uid, ...toPlain()}),
   });
 
-  useAppLayout({form, onSave: save});
-
   // Read from the trees, not from `form.state` — that only catches up when the deep
   // watcher flushes, so it can still be a tick behind the edit being saved.
   function toPlain(): MappingValues {
@@ -93,6 +91,8 @@
       <p>{{ t('File: {file}', {file: config.file ?? ''}) }}</p>
 
       <MappingTable :cols="destinationCols" />
+
+      <FormActions :form="form" :read-only="!editable" />
     </craft-pane>
   </form>
 </template>

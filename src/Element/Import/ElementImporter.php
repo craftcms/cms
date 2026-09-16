@@ -95,6 +95,12 @@ abstract class ElementImporter extends BaseImporter
     abstract public static function targetClass(): string;
 
     /**
+     * Returns a select-option list of field layout providers for the element class (singular or multiple layouts).
+     * The list of field layout providers as label/value pairs.
+     */
+    abstract public static function availableFieldLayoutProviders(): array;
+
+    /**
      * Returns the class name of the default transformer for the component.
      */
     public static function getDefaultTransformer(): ?string
@@ -145,17 +151,22 @@ abstract class ElementImporter extends BaseImporter
 
         return Form::make([
             FormField::make(t('Data File'), Text::make('file')->value($this->file)->placeholder('@root/resources/my-data.json'))
-                ->instructions(t('The absolute path to the file containing the data you want to import.'))
+                ->instructions(t('The @root-relative path to the file containing the data you want to import.'))
                 ->required(),
             FormField::make(t('Site'), Choice::make('site')
                 ->value($this->site?->handle ?? Sites::getPrimarySite()->handle)
                 ->options($availableSites))
                 ->instructions(t('The site you want to import the data into'))
                 ->required(),
+            FormField::make(t('Field Layout Provider'), Choice::make('fieldLayout')
+                ->value($this->fieldLayout)
+                ->placeholder(t('Please select'))
+                ->options(static::availableFieldLayoutProviders()))
+                ->instructions(t('The field layout (e.g. entry type, volume) to import into.')),
             FormField::make(t('Transformer'), Text::make('transformer')
                 ->value($this->usesDefaultTransformer() ? null : $this->transformerAsString())
                 ->placeholder(ElementTransformer::class))
-                ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
+                ->instructions(t('The fully qualified class name of the transformer you’d like to use.')),
         ]);
     }
 

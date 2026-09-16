@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Text;
@@ -110,6 +111,42 @@ class ImportConfigEditViewModel extends ViewModel
     public function refreshUrl(): ?string
     {
         return $this->readOnly ? null : action([ImportConfigController::class, 'renderForm']);
+    }
+
+    /** @return array<string, mixed>|null */
+    public function mapping(): ?array
+    {
+        $mapViewModel = $this->mapViewModel();
+
+        if ($mapViewModel === null) {
+            return null;
+        }
+
+        return [
+            'config' => $mapViewModel->config(),
+            'destinationCols' => $mapViewModel->destinationCols(),
+            'sourceDataCols' => $mapViewModel->sourceDataCols(),
+            'values' => $mapViewModel->values(),
+            'submit' => $mapViewModel->submit(),
+            'nestedColsUrl' => $mapViewModel->nestedColsUrl(),
+            'readOnly' => $mapViewModel->readOnly(),
+            'canSave' => $mapViewModel->canSave(),
+        ];
+    }
+
+    private function mapViewModel(): ?ImportMapViewModel
+    {
+        $importer = $this->importer;
+
+        if ($importer === null || $importer->uid === null) {
+            return null;
+        }
+
+        if ($importer::isElementImporter() && (! $importer instanceof ElementImporter || empty($importer->fieldLayout))) {
+            return null;
+        }
+
+        return new ImportMapViewModel($importer, $this->readOnly, $this->canSave);
     }
 
     /** @return list<array{value: class-string<BaseImporter>, label: string}> */

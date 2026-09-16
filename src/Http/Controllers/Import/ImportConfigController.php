@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Import;
 use Closure;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -16,15 +15,12 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ImportConfigEditViewModel;
-use CraftCms\Cms\Http\ViewModels\ImportFieldLayoutProviderViewModel;
-use CraftCms\Cms\Http\ViewModels\ImportMapViewModel;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -90,9 +86,6 @@ class ImportConfigController
             'isElementImporter' => $config::isElementImporter(),
             'importType' => $config::displayName(),
             'editUrl' => Url::cpUrl('import/configs/'.$config->handle),
-            'mapUrl' => ! $config::isElementImporter() || (property_exists($config, 'fieldLayout') && ! empty($config->fieldLayout))
-                ? Url::cpUrl('import/configs/'.$config->handle.'/map')
-                : null,
         ];
     }
 
@@ -162,6 +155,9 @@ class ImportConfigController
             if (property_exists($importer, 'site') && array_key_exists('site', $settings)) {
                 $importer->site($settings['site']);
             }
+            if (property_exists($importer, 'fieldLayout') && array_key_exists('fieldLayout', $settings)) {
+                $importer->fieldLayout($settings['fieldLayout']);
+            }
             if (array_key_exists('transformer', $settings)) {
                 $importer->transformer($settings['transformer']);
             }
@@ -217,6 +213,9 @@ class ImportConfigController
         if (property_exists($import, 'site')) {
             $import->site($this->request->input('settings.site', $import->site));
         }
+        if (property_exists($import, 'fieldLayout')) {
+            $import->fieldLayout($this->request->input('settings.fieldLayout', $import->fieldLayout));
+        }
         $import->transformer($this->request->input('settings.transformer', $import->transformer));
         $import->map($this->request->input('settings.map', $import->map));
         $import->matchCriteria($this->request->input('settings.matchCriteria', $import->matchCriteria));
@@ -231,126 +230,6 @@ class ImportConfigController
             t('Import config saved.'),
             'import',
         );
-    }
-
-    public function editFieldLayoutProvider(?ElementImporter $importer = null, ?string $handle = null): CpScreenResponse|RedirectResponse
-    {
-        $handle ??= $importer->handle ?? $this->request->input('handle');
-
-        abort_if(is_null($handle), 404, 'Import config not found');
-        abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
-        abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
-
-        // if it's not an element import, redirect to the config edit page
-        if (! $found->isElementImporter()) {
-            return redirect()->action([self::class, 'edit'], ['handle' => $handle]);
-        }
-
-        $importer ??= $found;
-
-        $currentUser = $this->request->craftUser();
-        $canSave = (bool) $currentUser?->can('saveImportConfigs');
-        $editable = ! $this->readOnly && $canSave;
-
-        return new CpScreenResponse()
-            ->title(t('Edit Field Layout Provider', ['name' => $importer->name]))
-            ->addCrumb(t('Import'), 'import')
-            ->addCrumb(t('Configs'), 'import/configs')
-            ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
-            ->formAttributes(['action' => action([self::class, 'storeFieldLayoutProvider'])])
-            ->inertiaPage('import/configs/FieldLayoutProvider', new ImportFieldLayoutProviderViewModel(
-                $importer,
-                app(FormResolver::class),
-                $this->readOnly,
-                $canSave,
-            ))
-            ->when(
-                $editable,
-                callback: function (CpScreenResponse $response) use ($importer) {
-                    $response
-                        ->action('import/configs/save-field-layout-provider')
-                        ->redirectUrl('import/configs')
-                        // TODO (iwona): ideally we want to use save+redirect action and not "just" a link to the next step
-                        ->addAltAction(t('Go to mapping configuration'), [
-                            'href' => action([self::class, 'editMap'], ['handle' => $importer->handle]),
-                        ]);
-                },
-            );
-    }
-
-    public function storeFieldLayoutProvider(): Response
-    {
-        $importConfigUid = $this->request->input('uid');
-        abort_if(empty($importConfigUid), 400, 'No import config UID provided');
-
-        $this->request->validate([
-            'uid' => ['string', 'max:36'],
-        ]);
-
-        abort_if(is_null($importer = $this->importConfigService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
-
-        $this->request->validate([
-            'fieldLayout' => ['required', 'string', 'max:255'],
-        ]);
-
-        /** @var ElementImporter $importer */
-        if (property_exists($importer, 'fieldLayout')) {
-            $importer->fieldLayout($this->request->input('fieldLayout', $importer->fieldLayout));
-        }
-
-        if (! $this->importConfigService->saveConfig($importer)) {
-            return $this->asModelFailure($importer, t('Couldn’t save import config.'), 'import');
-        }
-
-        return $this->asModelSuccess(
-            $importer,
-            t('Import config saved.'),
-            'import',
-        );
-    }
-
-    public function editMap(?BaseImporter $importer = null, ?string $handle = null): CpScreenResponse
-    {
-        $handle ??= $importer->handle ?? $this->request->input('handle');
-
-        abort_if(is_null($handle), 404, 'Import config not found');
-        abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
-        abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
-
-        $importer ??= $found;
-
-        $currentUser = $this->request->craftUser();
-        $canSave = (bool) $currentUser?->can('saveImportConfigs');
-
-        $response = new CpScreenResponse()
-            ->title(t('Edit map', ['name' => $importer->name]))
-            ->addCrumb(t('Import'), 'import')
-            ->addCrumb(t('Configs'), 'import/configs')
-            ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
-            ->inertiaPage('import/configs/Map', new ImportMapViewModel(
-                importer: $importer,
-                readOnly: $this->readOnly,
-                canSave: $canSave,
-            ))
-            ->unless(
-                $this->readOnly || ! $canSave,
-                callback: function (CpScreenResponse $response) {
-                    $response
-                        ->action('import/configs/save-map')
-                        ->redirectUrl('import/configs');
-                },
-                default: function (CpScreenResponse $response) {
-                    if ($this->readOnly) {
-                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
-                    }
-                },
-            );
-
-        if ($importer::isElementImporter()) {
-            $response->addCrumb(t('Field Layout Provider'), 'import/configs/'.$importer->handle.'/field-layout-provider');
-        }
-
-        return $response;
     }
 
     public function storeMap(): Response
@@ -544,7 +423,7 @@ class ImportConfigController
                 callback: function (CpScreenResponse $response) use ($importer) {
                     $response
                         ->action('import/configs/save')
-                        ->redirectUrl('import/configs');
+                        ->redirectUrl('import/configs/{handle}');
 
                     if ($importer?->isEditable()) {
                         $response->addAltAction(t('Delete'), [
@@ -561,30 +440,6 @@ class ImportConfigController
                                     'name' => $importer->name,
                                 ]),
                             ],
-                        ]);
-                    }
-
-                    if ($importer::isElementImporter()) {
-                        // TODO (iwona): this doesn't work, but I don't fully know why;
-                        //      ideally we want to use this action and not "just" a link to the next step
-                        //                        $response->addAltAction(t('Save and go to field layout provider'), [
-                        //                            'action' => [
-                        //                                'type' => 'http',
-                        //                                'method' => 'POST',
-                        //                                'url' => action([self::class, 'store']),
-                        //                                'body' => [
-                        //                                    'redirect' => Crypt::encrypt(action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle])),
-                        //                                ],
-                        //                            ],
-                        //                        ]);
-                        $response->addAltAction(t('Go to field layout provider'), [
-                            'href' => action([self::class, 'editFieldLayoutProvider'], ['handle' => $importer->handle]),
-                        ]);
-                    }
-                    if ($importer::isElementImporter() === false) {
-                        // TODO (iwona): ideally we want to use save+redirect action and not "just" a link to the next step
-                        $response->addAltAction(t('Go to mapping configuration'), [
-                            'href' => action([self::class, 'editMap'], ['handle' => $importer->handle]),
                         ]);
                     }
                 },

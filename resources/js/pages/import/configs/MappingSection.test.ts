@@ -5,16 +5,11 @@ import type {
   MappingColEntry,
   MappingValues,
 } from '@/modules/import/mapping/types';
-import Map from './Map.vue';
+import MappingSection from './MappingSection.vue';
 
 const state = vi.hoisted(() => ({
-  layout: vi.fn(),
   save: vi.fn(),
   openNested: vi.fn(),
-}));
-
-vi.mock('@/common/composables/useAppLayout', () => ({
-  useAppLayout: state.layout,
 }));
 
 vi.mock('@/modules/settings/composables/useSettingsSave', () => ({
@@ -77,7 +72,7 @@ function mount(
   destinationCols: MappingColEntry[],
   values: MappingValues = emptyValues()
 ) {
-  app = createApp(Map, {
+  app = createApp(MappingSection, {
     config: {
       uid: 'import-uid',
       handle: 'people',
@@ -99,7 +94,7 @@ function mount(
   app.mount(container);
 }
 
-/** What the page would post right now. The page copies its props, so this is the
+/** What the section would post right now. It copies its props, so this is the
  * only faithful view of its state. */
 function posted(): MappingValues & {importUid: string} {
   return state.save.mock.calls[0]![2].transform();
@@ -132,7 +127,6 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.layout.mockClear();
   state.save.mockClear();
   state.openNested.mockReset();
   container = document.createElement('div');

@@ -26,7 +26,6 @@
     isElementImporter: boolean;
     importType: string | null;
     editUrl: string;
-    mapUrl: string | null;
   }
 
   interface NonEditableConfigRow {
@@ -81,14 +80,6 @@
           href: row.original.editUrl,
         },
       ];
-
-      if (row.original.mapUrl) {
-        actions.push({
-          type: 'link',
-          label: t('Edit Mapping'),
-          href: row.original.mapUrl,
-        });
-      }
 
       if (props.canSave) {
         actions.push({

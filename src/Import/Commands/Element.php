@@ -54,7 +54,7 @@ class Element extends Command implements PromptsForMissingInput
         }
 
         $fieldLayoutProviderOptions = ImportHelper::flattenLabelValueArray(
-            ImportHelper::getAvailableFieldLayoutProviders($this->argument('elementType'))
+            $importerClass::availableFieldLayoutProviders()
         );
         $fieldLayoutProviderOptions = array_merge(['' => t('None - specified in the data file')], $fieldLayoutProviderOptions);
         $responses = form()

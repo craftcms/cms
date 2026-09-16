@@ -15,49 +15,6 @@ use CraftCms\Cms\Support\Facades\Fields;
 
 class ImportHelper
 {
-    /**
-     * Builds a select-option list of field layout providers for the element class (singular or multiple layouts).
-     * The list of field layout providers as label/value pairs.
-     */
-    public static function getAvailableFieldLayoutProviders(string $className): array
-    {
-        $element = (new $className);
-
-        // first try to get all field layouts
-        $fieldLayouts = $element::fieldLayouts(null);
-
-        // if we got zero results - try with a singular method
-        if (count($fieldLayouts) === 0) {
-            $fieldLayout = $element->getFieldLayout();
-
-            // if we were able to get the field layout this way, then there can only be one for the element;
-            // like there's only one for Address or User element
-            if ($fieldLayout) {
-                return [
-                    [
-                        'label' => $element::displayName(),
-                        'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
-                    ],
-                ];
-            }
-        }
-
-        $providers = [
-            [
-                'label' => 'Please select',
-                'value' => '',
-            ],
-        ];
-        foreach ($fieldLayouts as $fieldLayout) {
-            $providers[] = [
-                'label' => $fieldLayout->provider?->name ?? $fieldLayout->type,
-                'value' => $fieldLayout->uid,
-            ];
-        }
-
-        return $providers;
-    }
-
     public static function flattenLabelValueArray(array $array): array
     {
         return collect($array)

@@ -38,6 +38,23 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
+    public static function availableFieldLayoutProviders(): array
+    {
+        $element = new (static::targetClass());
+        $fieldLayouts = $element::fieldLayouts(null);
+        $providers = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            $providers[] = [
+                'label' => $fieldLayout->provider?->name ?? $fieldLayout->type,
+                'value' => $fieldLayout->uid,
+            ];
+        }
+
+        return $providers;
+    }
+
+    #[Override]
     public static function displayName(): string
     {
         return t('Assets');

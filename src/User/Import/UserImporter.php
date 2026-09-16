@@ -22,6 +22,23 @@ class UserImporter extends ElementImporter
     }
 
     #[Override]
+    public static function availableFieldLayoutProviders(): array
+    {
+        $element = new (static::targetClass());
+        $fieldLayout = $element->getFieldLayout();
+        $providers = [];
+
+        if ($fieldLayout) {
+            $providers[] = [
+                'label' => $element::displayName(),
+                'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
+            ];
+        }
+
+        return $providers;
+    }
+
+    #[Override]
     public static function displayName(): string
     {
         return t('Users');

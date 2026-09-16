@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Sections;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -21,6 +22,26 @@ class EntryImporter extends ElementImporter
     public static function targetClass(): string
     {
         return Entry::class;
+    }
+
+    #[Override]
+    public static function availableFieldLayoutProviders(): array
+    {
+        new (static::targetClass());
+        $providers = [];
+
+        // get all sections
+        $sections = Sections::getAllSections();
+        foreach ($sections as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $providers[] = [
+                    'label' => $section->name.': '.$entryType->name,
+                    'value' => $entryType->getFieldLayout()->uid,
+                ];
+            }
+        }
+
+        return $providers;
     }
 
     #[Override]
