@@ -24,6 +24,15 @@
   --color-surface-overlay: var(--c-surface-overlay);
   --color-surface-form: var(--c-surface-form);
 
+  /* ——— Surface backgrounds ———
+     The background-color namespace only feeds bg-*, so these give bg-default,
+     bg-raised, … without a text-default. */
+  --background-color-default: var(--c-surface-default);
+  --background-color-raised: var(--c-surface-raised);
+  --background-color-sunken: var(--c-surface-sunken);
+  --background-color-overlay: var(--c-surface-overlay);
+  --background-color-form: var(--c-surface-form);
+
   /* ——— Text ——— */
   --color-text-default: var(--c-text-default);
   --color-text-quiet: var(--c-text-quiet);
