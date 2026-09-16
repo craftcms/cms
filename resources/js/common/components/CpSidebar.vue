@@ -3,7 +3,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
-  import {computed, nextTick, watch} from 'vue';
+  import {computed, nextTick, useTemplateRef, watch} from 'vue';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import {type CraftData} from '@/common/composables/useCraftData';
   import {usePage} from '@inertiajs/vue3';
@@ -31,7 +31,22 @@
     }
   );
 
-  const {toggle: toggleSidebar} = useGlobalSidebar();
+  const {toggle: toggleSidebar, icon} = useGlobalSidebar();
+
+  const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
+
+  // The item re-renders as a different element when the nav collapses, which
+  // would otherwise drop focus to the page.
+  async function toggleCollapsed() {
+    toggleSidebar();
+    await nextTick();
+    await (
+      collapseItem.value as
+        | (HTMLElement & {updateComplete?: Promise<unknown>})
+        | null
+    )?.updateComplete;
+    collapseItem.value?.focus();
+  }
 </script>
 
 <template>
@@ -64,18 +79,24 @@
         :mode="sidebar.mode === 'floating' ? 'inline' : 'trail'"
       />
     </div>
-    <div class="cp-sidebar__footer">
-      <EditionInfo v-if="!collapsed" />
+    <div v-if="sidebar.mode === 'docked'" class="cp-sidebar__footer">
+      <craft-nav-list>
+        <craft-nav-item
+          ref="collapseItem"
+          :button="true"
+          :icon="icon"
+          :icon-only="collapsed || undefined"
+          @click="toggleCollapsed"
+        >
+          {{ collapsed ? t('Expand') : t('Collapse') }}
+        </craft-nav-item>
+      </craft-nav-list>
     </div>
   </nav>
 </template>
 
 <style scoped lang="scss">
   .cp-sidebar {
-    /* Above page content and its sticky headers — the element editor's is 1000
-     — but below modals (10001+). The sidebar is chrome: a floating drawer
-     overlays the page, and a collapsed rail's label tooltips overflow across
-     it. Both get sliced by a sticky header otherwise. */
     z-index: var(--global-sidebar-z-index);
     height: 100dvh;
     width: var(--global-sidebar-width);
@@ -88,6 +109,7 @@
   }
 
   .cp-sidebar[data-mode='docked'] {
+    height: calc(100dvh - var(--cp-debug-bar-height, 0px));
     transform: none;
     position: sticky;
     inset-block-start: 0;
@@ -115,7 +137,8 @@
   .cp-sidebar--collapsed {
     width: var(--global-sidebar-collapsed-width);
 
-    .cp-sidebar__body {
+    .cp-sidebar__body,
+    .cp-sidebar__footer {
       padding-inline: var(--c-spacing-sm);
     }
   }
@@ -138,8 +161,11 @@
 
   .cp-sidebar__footer {
     flex: 0 0 auto;
+    margin-block-start: auto;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--c-spacing-md);
     position: sticky;
-    inset-block-end: 0;
-    background-color: inherit;
+    inset-block-end: var(--cp-debug-bar-height, 0px);
+    background-color: var(--c-surface-sunken);
   }
 </style>

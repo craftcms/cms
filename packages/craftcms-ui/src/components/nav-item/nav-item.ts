@@ -53,6 +53,13 @@ export default class CraftNavItem extends LitElement {
   @property({type: Boolean, reflect: true})
   current: boolean = false;
 
+  /**
+   * Renders the row as a button, for an item that does something rather than
+   * going somewhere — collapsing the nav, say. Listen for `click` on the item.
+   */
+  @property({type: Boolean, reflect: true})
+  button: boolean = false;
+
   /** Opens the item in a new tab and displays an external link icon in the suffix. */
   @property({type: Boolean})
   external: boolean = false;
@@ -342,19 +349,42 @@ export default class CraftNavItem extends LitElement {
   /**
    * The tag the item's own row is built from. An item that goes somewhere is a
    * link; one that only discloses a flyout is a button, so it can be reached by
-   * keyboard and can carry `aria-expanded`; one that does neither is a label.
+   * keyboard and can carry `aria-expanded`; so is one that performs an action;
+   * one that does none of these is a label.
    */
   actionTag(useFlyout: boolean) {
     if (this.href) {
       return literal`a`;
     }
 
-    return useFlyout ? literal`button` : literal`span`;
+    return useFlyout || this.button ? literal`button` : literal`span`;
+  }
+
+  /**
+   * Focuses the row's own link or button. Collapsing and expanding re-render
+   * the row as a different element, so a caller that toggles the nav can hand
+   * focus back to the item rather than to whatever was rendered at the time.
+   */
+  override focus(options?: FocusOptions) {
+    const row = this.shadowRoot?.querySelector<HTMLElement>(
+      '.nav-item__action-item:is(a, button), .nav-item:is(a, button)'
+    );
+
+    if (row) {
+      row.focus(options);
+    } else {
+      super.focus(options);
+    }
   }
 
   /** A bare `<button>` defaults to submit, which would post its form. */
   buttonType(useFlyout: boolean) {
-    return !this.href && useFlyout ? 'button' : nothing;
+    return !this.href && (useFlyout || this.button) ? 'button' : nothing;
+  }
+
+  /** A row that is neither a link, a button, nor a flyout's trigger. */
+  isStatic(useFlyout: boolean) {
+    return !this.href && !useFlyout && !this.button;
   }
 
   /**
@@ -403,7 +433,7 @@ export default class CraftNavItem extends LitElement {
         class="${classMap({
           'nav-item': true,
           'nav-item--icon': true,
-          'nav-item--static': !this.href && !useFlyout,
+          'nav-item--static': this.isStatic(useFlyout),
         })}"
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
@@ -412,9 +442,11 @@ export default class CraftNavItem extends LitElement {
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         aria-label="${
-          (this.href || hasSubnav) && this.labelText ? this.labelText : nothing
+          (this.href || hasSubnav || this.button) && this.labelText
+            ? this.labelText
+            : nothing
         }"
-        @click="${this.href ? nothing : this.#toggleFlyout}"
+        @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
@@ -601,7 +633,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
-          'nav-item--static': !this.href && !useFlyout,
+          'nav-item--static': this.isStatic(useFlyout),
         })}"
         id="${this.itemId}"
       >
@@ -622,7 +654,7 @@ export default class CraftNavItem extends LitElement {
         aria-current="${this.href ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
-        @click="${this.href ? nothing : this.#toggleFlyout}"
+        @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
       >
         <slot
           id="${this.id}-label"

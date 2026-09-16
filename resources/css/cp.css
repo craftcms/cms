@@ -41,6 +41,13 @@ CP Styles
     var(--workspace-bg-image);
 }
 
+/* Laravel Debugbar pins its header row to the bottom of the viewport, and a
+   closed bar leaves its restore button there. Its open height is set inline
+   and isn't matched here. */
+:root:has(.phpdebugbar) {
+  --cp-debug-bar-height: calc(33rem / 16);
+}
+
 .skip-link--global {
   z-index: calc(var(--global-sidebar-z-index) + 1);
 }

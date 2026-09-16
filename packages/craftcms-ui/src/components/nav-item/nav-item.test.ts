@@ -798,3 +798,73 @@ describe('craft-nav-item selection', () => {
     expect(item.hasAttribute('current')).toBe(true);
   });
 });
+
+describe('craft-nav-item as a button', () => {
+  async function createButton(iconOnly: boolean): Promise<CraftNavItem> {
+    const item = await createFixture({iconOnly, subnav: false, href: false});
+    item.button = true;
+    await item.updateComplete;
+    return item;
+  }
+
+  it('renders its label as a button that reaches the item’s click listener', async () => {
+    const item = await createButton(false);
+    const clicks: Event[] = [];
+    item.addEventListener('click', (event) => clicks.push(event));
+
+    const button = item.shadowRoot!.querySelector<HTMLButtonElement>(
+      'button.nav-item__action-item'
+    )!;
+    expect(button.type).toBe('button');
+    expect(
+      item.shadowRoot!.querySelector('.nav-item')!.classList
+    ).not.toContain('nav-item--static');
+
+    button.click();
+    expect(clicks).toHaveLength(1);
+    expect(clicks[0].defaultPrevented).toBe(false);
+  });
+
+  it('is a named button with a tooltip when collapsed', async () => {
+    const item = await createButton(true);
+    const clicks: Event[] = [];
+    item.addEventListener('click', (event) => clicks.push(event));
+
+    const button =
+      item.shadowRoot!.querySelector<HTMLButtonElement>('button.nav-item')!;
+    expect(button.type).toBe('button');
+    expect(button.getAttribute('aria-label')).toBe('GraphQL');
+    expect(button.hasAttribute('aria-expanded')).toBe(false);
+    expect(item.shadowRoot!.querySelector('craft-tooltip')).not.toBeNull();
+
+    button.click();
+    expect(clicks).toHaveLength(1);
+  });
+
+  it('stays a label without it', async () => {
+    const item = await createFixture({subnav: false, href: false});
+
+    expect(item.shadowRoot!.querySelector('button')).toBeNull();
+    expect(item.shadowRoot!.querySelector('.nav-item')!.classList).toContain(
+      'nav-item--static'
+    );
+  });
+});
+
+describe('craft-nav-item focus', () => {
+  it('focuses the row, whichever element it is rendered as', async () => {
+    const item = await createFixture({subnav: false});
+
+    item.focus();
+    expect(item.shadowRoot!.activeElement).toBe(
+      item.shadowRoot!.querySelector('a.nav-item')
+    );
+
+    item.iconOnly = false;
+    await item.updateComplete;
+    item.focus();
+    expect(item.shadowRoot!.activeElement).toBe(
+      item.shadowRoot!.querySelector('a.nav-item__action-item')
+    );
+  });
+});
