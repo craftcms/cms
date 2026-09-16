@@ -41,6 +41,7 @@
   import {firstMessages} from '@/common/slideouts/errors';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
+  import {useScreenRegions} from './useScreenRegions';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -98,18 +99,11 @@
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
-  const hasToolbar = computed(
-    () => Boolean(slots.toolbar) || registry.has('toolbar')
-  );
-  const hasTabs = computed(
-    () => Boolean(slots['content-tabs']) || registry.has('content-tabs')
-  );
-  const hasContentNotice = computed(
-    () => Boolean(slots['content-notice']) || registry.has('content-notice')
-  );
-  const hasDetails = computed(
-    () => Boolean(slots['content-details']) || registry.has('content-details')
-  );
+  const regions = useScreenRegions(slots, registry);
+  const hasToolbar = computed(() => regions.has('toolbar'));
+  const hasTabs = computed(() => regions.has('content-tabs'));
+  const hasNotices = computed(() => regions.has('notices'));
+  const hasDetails = computed(() => regions.has('content-details'));
 
   const submitLabel = computed(
     () =>
@@ -404,6 +398,12 @@
 
     <div class="slideout-screen__body">
       <div ref="contentEl" class="slideout-screen__content">
+        <div v-show="hasNotices" class="slideout-screen__notices" role="status">
+          <LayoutSlotOutlet name="notices">
+            <slot name="notices"></slot>
+          </LayoutSlotOutlet>
+        </div>
+
         <LayoutSlotOutlet name="error-summary">
           <slot name="error-summary">
             <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
@@ -411,12 +411,6 @@
             <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
           </slot>
         </LayoutSlotOutlet>
-
-        <div v-show="hasContentNotice" role="status">
-          <LayoutSlotOutlet name="content-notice">
-            <slot name="content-notice"></slot>
-          </LayoutSlotOutlet>
-        </div>
 
         <CalloutReadOnly v-if="readOnly" />
 
@@ -536,6 +530,11 @@
     @container slideout (width >= 44rem) {
       flex-direction: row;
     }
+  }
+
+  .slideout-screen__notices {
+    display: grid;
+    gap: var(--c-spacing-sm, 0.5rem);
   }
 
   .slideout-screen__content {

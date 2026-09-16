@@ -224,60 +224,70 @@
     </div>
   </LayoutSlot>
 
-  <craft-callout
-    v-if="activity.isStale.value"
-    variant="warning"
-    icon="triangle-exclamation"
-    class="mb-4"
-    appearance="fill"
-    rounded="none"
+  <LayoutSlot
+    v-if="
+      activity.isStale.value ||
+      payload.readOnly ||
+      payload.notice ||
+      payload.mergeNotice
+    "
+    name="notices"
   >
-    {{ staleMessage }}
-
-    <craft-button
-      slot="action"
-      type="button"
-      variant="outline"
-      size="small"
-      @click="reload"
-      inherit
+    <craft-callout
+      v-if="activity.isStale.value"
+      variant="warning"
+      icon="triangle-exclamation"
+      class="mb-4"
+      appearance="fill"
+      rounded="none"
     >
-      {{ t('Reload') }}
-    </craft-button>
-  </craft-callout>
+      {{ staleMessage }}
 
-  <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
-    {{ t('This is a read-only view.') }}
-  </craft-callout>
+      <craft-button
+        slot="action"
+        type="button"
+        variant="outline"
+        size="small"
+        @click="reload"
+        inherit
+      >
+        {{ t('Reload') }}
+      </craft-button>
+    </craft-callout>
 
-  <craft-callout
-    v-if="payload.notice"
-    variant="neutral"
-    icon="edit"
-    class="mb-4"
-  >
-    {{ payload.notice }}
+    <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
+      {{ t('This is a read-only view.') }}
+    </craft-callout>
 
-    <craft-button
-      v-if="payload.canDiscardDraft"
-      slot="action"
-      type="button"
-      appearance="outline"
-      size="small"
-      @click="discardDraft"
+    <craft-callout
+      v-if="payload.notice"
+      variant="neutral"
+      icon="edit"
+      class="mb-4"
     >
-      {{ t('Discard changes') }}
-    </craft-button>
-  </craft-callout>
+      {{ payload.notice }}
 
-  <craft-callout
-    v-if="payload.mergeNotice"
-    variant="warning"
-    icon="triangle-exclamation"
-    class="mb-4"
-  >
-    {{ payload.mergeNotice }}
-  </craft-callout>
+      <craft-button
+        v-if="payload.canDiscardDraft"
+        slot="action"
+        type="button"
+        appearance="outline"
+        size="small"
+        @click="discardDraft"
+      >
+        {{ t('Discard changes') }}
+      </craft-button>
+    </craft-callout>
+
+    <craft-callout
+      v-if="payload.mergeNotice"
+      variant="warning"
+      icon="triangle-exclamation"
+      class="mb-4"
+    >
+      {{ payload.mergeNotice }}
+    </craft-callout>
+  </LayoutSlot>
 
   <FormRenderer
     v-if="formPayload"

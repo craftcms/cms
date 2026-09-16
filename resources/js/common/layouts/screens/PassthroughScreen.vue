@@ -47,8 +47,8 @@
 
 <template>
   <slot name="page-main">
+    <slot name="notices"></slot>
     <slot name="error-summary"></slot>
-    <slot name="content-notice"></slot>
     <slot name="content-tabs"></slot>
     <slot></slot>
     <slot name="content-footer"></slot>

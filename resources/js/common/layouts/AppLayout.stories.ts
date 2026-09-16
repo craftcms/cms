@@ -83,7 +83,7 @@ The Control Panel app shell. Provides the same extension points as Craft 5's
 | \`actionButton\` | \`actions\` slot (full override) |
 | \`block submitButton\` | \`submit-button\` slot |
 | \`actionMenu\` / \`formActions\` | \`formActions\` / \`formAdditionalActions\` / \`defaultFormActions\` props |
-| \`contentNotice\` | \`content-notice\` slot |
+| \`contentNotice\` | \`notices\` slot |
 | \`tabs\` | \`tabs\` slot |
 | \`sidebar\` | \`sidebar\` slot — defaults to a secondary nav built from the \`subnav\` page prop, with a \`subnav-actions\` slot below it |
 | \`block content\` | default slot |
@@ -160,8 +160,8 @@ export const AllExtensionPoints: Story = {
             </SlotMarker>
           </template>
 
-          <template #content-notice>
-            <SlotMarker name="content-notice">
+          <template #notices>
+            <SlotMarker name="notices">
               This entry was updated 5 minutes ago.
             </SlotMarker>
           </template>
@@ -297,7 +297,7 @@ export const AllExtensionPointsInContext: Story = {
           </div>
         </template>
 
-        <template #content-notice>
+        <template #notices>
           <craft-callout data-color="info" size="small">
             You're editing a draft. It won't be visible on the site until it's
             published.
@@ -535,10 +535,10 @@ export const SidebarAndDetails: Story = {
 };
 
 /**
- * `content-notice` and `content-tabs` render at the top of the content column, like the
- * content pane header in Craft 5.
+ * `notices` render at the top of the content column, above the page header, and
+ * `content-tabs` below it, like the content pane header in Craft 5.
  */
-export const ContentNoticeAndTabs: Story = {
+export const NoticesAndTabs: Story = {
   render: (args) => ({
     components: {AppLayout, SlotMarker},
     setup: () => ({args}),
@@ -546,8 +546,8 @@ export const ContentNoticeAndTabs: Story = {
       <div>
         <component is="style">${markerStyles}</component>
         <AppLayout v-bind="args">
-          <template #content-notice>
-            <SlotMarker name="content-notice">
+          <template #notices>
+            <SlotMarker name="notices">
               Showing the entry in its state on June 1, 2026.
             </SlotMarker>
           </template>

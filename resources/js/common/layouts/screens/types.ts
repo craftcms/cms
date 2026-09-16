@@ -58,6 +58,12 @@ export interface ScreenSlots {
   default?: () => any;
   /** Replaces the entire main column: breadcrumb bar, page header, and content. Craft 5: `block main`. */
   'page-main'?: () => any;
+  /**
+   * Notices about the page's state — a draft, a stale copy, a read-only view —
+   * at the top of the content column, above the page header. Craft 5:
+   * `contentNotice`.
+   */
+  notices?: () => any;
   /** Replaces the breadcrumb bar. Default renders the `crumbs` page prop and the `context-menu` slot. */
   breadcrumbs?: () => any;
   /** Extra controls next to the breadcrumbs, e.g. a site picker. Craft 5: `contextMenu`. */
@@ -70,16 +76,14 @@ export interface ScreenSlots {
   'title-badge'?: () => any;
   /** Controls between the title and the action buttons. Craft 5: `toolbar`. */
   toolbar?: () => any;
-  /** Replaces the whole action-buttons area, including the form save UI. Craft 5: `actionButton`. */
+  /** Page-level action buttons in the header, e.g. New … or Upload. Craft 5: `actionButton`. */
   actions?: () => any;
-  /** Extra buttons before the form save UI. Craft 5: `additionalButtons`. */
+  /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
   /** Replaces the save button while keeping the form action menu. Craft 5: `block submitButton`. */
   'submit-button'?: () => any;
   /** Replaces the default form error summary. Craft 5: `errorSummary`. */
   'error-summary'?: () => any;
-  /** Status notice at the top of the content column. Craft 5: `contentNotice`. */
-  'content-notice'?: () => any;
   /** Tabs above the content. Craft 5: `tabs`. */
   'content-tabs'?: () => any;
   /** Left column beside the content. Defaults to a secondary nav built from the `subnav` page prop. Craft 5: `sidebar`. */
@@ -90,7 +94,7 @@ export interface ScreenSlots {
    * the expanded nav — the collapsed action menu is built from descriptors.
    */
   'subnav-actions'?: () => any;
-  /** Bottom of the content column (pagination, meta info, …). Craft 5: `footer` (content pane). */
+  /** Bottom of the content column (pagination, meta info, …), beside the form save UI. Craft 5: `footer` (content pane). */
   'content-footer'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
   'content-details'?: () => any;
