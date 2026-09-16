@@ -9,6 +9,7 @@ import ConditionBuilderControl from './ConditionBuilderControl.vue';
 import ColorControl from './ColorControl.vue';
 import ColorSelectControl from './ColorSelectControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
+import ComboboxCreateControl from './ComboboxCreateControl.vue';
 import FormRenderer from './FormRenderer.vue';
 import GroupNode from './GroupNode.vue';
 import LightswitchControl from './LightswitchControl.vue';
@@ -66,6 +67,7 @@ export function registerFormComponents(
   components.register('craft:hidden', HiddenControl);
   components.register('craft:text', TextControl);
   components.register('craft:combobox', ComboboxControl);
+  components.register('craft:combobox-create', ComboboxCreateControl);
   components.register('craft:textarea', TextareaControl);
   components.register('craft:lightswitch', LightswitchControl);
   components.register('craft:checkbox', CheckboxControl);

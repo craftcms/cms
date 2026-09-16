@@ -13,6 +13,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\ColorSelect;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\ComboboxCreate;
 use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
@@ -59,6 +60,7 @@ class FormControlTypes extends TypeRegistry
         Color::class,
         ColorSelect::class,
         Combobox::class,
+        ComboboxCreate::class,
         ContentBlock::class,
         Date::class,
         DateTime::class,
