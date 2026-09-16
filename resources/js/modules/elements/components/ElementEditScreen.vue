@@ -6,7 +6,8 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
@@ -98,6 +99,10 @@
     ...viewButtons.value,
     ...headerButtons.value,
   ]);
+
+  /** Measured here because this component owns the body; see ElementDetailsTabs. */
+  const editorBody = ref<HTMLElement | null>(null);
+  const {width: bodyWidth} = useElementSize(editorBody);
 
   const hasDetails = computed(
     () =>
@@ -257,10 +262,15 @@
           </div>
 
           <div v-if="form.hasErrors" class="px-4">
-            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+            <ErrorSummary
+              v-if="form.hasErrors"
+              :errors="form.errors"
+              :title="t('Couldn’t save changes')"
+            />
           </div>
 
           <div
+            ref="editorBody"
             class="element-editor__body"
             :class="{'element-editor__body--details': hasDetails}"
           >
@@ -274,6 +284,7 @@
                       ref="renderer"
                       :payload="formPayload"
                       :errors="errors"
+                      :modified="autosave.modified.value"
                       @update:mutation="onMutation"
                     />
 
@@ -290,6 +301,7 @@
               <ElementDetailsTabs
                 :payload="payload"
                 :activity-timeline-version="activityTimelineVersion"
+                :available-width="bodyWidth"
                 pane
               >
                 <template #info>
@@ -310,6 +322,7 @@
                             ref="sidebarRenderer"
                             :payload="sidebarPayload"
                             :errors="sidebarErrors"
+                            :modified="autosave.modified.value"
                             @update:mutation="onSidebarMutation"
                           />
                         </craft-field-group>

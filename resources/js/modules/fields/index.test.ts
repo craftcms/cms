@@ -100,11 +100,11 @@ describe('field input action listeners', () => {
         <craft-action-menu>
           <craft-action-item id="trigger"></craft-action-item>
         </craft-action-menu>
-        <div class="matrix matrix-field">
-          <div class="matrixblock" data-id="1"></div>
-          <div class="matrixblock" data-id="2">
+        <div data-matrix-field>
+          <div data-matrix-block data-id="1"></div>
+          <div data-matrix-block data-id="2">
             <craft-field>
-              <div class="matrixblock" data-id="3"></div>
+              <div data-matrix-block data-id="3"></div>
             </craft-field>
           </div>
         </div>
@@ -113,7 +113,9 @@ describe('field input action listeners', () => {
 
     return {
       trigger: document.querySelector<HTMLElement>('#trigger')!,
-      blocks: [...document.querySelectorAll<HTMLElement>('.matrixblock')],
+      blocks: [
+        ...document.querySelectorAll<HTMLElement>('[data-matrix-block]'),
+      ],
     };
   }
 
@@ -201,6 +203,108 @@ describe('field input action listeners', () => {
         siteId: 2,
       },
     ]);
+  });
+
+  it('copies a Matrix block by its element id, not its UID', () => {
+    document.body.innerHTML = `
+      <craft-field>
+        <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
+        <div data-matrix-block data-id="uid-a" data-element-id="12" data-owner-id="9" data-site-id="1"></div>
+        <div data-matrix-block data-id="uid:new"></div>
+      </craft-field>
+    `;
+
+    window.dispatchEvent(
+      new CustomEvent('craft:copy-nested-elements', {
+        detail: {
+          selector: '[data-matrix-block]',
+          elementType: 'craft\\elements\\Entry',
+          fieldId: 4,
+          trigger: document.querySelector('#trigger'),
+        },
+      })
+    );
+
+    // The second block was minted in the browser and has no element behind it
+    // yet, so there is nothing for the clipboard to point at.
+    expect(copyElements).toHaveBeenCalledWith([
+      {
+        type: 'craft\\elements\\Entry',
+        fieldId: 4,
+        id: '12',
+        draftId: null,
+        revisionId: null,
+        ownerId: 9,
+        siteId: 1,
+      },
+    ]);
+  });
+
+  it('applies a selection item to the field’s selected blocks only', () => {
+    document.body.innerHTML = `
+      <craft-field>
+        <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
+        <div data-matrix-block data-selected data-id="1"></div>
+        <div data-matrix-block data-id="2"></div>
+      </craft-field>
+    `;
+    const blocks = [
+      ...document.querySelectorAll<HTMLElement>('[data-matrix-block]'),
+    ];
+    const entries = blocks.map(() => ({
+      collapse: vi.fn(),
+      expand: vi.fn(),
+      disable: vi.fn(),
+      enable: vi.fn(),
+    }));
+    forContainer.mockImplementation(
+      (el: Element) => entries[blocks.indexOf(el as HTMLElement)]
+    );
+    const trigger = document.querySelector('#trigger');
+
+    window.dispatchEvent(
+      new CustomEvent('craft:matrix-selection-action', {
+        detail: {action: 'collapse', trigger},
+      })
+    );
+    window.dispatchEvent(
+      new CustomEvent('craft:matrix-selection-action', {
+        detail: {action: 'disable', trigger},
+      })
+    );
+
+    expect(entries[0]!.collapse).toHaveBeenCalled();
+    expect(entries[0]!.disable).toHaveBeenCalled();
+    expect(entries[1]!.collapse).not.toHaveBeenCalled();
+    expect(entries[1]!.disable).not.toHaveBeenCalled();
+  });
+
+  it('selects and deselects the field’s blocks through its Matrix input', () => {
+    document.body.innerHTML = `
+      <craft-field>
+        <craft-action-menu><craft-action-item id="trigger"></craft-action-item></craft-action-menu>
+        <div data-matrix-block data-id="1"></div>
+      </craft-field>
+    `;
+    const entrySelect = {selectAll: vi.fn(), deselectAll: vi.fn()};
+    forContainer.mockReturnValue({matrix: {entrySelect}});
+    const trigger = document.querySelector('#trigger');
+
+    window.dispatchEvent(
+      new CustomEvent('craft:matrix-selection-action', {
+        detail: {action: 'select', trigger},
+      })
+    );
+
+    expect(entrySelect.selectAll).toHaveBeenCalled();
+
+    window.dispatchEvent(
+      new CustomEvent('craft:matrix-selection-action', {
+        detail: {action: 'deselect', trigger},
+      })
+    );
+
+    expect(entrySelect.deselectAll).toHaveBeenCalled();
   });
 
   it('does not touch the clipboard when there is nothing to copy', () => {

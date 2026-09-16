@@ -784,6 +784,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             // Is this a derivative element, and does the content block primarily belong to the canonical?
             if (
                 $element->getIsDerivative() &&
+                ! $contentBlock->getIsDraft() &&
                 $contentBlock->getPrimaryOwnerId() === $element->getCanonicalId() &&
                 // this is so that extra drafts don't get created for matrix in matrix scenario
                 // where both are set to inline-editable blocks view mode

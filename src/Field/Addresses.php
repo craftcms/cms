@@ -424,35 +424,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      */
     private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
-        // Was the value posted in the new (delta) format?
-        $delta = isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder']);
+        // Was the value posted in the new (delta) format, and by UUID or ID?
+        ['delta' => $delta, 'uids' => $uids, 'entries' => $newAddressData, 'sortOrder' => $newSortOrder] =
+            ElementHelper::nestedElementDelta($value);
 
-        if ($delta) {
-            $newAddressData = $value['entries'] ?? $value['blocks'] ?? [];
-            $newSortOrder = $value['sortOrder'] ?? null;
-
-            // Were the addresses posted by UUID or ID?
-            $firstKey = (string) array_key_first($newAddressData);
-            $firstSortOrder = $newSortOrder !== null ? (string) reset($newSortOrder) : '';
-            $uids = (
-                str_starts_with($firstKey, 'uid:') ||
-                str_starts_with($firstSortOrder, 'uid:') ||
-                Str::isUuid($firstKey) ||
-                Str::isUuid($firstSortOrder)
-            );
-
-            if ($uids) {
-                // Strip out the `uid:` key prefixes. New addresses are posted with them; addresses
-                // that were already on the element aren't, so both need to be normalized.
-                $newAddressData = array_combine(
-                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($newAddressData)),
-                    array_values($newAddressData),
-                );
-            }
-        } else {
-            $uids = false;
-            $newAddressData = $value;
-            $newSortOrder = array_keys($value);
+        if (! $delta) {
+            $newSortOrder = array_keys($newAddressData);
         }
 
         // Get the old addresses
@@ -528,10 +505,13 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             'longitude',
         ];
 
-        foreach ($newSortOrder as $postedAddressId) {
-            // New addresses are posted with a `uid:` key prefix; addresses that were already
-            // on the element aren't
-            $addressId = $uids ? Str::chopStart((string) $postedAddressId, 'uid:') : $postedAddressId;
+        foreach ($newSortOrder as $addressId) {
+            // nestedElementDelta() stripped the `uid:` prefix off the identity, but the
+            // POST keys still carry it — and this is the identity as posted, before the
+            // canonical/derivative remap below.
+            $postedAddressId = $uids
+                ? ElementHelper::NESTED_ELEMENT_UID_PREFIX.$addressId
+                : $addressId;
             $addressData = $newAddressData[$addressId] ?? [];
 
             // If this is a preexisting address but we don't have a record of it,
@@ -546,7 +526,11 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address = $oldAddressesById[$addressId];
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
+                if (
+                    $element->getIsDerivative() &&
+                    ! $address->getIsDraft() &&
+                    $address->getPrimaryOwnerId() === $element->getCanonicalId()
+                ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $address = app(Drafts::class)->createDraft($address, currentUser()?->getCraftUserId(), null, null, [
                         'canonicalId' => $address->id,

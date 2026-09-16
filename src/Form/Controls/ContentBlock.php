@@ -98,6 +98,12 @@ class ContentBlock extends Control
     }
 
     #[\Override]
+    public function nestsForms(): bool
+    {
+        return true;
+    }
+
+    #[\Override]
     public function nestedForms(mixed $value = null): array
     {
         if ($value === null) {
