@@ -18,6 +18,8 @@
   import type {FormValues} from '@/modules/forms/types';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import VarDump from '@/common/components/VarDump.vue';
 
   const props = defineProps<{
     /**
@@ -233,72 +235,81 @@
     "
     name="notices"
   >
-    <craft-callout
-      v-if="activity.isStale.value"
-      variant="warning"
-      icon="triangle-exclamation"
-      class="mb-4"
-      appearance="fill"
-      rounded="none"
-    >
-      {{ staleMessage }}
-
-      <craft-button
-        slot="action"
-        type="button"
-        variant="outline"
-        size="small"
-        @click="reload"
-        inherit
+    <div class="element-notices">
+      <craft-callout
+        v-if="activity.isStale.value"
+        variant="warning"
+        icon="triangle-exclamation"
+        class="mb-4"
+        appearance="fill"
+        rounded="none"
       >
-        {{ t('Reload') }}
-      </craft-button>
-    </craft-callout>
+        {{ staleMessage }}
 
-    <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
-      {{ t('This is a read-only view.') }}
-    </craft-callout>
+        <craft-button
+          slot="action"
+          type="button"
+          variant="outline"
+          size="small"
+          @click="reload"
+          inherit
+        >
+          {{ t('Reload') }}
+        </craft-button>
+      </craft-callout>
 
-    <craft-callout
-      v-if="payload.notice"
-      variant="neutral"
-      icon="edit"
-      class="mb-4"
-    >
-      {{ payload.notice }}
+      <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
+        {{ t('This is a read-only view.') }}
+      </craft-callout>
 
-      <craft-button
-        v-if="payload.canDiscardDraft"
-        slot="action"
-        type="button"
-        appearance="outline"
-        size="small"
-        @click="discardDraft"
+      <craft-callout
+        v-if="payload.notice"
+        variant="accent"
+        icon="edit"
+        class="mb-4"
+        rounded="none"
+        appearance="fill"
       >
-        {{ t('Discard changes') }}
-      </craft-button>
-    </craft-callout>
+        {{ payload.notice }}
 
-    <craft-callout
-      v-if="payload.mergeNotice"
-      variant="warning"
-      icon="triangle-exclamation"
-      class="mb-4"
-    >
-      {{ payload.mergeNotice }}
-    </craft-callout>
+        <craft-button
+          v-if="payload.canDiscardDraft"
+          slot="action"
+          type="button"
+          variant="outline"
+          size="small"
+          @click="discardDraft"
+          inherit
+        >
+          {{ t('Discard changes') }}
+        </craft-button>
+      </craft-callout>
+
+      <craft-callout
+        v-if="payload.mergeNotice"
+        variant="warning"
+        icon="triangle-exclamation"
+        class="mb-4"
+      >
+        {{ payload.mergeNotice }}
+      </craft-callout>
+    </div>
   </LayoutSlot>
 
-  <FormRenderer
-    v-if="formPayload"
-    ref="renderer"
-    :payload="formPayload"
-    :errors="errors"
-    :modified="autosave.modified.value"
-    @update:mutation="onMutation"
-  />
+  <div class="py-3">
+    <CpContainer>
+      <FormRenderer
+        v-if="formPayload"
+        ref="renderer"
+        :payload="formPayload"
+        :errors="errors"
+        :modified="autosave.modified.value"
+        @update:mutation="onMutation"
+      />
 
-  <slot :payload="payload" />
+      <slot :payload="payload" />
+    </CpContainer>
+  </div>
 
   <LayoutSlot
     v-if="hasDetails || $slots['details-header']"
@@ -309,27 +320,36 @@
       :activity-timeline-version="activityTimelineVersion"
     >
       <template #info>
-        <!-- Anything the element type shows above its meta fields, e.g. an
-          asset's file preview. -->
-        <slot name="details-header" :payload="payload" />
+        <div class="px-3 py-2 border-b border-b-quiet">
+          <h3 class="text-lg m-0">{{ t('Info') }}</h3>
+        </div>
 
-        <!--
+        <div class="p-3">
+          <!-- Anything the element type shows above its meta fields, e.g. an
+          asset's file preview. -->
+          <slot name="details-header" :payload="payload" />
+
+          <!--
           The meta fields render as their own Form, bridged into the same Inertia
           form as the field layout above, so they submit as ordinary inputs.
         -->
-        <FormRenderer
-          v-if="sidebarPayload"
-          ref="sidebarRenderer"
-          :payload="sidebarPayload"
-          :errors="sidebarErrors"
-          :modified="autosave.modified.value"
-          @update:mutation="onSidebarMutation"
-        />
+          <craft-field-group>
+            <FormRenderer
+              v-if="sidebarPayload"
+              ref="sidebarRenderer"
+              :payload="sidebarPayload"
+              :errors="sidebarErrors"
+              :modified="autosave.modified.value"
+              @update:mutation="onSidebarMutation"
+            />
+          </craft-field-group>
 
-        <DynamicHtmlRenderer
-          v-if="payload.metadataHtml"
-          :html="payload.metadataHtml"
-        />
+          <hr class="my-lg" />
+          <DynamicHtmlRenderer
+            v-if="payload.metadataHtml"
+            :html="payload.metadataHtml"
+          />
+        </div>
       </template>
     </ElementDetailsTabs>
   </LayoutSlot>

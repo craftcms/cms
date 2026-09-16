@@ -164,35 +164,32 @@
     </craft-tab>
     <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
       <slot v-if="tab.slot" :name="tab.slot" />
-      <component
-        v-else
-        :is="pane ? 'craft-pane' : 'div'"
-        :appearance="pane ? 'plain' : undefined"
-      >
+      <div v-else>
         <div
-          v-if="pane"
           slot="header"
-          class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
+          class="px-md py-sm border-b border-b-(--c-color-neutral-border-quiet)"
         >
-          <h3 slot="title" class="text-xs/4">{{ tab.label }}</h3>
+          <h3 slot="title" class="text-lg/4">{{ tab.label }}</h3>
         </div>
         <component
           v-if="tab.component"
           :is="tab.component"
           v-bind="componentProps()"
         />
-      </component>
+      </div>
     </div>
   </craft-tabs>
 </template>
 
 <style scoped>
   craft-tabs::part(base) {
-    gap: var(--c-spacing-sm);
+    gap: 0;
+    height: 100%;
   }
 
   craft-tabs::part(strip) {
-    border: 0;
+    padding: var(--c-spacing-sm);
+    border-inline-start: 1px solid var(--c-color-border-quiet);
   }
 
   craft-tab {
@@ -207,9 +204,9 @@
   }
 
   craft-tab[selected='true'] {
-    border-color: var(--c-color-neutral-border-normal);
-    background-color: var(--c-color-neutral-fill-normal);
-    color: var(--c-color-neutral-on-normal);
+    border-color: var(--c-color-accent-border-quiet);
+    background-color: var(--c-color-accent-fill-quiet);
+    color: var(--c-color-accent-on-quiet);
 
     &::after {
       display: none;

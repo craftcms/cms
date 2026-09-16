@@ -262,3 +262,16 @@ craft-field[data-highlighted] {
     transition: none;
   }
 }
+
+.cp-container {
+  --c-container-padding: var(--c-spacing-lg);
+  display: grid;
+  grid-template-columns: var(--c-container-padding) 1fr var(
+      --c-container-padding
+    );
+  grid-template-areas: '. content .';
+}
+
+.cp-container > * {
+  grid-column: 2;
+}

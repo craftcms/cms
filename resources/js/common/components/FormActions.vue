@@ -64,7 +64,7 @@
     <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
   </div>
 
-  <div v-if="!readOnly" class="flex items-center justify-end gap-2">
+  <div v-if="!readOnly" class="flex items-center justify-between gap-2">
     <template v-for="(button, index) in additionalButtons" :key="button.label">
       <craft-button
         :id="
