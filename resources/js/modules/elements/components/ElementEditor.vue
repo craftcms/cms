@@ -320,15 +320,11 @@
       :activity-timeline-version="activityTimelineVersion"
     >
       <template #info>
-        <div class="py-md px-lg border-b border-b-quiet">
-          <h3 class="text-md/4">{{ t('Info') }}</h3>
-        </div>
+        <!-- Anything the element type shows above its meta fields, e.g. an
+        asset's file preview. -->
+        <slot name="details-header" :payload="payload" />
 
         <div class="p-lg">
-          <!-- Anything the element type shows above its meta fields, e.g. an
-          asset's file preview. -->
-          <slot name="details-header" :payload="payload" />
-
           <!--
           The meta fields render as their own Form, bridged into the same Inertia
           form as the field layout above, so they submit as ordinary inputs.
