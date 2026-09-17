@@ -10,11 +10,13 @@ use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Workflow\WorkflowStageTypes;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Forms\FormKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
+use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function Orchestra\Testbench\package_path;
 
@@ -22,6 +24,10 @@ class WorkbenchServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->booted(
+            fn () => app(WorkflowStageTypes::class)->register(AutomaticApprovalStage::class),
+        );
+
         if (! $this->app->runningUnitTests()) {
             app(WidgetTypes::class)->register(HtmlExample::class);
         }
