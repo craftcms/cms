@@ -146,15 +146,32 @@ export default class CraftThumbnail extends LitElement {
     }
   }
 
-  override updated(changedProperties: PropertyValues<this>) {
-    this.updateSlottedSvgs();
+  override willUpdate(changedProperties: PropertyValues<this>) {
+    const animatedInputsChanged =
+      changedProperties.has('src') ||
+      changedProperties.has('srcset') ||
+      changedProperties.has('animated');
 
-    if (changedProperties.has('src')) {
+    if (animatedInputsChanged) {
       this.frozen = false;
       this.capturedFrame = null;
       this.resizeObserver?.disconnect();
       this.resizeObserver = null;
+
+      // A `src` change already triggers its own fresh `load` event;
+      // `srcset`/`animated` don't, so retry manually instead of risking a
+      // permanently stale frozen/unfrozen state.
+      if (!changedProperties.has('src')) {
+        const image = this.shadowRoot?.querySelector('img');
+        if (image?.complete) {
+          this.attemptFreeze(image);
+        }
+      }
     }
+  }
+
+  override updated() {
+    this.updateSlottedSvgs();
   }
 
   override connectedCallback() {
@@ -213,16 +230,18 @@ export default class CraftThumbnail extends LitElement {
     `;
   }
 
-  /**
-   * Loads the just-resolved image's source into a detached `Image`, which
-   * never gets composited on screen and so never advances past its first
-   * frame — unlike the visible `<img>`, which is actively animating by the
-   * time `load` fires. That detached copy is what gets drawn onto the cover
-   * canvas, sized to the visible image's rendered box.
-   */
   private freezeFrame(event: Event) {
-    const image = event.target as HTMLImageElement;
+    this.attemptFreeze(event.target as HTMLImageElement);
+  }
 
+  /**
+   * Loads the image's current source into a detached `Image`, which never
+   * gets composited on screen and so never advances past its first frame —
+   * unlike the visible `<img>`, which is actively animating by the time
+   * this runs. That detached copy is what gets drawn onto the cover canvas,
+   * sized to the visible image's rendered box.
+   */
+  private attemptFreeze(image: HTMLImageElement) {
     if (!this.isAnimated || !image.currentSrc) {
       return;
     }

@@ -110,3 +110,23 @@ it('freezes once a thumbnail becomes visible, even if it was hidden when its ima
     expect(canvas.height).toBeGreaterThan(0);
   });
 });
+
+it('shows the image again when animated is turned off after freezing', async () => {
+  document.body.innerHTML = `<craft-thumbnail src="${opaqueImage}" alt="Toggle" animated></craft-thumbnail>`;
+  const thumbnail = document.querySelector('craft-thumbnail')!;
+  await thumbnail.updateComplete;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+  await image.decode();
+
+  await vi.waitFor(() =>
+    expect(image.classList.contains('cp-visually-hidden')).toBe(true)
+  );
+
+  thumbnail.animated = false;
+  await thumbnail.updateComplete;
+
+  expect(
+    thumbnail.shadowRoot!.querySelector('canvas[part="cover"]')
+  ).toBeNull();
+  expect(image.classList.contains('cp-visually-hidden')).toBe(false);
+});
