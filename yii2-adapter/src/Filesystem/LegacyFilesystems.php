@@ -137,6 +137,10 @@ class LegacyFilesystems
                 continue;
             }
 
+            if (array_key_exists($diskName, $craftDisks)) {
+                throw new FilesystemException("Laravel disk [$diskName] conflicts with a legacy Craft filesystem handle.");
+            }
+
             if (str_starts_with($diskName, self::DISK_PREFIX)) {
                 throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
             }
@@ -171,7 +175,6 @@ class LegacyFilesystems
      */
     public function registerDisk(string $handle, ?array $filesystemConfig = null): void
     {
-        $diskName = $this->toDiskName($handle);
         $diskConfig = $filesystemConfig !== null
             ? $this->resolveDiskConfigFromArray($handle, $filesystemConfig)
             : $this->resolveDiskConfig($handle);
@@ -184,12 +187,16 @@ class LegacyFilesystems
 
         $diskConfig = $this->generatedDiskConfig($diskConfig);
         $diskConfigs = $this->currentDiskConfigs();
-        if (array_key_exists($diskName, $diskConfigs) && !$this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
-            throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
+        foreach ($this->diskNames($handle) as $diskName) {
+            if (array_key_exists($diskName, $diskConfigs) && !$this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
+                throw new FilesystemException("Laravel disk [$diskName] conflicts with a legacy Craft filesystem handle.");
+            }
+
+            $diskConfigs[$diskName] = $diskConfig;
         }
-        $diskConfigs[$diskName] = $diskConfig;
+
         $this->config->set('filesystems.disks', $diskConfigs);
-        $this->filesystemManager->forgetDisk($diskName);
+        $this->forgetDisks($this->diskNames($handle));
     }
 
     /**
@@ -197,23 +204,22 @@ class LegacyFilesystems
      */
     public function purgeDisk(string $handle): void
     {
-        $diskName = $this->toDiskName($handle);
         $diskConfigs = $this->config->get('filesystems.disks', []);
 
-        if (!is_array($diskConfigs) || !array_key_exists($diskName, $diskConfigs)) {
-            $this->filesystemManager->forgetDisk($diskName);
+        if (!is_array($diskConfigs)) {
+            $this->forgetDisks($this->diskNames($handle));
 
             return;
         }
 
-        if (!$this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
-            throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
+        foreach ($this->diskNames($handle) as $diskName) {
+            if (array_key_exists($diskName, $diskConfigs) && $this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
+                unset($diskConfigs[$diskName]);
+            }
         }
 
-        unset($diskConfigs[$diskName]);
-
         $this->config->set('filesystems.disks', $diskConfigs);
-        $this->filesystemManager->forgetDisk($diskName);
+        $this->forgetDisks($this->diskNames($handle));
     }
 
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
@@ -421,7 +427,10 @@ class LegacyFilesystems
                 continue;
             }
 
-            $craftDisks[$this->toDiskName($handle)] = $this->generatedDiskConfig($diskConfig);
+            $diskConfig = $this->generatedDiskConfig($diskConfig);
+            foreach ($this->diskNames($handle) as $diskName) {
+                $craftDisks[$diskName] = $diskConfig;
+            }
         }
 
         return $craftDisks;
@@ -532,7 +541,7 @@ class LegacyFilesystems
 
     private function isGeneratedDiskConfig(string $name, mixed $config): bool
     {
-        if (!str_starts_with($name, self::DISK_PREFIX) || !is_array($config)) {
+        if (!is_array($config)) {
             return false;
         }
 
@@ -540,7 +549,14 @@ class LegacyFilesystems
             return true;
         }
 
-        return ($config['driver'] ?? null) === 'craft-fs-bridge';
+        return str_starts_with($name, self::DISK_PREFIX)
+            && ($config['driver'] ?? null) === 'craft-fs-bridge';
+    }
+
+    /** @return array{string,string} */
+    private function diskNames(string $handle): array
+    {
+        return [$this->toDiskName($handle), $handle];
     }
 
     /**

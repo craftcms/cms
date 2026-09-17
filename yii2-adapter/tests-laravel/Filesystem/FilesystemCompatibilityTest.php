@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use craft\base\Fs;
 use craft\base\FsInterface;
-use craft\fs\Local;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
+use craft\fs\Local;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
@@ -30,6 +33,38 @@ it('resolves legacy bridge disks after Laravel rebinds the driver creator', func
 
     expect($disk->put('legacy.txt', 'legacy'))->toBeTrue()
         ->and($disk->get('legacy.txt'))->toBe('legacy');
+});
+
+it('registers legacy filesystem handles as disks for native volume operations', function() {
+    app(ProjectConfig::class)->set('fs.legacy-volume', [
+        'name' => 'Legacy Volume',
+        'type' => LegacyFilesystemCompatibilityTestFs::class,
+        'settings' => [],
+    ]);
+    app(LegacyFilesystems::class)->reset();
+
+    $volume = new Volume(['fs' => 'legacy-volume']);
+
+    expect(config('filesystems.disks.craft-fs-legacy-volume'))->toBeArray()
+        ->and(config('filesystems.disks.legacy-volume'))->toBeArray()
+        ->and($volume->sourceDisk()->put('legacy.txt', 'legacy'))->toBeTrue()
+        ->and($volume->sourceDisk()->get('legacy.txt'))->toBe('legacy');
+});
+
+it('rejects Laravel disks that conflict with legacy filesystem handles', function() {
+    app(ProjectConfig::class)->set('fs.legacy-volume', [
+        'name' => 'Legacy Volume',
+        'type' => LegacyFilesystemCompatibilityTestFs::class,
+        'settings' => [],
+    ]);
+    app(LegacyFilesystems::class)->reset();
+    config()->set('filesystems.disks.legacy-volume', [
+        'driver' => 'local',
+        'root' => sys_get_temp_dir(),
+    ]);
+
+    expect(fn() => app(LegacyFilesystems::class)->syncDisks())
+        ->toThrow(FilesystemException::class, 'conflicts with a legacy Craft filesystem handle');
 });
 
 it('keeps the Craft 5 filesystem classes in the Yii adapter', function() {
