@@ -2131,18 +2131,21 @@ JS, [
             [$width, $height],
             [$width * 2, $height * 2],
         ];
-        foreach ($thumbSizes as [$width, $height]) {
-            $url = AssetsService::getThumbUrl($this, $width, $height);
-            $srcsets[] = sprintf('%s %sw', $url, $width);
+        $src = null;
+        foreach ($thumbSizes as [$thumbWidth, $thumbHeight]) {
+            $url = AssetsService::getThumbUrl($this, $thumbWidth, $thumbHeight);
+            $srcsets[] = sprintf('%s %sw', $url, $thumbWidth);
+            $src ??= $url;
         }
 
-        return Html::tag('img', '', [
-            'sizes' => "{$thumbSizes[0][0]}px",
+        return Html::tag('craft-thumbnail', '', [
+            'src' => $src,
             'srcset' => implode(', ', $srcsets),
+            'sizes' => "{$width}px",
+            'width' => $width,
+            'height' => $height,
             'alt' => $this->thumbAlt(),
-            'data' => [
-                'animated' => $this->couldHaveAnimatedThumb(),
-            ],
+            'animated' => $this->couldHaveAnimatedThumb() ?: null,
         ]);
     }
 
@@ -2720,7 +2723,7 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         height: 190,
     },
 }).then(({data}) => {
-    $('#$thumbContainerId').find('img').replaceWith(data.img);
+    $('#$thumbContainerId').find('craft-thumbnail').replaceWith(data.img);
 }).finally(() => {
     $('#$thumbContainerId').removeClass('loading')
         .find('.spinner').remove();
