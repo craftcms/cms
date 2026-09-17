@@ -6,6 +6,20 @@ export default css`
     position: relative;
   }
 
+  /* The top layer's popover defaults would center it and paint it as a box of
+     its own; Lion positions the content, so the wrapper stays invisible. */
+  dialog[data-overlay-outer-wrapper][popover] {
+    inset: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    overflow: visible;
+    width: auto;
+    height: auto;
+  }
+
   .popover-pane {
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);

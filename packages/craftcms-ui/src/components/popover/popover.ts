@@ -99,10 +99,71 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
 
   #contentWrapper: HTMLElement | null = null;
 
+  /** Lion's controller while it's wired up to the top layer. */
+  #layeredCtrl: EventTarget | null = null;
+
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
   }
+
+  override _setupOverlayCtrl() {
+    super._setupOverlayCtrl();
+
+    this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
+    this.#layeredCtrl.addEventListener('before-show', this.#raise);
+    this.#layeredCtrl.addEventListener('hide', this.#lower);
+  }
+
+  override _teardownOverlayCtrl() {
+    this.#lower();
+    this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
+    this.#layeredCtrl?.removeEventListener('hide', this.#lower);
+    this.#layeredCtrl = null;
+
+    super._teardownOverlayCtrl();
+  }
+
+  /** The `<dialog>` Lion wraps the content in. */
+  get #dialog(): HTMLElement | null {
+    return (
+      this.shadowRoot?.querySelector<HTMLElement>(
+        'dialog[data-overlay-outer-wrapper]'
+      ) ?? null
+    );
+  }
+
+  /**
+   * Lifts the open popover into the browser's top layer, above every stacking
+   * context. Lion's non-modal dialog otherwise stays inside its ancestors':
+   * a z-index can't raise it past a sticky footer beside, say, a
+   * `container-type` field group, which is a stacking context of its own.
+   *
+   * Before Lion positions it, since the top layer also changes what a fixed
+   * overlay is placed against. Popovers opened later stack above earlier
+   * ones, so nested menus still land on top.
+   */
+  #raise = () => {
+    const dialog = this.#dialog;
+
+    if (!dialog || typeof dialog.showPopover !== 'function') {
+      return;
+    }
+
+    dialog.setAttribute('popover', 'manual');
+
+    if (!dialog.matches(':popover-open')) {
+      dialog.showPopover();
+    }
+  };
+
+  #lower = () => {
+    const dialog = this.#dialog;
+
+    if (dialog?.matches?.(':popover-open')) {
+      dialog.hidePopover();
+    }
+  };
 
   // @ts-expect-error – Lion expects this to return an OverlayConfig
   _defineOverlayConfig() {
