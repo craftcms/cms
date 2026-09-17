@@ -651,6 +651,8 @@ class Install extends Migration
             $table->string('name');
             $table->string('handle');
             $table->text('description')->nullable();
+            $table->string('file');
+            $table->string('transformer')->nullable();
             $table->mediumText('settings')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');

@@ -9,7 +9,6 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -38,7 +37,6 @@ beforeEach(function () {
 
     $this->importer = EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
-        ->fieldLayout(EntryTypes::getEntryTypeById($this->typeA->id)->getFieldLayout())
         ->transformer(null);
 });
 
@@ -47,10 +45,10 @@ it('uses the entry type selected via the field layout provider, ignoring a typeI
     $importerWithUid = clone ($this->importer, [
         'uid' => 'i-have-a-uid',
     ]);
+    $importerWithUid->section($this->section->uid)
+        ->entryType($this->typeA->uid);
     $this->import->importItem($importerWithUid, [
         'title' => 'imported entry',
-        'sectionId' => $this->section->handle,
-        'typeId' => $this->typeB->id,
     ]);
 
     $entry = EntryElement::find()->title('imported entry')->one();
@@ -62,6 +60,7 @@ it('uses the entry type selected via the field layout provider, ignoring a typeI
 dataset('requiredValueScenarios', [
     'section requires an author' => [[
         'section' => fn ($test) => $test->sectionWithAuthors,
+        'entryType' => fn ($test) => $test->typeA,
         'importer' => fn ($test) => $test->importer,
         'mappedData' => function ($test) {
             $test->requiredValueAuthor = User::factory()->create();
@@ -72,7 +71,8 @@ dataset('requiredValueScenarios', [
     ]],
     'entry type has a required Plain Text field' => [[
         'section' => fn ($test) => Section::factory()->withEntryTypes($test->typeC)->create(['minAuthors' => 0]),
-        'importer' => fn ($test) => $test->importer->fieldLayout(EntryTypes::getEntryTypeById($test->typeC->id)->getFieldLayout()),
+        'entryType' => fn ($test) => $test->typeC,
+        'importer' => fn ($test) => $test->importer,
         'mappedData' => fn ($test) => ['myRequiredText' => 'some value'],
         'assertMapped' => fn ($test, EntryElement $entry) => expect($entry->getFieldValue('myRequiredText'))->toBe('some value'),
     ]],
@@ -80,12 +80,11 @@ dataset('requiredValueScenarios', [
 
 describe('required-value validation, skipping enabled entries and allowing disabled ones', function () {
     it('fails and skips an entry imported enabled without the required value mapped', function (array $scenario) {
-        $section = ($scenario['section'])($this);
         $importer = ($scenario['importer'])($this);
+        $importer->section(($scenario['section'])($this)->uid)->entryType(($scenario['entryType'])($this)->uid);
 
         $this->import->importItem($importer, [
             'title' => 'imported entry',
-            'sectionId' => $section->handle,
         ]);
 
         $entry = EntryElement::find()->title('imported entry')->one();
@@ -94,12 +93,12 @@ describe('required-value validation, skipping enabled entries and allowing disab
     })->with('requiredValueScenarios');
 
     it('succeeds importing a disabled entry without the required value mapped', function (array $scenario) {
-        $section = ($scenario['section'])($this);
         $importer = ($scenario['importer'])($this);
+        $section = ($scenario['section'])($this);
+        $importer->section($section->uid)->entryType(($scenario['entryType'])($this)->uid);
 
         $this->import->importItem($importer, [
             'title' => 'imported entry',
-            'sectionId' => $section->handle,
             'enabled' => false,
         ]);
 
@@ -109,12 +108,11 @@ describe('required-value validation, skipping enabled entries and allowing disab
     })->with('requiredValueScenarios');
 
     it('succeeds importing an enabled entry with the required value mapped', function (array $scenario) {
-        $section = ($scenario['section'])($this);
         $importer = ($scenario['importer'])($this);
+        $importer->section(($scenario['section'])($this)->uid)->entryType(($scenario['entryType'])($this)->uid);
 
         $this->import->importItem($importer, [
             'title' => 'imported entry',
-            'sectionId' => $section->handle,
             ...($scenario['mappedData'])($this),
         ]);
 

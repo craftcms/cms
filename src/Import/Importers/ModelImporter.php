@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Importers;
 
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
@@ -47,10 +48,29 @@ abstract class ModelImporter extends BaseImporter
         'varchar' => Query::TYPE_STRING,
     ];
 
-    /**
-     * Returns the fixed model FQCN this importer subclass targets.
-     */
-    abstract public static function targetClass(): string;
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public function refreshSettingsForm(array $settings): void {}
+
+    #[Override]
+    public function storeSettings(array $settings): void {}
+
+    #[Override]
+    public function getSettings(): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public static function getDefaultTransformer(): ?string
+    {
+        return null;
+    }
 
     #[Override]
     public function getDestinationCols(): array
@@ -70,18 +90,6 @@ abstract class ModelImporter extends BaseImporter
             'canBeCleared' => $col['nullable'],
             // 'isProperty' => true,
         ], $columns);
-    }
-
-    /**
-     * Returns whether a given DB column type can be used to value being imported against the value in the database.
-     * You can match on text, numeric, boolean, and date/time values.
-     */
-    private function isTypeMatchable(string $type): bool
-    {
-        $type = self::TYPE_ALIASES[$type] ?? $type;
-
-        return in_array(Query::getSimplifiedColumnType($type), [Query::SIMPLE_TYPE_NUMERIC, Query::SIMPLE_TYPE_TEXTUAL]) ||
-            in_array($type, [Query::TYPE_BOOLEAN, Query::TYPE_DATETIME, Query::TYPE_DATE, Query::TYPE_TIME, Query::TYPE_TIMESTAMP], true);
     }
 
     #[Override]
@@ -113,6 +121,18 @@ abstract class ModelImporter extends BaseImporter
         if ($isNew || $model->isDirty()) {
             $model->save();
         }
+    }
+
+    /**
+     * Returns whether a given DB column type can be used to value being imported against the value in the database.
+     * You can match on text, numeric, boolean, and date/time values.
+     */
+    private function isTypeMatchable(string $type): bool
+    {
+        $type = self::TYPE_ALIASES[$type] ?? $type;
+
+        return in_array(Query::getSimplifiedColumnType($type), [Query::SIMPLE_TYPE_NUMERIC, Query::SIMPLE_TYPE_TEXTUAL]) ||
+            in_array($type, [Query::TYPE_BOOLEAN, Query::TYPE_DATETIME, Query::TYPE_DATE, Query::TYPE_TIME, Query::TYPE_TIMESTAMP], true);
     }
 
     /**

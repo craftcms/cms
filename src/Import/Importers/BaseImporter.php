@@ -7,10 +7,8 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
@@ -82,134 +80,48 @@ abstract class BaseImporter
     }
 
     /**
+     * Returns the fixed element type FQCN this importer subclass targets.
+     */
+    abstract public static function targetClass(): string;
+
+    abstract public static function create(): self;
+
+    /**
      * Returns the display name for the importer.
      */
-    public static function displayName(): string
-    {
-        return t('Base Importer');
-    }
+    abstract public static function displayName(): string;
 
     /**
-     * Determines if the importer is editable.
-     * If the importer has a UID, it means it's stored in the database, and therefore it's editable via the Control Panel.
-     * Otherwise, it's a custom importer that comes e.g. from a file.'
+     * Defines the type-specific settings nodes and context for this importer form.
      */
-    public function isEditable(): bool
-    {
-        return isset($this->uid);
-    }
+    abstract public function settingsForm(FormContext $context): array;
 
     /**
-     * Defines the type-specific settings form for this importer.
+     * Renders the importer-specific part of the settings form.
      */
-    public function settingsForm(FormContext $context = new FormContext): Form
-    {
-        return Form::make([
-            FormField::make(t('Data File'), Text::make('file')->value($this->file)->placeholder('@root/resources/my-data.json'))
-                ->instructions(t('The absolute path to the file containing the data you want to import.'))
-                ->required(),
-            FormField::make(t('Transformer'), Text::make('transformer')->value($this->transformerAsString())->placeholder('App\\Import\\Transformers\\MyCustomTransformer'))
-                ->instructions(t('The class name (with namespace) of the transformer you’d like to use.')),
-        ]);
-    }
+    abstract public function refreshSettingsForm(array $settings): void;
 
     /**
-     * Defines the validation rules for the importer, including its persistable metadata.
+     * Gives importers a chance to store their specific settings.
      */
-    public static function getRules(): array
-    {
-        return array_merge([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'handle' => [
-                'required',
-                'string',
-                'max:255',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                function ($attribute, $value, Closure $fail, Validator $validator) {
-                    $found = ImportConfig::getConfigByHandle($value, true);
-                    if ($found !== null && $found->uid !== $validator->getValue('uid')) {
-                        $fail(t('{attribute} "{value}" has already been taken.', [
-                            'attribute' => $attribute,
-                            'value' => $value,
-                        ]));
-                    }
-                },
-            ],
-        ], static::getSettingsRules());
-    }
+    abstract public function storeSettings(array $settings): void;
 
     /**
-     * Defines the validation rules for the importer's execution settings, independent of
-     * whether the importer is ever persisted/named (e.g. an ad-hoc CLI-built importer).
+     * Returns an array of importer-specific settings.
      */
-    public static function getSettingsRules(): array
-    {
-        return [
-            'settings.file' => [
-                'required',
-                'string',
-                'max:255',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateFile($value, $attribute, $fail, $validator),
-            ],
-            'settings.transformer' => [
-                'nullable',
-                'string',
-                'max:255',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateTransformer($value, $attribute, $fail, $validator),
-            ],
-            'settings.map' => ['array'],
-            'settings.matchCriteria' => ['array'],
-            'settings.clearableItems' => ['array'],
-        ];
-    }
+    abstract public function getSettings(): array;
 
     /**
-     * Builds the data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
+     * Specifies a default transformer that the importer should use if none is provided.
      */
-    protected function toValidationData(): array
-    {
-        return [
-            'uid' => $this->uid,
-            'name' => $this->name,
-            'handle' => $this->handle,
-            'settings' => [
-                'file' => $this->file,
-                'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
-                'map' => $this->map,
-            ],
-        ];
-    }
-
-    /**
-     * Validates the importer's full state.
-     *
-     * @throws ValidationException
-     */
-    public function validate(): void
-    {
-        ValidatorFacade::make($this->toValidationData(), static::getRules())->validate();
-    }
-
-    /**
-     * Validates only the importer's execution settings.
-     *
-     * @throws ValidationException
-     */
-    public function validateSettings(): void
-    {
-        ValidatorFacade::make($this->toValidationData(), static::getSettingsRules())->validate();
-    }
+    abstract public static function getDefaultTransformer(): ?string;
 
     /**
      * Sets the name for the importer.
      *
      * @param  string  $name  The name to set.
      */
-    public function name(string $name): self
+    public function name(?string $name): self
     {
         $this->name = $name;
 
@@ -259,6 +171,7 @@ abstract class BaseImporter
      */
     public function transformer(string|null|BaseTransformer $transformer): self
     {
+        $transformer ??= static::getDefaultTransformer();
         $this->transformer = self::normalizeTransformer($transformer);
 
         return $this;
@@ -318,6 +231,97 @@ abstract class BaseImporter
     }
 
     /**
+     * Defines the validation rules for the importer, including its persistable metadata.
+     */
+    public static function getRules(): array
+    {
+        return array_merge([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'handle' => [
+                'required',
+                'string',
+                'max:255',
+                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
+                function ($attribute, $value, Closure $fail, Validator $validator) {
+                    $found = ImportConfig::getConfigByHandle($value, true);
+                    if ($found !== null && $found->uid !== $validator->getValue('uid')) {
+                        $fail(t('{attribute} "{value}" has already been taken.', [
+                            'attribute' => $attribute,
+                            'value' => $value,
+                        ]));
+                    }
+                },
+            ],
+            'file' => [
+                'required',
+                'string',
+                'max:255',
+                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateFile($value, $attribute, $fail, $validator),
+            ],
+            'transformer' => [
+                'nullable',
+                'string',
+                'max:255',
+                fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateTransformer($value, $attribute, $fail, $validator),
+            ],
+        ], static::getSettingsRules());
+    }
+
+    /**
+     * Defines the validation rules for the importer's execution settings, independent of
+     * whether the importer is ever persisted/named (e.g. an ad-hoc CLI-built importer).
+     */
+    public static function getSettingsRules(): array
+    {
+        return [
+            'settings.map' => ['array'],
+            'settings.matchCriteria' => ['array'],
+            'settings.clearableItems' => ['array'],
+        ];
+    }
+
+    /**
+     * Builds the data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
+     */
+    protected function toValidationData(): array
+    {
+        return [
+            'uid' => $this->uid,
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'settings' => [
+                'file' => $this->file,
+                'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
+                'map' => $this->map,
+            ],
+        ];
+    }
+
+    /**
+     * Validates the importer's full state.
+     *
+     * @throws ValidationException
+     */
+    public function validate(): void
+    {
+        ValidatorFacade::make($this->toValidationData(), static::getRules())->validate();
+    }
+
+    /**
+     * Validates only the importer's execution settings.
+     *
+     * @throws ValidationException
+     */
+    public function validateSettings(): void
+    {
+        ValidatorFacade::make($this->toValidationData(), static::getSettingsRules())->validate();
+    }
+
+    /**
      * Validates a provided file based on its existence, MIME type, and compatibility with
      * the application's expected data types.
      *
@@ -364,6 +368,71 @@ abstract class BaseImporter
         }
 
         return true;
+    }
+
+    /**
+     * Validates the transformer value to ensure it is either empty, a closure, or a valid class compatible with `BaseTransformer`.
+     *
+     * @param  mixed  $value  The value of the transformer being validated.
+     * @param  string  $attribute  The name of the attribute being validated.
+     * @param  Closure  $fail  The callback function to invoke when validation fails.
+     * @param  Validator  $validator  The validator instance performing the validation.
+     */
+    public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    {
+        // if it's empty - that's fine (we'll probably use the default ElementTransformer)
+        if (empty($value)) {
+            return true;
+        }
+
+        if (self::normalizeTransformer($value) === null) {
+            $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * No-op base validator for the map setting; always returns true (subclasses override).
+     *
+     * @param  mixed  $value  The value of the map being validated.
+     * @param  string  $attribute  The name of the attribute being validated.
+     * @param  Closure  $fail  The callback function to invoke when validation fails.
+     * @param  Validator  $validator  The validator instance performing the validation.
+     * @param  array  $params  Additional context params for the validation.
+     */
+    public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        // by default this does nothing
+        return true;
+    }
+
+    /**
+     * Returns the names of the columns/properties/fields that we're importing into.
+     */
+    public function getDestinationCols(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the names of the columns/properties that we're importing from (the ones from the data source).
+     */
+    public function getSourceDataCols(): array
+    {
+        return [];
+    }
+
+    /**
+     * No-op base implementation; subclasses override to actually perform the import.
+     *
+     * @param  array  $data  The data for the item being imported.
+     */
+    public function importItem(array $data): void
+    {
+        // by default, this doesn't do anything
     }
 
     /**
@@ -430,30 +499,6 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates the transformer value to ensure it is either empty, a closure, or a valid class compatible with `BaseTransformer`.
-     *
-     * @param  mixed  $value  The value of the transformer being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     */
-    public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        // if it's empty - that's fine (we'll probably use the default ElementTransformer)
-        if (empty($value)) {
-            return true;
-        }
-
-        if (self::normalizeTransformer($value) === null) {
-            $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Returns the transformer's class name if it's a BaseTransformer instance, otherwise null.
      */
     public function transformerAsString(): ?string
@@ -470,48 +515,38 @@ abstract class BaseImporter
     }
 
     /**
-     * No-op base validator for the map setting; always returns true (subclasses override).
-     *
-     * @param  mixed  $value  The value of the map being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     * @param  array  $params  Additional context params for the validation.
+     * Determines if the importer is editable.
+     * If the importer has a UID, it means it's stored in the database, and therefore it's editable via the Control Panel.
+     * Otherwise, it's a custom importer that comes e.g. from a file.'
      */
-    public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    public function isEditable(): bool
     {
-        // by default this does nothing
-        return true;
-    }
-
-    /**
-     * Returns the names of the columns/properties/fields that we're importing into.
-     */
-    public function getDestinationCols(): array
-    {
-        return [];
-    }
-
-    /**
-     * Returns the names of the columns/properties that we're importing from (the ones from the data source).
-     */
-    public function getSourceDataCols(): array
-    {
-        return [];
-    }
-
-    /**
-     * No-op base implementation; subclasses override to actually perform the import.
-     *
-     * @param  array  $data  The data for the item being imported.
-     */
-    public function importItem(array $data): void
-    {
-        // by default, this doesn't do anything
+        return isset($this->uid);
     }
 
     public static function isElementImporter(): bool
     {
+        return false;
+    }
+
+    /**
+     * Returns whether the current transformer is the default one for the element type.
+     */
+    public function usesDefaultTransformer(): bool
+    {
+        $currentTransformer = $this->transformer;
+        $defaultTransformer = static::getDefaultTransformer();
+
+        // if they're simply the same - they're the same
+        if ($currentTransformer === $defaultTransformer) {
+            return true;
+        }
+
+        // if the current transformer is an object and the class matches the default one - they're the same
+        if ($currentTransformer instanceof BaseTransformer && $currentTransformer::class === $defaultTransformer) {
+            return true;
+        }
+
         return false;
     }
 }

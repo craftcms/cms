@@ -8,7 +8,6 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -113,52 +112,6 @@ it('accepts an already-nested truthy-leaf shape as-is', function () {
     $importer = EntryImporter::create()->clearableItems(['myPlainText' => 1]);
 
     expect($importer->clearableItems)->toBe(['myPlainText' => 1]);
-});
-
-// The following two tests verify the raw $data mutation in isolation, via a no-op importer that just
-// captures what it's handed — decoupled from Entry/Element persistence, since the "leaves untouched"
-// tests above show persistence has its own unrelated, pre-existing bug for matched-element updates.
-it('strips a non-clearable, empty top-level key from the data entirely, before the importer ever sees it', function () {
-    $importer = new class extends BaseImporter
-    {
-        public array $capturedData = [];
-
-        #[Override]
-        public function importItem(array $data): void
-        {
-            $this->capturedData = $data;
-        }
-    };
-    $importer->matchCriteria([]);
-    $importer->clearableItems(['heading' => true]);
-
-    $this->import->importItem($importer, ['title' => 'foo', 'body' => '', 'heading' => '']);
-
-    expect($importer->capturedData)->toBe(['title' => 'foo', 'heading' => null]);
-});
-
-it('strips a non-clearable, empty nested key inside a declared container, while keeping the clearable one', function () {
-    $importer = new class extends BaseImporter
-    {
-        public array $capturedData = [];
-
-        #[Override]
-        public function importItem(array $data): void
-        {
-            $this->capturedData = $data;
-        }
-    };
-    $importer->matchCriteria([]);
-    $importer->clearableItems(['myMatrix' => ['blockEt' => ['fields' => ['plainText' => true]]]]);
-
-    $this->import->importItem($importer, [
-        'title' => 'foo',
-        'myMatrix' => [
-            ['type' => 'blockEt', 'title' => 'block 1', 'fields' => ['plainText' => '', 'other' => '']],
-        ],
-    ]);
-
-    expect($importer->capturedData['myMatrix'][0]['fields'])->toBe(['plainText' => null]);
 });
 
 describe('nested matrix clearing', function () {

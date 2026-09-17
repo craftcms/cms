@@ -8,41 +8,14 @@ use CraftCms\Cms\Asset\Import\AssetImporter;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
-use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Import\UserImporter;
-
-it('returns every field layout provider when the element type has more than one field layout', function () {
-    $fieldLayoutA = FieldLayout::factory()->create(['type' => EntryElement::class]);
-    $fieldLayoutB = FieldLayout::factory()->create(['type' => EntryElement::class]);
-    $entryTypeA = EntryType::factory()->withFieldLayout($fieldLayoutA)->create(['name' => 'Provider A', 'handle' => 'providerA']);
-    $entryTypeB = EntryType::factory()->withFieldLayout($fieldLayoutB)->create(['name' => 'Provider B', 'handle' => 'providerB']);
-    Section::factory()->withEntryTypes($entryTypeA, $entryTypeB)->create(['type' => SectionType::Channel]);
-
-    $providers = ImportHelper::getAvailableFieldLayoutProviders(EntryElement::class);
-    $values = array_column($providers, 'value');
-
-    expect($values)->toContain($fieldLayoutA->uid)
-        ->and($values)->toContain($fieldLayoutB->uid)
-        ->and($providers[0])->toBe(['label' => 'Please select', 'value' => '']);
-});
-
-it('falls back to the singular field layout when the element type has none via the plural method', function () {
-    $providers = ImportHelper::getAvailableFieldLayoutProviders(Address::class);
-
-    expect($providers)->toHaveCount(1)
-        ->and($providers[0]['label'])->toBe(Address::displayName())
-        ->and($providers[0]['value'])->toBe((new Address)->getFieldLayout()->type);
-});
 
 it('resolves site() from a numeric ID', function () {
     $site = SiteModel::factory()->create();

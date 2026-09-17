@@ -27,7 +27,7 @@ class EntryTransformer extends ElementTransformer
         }
 
         if (is_string($value)) {
-            $section = Sections::getSectionByHandle($value);
+            $section = Sections::getSectionByHandle($value) ?? Sections::getSectionByUid($value);
             if ($section) {
                 return $section->id;
             }

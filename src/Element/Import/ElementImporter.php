@@ -11,18 +11,16 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -89,85 +87,133 @@ abstract class ElementImporter extends BaseImporter
         });
     }
 
-    /**
-     * Returns the fixed element type FQCN this importer subclass targets.
-     */
-    abstract public static function targetClass(): string;
-
-    /**
-     * Returns a select-option list of field layout providers for the element class (singular or multiple layouts).
-     * The list of field layout providers as label/value pairs.
-     */
-    abstract public static function availableFieldLayoutProviders(): array;
-
-    /**
-     * Returns the class name of the default transformer for the component.
-     */
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return ElementTransformer::class;
     }
 
-    /**
-     * Prepares a new element instance for import.
-     */
-    public function prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null): ElementInterface
-    {
-        $element ??= new ($this::targetClass());
-
-        // ensure site is set
-        $element->siteId = $this->site->id;
-
-        return $element;
-    }
-
-    /**
-     * Prepare the element query that searches for the root element we're importing into
-     */
-    public function prepareRootElementImportQuery(ElementInterface $element, ElementQueryInterface $query): ElementQueryInterface
-    {
-        // by default, we don't need to adjust the element query
-        return $query;
-    }
-
-    /**
-     * Sets element's importable attributes.
-     */
-    public function setAttributesForImport(ElementInterface $element, array $attributes): void
-    {
-        // the ID and UID can only be used to match on, we cannot have them be set via the import
-        unset($attributes['id'], $attributes['uid']);
-
-        // by default, simply set the attributes
-        $element->setAttributesFromRequest($attributes);
-    }
-
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsForm(FormContext $context): array
     {
         $availableSites = Sites::getEditableSites()
             ->map(fn ($item) => ['label' => $item->name, 'value' => $item->handle])
             ->all();
 
-        return Form::make([
-            FormField::make(t('Data File'), Text::make('file')->value($this->file)->placeholder('@root/resources/my-data.json'))
-                ->instructions(t('The @root-relative path to the file containing the data you want to import.'))
-                ->required(),
-            FormField::make(t('Site'), Choice::make('site')
-                ->value($this->site?->handle ?? Sites::getPrimarySite()->handle)
-                ->options($availableSites))
-                ->instructions(t('The site you want to import the data into'))
-                ->required(),
-            FormField::make(t('Field Layout Provider'), Choice::make('fieldLayout')
-                ->value($this->fieldLayout)
-                ->placeholder(t('Please select'))
-                ->options(static::availableFieldLayoutProviders()))
-                ->instructions(t('The field layout (e.g. entry type, volume) to import into.')),
-            FormField::make(t('Transformer'), Text::make('transformer')
-                ->value($this->usesDefaultTransformer() ? null : $this->transformerAsString())
-                ->placeholder(ElementTransformer::class))
-                ->instructions(t('The fully qualified class name of the transformer you’d like to use.')),
-        ]);
+        return [
+            'context' => $context,
+            'nodes' => [
+                FormField::make(t('Site'), Choice::make('site')
+                    ->value($this->site?->handle ?? Sites::getPrimarySite()->handle)
+                    ->options($availableSites))
+                    ->instructions(t('The site you want to import the data into'))
+                    ->required(),
+                Heading::make('temp-save', t('TEMPORARY: for now, you need to save before the mapping will show or change according to your selection.')),
+            ],
+        ];
+    }
+
+    #[Override]
+    public function refreshSettingsForm(array $settings): void
+    {
+        if (array_key_exists('site', $settings)) {
+            $this->site($settings['site']);
+        }
+        if (array_key_exists('fieldLayout', $settings)) {
+            $this->fieldLayout($settings['fieldLayout']);
+        }
+    }
+
+    #[Override]
+    public function storeSettings(array $settings): void
+    {
+        $this->site($settings['site']);
+        // $this->fieldLayout($settings['fieldLayout']);
+    }
+
+    #[Override]
+    public function getSettings(): array
+    {
+        $settings['keepMissingNestedElements'] = $this->keepMissingNestedElements;
+        $settings['site'] = $this->site->uid;
+        $settings['fieldLayout'] = $this->fieldLayout;
+
+        return $settings;
+    }
+
+    /**
+     * Resolves and sets the target site from a Site instance, id, handle, or uid.
+     * Defaults to the primary site if null.
+     *
+     * @param  string|int|Site|null  $site  The site instance, ID, handle, uid, or null.
+     */
+    public function site(string|int|Site|null $site): self
+    {
+        $resolved = static::normalizeSite($site);
+
+        if ($resolved === null) {
+            throw new InvalidArgumentException(is_numeric($site)
+                ? "No site found with ID: $site"
+                : "No site found with handle or UID: \"$site\".");
+        }
+
+        $this->site = $resolved;
+
+        return $this;
+    }
+
+    /**
+     * Resolves and sets the field layout UID/type from a FieldLayout instance, id, or uid/type string.
+     *
+     * @param  string|int|FieldLayout|null  $value  The field layout instance, ID, uid, type, or null.
+     */
+    public function fieldLayout(string|int|FieldLayout|null $value): self
+    {
+        if ($value === null) {
+            $this->fieldLayout = null;
+
+            return $this;
+        }
+
+        $fieldLayout = static::normalizeFieldLayout($value, create: true);
+
+        if ($fieldLayout === null) {
+            throw new InvalidArgumentException(is_numeric($value)
+                ? "No field layout found with ID: $value"
+                : "No field layout found with UID or Type of: \"$value\".");
+        }
+
+        // if the field layout is saved in the database, then it has an ID and therefore persistent UID;
+        // otherwise, it's the default layout and we need to use the type
+        $this->fieldLayout = $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type;
+
+        return $this;
+    }
+
+    /**
+     * Sets the container field handles that should keep nested elements missing from the
+     * incoming data instead of pruning them, and returns the current instance.
+     *
+     * @param  array|null  $keepMissingNestedElements  The field handles to keep, either as the nested
+     *                                                 `__keep__`-leaf tree (matching $matchCriteria's
+     *                                                 shape) or a flat list of dot-notation handles to keep.
+     */
+    public function keepMissingNestedElements(?array $keepMissingNestedElements = null): self
+    {
+        if ($keepMissingNestedElements !== null) {
+            $keepMissingNestedElements = ImportHelper::decodeRecursive($keepMissingNestedElements);
+
+            if (array_is_list($keepMissingNestedElements)) {
+                $keepMissingNestedElements = Arr::undot(array_fill_keys(
+                    array_map(fn ($handle) => $handle.'.__keep__', $keepMissingNestedElements),
+                    true
+                ));
+            }
+
+            $this->keepMissingNestedElements = $keepMissingNestedElements;
+        }
+
+        return $this;
     }
 
     #[Override]
@@ -183,6 +229,99 @@ abstract class ElementImporter extends BaseImporter
             ],
             'settings.keepMissingNestedElements' => ['array'],
         ]);
+    }
+
+    #[Override]
+    protected function toValidationData(): array
+    {
+        $data = parent::toValidationData();
+        $data['settings']['site'] = $this->site?->handle;
+        $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
+
+        return $data;
+    }
+
+    /**
+     * Validates that the given handle matches a known site.
+     *
+     * @param  mixed  $value  The value of the site handle being validated.
+     * @param  string  $attribute  The name of the attribute being validated.
+     * @param  Closure  $fail  The callback function to invoke when validation fails.
+     * @param  Validator  $validator  The validator instance performing the validation.
+     */
+    public static function validateSite(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    {
+        if (empty($value)) {
+            $fail($attribute, t('Site must be provided.'));
+
+            return false;
+        }
+
+        if (static::normalizeSite($value) === null) {
+            $fail($attribute, t('“{site}” is not a valid site handle.', [
+                'site' => $value,
+            ]));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates that the given field layout is a valid FieldLayout instance, numeric ID, UID, or element-type string.
+     */
+    public static function validateFieldLayout(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    {
+        // if we don't have a UID, then the config is coming from the CLI or file-based and won't have a fieldLayout
+        if (! isset($validator->getData()['uid'])) {
+            return true;
+        }
+
+        // can't be empty
+        if (empty($value)) {
+            $fail($attribute, t('Field layout must be provided.'));
+
+            return false;
+        }
+
+        // has to exist (never create a layout as a side effect of validation)
+        $fieldLayout = static::normalizeFieldLayout($value);
+        if ($fieldLayout === null) {
+            $fail($attribute, t('No field layout found for “{fieldLayout}”.', [
+                'fieldLayout' => $value,
+            ]));
+
+            return false;
+        }
+
+        //        // has to belong to the element type if we know it
+        //        $className = Arr::get($validator->getData(), 'settings.className');
+        //        if (is_string($className) && $className !== '' && $fieldLayout->type !== $className) {
+        //            $fail($attribute, t('Field layout does not belong to element type “{elementType}”.', [
+        //                'elementType' => $className,
+        //            ]));
+        //
+        //            return false;
+        //        }
+
+        return true;
+    }
+
+    #[Override]
+    public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        // in case of an element importer, the $params might contain the field this map partial is for
+        // if $params is empty, then we're validating the whole map
+        if (! empty($params['field'])) {
+            $field = $params['field'];
+
+            if ($field instanceof ImportableElementContainerFieldInterface) {
+                $field->validateMapping($value, $attribute, $fail, $validator, $params);
+            }
+        }
+
+        return true;
     }
 
     #[Override]
@@ -216,8 +355,7 @@ abstract class ElementImporter extends BaseImporter
             return $propertyCols;
         }
 
-        $fieldsService = app(Fields::class);
-        $fieldLayout = $fieldsService->getLayoutByUid($this->fieldLayout) ?? $fieldsService->getLayoutByType($this->fieldLayout);
+        $fieldLayout = self::normalizeFieldLayout($this->fieldLayout);
 
         $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
 
@@ -235,12 +373,6 @@ abstract class ElementImporter extends BaseImporter
         }
 
         return Import::getDataHeadings($filePath);
-    }
-
-    #[Override]
-    public static function isElementImporter(): bool
-    {
-        return true;
     }
 
     #[Override]
@@ -347,122 +479,6 @@ abstract class ElementImporter extends BaseImporter
         }
     }
 
-    #[Override]
-    protected function toValidationData(): array
-    {
-        $data = parent::toValidationData();
-        $data['settings']['site'] = $this->site?->handle;
-        $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
-
-        return $data;
-    }
-
-    #[Override]
-    public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
-    {
-        // in case of an element importer, the $params might contain the field this map partial is for
-        // if $params is empty, then we're validating the whole map
-        if (! empty($params['field'])) {
-            $field = $params['field'];
-
-            if ($field instanceof ImportableElementContainerFieldInterface) {
-                $field->validateMapping($value, $attribute, $fail, $validator, $params);
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates that the given field layout is a valid FieldLayout instance, numeric ID, UID, or element-type string.
-     */
-    public static function validateFieldLayout(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        // if we don't have a UID, then the config is coming from the CLI or file-based and won't have a fieldLayout
-        if (! isset($validator->getData()['uid'])) {
-            return true;
-        }
-
-        // can't be empty
-        if (empty($value)) {
-            $fail($attribute, t('Field layout must be provided.'));
-
-            return false;
-        }
-
-        // has to exist (never create a layout as a side effect of validation)
-        $fieldLayout = static::normalizeFieldLayout($value);
-        if ($fieldLayout === null) {
-            $fail($attribute, t('No field layout found for “{fieldLayout}”.', [
-                'fieldLayout' => $value,
-            ]));
-
-            return false;
-        }
-
-        //        // has to belong to the element type if we know it
-        //        $className = Arr::get($validator->getData(), 'settings.className');
-        //        if (is_string($className) && $className !== '' && $fieldLayout->type !== $className) {
-        //            $fail($attribute, t('Field layout does not belong to element type “{elementType}”.', [
-        //                'elementType' => $className,
-        //            ]));
-        //
-        //            return false;
-        //        }
-
-        return true;
-    }
-
-    /**
-     * Validates that the given handle matches a known site.
-     *
-     * @param  mixed  $value  The value of the site handle being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     */
-    public static function validateSite(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        if (empty($value)) {
-            $fail($attribute, t('Site must be provided.'));
-
-            return false;
-        }
-
-        if (static::normalizeSite($value) === null) {
-            $fail($attribute, t('“{site}” is not a valid site handle.', [
-                'site' => $value,
-            ]));
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Resolves a FieldLayout instance, numeric ID, UID, or element-type string to a FieldLayout, or null if not found.
-     * A null value resolves to null.
-     */
-    private static function normalizeFieldLayout(string|int|FieldLayout|null $value, bool $create = false): ?FieldLayout
-    {
-        if ($value instanceof FieldLayout) {
-            return $value;
-        }
-
-        if ($value === null) {
-            return null;
-        }
-
-        $fieldsService = app(Fields::class);
-
-        if (is_numeric($value)) {
-            return $fieldsService->getLayoutById((int) $value);
-        }
-
-        return $fieldsService->getLayoutByUid($value) ?? $fieldsService->getLayoutByType($value, create: $create);
-    }
-
     /**
      * Resolves a Site instance, numeric ID, handle, or UID to a Site, or null if not found.
      * A null value resolves to the primary site.
@@ -473,112 +489,62 @@ abstract class ElementImporter extends BaseImporter
             $value instanceof Site => $value,
             $value === null => Sites::getPrimarySite(),
             is_numeric($value) => Sites::getSiteById((int) $value),
-            default => Sites::getSiteByHandle($value) ?? static::siteByUidOrNull($value),
+            default => static::siteByUidOrNull($value) ?? Sites::getSiteByHandle($value),
         };
     }
 
+    /**
+     * Resolves a FieldLayout instance, numeric ID, UID, or element-type string to a FieldLayout, or null if not found.
+     * A null value resolves to null.
+     */
+    private static function normalizeFieldLayout(string|int|FieldLayout|null $value, bool $create = false): ?FieldLayout
+    {
+        return match (true) {
+            $value instanceof FieldLayout => $value,
+            $value === null => null,
+            is_numeric($value) => Fields::getLayoutById((int) $value),
+            default => Fields::getLayoutByUid($value) ?? Fields::getLayoutByType($value, create: $create),
+        };
+    }
+
+    /**
+     * Prepares a new element instance for import.
+     */
+    public function prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null): ElementInterface
+    {
+        $element ??= new ($this::targetClass());
+
+        // ensure site is set
+        $element->siteId = $this->site->id;
+
+        return $element;
+    }
+
+    /**
+     * Prepare the element query that searches for the root element we're importing into
+     */
+    public function prepareRootElementImportQuery(ElementInterface $element, ElementQueryInterface $query): ElementQueryInterface
+    {
+        // by default, we don't need to adjust the element query
+        return $query;
+    }
+
+    /**
+     * Sets element's importable attributes.
+     */
+    public function setAttributesForImport(ElementInterface $element, array $attributes): void
+    {
+        // the ID and UID can only be used to match on, we cannot have them be set via the import
+        unset($attributes['id'], $attributes['uid']);
+
+        // by default, simply set the attributes
+        $element->setAttributesFromRequest($attributes);
+    }
+
     #[Override]
-    public function transformer(string|null|BaseTransformer $transformer): self
+    public static function isElementImporter(): bool
     {
-        $transformer ??= static::getDefaultTransformer();
-
-        return parent::transformer($transformer);
-    }
-
-    /**
-     * Resolves and sets the target site from a Site instance, id, handle, or uid.
-     * Defaults to the primary site if null.
-     *
-     * @param  string|int|Site|null  $site  The site instance, ID, handle, uid, or null.
-     */
-    public function site(string|int|Site|null $site): self
-    {
-        $resolved = static::normalizeSite($site);
-
-        if ($resolved === null) {
-            throw new InvalidArgumentException(is_numeric($site)
-                ? "No site found with ID: $site"
-                : "No site found with handle or UID: \"$site\".");
-        }
-
-        $this->site = $resolved;
-
-        return $this;
-    }
-
-    /**
-     * Resolves and sets the field layout UID/type from a FieldLayout instance, id, or uid/type string.
-     *
-     * @param  string|int|FieldLayout|null  $value  The field layout instance, ID, uid, type, or null.
-     */
-    public function fieldLayout(string|int|FieldLayout|null $value): self
-    {
-        if ($value === null) {
-            $this->fieldLayout = null;
-
-            return $this;
-        }
-
-        $fieldLayout = static::normalizeFieldLayout($value, create: true);
-
-        if ($fieldLayout === null) {
-            throw new InvalidArgumentException(is_numeric($value)
-                ? "No field layout found with ID: $value"
-                : "No field layout found with UID or Type of: \"$value\".");
-        }
-
-        // if the field layout is saved in the database, then it has an ID and therefore persistent UID;
-        // otherwise, it's the default layout and we need to use the type
-        $this->fieldLayout = $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type;
-
-        return $this;
-    }
-
-    /**
-     * Sets the container field handles that should keep nested elements missing from the
-     * incoming data instead of pruning them, and returns the current instance.
-     *
-     * @param  array|null  $keepMissingNestedElements  The field handles to keep, either as the nested
-     *                                                 `__keep__`-leaf tree (matching $matchCriteria's
-     *                                                 shape) or a flat list of dot-notation handles to keep.
-     */
-    public function keepMissingNestedElements(?array $keepMissingNestedElements = null): self
-    {
-        if ($keepMissingNestedElements !== null) {
-            $keepMissingNestedElements = ImportHelper::decodeRecursive($keepMissingNestedElements);
-
-            if (array_is_list($keepMissingNestedElements)) {
-                $keepMissingNestedElements = Arr::undot(array_fill_keys(
-                    array_map(fn ($handle) => $handle.'.__keep__', $keepMissingNestedElements),
-                    true
-                ));
-            }
-
-            $this->keepMissingNestedElements = $keepMissingNestedElements;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Returns whether the current transformer is the default one for the element type.
-     */
-    private function usesDefaultTransformer(): bool
-    {
-        $currentTransformer = $this->transformer;
-        $defaultTransformer = static::getDefaultTransformer();
-
-        // if they're simply the same - they're the same
-        if ($currentTransformer === $defaultTransformer) {
-            return true;
-        }
-
-        // if the current transformer is an object and the class matches the default one - they're the same
-        if ($currentTransformer instanceof BaseTransformer && $currentTransformer::class === $defaultTransformer) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**

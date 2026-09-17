@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
@@ -30,7 +31,7 @@ class Element extends Command implements PromptsForMissingInput
         {elementType : The fully qualified class name of the element type you want to import into.}
         {file : `@root`-relative path to the file containing data you want to import.}
         {--site= : The handle of the site you want to import into.}
-        {--fieldLayoutProvider= : The UID of the field layout provider you want to use.}
+        {--fieldLayout= : The UID of the field layout you want to use.}
         {--transformer= : The fully qualified class name of the transformer you want to use to manipulate the data on import.}
         {--matchCriteria= : An array of key-value pairs that will be used to match existing elements when importing.}
     ';
@@ -53,10 +54,11 @@ class Element extends Command implements PromptsForMissingInput
             $this->fail("No importer is registered for element type \"$elementType\".");
         }
 
-        $fieldLayoutProviderOptions = ImportHelper::flattenLabelValueArray(
-            $importerClass::availableFieldLayoutProviders()
-        );
-        $fieldLayoutProviderOptions = array_merge(['' => t('None - specified in the data file')], $fieldLayoutProviderOptions);
+        //        // TODO (iwona): change this to per-element options?
+        //        $fieldLayoutProviderOptions = ImportHelper::flattenLabelValueArray(
+        //            $importerClass::availableFieldLayoutProviders()
+        //        );
+        //        $fieldLayoutProviderOptions = array_merge(['' => t('None - specified in the data file')], $fieldLayoutProviderOptions);
         $responses = form()
             ->addIf(! $this->option('site') && Sites::isMultiSite(), fn ($form) => select(
                 label: 'Which site you want to import into?',
@@ -65,10 +67,6 @@ class Element extends Command implements PromptsForMissingInput
                     ->all(),
                 default: Sites::getPrimarySite()->handle,
             ), 'site')
-            ->addIf(! $this->option('fieldLayoutProvider'), fn () => select(
-                label: 'Provide UID, ID, or type of the field layout provider you want to use.',
-                options: $fieldLayoutProviderOptions,
-            ), 'fieldLayoutProvider')
             // todo (iwona): maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
             ->addIf(! $this->option('transformer'), fn () => text(
                 label: 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)',
@@ -94,12 +92,21 @@ class Element extends Command implements PromptsForMissingInput
             $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
         }
 
+        $settings = [
+            ...$responses,
+            ...$this->options(),
+        ];
+        unset($settings['matchCriteria']);
+
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
-        $importConfig = $importerClass::create()
-            ->file($this->argument('file'))
-            ->site($this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle)
-            ->fieldLayout($this->option('fieldLayoutProvider') ?: $responses['fieldLayoutProvider'] ?: null)
-            ->transformer($this->option('transformer') ?: $responses['transformer'] ?: null);
+        $config = [
+            'type' => $importerClass,
+            'file' => $this->argument('file'),
+            'transformer' => $this->option('transformer') ?: $responses['transformer'] ?: null,
+            'settings' => $settings,
+        ];
+
+        $importConfig = ImportConfig::createImporter($config);
 
         if ($matchCriteria) {
             $importConfig->matchCriteria($matchCriteria);
@@ -111,14 +118,14 @@ class Element extends Command implements PromptsForMissingInput
             "Element Type: `{$importConfig::targetClass()}`",
             "File: `$importConfig->file`",
             "Site: `{$importConfig->site->name}`",
-            'Field Layout Provider: '.($importConfig->fieldLayout ? "`$importConfig->fieldLayout`" : 'NULL'),
+            'Field Layout: '.($importConfig->fieldLayout ? "`$importConfig->fieldLayout`" : 'NULL'),
             'Transformer: '.($importConfig->transformer ? "`{$importConfig->transformerAsString()}`" : 'NULL'),
             'Match Criteria: '.($importConfig->matchCriteria ? json_encode($importConfig->matchCriteria) : 'NULL'),
         ];
         $this->components->bulletList($list);
 
         try {
-            $importConfig->validateSettings();
+            // $importConfig->validateSettings();
             $filePath = $importConfig::resolvedFilePath($importConfig->file);
             $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importConfig);
             $allData = Import::getFormattedData($filePath);

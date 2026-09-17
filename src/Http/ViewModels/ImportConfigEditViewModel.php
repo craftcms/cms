@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Text;
@@ -66,6 +67,17 @@ class ImportConfigEditViewModel extends ViewModel
             FormField::make(t('Description'), Textarea::make('description'))
                 ->instructions(t('A description of what this import config is for.'))
                 ->visible($hasType),
+            FormField::make(t('Data File'), Text::make('file')
+                ->placeholder('@root/resources/my-data.json'))
+                ->instructions(t('The @root-relative path to the file containing the data you want to import.'))
+                ->required()
+                ->visible($hasType),
+            FormField::make(t('Transformer'), Text::make('transformer')
+                ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())
+                ->placeholder(ElementTransformer::class))
+                ->instructions(t('The fully qualified class name of the transformer you’d like to use.'))
+                ->visible($hasType),
+
         ]), new FormContext(
             values: [
                 'uid' => $this->importer?->uid,
@@ -73,6 +85,7 @@ class ImportConfigEditViewModel extends ViewModel
                 'name' => $this->importer?->name,
                 'handle' => $this->importer?->handle,
                 'description' => $this->importer?->description,
+                'file' => $this->importer?->file,
             ],
             mode: $mode,
             refreshable: $refreshable,
@@ -80,11 +93,14 @@ class ImportConfigEditViewModel extends ViewModel
 
         $settingsContext = new FormContext(namespace: 'settings', mode: $mode, refreshable: $refreshable);
         $settingsForm = $this->importer?->settingsForm($settingsContext);
+        $settingsNodes = $settingsForm['nodes'] ?? null;
+        $settingsContext = $settingsForm['context'] ?? $settingsContext;
+
         $settings = $this->formResolver->resolve(
-            $settingsForm === null
+            empty($settingsNodes)
                 ? Form::make()
                 : Form::make([
-                    Group::make('import-config-settings', $settingsForm->nodes())->dependsOn('type'),
+                    Group::make('import-config-settings', $settingsNodes)->dependsOn('type'),
                 ]),
             $settingsContext,
         );
@@ -110,7 +126,7 @@ class ImportConfigEditViewModel extends ViewModel
 
     public function refreshUrl(): ?string
     {
-        return $this->readOnly ? null : action([ImportConfigController::class, 'renderForm']);
+        return $this->readOnly ? null : action([ImportConfigController::class, 'refreshForm']);
     }
 
     /** @return array<string, mixed>|null */

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Import;
 
+use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
@@ -14,6 +16,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\ImportLog;
@@ -22,6 +27,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use Exception;
+use Illuminate\Validation\Validator;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -31,33 +37,12 @@ use function CraftCms\Cms\t;
  */
 class AssetImporter extends ElementImporter
 {
+    public protected(set) ?string $volume = null;
+
     #[Override]
     public static function targetClass(): string
     {
         return Asset::class;
-    }
-
-    #[Override]
-    public static function availableFieldLayoutProviders(): array
-    {
-        $element = new (static::targetClass());
-        $fieldLayouts = $element::fieldLayouts(null);
-        $providers = [];
-
-        foreach ($fieldLayouts as $fieldLayout) {
-            $providers[] = [
-                'label' => $fieldLayout->provider?->name ?? $fieldLayout->type,
-                'value' => $fieldLayout->uid,
-            ];
-        }
-
-        return $providers;
-    }
-
-    #[Override]
-    public static function displayName(): string
-    {
-        return t('Assets');
     }
 
     /**
@@ -68,9 +53,132 @@ class AssetImporter extends ElementImporter
         return new self;
     }
 
+    #[Override]
+    public static function displayName(): string
+    {
+        return t('Assets');
+    }
+
     public static function getDefaultTransformer(): ?string
     {
         return AssetTransformer::class;
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context): array
+    {
+        $parent = parent::settingsForm($context);
+
+        return [
+            'context' => $parent['context'] ?? $context,
+            'nodes' => [
+                ...$parent['nodes'] ?? [],
+                FormField::make(t('Volume'), Choice::make(['volume'])
+                    ->value($this->volume)
+                    ->placeholder(t('Please select'))
+                    ->options($this->availableVolumes())
+                    ->reactive())
+                    ->instructions(t('The volume to import into.')),
+            ],
+        ];
+    }
+
+    #[Override]
+    public function refreshSettingsForm(array $settings): void
+    {
+        parent::refreshSettingsForm($settings);
+
+        if (array_key_exists('volume', $settings)) {
+            $this->volume($settings['volume']);
+            $this->fieldLayout($settings['fieldLayout']);
+        }
+    }
+
+    #[Override]
+    public function storeSettings(array $settings): void
+    {
+        parent::storeSettings($settings);
+
+        $this->volume($settings['volume'] ?? null);
+    }
+
+    #[Override]
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+
+        $settings['volume'] = $this->volume;
+
+        return $settings;
+    }
+
+    /**
+     * Sets the target volume by uid.
+     */
+    public function volume(string|int|Volume|null $value): self
+    {
+        $result = self::normalizeVolume($value);
+        if (! $result) {
+            $this->volume = null;
+            $this->fieldLayout(null);
+        } else {
+            $this->volume = $result->uid;
+            $this->fieldLayout($result->getFieldLayout());
+        }
+
+        return $this;
+    }
+
+    #[Override]
+    public static function getSettingsRules(): array
+    {
+        return array_merge(parent::getSettingsRules(), [
+            'settings.volume' => [
+                'required',
+                'string',
+                'max:255',
+                fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateVolume($value, $attribute, $fail, $validator),
+            ],
+        ]);
+    }
+
+    #[Override]
+    protected function toValidationData(): array
+    {
+        $data = parent::toValidationData();
+        $data['settings']['volume'] = $this->volume ?? null;
+
+        return $data;
+    }
+
+    public static function validateVolume(string $value, string $attribute, Closure $fail, Validator $validator): bool
+    {
+        // can't be empty
+        if (empty($value)) {
+            $fail($attribute, t('Volume must be provided.'));
+
+            return false;
+        }
+
+        if (static::normalizeVolume($value) === null) {
+            $fail($attribute, t('No Volume found for “{volume}”.', [
+                'volume' => $value,
+            ]));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static function normalizeVolume(string|int|Volume|null $value): ?Volume
+    {
+        return match (true) {
+            $value instanceof Volume => $value,
+            $value === null => null,
+            is_numeric($value) => Volumes::getVolumeById((int) $value),
+            default => Volumes::getVolumeByUid($value) ?? Volumes::getVolumeByHandle($value),
+        };
     }
 
     #[Override]
@@ -187,5 +295,13 @@ class AssetImporter extends ElementImporter
         }
 
         parent::setAttributesForImport($element, $attributes);
+    }
+
+    protected function availableVolumes(): array
+    {
+        return Volumes::getAllVolumes()->map(fn ($volume) => [
+            'label' => $volume->name,
+            'value' => $volume->uid,
+        ])->all();
     }
 }

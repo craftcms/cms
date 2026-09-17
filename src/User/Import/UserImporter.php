@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Import;
 
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
@@ -21,21 +22,12 @@ class UserImporter extends ElementImporter
         return User::class;
     }
 
-    #[Override]
-    public static function availableFieldLayoutProviders(): array
+    /**
+     * Convenience factory returning a new instance.
+     */
+    public static function create(): self
     {
-        $element = new (static::targetClass());
-        $fieldLayout = $element->getFieldLayout();
-        $providers = [];
-
-        if ($fieldLayout) {
-            $providers[] = [
-                'label' => $element::displayName(),
-                'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
-            ];
-        }
-
-        return $providers;
+        return new self;
     }
 
     #[Override]
@@ -44,11 +36,12 @@ class UserImporter extends ElementImporter
         return t('Users');
     }
 
-    /**
-     * Convenience factory returning a new instance.
-     */
-    public static function create(): self
+    #[Override]
+    public function storeSettings(array $settings): void
     {
-        return new self;
+        parent::storeSettings($settings);
+
+        $fieldLayout = Fields::getLayoutByType(User::class, false);
+        $this->fieldLayout($fieldLayout ? $fieldLayout->uid : User::class);
     }
 }

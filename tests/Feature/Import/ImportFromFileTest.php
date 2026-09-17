@@ -49,7 +49,9 @@ beforeEach(function () {
     $this->importerFor = fn (string $name) => EntryImporter::create()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null)
-        ->file('tests/Fixtures/Import/'.$name);
+        ->file('tests/Fixtures/Import/'.$name)
+        ->section($this->section->handle)
+        ->entryType($this->entryType->handle);
 });
 
 afterEach(function () {

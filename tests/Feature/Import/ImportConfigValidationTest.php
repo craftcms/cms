@@ -20,8 +20,8 @@ it('getSettingsRules excludes name/handle while getRules includes them', functio
 
     expect($settingsRules)->not->toHaveKey('name')
         ->and($settingsRules)->not->toHaveKey('handle')
-        ->and($settingsRules)->toHaveKeys(['settings.file', 'settings.transformer', 'settings.map', 'settings.site'])
-        ->and($fullRules)->toHaveKeys(['name', 'handle', 'settings.file', 'settings.transformer', 'settings.map', 'settings.site']);
+        ->and($settingsRules)->toHaveKeys(['settings.map', 'settings.site'])
+        ->and($fullRules)->toHaveKeys(['name', 'handle', 'settings.map', 'settings.site']);
 });
 
 it('validateSettings throws with settings-only errors for an ad-hoc importer missing file/site, even without a name/handle', function () {
@@ -31,7 +31,7 @@ it('validateSettings throws with settings-only errors for an ad-hoc importer mis
         $importer->validateSettings();
         expect(false)->toBeTrue('Expected a ValidationException to be thrown.');
     } catch (ValidationException $e) {
-        expect($e->errors())->toHaveKey('settings.file')
+        expect($e->errors())->not->toHaveKey('file')
             ->and($e->errors())->toHaveKey('settings.site')
             ->and($e->errors())->not->toHaveKey('name')
             ->and($e->errors())->not->toHaveKey('handle');
@@ -47,7 +47,7 @@ it('validate throws for an invalid importer, including missing name/handle', fun
     } catch (ValidationException $e) {
         expect($e->errors())->toHaveKey('name')
             ->and($e->errors())->toHaveKey('handle')
-            ->and($e->errors())->toHaveKey('settings.file');
+            ->and($e->errors())->toHaveKey('file');
     }
 });
 
@@ -110,17 +110,17 @@ it('validateFieldLayout still passes the existence check when className is missi
 });
 
 it('validateTransformer still passes for a valid class, arrow function, and empty value, and fails for garbage', function () {
-    $rule = ElementImporter::getSettingsRules()['settings.transformer'];
+    $rule = ElementImporter::getRules()['transformer'];
 
-    $passing = Validator::make(['settings' => ['transformer' => null]], ['settings.transformer' => $rule])->errors();
-    $passingClass = Validator::make(['settings' => ['transformer' => ElementTransformer::class]], ['settings.transformer' => $rule])->errors();
-    $passingArrowFn = Validator::make(['settings' => ['transformer' => 'fn ($element) => $element']], ['settings.transformer' => $rule])->errors();
-    $failing = Validator::make(['settings' => ['transformer' => 'NotARealClass']], ['settings.transformer' => $rule])->errors();
+    $passing = Validator::make(['transformer' => null], ['transformer' => $rule])->errors();
+    $passingClass = Validator::make(['transformer' => ElementTransformer::class], ['transformer' => $rule])->errors();
+    $passingArrowFn = Validator::make(['transformer' => 'fn ($element) => $element'], ['transformer' => $rule])->errors();
+    $failing = Validator::make(['transformer' => 'NotARealClass'], ['transformer' => $rule])->errors();
 
-    expect($passing)->not->toHaveKey('settings.transformer')
-        ->and($passingClass)->not->toHaveKey('settings.transformer')
-        ->and($passingArrowFn)->not->toHaveKey('settings.transformer')
-        ->and($failing)->toHaveKey('settings.transformer');
+    expect($passing)->not->toHaveKey('transformer')
+        ->and($passingClass)->not->toHaveKey('transformer')
+        ->and($passingArrowFn)->not->toHaveKey('transformer')
+        ->and($failing)->toHaveKey('transformer');
 });
 
 it('excludes an invalid file-based import config from getAllConfigs', function () {

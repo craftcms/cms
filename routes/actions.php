@@ -315,7 +315,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Import
         Route::middleware('can:saveImportConfigs')->group(function () {
-            Route::post('import/configs/render-form', [ImportConfigController::class, 'renderForm']);
+            Route::post('import/configs/refresh-form', [ImportConfigController::class, 'refreshForm']);
             Route::post('import/configs/save', [ImportConfigController::class, 'store']);
             Route::post('import/configs/save-map', [ImportConfigController::class, 'storeMap']);
             Route::get('import/configs/nested-mapping-cols', [ImportConfigController::class, 'nestedMappingCols']);

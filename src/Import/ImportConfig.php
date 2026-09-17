@@ -18,6 +18,7 @@ use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use ReflectionMethod;
 use Throwable;
 
 #[Singleton]
@@ -36,16 +37,21 @@ class ImportConfig
      *
      * @param  array  $config  The importer config array.
      */
-    public function createImporter(array $config): BaseImporter
+    public static function createImporter(array $config): BaseImporter
     {
         $importer = new $config['type']($config);
-        $importer->name($config['name']);
-        $importer->handle($config['handle']);
-        $importer->description($config['description']);
-        $settings = JsonSupport::decode($config['settings']);
+        $importer->name($config['name'] ?? null);
+        $importer->handle($config['handle'] ?? null);
+        $importer->description($config['description'] ?? null);
+        $importer->file($config['file']);
+        $importer->transformer($config['transformer']);
+        $settings = is_array($config['settings']) ? $config['settings'] : JsonSupport::decode($config['settings']);
         foreach ($settings as $setting => $value) {
             if (method_exists($importer, $setting)) {
-                $importer->{$setting}($value);
+                $reflection = new ReflectionMethod($importer, $setting);
+                if ($reflection->isPublic()) {
+                    $importer->{$setting}($value);
+                }
             }
         }
 
@@ -62,7 +68,7 @@ class ImportConfig
         if ($this->configs === null) {
             $dbConfigs = $this->_importConfigQuery()->get()->all();
             $dbConfigs = array_map(
-                fn ($config) => $this->createImporter((array) $config + ['editable' => true]),
+                fn ($config) => static::createImporter((array) $config + ['editable' => true]),
                 $dbConfigs
             );
 
@@ -130,7 +136,7 @@ class ImportConfig
 
         $row = $this->_importConfigQuery()->where('handle', $handle)->first();
         if ($row !== null) {
-            return $this->createImporter((array) $row + ['editable' => true]);
+            return static::createImporter((array) $row + ['editable' => true]);
         }
 
         if ($editableOnly) {
@@ -158,7 +164,7 @@ class ImportConfig
 
         $row = $this->_importConfigQuery()->where('uid', $uid)->first();
         if ($row !== null) {
-            return $this->createImporter((array) $row + ['editable' => true]);
+            return static::createImporter((array) $row + ['editable' => true]);
         }
 
         if ($editableOnly) {
@@ -201,22 +207,17 @@ class ImportConfig
             $configRecord->name = $importer->name;
             $configRecord->handle = $importer->handle;
             $configRecord->description = $importer->description;
+            $configRecord->file = $importer->file;
+            $configRecord->transformer = $importer->transformer ? $importer->transformer::class : null;
+
+            // iterate through all public props that's not above
             $settings = [
-                'file' => $importer->file,
-                'transformer' => $importer->transformer ? $importer->transformer::class : null,
                 'map' => $importer->map,
                 'matchCriteria' => $importer->matchCriteria,
                 'clearableItems' => $importer->clearableItems,
+                ...$importer->getSettings(),
             ];
-            if (property_exists($importer, 'keepMissingNestedElements')) {
-                $settings['keepMissingNestedElements'] = $importer->keepMissingNestedElements;
-            }
-            if (property_exists($importer, 'site')) {
-                $settings['site'] = $importer->site->uid;
-            }
-            if (property_exists($importer, 'fieldLayout')) {
-                $settings['fieldLayout'] = $importer->fieldLayout;
-            }
+
             $configRecord->settings = $settings;
             $configRecord->save();
 
@@ -311,6 +312,8 @@ class ImportConfig
                 'name',
                 'handle',
                 'description',
+                'file',
+                'transformer',
                 'settings',
                 'import_configs.uid',
             ])

@@ -125,7 +125,7 @@ class ImportConfigController
         return $this->cpScreenResponse($import);
     }
 
-    public function renderForm(): JsonResponse
+    public function refreshForm(): JsonResponse
     {
         $data = $this->request->validate([
             'values' => ['required', 'array'],
@@ -134,6 +134,8 @@ class ImportConfigController
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
             'values.description' => ['nullable', 'string'],
+            'values.file' => ['nullable', 'string'],
+            'values.transformer' => ['nullable', 'string'],
             'values.settings' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -146,21 +148,10 @@ class ImportConfigController
             $importer->name($values['name'] ?? '');
             $importer->handle($values['handle'] ?? '');
             $importer->description($values['description'] ?? null);
+            $importer->file($values['file']);
+            $importer->transformer($values['transformer']);
 
-            $settings = $values['settings'] ?? [];
-
-            if (array_key_exists('file', $settings)) {
-                $importer->file($settings['file']);
-            }
-            if (property_exists($importer, 'site') && array_key_exists('site', $settings)) {
-                $importer->site($settings['site']);
-            }
-            if (property_exists($importer, 'fieldLayout') && array_key_exists('fieldLayout', $settings)) {
-                $importer->fieldLayout($settings['fieldLayout']);
-            }
-            if (array_key_exists('transformer', $settings)) {
-                $importer->transformer($settings['transformer']);
-            }
+            $importer->refreshSettingsForm($values['settings'] ?? []);
         }
 
         return new JsonResponse([
@@ -209,14 +200,11 @@ class ImportConfigController
         $import->name($this->request->input('name', $import->name));
         $import->handle($this->request->input('handle', $import->handle));
         $import->description($this->request->input('description', $import->description));
-        $import->file($this->request->input('settings.file', $import->file));
-        if (property_exists($import, 'site')) {
-            $import->site($this->request->input('settings.site', $import->site));
-        }
-        if (property_exists($import, 'fieldLayout')) {
-            $import->fieldLayout($this->request->input('settings.fieldLayout', $import->fieldLayout));
-        }
-        $import->transformer($this->request->input('settings.transformer', $import->transformer));
+        $import->file($this->request->input('file', $import->file));
+        $import->transformer($this->request->input('transformer', $import->transformer));
+
+        $import->storeSettings($this->request->input('settings', []));
+
         $import->map($this->request->input('settings.map', $import->map));
         $import->matchCriteria($this->request->input('settings.matchCriteria', $import->matchCriteria));
 
