@@ -104,8 +104,8 @@ export default class CraftActionMenu extends CraftPopover {
    */
   @property({attribute: false}) actions?: ActionMenuActions;
 
-  /** Accessible label for the generated default invoker. */
-  @property() label: string = t('Actions');
+  /** Accessible label for the generated default invoker, and for the menu. */
+  @property() override label: string = t('Actions');
 
   /** Icon name for the generated default invoker. */
   @property() icon: string = 'ellipsis';

@@ -184,27 +184,27 @@ export default css`
   /*
   Flush
    */
-  :host([variant~="plain"][flush='']),
-  :host([variant~="plain"][flush~='inline']),
-  :host([variant~="plain"][flush~='inline-start']) {
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-start']) {
     margin-inline-start: calc(var(--_flush-inline) * -1);
   }
 
-  :host([variant~="plain"][flush='']),
-  :host([variant~="plain"][flush~='inline']),
-  :host([variant~="plain"][flush~='inline-end']) {
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-end']) {
     margin-inline-end: calc(var(--_flush-inline) * -1);
   }
 
-  :host([variant~="plain"][flush='']),
-  :host([variant~="plain"][flush~='block']),
-  :host([variant~="plain"][flush~='block-start']) {
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-start']) {
     margin-block-start: calc(var(--_flush-block) * -1);
   }
 
-  :host([variant~="plain"][flush='']),
-  :host([variant~="plain"][flush~='block']),
-  :host([variant~="plain"][flush~='block-end']) {
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-end']) {
     margin-block-end: calc(var(--_flush-block) * -1);
   }
 

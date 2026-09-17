@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
 import type {ActionItem} from '@/common/types';
+import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditor';
 import ElementContextMenu from './ElementContextMenu.vue';
 
 const rendered = vi.hoisted(() => ({actions: [] as Array<ActionItem>}));
@@ -24,7 +25,7 @@ afterEach(() => {
   rendered.actions = [];
 });
 
-function mount(items: Array<Record<string, unknown>>): Array<ActionItem> {
+function mount(items: Array<ElementContextMenuItem>): Array<ActionItem> {
   app = createApp({
     render: () => h(ElementContextMenu, {label: 'Revisions', items}),
   });

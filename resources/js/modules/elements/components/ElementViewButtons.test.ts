@@ -1,8 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
-import ElementViewButtons, {
-  type ElementPreviewTarget,
-} from './ElementViewButtons.vue';
+import type {ElementPreviewTarget} from '@/modules/elements/composables/useElementEditor';
+import ElementViewButtons from './ElementViewButtons.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
 

@@ -6,6 +6,7 @@
 </script>
 
 <script setup lang="ts">
+  import type {BreadcrumbItem} from '@/common/types';
   import CpLink from '@/common/components/CpLink.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';

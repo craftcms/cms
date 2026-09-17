@@ -1,4 +1,4 @@
-import {html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
@@ -56,6 +56,12 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   // from the page: without it the pane's 1px border sits outside its width and
   // it overshoots whatever it was sized to.
   static override styles = [hostStyles, styles];
+
+  /**
+   * Names the popup for assistive tech. Lion gives the content `role="dialog"`,
+   * and a dialog without a name is a WCAG 4.1.2 failure.
+   */
+  @property() label?: string;
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -234,7 +240,11 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
       <div id="overlay-content-node-wrapper">
-        <div class="popover-pane" part="popup">
+        <div
+          class="popover-pane"
+          part="popup"
+          aria-label="${this.label ?? nothing}"
+        >
           <slot name="content">
             <slot name="content-body"></slot>
             <slot name="content-footer"></slot>

@@ -278,7 +278,7 @@
    * `icon.svg`. It goes in the same slot the named icon would fill.
    */
   function iconSvgOf(action: NavItem): string | undefined {
-    return isGroup(action) ? undefined : action.iconSvg;
+    return action.type === 'group' ? undefined : action.iconSvg;
   }
 
   const actionsLentTo = useNavItemActions();
@@ -328,7 +328,7 @@
       href: hrefOf(action),
       '.active': isSelected(action),
       '.current': isCurrent(action),
-      '.indicator': Boolean(action.indicator),
+      '.indicator': action.type !== 'group' && Boolean(action.indicator),
     };
 
     if (navIs(action) === 'craft-nav-item') {

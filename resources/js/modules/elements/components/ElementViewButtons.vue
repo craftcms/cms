@@ -5,12 +5,7 @@
    * that lands on the tokenized preview.
    */
   import {t} from '@craftcms/ui';
-
-  export interface ElementPreviewTarget {
-    label: string;
-    url: string;
-    icon?: string;
-  }
+  import type {ElementPreviewTarget} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
     targets: Array<ElementPreviewTarget>;
