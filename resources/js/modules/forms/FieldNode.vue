@@ -36,6 +36,7 @@
     /** Visually hides the label, keeping it available to screen readers. */
     labelSrOnly?: boolean;
     instructions?: string | null;
+    instructionsHtml?: string;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
     tip?: string;
@@ -188,7 +189,9 @@
   <craft-field
     :label="node.props.label ?? undefined"
     :label-sr-only="node.props.labelSrOnly || undefined"
-    :help-text="node.props.instructions ?? undefined"
+    :help-text="
+      node.props.instructionsHtml ? undefined : (node.props.instructions ?? undefined)
+    "
     :instructions-position="node.props.instructionsPosition"
     :required="Boolean(node.props.required)"
     :readonly="control.mode === 'readOnly'"
@@ -216,6 +219,11 @@
         @change="onChange"
       />
     </div>
+    <span
+      v-if="node.props.instructionsHtml"
+      slot="help-text"
+      v-html="node.props.instructionsHtml"
+    />
     <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
     <span
       v-if="node.props.warningHtml"

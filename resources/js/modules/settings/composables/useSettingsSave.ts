@@ -87,6 +87,10 @@ export function useSettingsSave<T extends object>(
     // Callers can opt out of state preservation — e.g. "save as new", which
     // navigates to a different record and needs the form to re-initialize.
     preserveState = true,
+    // An alternate form action ("Save as a new X", "Delete") posting the
+    // same in-progress values to a different destination than this screen's
+    // own default `submit` target.
+    action: actionOverride,
   }: FormSaveOptions = {}) {
     options.onBeforeSave?.();
 
@@ -109,7 +113,7 @@ export function useSettingsSave<T extends object>(
      * usual 422 — `asJsonFailure()` picks it.
      */
     async function submitInSlideout(retried = false): Promise<void> {
-      const route = action();
+      const route = actionOverride ?? action();
       const routeIsString = Object(route).constructor === String;
 
       form.clearErrors();
@@ -226,7 +230,7 @@ export function useSettingsSave<T extends object>(
 
           return payload;
         })
-        .submit(action(), {
+        .submit(actionOverride ?? action(), {
           ...submitOptions,
           onHttpException: (response) => {
             if (!passwordConfirmation || response.status !== 423 || retried) {

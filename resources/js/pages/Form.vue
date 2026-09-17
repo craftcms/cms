@@ -2,7 +2,7 @@
   import {actionClient} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {shallowRef, toRaw} from 'vue';
+  import {computed, shallowRef, toRaw} from 'vue';
   import {
     useAppLayout,
     type UseAppLayoutOptions,
@@ -10,6 +10,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import type {ActionItem, FormAltAction} from '@/common/types';
   import type {
     FormChange,
     FormChangeKind,
@@ -34,6 +35,12 @@
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+    /**
+     * Server-described alternate form actions ("Save as a new X", "Delete") —
+     * see {@link FormAltAction}. Each resubmits the form's current values via
+     * this same component's own `save()`, just aimed at a different action.
+     */
+    formActions?: FormAltAction[];
     /**
      * Server-rendered read-only metadata (e.g. Created at/Updated at) for the details
      * column — the same {@see \CraftCms\Cms\Cp\Html\ContentHtml::metadataHtml()} markup
@@ -89,12 +96,39 @@
       }).save
     : undefined;
 
+  // Each server-described alt action becomes a real `ActionItemButton`, whose
+  // `onClick` reuses this component's own `save()` — the only place that has
+  // both the in-progress values (`renderer.value?.currentValues()`, via
+  // `save`'s own `transform` above) and the confirm/redirect machinery
+  // already built for the primary Save button. This is the piece `formActions`
+  // itself can't carry: it's plain JSON from the server, not a closure.
+  const translatedFormActions = computed<ActionItem[]>(
+    () =>
+      props.formActions?.map((altAction) => ({
+        label: altAction.label,
+        variant: altAction.destructive ? 'danger' : undefined,
+        onClick: () => {
+          if (altAction.confirm && !window.confirm(altAction.confirm)) {
+            return;
+          }
+
+          save?.({
+            action: altAction.action
+              ? {url: altAction.action, method: 'post'}
+              : undefined,
+            data: altAction.params,
+          });
+        },
+      })) ?? []
+  );
+
   // `PageScreen` shows the Save button purely on `form` being truthy (`v-if="form"`) —
   // it doesn't look at `onSave`/`submit`. Passing `inertiaForm` unconditionally would
   // show a Save button with nothing to save on a node-only screen (a listing, say).
   useAppLayout({
     form: props.submit ? inertiaForm : null,
     defaultFormActions: props.defaultFormActions,
+    formActions: translatedFormActions.value,
     onSave: save,
   });
 

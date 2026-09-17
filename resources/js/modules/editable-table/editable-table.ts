@@ -588,8 +588,15 @@ export class EditableTable extends Base<EditableTableSettings> {
   ): any {
     void staticRows;
 
+    // `_hidden` is a reserved row key, not a declared column — same principle
+    // `HasVisibility` documents for whole Field/Group nodes: the row's own cells stay
+    // real inputs (still posting, still holding whatever was typed) rather than being
+    // omitted, so the caller can toggle it back without losing anything. Both the
+    // `hidden` attribute and the class are set, matching that same convention, since
+    // some hosts override the UA `[hidden]` rule.
     const $tr = $('<tr/>', {
       'data-id': rowId,
+      ...(values._hidden ? {hidden: true, class: 'hidden'} : {}),
     });
 
     for (const colId in columns) {

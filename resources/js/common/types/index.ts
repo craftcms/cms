@@ -1,5 +1,6 @@
 import type {ActionFeedback, BaseAction, VariantKey} from '@craftcms/ui';
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
+import type {UrlMethodPair} from '@inertiajs/core';
 import type {Component} from 'vue';
 import type {FormValues} from '@/modules/forms/types';
 
@@ -123,10 +124,38 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
+/**
+ * A server-described alternate form action — the `Form` page's counterpart to
+ * `\CraftCms\Cms\Http\Responses\CpScreenResponse::addAltAction()` ("Save as a
+ * new X", "Delete", …). Unlike a plain {@link ActionItemButton}, this carries
+ * no client-side `onClick` (it's plain JSON from the server) — `Form.vue`
+ * translates each one into a real action that resubmits the form's *current*
+ * in-progress values to `action` (default POST to the screen's own submit
+ * method) instead of firing an isolated request.
+ */
+export interface FormAltAction {
+  label: string;
+  /** Renders the action as destructive (e.g. a "Delete"). */
+  destructive?: boolean;
+  /** Defaults to the screen's own submit action when omitted. */
+  action?: string;
+  /** Extra values merged into the posted payload alongside the form's own. */
+  params?: FormValues;
+  /** A confirmation message shown (native `confirm()`) before submitting. */
+  confirm?: string;
+}
+
 export interface FormSaveOptions {
   redirect?: boolean;
   data?: FormValues;
   preserveState?: boolean;
+  /**
+   * Submits to a different destination than the screen's own default
+   * `submit` target — e.g. an alternate form action posting the same
+   * in-progress values elsewhere ("Save as a new X", "Delete"). Omit to use
+   * the screen's own action.
+   */
+  action?: UrlMethodPair;
 }
 
 export interface EntryType {

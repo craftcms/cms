@@ -31,6 +31,9 @@ class Table extends Control
 
     private bool $keyed = false;
 
+    /** @var list<string> */
+    private array $hiddenRows = [];
+
     /** @var array<string, array<string, true>> */
     private array $errors = [];
 
@@ -51,6 +54,7 @@ class Table extends Control
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
             'static' => $attributes['name'] === null,
+            'hiddenRows' => $control->props['hiddenRows'] ?? [],
             'errors' => $control->props['errors'] ?? [],
         ]);
     }
@@ -110,6 +114,27 @@ class Table extends Control
         return $this;
     }
 
+    /**
+     * Hides the given rows (by their row key — a shipping category id, say) without
+     * removing them: their cells stay real inputs, still posting whatever they hold, so a
+     * caller can stop hiding a row later without losing anything already typed in it —
+     * the same principle {@see \CraftCms\Cms\Form\Nodes\Concerns\HasVisibility} documents
+     * for whole Field/Group nodes.
+     *
+     * Deliberately a Control *prop* rather than part of each row's own value: props are
+     * always freshly reapplied on a reactive refresh, whereas row-level values are only
+     * ever merged in where missing (so an already-known row can't be updated this way
+     * without touching real submitted data).
+     *
+     * @param  list<string>  $rowIds
+     */
+    public function hiddenRows(array $rowIds): static
+    {
+        $this->hiddenRows = $rowIds;
+
+        return $this;
+    }
+
     /** @param array<string, array<string, true>> $errors */
     public function errors(array $errors): static
     {
@@ -136,6 +161,7 @@ class Table extends Control
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            'hiddenRows' => $this->hiddenRows ?: null,
             'errors' => $this->errors ?: null,
         ]);
     }

@@ -52,6 +52,12 @@ export type EditableTableValue =
   | EditableTableValue[]
   | EditableTableRow;
 
+/**
+ * `_hidden` is a reserved key (not a declared column, so it never renders as a
+ * cell): hides the row (`hidden` attribute + class) without removing it — its
+ * cells stay real inputs, still posting whatever they hold, so a caller can
+ * toggle it back off without losing anything already typed.
+ */
 export interface EditableTableRow {
   [key: string]: EditableTableValue;
 }

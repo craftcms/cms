@@ -125,6 +125,12 @@ class Field implements Node
         return $this;
     }
 
+    /**
+     * Supports the same markdown as `tip()`/`warning()` — including a raw
+     * inline tag like `<a href="...">` (preserved by the same
+     * {@see self::noticeHtml()} pass those use), unlike a plain-text field
+     * whose instructions never go through markdown parsing at all.
+     */
     public function instructions(?string $instructions): static
     {
         $this->instructions = $instructions;
@@ -237,6 +243,7 @@ class Field implements Node
             ...Arr::whereNotNull([
                 'labelSrOnly' => $this->labelSrOnly ?: null,
                 'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
+                'instructionsHtml' => $this->noticeHtml($this->instructions),
                 'tip' => $this->tip,
                 'tipHtml' => $this->noticeHtml($this->tip),
                 'warning' => $this->warning,
