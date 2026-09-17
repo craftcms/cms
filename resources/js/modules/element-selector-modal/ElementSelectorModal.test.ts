@@ -34,7 +34,7 @@ vi.mock('@/pages/assets/AssetUploadButton.vue', async () => {
   return {
     default: define({
       name: 'AssetUploadButtonStub',
-      props: ['canUpload', 'folderId', 'fsType', 'reloadOnComplete'],
+      props: ['canUpload', 'folderId', 'reloadOnComplete'],
       emits: ['uploaded'],
       setup(props, {emit}) {
         upload.emit = emit as (event: string, payload?: unknown) => void;
@@ -343,7 +343,6 @@ describe('the upload button', () => {
   const uploadable = {
     'can-upload': true,
     'folder-id': 7,
-    'fs-type': 'craft\\fs\\Local',
   };
 
   /** Mount with the index showing, which is when a source exists at all. */
@@ -407,7 +406,6 @@ describe('the upload button', () => {
     expect(upload.lastProps).toMatchObject({
       canUpload: true,
       folderId: 7,
-      fsType: 'craft\\fs\\Local',
       // There is no page behind a modal to reload.
       reloadOnComplete: false,
     });

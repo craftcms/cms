@@ -40,9 +40,6 @@ use CraftCms\Cms\Field\LinkTypes\Url;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\Filesystem\Filesystems;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
-use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Utility\Utilities\PhpInfo;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
@@ -210,6 +207,25 @@ it('rejects legacy link types that claim the protected URL identity', function()
         ->and(LegacyLink::types()['url'])->toBe(Url::class);
 });
 
+it('keeps filesystem type registration on the legacy service', function() {
+    $calls = 0;
+
+    YiiEvent::on(
+        LegacyFilesystems::class,
+        LegacyFilesystems::EVENT_REGISTER_FILESYSTEM_TYPES,
+        function(RegisterComponentTypesEvent $event) use (&$calls) {
+            $calls++;
+            expect($event->types)->toBe([\craft\fs\Local::class]);
+            $event->types[] = 'crafttests\\fs\\LegacyFilesystem';
+        },
+    );
+
+    expect(app(LegacyFilesystems::class)->getAllFilesystemTypes())
+        ->toBe([\craft\fs\Local::class, 'crafttests\\fs\\LegacyFilesystem'])
+        ->and($calls)->toBe(1)
+        ->and(class_exists('CraftCms\\Cms\\Filesystem\\FilesystemTypes'))->toBeFalse();
+});
+
 it('applies legacy type registration events to a fresh modern registry snapshot', function(
     string $registryClass,
     string $modernType,
@@ -312,16 +328,6 @@ it('applies legacy type registration events to a fresh modern registry snapshot'
         Feed::class,
         CraftSupport::class,
     ],
-    'filesystems' => [
-        FilesystemTypes::class,
-        AdapterRegistryFilesystem::class,
-        LegacyFilesystems::class,
-        LegacyFilesystems::EVENT_REGISTER_FILESYSTEM_TYPES,
-        Filesystems::class,
-        'getAllFilesystemTypes',
-        AdapterRetainedFilesystem::class,
-        Local::class,
-    ],
     'image transformers' => [
         ImageTransformers::class,
         AdapterRegistryImageTransformer::class,
@@ -367,14 +373,6 @@ abstract class AdapterRetainedNestedEntryField extends Matrix
 }
 
 abstract class AdapterRegistryWidget extends Widget
-{
-}
-
-abstract class AdapterRegistryFilesystem extends Local
-{
-}
-
-abstract class AdapterRetainedFilesystem extends Local
 {
 }
 

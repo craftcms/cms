@@ -1,25 +1,39 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+declare(strict_types=1);
 
 namespace craft\fs;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Temp represents a temporary filesystem.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     *
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Temp} instead.
-     */
-    class Temp extends \CraftCms\Cms\Filesystem\Filesystems\Temp
+use Craft;
+use Override;
+
+/**
+ * Temp represents a temporary filesystem.
+ *
+ * @since 4.0.0
+ * @deprecated 6.0.0
+ */
+class Temp extends Local
+{
+    public bool $hasUrls = false;
+
+    #[Override]
+    public static function displayName(): string
     {
+        return 'Temp';
+    }
+
+    public function __construct($config = [])
+    {
+        $config['path'] ??= Craft::$app->getPath()->getTempAssetUploadsPath();
+        $config['name'] ??= Craft::t('app', 'Temporary Uploads');
+
+        parent::__construct($config);
+    }
+
+    #[Override]
+    public function getSettingsHtml(): ?string
+    {
+        return null;
     }
 }

@@ -3,10 +3,11 @@
 ## Unreleased
 
 > [!IMPORTANT]
-> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
+> This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
 - Added support for upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API. ([#19604](https://github.com/craftcms/cms/pull/19604))
-- Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Improved performance of element queries, control panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
 - Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
@@ -20,10 +21,15 @@
 - Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 - Removed the “Show unpermitted files” and “Allowed File Types” settings from Assets, Link, and Markdown fields, in favor of “Viewable” and “File Type” condition rules in the “Selectable Assets Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
+- Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
+- Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
+- Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
+- Added `CraftCms\Cms\Asset\Models\Volume::$hasUrls`, which determines whether the volume’s assets have public URLs. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Added `CraftCms\Cms\Condition\BaseConditionGroup`. ([#19587](https://github.com/craftcms/cms/pull/19587))
-- Added `CraftCms\Cms\Condition\ConditionBuilder`. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added `CraftCms\Cms\Condition\ConditionBuilderPayload`. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added `CraftCms\Cms\Condition\ConditionBuilderRenderer`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Condition\ConditionBuilder`. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added `CraftCms\Cms\Condition\ConditionRulePayload`. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added `CraftCms\Cms\Condition\Contracts\ConditionComponentInterface`. ([#19587](https://github.com/craftcms/cms/pull/19587))
 - Added `CraftCms\Cms\Condition\Contracts\ConditionGroupInterface`. ([#19587](https://github.com/craftcms/cms/pull/19587))
@@ -31,30 +37,34 @@
 - Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getForm()`, which replaces `getHtml()`. ([#19588](https://github.com/craftcms/cms/pull/19588))
 - Added `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::isSelectableForCondition()`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Added `CraftCms\Cms\Condition\Enums\GroupOperator`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\Config\GeneralConfig::$uploadSessionDisk` and `getUploadSessionDisk()`, which determine the disk used to stage upload sessions. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Added `CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface`, which element condition rules that modify element queries should now implement. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Added `CraftCms\Cms\Element\Conditions\ElementCondition::$forQuery`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Added `CraftCms\Cms\Element\Conditions\ElementCondition`. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
+- Renamed `CraftCms\Cms\Config\GeneralConfig::$tempAssetUploadFs` to `$tempAssetUploadDisk`, and `getTempAssetUploadFs()` to `getTempAssetUploadDisk()`, which now reference a Laravel filesystem disk exclusively. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Renamed `CraftCms\Cms\Cp\SelectOptions::getFsOptions()` to `getDiskOptions()`, which now returns Laravel filesystem disk options exclusively. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
+- Removed `CraftCms\Cms\Asset\Assets::getTempAssetUploadFs()` and `CraftCms\Cms\Asset\AssetsHelper::isTempUploadFs()`. `Assets::getTempAssetUploadDisk()` should be used instead, which now returns a Laravel filesystem disk. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Removed `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::getHtml()`. `getForm()` must be implemented instead. ([#19588](https://github.com/craftcms/cms/pull/19588))
+- Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Removed `CraftCms\Cms\Cp\Components\FilesystemSelect` and `CraftCms\Cms\Form\Controls\FilesystemSelect`. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
 - Removed `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::getExclusiveQueryParams()` and `modifyQuery()`. `ElementQueryConditionRuleInterface::modifyQuery()` should be implemented instead, which now accepts the underlying query builder directly. ([#19563](https://github.com/craftcms/cms/pull/19563))
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
-- Added `Cp.$elementDetailsTabs`, allowing plugins to register Control Panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
-- Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
-- Added `CraftCms\Cms\Contracts\PluginInterface::createSettings()`, which replaces `createSettingsModel()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
-- Removed `CraftCms\Cms\Contracts\PluginInterface::createSettingsModel()`. `createSettings()` must be implemented instead. ([#19574](https://github.com/craftcms/cms/pull/19574))
-- Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
-- Added `CraftCms\Cms\Dashboard\Widgets\Widget::component()` and `props()`, which replace `getBodyHtml()`. ([#19564](https://github.com/craftcms/cms/pull/19564))
-- Removed `CraftCms\Cms\Dashboard\Widgets\Widget::getBodyHtml()`. `component()` and `props()` must be implemented instead. (`getBodyHtml()` remains supported through the Yii adapter.) ([#19564](https://github.com/craftcms/cms/pull/19564))
-- `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
-- Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
+- Removed `CraftCms\Cms\Filesystem\Filesystems`, `FilesystemTypes`, `Contracts\FsInterface`, `Filesystems\Filesystem` (and its `DiskFilesystem`, `Local`, `MissingFs`, and `Temp` implementations), `Resources\FsResource`, `Events\FilesystemRenamed`, and `CraftCms\Cms\Support\Facades\Filesystems`. Laravel filesystem disks should be configured and referenced directly instead; Craft filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Http\Controllers\Settings\FilesystemsController` and `CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel`, along with the Filesystems control panel settings page. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed `CraftCms\Cms\Plugin\Concerns\HasFilesystemTypes`. Plugins can no longer register custom Craft filesystem types. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Added `Cp.$elementDetailsTabs`, allowing plugins to register control panel element-details tabs. ([#19646](https://github.com/craftcms/cms/pull/19646))
 - Added support for sending queued Laravel notifications to `CraftCms\Cms\User\Elements\User` elements. ([#19541](https://github.com/craftcms/cms/pull/19541))
 - Added the `<craft-timeline-item>` web component. ([#19629](https://github.com/craftcms/cms/pull/19629))
-- Added `CraftCms\Cms\Activity\Contracts\ShouldBeRetained`, allowing activity event types such as comments to opt out of activity garbage collection.
 - Added the `authGuard` and `authPasswordBroker` general config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 - Stopped loading the deprecated `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
-- Added `CraftCms\Cms\ProjectConfig\ProjectConfig::getPendingChanges()`.
 - Removed HTMX.
 - Fixed a bug where saved drafts without canonical elements were missing from element indexes. ([#19649](https://github.com/craftcms/cms/pull/19649))
 - Fixed a bug where submitting a form after signing in through an elevated or expired session modal could fail CSRF validation.

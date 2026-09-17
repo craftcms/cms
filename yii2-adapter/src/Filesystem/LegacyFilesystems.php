@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Filesystem;
+namespace CraftCms\Yii2Adapter\Filesystem;
 
+use craft\base\FsInterface;
+use craft\fs\MissingFs;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
-use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
-use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -26,7 +24,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 #[Singleton]
-class Filesystems
+class LegacyFilesystems
 {
     public const string DISK_PREFIX = 'craft-fs-';
 
@@ -48,8 +46,8 @@ class Filesystems
         private readonly ProjectConfig $projectConfig,
         private readonly ConfigRepository $config,
         private readonly FilesystemManager $filesystemManager,
-        private readonly FilesystemTypes $filesystemTypes,
-    ) {}
+    ) {
+    }
 
     /** @return array<string,mixed> */
     public function createFilesystemConfig(FsInterface $fs): array
@@ -62,16 +60,6 @@ class Filesystems
     }
 
     /**
-     * Returns all registered filesystem types.
-     *
-     * @return Collection<int,class-string<FsInterface>>
-     */
-    public function getAllFilesystemTypes(): Collection
-    {
-        return $this->filesystemTypes->types();
-    }
-
-    /**
      * @return Collection<string,FsInterface>
      */
     private function filesystems(): Collection
@@ -80,13 +68,13 @@ class Filesystems
             return $this->filesystems;
         }
 
-        $configs = $this->projectConfig->get(ProjectConfig::PATH_FS);
-        if (! is_array($configs)) {
+        $configs = $this->projectConfig->get('fs');
+        if (!is_array($configs)) {
             $configs = [];
         }
 
         $filesystems = collect($configs)
-            ->mapWithKeys(function (array $config, string $handle): array {
+            ->mapWithKeys(function(array $config, string $handle): array {
                 $config['handle'] = $handle;
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
 
@@ -111,7 +99,7 @@ class Filesystems
 
     public function toDiskName(string $handle): string
     {
-        return self::DISK_PREFIX.$handle;
+        return self::DISK_PREFIX . $handle;
     }
 
     public function disk(string $reference, ?string $prefix = null): FilesystemAdapter
@@ -128,7 +116,7 @@ class Filesystems
                 'prefix' => $prefix,
             ]);
 
-        if (! $disk instanceof FilesystemAdapter) {
+        if (!$disk instanceof FilesystemAdapter) {
             throw new FilesystemException("Filesystem reference [$reference] did not resolve to a Laravel filesystem adapter.");
         }
 
@@ -149,6 +137,10 @@ class Filesystems
                 continue;
             }
 
+            if (array_key_exists($diskName, $craftDisks)) {
+                throw new FilesystemException("Laravel disk [$diskName] conflicts with a legacy Craft filesystem handle.");
+            }
+
             if (str_starts_with($diskName, self::DISK_PREFIX)) {
                 throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
             }
@@ -163,7 +155,7 @@ class Filesystems
 
         $staleDiskNames = array_keys(array_filter(
             $currentDisks,
-            fn (mixed $config, string $name): bool => $this->isGeneratedDiskConfig($name, $config),
+            fn(mixed $config, string $name): bool => $this->isGeneratedDiskConfig($name, $config),
             ARRAY_FILTER_USE_BOTH,
         ));
 
@@ -183,7 +175,6 @@ class Filesystems
      */
     public function registerDisk(string $handle, ?array $filesystemConfig = null): void
     {
-        $diskName = $this->toDiskName($handle);
         $diskConfig = $filesystemConfig !== null
             ? $this->resolveDiskConfigFromArray($handle, $filesystemConfig)
             : $this->resolveDiskConfig($handle);
@@ -196,12 +187,16 @@ class Filesystems
 
         $diskConfig = $this->generatedDiskConfig($diskConfig);
         $diskConfigs = $this->currentDiskConfigs();
-        if (array_key_exists($diskName, $diskConfigs) && ! $this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
-            throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
+        foreach ($this->diskNames($handle) as $diskName) {
+            if (array_key_exists($diskName, $diskConfigs) && !$this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
+                throw new FilesystemException("Laravel disk [$diskName] conflicts with a legacy Craft filesystem handle.");
+            }
+
+            $diskConfigs[$diskName] = $diskConfig;
         }
-        $diskConfigs[$diskName] = $diskConfig;
+
         $this->config->set('filesystems.disks', $diskConfigs);
-        $this->filesystemManager->forgetDisk($diskName);
+        $this->forgetDisks($this->diskNames($handle));
     }
 
     /**
@@ -209,35 +204,34 @@ class Filesystems
      */
     public function purgeDisk(string $handle): void
     {
-        $diskName = $this->toDiskName($handle);
         $diskConfigs = $this->config->get('filesystems.disks', []);
 
-        if (! is_array($diskConfigs) || ! array_key_exists($diskName, $diskConfigs)) {
-            $this->filesystemManager->forgetDisk($diskName);
+        if (!is_array($diskConfigs)) {
+            $this->forgetDisks($this->diskNames($handle));
 
             return;
         }
 
-        if (! $this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
-            throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
+        foreach ($this->diskNames($handle) as $diskName) {
+            if (array_key_exists($diskName, $diskConfigs) && $this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
+                unset($diskConfigs[$diskName]);
+            }
         }
 
-        unset($diskConfigs[$diskName]);
-
         $this->config->set('filesystems.disks', $diskConfigs);
-        $this->filesystemManager->forgetDisk($diskName);
+        $this->forgetDisks($this->diskNames($handle));
     }
 
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {
-        $configPath = sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle);
+        $configPath = sprintf('fs.%s', $fs->handle);
         $isNewFs = $this->projectConfig->get($configPath) === null;
 
-        if (! $fs->beforeSave($isNewFs)) {
+        if (!$fs->beforeSave($isNewFs)) {
             return false;
         }
 
-        if ($runValidation && ! $fs->validate()) {
+        if ($runValidation && !$fs->validate()) {
             Log::info('Filesystem not saved due to validation error.', [__METHOD__]);
 
             return false;
@@ -270,7 +264,7 @@ class Filesystems
                     }
                 }
 
-                event(new FilesystemRenamed($fs));
+                event(new LegacyFilesystemRenamed($fs));
             }
         }
 
@@ -304,12 +298,12 @@ class Filesystems
 
     public function removeFilesystem(FsInterface $fs): bool
     {
-        if (! $fs->beforeDelete()) {
+        if (!$fs->beforeDelete()) {
             return false;
         }
 
         $this->projectConfig->remove(
-            sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle),
+            sprintf('fs.%s', $fs->handle),
             "Remove the “{$fs->handle}” filesystem",
         );
 
@@ -355,7 +349,7 @@ class Filesystems
     /**
      * Resolves a handle to a filesystem instance.
      *
-     * Supports: `disk:diskName`, Craft filesystem handles, plain Laravel disk names.
+     * Supports Craft filesystem handles and Laravel disk names.
      */
     public function resolve(string $handle): ?FsInterface
     {
@@ -389,7 +383,7 @@ class Filesystems
     {
         $diskConfigs = $this->config->get('filesystems.disks', []);
 
-        if (! is_array($diskConfigs)) {
+        if (!is_array($diskConfigs)) {
             return [];
         }
 
@@ -415,14 +409,14 @@ class Filesystems
     private function craftDisksFromProjectConfig(): array
     {
         $craftDisks = [];
-        $projectConfig = $this->projectConfig->get(ProjectConfig::PATH_FS);
+        $projectConfig = $this->projectConfig->get('fs');
 
-        if (! is_array($projectConfig)) {
+        if (!is_array($projectConfig)) {
             return $craftDisks;
         }
 
         foreach ($projectConfig as $handle => $filesystemConfig) {
-            if (! is_string($handle)) {
+            if (!is_string($handle)) {
                 continue;
             }
             if ($handle === '') {
@@ -433,7 +427,10 @@ class Filesystems
                 continue;
             }
 
-            $craftDisks[$this->toDiskName($handle)] = $this->generatedDiskConfig($diskConfig);
+            $diskConfig = $this->generatedDiskConfig($diskConfig);
+            foreach ($this->diskNames($handle) as $diskName) {
+                $craftDisks[$diskName] = $diskConfig;
+            }
         }
 
         return $craftDisks;
@@ -485,16 +482,8 @@ class Filesystems
     private function classify(string $reference): ?array
     {
         $reference = Env::parse($reference);
-        if (! is_string($reference) || $reference === '') {
+        if (!is_string($reference) || $reference === '') {
             return null;
-        }
-
-        if (str_starts_with($reference, 'disk:')) {
-            $diskName = substr($reference, strlen('disk:'));
-
-            return $diskName !== '' && $this->diskExists($diskName)
-                ? ['type' => 'disk', 'diskName' => $diskName]
-                : null;
         }
 
         $filesystem = $this->getFilesystemByHandle($reference);
@@ -504,7 +493,7 @@ class Filesystems
                 'filesystem' => $filesystem,
             ];
 
-            if (! $filesystem instanceof MissingFs) {
+            if (!$filesystem instanceof MissingFs) {
                 $target['diskName'] = $this->toDiskName($reference);
             }
 
@@ -516,9 +505,9 @@ class Filesystems
             : null;
     }
 
-    private function diskFilesystem(string $diskName): DiskFilesystem
+    private function diskFilesystem(string $diskName): DiskFs
     {
-        return new DiskFilesystem([
+        return new DiskFs([
             'disk' => $diskName,
         ]);
     }
@@ -530,7 +519,7 @@ class Filesystems
         }
 
         $resolved = Env::parse($prefix);
-        if (! is_string($resolved) || $resolved === '') {
+        if (!is_string($resolved) || $resolved === '') {
             throw new InvalidSubpathException($prefix);
         }
 
@@ -552,7 +541,7 @@ class Filesystems
 
     private function isGeneratedDiskConfig(string $name, mixed $config): bool
     {
-        if (! str_starts_with($name, self::DISK_PREFIX) || ! is_array($config)) {
+        if (!is_array($config)) {
             return false;
         }
 
@@ -560,7 +549,14 @@ class Filesystems
             return true;
         }
 
-        return ($config['driver'] ?? null) === 'craft-fs-bridge';
+        return str_starts_with($name, self::DISK_PREFIX)
+            && ($config['driver'] ?? null) === 'craft-fs-bridge';
+    }
+
+    /** @return array{string,string} */
+    private function diskNames(string $handle): array
+    {
+        return [$this->toDiskName($handle), $handle];
     }
 
     /**
@@ -569,7 +565,7 @@ class Filesystems
      */
     private function validateDiskConfig(string $handle, array $config): array
     {
-        if (! is_string($config['driver'] ?? null) || $config['driver'] === '') {
+        if (!is_string($config['driver'] ?? null) || $config['driver'] === '') {
             throw new FilesystemException("Filesystem [$handle] returned an invalid Laravel disk configuration.");
         }
 

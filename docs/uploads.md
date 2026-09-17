@@ -11,11 +11,13 @@ use CraftCms\Cms\Config\GeneralConfig;
 
 return GeneralConfig::create()
     ->maxUploadFileSize(200 * 1024 * 1024)
-    ->tempAssetUploadFs('disk:uploads');
+    ->tempAssetUploadDisk('uploads')
+    ->uploadSessionDisk('upload-sessions');
 ```
 
 - `maxUploadFileSize` limits the complete file, independently of PHP’s per-request limit.
-- `tempAssetUploadFs` selects the shared temporary filesystem for asset and photo sessions by handle or `disk:name`. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP.
+- `tempAssetUploadDisk` selects the Laravel disk used for temporary Assets and user photos.
+- `uploadSessionDisk` selects the Laravel disk where upload sessions stage incoming bytes. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP.
 - `uploadChunkSize` defaults to 8 MiB for PHP uploads, capped by `post_max_size`. Lower it if your proxy or web server has a smaller request limit. S3 uses Uppy’s default part sizes: at least 5 MiB, increasing as needed to stay within 10,000 parts.
 - `uploader` optionally selects a registered transport driver. By default, Craft chooses S3 multipart for Laravel S3 disks and tus for other disks.
 - `uploadSessionDuration` defaults to 24 hours of inactivity. Craft garbage collection removes expired uploads.

@@ -10,9 +10,10 @@ namespace crafttests\fixtures;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\services\Fs;
+use craft\services\ProjectConfig as LegacyProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
 use yii\base\ErrorException;
 use yii\test\ArrayFixture;
 
@@ -41,12 +42,12 @@ class FsFixture extends ArrayFixture
     public function load(): void
     {
         $projectConfig = app(ProjectConfig::class);
-        $this->_originalConfig = $projectConfig->get(ProjectConfig::PATH_FS);
+        $this->_originalConfig = $projectConfig->get(LegacyProjectConfig::PATH_FS);
         $this->_originalService = Craft::$app->getFs();
 
-        $projectConfig->set(ProjectConfig::PATH_FS, $this->getData());
+        $projectConfig->set(LegacyProjectConfig::PATH_FS, $this->getData());
         Craft::$app->set('fs', new Fs());
-        Filesystems::reset();
+        app(LegacyFilesystems::class)->reset();
     }
 
     /**
@@ -61,12 +62,12 @@ class FsFixture extends ArrayFixture
             FileHelper::removeDirectory($settings['path']);
         }
 
-        app(ProjectConfig::class)->set(ProjectConfig::PATH_FS, $this->_originalConfig);
+        app(ProjectConfig::class)->set(LegacyProjectConfig::PATH_FS, $this->_originalConfig);
         if (isset($this->_originalService)) {
             Craft::$app->set('fs', $this->_originalService);
         }
 
-        Filesystems::reset();
+        app(LegacyFilesystems::class)->reset();
 
         parent::unload();
     }

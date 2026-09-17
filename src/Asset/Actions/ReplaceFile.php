@@ -64,7 +64,7 @@ class ReplaceFile extends ElementAction
               }
             });
 
-            const tempUploader = Craft.createUploader(elementIndex.uploader.fsType, \$fileInput, settings);
+            const tempUploader = Craft.createUploader(null, \$fileInput, settings);
             tempUploader.setParams({
                 assetId: \$element.data('id')
             });

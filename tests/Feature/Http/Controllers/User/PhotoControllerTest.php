@@ -100,7 +100,7 @@ test('upload', function () {
     ]);
 
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
     ]);
 
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
@@ -137,7 +137,7 @@ test('destroy', function () {
     ]);
 
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
     ]);
 
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);

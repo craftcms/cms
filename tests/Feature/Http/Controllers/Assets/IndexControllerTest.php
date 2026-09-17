@@ -61,7 +61,7 @@ it('sets the CP-relative path for legacy URL generation', function () {
 
 it('renders with a default source', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -96,7 +96,7 @@ it('leaves an index that names its source where it is', function () {
 
 it('preloads existing thumbnail indexes for the displayed assets', function (int $sourceWidth, int $sourceHeight, array $transforms) {
     Queue::fake();
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = Folders::getRootFolderByVolumeId($volume->id);
     $imageTransformer = new ImageTransformer;
 
@@ -152,7 +152,7 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
 ]);
 
 it('preserves custom thumbnail URLs without resolving the configured transformer', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -176,7 +176,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
 });
 
 it('preserves thumbnail overrides on asset subclasses', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -199,7 +199,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
 });
 
 it('reports thumbnail jobs created while rendering the requested page data', function (bool $inertia, bool $queueOnly) {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -255,7 +255,7 @@ it('reports thumbnail jobs created while rendering the requested page data', fun
 
 it('includes a volume’s subfolders in the index results', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -278,7 +278,7 @@ it('includes a volume’s subfolders in the index results', function () {
 
 it('scopes the results to the subfolder named in the path', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -301,7 +301,7 @@ it('scopes the results to the subfolder named in the path', function () {
 
 it('passes the route path segment through as defaultSource', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 

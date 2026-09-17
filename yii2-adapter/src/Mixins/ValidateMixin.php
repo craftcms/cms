@@ -10,7 +10,6 @@ use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
@@ -71,7 +70,7 @@ readonly class ValidateMixin
             Deprecator::log($this::class . '->addError', 'Calling `->addError` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
 
             /**
-             * @var Volume|Widget|Element|Field|FieldLayoutComponent|Filesystem $this
+             * @var Volume|Widget|Element|Field|FieldLayoutComponent $this
              *
              * @phpstan-ignore-next-line
              */

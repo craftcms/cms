@@ -101,11 +101,13 @@
     <!-- The file preview sits above the meta fields, as in the legacy
       editor's sidebar. -->
     <template v-if="previewFragment" #details-header>
-      <HtmlFragmentRenderer
-        :fragment="previewFragment"
-        class="mb-4"
-        @ready="onPreviewReady"
-      />
+      <div class="asset-preview">
+        <HtmlFragmentRenderer
+          :fragment="previewFragment"
+          class="mb-4"
+          @ready="onPreviewReady"
+        />
+      </div>
     </template>
   </ElementEditor>
 
@@ -116,3 +118,19 @@
     @saved="onImageSaved"
   />
 </template>
+
+<style scoped>
+  /*
+   * craft-thumbnail's own fixed --c-thumbnail-size square box doesn't fit
+   * this preview, which is fluid-width and capped at 190px tall — override
+   * its exposed `thumbnail` part so it shrinks to the (already
+   * server-scaled) image's natural size instead, matching how the plain
+   * <img> this preview used before craft-thumbnail was sized.
+   */
+  .asset-preview :deep(.preview-thumb craft-thumbnail::part(thumbnail)) {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 190px;
+  }
+</style>

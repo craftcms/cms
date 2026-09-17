@@ -17,7 +17,6 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Filesystem\Data\FsListing as FilesystemFsListing;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -65,7 +64,6 @@ readonly class CompatibilityMixins
         Element::mixin(new ElementMixin());
         Field::mixin(new ValidateMixin());
         FieldLayoutComponent::mixin(new ValidateMixin());
-        FilesystemComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
         AssetFolderCriteria::mixin(new ValidateMixin());

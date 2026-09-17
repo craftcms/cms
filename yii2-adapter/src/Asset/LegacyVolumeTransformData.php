@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use WeakMap;
 
 class LegacyVolumeTransformData
@@ -38,29 +36,12 @@ class LegacyVolumeTransformData
 
     public function setFilesystem(Volume $volume, ?string $handle): void
     {
-        $this->get($volume)->filesystem = $this->normalizeStorageHandle($handle);
+        $this->get($volume)->filesystem = $handle;
     }
 
     public function setSubpath(Volume $volume, string $subpath): void
     {
         $this->get($volume)->subpath = $subpath;
-    }
-
-    private function normalizeStorageHandle(?string $handle): ?string
-    {
-        if (
-            !$handle
-            || str_starts_with($handle, Volume::STORAGE_DISK_PREFIX)
-            || str_contains($handle, '$')
-            || str_starts_with($handle, '@')
-            || Filesystems::getFilesystemByHandle($handle)
-        ) {
-            return $handle;
-        }
-
-        return app(FilesystemsService::class)->diskExists($handle)
-            ? Volume::STORAGE_DISK_PREFIX . $handle
-            : $handle;
     }
 }
 
