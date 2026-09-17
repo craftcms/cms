@@ -666,13 +666,7 @@ readonly class Navigation
     {
         parse_str((string) parse_url($url, PHP_URL_QUERY), $params);
 
-        foreach ($params as $name => $value) {
-            if ($this->request->query($name) !== $value) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($params, fn ($value, $name) => ! ($this->request->query($name) !== $value));
     }
 
     private function pathMatches(string $path, string $itemPath): bool
