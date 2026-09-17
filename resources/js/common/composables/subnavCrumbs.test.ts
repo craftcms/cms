@@ -1,5 +1,9 @@
 import {describe, expect, it} from 'vite-plus/test';
-import {subnavCrumbs, withSubnavCrumbs} from './subnavCrumbs';
+import {
+  subnavCrumbs,
+  withNavCrumbMenus,
+  withSubnavCrumbs,
+} from './subnavCrumbs';
 
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
 
@@ -173,5 +177,60 @@ describe('withSubnavCrumbs', () => {
     const crumbs = [{label: 'Settings', href: '/admin/settings'}];
 
     expect(withSubnavCrumbs(crumbs, [])).toEqual(crumbs);
+  });
+});
+
+describe('withNavCrumbMenus', () => {
+  const ENTRIES = navCrumbItem({
+    label: 'Entries',
+    href: '/admin/content/entries',
+    subnav: [
+      navCrumbItem({label: 'All entries', href: '/admin/content/entries'}),
+      navCrumbItem({label: 'Singles', href: '/admin/content/entries/singles'}),
+      navCrumbItem({
+        label: 'Channels',
+        href: null,
+        group: true,
+        subnav: [
+          navCrumbItem({label: 'Posts', href: '/admin/content/entries/posts'}),
+        ],
+      }),
+    ],
+  });
+  const NAV = [navCrumbItem({label: 'Dashboard'}), ENTRIES];
+
+  it('swaps a switcher for the menu the nav draws at its level', () => {
+    const [entries, posts] = withNavCrumbMenus(
+      [
+        {label: 'Entries', href: '/admin/content/entries'},
+        {
+          label: 'Posts',
+          href: '/admin/content/entries/posts',
+          items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
+        },
+      ],
+      NAV
+    );
+
+    expect(entries!.items).toBeUndefined();
+    expect(posts!.items).toMatchObject([
+      {type: 'link', label: 'All entries', selected: false},
+      {type: 'link', label: 'Singles', selected: false},
+      {
+        type: 'group',
+        heading: 'Channels',
+        items: [{type: 'link', label: 'Posts', selected: true}],
+      },
+    ]);
+  });
+
+  it('keeps the server menu for a crumb the nav doesn’t know', () => {
+    const items = [{type: 'link' as const, label: 'Other', href: '/x'}];
+    const [crumb] = withNavCrumbMenus(
+      [{label: 'Elsewhere', href: '/admin/elsewhere', items}],
+      NAV
+    );
+
+    expect(crumb!.items).toBe(items);
   });
 });
