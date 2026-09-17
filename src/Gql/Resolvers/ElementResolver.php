@@ -133,4 +133,19 @@ abstract class ElementResolver extends Resolver
      * @param  string|null  $fieldName  Field name to resolve on the source, if not a top-level resolution.
      */
     abstract protected static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed;
+
+    /**
+     * Prepares a top-level, schema-scoped element query for this resolver, as if it were the
+     * root of a resolver chain.
+     *
+     * This gives code outside the resolver’s own class hierarchy (e.g. GQL element types
+     * resolving `prev`/`next` fields) a public way to get a properly-scoped query, without
+     * requiring `prepareQuery()` itself to be public.
+     *
+     * @param  array  $arguments  Arguments to apply to the query.
+     */
+    public static function prepareRootQuery(array $arguments): mixed
+    {
+        return static::prepareQuery(null, $arguments);
+    }
 }

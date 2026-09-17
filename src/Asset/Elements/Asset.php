@@ -507,7 +507,7 @@ class Asset extends Element
     {
         $sources = [];
         $user = currentUserElement();
-        $volumeIds = $context === ElementSources::CONTEXT_INDEX
+        $volumeIds = in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])
             ? Volumes::getViewableVolumeIds()
             : Volumes::getAllVolumeIds();
 

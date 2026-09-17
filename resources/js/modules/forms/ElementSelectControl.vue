@@ -79,6 +79,7 @@
     elementType: string;
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
+    context: string;
     sources: string[] | null;
     criteria: FormProperties;
     selectionCondition?: FormProperties;
@@ -316,6 +317,7 @@
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
       {
+        context: props.control.props.context,
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,

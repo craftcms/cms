@@ -9,6 +9,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -128,6 +129,28 @@ it('reactivates existing inactive user with same email', function () {
     $user = User::find()->email($inactiveUser->email)->one();
     expect($user)->not->toBeNull();
     expect($user->active)->toBeTrue();
+});
+
+it('clears admin status and permissions from a reactivated inactive user', function () {
+    Edition::set(Edition::Pro);
+
+    $inactiveUser = UserFactory::new()->admin()->createElement([
+        'email' => 'inactive-admin@example.com',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    app(UserPermissions::class)->saveUserPermissions($inactiveUser->id, ['accessCp']);
+
+    post(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'newPassword123!',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email($inactiveUser->email)->one();
+    expect($user->admin)->toBeFalse();
+    expect(app(UserPermissions::class)->getPermissionsByUserId($user->id))->toBeEmpty();
 });
 
 it('tracks affiliated site on registration', function () {

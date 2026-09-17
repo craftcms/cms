@@ -38,6 +38,20 @@ test('containsMb4', function (string $string, bool $expected) {
     ['𨳊', true],
 ]);
 
+test('containsNewlines', function (string $string, bool $expected) {
+    expect(Str::containsNewlines($string))->toBe($expected);
+})->with([
+    ['Str contains no newlines', false],
+    ['', false],
+    ["Str contains a tab\tand spaces", false],
+    ["Str contains a\nnewline", true],
+    ["Str contains a\rcarriage return", true],
+    ["Str contains a\r\nCRLF", true],
+    ["\nStarts with a newline", true],
+    ["Ends with a newline\n", true],
+    ["Multiple\nnewlines\nhere", true],
+]);
+
 test('convertToUtf8', function (string $expected, string $string) {
     expect(Str::convertToUtf8($string))->toBe($expected);
 })->with([

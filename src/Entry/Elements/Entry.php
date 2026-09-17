@@ -388,7 +388,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     protected static function defineSources(string $context): array
     {
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $sections = Sections::getEditableSections();
             $editable = true;
         } else {
