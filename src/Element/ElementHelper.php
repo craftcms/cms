@@ -798,6 +798,10 @@ class ElementHelper
             'params',
         ]);
 
+        if (isset($criteria['search']) && ! is_string($criteria['search'])) {
+            unset($criteria['search']);
+        }
+
         return $criteria;
     }
 

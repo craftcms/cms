@@ -30,5 +30,13 @@ class EagerLoadPlan
         public array $nested = [],
 
         public bool $lazy = false,
+
+        /**
+         * @var int[]|null Restricts the site(s) elements get eager-loaded from.
+         *
+         * If `criteria['siteId']` is also specified, the actual sites will be the intersection of
+         * this property and the criteria.
+         */
+        public ?array $siteIds = null,
     ) {}
 }

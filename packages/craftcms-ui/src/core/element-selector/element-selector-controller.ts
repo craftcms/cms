@@ -295,7 +295,7 @@ export class ElementSelectorController<
     const {options} = this;
 
     const params: Record<string, unknown> = {
-      context: 'modal',
+      context: options.context ?? 'modal',
       elementType: this.elementType,
       sources: options.sources,
       condition: options.condition,
@@ -327,7 +327,7 @@ export class ElementSelectorController<
     const {options} = this;
 
     return {
-      context: 'modal',
+      context: options.context ?? 'modal',
       storageKey: options.storageKey,
       condition: options.condition,
       referenceElementId: options.referenceElementId,

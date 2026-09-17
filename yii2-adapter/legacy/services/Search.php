@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -43,8 +45,9 @@ use yii\db\Expression;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->getSearch()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Search} instead.
+ * @deprecated 6.0.0 use {@see LaravelSearch} instead.
  */
 class Search extends Component
 {
@@ -85,6 +88,7 @@ class Search extends Component
 
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
+     *
      * @since 3.4.10
      */
     public bool $useFullText = true;
@@ -104,27 +108,23 @@ class Search extends Component
      */
     private array $_groups;
 
-    /**
-     * @var bool
-     */
     private bool $_isMysql;
 
     /**
-     * @var array|null
      * @see _isSupportedFullTextWord()
      */
     private ?array $_mysqlStopWords = null;
 
     /**
      * @var int Because the `keywords` column in the search index table is a
-     * B-TREE index on Postgres, you can get an "index row size exceeds maximum
-     * for index" error with a lot of data. This value is a hard limit to
-     * truncate search index data for a single row in Postgres.
+     *          B-TREE index on Postgres, you can get an "index row size exceeds maximum
+     *          for index" error with a lot of data. This value is a hard limit to
+     *          truncate search index data for a single row in Postgres.
      */
     public int $maxPostgresKeywordLength = 2450;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -140,9 +140,8 @@ class Search extends Component
     /**
      * Indexes the attributes of a given element defined by its element type.
      *
-     * @param ElementInterface $element
-     * @param string[]|null $fieldHandles The field handles that should be indexed,
-     * or `null` if all fields should be indexed.
+     * @param  string[]|null  $fieldHandles  The field handles that should be indexed,
+     *                                       or `null` if all fields should be indexed.
      * @return bool Whether the indexing was a success.
      */
     public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
@@ -153,8 +152,8 @@ class Search extends Component
     /**
      * Queues up an element to be indexed.
      *
-     * @param ElementInterface $element
-     * @param string[] $fieldHandles
+     * @param  string[]  $fieldHandles
+     *
      * @since 5.7.0
      */
     public function queueIndexElement(ElementInterface $element, array $fieldHandles): void
@@ -165,9 +164,8 @@ class Search extends Component
     /**
      * Indexes the attributes of a given element, only if it's queued.
      *
-     * @param int $elementId
-     * @param int $siteId
-     * @param class-string<ElementInterface>|null $elementType
+     * @param  class-string<ElementInterface>|null  $elementType
+     *
      * @since 5.7.0
      */
     public function indexElementIfQueued(int $elementId, int $siteId, ?string $elementType = null): void
@@ -182,8 +180,6 @@ class Search extends Component
      * If the element query is being ordered by `score`, [[searchElements()]] will be called regardless of
      * what this returns.
      *
-     * @param ElementQueryInterface $elementQuery
-     * @return bool
      * @since 4.8.0
      */
     public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool
@@ -194,8 +190,9 @@ class Search extends Component
     /**
      * Searches for elements that match the given element query.
      *
-     * @param ElementQueryInterface $elementQuery The element query being executed
+     * @param  ElementQueryInterface  $elementQuery  The element query being executed
      * @return array<string,int> The element scores (descending) indexed by element ID and site ID (e.g. `'100-1'`).
+     *
      * @since 3.7.14
      */
     public function searchElements(ElementQueryInterface $elementQuery): array
@@ -206,9 +203,9 @@ class Search extends Component
     /**
      * Returns a database query which will fetch results for a given search query.
      *
-     * @param string|array|SearchQuery $searchQuery The search term to filter the resulting elements by.
-     * @param ElementQueryInterface $elementQuery The element query being executed
-     * @return Query|false
+     * @param  string|array|SearchQuery  $searchQuery  The search term to filter the resulting elements by.
+     * @param  ElementQueryInterface  $elementQuery  The element query being executed
+     *
      * @since 4.6.0
      */
     public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQueryInterface $elementQuery): Query|false
@@ -255,8 +252,6 @@ class Search extends Component
     /**
      * Normalizes a `search` param into a [[SearchQuery]] object.
      *
-     * @param string|array|SearchQuery $searchQuery
-     * @return SearchQuery
      * @since 4.4.0
      */
     public function normalizeSearchQuery(string|array|SearchQuery $searchQuery): SearchQuery
@@ -272,6 +267,7 @@ class Search extends Component
         $options = array_merge($searchQuery);
         $searchQuery = Arr::pull($options, 'query');
         $options = array_merge(Cms::config()->defaultSearchTermOptions, $options);
+
         return new SearchQuery($searchQuery, $options);
     }
 
@@ -372,9 +368,8 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
-     * @param int|int[]|null $siteId The site ID(s) to search within
-     * @param MemoizableArray<FieldInterface>|null $customFields
-     * @return string|false
+     * @param  int|int[]|null  $siteId  The site ID(s) to search within
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      */
     private function _getWhereClause(array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
@@ -409,11 +404,8 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array $tokens
-     * @param bool $inclusive
-     * @param int|int[]|null $siteId
-     * @param MemoizableArray<FieldInterface>|null $customFields
-     * @return string|false
+     * @param  int|int[]|null  $siteId
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      */
     private function _processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
@@ -471,10 +463,8 @@ class Search extends Component
      * Generates a piece of WHERE clause for fallback (LIKE) search from search term
      * or returns keywords to use in a full text search clause
      *
-     * @param SearchQueryTerm $term
-     * @param int|int[]|null $siteId
-     * @param MemoizableArray<FieldInterface>|null $customFields
-     * @return array
+     * @param  int|int[]|null  $siteId
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      */
     private function _getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?MemoizableArray $customFields): array
     {
@@ -590,9 +580,7 @@ class Search extends Component
     /**
      * Normalize term from tokens, keep a record for cache.
      *
-     * @param string $term
-     * @param int|int[]|null $siteId
-     * @return string
+     * @param  int|int[]|null  $siteId
      */
     private function _normalizeTerm(string $term, array|int|null $siteId = null): string
     {
@@ -611,8 +599,7 @@ class Search extends Component
     /**
      * Get the fieldId for given attribute or `null` for unmatched.
      *
-     * @param string $attribute
-     * @param MemoizableArray<FieldInterface>|null $customFields
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return int|int[]|null
      */
     private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
@@ -625,31 +612,32 @@ class Search extends Component
         }
 
         $field = app(Fields::class)->getFieldByHandle($attribute);
+
         return $field->id ?? null;
     }
 
     /**
      * Get SQL bit for simple WHERE clause
      *
-     * @param string $key The attribute.
-     * @param string $oper The operator.
-     * @param string|int $val The value.
-     * @return string
+     * @param  string  $key  The attribute.
+     * @param  string  $oper  The operator.
+     * @param  string|int  $val  The value.
      */
     private function _sqlWhere(string $key, string $oper, string|int $val): string
     {
-        $key = Craft::$app->getDb()->quoteColumnName($key);
+        $db = Craft::$app->getDb();
+        $key = $db->quoteColumnName($key);
+        $val = $db->quoteValue($val);
 
-        return sprintf("(%s %s '%s')", $key, $oper, $val);
+        return "($key $oper $val)";
     }
 
     /**
      * Get SQL necessary for a full text search.
      *
-     * @param mixed $val String or Array of keywords
-     * @param bool $bool Use In Boolean Mode or not
-     * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
-     * @return string
+     * @param  mixed  $val  String or Array of keywords
+     * @param  bool  $bool  Use In Boolean Mode or not
+     * @param  string  $glue  If multiple values are passed in as an array, the operator to combine them (AND or OR)
      */
     private function _sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): string
     {
@@ -663,7 +651,7 @@ class Search extends Component
         if (DB::isSqlite()) {
             $likeGlue = $glue === ' AND ' ? ' AND ' : ' OR ';
             $parts = [];
-            foreach ((array)$val as $word) {
+            foreach ((array) $val as $word) {
                 // Strip trailing :* (prefix search marker) since LIKE handles it with %
                 $word = rtrim($word, ':*');
                 // Strip leading - (exclude marker) — exclusion handled elsewhere
@@ -671,6 +659,7 @@ class Search extends Component
                 $col = $db->quoteColumnName('keywords');
                 $parts[] = "$col LIKE '% $word%'";
             }
+
             return implode($likeGlue, $parts);
         }
 
@@ -702,9 +691,7 @@ class Search extends Component
     /**
      * Get SQL bit for sub-selects.
      *
-     * @param string $where
-     * @param int|int[]|null $siteId
-     * @return string|false
+     * @param  int|int[]|null  $siteId
      */
     private function _sqlSubSelect(string $where, array|int|null $siteId): string|false
     {
@@ -725,10 +712,6 @@ class Search extends Component
 
     /**
      * Whether or not to do a full text search or not.
-     *
-     * @param string $keywords
-     * @param SearchQueryTerm $term
-     * @return bool
      */
     private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
@@ -747,7 +730,7 @@ class Search extends Component
     /**
      * This method will return PostgreSQL specific SQL necessary to find an exact phrase search.
      *
-     * @param string $val The phrase or exact value to search for.
+     * @param  string  $val  The phrase or exact value to search for.
      * @return string The SQL to perform the search.
      */
     private function _sqlPhraseExactMatch(string $val): string
@@ -760,13 +743,10 @@ class Search extends Component
         }
 
         $ftVal = implode(' & ', explode(' ', $val));
+
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE ' %s '", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $val);
     }
 
-    /**
-     * @param string $keyword
-     * @return bool
-     */
     private function _isSupportedFullTextWord(string $keyword): bool
     {
         if (!$this->_isMysql) {
