@@ -13,6 +13,7 @@
 - Fixed a bug where public registration could fail when sending the activation email, if email verification wasn’t required but the password was deferred. ([#19610](https://github.com/craftcms/cms/issues/19610))
 - Fixed a bug where custom fields nested within Content Block fields weren’t editable from element indexes. ([#19602](https://github.com/craftcms/cms/discussions/19602))
 - Fixed a bug where nested relational fields weren’t enforcing their “Validate related {type}” setting. ([#19625](https://github.com/craftcms/cms/pull/19625))
+- Fixed a bug where newly-created generated fields weren’t immediately available to card previews. ([#19166](https://github.com/craftcms/cms/pull/19166))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-r56r-f696-c8w9, GHSA-f6gf-r952-rxg6, GHSA-qcvp-ggx3-97r6)
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-qj3q-j7r4-428p, GHSA-9hp6-3565-gvh5)
