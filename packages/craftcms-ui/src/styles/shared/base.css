@@ -198,7 +198,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   thead,
   th {
-    background-color: var(--c-color-neutral-fill-quiet);
+    background-color: var(--c-surface-default);
   }
 
   th,
@@ -210,26 +210,25 @@ Modify with `cp-table--auto` to apply table-layout: auto
     overflow: hidden;
     text-overflow: ellipsis;
     width: 0;
-    height: var(--_row-height);
+    border-block-end: 1px solid
+      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
 
     &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
       padding: 0;
     }
   }
 
-  tbody tr {
+  td {
+    height: var(--_row-height);
   }
 
-  td,
   th {
-    border-block-end: 1px solid
-      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+    height: calc(var(--_row-height) * 0.8);
   }
 
   /* Add a rule to the first cells */
   tr:first-child {
-    td,
-    th {
+    td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
     }
@@ -368,4 +367,16 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table--spacious {
   --_row-height: calc(50rem / 16);
+}
+
+.cp-table--full-width {
+  th:first-child,
+  td:first-child {
+    padding-inline-start: var(--c-container-padding);
+  }
+
+  th:last-child,
+  td:last-child {
+    padding-inline-end: var(--c-container-padding);
+  }
 }

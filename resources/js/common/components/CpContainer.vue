@@ -9,9 +9,10 @@
 
 <style scoped lang="scss">
   .cp-container {
-    --_gutter: var(--c-gutter, var(--c-spacing-lg));
     display: grid;
-    grid-template-columns: var(--_gutter) 1fr var(--_gutter);
+    grid-template-columns: var(--c-container-padding) 1fr var(
+        --c-container-padding
+      );
     gap: 0;
   }
 

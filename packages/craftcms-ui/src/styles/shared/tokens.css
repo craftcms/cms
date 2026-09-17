@@ -72,6 +72,9 @@
   --c-spacing-xl: calc(var(--c-spacing) * 8);
   --c-spacing-2xl: calc(var(--c-spacing) * 16);
 
+  /* Inline padding for the CpContainer element */
+  --c-container-padding: var(--c-spacing-lg);
+
   --c-size-touch-target: calc(34rem / 16);
   --c-size-touch-target-sm: calc(24rem / 16);
 

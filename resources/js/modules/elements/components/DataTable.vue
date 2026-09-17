@@ -30,9 +30,11 @@
       loading?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
+      fullWidth?: boolean;
     }>(),
 
     {
+      fullWidth: false,
       reorderable: false,
       selectable: false,
       loading: false,
@@ -288,6 +290,7 @@
     :class="{
       'cp-table': true,
       'cp-table--grid': false,
+      'cp-table--full-width': fullWidth,
       'cp-table--compact': spacing === TableSpacing.Compact,
       'cp-table--spacious': spacing === TableSpacing.Spacious,
       'cp-table--auto': layout === 'auto',
@@ -491,8 +494,8 @@
   :deep(.cp-table-cell--header[aria-sort]) {
     &:hover,
     &:focus-within {
-      background-color: var(--c-color-neutral-fill-loud);
-      color: var(--c-color-neutral-on-loud);
+      background-color: var(--c-color-fill-loud);
+      color: var(--c-color-on-loud);
     }
   }
 
@@ -507,7 +510,7 @@
   // Selection column hugs its checkbox rather than claiming a data-column share.
   :deep(.cp-table-cell--select) {
     width: 1px;
-    max-width: calc(30rem / 16);
+    // max-width: calc(30rem / 16);
     white-space: nowrap;
   }
 
