@@ -116,9 +116,9 @@ describe('flush', () => {
     return {button, container};
   }
 
-  function labelRect(button: CraftButton): DOMRect {
+  function textRect(element: Element): DOMRect {
     const range = document.createRange();
-    range.selectNodeContents(button);
+    range.selectNodeContents(element);
     return range.getBoundingClientRect();
   }
 
@@ -128,15 +128,28 @@ describe('flush', () => {
       .getBoundingClientRect();
   }
 
-  it('lines the label up with the text around it on every side', async () => {
+  it('pulls the label out to the container edges on the inline axis', async () => {
     const {button, container} = await mountFlush({flush: ''});
     const box = container.getBoundingClientRect();
-    const label = labelRect(button);
+    const label = textRect(button);
 
     expect(label.left).toBeCloseTo(box.left, 0);
-    expect(label.top).toBeCloseTo(box.top, 0);
     expect(label.right).toBeCloseTo(box.right, 0);
-    expect(label.bottom).toBeCloseTo(box.bottom, 0);
+  });
+
+  it('lines the label up with the text beside it on the block axis', async () => {
+    const {button, container} = await mountFlush({flush: ''});
+    // Measured against text, not the container: a range rect is the font's
+    // text box, which only matches the container's `1lh` in a gapless font.
+    const reference = document.createElement('span');
+    reference.textContent = 'Edit';
+    container.prepend(reference);
+
+    const label = textRect(button);
+    const text = textRect(reference);
+
+    expect(label.top).toBeCloseTo(text.top, 0);
+    expect(label.bottom).toBeCloseTo(text.bottom, 0);
   });
 
   it('only pulls in the sides it names', async () => {
