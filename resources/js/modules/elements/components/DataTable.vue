@@ -292,17 +292,17 @@
       []
     );
 
-    // Leading utility columns, in render order: reorder handle, structure
-    // toggle, then select.
+    // Leading utility columns, in render order: structure toggle, reorder
+    // handle, then select.
     if (props.selectable) {
       gridDef.unshift('44px');
     }
 
-    if (props.structure) {
+    if (props.reorderable) {
       gridDef.unshift('44px');
     }
 
-    if (props.reorderable) {
+    if (props.structure) {
       gridDef.unshift('44px');
     }
 
@@ -399,11 +399,6 @@
     </caption>
     <thead>
       <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-        <template v-if="!readOnly && reorderable">
-          <th class="cell cell--header">
-            <span class="sr-only">Reorder</span>
-          </th>
-        </template>
         <th
           v-if="structure"
           class="cp-table-cell cp-table-cell--header cp-table-cell--structure"
@@ -411,6 +406,11 @@
         >
           <span class="sr-only">{{ t('Expand or collapse') }}</span>
         </th>
+        <template v-if="!readOnly && reorderable">
+          <th class="cell cell--header">
+            <span class="sr-only">Reorder</span>
+          </th>
+        </template>
         <th
           v-if="selectable"
           class="cp-table-cell cp-table-cell--header cp-table-cell--select"
@@ -516,42 +516,6 @@
           @click="onRowClick(row, $event)"
           @keydown="onRowKeydown(row, rowIdx, $event)"
         >
-          <td v-if="reorderable && !readOnly && structure">
-            <div>
-              <craft-reorder-button
-                nested
-                :position="structurePosition(row.original.id)"
-                .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
-                .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
-                :ref="(el: any) => structureDrag.setHandleRef(el, row.id)"
-                @reorder="onStructureReorder(row.original.id, $event)"
-              ></craft-reorder-button>
-            </div>
-            <DropIndicator :edge="structureDropEdge(row.id)" />
-          </td>
-          <template v-else-if="reorderable && !readOnly">
-            <td>
-              <div>
-                <craft-reorder-button
-                  @reorder="
-                    (e: CustomEvent<{direction: 'up' | 'down'}>) =>
-                      emit(
-                        'reorder',
-                        row.index,
-                        e.detail.direction === 'up'
-                          ? row.index - 1
-                          : row.index + 1
-                      )
-                  "
-                  :position="getRowPosition(row.index)"
-                  :ref="(el: any) => setHandleRef(el, row.id)"
-                ></craft-reorder-button>
-              </div>
-
-              <!-- Drop indicator spans entire row, positioned from this cell -->
-              <DropIndicator :edge="getClosestEdge(row.id)" />
-            </td>
-          </template>
           <td v-if="structure" class="cp-table-cell cp-table-cell--structure">
             <craft-button
               v-if="row.original.hasDescendants"
@@ -577,7 +541,51 @@
                 "
               ></craft-icon>
             </craft-button>
+
+            <!-- Drop indicator spans entire row, positioned from this cell -->
+            <DropIndicator
+              v-if="reorderable && !readOnly"
+              :edge="structureDropEdge(row.id)"
+            />
           </td>
+          <td
+            v-if="reorderable && !readOnly && structure"
+            class="cp-table-cell--structure-reorder"
+          >
+            <div>
+              <craft-reorder-button
+                nested
+                :position="structurePosition(row.original.id)"
+                .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
+                .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
+                :ref="(el: any) => structureDrag.setHandleRef(el, row.id)"
+                @reorder="onStructureReorder(row.original.id, $event)"
+              ></craft-reorder-button>
+            </div>
+          </td>
+          <template v-else-if="reorderable && !readOnly">
+            <td>
+              <div>
+                <craft-reorder-button
+                  @reorder="
+                    (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+                      emit(
+                        'reorder',
+                        row.index,
+                        e.detail.direction === 'up'
+                          ? row.index - 1
+                          : row.index + 1
+                      )
+                  "
+                  :position="getRowPosition(row.index)"
+                  :ref="(el: any) => setHandleRef(el, row.id)"
+                ></craft-reorder-button>
+              </div>
+
+              <!-- Drop indicator spans entire row, positioned from this cell -->
+              <DropIndicator :edge="getClosestEdge(row.id)" />
+            </td>
+          </template>
           <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
             <craft-checkbox
               label-sr-only
@@ -690,12 +698,14 @@
   }
 
   :deep(.cp-table-cell--structure),
-  :deep(.cp-table-cell--structure + .cp-table-cell--select) {
+  :deep(.cp-table-cell--structure-reorder),
+  :deep(.cp-table-cell--structure ~ .cp-table-cell--select) {
     overflow: visible;
   }
 
   :deep(.cp-table-structure-toggle),
-  :deep(.cp-table-cell--structure + .cp-table-cell--select > craft-checkbox) {
+  :deep(.cp-table-cell--structure-reorder > div),
+  :deep(.cp-table-cell--structure ~ .cp-table-cell--select > craft-checkbox) {
     position: relative;
     z-index: 1;
     inset-inline-start: var(--_structure-indent);
