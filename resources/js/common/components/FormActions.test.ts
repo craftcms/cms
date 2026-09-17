@@ -11,7 +11,7 @@ describe('FormActions', () => {
     container?.remove();
   });
 
-  it('keeps an unavailable additional action focusable with an explanation', () => {
+  it('keeps an unavailable additional action focusable with an explanation', async () => {
     const onClick = vi.fn();
     container = document.createElement('div');
     document.body.append(container);
@@ -44,10 +44,11 @@ describe('FormActions', () => {
       container.querySelector<HTMLElementTagNameMap['craft-tooltip']>(
         'craft-tooltip'
       )!;
+    await applyButton.updateComplete;
 
-    expect(applyButton.disabled).toBe(false);
-    expect(applyButton.getAttribute('aria-disabled')).toBe('true');
-    expect(applyButton.id).toBe('disabled-form-action-0');
+    expect(applyButton.disabled).toBe(true);
+    expect(applyButton.tabIndex).toBe(0);
+    expect(applyButton.id).not.toBe('');
     expect(tooltip.for).toBe(applyButton.id);
     expect(tooltip.textContent).toContain(
       'This draft must be approved before it can be applied.'

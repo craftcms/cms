@@ -75,11 +75,9 @@
         type="button"
         :variant="button.variant ?? ButtonVariant.Solid"
         :loading="isButtonProcessing(button.label)"
-        :disabled="
-          form.processing || (button.disabled && !button.disabledReason)
-        "
-        :aria-disabled="
-          button.disabled && button.disabledReason ? 'true' : undefined
+        :disabled="form.processing || button.disabled"
+        :focusable-when-disabled="
+          button.disabled && button.disabledReason ? true : undefined
         "
         @click="handleAdditionalButtonClick(button, $event)"
       >

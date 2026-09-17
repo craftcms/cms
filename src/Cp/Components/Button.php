@@ -43,6 +43,8 @@ class Button extends ViewComponent
 
     protected bool $loading = false;
 
+    protected bool $focusableWhenDisabled = false;
+
     protected bool $active = false;
 
     protected bool $toggle = false;
@@ -143,6 +145,13 @@ class Button extends ViewComponent
     public function loading(bool $loading = true): static
     {
         $this->loading = $loading;
+
+        return $this;
+    }
+
+    public function focusableWhenDisabled(bool $focusableWhenDisabled = true): static
+    {
+        $this->focusableWhenDisabled = $focusableWhenDisabled;
 
         return $this;
     }
@@ -255,6 +264,7 @@ class Button extends ViewComponent
             'icon' => $icon,
             'icon-position' => $this->iconPosition,
             'loading' => $this->loading,
+            'focusable-when-disabled' => $this->focusableWhenDisabled,
             'active' => $this->active ? 'true' : null,
             'toggle' => $this->toggle,
             'value' => $this->value,
