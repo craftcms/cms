@@ -39,10 +39,11 @@ beforeEach(function () {
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('upload-parts');
     Storage::fake('upload-destination');
-    Cms::config()->tempAssetUploadFs = 'disk:upload-parts';
+    Cms::config()->tempAssetUploadDisk = 'upload-parts';
+    Cms::config()->uploadSessionDisk = 'upload-parts';
     Cms::config()->uploadChunkSize = 3;
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:upload-destination']);
+    $this->volume = Volume::factory()->create(['fs' => 'upload-destination']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);
 });
 
@@ -82,7 +83,7 @@ it('allows per-upload storage and uploader selection without changing config', f
             ->and($event->size)->toBe(6)
             ->and($event->parameters['folderId'])->toBe($this->folder->id);
 
-        $event->filesystem = 'disk:upload-destination';
+        $event->disk = 'upload-destination';
         $event->uploader = $uploader;
     });
 
@@ -91,9 +92,9 @@ it('allows per-upload storage and uploader selection without changing config', f
     ])->assertCreated()->assertJsonPath('transport.type', 'tus')->json();
 
     $stored = UploadSession::findOrFail($session['id']);
-    expect($stored->disk)->toBe('disk:upload-destination')
+    expect($stored->disk)->toBe('upload-destination')
         ->and($stored->uploader)->toBe($uploader ?? 'tus')
-        ->and(Cms::config()->tempAssetUploadFs)->toBe('disk:upload-parts');
+        ->and(Cms::config()->uploadSessionDisk)->toBe('upload-parts');
 
     $this->call('PATCH', $session['transport']['options']['url'], server: [
         'CONTENT_TYPE' => 'application/offset+octet-stream',
@@ -115,7 +116,7 @@ it('preserves configured upload defaults when the event does not override them',
     ])->assertCreated()->json();
 
     $stored = UploadSession::findOrFail($session['id']);
-    expect($stored->disk)->toBe('disk:upload-parts')
+    expect($stored->disk)->toBe('upload-parts')
         ->and($stored->uploader)->toBe('custom');
     Event::assertDispatchedTimes(UploadSessionStarting::class, 1);
 });
@@ -326,7 +327,7 @@ it('keeps the staged bytes when required processing fails and retries completion
 
 it('replaces the existing asset without creating a second asset', function (string $subpath) {
     config()->set('filesystems.disks.upload-destination.root', Storage::disk('upload-destination')->path(''));
-    $this->volume = Volume::factory()->create(['fs' => 'disk:upload-destination', 'subpath' => $subpath]);
+    $this->volume = Volume::factory()->create(['fs' => 'upload-destination', 'subpath' => $subpath]);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);
 
     $upload = function (string $bytes, array $parameters): array {

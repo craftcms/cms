@@ -10,21 +10,20 @@ use CraftCms\Cms\Filesystem\Uploaders\S3Uploader;
 use CraftCms\Cms\Filesystem\Uploaders\TusUploader;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\AwsS3V3Adapter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Manager;
 use Override;
 
 #[Singleton]
 class Uploaders extends Manager
 {
-    public function getDefaultDriver(?string $diskReference = null): string
+    public function getDefaultDriver(?string $diskName = null): string
     {
         if (Cms::config()->uploader !== null) {
             return Cms::config()->uploader;
         }
 
-        $disk = $this->container->make(Filesystems::class)->disk(
-            $diskReference ?? Cms::config()->getTempAssetUploadFs(),
-        );
+        $disk = Storage::disk($diskName ?? Cms::config()->getUploadSessionDisk());
 
         return $disk instanceof AwsS3V3Adapter ? 's3' : 'tus';
     }

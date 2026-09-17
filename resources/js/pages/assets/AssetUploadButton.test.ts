@@ -50,7 +50,6 @@ it('opens the file picker and configures uploads for the selected folder', async
       h(AssetUploadButton, {
         canUpload: true,
         folderId: 12,
-        fsType: 'Local',
       }),
   });
 
@@ -64,7 +63,7 @@ it('opens the file picker and configures uploads for the selected folder', async
 
   expect(inputClick).toHaveBeenCalledOnce();
   expect(Craft.createUploader).toHaveBeenCalledWith(
-    'Local',
+    null,
     input,
     expect.objectContaining({
       fileInput: input,
@@ -93,7 +92,6 @@ function mountUploader(props: Record<string, unknown> = {}): {
       h(AssetUploadButton, {
         canUpload: true,
         folderId: 12,
-        fsType: 'Local',
         ...props,
       }),
   });
@@ -168,7 +166,7 @@ it('binds the caller’s drop zone once it resolves', async () => {
   await nextTick();
 
   expect(Craft.createUploader).toHaveBeenLastCalledWith(
-    'Local',
+    null,
     expect.anything(),
     expect.objectContaining({dropZone: zone})
   );

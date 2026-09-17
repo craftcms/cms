@@ -6,11 +6,11 @@ use Aws\CommandInterface;
 use Aws\Result;
 use Aws\S3\S3Client;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploaders\S3Uploader;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Filesystem\AwsS3V3Adapter;
+use Illuminate\Support\Facades\Storage;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
 use League\Flysystem\Filesystem;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -43,13 +43,11 @@ beforeEach(function () {
     $this->disk->shouldReceive('getClient')->andReturn($this->client);
     $this->disk->shouldReceive('getConfig')->andReturn(['bucket' => 'upload-bucket', 'region' => 'us-east-1']);
     $this->disk->shouldReceive('path')->andReturnUsing(fn (string $path) => 'prefix/'.$path);
-    $filesystems = Mockery::mock(Filesystems::class);
-    $filesystems->shouldReceive('disk')->with('disk:uploads')->andReturn($this->disk);
-    app()->instance(Filesystems::class, $filesystems);
+    Storage::shouldReceive('disk')->with('uploads')->andReturn($this->disk);
 });
 
 it('signs direct multipart requests and completes using storage-verified parts', function () {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388611]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'filename' => 'movie.mp4', 'size' => 8388611]);
     $uploader = app(S3Uploader::class);
     $setup = $uploader->start($session);
     $session->chunkSize = $setup->chunkSize;
@@ -71,7 +69,7 @@ it('signs direct multipart requests and completes using storage-verified parts',
 });
 
 it('sizes S3 parts to match the default upload transport', function (int $size, int $chunkSize, int $partCount) {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => $size]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'filename' => 'movie.mp4', 'size' => $size]);
     $setup = app(S3Uploader::class)->start($session);
     $session->chunkSize = $setup->chunkSize;
     $session->state = $setup->state;
@@ -84,7 +82,7 @@ it('sizes S3 parts to match the default upload transport', function (int $size, 
 ]);
 
 it('rejects storage parts that do not match the declared size', function () {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388612]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'filename' => 'movie.mp4', 'size' => 8388612]);
     $uploader = app(S3Uploader::class);
     $setup = $uploader->start($session);
     $session->chunkSize = $setup->chunkSize;
@@ -131,7 +129,7 @@ it('stores processed bytes when sanitization changed the local file', function (
 });
 
 it('aborts multipart storage and removes the staging prefix', function () {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'state' => ['uploadId' => 'multipart-id']]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'state' => ['uploadId' => 'multipart-id']]);
     $this->disk->shouldReceive('deleteDirectory')->once()->with('upload-sessions/session')->andReturnTrue();
     app(S3Uploader::class)->abort($session);
 
@@ -141,7 +139,7 @@ it('aborts multipart storage and removes the staging prefix', function () {
 });
 
 it('only signs completion after verifying all S3 parts', function () {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 8388611]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'filename' => 'movie.mp4', 'size' => 8388611]);
     $uploader = app(S3Uploader::class);
     $setup = $uploader->start($session);
     $session->chunkSize = $setup->chunkSize;
@@ -156,7 +154,7 @@ it('only signs completion after verifying all S3 parts', function () {
 });
 
 it('rejects signing a part outside the session', function () {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 3]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'filename' => 'movie.mp4', 'size' => 3]);
     $uploader = app(S3Uploader::class);
     $setup = $uploader->start($session);
     $session->chunkSize = $setup->chunkSize;
@@ -166,7 +164,7 @@ it('rejects signing a part outside the session', function () {
 });
 
 it('recognizes bytes completed by the browser before Craft finalization', function () {
-    $session = new UploadSession(['id' => 'session', 'disk' => 'disk:uploads', 'filename' => 'movie.mp4', 'size' => 3]);
+    $session = new UploadSession(['id' => 'session', 'disk' => 'uploads', 'filename' => 'movie.mp4', 'size' => 3]);
     $this->disk->shouldReceive('exists')->with($session->path())->andReturnTrue();
     $this->disk->shouldReceive('size')->with($session->path())->andReturn(3);
     $uploader = app(S3Uploader::class);

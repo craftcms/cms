@@ -27,7 +27,6 @@ use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
-use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Form\Controls\AssetSelect;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\ElementSelect;
@@ -848,7 +847,6 @@ class Assets extends BaseRelationField
 
         return $control
             ->canUpload()
-            ->fsType($uploadVolume->sourceFilesystemType())
             ->uploadFolderId($uploadFolderId);
     }
 
@@ -894,7 +892,6 @@ class Assets extends BaseRelationField
         $variables = parent::inputTemplateVariables($value, $element);
 
         $uploadVolume = $this->_uploadVolume();
-        $variables['fsType'] = $uploadVolume?->sourceFilesystemType();
         $variables['showFolders'] = ! $this->restrictLocation || $this->allowSubfolders;
         $variables['canUpload'] = (
             $this->allowUploads &&

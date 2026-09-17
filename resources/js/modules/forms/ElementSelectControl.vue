@@ -92,7 +92,6 @@
     /** `AssetSelect` only; absent for every other element type. */
     canUpload?: boolean;
     uploadFolderId?: number | null;
-    fsType?: string | null;
     showFolders?: boolean;
   };
   const props = defineProps<{
@@ -638,7 +637,6 @@
           variant="dashed"
           :can-upload="control.props.canUpload"
           :folder-id="control.props.uploadFolderId ?? undefined"
-          :fs-type="control.props.fsType ?? undefined"
           :drop-zone="dropZone"
           :reload-on-complete="false"
           :disabled="!showUpload"

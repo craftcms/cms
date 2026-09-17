@@ -8,18 +8,16 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSetup;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class TusUploader implements Uploader
 {
-    public function __construct(private readonly Filesystems $filesystems) {}
-
     public function start(UploadSession $session): UploadSetup
     {
         $requestLimit = PHP::sizeToBytes(ini_get('post_max_size'));
@@ -120,7 +118,7 @@ class TusUploader implements Uploader
             'Upload-Offset' => (string) $session->state['offset'],
         ]);
 
-        $disk = $this->filesystems->disk($session->disk);
+        $disk = Storage::disk($session->disk);
         $limit = min($session->chunkSize, $session->size - $offset);
         $buffer = tmpfile();
 
@@ -161,7 +159,7 @@ class TusUploader implements Uploader
     {
         abort_unless($session->state['offset'] === $session->size, 422, 'The upload is incomplete.');
 
-        $disk = $this->filesystems->disk($session->disk);
+        $disk = Storage::disk($session->disk);
 
         if ($disk->exists($session->path()) && $disk->size($session->path()) === $session->size) {
             return new UploadedFile($disk, $session->path(), $session->filename);
@@ -205,7 +203,7 @@ class TusUploader implements Uploader
 
     public function abort(UploadSession $session): void
     {
-        if (! $this->filesystems->disk($session->disk)->deleteDirectory($session->prefix())) {
+        if (! Storage::disk($session->disk)->deleteDirectory($session->prefix())) {
             throw new RuntimeException('Unable to remove the temporary upload.');
         }
     }

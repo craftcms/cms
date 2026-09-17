@@ -54,7 +54,7 @@ export type ElementActionBehavior =
       settings?: FormProperties;
     }
   | {type: 'download'; actionUrl: string; params?: FormValues}
-  | {type: 'replaceFile'; assetId: number; fsType: string}
+  | {type: 'replaceFile'; assetId: number}
   | {type: 'editImage'; assetId: number}
   /**
    * Fetches a single-use URL and offers it for copying. Always behind an
@@ -179,7 +179,7 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         return;
 
       case 'replaceFile':
-        replaceFile(behavior.assetId, behavior.fsType);
+        replaceFile(behavior.assetId);
 
         return;
 
@@ -252,7 +252,7 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
    * uploader, then reloads so the filename, size, dimensions, and thumbnail all
    * come back from the server together.
    */
-  function replaceFile(assetId: number, fsType: string): void {
+  function replaceFile(assetId: number): void {
     const input = document.createElement('input');
     input.type = 'file';
     input.name = 'replaceFile';
@@ -294,7 +294,7 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
         fileuploadalways: () => input.remove(),
       },
     });
-    const uploader = Craft.createUploader(fsType, $(input), uploaderSettings);
+    const uploader = Craft.createUploader(null, $(input), uploaderSettings);
 
     uploader.setParams({assetId});
     input.click();

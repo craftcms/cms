@@ -101,14 +101,15 @@ different parameter sets, even when they share a driver.
 Craft reserves the `craft` transformer and driver. Its name, handle, and driver cannot change, and the transformer cannot be
 deleted. You can still edit these settings:
 
-- **Output Filesystem** selects where Craft stores generated transforms. Leave it empty to use the source Asset's
-  filesystem.
-- **Output Subpath** places generated transforms below a subpath on the selected output filesystem.
+- **Output Disk** selects the Laravel filesystem disk where Craft stores generated transforms. Leave it empty to use the
+  source Asset's disk.
+- **Transforms have public URLs** tells Craft whether the selected output disk supports public URLs.
+- **Output Subpath** places generated transforms below a subpath on the selected output disk.
 - **Generate Transforms Before Page Load** controls whether Craft generates each transform before returning its URL.
   Otherwise, Craft generates it when the URL is first requested.
 
-The filesystem settings accept environment-variable aliases. The built-in driver resolves the aliases before choosing its
-output filesystem.
+The disk and subpath settings accept environment-variable aliases. The built-in driver resolves the aliases before choosing
+its output disk.
 
 The Craft driver uses Craft's local image transformer. It rejects unsupported source formats, maintains the transform index,
 supports deferred generation, and preloads index data for Asset queries.

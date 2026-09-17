@@ -10,11 +10,11 @@
 namespace craft\debug;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\web\View;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Yii2Adapter\Filesystem\DiskFs;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use yii\base\InvalidConfigException;
@@ -81,7 +81,7 @@ class Module extends \yii\debug\Module
         }
 
         if ($this->fs instanceof FsInterface) {
-            if ($this->fs instanceof DiskFileSystem && is_string($this->fs->disk) && $this->fs->disk !== '') {
+            if ($this->fs instanceof DiskFs && is_string($this->fs->disk) && $this->fs->disk !== '') {
                 return Storage::disk($this->fs->disk);
             }
 
@@ -113,22 +113,14 @@ class Module extends \yii\debug\Module
             throw new InvalidConfigException('Invalid debug filesystem handle.');
         }
 
-        if (str_starts_with($handle, 'disk:')) {
-            $diskName = substr($handle, strlen('disk:'));
-            if ($diskName !== '' && is_array(config('filesystems.disks')) && array_key_exists($diskName, config('filesystems.disks'))) {
-                return Storage::disk($diskName);
-            }
-
-            throw new InvalidConfigException("Invalid debug filesystem handle: $handle");
-        }
-
         $disks = config('filesystems.disks', []);
         if (is_array($disks) && array_key_exists($handle, $disks)) {
             return Storage::disk($handle);
         }
 
-        if (Filesystems::getFilesystemByHandle($handle)) {
-            return Filesystems::disk($handle);
+        $filesystems = app(LegacyFilesystems::class);
+        if ($filesystems->getFilesystemByHandle($handle)) {
+            return $filesystems->disk($handle);
         }
 
         throw new InvalidConfigException("Invalid debug filesystem handle: $handle");

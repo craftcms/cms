@@ -9,7 +9,6 @@
 
 namespace crafttests\unit\elements;
 
-use craft\fs\Local;
 use craft\models\ImageTransform;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
@@ -44,9 +43,7 @@ class AssetElementTest extends TestCase
         // Set up asset to have an URL and a mock transform
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-                'getFs' => $this->make(Local::class, [
-                    'hasUrls' => true,
-                ]),
+                'hasUrls' => true,
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',

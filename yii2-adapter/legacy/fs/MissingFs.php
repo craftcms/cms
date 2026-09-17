@@ -1,22 +1,34 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+declare(strict_types=1);
 
 namespace craft\fs;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @property class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface> $expectedType
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\MissingFs} instead.
-     */
-    class MissingFs extends \CraftCms\Cms\Filesystem\Filesystems\MissingFs
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
+use CraftCms\Yii2Adapter\Filesystem\DiskFs;
+use Override;
+use RuntimeException;
+
+/**
+ * MissingFs represents a filesystem with an invalid class.
+ *
+ * @since 4.0.0
+ * @deprecated 6.0.0
+ */
+class MissingFs extends DiskFs implements MissingComponentInterface
+{
+    use MissingComponentTrait;
+
+    #[Override]
+    public function getRootUrl(): ?string
     {
+        return null;
+    }
+
+    #[Override]
+    public function getDiskConfig(): array
+    {
+        throw new RuntimeException('Missing filesystem components do not provide a disk config.');
     }
 }

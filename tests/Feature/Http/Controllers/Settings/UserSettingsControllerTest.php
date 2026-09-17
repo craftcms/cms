@@ -103,12 +103,12 @@ it('exposes all user photo volumes', function () {
     $publicVolume = Volume::factory()->create([
         'name' => 'Public Photos',
         'handle' => 'publicPhotos',
-        'fs' => 'disk:user-photo-public',
+        'fs' => 'user-photo-public',
     ]);
     $privateVolume = Volume::factory()->create([
         'name' => 'Private Photos',
         'handle' => 'privatePhotos',
-        'fs' => 'disk:user-photo-private',
+        'fs' => 'user-photo-private',
     ]);
     app(Volumes::class)->reset();
 
@@ -169,7 +169,7 @@ it('can save a user photo volume uid', function () {
     $privateVolume = Volume::factory()->create([
         'name' => 'Private Photos',
         'handle' => 'privatePhotos',
-        'fs' => 'disk:user-photo-private',
+        'fs' => 'user-photo-private',
     ]);
     app(Volumes::class)->reset();
 

@@ -12,7 +12,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources as ElementSourceTypes;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Section\Sections;
@@ -34,7 +33,6 @@ class ConfigRebuilder
         private readonly Conditions $conditions,
         private readonly EntryTypes $entryTypes,
         private readonly Fields $fields,
-        private readonly Filesystems $filesystems,
         private readonly Gql $gql,
         private readonly Sections $sections,
         private readonly SiteGroups $siteGroups,
@@ -58,9 +56,6 @@ class ConfigRebuilder
         $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components($this->entryTypes->getAllEntryTypes());
         $config[ProjectConfig::PATH_FIELDS] = collect($this->fields->getAllFields('global'))
             ->mapWithKeys(fn ($field): array => [$field->uid => $this->fields->createFieldConfig($field)])
-            ->all();
-        $config[ProjectConfig::PATH_FS] = collect($this->filesystems->getAllFilesystems())
-            ->mapWithKeys(fn ($filesystem): array => [$filesystem->handle => $this->filesystems->createFilesystemConfig($filesystem)])
             ->all();
         $config[ProjectConfig::PATH_IMAGE_TRANSFORMS] = $this->components($this->imageTransforms->getAllTransforms());
         $config[ProjectConfig::PATH_SECTIONS] = $this->components($this->sections->getAllSections());

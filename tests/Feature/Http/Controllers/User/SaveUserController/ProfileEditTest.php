@@ -55,7 +55,7 @@ describe('photo selection', function () {
             'root' => storage_path('framework/testing/profile-photos'),
         ]);
         $this->disk = Storage::fake('profile-photos');
-        $this->volume = Volume::factory()->create(['fs' => 'disk:profile-photos']);
+        $this->volume = Volume::factory()->create(['fs' => 'profile-photos']);
         ProjectConfig::set('users.photoVolumeUid', $this->volume->uid);
         ProjectConfig::set('users.photoSubpath', 'profiles/{id}');
         $this->folder = app(Users::class)->userPhotoFolder($this->user);
@@ -100,7 +100,7 @@ describe('photo selection', function () {
 
     it('rejects assets outside the configured photo folder', function (string $location) {
         $volume = $location === 'other volume'
-            ? Volume::factory()->create(['fs' => 'disk:profile-photos'])
+            ? Volume::factory()->create(['fs' => 'profile-photos'])
             : $this->volume;
         Volumes::reset();
         $path = match ($location) {
