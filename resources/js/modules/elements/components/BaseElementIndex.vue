@@ -223,12 +223,6 @@
     overflow-y: clip;
   }
 
-  .element-index__header,
-  .element-index__navbar,
-  .element-index__footer {
-    padding-inline: var(--c-container-padding);
-  }
-
   .element-index__header {
     margin-block-end: var(--c-spacing-md);
   }
