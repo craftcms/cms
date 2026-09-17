@@ -142,7 +142,7 @@ abstract class ElementResolver extends Resolver
      * resolving `prev`/`next` fields) a public way to get a properly-scoped query, without
      * requiring `prepareQuery()` itself to be public.
      *
-     * @param  array  $arguments  Arguments to apply to the query.
+     * @param  array<string, mixed>  $arguments  Arguments to apply to the query.
      */
     public static function prepareRootQuery(array $arguments): mixed
     {
