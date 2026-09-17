@@ -27,7 +27,7 @@ beforeEach(function () {
     actingAs(User::findOne());
     config()->set('filesystems.disks.photo-parts', ['driver' => 'local', 'root' => storage_path('framework/testing/photo-parts')]);
     Storage::fake('photo-parts');
-    Cms::config()->tempAssetUploadFs = 'disk:photo-parts';
+    Cms::config()->uploadSessionDisk = 'photo-parts';
     Cms::config()->uploadChunkSize = 512;
 
     $this->uploadPhoto = function (UploadedFile $photo): TestResponse {
@@ -244,7 +244,7 @@ it('rejects invalid image contents without changing the users photo', function (
         'driver' => 'local',
         'root' => storage_path('framework/testing/invalid-photo'),
     ]);
-    $volume = Volume::factory()->create(['fs' => 'disk:invalid-photo']);
+    $volume = Volume::factory()->create(['fs' => 'invalid-photo']);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
     $photoId = User::findOne(auth()->id())->photoId;
 
