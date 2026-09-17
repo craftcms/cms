@@ -20,7 +20,7 @@
   type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
 
   interface ConflictPrompt extends UploadResult {
-    assetId: number | string;
+    assetId: number;
     filename: string;
     conflict: string;
     choice?: string;

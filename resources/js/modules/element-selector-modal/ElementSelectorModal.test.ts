@@ -34,12 +34,7 @@ vi.mock('@/pages/assets/AssetUploadButton.vue', async () => {
   return {
     default: define({
       name: 'AssetUploadButtonStub',
-      props: [
-        'canUpload',
-        'folderId',
-        'allowedKinds',
-        'reloadOnComplete',
-      ],
+      props: ['canUpload', 'folderId', 'allowedKinds', 'reloadOnComplete'],
       emits: ['uploaded'],
       setup(props, {emit}) {
         upload.emit = emit as (event: string, payload?: unknown) => void;
