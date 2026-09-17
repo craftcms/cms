@@ -752,6 +752,7 @@ abstract class ContentIndexViewModel extends ViewModel
             elementType: $this->elementType,
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
+            baseCriteria: $this->baseCriteria(),
             criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
         )['query'];
 
@@ -762,6 +763,22 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $this->query = $query;
+    }
+
+    /**
+     * Includes saved unpublished drafts alongside canonical elements, matching
+     * the baseline criteria used by the Craft 5 element index.
+     *
+     * @return array<string, mixed>
+     */
+    private function baseCriteria(): array
+    {
+        return [
+            'drafts' => $this->canHaveDrafts() ? null : false,
+            'draftOf' => false,
+            'savedDraftsOnly' => true,
+            ...($this->sourceState()[1]['criteria'] ?? []),
+        ];
     }
 
     /**
