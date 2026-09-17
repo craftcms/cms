@@ -45,6 +45,31 @@ it('gives the trail to the deepest match rather than the first', function () {
   expect(labelsSelected(selected)).toEqual(['GraphQL', 'Schemas']);
 });
 
+it('leaves a source addressed by query to pages that ask for it', function () {
+  const items = [
+    node('Assets', {
+      href: '/admin/assets',
+      subnav: [
+        node('Images', {href: '/admin/assets/images'}),
+        node('Temporary Uploads', {href: '/admin/assets?source=temp'}),
+      ],
+    }),
+  ];
+
+  expect(labelsSelected(withNavSelection(items, '/admin/assets'))).toEqual([
+    'Assets',
+  ]);
+  expect(
+    labelsSelected(withNavSelection(items, '/admin/assets?source=temp'))
+  ).toEqual(['Assets', 'Temporary Uploads']);
+  expect(navItemContains('/admin/assets?source=temp', '/admin/assets')).toBe(
+    false
+  );
+  expect(
+    navItemContains('/admin/assets', '/admin/assets/images?source=x')
+  ).toBe(true);
+});
+
 it('picks the source over the index that sits beside it', function () {
   // This is how a real sources subnav is shaped: the index is a sibling of the
   // sources, not their parent, and its path prefixes every one of them. Taking

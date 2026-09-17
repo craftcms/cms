@@ -32,12 +32,37 @@ function matches(path: string, itemPath: string): boolean {
   );
 }
 
+function queryOf(href: string | null): URLSearchParams {
+  try {
+    return new URL(href ?? '', window.location.origin).searchParams;
+  } catch {
+    return new URLSearchParams();
+  }
+}
+
+/**
+ * Whether the URL carries every query parameter the item's href does. An item
+ * addressed by query (`assets?source=temp`) shares its path with the bare
+ * index, so the path alone would claim that page for it.
+ */
+function queryMatches(
+  query: URLSearchParams,
+  itemHref: string | null
+): boolean {
+  return [...queryOf(itemHref)].every(
+    ([name, value]) => query.get(name) === value
+  );
+}
+
 /**
  * Whether a nav item's href is, or is an ancestor of, the given URL — the rule
  * selection uses, for anything else that needs the item a page belongs to.
  */
 export function navItemContains(itemHref: string | null, url: string): boolean {
-  return matches(pathOf(url), pathOf(itemHref));
+  return (
+    matches(pathOf(url), pathOf(itemHref)) &&
+    queryMatches(queryOf(url), itemHref)
+  );
 }
 
 /** `subnav` is `false` when the server hasn't resolved a branch yet. */
@@ -48,6 +73,7 @@ function childrenOf(item: NavNode): Array<NavNode> {
 function selectWithin(
   items: Array<NavNode>,
   path: string,
+  query: URLSearchParams,
   state: {found: boolean}
 ): Array<NavNode> {
   // Every child first, so a deeper match settles the question before any item
@@ -55,7 +81,7 @@ function selectWithin(
   const resolved = items.map((item) => {
     const children = childrenOf(item);
     const subnav = children.length
-      ? selectWithin(children, path, state)
+      ? selectWithin(children, path, query, state)
       : item.subnav;
 
     return {
@@ -79,7 +105,11 @@ function selectWithin(
     resolved.forEach(({item}, index) => {
       const itemPath = pathOf(item.href);
 
-      if (matches(path, itemPath) && itemPath.length > bestLength) {
+      if (
+        matches(path, itemPath) &&
+        queryMatches(query, item.href) &&
+        itemPath.length > bestLength
+      ) {
         best = index;
         bestLength = itemPath.length;
       }
@@ -115,7 +145,7 @@ export function withNavSelection(
   // Your own account sits under Users, which is where the nav points.
   path = path.replace(/\/myaccount(\/|$)/, '/users$1');
 
-  return selectWithin(items, path, {found: false});
+  return selectWithin(items, path, queryOf(url), {found: false});
 }
 
 /**

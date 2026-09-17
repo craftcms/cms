@@ -527,7 +527,7 @@ readonly class Navigation
             // it has already set `$found`, and the trail has to reach the root.
             // Failing that, the first path match wins and closes the question
             // for everything after it.
-            if ($descendantSelected || (! $found && $this->pathMatches($path, $itemPath))) {
+            if ($descendantSelected || (! $found && $this->pathMatches($path, $itemPath) && $this->queryMatches((string) $item->href))) {
                 $item->selected = true;
                 $item->linkAttributes['aria']['current'] = $itemPath === $path ? 'page' : 'true';
                 $found = true;
@@ -655,6 +655,24 @@ readonly class Navigation
         }
 
         return $path;
+    }
+
+    /**
+     * Whether the request carries every query parameter the item's URL does.
+     * An item addressed by query (`assets?source=temp`) shares its path with
+     * the bare index, so the path alone would claim that page for it.
+     */
+    private function queryMatches(string $url): bool
+    {
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $params);
+
+        foreach ($params as $name => $value) {
+            if ($this->request->query($name) !== $value) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function pathMatches(string $path, string $itemPath): bool

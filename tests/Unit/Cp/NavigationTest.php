@@ -381,3 +381,41 @@ it('carries a plugin’s own icon into its settings nav item', function () {
     expect($plugin->iconSvg)->toBe('<svg viewBox="0 0 16 16"></svg>')
         ->and($plugin->icon)->toBeNull();
 });
+
+it('leaves a source addressed by query to requests that ask for it', function (string $uri, array $selected) {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect(['Entries']));
+    $sources->shouldReceive('getPageSettings')->andReturn([]);
+    $sources->shouldReceive('getSources')->andReturn(collect([
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'section:abc',
+            'label' => 'Posts',
+            'data' => ['handle' => 'posts'],
+        ],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent'],
+    ]));
+
+    $navigation = new Navigation(
+        Request::create($uri),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        $sources,
+        cpSettings(),
+    );
+
+    $entries = collect($navigation->getItems())->firstWhere('label', 'Entries');
+
+    expect($entries->selected)->toBeTrue()
+        ->and(collect($entries->subnav)->where('selected', true)->pluck('label')->all())
+        ->toBe($selected);
+})->with([
+    'the bare index' => ['/admin/content/entries', []],
+    'the query that names it' => ['/admin/content/entries?source=custom:1', ['Recent']],
+]);
