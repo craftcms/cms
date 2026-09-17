@@ -1,8 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import SecondaryNav from '@/common/components/SecondaryNav.vue';
-  import {useElementSourceActions} from '@/modules/elements/composables/useElementSourceActions';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
@@ -15,6 +13,7 @@
   import {ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
   import {useNavItemAction} from '@/common/composables/useNavItemActions';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -54,16 +53,6 @@
     onActionPerformed,
   } = page;
 
-  // The sources describe themselves, so `SecondaryNav` can draw them as a list
-  // and as the menu it collapses into without either rendering going its own
-  // way. The selector modal builds the same descriptors.
-  const {actions: sourceActions} = useElementSourceActions({
-    sources: () => elementIndex.sources,
-    route: () => props.route,
-    activeSource: () => elementIndex.source?.key,
-    viewMode: () => (viewState.mode !== 'table' ? viewState.mode : null),
-  });
-
   const customizeSourcesActive = ref(false);
 
   // The sources are edited from the nav now rather than from a sidebar on the
@@ -78,7 +67,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot v-if="$slots.actions" name="content-actions">
     <!-- Type-specific page actions (e.g. a New Entry or Upload button). -->
     <slot name="actions" :element-index="elementIndex" />
   </LayoutSlot>
@@ -116,16 +105,18 @@
       >
         <template #actions>
           <!-- Type-specific actions that belong with the list itself, such
-            as the entries index's New Entry button. -->
+              as the entries index's New Entry button. -->
           <slot name="toolbar-actions" :element-index="elementIndex" />
         </template>
       </ElementIndexToolbar>
     </template>
-    <template #navbar><slot name="navbar"></slot></template>
+    <template #navbar>
+      <slot name="navbar"></slot>
+    </template>
     <template #body="{selection}">
       <!-- Delegated so every view mode gets double-click-to-edit without
-          any of them knowing about it, matching Craft 5's element container
-          listener. -->
+            any of them knowing about it, matching Craft 5's element container
+            listener. -->
       <div @dblclick="quickEdit.onDblClick">
         <ElementCards
           v-if="mode === 'cards'"
@@ -146,6 +137,7 @@
           :table="elementTable"
           :selectable="true"
           :loading="loading"
+          :full-width="true"
           :spacing="TableSpacing.Spacious"
         />
       </div>

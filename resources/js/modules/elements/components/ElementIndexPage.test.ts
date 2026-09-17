@@ -27,20 +27,6 @@ vi.mock('@/common/composables/useCraftData', () => ({
   default: () => ({site: {handle: 'default'}}),
 }));
 
-const sourceActions = vi.hoisted(() => ({
-  options: null as null | Record<string, (() => unknown) | undefined>,
-}));
-
-vi.mock('@/modules/elements/composables/useElementSourceActions', () => ({
-  useElementSourceActions: (
-    options: Record<string, (() => unknown) | undefined>
-  ) => {
-    sourceActions.options = options;
-
-    return {actions: {value: []}};
-  },
-}));
-
 // Rendered inline rather than teleported: there's no screen shell here to
 // teleport into, and the shell isn't what's under test.
 vi.mock('@/common/components/LayoutSlot.vue', () => ({
@@ -139,66 +125,6 @@ async function mountPage(props: Record<string, unknown> = {}) {
   };
   await nextTick();
 }
-
-it('hands the secondary nav its live sources', async () => {
-  const viewState = reactive({mode: 'table'});
-
-  page.elementIndex = {
-    elementIndex: reactive({
-      sources: [
-        {type: 'native', key: '*', label: 'All entries'},
-        {type: 'native', key: 'section:blog', label: 'Blog'},
-      ],
-      source: {key: '*'},
-      pagination: {from: 1, to: 2, total: 2},
-      actions: [],
-      elementType: 'entry',
-      context: 'index',
-      viewModes: [],
-      statusOptions: [],
-    }),
-    elementTable: {},
-    viewState,
-    conditions: {},
-    filters: {},
-    columnOptions: [],
-    tableColumns: [],
-    reorder: vi.fn(),
-    sortField: null,
-    sortDirection: null,
-    mode: 'table',
-    loading: false,
-    visibleViewModes: [],
-    onActionPerformed: vi.fn(),
-  };
-
-  const container = document.createElement('div');
-  document.body.append(container);
-
-  const app = createApp({
-    render: () =>
-      h(ElementIndexPage, {route: {url: () => '/admin/entries'} as never}),
-  });
-
-  app.mount(container);
-  teardown = () => {
-    app.unmount();
-    container.remove();
-  };
-  await nextTick();
-
-  // `useElementIndexPage` returns a reactive object rather than refs, so
-  // reaching through `.value` yields undefined and throws in setup — which
-  // renders the whole page as nothing behind the layout chrome.
-  const options = sourceActions.options!;
-
-  expect(options).not.toBeNull();
-  expect(options.sources!()).toEqual([
-    {type: 'native', key: '*', label: 'All entries'},
-    {type: 'native', key: 'section:blog', label: 'Blog'},
-  ]);
-  expect(options.activeSource!()).toBe('*');
-});
 
 it('lends the nav a gear that opens Customize Sources', async () => {
   await mountPage({customizableSources: true});
