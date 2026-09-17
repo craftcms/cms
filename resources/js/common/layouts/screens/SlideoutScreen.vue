@@ -100,9 +100,9 @@
   const form = computed(() => props.value.form ?? null);
 
   const regions = useScreenRegions(slots, registry);
-  const hasToolbar = computed(() => regions.has('toolbar'));
+  const hasToolbarMeta = computed(() => regions.has('content-toolbar-meta'));
   const hasTabs = computed(() => regions.has('content-tabs'));
-  const hasNotices = computed(() => regions.has('notices'));
+  const hasNotices = computed(() => regions.has('content-notices'));
   const hasDetails = computed(() => regions.has('content-details'));
 
   const submitLabel = computed(
@@ -360,13 +360,16 @@
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
       <div ref="toolbarEl" class="slideout-screen__toolbar">
-        <LayoutSlotOutlet name="toolbar">
-          <slot name="toolbar"></slot>
+        <LayoutSlotOutlet name="content-toolbar-meta">
+          <slot name="content-toolbar-meta"></slot>
+        </LayoutSlotOutlet>
+        <LayoutSlotOutlet name="content-toolbar-actions">
+          <slot name="content-toolbar-actions"></slot>
         </LayoutSlotOutlet>
       </div>
 
-      <LayoutSlotOutlet name="actions">
-        <slot name="actions"></slot>
+      <LayoutSlotOutlet name="content-actions">
+        <slot name="content-actions"></slot>
       </LayoutSlotOutlet>
 
       <a
@@ -399,8 +402,8 @@
     <div class="slideout-screen__body">
       <div ref="contentEl" class="slideout-screen__content">
         <div v-show="hasNotices" class="slideout-screen__notices" role="status">
-          <LayoutSlotOutlet name="notices">
-            <slot name="notices"></slot>
+          <LayoutSlotOutlet name="content-notices">
+            <slot name="content-notices"></slot>
           </LayoutSlotOutlet>
         </div>
 
@@ -472,7 +475,7 @@
       <LayoutSlotOutlet name="breadcrumbs" />
       <LayoutSlotOutlet name="context-menu" />
       <LayoutSlotOutlet name="title" />
-      <LayoutSlotOutlet name="title-badge" />
+      <LayoutSlotOutlet name="content-toolbar" />
       <LayoutSlotOutlet name="content-sidebar" />
       <LayoutSlotOutlet name="subnav-actions" />
       <LayoutSlotOutlet name="page-footer" />

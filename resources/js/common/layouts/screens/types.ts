@@ -34,6 +34,18 @@ export interface ScreenProps {
   /** Overrides the submit button's text. Craft 5: `submitButtonLabel`. */
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
+  /**
+   * Caps the content column's width and, unless it's centered, rules off its
+   * end: `true` for the default (`--cp-content-max-width`, 960px), or any CSS
+   * length. Full pages only; a slideout is narrow already.
+   */
+  contentMaxWidth?: boolean | string;
+  /**
+   * Centers the content column in the space it has, and keeps the footer's
+   * rule to the width of the content. Only visible alongside
+   * `contentMaxWidth`, since a full-width column already fills that space.
+   */
+  centerContent?: boolean;
 }
 
 export interface ScreenEmits {
@@ -63,21 +75,36 @@ export interface ScreenSlots {
    * at the top of the content column, above the page header. Craft 5:
    * `contentNotice`.
    */
-  notices?: () => any;
+  'content-notices'?: () => any;
   /** Replaces the breadcrumb bar. Default renders the `crumbs` page prop and the `context-menu` slot. */
   breadcrumbs?: () => any;
   /** Extra controls next to the breadcrumbs, e.g. a site picker. Craft 5: `contextMenu`. */
   'context-menu'?: () => any;
-  /** Replaces the page header (title through action buttons). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
+  /** Replaces the page header (the title). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
   'content-header'?: () => any;
   /** Replaces the default `<h1>` page title. Craft 5: `block pageTitle`. */
   title?: () => any;
-  /** Status badges next to the title. Craft 5: `#revision-indicators`. */
-  'title-badge'?: () => any;
-  /** Controls between the title and the action buttons. Craft 5: `toolbar`. */
-  toolbar?: () => any;
-  /** Page-level action buttons in the header, e.g. New … or Upload. Craft 5: `actionButton`. */
-  actions?: () => any;
+  /**
+   * Replaces the toolbar above the page header, which holds
+   * `content-toolbar-meta` and `content-toolbar-actions`.
+   */
+  'content-toolbar'?: () => any;
+  /**
+   * About what the page shows, at the start of the toolbar: status badges,
+   * who else is editing, View buttons, a server screen's toolbar HTML.
+   * Craft 5: `#revision-indicators`, `toolbar`.
+   */
+  'content-toolbar-meta'?: () => any;
+  /**
+   * Actions on what the page shows, at the end of the toolbar, usually as an
+   * action menu: editing an entry's entry type, Validate entry, and the like.
+   */
+  'content-toolbar-actions'?: () => any;
+  /**
+   * Page-level actions beside the title, e.g. New … or Upload. Craft 5:
+   * `actionButton`.
+   */
+  'content-actions'?: () => any;
   /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
   /** Replaces the save button while keeping the form action menu. Craft 5: `block submitButton`. */

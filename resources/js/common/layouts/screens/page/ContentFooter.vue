@@ -6,6 +6,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
   import type {InertiaForm} from '@inertiajs/vue3';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {ActionItem, FormSaveOptions} from '@/common/types';
@@ -24,9 +25,14 @@
         readOnly: boolean;
         form: InertiaForm<any> | null;
         defaultFormActions: Array<DefaultFormAction>;
+        /**
+         * Keeps the row, rule included, within the content's container, for a
+         * centered column where a full-width rule would overshoot the content.
+         */
+        contained?: boolean;
       }
     >(),
-    {formAdditionalButtons: () => []}
+    {formAdditionalButtons: () => [], contained: false}
   );
 
   const emit = defineEmits<{
@@ -71,33 +77,38 @@
 </script>
 
 <template>
-  <div v-show="visible" class="content-footer border-t border-t-quiet p-lg">
-    <div>
-      <LayoutSlotOutlet name="content-footer">
-        <slot name="content-footer"></slot>
-      </LayoutSlotOutlet>
-    </div>
+  <component :is="contained ? CpContainer : 'div'" v-show="visible">
+    <div
+      class="content-footer border-t border-t-quiet"
+      :class="contained ? 'py-lg' : 'p-lg'"
+    >
+      <div class="flex gap-2 items-center justify-between">
+        <FormActions
+          v-if="form"
+          :form="form"
+          :action-items="formActionItems"
+          :additional-actions="formAdditionalActions"
+          :additional-buttons="formAdditionalButtons"
+          :submit-label="submitButtonLabel"
+          :read-only="readOnly"
+        >
+          <template v-if="slots['submit-button']" #submit-button>
+            <slot name="submit-button"></slot>
+          </template>
+        </FormActions>
 
-    <div class="flex gap-2 items-center">
-      <LayoutSlotOutlet name="additional-buttons">
-        <slot name="additional-buttons"></slot>
-      </LayoutSlotOutlet>
+        <LayoutSlotOutlet name="additional-buttons">
+          <slot name="additional-buttons"></slot>
+        </LayoutSlotOutlet>
+      </div>
 
-      <FormActions
-        v-if="form"
-        :form="form"
-        :action-items="formActionItems"
-        :additional-actions="formAdditionalActions"
-        :additional-buttons="formAdditionalButtons"
-        :submit-label="submitButtonLabel"
-        :read-only="readOnly"
-      >
-        <template v-if="slots['submit-button']" #submit-button>
-          <slot name="submit-button"></slot>
-        </template>
-      </FormActions>
+      <div>
+        <LayoutSlotOutlet name="content-footer">
+          <slot name="content-footer"></slot>
+        </LayoutSlotOutlet>
+      </div>
     </div>
-  </div>
+  </component>
 </template>
 
 <style scoped lang="css">
@@ -106,6 +117,5 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--c-spacing-md);
-    margin-block-start: var(--c-spacing-lg);
   }
 </style>
