@@ -30,11 +30,9 @@
       loading?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
-      fullWidth?: boolean;
     }>(),
 
     {
-      fullWidth: false,
       reorderable: false,
       selectable: false,
       loading: false,
@@ -290,7 +288,6 @@
     :class="{
       'cp-table': true,
       'cp-table--grid': false,
-      'cp-table--full-width': fullWidth,
       'cp-table--compact': spacing === TableSpacing.Compact,
       'cp-table--spacious': spacing === TableSpacing.Spacious,
       'cp-table--auto': layout === 'auto',

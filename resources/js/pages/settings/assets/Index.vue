@@ -17,6 +17,7 @@
   import type {SortItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   interface VolumeData {
     id: number;
@@ -141,7 +142,7 @@
     </CpLink>
   </LayoutSlot>
 
-  <div class="@container">
+  <CpContainer class="@container">
     <AdminTable
       :table="table"
       :reorderable="true"
@@ -153,5 +154,5 @@
         <Empty :label="t('No volumes exist yet.')" icon="light/files" />
       </template>
     </AdminTable>
-  </div>
+  </CpContainer>
 </template>

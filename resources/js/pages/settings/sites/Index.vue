@@ -19,6 +19,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     title: string;
@@ -257,7 +258,7 @@
     </CpLink>
   </LayoutSlot>
 
-  <div class="@container">
+  <CpContainer class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -284,7 +285,7 @@
         </Empty>
       </template>
     </AdminTable>
-  </div>
+  </CpContainer>
 
   <ModalForm
     :is-active="modalActive"

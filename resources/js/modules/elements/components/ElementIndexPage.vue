@@ -72,77 +72,78 @@
     <slot name="actions" :element-index="elementIndex" />
   </LayoutSlot>
 
-  <BaseElementIndex
-    :table="elementTable"
-    :selectable="true"
-    :loading="loading"
-    :from="elementIndex.pagination.from"
-    :to="elementIndex.pagination.to"
-    :total="elementIndex.pagination.total"
-    :enable-adjust-page-size="true"
-    :actions="elementIndex.actions"
-    :element-type="elementIndex.elementType"
-    :source="elementIndex.source?.key"
-    :context="elementIndex.context"
-    @action-performed="onActionPerformed"
-  >
-    <template #header>
-      <ElementIndexToolbar
-        v-model:search="filters.form.search"
-        v-model:status="filters.form.status"
-        v-model:conditions="conditions"
-        :processing="filters.form.processing"
-        :status-options="elementIndex.statusOptions"
-        :view-modes="visibleViewModes"
-        :column-options="columnOptions"
-        :sort-options="elementIndex.sortOptions"
-        v-model:mode="mode"
-        v-model:sort-field="sortField"
-        v-model:sort-direction="sortDirection"
-        v-model:table-columns="tableColumns"
-        @submit="filters.submit"
-        @reorder="reorder"
-      >
-        <template #actions>
-          <!-- Type-specific actions that belong with the list itself, such
+  <CpContainer>
+    <BaseElementIndex
+      :table="elementTable"
+      :selectable="true"
+      :loading="loading"
+      :from="elementIndex.pagination.from"
+      :to="elementIndex.pagination.to"
+      :total="elementIndex.pagination.total"
+      :enable-adjust-page-size="true"
+      :actions="elementIndex.actions"
+      :element-type="elementIndex.elementType"
+      :source="elementIndex.source?.key"
+      :context="elementIndex.context"
+      @action-performed="onActionPerformed"
+    >
+      <template #header>
+        <ElementIndexToolbar
+          v-model:search="filters.form.search"
+          v-model:status="filters.form.status"
+          v-model:conditions="conditions"
+          :processing="filters.form.processing"
+          :status-options="elementIndex.statusOptions"
+          :view-modes="visibleViewModes"
+          :column-options="columnOptions"
+          :sort-options="elementIndex.sortOptions"
+          v-model:mode="mode"
+          v-model:sort-field="sortField"
+          v-model:sort-direction="sortDirection"
+          v-model:table-columns="tableColumns"
+          @submit="filters.submit"
+          @reorder="reorder"
+        >
+          <template #actions>
+            <!-- Type-specific actions that belong with the list itself, such
               as the entries index's New Entry button. -->
-          <slot name="toolbar-actions" :element-index="elementIndex" />
-        </template>
-      </ElementIndexToolbar>
-    </template>
-    <template #navbar>
-      <slot name="navbar"></slot>
-    </template>
-    <template #body="{selection}">
-      <!-- Delegated so every view mode gets double-click-to-edit without
+            <slot name="toolbar-actions" :element-index="elementIndex" />
+          </template>
+        </ElementIndexToolbar>
+      </template>
+      <template #navbar>
+        <slot name="navbar"></slot>
+      </template>
+      <template #body="{selection}">
+        <!-- Delegated so every view mode gets double-click-to-edit without
             any of them knowing about it, matching Craft 5's element container
             listener. -->
-      <div @dblclick="quickEdit.onDblClick">
-        <ElementCards
-          v-if="mode === 'cards'"
-          :selection="selection"
-          :data="elementIndex.data"
-          :selectable="true"
-          :loading="loading"
-        />
-        <ElementThumbs
-          v-else-if="mode === 'thumbs'"
-          :selection="selection"
-          :data="elementIndex.data"
-          :selectable="true"
-          :loading="loading"
-        />
-        <DataTable
-          v-else
-          :table="elementTable"
-          :selectable="true"
-          :loading="loading"
-          :full-width="true"
-          :spacing="TableSpacing.Spacious"
-        />
-      </div>
-    </template>
-  </BaseElementIndex>
+        <div @dblclick="quickEdit.onDblClick">
+          <ElementCards
+            v-if="mode === 'cards'"
+            :selection="selection"
+            :data="elementIndex.data"
+            :selectable="true"
+            :loading="loading"
+          />
+          <ElementThumbs
+            v-else-if="mode === 'thumbs'"
+            :selection="selection"
+            :data="elementIndex.data"
+            :selectable="true"
+            :loading="loading"
+          />
+          <DataTable
+            v-else
+            :table="elementTable"
+            :selectable="true"
+            :loading="loading"
+            :spacing="TableSpacing.Spacious"
+          />
+        </div>
+      </template>
+    </BaseElementIndex>
+  </CpContainer>
 
   <CustomizeSourcesModal
     :is-active="customizeSourcesActive"

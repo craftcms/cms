@@ -15,6 +15,7 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
   import type {UserGroup} from '@/common/types';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     groups: Array<UserGroup>;
@@ -66,7 +67,7 @@
     >
   </LayoutSlot>
 
-  <div class="@container">
+  <CpContainer class="@container">
     <AdminTable :table="table" :full-width="true">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
@@ -76,5 +77,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </div>
+  </CpContainer>
 </template>

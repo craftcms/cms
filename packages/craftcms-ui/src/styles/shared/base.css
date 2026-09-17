@@ -368,15 +368,3 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table--spacious {
   --_row-height: calc(50rem / 16);
 }
-
-.cp-table--full-width {
-  th:first-child,
-  td:first-child {
-    padding-inline-start: var(--c-container-padding);
-  }
-
-  th:last-child,
-  td:last-child {
-    padding-inline-end: var(--c-container-padding);
-  }
-}
