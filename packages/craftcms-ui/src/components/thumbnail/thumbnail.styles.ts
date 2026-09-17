@@ -63,6 +63,27 @@ export default css`
     object-fit: fill;
   }
 
+  /*
+   * The real <img> is visually hidden (cp-visually-hidden) once its frame is
+   * captured, so the cover canvas is the only visible child left — a normal,
+   * in-flow flex item like .thumbnail__image used to be, not an overlay
+   * positioned on top of a still-visible image. It's already pre-sized and
+   * pre-cropped in JS to its exact pixel dimensions (see paintCover()), so
+   * it just needs a sane cap for later container resizes, same as the image.
+   */
+  .thumbnail__cover {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Not yet painted — stay out of flow so the empty canvas doesn't disturb
+     the still-visible <img>'s layout. Exactly one of the two is ever
+     in-flow at a time. */
+  .thumbnail__cover--pending {
+    position: absolute;
+  }
+
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
   .thumbnail--checkered {
     background-image:
@@ -96,6 +117,7 @@ export default css`
   }
 
   .thumbnail--rounded .thumbnail__image,
+  .thumbnail--rounded .thumbnail__cover,
   .thumbnail--rounded ::slotted(img),
   .thumbnail--rounded ::slotted(svg) {
     border-radius: var(--c-thumbnail-radius);
