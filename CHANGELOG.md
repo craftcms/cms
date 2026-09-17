@@ -6,6 +6,7 @@
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), and [#19585](https://github.com/craftcms/cms/pull/19585) for details.
 
 - Added support for upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API. ([#19604](https://github.com/craftcms/cms/pull/19604))
+- Removed Craft-managed filesystems and their Control Panel settings. Volumes and Asset Transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and volumes define whether their assets have public URLs.
 - Improved performance of element queries, Control Panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
 - Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
@@ -246,7 +247,6 @@
 - Added `CraftCms\Cms\Field\LinkTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Field\NestedEntryFieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\FieldLayout\NativeFields`. ([#19270](https://github.com/craftcms/cms/pull/19270))
-- Added `CraftCms\Cms\Filesystem\FilesystemTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Gql\GqlArguments`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Gql\GqlDirectives`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Gql\GqlMutations`. ([#19270](https://github.com/craftcms/cms/pull/19270))
@@ -254,7 +254,6 @@
 - Added `CraftCms\Cms\Gql\GqlTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Image\ImageTransformers`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Image\Raster::getInterventionImage()`.
-- Added `CraftCms\Cms\Plugin\Plugin::$filesystemTypes`. ([#19307](https://github.com/craftcms/cms/pull/19307))
 - Added `CraftCms\Cms\Plugin\Plugin::$gqlDirectives`. ([#19307](https://github.com/craftcms/cms/pull/19307))
 - Added `CraftCms\Cms\Plugin\Plugin::$gqlMutations`. ([#19307](https://github.com/craftcms/cms/pull/19307))
 - Added `CraftCms\Cms\Plugin\Plugin::$gqlQueries`. ([#19307](https://github.com/craftcms/cms/pull/19307))
@@ -290,7 +289,6 @@
 - Removed `CraftCms\Cms\Field\Events\LinkTypesResolving`. `CraftCms\Cms\Field\LinkTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving`. `CraftCms\Cms\Field\NestedEntryFieldTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving`. `CraftCms\Cms\FieldLayout\NativeFields::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
-- Removed `CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving`. `CraftCms\Cms\Filesystem\FilesystemTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving`. `CraftCms\Cms\Gql\GqlArguments::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Gql\Events\GqlDirectivesResolving`. `CraftCms\Cms\Gql\GqlDirectives::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Gql\Events\GqlMutationsResolving`. `CraftCms\Cms\Gql\GqlMutations::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
