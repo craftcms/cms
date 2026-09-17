@@ -14,12 +14,15 @@
       buttonVariant?: ButtonVariant;
       /** Puts a filter box at the top — worth it once the list is long. */
       searchable?: boolean;
+      /** Passed to the invoker; see `craft-button`'s `flush`. */
+      flush?: boolean | string;
     }>(),
     {
       icon: 'ellipsis',
       label: t('Actions'),
       buttonVariant: ButtonVariant.Plain,
       searchable: false,
+      flush: true,
     }
   );
 
@@ -34,6 +37,12 @@
     ...props.actions.filter((action) => !isDanger(action)),
     ...props.actions.filter((action) => isDanger(action)),
   ]);
+
+  // `craft-button` reads `flush` as an attribute value, where a bare `flush` is
+  // the empty string. `true` would reflect as "true", which matches no side.
+  const invokerFlush = computed(() =>
+    props.flush === true ? '' : props.flush || undefined
+  );
 
   function isDanger(action: ActionItem): boolean {
     return 'variant' in action && action.variant === 'danger';
@@ -76,6 +85,7 @@
           :icon="icon"
           :aria-label="label"
           inherit
+          :flush="invokerFlush"
           :variant="buttonVariant"
         >
         </craft-button>
