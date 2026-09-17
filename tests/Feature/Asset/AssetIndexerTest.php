@@ -561,7 +561,7 @@ it('skips directories starting with underscore in index list', function () {
 function createIndexerTestVolume(array $attributes = []): Volume
 {
     return Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         ...$attributes,
     ]);
 }

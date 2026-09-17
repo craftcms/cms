@@ -33,18 +33,15 @@ use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -148,31 +145,13 @@ class DatabaseSeeder extends Seeder
             $user->notifications()->latest()->firstOrFail()->markAsRead();
         });
 
-        $this->components->task('Creating assets filesystem', function (): void {
-            $_SERVER['DOCUMENT_ROOT'] = Env::get('DOCUMENT_ROOT') ?: public_path();
-
-            $filesystem = Filesystems::createFilesystem([
-                'type' => Local::class,
-                'name' => 'Assets',
-                'handle' => 'assets',
-                'settings' => [
-                    'path' => '$DOCUMENT_ROOT/assets',
-                    'hasUrls' => true,
-                    'url' => '/assets',
-                ],
-            ]);
-
-            if (! Filesystems::saveFilesystem($filesystem)) {
-                throw new RuntimeException('Failed to create the assets filesystem.');
-            }
-        });
-
         $this->components->task('Creating asset volumes', function (): void {
             foreach (['images' => 'Images', 'documents' => 'Documents'] as $handle => $name) {
                 $volume = new Volume([
                     'name' => $name,
                     'handle' => $handle,
                     'fsHandle' => 'assets',
+                    'hasUrls' => true,
                     'subpath' => $handle,
                     'assetTransformer' => 'craft',
                 ]);

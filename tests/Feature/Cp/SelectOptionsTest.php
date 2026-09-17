@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
@@ -13,8 +11,6 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
-use CraftCms\Cms\Support\Facades\Filesystems;
 
 describe('getEnvSuggestions', function () {
     it('returns environment variable suggestions without aliases', function () {
@@ -350,9 +346,9 @@ describe('getLanguageOptions', function () {
     });
 });
 
-describe('getFsOptions', function () {
-    it('returns filesystem options', function () {
-        $options = SelectOptions::getFsOptions();
+describe('getDiskOptions', function () {
+    it('returns disk options', function () {
+        $options = SelectOptions::getDiskOptions();
 
         expect($options)->toBeArray();
 
@@ -362,44 +358,8 @@ describe('getFsOptions', function () {
         }
     });
 
-    it('excludes temp upload filesystems', function () {
-        $previousTempAssetUploadFs = Cms::config()->tempAssetUploadFs;
-
-        try {
-            $included = Filesystems::createFilesystem([
-                'type' => Local::class,
-                'name' => 'Included Select Options Filesystem',
-                'handle' => 'includedSelectOptionsFs',
-                'settings' => [
-                    'path' => storage_path('framework/testing/select-options/included-select-options-fs'),
-                ],
-            ]);
-            $excluded = Filesystems::createFilesystem([
-                'type' => Local::class,
-                'name' => 'Temp Select Options Filesystem',
-                'handle' => 'tempSelectOptionsFs',
-                'settings' => [
-                    'path' => storage_path('framework/testing/select-options/temp-select-options-fs'),
-                ],
-            ]);
-
-            expect(Filesystems::saveFilesystem($included, false))->toBeTrue()
-                ->and(Filesystems::saveFilesystem($excluded, false))->toBeTrue();
-
-            Cms::config()->tempAssetUploadFs = 'tempSelectOptionsFs';
-
-            $values = array_column(SelectOptions::getFsOptions(), 'value');
-
-            expect(AssetsHelper::isTempUploadFs($excluded))->toBeTrue()
-                ->and($values)->toContain('includedSelectOptionsFs')
-                ->not->toContain('tempSelectOptionsFs');
-        } finally {
-            Cms::config()->tempAssetUploadFs = $previousTempAssetUploadFs;
-        }
-    });
-
     it('sorts options by label', function () {
-        $options = SelectOptions::getFsOptions();
+        $options = SelectOptions::getDiskOptions();
         $labels = array_column($options, 'label');
         $sorted = $labels;
         sort($sorted);
@@ -407,26 +367,26 @@ describe('getFsOptions', function () {
         expect($labels)->toBe($sorted);
     });
 
-    it('includes manually configured Laravel disks with a disk: prefix', function () {
+    it('includes manually configured Laravel disks', function () {
         config()->set('filesystems.disks.manual-select-options-disk', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/select-options/manual-select-options-disk'),
         ]);
 
-        $values = array_column(SelectOptions::getFsOptions(), 'value');
+        $values = array_column(SelectOptions::getDiskOptions(), 'value');
 
-        expect($values)->toContain('disk:manual-select-options-disk');
+        expect($values)->toContain('manual-select-options-disk');
     });
 
-    it('excludes internal and Craft-registered system disks', function () {
+    it('excludes internal disks', function () {
         config()->set('filesystems.disks.craft-tmp', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/select-options/craft-tmp'),
         ]);
 
-        $values = array_column(SelectOptions::getFsOptions(), 'value');
+        $values = array_column(SelectOptions::getDiskOptions(), 'value');
 
-        expect($values)->not->toContain('disk:craft-tmp');
+        expect($values)->not->toContain('craft-tmp');
     });
 });
 

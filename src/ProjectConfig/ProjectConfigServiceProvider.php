@@ -7,7 +7,6 @@ namespace CraftCms\Cms\ProjectConfig;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
 use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
@@ -99,10 +98,6 @@ class ProjectConfigServiceProvider extends ServiceProvider
             ->onAdd(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onRemove(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleDeletedField($event))
-            // Filesystems
-            ->onAdd(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
-            ->onUpdate(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
-            ->onRemove(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleDeletedFilesystem($event))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))
             ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))

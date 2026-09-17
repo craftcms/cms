@@ -205,7 +205,6 @@
         "Entries": "CraftCms\\Cms\\Support\\Facades\\Entries",
         "EntryTypes": "CraftCms\\Cms\\Support\\Facades\\EntryTypes",
         "Fields": "CraftCms\\Cms\\Support\\Facades\\Fields",
-        "Filesystems": "CraftCms\\Cms\\Support\\Facades\\Filesystems",
         "Folders": "CraftCms\\Cms\\Support\\Facades\\Folders",
         "Gql": "CraftCms\\Cms\\Support\\Facades\\Gql",
         "HtmlSanitizers": "CraftCms\\Cms\\Support\\Facades\\HtmlSanitizers",

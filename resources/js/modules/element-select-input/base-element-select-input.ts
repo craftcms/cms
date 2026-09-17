@@ -83,7 +83,6 @@ export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
   editorSettings: Record<string, never>;
   canUpload?: boolean;
   describedBy?: string;
-  fsType?: string;
   sectionId?: number;
   tagGroupId?: number | null;
   targetSiteId?: number;

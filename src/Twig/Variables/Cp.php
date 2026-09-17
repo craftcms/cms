@@ -262,16 +262,6 @@ class Cp extends Component
     }
 
     /**
-     * Returns all options for a filesystem input.
-     */
-    /** @return list<array<string, mixed>> */
-    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.')]
-    public function getFsOptions(): array
-    {
-        return SelectOptions::getFsOptions();
-    }
-
-    /**
      * Returns all options for a volume input.
      */
     /** @return list<array<string, mixed>> */

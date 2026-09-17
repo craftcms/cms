@@ -19,7 +19,6 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasEditions;
     use Concerns\HasElementTypes;
     use Concerns\HasFieldtypes;
-    use Concerns\HasFilesystemTypes;
     use Concerns\HasFrontendAssets;
     use Concerns\HasGql;
     use Concerns\HasLinkTypes;
@@ -114,7 +113,6 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         $this->bootHasConfig();
         $this->bootHasElementTypes();
         $this->bootHasFieldTypes();
-        $this->bootHasFilesystemTypes();
         $this->bootHasFrontendAssets();
         $this->bootHasGql();
         $this->bootHasLinkTypes();

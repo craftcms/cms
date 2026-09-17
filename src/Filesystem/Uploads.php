@@ -41,8 +41,8 @@ class Uploads
 
         event($event = new UploadSessionStarting($request, $handler, $filename, $size, $parameters));
 
-        $diskReference = $event->filesystem ?? Cms::config()->getTempAssetUploadFs();
-        $name = $event->uploader ?? $this->uploaders->getDefaultDriver($diskReference);
+        $disk = $event->disk ?? Cms::config()->getUploadSessionDisk();
+        $name = $event->uploader ?? $this->uploaders->getDefaultDriver($disk);
         $uploader = $this->uploaders->driver($name);
 
         $session = UploadSession::create([
@@ -50,7 +50,7 @@ class Uploads
             'owner' => $this->owner($request),
             'handler' => $handler,
             'uploader' => $name,
-            'disk' => $diskReference,
+            'disk' => $disk,
             'filename' => $filename,
             'size' => $size,
             'parameters' => $parameters,

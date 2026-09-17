@@ -269,7 +269,7 @@ interface CraftStatic {
     settings?: LegacyWidgetSettings
   ) => LegacyModalInstance;
   createUploader(
-    fsType: string,
+    fsType: string | null,
     $element: JQuery,
     settings?: LegacyWidgetSettings
   ): {setParams(params: LegacyWidgetSettings): void};

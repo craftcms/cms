@@ -56,7 +56,6 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
@@ -78,7 +77,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ElementSources;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -158,7 +156,7 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-type TransformConfig array<string, bool|float|int|string|array<string, bool|float|int|string|null>|null>
  * @phpstan-type SourcePathInfo array{uri: string, folderId: int, hasChildren: bool, canView: bool, canCreate: bool, canMoveSubItems: bool, key: string, label: string, icon?: string, handle?: string|null, criteria?: array{folderId: int|null}, canRename?: bool, canMove?: bool, canDelete?: bool}
- * @phpstan-type SourceInfo array{key: string, label: string|null, hasThumbs: bool, criteria: array{folderId: int|null, uploaderId?: int|null}, defaultSort: array{string, string}, defaultSourcePath: list<SourcePathInfo>|null, data: array{volume-handle: string|false, folder-id: int|null, can-upload: bool, can-move-to: bool, can-move-peer-files-to?: bool, fs-type: class-string}}
+ * @phpstan-type SourceInfo array{key: string, label: string|null, hasThumbs: bool, criteria: array{folderId: int|null, uploaderId?: int|null}, defaultSort: array{string, string}, defaultSourcePath: list<SourcePathInfo>|null, data: array{volume-handle: string|false, folder-id: int|null, can-upload: bool, can-move-to: bool, can-move-peer-files-to?: bool}}
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
@@ -524,7 +522,6 @@ class Asset extends Element
             ! app()->runningInConsole()
         ) {
             $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
-            $temporaryUploadVolume = $temporaryUploadFolder->getVolume();
             $sources[] = [
                 'key' => 'temp',
                 'label' => t('Temporary Uploads'),
@@ -537,7 +534,6 @@ class Asset extends Element
                     'can-upload' => true,
                     'can-move-to' => false,
                     'can-move-peer-files-to' => false,
-                    'fs-type' => $temporaryUploadVolume->sourceFilesystemType(),
                 ],
             ];
         }
@@ -1122,7 +1118,6 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'fs-type' => $volume->sourceFilesystemType(),
             ],
         ];
 
@@ -1345,7 +1340,6 @@ class Asset extends Element
                 'behavior' => [
                     'type' => 'replaceFile',
                     'assetId' => $this->id,
-                    'fsType' => $this->getVolume()->sourceFilesystemType(),
                 ],
             ];
         }
@@ -1374,22 +1368,6 @@ class Asset extends Element
                 ],
             ];
 
-            $fsHandle = $this->getVolume()->getFsHandle();
-
-            if (
-                is_string($fsHandle) &&
-                ! str_starts_with($fsHandle, Volume::STORAGE_DISK_PREFIX) &&
-                Filesystems::getFilesystemByHandle($fsHandle)
-            ) {
-                $items[] = [
-                    'label' => t('Filesystem settings'),
-                    'icon' => 'gear',
-                    'behavior' => [
-                        'type' => 'slideout',
-                        'url' => Url::cpUrl("settings/filesystems/$fsHandle/edit"),
-                    ],
-                ];
-            }
         }
 
         return $items;
@@ -1485,10 +1463,10 @@ JS, [
                 'showInChips' => false,
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $dimensionsLabel) => <<<JS
 $('#' + $id).on('activate', () => {
   const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-  const uploader = Craft.createUploader($fsType, fileInput, {
+  const uploader = Craft.createUploader(null, fileInput, {
     dropZone: null,
     fileInput: fileInput,
     paramName: 'replaceFile',
@@ -1609,7 +1587,6 @@ JS, [
                 InputNamespace::namespaceId($replaceId),
                 InputNamespace::get(),
                 $this->id,
-                $this->getVolume()->sourceFilesystemType(),
                 t('Dimensions'),
             ]);
         }
@@ -1672,26 +1649,6 @@ JS, [
                 ['volumeId' => $this->volumeId],
             ]);
 
-            $fsHandle = $this->getVolume()->getFsHandle();
-            if (is_string($fsHandle) && ! str_starts_with($fsHandle, Volume::STORAGE_DISK_PREFIX) && Filesystems::getFilesystemByHandle($fsHandle)) {
-                $fsEditId = sprintf('edit-fs-%s', mt_rand());
-                $items[] = [
-                    'id' => $fsEditId,
-                    'icon' => 'gear',
-                    'label' => t('Filesystem settings'),
-                ];
-
-                HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    new Craft.CpScreenSlideout($url);
-  });
-})();
-JS, [
-                    InputNamespace::namespaceId($fsEditId),
-                    Url::cpUrl("settings/filesystems/$fsHandle/edit"),
-                ]);
-            }
         }
 
         return $items;
@@ -3319,7 +3276,7 @@ JS;
 
             try {
                 if (! $newDisk->writeStream($newPath, $stream, [
-                    Filesystem::CONFIG_MIMETYPE => File::getMimeType($tempPath),
+                    'mimetype' => File::getMimeType($tempPath),
                 ])) {
                     throw new FilesystemException("Unable to write stream to path: $newPath");
                 }
