@@ -522,11 +522,11 @@ export default class CraftActionMenu extends CraftPopover {
         // Presentational: it labels the items visually but must never take
         // focus or be matched by the item selector.
         heading.setAttribute('role', 'presentation');
+        // Styled like a nav heading.
         Object.assign(heading.style, {
           padding: 'var(--c-spacing-xs) var(--c-spacing-md)',
-          color: 'var(--c-text-subtle)',
-          fontSize: 'var(--c-text-xs)',
-          fontWeight: '600',
+          fontSize: 'var(--c-text-sm)',
+          fontWeight: 'bold',
         });
         fragment.appendChild(heading);
       }

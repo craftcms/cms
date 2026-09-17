@@ -485,8 +485,7 @@
      `::slotted()` rule can't reach inside the slotted content. */
   .action-list__heading {
     padding: var(--c-spacing-xs) var(--c-spacing-md);
-    color: var(--c-text-subtle);
-    font-size: var(--c-text-xs);
-    font-weight: 600;
+    font-size: var(--c-text-sm);
+    font-weight: bold;
   }
 </style>
