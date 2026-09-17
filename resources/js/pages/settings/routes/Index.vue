@@ -14,6 +14,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     title: string;
@@ -84,7 +85,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <Link :href="create()">
       <craft-button
         v-if="!readOnly"
@@ -98,9 +99,23 @@
   </LayoutSlot>
 
   <div v-if="routes.length === 0" class="empty-routes">
-    <craft-pane appearance="raised">
-      <Empty :label="t('No routes exist yet.')" />
-    </craft-pane>
+    <CpContainer>
+      <Empty
+        :label="t('No routes exist yet.')"
+        class="border border-quiet rounded"
+      >
+        <Link :href="create()">
+          <craft-button
+            v-if="!readOnly"
+            type="button"
+            icon="plus"
+            :variant="ButtonVariant.Primary"
+          >
+            {{ t('New route') }}
+          </craft-button>
+        </Link>
+      </Empty>
+    </CpContainer>
   </div>
 
   <div v-else class="routes-list">

@@ -102,14 +102,14 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink variant="accent" appearance="button" :href="create().url">{{
       t('New filesystem')
     }}</CpLink>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
-    <AdminTable :table="table" :reorderable="false">
+  <div>
+    <AdminTable :table="table" :reorderable="false" :full-width="true">
       <template #empty-row>
         <Empty :label="t('No filesystems exist yet.')" icon="light/folder-open">
           <CpLink appearance="button" :href="create().url">{{
@@ -118,5 +118,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 </template>

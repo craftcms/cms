@@ -129,7 +129,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       as="craft-button"
       variant="accent"
@@ -143,7 +143,7 @@
 
   <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
 
-  <craft-pane padding="0" appearance="raised">
+  <div>
     <AdminTable
       :title="title"
       :table="sectionTable"
@@ -152,10 +152,11 @@
       :to="pagination.to"
       :total="pagination.total"
       :enable-adjust-page-size="true"
+      :full-width="true"
     >
-      <template #search-form>
+      <template #table-header>
         <SearchForm :action="index()" v-model="searchTerm" />
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 </template>

@@ -246,20 +246,18 @@
       </craft-action-menu>
     </div>
   </LayoutSlot>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       v-if="!readOnly"
       as="craft-button"
       :href="create({}, {query: {groupId: group?.id}}).url"
-      variant="accent"
-      appearance="button"
+      icon="plus"
     >
-      <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('New Site') }}
     </CpLink>
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="@container">
+  <div class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -268,6 +266,7 @@
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
+      :full-width="true"
       spacing="spacious"
       @reorder="handleReorder"
     >
@@ -285,7 +284,7 @@
         </Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 
   <ModalForm
     :is-active="modalActive"

@@ -18,7 +18,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <DynamicHtmlRenderer
       v-if="toolbarHtml"
       :html="toolbarHtml"

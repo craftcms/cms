@@ -56,7 +56,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       :href="create().url"
       icon="plus"
@@ -66,8 +66,8 @@
     >
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="@container">
-    <AdminTable :table="table">
+  <div class="@container">
+    <AdminTable :table="table" :full-width="true">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
           <CpLink :href="create().url" icon="plus" appearance="button">{{
@@ -76,5 +76,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 </template>

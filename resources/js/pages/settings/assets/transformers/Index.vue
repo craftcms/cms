@@ -106,13 +106,13 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="!readOnly" name="actions">
+  <LayoutSlot v-if="!readOnly" name="content-actions">
     <CpLink variant="accent" appearance="button" :href="create().url">{{
       t('New Asset Transformer')
     }}</CpLink>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
-    <AdminTable :table="table" :reorderable="false" />
-  </craft-pane>
+  <div>
+    <AdminTable :table="table" :reorderable="false" :full-width="true" />
+  </div>
 </template>

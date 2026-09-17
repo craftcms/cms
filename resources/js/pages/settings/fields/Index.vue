@@ -202,27 +202,28 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink appearance="button" variant="accent" :href="create()" icon="plus">
       {{ t('New field') }}
     </CpLink>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
+  <div>
     <AdminTable
       :table="table"
       :reorderable="false"
       :from="pagination.from"
       :to="pagination.to"
+      :full-width="true"
       :total="pagination.total"
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
         <Empty icon="light/pen-to-square" :label="t('No fields exist yet.')" />
       </template>
-      <template #search-form>
+      <template #table-header>
         <SearchForm v-model="searchTerm" />
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 </template>

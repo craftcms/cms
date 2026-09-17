@@ -7,6 +7,7 @@
   import WidgetManager from '@/modules/dashboard/WidgetManager.vue';
   import {useDashboard} from '@/modules/dashboard/useDashboard';
   import type {DashboardWidget, WidgetType} from '@/modules/dashboard/types';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     widgets: DashboardWidget[];
@@ -36,8 +37,8 @@
 </script>
 
 <template>
-  <div>
-    <LayoutSlot name="actions">
+  <CpContainer>
+    <LayoutSlot name="content-actions">
       <div class="flex gap-2">
         <ActionMenu :actions="actions" :label="t('New widget')"
           ><template #invoker
@@ -93,7 +94,7 @@
         @resize="refreshGrid"
       />
     </div>
-  </div>
+  </CpContainer>
 </template>
 
 <style scoped>

@@ -84,7 +84,7 @@
     <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="fragmentReady" />
   </LayoutSlot>
 
-  <LayoutSlot v-if="contentNotice" name="notices">
+  <LayoutSlot v-if="contentNotice" name="content-notices">
     <HtmlFragmentRenderer
       :fragment="fragment(contentNotice)"
       @ready="fragmentReady"
@@ -98,7 +98,7 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="toolbar" name="toolbar">
+  <LayoutSlot v-if="toolbar" name="content-toolbar-meta">
     <HtmlFragmentRenderer
       :fragment="fragment(toolbar)"
       @ready="fragmentReady"

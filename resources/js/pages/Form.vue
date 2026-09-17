@@ -17,6 +17,7 @@
   } from '@/modules/forms/types';
   import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     form: FormPayload;
@@ -70,6 +71,8 @@
   useAppLayout({
     form: inertiaForm,
     defaultFormActions: props.defaultFormActions,
+    contentMaxWidth: true,
+    centerContent: true,
     onSave: save,
   });
 
@@ -109,23 +112,25 @@
 
 <template>
   <form @submit.prevent="save()">
-    <craft-field-group class="py-4">
-      <FormRenderer
-        ref="renderer"
-        :payload="form"
-        :refresh="refreshUrl ? refresh : undefined"
-        :errors="errors"
-        @update:mutation="onMutation"
-        @change="onChange"
-      >
-        <template
-          v-for="(_, slotName) in $slots"
-          :key="slotName"
-          #[slotName]="slotProps"
+    <CpContainer>
+      <craft-field-group class="py-4">
+        <FormRenderer
+          ref="renderer"
+          :payload="form"
+          :refresh="refreshUrl ? refresh : undefined"
+          :errors="errors"
+          @update:mutation="onMutation"
+          @change="onChange"
         >
-          <slot :name="slotName" v-bind="slotProps" />
-        </template>
-      </FormRenderer>
-    </craft-field-group>
+          <template
+            v-for="(_, slotName) in $slots"
+            :key="slotName"
+            #[slotName]="slotProps"
+          >
+            <slot :name="slotName" v-bind="slotProps" />
+          </template>
+        </FormRenderer>
+      </craft-field-group>
+    </CpContainer>
   </form>
 </template>
