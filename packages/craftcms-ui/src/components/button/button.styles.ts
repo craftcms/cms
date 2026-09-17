@@ -442,6 +442,14 @@ export default css`
     align-items: center;
   }
 
+  .button-content--spaced-prefix .prefix {
+    margin-inline-end: var(--c-spacing-sm);
+  }
+
+  .button-content--spaced-suffix .suffix {
+    margin-inline-start: var(--c-spacing-sm);
+  }
+
   .button-content--start {
     justify-content: start;
   }

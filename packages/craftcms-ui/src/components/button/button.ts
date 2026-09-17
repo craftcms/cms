@@ -77,6 +77,16 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     this.syncLinkHostState();
     this.addEventListener('click', this.#handleToggleClick);
 
+    this.#syncContent();
+    this.#contentObserver = new MutationObserver(() => this.#syncContent());
+    this.#contentObserver.observe(this, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['slot'],
+    });
+
     // Moved while it was still waiting to be shown: disconnecting dropped the
     // observer, so pick the wait back up rather than never judging it.
     if (this.hasUpdated && !this.accessibleName) {
@@ -87,6 +97,8 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this.#handleToggleClick);
+    this.#contentObserver?.disconnect();
+    this.#contentObserver = null;
     this.#stopAwaitingRender();
 
     if (this.announcementTimer) {
@@ -181,6 +193,40 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
         this.tabIndex = 0;
       }
       this.linkHostStateApplied = false;
+    }
+  }
+
+  /**
+   * Reads which slots the light DOM fills, so the icon only gets space beside
+   * a label. CSS can't tell: an empty prefix or suffix is still a flex item,
+   * and markup whitespace alone still fills the label slot.
+   */
+  #syncContent(): void {
+    const filled = (slot: string | null) =>
+      Array.from(this.childNodes).some((node) => {
+        if (node instanceof Element) {
+          return (node.getAttribute('slot') || null) === slot;
+        }
+
+        return (
+          slot === null &&
+          node.nodeType === Node.TEXT_NODE &&
+          !!node.textContent?.trim()
+        );
+      });
+
+    const content = {
+      label: filled(null),
+      prefix: filled('prefix'),
+      suffix: filled('suffix'),
+    };
+
+    if (
+      content.label !== this._content.label ||
+      content.prefix !== this._content.prefix ||
+      content.suffix !== this._content.suffix
+    ) {
+      this._content = content;
     }
   }
 
@@ -326,6 +372,12 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   @state()
   private _hasAccessibilityError: boolean = false;
 
+  /** Which parts of the content have something in them; see #syncContent. */
+  @state()
+  private _content = {label: false, prefix: false, suffix: false};
+
+  #contentObserver: MutationObserver | null = null;
+
   /** Waits for a hidden button to be shown before judging its name. */
   #renderObserver: ResizeObserver | null = null;
 
@@ -350,10 +402,17 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   }
 
   override render() {
+    const hasPrefix =
+      this._content.prefix || (!!this.icon && this.iconPosition === 'prefix');
+    const hasSuffix =
+      this._content.suffix || (!!this.icon && this.iconPosition === 'suffix');
+
     const content = html`
       <div
         class="${classMap({
           'button-content': true,
+          'button-content--spaced-prefix': hasPrefix && this._content.label,
+          'button-content--spaced-suffix': hasSuffix && this._content.label,
           'button-content--start': this.align === 'start',
           'button-content--end': this.align === 'end',
           'a11y-error': this._hasAccessibilityError,
