@@ -18,6 +18,7 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\test\TestCase;
+use CraftCms\Cms\Section\Enums\SectionType;
 use RuntimeException;
 
 /**
@@ -178,7 +179,7 @@ class ElementPrevNextTest extends TestCase
         $section = new Section();
         $section->name = $handle;
         $section->handle = $handle;
-        $section->type = Section::TYPE_CHANNEL;
+        $section->type = SectionType::Channel;
         $section->enableVersioning = false;
         $section->propagationMethod = PropagationMethod::All;
         $section->setEntryTypes([$this->entryType]);
