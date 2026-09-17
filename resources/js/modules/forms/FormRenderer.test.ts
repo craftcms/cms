@@ -419,6 +419,186 @@ describe('FormRenderer', () => {
     expect(field('uiMode').getAttribute('status')).toBeNull();
   });
 
+  /**
+   * A control inside a nested form belongs to a different element, and inherits
+   * its owner's delta group. Badging on that would mean adding one Matrix block
+   * lit up every field in every block, since all of them answer to the field
+   * that holds them.
+   */
+  it('leaves a nested form’s fields clean when their owner’s field is modified', async () => {
+    const nested = clonePayload();
+    const group = ['settings', 'matrix'];
+    const blockScope = [...group, 'entries', 'block-a'];
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'First'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: group,
+          mode: 'editable',
+          deltaGroup: group,
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {
+                    label: 'Heading',
+                    instructions: null,
+                    required: false,
+                  },
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    // The owner's group, inherited — which is the whole point.
+                    deltaGroup: group,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(nested, {modified: ['settings.matrix']});
+
+    const fieldFor = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="${name}"]`)!
+        .closest('craft-field')!;
+
+    expect(fieldFor('settings[matrix]').getAttribute('status')).toBe(
+      'modified'
+    );
+    expect(
+      fieldFor('settings[matrix][entries][block-a][heading]').getAttribute(
+        'status'
+      )
+    ).toBeNull();
+  });
+
+  /**
+   * Craft 5 marks a changed input's field and every enclosing field. That's
+   * how an edit inside a block created in this draft — which the server has no
+   * change record for — still shows on the Matrix field holding it. The field
+   * inside the block doesn't badge on its own.
+   */
+  it('badges a field holding nested forms when something inside it changes', async () => {
+    const nested = clonePayload();
+    const group = ['settings', 'matrix'];
+    const blockScope = [...group, 'entries', 'block-a'];
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'First'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: group,
+          mode: 'editable',
+          deltaGroup: group,
+          nestsForms: true,
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: true,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {
+                    label: 'Heading',
+                    instructions: null,
+                    required: false,
+                  },
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    deltaGroup: group,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(nested);
+
+    const fieldFor = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="${name}"]`)!
+        .closest('craft-field')!;
+    const matrix = () => fieldFor('settings[matrix]');
+    const heading = () =>
+      fieldFor('settings[matrix][entries][block-a][heading]');
+
+    // Nothing has changed yet, and the server reported nothing.
+    expect(matrix().getAttribute('status')).toBeNull();
+
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[matrix][entries][block-a][heading]"]'
+    )!;
+    input.value = 'Changed';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(matrix().getAttribute('status')).toBe('modified');
+    expect(heading().getAttribute('status')).toBeNull();
+
+    // Throwing the values away clears it — even though rewriting the input
+    // makes its control report a change that leaves the value where it started.
+    renderer.resetValues();
+    await nextTick();
+
+    expect(matrix().getAttribute('status')).toBeNull();
+  });
+
   it('renders the shared payload with equivalent names, values, and errors', () => {
     const placeholder = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'
@@ -454,6 +634,49 @@ describe('FormRenderer', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(
       'The settings could not be saved.'
     );
+  });
+
+  it('visually hides field labels the server marks screen-reader-only', async () => {
+    const field = (
+      name: string,
+      props: FormPayload['nodes'][number]['props']
+    ): FormPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: name, ...props},
+      control: {
+        type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+        component: 'craft:choice',
+        props: {
+          options: [{label: 'is one of', value: 'in'}],
+          multiple: false,
+          presentation: 'select',
+        },
+        path: ['settings', name],
+        mode: 'editable',
+        deltaGroup: ['settings', name],
+      },
+    });
+    app.unmount();
+    await mount({
+      scope: ['settings'],
+      refreshable: false,
+      nodes: [field('hidden', {labelSrOnly: true}), field('visible', {})],
+      values: {settings: {hidden: 'in', visible: 'in'}},
+      errors: [],
+      globalErrors: [],
+    });
+
+    // The select's own label chrome follows the field's.
+    const labelSrOnly = (name: string, selector: string) =>
+      container
+        .querySelector(`select[name="settings[${name}]"]`)!
+        .closest(selector)!
+        .hasAttribute('label-sr-only');
+    expect(labelSrOnly('hidden', 'craft-field')).toBe(true);
+    expect(labelSrOnly('hidden', 'craft-select')).toBe(true);
+    expect(labelSrOnly('visible', 'craft-field')).toBe(false);
+    expect(labelSrOnly('visible', 'craft-select')).toBe(false);
   });
 
   it('displays a combobox option label for its initial value', async () => {
@@ -919,12 +1142,11 @@ describe('FormRenderer', () => {
     app.unmount();
     await mount(condition);
 
-    const operator = [
-      ...container.querySelectorAll<HTMLElement>(
-        '.condition-group craft-button'
-      ),
-    ].find((button) => button.textContent?.trim() === 'Any')!;
-    operator.click();
+    const operator = container.querySelector<HTMLSelectElement>(
+      '.condition-group__operator select'
+    )!;
+    operator.value = 'or';
+    operator.dispatchEvent(new Event('change', {bubbles: true}));
     await nextTick();
 
     expect(renderer.currentValues()).toMatchObject({
@@ -2551,11 +2773,11 @@ describe('FormRenderer', () => {
         'select[name="settings[choice]"]'
       )?.value
     ).toBe('1');
-    expect(
-      container
-        .querySelector('select[name="settings[choice]"]')
-        ?.closest('craft-select')
-    ).not.toBeNull();
+    const choiceSelect = container
+      .querySelector('select[name="settings[choice]"]')
+      ?.closest('craft-select');
+    expect(choiceSelect).not.toBeNull();
+    expect(choiceSelect!.hasAttribute('label-sr-only')).toBe(false);
     expect(
       container.querySelectorAll(
         'input[type="checkbox"][name="settings[tags][]"]'
@@ -2695,6 +2917,19 @@ describe('FormRenderer', () => {
             placeholder: 'Write <Markdown>',
             toolbarButtons: ['bold', 'link'],
             showToolbar: true,
+            types: [
+              {
+                id: 'asset',
+                label: 'Asset',
+                kind: 'element',
+                elementSelectConfig: {
+                  sources: ['volume:documents'],
+                  criteria: {kind: ['pdf']},
+                },
+              },
+            ],
+            showLabelField: true,
+            advancedFields: ['title'],
           },
           '<script>alert(1)</script> **Safe**',
         ],
@@ -2830,6 +3065,27 @@ describe('FormRenderer', () => {
         .querySelector('craft-markdown-field')
         ?.hasAttribute('sanitize-html')
     ).toBe(true);
+    expect(
+      container.querySelector<
+        HTMLElement & {
+          linkTypes: unknown[];
+          showLinkLabelField: boolean;
+          linkAdvancedFields: string[];
+        }
+      >('craft-markdown-field')
+    ).toMatchObject({
+      linkTypes: [
+        {
+          id: 'asset',
+          elementSelectConfig: {
+            sources: ['volume:documents'],
+            criteria: {kind: ['pdf']},
+          },
+        },
+      ],
+      showLinkLabelField: true,
+      linkAdvancedFields: ['title'],
+    });
     expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
     expect(
       container.querySelector<HTMLInputElement>(
@@ -3186,7 +3442,7 @@ describe('FormRenderer', () => {
       onMutation: (value) => (mutation = value),
     });
 
-    expect(container.querySelectorAll('.matrixblock')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-matrix-block]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-content-block]')).toHaveLength(1);
     expect(container.textContent).toContain('Body is invalid.');
     const heading = required(
@@ -3260,19 +3516,24 @@ describe('FormRenderer', () => {
       },
     });
 
-    while (
-      container.querySelector<HTMLElement>(
-        '.matrixblock craft-button[data-form-matrix-remove]'
-      )
-    ) {
-      required(
-        container.querySelector<HTMLElement>(
-          '.matrixblock craft-button[data-form-matrix-remove]'
-        ),
-        'Expected a Matrix remove button while entries remain.'
-      ).click();
+    // Delete lives in the block's "⋮" menu, which dispatches on window and is
+    // scoped by the invoking element.
+    for (let guard = 0; guard < 10; guard++) {
+      const block = container.querySelector<HTMLElement>('[data-matrix-block]');
+
+      if (!block) {
+        break;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {action: 'delete', uid: block.dataset.id, trigger: block},
+        })
+      );
       await nextTick();
     }
+
+    expect(container.querySelector('[data-matrix-block]')).toBeNull();
 
     expect(mutation).toEqual({
       settings: {matrix: {entries: {}, sortOrder: []}},
@@ -3345,7 +3606,9 @@ describe('FormRenderer', () => {
     };
     await mount(justAdded);
 
-    expect(container.querySelector('.matrixblock craft-spinner')).toBeNull();
+    expect(
+      container.querySelector('[data-matrix-block] craft-spinner')
+    ).toBeNull();
     expect(
       container.querySelector(
         `input[name="settings[matrix][entries][${uid}][heading]"]`
@@ -3605,6 +3868,50 @@ describe('FormRenderer', () => {
       expect(Array.from(new FormData(form))).toEqual([]);
     }
   );
+
+  /**
+   * The guarantee that replaced every control guarding itself: a control whose
+   * path isn't in the values tree is handed the empty value its Control
+   * declared, so it renders empty instead of reaching into nothing.
+   *
+   * A throw during render is what "Failed to render Form Control" is — the
+   * renderer swaps the control for the error and the field is gone until the
+   * page is reloaded.
+   */
+  it('hands a control its empty value when the values have no path for it', async () => {
+    const missing = clonePayload();
+    missing.values = {};
+    missing.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'When', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\DateTime',
+          component: 'craft:date-time',
+          props: {
+            showDate: true,
+            showTime: true,
+            showTimeZone: true,
+            locale: 'en-US',
+            minuteIncrement: 15,
+          },
+          path: ['settings', 'when'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'when'],
+          // What `Control::emptyValue()` ships for a control whose value is a
+          // shape. Every part of a date is dereferenced on the way to the input.
+          emptyValue: {},
+        },
+      },
+    ] as unknown as FormPayload['nodes'];
+
+    app.unmount();
+    await mount(missing);
+
+    expect(container.textContent).not.toContain('Failed to render');
+    expect(container.querySelector('craft-input-date-time')).not.toBeNull();
+  });
 
   async function mount(
     formPayload: FormPayload,

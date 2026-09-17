@@ -237,8 +237,11 @@ export default css`
   }
 
   :host([variant~='primary']:active),
+  :host([variant~='primary'][aria-pressed='true']),
   :host([variant~='danger']:active),
-  :host([variant~='solid']:active) {
+  :host([variant~='danger'][aria-pressed='true']),
+  :host([variant~='solid']:active),
+  :host([variant~='solid'][aria-pressed='true']) {
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 10)
@@ -440,6 +443,7 @@ export default css`
        the (non-positioned) anchor and swallows every pointer click before it
        can activate the link. Recreate the overlay on the anchor instead, so
        the full target navigates. */
+
     &::before {
       display: none;
     }
@@ -466,6 +470,7 @@ export default css`
 
     /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
+
     &::before {
       content: '';
       position: absolute;

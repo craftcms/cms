@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use SensitiveParameter;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -387,7 +388,7 @@ class AuthMethods
                     return false;
                 }
 
-                $authUser = auth()->getProvider()->retrieveById(Session::get('user.login_id', $user->id));
+                $authUser = craftAuth()->getProvider()->retrieveById(Session::get('user.login_id', $user->id));
                 $remember = (bool) Session::get('user.remember', false);
 
                 $this->setUser(null);
@@ -396,7 +397,7 @@ class AuthMethods
                     return false;
                 }
 
-                auth()->login($authUser, $remember);
+                craftAuth()->login($authUser, $remember);
             }
 
             return true;

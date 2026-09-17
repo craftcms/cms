@@ -34,7 +34,6 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Prompts\Support\Logger;
@@ -42,6 +41,7 @@ use ReflectionClass;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\craftAuth;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\warning;
@@ -302,6 +302,24 @@ class Install extends Migration
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('keptFile')->nullable();
             $table->dateTime('dateModified')->nullable();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+        });
+
+        $logger?->subLabel('upload_sessions');
+        Schema::create(Table::UPLOADSESSIONS, function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('owner');
+            $table->string('handler');
+            $table->string('uploader');
+            $table->string('disk');
+            $table->string('filename');
+            $table->unsignedBigInteger('size');
+            $table->unsignedBigInteger('chunkSize')->default(1);
+            $table->jsonb('parameters');
+            $table->jsonb('state');
+            $table->jsonb('result')->nullable();
+            $table->dateTime('expiresAt')->index();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
         });
@@ -1338,7 +1356,7 @@ class Install extends Migration
             ]);
 
             if (! app()->runningInConsole()) {
-                Auth::login($user);
+                craftAuth()->login($user);
             }
 
             $logger?->success('Saved.');

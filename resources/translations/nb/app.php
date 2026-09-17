@@ -601,6 +601,7 @@ return [
     'Descending' => 'Synkende',
     'Description' => 'Beskrivelse',
     'Deselect All' => 'Velg bort alle',
+    'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'PC',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Bestemmer hvilket nettsted brukeren vil motta e-poster fra, når de sendes via kontrollpanelet.',
     'Developer Response' => 'Utviklersvar',
@@ -1424,6 +1425,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Gjenopprettingskoder kan brukes som en sikkerhetskopiform for bekreftelse når du ikke kan bruke din primære metode.',
     'Recovery codes generated.' => 'Gjenopprettingskoder generert.',
     'Red' => 'Rød',
+    'Redo' => 'Redo',
     'Refresh' => 'Oppdater',
     'Regenerate' => 'Regenerer',
     'Regenerating project config YAML files from the loaded project config…' => 'Regenerer YAML-prosjektkonfigurasjonsfiler fra den lastede prosjektkonfigurasjonen …',
@@ -1569,6 +1571,7 @@ return [
     'Select Schema' => 'Velg skjema',
     'Select a filesystem' => 'Velg et filsystem',
     'Select all' => 'Velg alle',
+    'Select all {type}' => 'Select all {type}',
     'Select context' => 'Velg kontekst',
     'Select element' => 'Velg element',
     'Select section' => 'Velg seksjon',
@@ -2318,9 +2321,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName|e}}
+    'test_email_body' => 'Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

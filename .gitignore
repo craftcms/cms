@@ -43,3 +43,7 @@ cms-assets/resources/icons/*
 # Storybook build output
 /storybook-static
 resources/build
+
+# Orb runtime state
+.amp/portals/*
+.amp/databases/

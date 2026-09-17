@@ -11,11 +11,13 @@
   import {computed} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import {t} from '@craftcms/ui';
-  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditor';
+  import type {
+    ElementContextMenuItem,
+    ElementEditPayload,
+  } from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
-    /** `payload.contextMenu.items`, or an empty list when the element has none. */
-    items: Array<ElementContextMenuItem>;
+    payload: ElementEditPayload;
   }>();
 
   interface RevisionItem {
@@ -50,7 +52,7 @@
     let group: RevisionGroup | null = null;
     let inFooter = false;
 
-    props.items.forEach((item, index) => {
+    (props.payload.contextMenu?.items ?? []).forEach((item, index) => {
       // The rule separates the list proper from the "View all revisions" link
       // the server appends when there are more revisions than it sent.
       if (item.type === 'hr') {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
@@ -29,14 +30,6 @@ class Entry extends BaseElementLinkType
      */
     public bool $showUnpermittedSections = false;
 
-    /**
-     * @var bool Whether to show entries the user doesn’t have permission to view,
-     *           per the “View other users’ entries” permission.
-     *
-     * @since 5.7.0
-     */
-    public bool $showUnpermittedEntries = false;
-
     protected static function elementType(): string
     {
         return EntryElement::class;
@@ -45,13 +38,19 @@ class Entry extends BaseElementLinkType
     /** @param array<string, bool|list<string>|null> $config */
     public function __construct(array $config = [])
     {
-        // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
+        // Default showUnpermittedSections to true for existing Entries link types
         if (! empty($config) && ! isset($config['showUnpermittedSections'])) {
             $config['showUnpermittedSections'] = true;
-            $config['showUnpermittedEntries'] = true;
         }
 
         parent::__construct($config);
+
+        // Add the “Viewable” rule by default
+        if (empty($config) && is_null($this->getSelectionCondition())) {
+            $condition = $this->createSelectionCondition();
+            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
+            $this->setSelectionCondition($condition);
+        }
     }
 
     #[Override]
@@ -62,9 +61,6 @@ class Entry extends BaseElementLinkType
             FormField::make(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedSections'))->value($this->showUnpermittedSections)),
-            FormField::make(t('Show unpermitted entries'))
-                ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
-                ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedEntries'))->value($this->showUnpermittedEntries)),
         ];
     }
 
@@ -106,19 +102,6 @@ class Entry extends BaseElementLinkType
         return array_values(array_unique($sources));
     }
 
-    /** @return array<string, bool|list<string>|string|null> */
-    #[Override]
-    protected function selectionCriteria(): array
-    {
-        $criteria = parent::selectionCriteria();
-
-        if (! $this->showUnpermittedEntries) {
-            $criteria['editable'] = true;
-        }
-
-        return $criteria;
-    }
-
     /**
      * @return array{
      *     elementType: class-string<ElementInterface>,
@@ -126,6 +109,7 @@ class Entry extends BaseElementLinkType
      *     single: bool,
      *     sources: string|array<int, string>,
      *     criteria: array<string, bool|list<string>|string|null>,
+     *     condition: array<string, mixed>|null,
      * }
      */
     #[Override]

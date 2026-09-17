@@ -11,6 +11,7 @@
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineActor from './ActivityTimelineActor.vue';
+  import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import '../../markdown-field/markdown-field';
 
   interface ActivityCommentResponse {
@@ -22,6 +23,7 @@
     elementType: string;
     elementId: number | null;
     siteId: number | null;
+    last?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -264,6 +266,15 @@
       </time>
     </div>
   </craft-card>
+
+  <ActivityTimelineEvent
+    v-else-if="event"
+    :event="event"
+    :element-type="elementType"
+    :element-id="elementId"
+    :site-id="siteId"
+    :last="last ?? false"
+  />
 </template>
 
 <style scoped>

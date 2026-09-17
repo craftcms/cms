@@ -6,11 +6,14 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
@@ -86,6 +89,48 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public string $actionTrigger = 'actions';
+
+    /**
+     * @var string|null The Laravel authentication guard Craft should use.
+     *
+     * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
+     * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authGuard('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_GUARD=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthGuard()
+     */
+    public ?string $authGuard = null;
+
+    /**
+     * @var string|null The Laravel password broker Craft should use.
+     *
+     * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
+     * and token table in `config/auth.php`, and set this to the broker name.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authPasswordBroker('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_PASSWORD_BROKER=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthPasswordBroker()
+     */
+    public ?string $authPasswordBroker = null;
 
     /**
      * @var mixed The maximum age of activity events before garbage collection deletes them.
@@ -367,6 +412,22 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public bool $allowUppercaseInSlug = false;
+
+    /**
+     * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->autoEagerLoadElements(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTO_EAGER_LOAD_ELEMENTS=false
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $autoEagerLoadElements = true;
 
     /**
      * @var bool Whether users should automatically be logged in after activating their account.
@@ -1813,6 +1874,28 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 16MB
      */
     public string|int $maxUploadFileSize = 16777216;
+
+    /**
+     * The registered upload transport to use, or null to select one from the temporary disk.
+     *
+     * @group Assets
+     */
+    public ?string $uploader = null;
+
+    /**
+     * Maximum bytes per PHP upload request. Proxy request limits may require a smaller value.
+     * S3 multipart uploads use parts of at least 5 MiB.
+     *
+     * @group Assets
+     */
+    public int $uploadChunkSize = 8 * 1024 * 1024;
+
+    /**
+     * Seconds of inactivity before an upload session and its temporary files can be removed.
+     *
+     * @group Assets
+     */
+    public int $uploadSessionDuration = 24 * 60 * 60;
 
     /**
      * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
@@ -3385,6 +3468,24 @@ class GeneralConfig extends BaseConfig
     public function allowUppercaseInSlug(bool $value = true): self
     {
         $this->allowUppercaseInSlug = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ```php
+     * ->autoEagerLoadElements(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $autoEagerLoadElements
+     */
+    public function autoEagerLoadElements(bool $value = true): self
+    {
+        $this->autoEagerLoadElements = $value;
 
         return $this;
     }
@@ -4974,6 +5075,27 @@ class GeneralConfig extends BaseConfig
         return $this;
     }
 
+    public function uploader(?string $value): self
+    {
+        $this->uploader = $value;
+
+        return $this;
+    }
+
+    public function uploadChunkSize(int $value): self
+    {
+        $this->uploadChunkSize = $value;
+
+        return $this;
+    }
+
+    public function uploadSessionDuration(int $value): self
+    {
+        $this->uploadSessionDuration = $value;
+
+        return $this;
+    }
+
     /**
      * Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
@@ -6183,6 +6305,44 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the temporary asset upload filesystem handle or disk reference.
+     */
+    public function getTempAssetUploadFs(): string
+    {
+        return Env::parse($this->tempAssetUploadFs) ?: 'disk:'.Filesystems::TEMP_ASSET_DISK;
+    }
+
+    /**
+     * Returns the Laravel authentication guard Craft should use.
+     *
+     * @see authGuard
+     */
+    public function getAuthGuard(): string
+    {
+        return $this->authGuard ?? Auth::getDefaultDriver();
+    }
+
+    /**
+     * Returns the Laravel password broker Craft should use.
+     *
+     * @see authPasswordBroker
+     */
+    public function getAuthPasswordBroker(): string
+    {
+        return $this->authPasswordBroker ?? Password::getDefaultDriver();
+    }
+
+    /**
+     * Returns the session key used to store the password confirmation timestamp.
+     */
+    public function getPasswordConfirmationKey(): string
+    {
+        return $this->authGuard === null
+            ? 'auth.password_confirmed_at'
+            : sprintf('auth.%s.password_confirmed_at', $this->authGuard);
     }
 
     /**

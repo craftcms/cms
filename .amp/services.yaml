@@ -1,0 +1,28 @@
+# Optional database engines; SQLite remains the default in tests/.env.
+# Start one with `amp orb service restart mysql` (or `pgsql`), or both with
+# `amp orb services ensure`. These services are local only: never add portals.
+# After starting, create a test database as needed:
+#   mysql -h 127.0.0.1 -u root -e 'CREATE DATABASE IF NOT EXISTS craft_test'
+#   createdb -h 127.0.0.1 -U root craft_test
+# Use DB_HOST=127.0.0.1, DB_USERNAME=root, and an empty DB_PASSWORD in tests/.env,
+# alongside DB_CONNECTION=mysql or pgsql and DB_DATABASE=craft_test.
+# Durability is disabled for disposable debugging data, not production use.
+services:
+  mysql:
+    port: 3306
+    command: >-
+      exec /usr/sbin/mysqld --no-defaults
+      --datadir="$PWD/.amp/databases/mysql"
+      --socket="$PWD/.amp/databases/mysql.sock"
+      --pid-file="$PWD/.amp/databases/mysql.pid"
+      --bind-address=127.0.0.1 --port="$PORT" --mysqlx=OFF
+      --secure-file-priv="$PWD/.amp/databases"
+      --skip-log-bin --innodb-flush-log-at-trx-commit=0
+  pgsql:
+    port: 5432
+    command: >-
+      exec /usr/lib/postgresql/15/bin/postgres
+      -D "$PWD/.amp/databases/pgsql"
+      -k "$PWD/.amp/databases"
+      -h 127.0.0.1 -p "$PORT"
+      -c fsync=off -c synchronous_commit=off -c full_page_writes=off
