@@ -127,7 +127,6 @@
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
-    background-color: var(--c-surface-default);
 
     // TODO: consolidate breakpoints
     @media screen and (min-width: 768px) {

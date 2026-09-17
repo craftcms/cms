@@ -235,6 +235,7 @@
                     :class="{
                       'cp-content__main--constrained': contentConstrained,
                       'cp-content__main--centered': centerContent,
+                      'cp-content__main--last-child': !hasDetails,
                     }"
                     :style="contentMainStyle"
                   >
@@ -354,6 +355,8 @@
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
+    border-start-start-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
+    border-start-end-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
 
     @media screen and (min-width: 768px) {
       grid-template-columns: auto minmax(0, 1fr);
@@ -398,7 +401,6 @@
 
     display: grid;
     height: 100%;
-    background-color: var(--c-surface-default);
 
     @container (width >= 768px) {
       &.cp-content--details {
@@ -438,6 +440,7 @@
 
   .cp-content__sidebar {
     border-inline-end: 1px solid var(--c-color-border-quiet);
+    background-color: var(--c-surface-default);
   }
 
   .cp-content__notices {
@@ -449,6 +452,11 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    background-color: var(--c-surface-default);
+
+    &.cp-content__main--last-child {
+      border-start-end-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
+    }
   }
 
   .cp-content__main--constrained {

@@ -55,7 +55,7 @@ CP Styles
 
 html,
 body {
-  background-color: var(--c-surface-default);
+  background-color: var(--c-header-bg);
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The
