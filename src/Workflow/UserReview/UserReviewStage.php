@@ -86,7 +86,7 @@ class UserReviewStage extends WorkflowStage
 
         return new WorkflowStageResult(
             WorkflowStageStatus::Pending,
-            t('{count} of {required} approvals', ['count' => $approvals, 'required' => $this->approvalsRequired]),
+            t('{count} of {required} approved', ['count' => $approvals, 'required' => $this->approvalsRequired]),
             $context->payload,
         );
     }

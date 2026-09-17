@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Workflows;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\Workflows;
@@ -18,6 +19,7 @@ class WorkflowTransitionsController
     public function __construct(
         private readonly ElementRequest $request,
         private readonly Workflows $workflows,
+        private readonly ElementEditorActions $editorActions,
     ) {}
 
     public function submit(): JsonResponse
@@ -78,10 +80,17 @@ class WorkflowTransitionsController
 
     private function response(ElementInterface $draft, ?string $message = null): JsonResponse
     {
+        $review = $this->workflows->reviewData(
+            draft: $draft,
+            viewer: $this->request->craftUser(),
+        );
+
         return new JsonResponse([
-            'workflowReview' => $this->workflows->reviewData(
-                draft: $draft,
-                viewer: $this->request->craftUser(),
+            'workflowReview' => $review,
+            'editorActions' => $this->editorActions->for(
+                element: $draft,
+                canSave: $this->request->craftUser()->can('save', $draft),
+                review: $review,
             ),
             ...($message !== null ? ['message' => $message] : []),
         ]);

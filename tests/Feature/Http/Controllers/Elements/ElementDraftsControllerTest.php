@@ -376,9 +376,8 @@ describe('store', function () {
         expect($savedDraft->isProvisionalDraft)->toBeFalse()
             ->and($savedDraft->title)->toBe('Saved Draft Title')
             ->and($response->json('screen.isProvisionalDraft'))->toBeFalse()
-            ->and($response->json('screen.workflow.configured'))->toBeTrue()
             ->and($response->json('screen.workflow.current.canSubmit'))->toBeTrue()
-            ->and(collect($response->json('screen.headerActions'))->pluck('label'))->not->toContain('Create a draft');
+            ->and(collect($response->json('screen.editorActions.buttons'))->pluck('label'))->not->toContain('Create a draft');
     });
 
     it('redirects to the named draft after promoting a provisional draft for review', function () {
@@ -465,7 +464,7 @@ describe('store', function () {
             ->and($response->json('screen.canonicalId'))->toBe($entry->id)
             // Saving now means applying the draft, not saving the element under it.
             ->and($response->json('screen.applyDraftUrl'))->toContain('elements/apply-draft')
-            ->and($response->json('screen.submitButtonLabel'))->toBe(t('Save'));
+            ->and($response->json('screen.editorActions.primary.label'))->toBe(t('Save'));
 
         // The rest of the chrome the initial load carries, which the screen has
         // no other way to refresh mid-edit.
@@ -475,8 +474,7 @@ describe('store', function () {
                 'metadataHtml',
                 'statusLabelHtml',
                 'crumbs',
-                'formActions',
-                'headerActions',
+                'editorActions',
                 'actionMenu',
                 'previewTargets',
                 'updatedTimestamps',
@@ -844,7 +842,6 @@ describe('apply', function () {
             ->and($savedDraft->isProvisionalDraft)->toBeFalse()
             ->and($savedDraft->title)->toBe('Changed Title')
             ->and($response->json('screen.draftId'))->toBe($draft->draftId)
-            ->and($response->json('screen.workflow.configured'))->toBeTrue()
             ->and($response->json('screen.workflow.convertedToDraft'))->toBeTrue()
             ->and($response->json('screen.workflow.current.canSubmit'))->toBeTrue();
     });

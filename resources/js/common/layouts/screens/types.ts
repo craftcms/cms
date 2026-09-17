@@ -18,6 +18,8 @@ export type DefaultFormAction = 'saveAndContinueEditing';
 export interface ScreenProps {
   title?: string;
   debug?: any;
+  /** Hides save controls without hiding non-save element actions. */
+  saveDisabled?: boolean;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<DefaultFormAction>;
   formActions?: Array<ActionItem>;

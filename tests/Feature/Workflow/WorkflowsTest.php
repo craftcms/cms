@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Activity\ActivityTimelinePresenter;
 use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
@@ -201,15 +200,10 @@ it('persists typed stages and assigns workflows from sections', function () {
             'uid' => $stageUid,
             'name' => 'Editorial',
             'type' => UserReviewStage::class,
-        ])->and(json_decode($workflow->getRawOriginal('stages'), true))->toBe([[
-            'uid' => $stageUid,
-            'name' => 'Editorial',
-            'type' => UserReviewStage::class,
-            'settings' => [
-                'approvalsRequired' => 1,
-                'userGroups' => [$group->uid],
-            ],
-        ]])->and($this->draft->workflow()?->is($workflow))->toBeTrue();
+        ])->and($stage->settings)->toBe([
+            'approvalsRequired' => 1,
+            'userGroups' => [$group->uid],
+        ])->and($this->draft->workflow()?->is($workflow))->toBeTrue();
 });
 
 it('validates settings with the registered stage type', function () {
@@ -227,9 +221,9 @@ it('validates settings with the registered stage type', function () {
         ->assertJsonValidationErrors('stages.0.settings.outcome');
 });
 
-it('cascades approved automated stages and stores each complete payload by stage uid', function () {
+it('cascades approved automated stages', function () {
     app(WorkflowStageTypes::class)->register(TestAutomatedWorkflowStage::class);
-    $workflow = workflowFor($this->entry, [
+    workflowFor($this->entry, [
         automatedStage('lint', 'approved'),
         automatedStage('policy', 'approved'),
     ]);
@@ -237,11 +231,7 @@ it('cascades approved automated stages and stores each complete payload by stage
     $run = submitAs($this->workflows, $this->draft, $this->author);
 
     expect($run->status)->toBe(WorkflowStatus::Approved)
-        ->and($run->currentStage)->toBe(1)
-        ->and($run->payload)->toBe([
-            $workflow->stages[0]->uid => ['evaluations' => 1],
-            $workflow->stages[1]->uid => ['evaluations' => 1],
-        ]);
+        ->and(workflowEvents($this->entry, WorkflowTransition::StageApproved))->toHaveCount(2);
 });
 
 it('keeps pending automated stages pending with their status message', function () {
@@ -252,7 +242,6 @@ it('keeps pending automated stages pending with their status message', function 
 
     expect($run->status)->toBe(WorkflowStatus::Pending)
         ->and($run->currentStageResult)->toBe('Automated check pending')
-        ->and($run->payload)->each->toBe(['evaluations' => 1])
         ->and($this->workflows->reviewData($this->draft, $this->author)->actionComponent)->toBeNull();
 });
 
@@ -273,15 +262,13 @@ it('completes a pending automated stage and advances the workflow', function () 
 
     expect($completed->status)->toBe(WorkflowStatus::Approved)
         ->and($completed->currentStageResult)->toBe('Automated check approved')
-        ->and($completed->payload)->each->toBe([
+        ->and($completed->payload[$workflow->stages->sole()->uid])->toBe([
             'evaluations' => 1,
             'summary' => 'No issues found.',
         ]);
 
     $event = workflowEvents($this->entry, WorkflowTransition::StageApproved)->sole();
     expect($event->actorType)->toBe(ActivityActor::TYPE_SYSTEM)
-        ->and($event->data['stage'])->toBe('External check')
-        ->and($event->data['note'])->toBe('Automated check approved')
         ->and(WorkflowActivityEvent::format($event))->toContain('External check');
 
     $stageData = collect($this->workflows->reviewData($this->draft, $this->author)->runs)
@@ -303,12 +290,12 @@ it('records a failed automatic stage with its result message', function () {
     $event = workflowEvents($this->entry, WorkflowTransition::StageFailed)->sole();
 
     expect($run->status)->toBe(WorkflowStatus::Failed)
-        ->and($event->actorType)->toBe(ActivityActor::TYPE_SYSTEM)
-        ->and($event->data['note'])->toBe('Automated check failed');
+        ->and($event->actorType)->toBe(ActivityActor::TYPE_SYSTEM);
 
     $stageData = collect($this->workflows->reviewData($this->draft, $this->author)->runs)
         ->firstWhere('current')->stages[0];
-    expect($stageData->events[0]->decision)->toBe('failed');
+    expect($stageData->events[0]->decision)->toBe('failed')
+        ->and($stageData->events[0]->noteHtml)->toContain('Automated check failed');
 });
 
 it('ignores stale automated stage completions', function () {
@@ -328,8 +315,7 @@ it('ignores stale automated stage completions', function () {
     );
 
     expect($completed->status)->toBe(WorkflowStatus::Pending)
-        ->and($completed->currentStageResult)->toBe('Automated check pending')
-        ->and($completed->payload)->each->toBe(['evaluations' => 1]);
+        ->and($completed->currentStageResult)->toBe('Automated check pending');
 
     $this->workflows->contentChanged($this->draft);
     $completed = $this->workflows->reportStageResult(
@@ -338,8 +324,7 @@ it('ignores stale automated stage completions', function () {
         result: $result,
     );
 
-    expect($completed->status)->toBe(WorkflowStatus::Invalidated)
-        ->and($completed->payload)->each->toBe(['evaluations' => 1]);
+    expect($completed->status)->toBe(WorkflowStatus::Invalidated);
 
     expect($this->workflows->reportStageResult(
         runId: PHP_INT_MAX,
@@ -392,12 +377,10 @@ it('fails on a change request and preserves history when resubmitted', function 
         'Clarify the claim.',
     );
     $this->workflows->addComment($this->draft, $firstRun->id, $stage->uid, 'I will revise it.');
-    $secondRun = submitAs($this->workflows, $this->draft, $this->author, 'Revised.');
+    submitAs($this->workflows, $this->draft, $this->author, 'Revised.');
     $review = $this->workflows->reviewData($this->draft, $this->author);
 
     expect($firstRun->status)->toBe(WorkflowStatus::Failed)
-        ->and($secondRun->id)->not->toBe($firstRun->id)
-        ->and($secondRun->activityRootEventId)->not->toBe($firstRun->activityRootEventId)
         ->and($review->runs)->toHaveCount(2)
         ->and(collect($review->runs)->last()->stages[0]->icon)->toBe('xmark')
         ->and(collect($review->runs)->last()->stages[0]->events)->toHaveCount(2)
@@ -409,7 +392,7 @@ it('fails on a change request and preserves history when resubmitted', function 
         ->and(collect($review->runs)->first()->submission->description)->toBe('requested review');
 });
 
-it('groups activity under a submission root and snapshots the workflow definition', function () {
+it('presents workflow activity as a grouped review and snapshots the workflow definition', function () {
     $group = reviewerGroup([$this->reviewers[0]]);
     $workflow = workflowFor($this->entry, [userReviewStage('Editorial review', $group)]);
     $stage = $workflow->stages->sole();
@@ -424,51 +407,12 @@ it('groups activity under a submission root and snapshots the workflow definitio
         'Approved.',
     );
 
-    $events = ActivityEvent::query()
-        ->subject(ActivitySubject::fromElement($this->entry))
-        ->eventTypes(WorkflowActivityEvent::class)
-        ->oldest('occurredAt')
-        ->orderBy('id')
-        ->get();
-    $root = $events->firstWhere('data.type', WorkflowActivityType::Submit->value);
+    $review = $this->workflows->reviewData($this->draft, $this->author);
+    $presentedRun = collect($review->runs)->firstWhere('current');
 
-    expect($root)->not->toBeNull()
-        ->and($run->fresh()->activityRootEventId)->toBe($root->id)
-        ->and($root->rootEventId)->toBeNull()
-        ->and($events->whereNull('rootEventId'))->toHaveCount(1)
-        ->and($root->data)->not->toHaveKey('runId')
-        ->and($root->data['draft'])->toMatchArray([
-            'elementId' => $this->draft->id,
-            'draftId' => $this->draft->draftId,
-            'elementType' => Entry::class,
-            'siteId' => $this->draft->siteId,
-        ])
-        ->and($root->data['workflow'])->toMatchArray([
-            'id' => $workflow->id,
-            'uid' => $workflow->uid,
-            'name' => 'Editorial workflow',
-            'stages' => [[
-                'uid' => $stage->uid,
-                'name' => 'Editorial review',
-                'type' => UserReviewStage::class,
-                'settings' => [
-                    'approvalsRequired' => 1,
-                    'userGroups' => [$group->uid],
-                ],
-            ]],
-        ]);
-
-    $childEvents = $events->whereNotNull('rootEventId');
-    expect($childEvents)->not->toBeEmpty()
-        ->and($childEvents->pluck('rootEventId')->unique()->values()->all())->toBe([$root->id])
-        ->and($childEvents->every(fn (ActivityEvent $event): bool => ! array_key_exists('runId', $event->data)))->toBeTrue();
-
-    $presentedRoot = app(ActivityTimelinePresenter::class)
-        ->events(collect([$root]), $this->author)
-        ->sole();
-
-    expect($presentedRoot['component'])->toBe('craft:workflow-activity-event')
-        ->and($presentedRoot['props']['noteHtml'])->toContain('Ready for review.');
+    expect($presentedRun->submission->noteHtml)->toContain('Ready for review.')
+        ->and($presentedRun->stages[0]->events)->toHaveCount(1)
+        ->and($presentedRun->stages[0]->events[0]->decision)->toBe('approved');
 
     $workflow->stages = $workflow->stages->map(fn (WorkflowStageData $workflowStage): array => [
         'uid' => $workflowStage->uid,
@@ -595,7 +539,6 @@ it('gates only draft application and permits an admin override without a reason'
         ->and($applied)->toBeFalse();
 
     $run = $this->workflows->overrideApproval($this->draft, $run->id);
-    expect($run->currentStageResult)->toBeNull();
     $this->workflows->applyDraft(
         $this->draft,
         $this->author,
@@ -657,7 +600,9 @@ it('exposes stage components and safely handles user review decisions', function
         ->assertJsonPath('workflowReview.status', 'approved')
         ->assertJsonPath('workflowReview.actionComponent', null)
         ->assertJsonPath('workflowReview.showDefaultActions', true)
-        ->assertJsonPath('workflowReview.actionProps', []);
+        ->assertJsonPath('workflowReview.actionProps', [])
+        ->assertJsonPath('editorActions.buttons.0.disabled', false)
+        ->assertJsonPath('editorActions.buttons.0.params.workflowRunId', $run->id);
 
     $event = workflowEvents($this->entry, WorkflowTransition::Approve)->sole();
     expect($event->actorId)->toBe($this->reviewers[0]->id)

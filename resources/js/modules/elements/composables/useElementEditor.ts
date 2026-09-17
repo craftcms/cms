@@ -1,7 +1,15 @@
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  shallowRef,
+  watch,
+  type InjectionKey,
+} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {
@@ -21,6 +29,8 @@ export interface ElementEditFormData {
   enabled?: string | number | boolean | null;
   enabledForSite?: Record<string, string | number | boolean | null>;
   provisional?: number;
+  dropProvisional?: number;
+  workflowSave?: number;
   redirect?: string;
 }
 
@@ -35,11 +45,28 @@ export interface ElementFormAction {
   label: string;
   actionUrl: string | null;
   params: FormValues;
+  includeFormData?: boolean;
+  disabled?: boolean;
+  disabledReason?: string | null;
   /** Pre-encrypted by the server; the save controllers decrypt it. */
   redirect: string | null;
   variant?: string;
   shortcut?: boolean;
   shift?: boolean;
+}
+
+export const elementFormActionSubmitterKey: InjectionKey<
+  (action: ElementFormAction) => void
+> = Symbol('elementFormActionSubmitter');
+
+export interface ElementPrimaryAction extends ElementFormAction {
+  tabId: string | null;
+}
+
+export interface ElementEditorActions {
+  primary: ElementPrimaryAction;
+  menu: Array<ElementFormAction>;
+  buttons: Array<ElementFormAction>;
 }
 
 /**
@@ -72,8 +99,7 @@ export interface ElementEditPayload {
   statusLabelHtml: string | null;
   saveUrl: string;
   applyDraftUrl: string;
-  formActions: Array<ElementFormAction>;
-  headerActions: Array<ElementFormAction>;
+  editorActions: ElementEditorActions;
   autosaveUrl: string;
   discardDraftUrl: string;
   isProvisionalDraft: boolean;
@@ -82,7 +108,6 @@ export interface ElementEditPayload {
   notice: string | null;
   mergeNotice: string | null;
   canDiscardDraft: boolean;
-  submitButtonLabel: string;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<{label: string; url: string}>;
   elementDisplayName: string;
@@ -94,7 +119,18 @@ export interface ElementEditPayload {
     label: string;
     items: Array<ElementContextMenuItem>;
   } | null;
+  workflow: {
+    convertedToDraft?: boolean;
+    current: CraftCms.Cms.Workflow.Data.WorkflowReviewData | null;
+    draftReviews: CraftCms.Cms.Workflow.Data.WorkflowDraftReviewData[];
+  };
 }
+
+export type ElementEditPayloadUpdater = (
+  patch:
+    | Partial<ElementEditPayload>
+    | ((payload: ElementEditPayload) => Partial<ElementEditPayload>)
+) => void;
 
 /*
  * `origin/6.x` added an `isElementEditPayload()` guard here that threw when the
@@ -145,6 +181,29 @@ export function useElementEditor({saveData}: Options = {}) {
       ...savedScreen.value,
     }))
   );
+
+  const editingReviewedDraft = shallowRef(false);
+  const workflowReviewLocked = computed(
+    () =>
+      !editingReviewedDraft.value &&
+      ['pending', 'approved'].includes(props.workflow.current?.status ?? '')
+  );
+
+  watch(
+    () => props.workflow.current?.status,
+    (status, previousStatus) => {
+      if (
+        status !== previousStatus &&
+        (status === 'pending' || status === 'approved')
+      ) {
+        editingReviewedDraft.value = false;
+      }
+    }
+  );
+
+  function startEditingReviewedDraft(): void {
+    editingReviewedDraft.value = true;
+  }
 
   // The field layout comes back on the response separately from the screen
   // payload — scoped to whatever the request asked for — and applying it is the
@@ -322,12 +381,10 @@ export function useElementEditor({saveData}: Options = {}) {
 
   const {save} = useSettingsSave(
     form,
-    // Applying a draft and saving the element are different endpoints, and
-    // which one applies depends on whether autosave has created a draft by the
-    // time the user submits — not on how the page was first rendered.
     () => ({
       url:
         pendingAction.value?.actionUrl ??
+        props.editorActions.primary.actionUrl ??
         (autosave.draftId.value !== null ? props.applyDraftUrl : props.saveUrl),
       method: 'post' as const,
     }),
@@ -336,28 +393,28 @@ export function useElementEditor({saveData}: Options = {}) {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
         // the page was rendered with.
-        const transformed = {...saveData?.(), ...data};
-        // Once autosave has created a provisional draft, the submission has to
-        // target it — otherwise applying would save the canonical element and
-        // strand the draft holding the newer values.
-        //
-        // This posts to a shared `elements/*` action rather than the element
-        // type's own, so it needs the generic identity params: the type-specific
-        // ones (an entry's `entryId`) mean nothing there.
+        const transformed =
+          pendingAction.value?.includeFormData === false
+            ? {}
+            : {...saveData?.(), ...data};
+        // Shared `elements/*` actions need generic identity params: the
+        // type-specific ones (an entry's `entryId`) mean nothing there.
         if (autosave.draftId.value !== null) {
           Object.assign(transformed, {
             elementType: props.elementType,
             elementId: props.canonicalId,
-            draftId: autosave.draftId.value,
+            siteId: props.siteId,
           });
-          if (draftIsProvisional.value) transformed.provisional = 1;
+          if (autosave.draftId.value !== null) {
+            Object.assign(transformed, {draftId: autosave.draftId.value});
+            if (draftIsProvisional.value) transformed.provisional = 1;
+          }
         }
 
-        // An alternate action's own params win — "Create a draft" has to be
-        // able to override the provisional targeting above.
-        Object.assign(transformed, pendingAction.value?.params);
-        if (pendingAction.value?.redirect) {
-          transformed.redirect = pendingAction.value.redirect;
+        const action = pendingAction.value ?? props.editorActions.primary;
+        Object.assign(transformed, action.params);
+        if (action.redirect) {
+          transformed.redirect = action.redirect;
         }
 
         return transformed;
@@ -400,6 +457,16 @@ export function useElementEditor({saveData}: Options = {}) {
 
     void nextTick(() => (pendingAction.value = null));
   }
+
+  const updatePayload: ElementEditPayloadUpdater = (patch): void => {
+    const updatedPayload = typeof patch === 'function' ? patch(props) : patch;
+
+    savedScreen.value = {
+      ...savedScreen.value,
+      ...updatedPayload,
+    };
+    activityTimelineVersion.value++;
+  };
 
   /**
    * Re-seeds both renderers from the payload the screen currently holds,
@@ -542,6 +609,9 @@ export function useElementEditor({saveData}: Options = {}) {
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
+    startEditingReviewedDraft,
+    updatePayload,
     values,
+    workflowReviewLocked,
   };
 }

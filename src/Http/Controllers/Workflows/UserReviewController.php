@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Workflows;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
 use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
@@ -24,6 +25,7 @@ class UserReviewController
     public function __construct(
         private readonly ElementRequest $request,
         private readonly Workflows $workflows,
+        private readonly ElementEditorActions $editorActions,
     ) {}
 
     public function approve(WorkflowRun $workflowRun, string $stage): JsonResponse
@@ -69,8 +71,15 @@ class UserReviewController
             activityNote: trim((string) $message) ?: null,
         );
 
+        $review = $this->workflows->reviewData($draft, $this->request->craftUser());
+
         return new JsonResponse([
-            'workflowReview' => $this->workflows->reviewData($draft, $this->request->craftUser()),
+            'workflowReview' => $review,
+            'editorActions' => $this->editorActions->for(
+                element: $draft,
+                canSave: $this->request->craftUser()->can('save', $draft),
+                review: $review,
+            ),
             'message' => t('Review updated.'),
         ]);
     }

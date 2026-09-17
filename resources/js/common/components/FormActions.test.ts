@@ -58,4 +58,33 @@ describe('FormActions', () => {
 
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it('hides save controls without hiding non-save actions', () => {
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(FormActions, {
+          form: {
+            processing: false,
+            recentlySuccessful: false,
+            hasErrors: false,
+          },
+          saveDisabled: true,
+          actionItems: [{label: 'Save and continue editing'}],
+          additionalActions: [{label: 'Duplicate'}],
+          additionalButtons: [{label: 'View'}],
+        }),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+
+    expect(container.querySelector('[type="submit"]')).toBeNull();
+    expect(container.textContent).toContain('View');
+    expect(
+      container.querySelector<HTMLElementTagNameMap['craft-action-menu']>(
+        'craft-action-menu'
+      )?.actions
+    ).toEqual([expect.objectContaining({label: 'Duplicate'})]);
+  });
 });

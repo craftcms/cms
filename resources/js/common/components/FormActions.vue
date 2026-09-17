@@ -14,6 +14,7 @@
     /** Overrides the submit button's text (e.g. "Save draft"). */
     submitLabel?: string;
     readOnly?: boolean;
+    saveDisabled?: boolean;
   }>();
 
   defineSlots<{
@@ -96,7 +97,7 @@
       </craft-tooltip>
     </template>
 
-    <craft-button-group v-if="actionItems?.length">
+    <craft-button-group v-if="!saveDisabled && actionItems?.length">
       <slot name="submit-button">
         <craft-button
           type="submit"
@@ -121,7 +122,7 @@
       </ActionMenu>
     </craft-button-group>
 
-    <slot v-else name="submit-button">
+    <slot v-else-if="!saveDisabled" name="submit-button">
       <craft-button
         type="submit"
         :variant="ButtonVariant.Primary"

@@ -21,6 +21,7 @@ readonly class WorkflowRunStageData
         public bool $current,
         public bool $approved,
         public string $icon,
+        public string $iconColor,
         public ?string $message,
         public ?string $summaryComponent,
         /** @var array<string, mixed> */
@@ -34,24 +35,32 @@ readonly class WorkflowRunStageData
         $component = $stage->component();
         $context = new WorkflowStageContext($draft, $run, $stage, $run->payload[$stage->uid] ?? []);
         $isCurrent = $stageIndex === $run->currentStage;
+        $summaryComponent = $component->summaryComponent();
         $isApproved = $stageIndex < $run->currentStage
             || ($isCurrent && in_array($run->status, [WorkflowStatus::Approved, WorkflowStatus::Published], true));
         $events = $runEvents
             ->filter(fn (WorkflowTimelineItemData $event): bool => $event->belongsToStage($stageIndex + 1))
             ->values();
+        $failed = $events->contains(fn (WorkflowTimelineItemData $event): bool => in_array($event->decision, [WorkflowStageStatus::Failed->value, 'rejected'], true));
 
         return new self(
             name: t($stage->name),
             current: $run->isPending() && $isCurrent,
             approved: $isApproved,
             icon: match (true) {
-                $events->contains(fn (WorkflowTimelineItemData $event): bool => in_array($event->decision, [WorkflowStageStatus::Failed->value, 'rejected'], true)) => 'xmark',
+                $failed => 'xmark',
                 $isApproved => 'check',
                 $run->isPending() && $isCurrent => 'clock',
                 default => 'minus',
             },
-            message: $isCurrent ? $run->currentStageResult : null,
-            summaryComponent: $component->summaryComponent(),
+            iconColor: match (true) {
+                $failed => 'danger',
+                $isApproved => 'success',
+                $run->isPending() && $isCurrent => 'warning',
+                default => 'neutral',
+            },
+            message: $isCurrent && $summaryComponent === null ? $run->currentStageResult : null,
+            summaryComponent: $summaryComponent,
             summaryProps: $component->summaryProps($context, $viewer),
             events: $events->all(),
         );

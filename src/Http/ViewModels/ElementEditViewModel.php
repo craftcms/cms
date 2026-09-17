@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -23,13 +24,17 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Workflows;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
+use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
+use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Gate;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -141,124 +146,55 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
-     * The alternate save actions offered beside the Save button — "Save and
-     * continue editing", "Save as a new …", and friends.
-     *
-     * Each entry submits the edit form as it stands, optionally to a different
-     * action and with extra params. `actionUrl` is null when the item posts to
-     * the screen's ordinary save target, which the client resolves at submit
-     * time (see {@see applyDraftUrl()}).
-     *
-     * @return list<array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: string|null, shortcut: bool, shift: bool}>
+     * @return array{
+     *     primary: array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: null, tabId: string|null},
+     *     menu: list<array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: string|null, shortcut: bool, shift: bool}>,
+     *     buttons: list<array<string, mixed>>,
+     * }
      */
-    public function formActions(): array
+    public function editorActions(): array
     {
-        if (! $this->canSave) {
-            return [];
-        }
-
-        return array_map(fn (array $action): array => [
-            'label' => (string) $action['label'],
-            'actionUrl' => isset($action['action']) ? Url::actionUrl($action['action']) : null,
-            'params' => isset($action['action'])
-                ? [...$this->genericIdentityParams(), ...($action['params'] ?? [])]
-                : ($action['params'] ?? []),
-            // Redirects cross the wire encrypted; the save controllers decrypt
-            // them and render `{cpEditUrl}` against the saved element.
-            'redirect' => isset($action['redirect']) ? Crypt::encrypt($action['redirect']) : null,
-            'shortcut' => (bool) ($action['shortcut'] ?? false),
-            'shift' => (bool) ($action['shift'] ?? false),
-        ], $this->element->getAltActions());
+        return app(ElementEditorActions::class)->for(
+            element: $this->element,
+            canSave: $this->canSave,
+            review: $this->workflowReview(),
+            primaryLabel: $this->primaryActionLabel(),
+            isNew: $this->request->boolean('fresh'),
+        );
     }
 
-    /**
-     * Buttons shown beside Save.
-     *
-     * Applying a named draft and reverting a revision belong here too, but
-     * those screens still render through the legacy editor, so they arrive with
-     * the draft/revision work rather than as unreachable buttons.
-     *
-     * @return list<array{label: string, actionUrl: string, params: array<string, mixed>, redirect: string|null, variant: string}>
-     */
-    public function headerActions(): array
+    protected function primaryActionLabel(): ?string
     {
-        $element = $this->element;
-        $canonical = $element->getCanonical(true);
-        $isCurrent = $element->getIsCanonical() || $element->isProvisionalDraft;
-        $actions = [];
+        return null;
+    }
 
-        if ($isCurrent && ! $element->getIsUnpublishedDraft() && Gate::check('createDrafts', $canonical)) {
-            $actions[] = [
-                'label' => t('Create a draft'),
-                'actionUrl' => Url::actionUrl('elements/save-draft'),
-                'params' => [
-                    ...$this->genericIdentityParams(),
-                    // Without this the provisional draft is promoted in place
-                    // rather than a separate named draft being created.
-                    'dropProvisional' => 1,
-                ],
-                'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                'variant' => 'outline',
-            ];
-        }
+    /** @return array{convertedToDraft: bool, current: WorkflowReviewData|null, draftReviews: list<WorkflowDraftReviewData>} */
+    public function workflow(): array
+    {
+        return [
+            'convertedToDraft' => $this->element->draftId !== null
+                && (int) session()->get('workflowDraftCreated') === $this->element->draftId,
+            'current' => $this->workflowReview(),
+            'draftReviews' => [],
+        ];
+    }
 
-        // Applying a named draft writes it onto the canonical element. The
-        // provisional case isn't here: for those the Save button *is* apply.
-        if (
-            $element->getIsDraft() &&
-            ! $isCurrent &&
-            $this->canSave &&
-            Gate::check('saveCanonical', $element)
-        ) {
-            $actions[] = [
-                'label' => t('Apply draft'),
-                'actionUrl' => Url::actionUrl('elements/apply-draft'),
-                'params' => [
-                    ...$this->genericIdentityParams(),
-                    'draftId' => $element->draftId,
-                ],
-                'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                'variant' => 'secondary',
-            ];
-        }
+    protected function workflowReview(): ?WorkflowReviewData
+    {
+        return once(function (): ?WorkflowReviewData {
+            $user = currentUser();
 
-        if (
-            $element->getIsRevision() &&
-            $element->hasRevisions() &&
-            Gate::check('saveCanonical', $element)
-        ) {
-            $actions[] = [
-                'label' => t('Revert content from this revision'),
-                'actionUrl' => Url::actionUrl('elements/revert'),
-                'params' => [
-                    ...$this->genericIdentityParams(),
-                    'revisionId' => $element->revisionId,
-                ],
-                'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                'variant' => 'outline',
-            ];
-        }
+            if (
+                $user === null ||
+                ! $this->element instanceof WorkflowableInterface ||
+                ! $this->element->getIsDraft() ||
+                $this->element->isProvisionalDraft
+            ) {
+                return null;
+            }
 
-        // Read-only users who may still branch the element get the duplicate
-        // path instead, since they can't save over the canonical one.
-        if (
-            ! $this->canSave &&
-            ! $element->getIsRevision() &&
-            Gate::check('duplicateAsDraft', $element)
-        ) {
-            $actions[] = [
-                'label' => t('Save as a new {type}', ['type' => $element::lowerDisplayName()]),
-                'actionUrl' => Url::actionUrl('elements/duplicate'),
-                'params' => [
-                    ...$this->genericIdentityParams(),
-                    'asUnpublishedDraft' => 1,
-                ],
-                'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                'variant' => 'outline',
-            ];
-        }
-
-        return $actions;
+            return Workflows::reviewData($this->element, $user);
+        });
     }
 
     /** The element type's lowercase display name, for user-facing messages. */
@@ -563,22 +499,6 @@ abstract class ElementEditViewModel extends ViewModel
             ->with(['revisionCreator']);
     }
 
-    /**
-     * Identity params the shared `elements/*` actions need to resolve the
-     * element. The type-specific save controllers key off their own params
-     * (an entry's `entryId`), so these only apply to the generic endpoints.
-     *
-     * @return array{elementType: class-string<ElementInterface>, elementId: int|null, siteId: int|null}
-     */
-    private function genericIdentityParams(): array
-    {
-        return [
-            'elementType' => $this->element::class,
-            'elementId' => $this->element->getCanonical(true)->id,
-            'siteId' => $this->element->siteId,
-        ];
-    }
-
     public function isProvisionalDraft(): bool
     {
         return (bool) $this->element->isProvisionalDraft;
@@ -630,27 +550,6 @@ abstract class ElementEditViewModel extends ViewModel
     public function canDiscardDraft(): bool
     {
         return (bool) $this->element->isProvisionalDraft;
-    }
-
-    /**
-     * The Save button's label. Saving a named draft saves the draft rather than
-     * the element, and an unpublished draft creates the element outright.
-     */
-    public function submitButtonLabel(): string
-    {
-        $element = $this->element;
-
-        if ($element->getIsUnpublishedDraft()) {
-            return Gate::check('saveCanonical', $element)
-                ? mb_ucfirst(t('Create {type}', ['type' => $element::lowerDisplayName()]))
-                : mb_ucfirst(t('Save {type}', ['type' => t('draft')]));
-        }
-
-        if ($element->getIsDraft() && ! $element->isProvisionalDraft) {
-            return mb_ucfirst(t('Save {type}', ['type' => t('draft')]));
-        }
-
-        return t('Save');
     }
 
     public function elementId(): ?int

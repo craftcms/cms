@@ -333,6 +333,7 @@
                               :additional-buttons="formAdditionalButtons"
                               :submit-label="submitButtonLabel"
                               :read-only="readOnly"
+                              :save-disabled="saveDisabled"
                             >
                               <template
                                 v-if="slots['submit-button']"
