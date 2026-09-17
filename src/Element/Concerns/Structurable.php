@@ -397,7 +397,7 @@ trait Structurable
             return null;
         }
 
-        return $query
+        return (clone $query)
             ->id($elementIds[$key + $direction])
             ->one();
     }

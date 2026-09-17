@@ -8,14 +8,14 @@
 namespace crafttests\unit\gql;
 
 use craft\gql\base\ElementResolver;
-use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\elements\Asset as AssetType;
 use craft\gql\types\elements\Category as CategoryType;
 use craft\gql\types\elements\Element as ElementType;
 use craft\gql\types\elements\Entry as EntryType;
 use craft\test\TestCase;
+use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use ReflectionMethod;
 
 /**
