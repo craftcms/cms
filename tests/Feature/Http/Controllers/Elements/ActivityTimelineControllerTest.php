@@ -136,14 +136,14 @@ it('returns the requested site timeline oldest first with safe formatted details
         ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->has('events', 2)
-            ->where('events.0.id', $neutral->id)
+            ->where('events.0.id', (string) $neutral->id)
             ->where('events.0.component', 'craft:activity-timeline-event')
             ->where('events.0.props', [])
             ->where('events.0.icon', 'plus')
             ->where('events.0.actor.label', 'Ada Lovelace')
             ->whereType('events.0.actor.url', 'string')
             ->where('events.0.actor.deleted', false)
-            ->where('events.1.id', $updated->id)
+            ->where('events.1.id', (string) $updated->id)
             ->where('events.1.changes.0.label', 'Title')
             ->where('events.1.changes.0.old', 'Draft')
             ->where('events.1.changes.0.new', 'Release notes')
@@ -198,8 +198,8 @@ it('limits embedded timelines and returns every event for the full timeline', fu
     ])
         ->assertOk()
         ->assertJsonCount(25, 'events')
-        ->assertJsonPath('events.0.id', $events[1]->id)
-        ->assertJsonPath('events.24.id', $events[25]->id);
+        ->assertJsonPath('events.0.id', (string) $events[1]->id)
+        ->assertJsonPath('events.24.id', (string) $events[25]->id);
 
     postJson(action(ActivityTimelineController::class), [
         'elementType' => Entry::class,
@@ -209,8 +209,8 @@ it('limits embedded timelines and returns every event for the full timeline', fu
     ])
         ->assertOk()
         ->assertJsonCount(26, 'events')
-        ->assertJsonPath('events.0.id', $events[0]->id)
-        ->assertJsonPath('events.25.id', $events[25]->id);
+        ->assertJsonPath('events.0.id', (string) $events[0]->id)
+        ->assertJsonPath('events.25.id', (string) $events[25]->id);
 });
 
 it('keeps deleted actors identifiable and sanitizes plugin descriptions', function () {
@@ -227,7 +227,7 @@ it('keeps deleted actors identifiable and sanitizes plugin descriptions', functi
     ])
         ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->where('events.0.id', $event->id)
+            ->where('events.0.id', (string) $event->id)
             ->where('events.0.icon', 'bolt')
             ->where('events.0.actor.label', 'Deleted editor')
             ->where('events.0.actor.url', null)
@@ -250,7 +250,7 @@ it('shows plugin actors without profile links and allows a default icon', functi
     ])
         ->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->where('events.0.id', $event->id)
+            ->where('events.0.id', (string) $event->id)
             ->where('events.0.icon', null)
             ->where('events.0.actor.label', 'Webhook')
             ->where('events.0.actor.url', null)
@@ -276,7 +276,7 @@ it('shows canonical activity for drafts and revisions', function (string $deriva
         $derivative => $derivativeId,
     ])
         ->assertOk()
-        ->assertJsonPath('events.0.id', $event->id);
+        ->assertJsonPath('events.0.id', (string) $event->id);
 })->with([
     'draft' => 'draftId',
     'revision' => 'revisionId',
