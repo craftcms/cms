@@ -3,6 +3,7 @@ import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
 import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
 import type CraftTextExpander from '@craftcms/ui/components/text-expander/text-expander';
 import '@craftcms/ui/components/text-expander/text-expander';
+import CraftInputMoney from '@craftcms/ui/components/input-money/input-money';
 import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
@@ -688,6 +689,54 @@ export class EditableTable extends Base<EditableTableSettings> {
               })
               .appendTo($cell);
             break;
+
+          case 'money': {
+            // A stored value is `{value, locale}` — the same shape the
+            // standalone `craft:money` Form Control posts and reads (see
+            // `MoneyControl.vue`) — but a brand-new row's `value` is often
+            // just `''` (from `defaultValues`), so only unwrap the shape when
+            // it's actually there.
+            const moneyValue =
+              value instanceof Object && !Array.isArray(value)
+                ? ((value as Record<string, unknown>).value ?? null)
+                : (value ?? null);
+            const moneyLocale =
+              (value instanceof Object && !Array.isArray(value)
+                ? (value as Record<string, unknown>).locale
+                : undefined) ??
+              col.locale ??
+              'en-US';
+            const money = document.createElement(
+              'craft-input-money'
+            ) as CraftInputMoney;
+            money.name = `${name}[value]`;
+            money.modelValue =
+              moneyValue === null ? '' : String(moneyValue);
+            money.currency = col.currency ?? 'USD';
+            money.locale = String(moneyLocale);
+            if (col.decimals !== undefined) money.decimals = col.decimals;
+            if (col.decimalSeparator !== undefined) {
+              money.decimalSeparator = col.decimalSeparator;
+            }
+            if (col.groupSeparator !== undefined) {
+              money.groupSeparator = col.groupSeparator;
+            }
+            if (col.showCurrency !== undefined) {
+              money.showCurrency = col.showCurrency;
+            }
+            if (col.clearable !== undefined) money.clearable = col.clearable;
+            $cell.append(money);
+            // Posted alongside `${name}[value]`, exactly as `InputMoney::renderSlots()`
+            // does for the standalone control — `cellValue()`'s generic
+            // multi-entry fallback reassembles the two back into one
+            // `{value, locale}` cell value, no special-casing needed there.
+            $('<input/>', {
+              type: 'hidden',
+              name: `${name}[locale]`,
+              value: String(moneyLocale),
+            }).appendTo($cell);
+            break;
+          }
 
           case 'time':
             Craft.ui

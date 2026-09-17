@@ -4,12 +4,14 @@
   import {
     type ColumnDef,
     getCoreRowModel,
+    type RowSelectionState,
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, h, ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import type {ActionItemLink} from '@/common/types';
+  import Text from '@/common/components/Text.vue';
+  import type {ActionItemButton, ActionItemLink} from '@/common/types';
   import Empty from '@/common/components/Empty.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -40,6 +42,34 @@
   interface TableHtml {
     html: string;
   }
+
+  /**
+   * A single bulk-footer action — posts `{ids: <selected row ids>, ...params}` to `url`.
+   * `allowMultiple: false` (default `true`) disables it — as a standalone button, or as a
+   * menu item — whenever more than one row is selected, for an action that only makes sense
+   * against one row at a time (its endpoint has no obligation to reflect that itself; nothing
+   * stops a request with several ids reaching it some other way, so this is a UI nicety, not
+   * a substitute for that endpoint enforcing the same rule server-side).
+   */
+  interface BulkActionSingle {
+    label: string;
+    url: string;
+    params?: Record<string, unknown>;
+    allowMultiple?: boolean;
+  }
+
+  /**
+   * A dropdown of {@link BulkActionSingle}s, shown as one button in the bulk footer. `label`
+   * is optional — omit it (alongside an `icon`) for an icon-only invoker, matching legacy's
+   * own unlabeled gear-icon settings menu for a single, infrequently-needed item.
+   */
+  interface BulkActionMenu {
+    label?: string;
+    icon?: string;
+    items: BulkActionSingle[];
+  }
+
+  type BulkAction = BulkActionSingle | BulkActionMenu;
 
   /**
    * A scalar renders as plain text; `{label, url}` renders as a link (or plain
@@ -95,6 +125,8 @@
       reorderUrl: string | null;
       deleteUrl: string | null;
       deleteConfirmMessage: string | null;
+      bulkDeletable: boolean;
+      bulkActions: BulkAction[];
     }>;
   }>();
 
@@ -136,6 +168,10 @@
     value: TableLink | TableLink[] | TableMenu | TableIcon | TableHtml
   ): value is TableHtml {
     return !Array.isArray(value) && 'html' in value;
+  }
+
+  function isBulkActionMenu(action: BulkAction): action is BulkActionMenu {
+    return 'items' in action;
   }
 
   function renderLink(link: TableLink) {
@@ -216,6 +252,19 @@
     return cols;
   });
 
+  // Keyed by row id (see `getRowId`) rather than row index, so a selection
+  // survives the optimistic row-removal a delete does. Gated on `bulkDeletable`
+  // (see `Table::deletable()`) or a non-empty `bulkActions` — either turns
+  // selection on; a plain `deleteUrl` alone (no `bulk: true`) wouldn't know
+  // what to do with the `ids` array a bulk request posts.
+  const rowSelection = ref<RowSelectionState>({});
+
+  const hasBulkFooter = computed(
+    () =>
+      (!!props.node.props.deleteUrl && props.node.props.bulkDeletable) ||
+      props.node.props.bulkActions.length > 0
+  );
+
   const table = useVueTable({
     get data() {
       return rows.value;
@@ -223,9 +272,28 @@
     get columns() {
       return columns.value;
     },
+    state: {
+      get rowSelection() {
+        return rowSelection.value;
+      },
+    },
+    getRowId: (row) => String(row.id),
+    // A row opted out of the single-row delete action (`_deletable: false`) is
+    // just as ineligible for any bulk one — there's no separate "excluded from
+    // bulk actions but not delete" flag, so this gate serves both.
+    enableRowSelection: (row) =>
+      hasBulkFooter.value && row.original._deletable !== false,
+    onRowSelectionChange: (updater) => {
+      rowSelection.value =
+        updater instanceof Function ? updater(rowSelection.value) : updater;
+    },
     enableSorting: false,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const selectedIds = computed(() =>
+    table.getSelectedRowModel().rows.map((row) => row.original.id!)
+  );
 
   function onReorder(startIndex: number, finishIndex: number): void {
     const reordered = [...rows.value];
@@ -257,6 +325,65 @@
     await actionClient.post(props.node.props.deleteUrl!, {id: row.id});
     rows.value = rows.value.filter((r) => r.id !== row.id);
     refreshForm();
+  }
+
+  /**
+   * Deletes every currently-selected row in one request. Posts a real `ids`
+   * array (not the JSON-encoded string `onReorder` posts) — this shares the
+   * same backend action as a single-row {@link deleteRow}, and the legacy
+   * `Craft.VueAdminTable` widget's own bulk delete posted `ids` as a plain
+   * array the same way.
+   */
+  async function deleteSelected(): Promise<void> {
+    const ids = selectedIds.value;
+
+    if (!ids.length) return;
+
+    const message = props.node.props.deleteConfirmMessage ?? t('Are you sure?');
+
+    if (!confirm(message)) {
+      return;
+    }
+
+    await actionClient.post(props.node.props.deleteUrl!, {ids});
+    rows.value = rows.value.filter((r) => !ids.includes(r.id!));
+    table.resetRowSelection();
+    refreshForm();
+  }
+
+  /**
+   * Runs one bulk action (a {@link BulkActionSingle}, whether it stands alone
+   * or was picked from a {@link BulkActionMenu}) against every selected row.
+   * Unlike delete, there's no confirmation step here — none of these actions
+   * are inherently destructive the way delete is, so `Table::bulkActions()`
+   * doesn't carry a per-action confirm message.
+   */
+  async function performBulkAction(action: BulkActionSingle): Promise<void> {
+    const ids = selectedIds.value;
+
+    if (!ids.length) return;
+    // Belt-and-braces alongside the disabled button/menu item below — the
+    // control shouldn't be reachable in this state, but this is what actually
+    // stops the request if it somehow is.
+    if (action.allowMultiple === false && ids.length > 1) return;
+
+    await actionClient.post(action.url, {ids, ...action.params});
+    table.resetRowSelection();
+    refreshForm();
+  }
+
+  function bulkActionDisabled(action: BulkActionSingle): boolean {
+    return action.allowMultiple === false && selectedIds.value.length > 1;
+  }
+
+  /** Adapts a menu action's items to `ActionMenu`'s item shape. */
+  function bulkActionMenuItems(menu: BulkActionMenu): ActionItemButton[] {
+    return menu.items.map((item) => ({
+      type: 'button',
+      label: item.label,
+      disabled: bulkActionDisabled(item),
+      onClick: () => performBulkAction(item),
+    }));
   }
 
   // This Node's data is set once, from the page's own initial render — not read from a
@@ -302,12 +429,113 @@
       <AdminTable
         :table="table"
         :reorderable="!!node.props.reorderUrl"
+        :selectable="hasBulkFooter"
         @reorder="onReorder"
       >
         <template #empty-row>
           <Empty :label="node.props.emptyMessage ?? t('Nothing to show.')" />
         </template>
       </AdminTable>
+
+      <!--
+        The element index's own footer (`BaseElementIndex.vue`, reached via
+        `AdminTable`) never renders here: it needs `from`/`to`/`total` props
+        this component doesn't pass (nothing paginates a Table Node's data —
+        every row is always on the one page), and its selection/bulk-action
+        row (`BulkActionsBar`) is wired to real Craft elements end to end
+        (`PerformElementActionController` resolves an `ElementQuery` and a
+        registered `ElementAction` — there's no fitting either into it for
+        these plain PHP-object rows). This replicates just its appearance —
+        same background, border, and copy — driven by this component's own
+        `rows`/`selectedIds` instead.
+      -->
+      <div v-if="rows.length" class="admin-table-footer">
+        <template v-if="selectedIds.length">
+          <Text
+            as="span"
+            class="admin-table-footer__count"
+            template="{count, plural, =1{# selected} other{# selected}}"
+            :params="{count: selectedIds.length}"
+          />
+          <craft-button
+            type="button"
+            variant="plain"
+            size="small"
+            @click="table.resetRowSelection()"
+            >{{ t('Clear selection') }}</craft-button
+          >
+          <div class="admin-table-footer__actions">
+            <template
+              v-for="(action, index) in node.props.bulkActions"
+              :key="index"
+            >
+              <ActionMenu
+                v-if="isBulkActionMenu(action)"
+                :actions="bulkActionMenuItems(action)"
+                :icon="action.icon"
+                :label="action.label || undefined"
+              >
+                <!--
+                  Omitted (rather than `v-if="action.label"` around the button
+                  alone) when there's no label, so ActionMenu's own default
+                  invoker — an icon-only button, already accessible via its own
+                  `label` prop above — renders instead of an empty one here.
+                -->
+                <template v-if="action.label" #invoker="{attributes}">
+                  <craft-button type="button" size="small" v-bind="attributes">
+                    {{ action.label }}
+                    <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+                  </craft-button>
+                </template>
+              </ActionMenu>
+              <craft-button
+                v-else
+                type="button"
+                size="small"
+                :disabled="bulkActionDisabled(action)"
+                @click="performBulkAction(action)"
+                >{{ action.label }}</craft-button
+              >
+            </template>
+            <craft-button
+              v-if="node.props.deleteUrl && node.props.bulkDeletable"
+              type="button"
+              variant="danger"
+              size="small"
+              @click="deleteSelected"
+              >{{ t('Delete') }}</craft-button
+            >
+          </div>
+        </template>
+        <Text
+          v-else
+          as="span"
+          template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
+          :params="{from: 1, to: rows.length, total: rows.length}"
+        />
+      </div>
     </craft-pane>
   </div>
 </template>
+
+<style scoped lang="scss">
+  .admin-table-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    background-color: var(--c-color-neutral-fill-quiet);
+    padding: var(--c-spacing-md);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .admin-table-footer__count {
+    font-weight: 600;
+  }
+
+  .admin-table-footer__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    margin-inline-start: auto;
+  }
+</style>

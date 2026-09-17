@@ -46,6 +46,11 @@ class Table implements Node
 
     private ?string $deleteConfirmMessage = null;
 
+    private bool $bulkDeletable = false;
+
+    /** @var list<array<string, mixed>> */
+    private array $bulkActions = [];
+
     public function __construct(private readonly string $uid) {}
 
     public static function make(string $uid): self
@@ -132,11 +137,54 @@ class Table implements Node
     /**
      * Adds a per-row delete action, posting `{id: <row id>}` to `$url`. Individual rows can
      * opt out via `_deletable => false` in {@see rows()}.
+     *
+     * `$bulk` additionally renders a row-selection checkbox column and a "N selected" bar with
+     * its own bulk delete button, posting `{ids: <row ids>}` to the same `$url` — set it only
+     * when that action genuinely handles an `ids` array alongside a single `id` (mirroring the
+     * legacy dual `id`/`ids` contract some of these actions still carry). Leave it `false`
+     * (the default) for an action that only understands `id`; turning bulk selection on for
+     * one of those doesn't add a client-side capability so much as start sending it requests
+     * it will reject.
      */
-    public function deletable(string $url, ?string $confirmMessage = null): static
+    public function deletable(string $url, ?string $confirmMessage = null, bool $bulk = false): static
     {
         $this->deleteUrl = $url;
         $this->deleteConfirmMessage = $confirmMessage;
+        $this->bulkDeletable = $bulk;
+
+        return $this;
+    }
+
+    /**
+     * Adds bulk action buttons to the selection footer (shown once at least one row is
+     * selected, alongside "Clear selection" and — if the table is {@see deletable()} with
+     * `bulk: true` — a trailing "Delete" button). Every action posts `{ids: <selected row
+     * ids>, ...params}` to its own `url`; there's no client-side notion of what the action
+     * does beyond that; the endpoint owns applying it and returning a normal flash response.
+     *
+     * Each entry in `$actions` is either:
+     * - a single action: `['label' => string, 'url' => string, 'params'? => array<string,
+     *   mixed>, 'allowMultiple'? => bool]` — `params` is merged into the posted body
+     *   alongside `ids`; `allowMultiple` (default `true`) disables the button whenever more
+     *   than one row is selected, for an action that only makes sense against one row at a
+     *   time (a UI nicety only — the endpoint still gets whatever `ids` a request carries,
+     *   and is responsible for enforcing that itself if it matters).
+     * - a dropdown menu of single actions in the same shape: `['label'? => string, 'icon'? =>
+     *   string, 'items' => list<array{label: string, url: string, params?: array<string,
+     *   mixed>, allowMultiple?: bool}>]`. Omit `label` (pairing it with an `icon`) for an
+     *   icon-only invoker — the button shows just that icon, no visible text — matching
+     *   legacy's own unlabeled gear-icon menu for a single, infrequently-needed item (e.g.
+     *   shipping categories' "Set Default Category").
+     *
+     * Reaches for a row-selection checkbox column the same way `deletable(..., bulk: true)`
+     * does — either one turns selection on; a table with both just contributes its own
+     * button(s) to the same footer.
+     *
+     * @param  list<array<string, mixed>>  $actions
+     */
+    public function bulkActions(array $actions): static
+    {
+        $this->bulkActions = $actions;
 
         return $this;
     }
@@ -171,11 +219,11 @@ class Table implements Node
                 ? Html::a(Html::encode($link['label']), $link['url'])
                 : Html::encode($link['label']);
 
-            // Reordering and deleting are inherently interactive (drag handles, confirmation
-            // dialogs, CSRF-protected requests) with no sensible plain-HTML equivalent, so this
-            // fallback renders a menu's links inline but otherwise omits those two affordances —
-            // consistent with the rest of the CP treating this renderer as JS-less read access,
-            // not a full replacement for the Vue control.
+            // Reordering, deleting, and bulk actions are inherently interactive (drag handles,
+            // confirmation dialogs, row selection, CSRF-protected requests) with no sensible
+            // plain-HTML equivalent, so this fallback renders a menu's links inline but
+            // otherwise omits those affordances — consistent with the rest of the CP treating
+            // this renderer as JS-less read access, not a full replacement for the Vue control.
             $renderCell = function(array $column, array $row) use ($renderLink): string {
                 $value = $row[$column['key']] ?? '';
 
@@ -250,6 +298,8 @@ class Table implements Node
             'reorderUrl' => $this->reorderUrl,
             'deleteUrl' => $this->deleteUrl,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
+            'bulkDeletable' => $this->bulkDeletable,
+            'bulkActions' => $this->bulkActions,
         ];
     }
 

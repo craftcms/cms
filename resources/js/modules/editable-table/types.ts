@@ -27,8 +27,20 @@ export interface EditableTableColumn {
   toggle?: string[];
   /** Auto-populate this column's value (a handle) from another column. */
   autopopulate?: string;
-  /** Number column: locale used for formatting/parsing. */
+  /** Number/money column: locale used for formatting/parsing. */
   locale?: string;
+  /** Money column: ISO currency code (e.g. `USD`). Defaults to `USD`. */
+  currency?: string;
+  /** Money column: fraction digits to allow. Defaults to the currency's own. */
+  decimals?: number;
+  /** Money column: overrides the locale's own decimal separator. */
+  decimalSeparator?: string;
+  /** Money column: overrides the locale's own thousands separator. */
+  groupSeparator?: string;
+  /** Money column: shows the currency code/symbol prefix. Defaults to `true`. */
+  showCurrency?: boolean;
+  /** Money column: shows a clear button once there's a value. Defaults to `true`. */
+  clearable?: boolean;
   [key: string]: EditableTableColumnValue;
 }
 

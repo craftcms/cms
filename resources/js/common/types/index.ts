@@ -191,6 +191,7 @@ export type EditableTableCellType =
   | 'autosuggest'
   | 'template'
   | 'number'
+  | 'money'
   | 'singleline'
   | 'multiline'
   | 'heading'

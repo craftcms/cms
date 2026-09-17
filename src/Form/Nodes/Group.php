@@ -49,6 +49,8 @@ class Group extends Container
 
     private bool $collapsible = false;
 
+    private bool $expanded = false;
+
     private bool $asField = false;
 
     private ?string $instructions = null;
@@ -109,6 +111,18 @@ class Group extends Container
     public function collapsible(bool $collapsible = true): static
     {
         $this->collapsible = $collapsible;
+
+        return $this;
+    }
+
+    /**
+     * Starts a {@see self::collapsible()} group open rather than collapsed — e.g. an
+     * "Advanced" section whose fields already hold a value worth surfacing right away.
+     * Ignored (and never sent to the client) when the group isn't collapsible at all.
+     */
+    public function expanded(bool $expanded = true): static
+    {
+        $this->expanded = $expanded;
 
         return $this;
     }
@@ -184,6 +198,7 @@ class Group extends Container
         return [
             'label' => $this->label,
             ...($this->collapsible && ! $this->asField ? ['collapsible' => true] : []),
+            ...($this->collapsible && ! $this->asField && $this->expanded ? ['expanded' => true] : []),
             ...($this->asField ? ['asField' => true] : []),
             ...Arr::whereNotNull([
                 'instructions' => $this->instructions,

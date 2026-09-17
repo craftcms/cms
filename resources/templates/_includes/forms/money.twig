@@ -24,15 +24,33 @@
   decimals: decimals,
   }|merge(jsSettings ?? {}) %}
 
-{{ hiddenInput("#{name}[locale]", formattingLocale) }}
-
+{#
+  Everything renders inside one root element on purpose: the surrounding `craft-field`
+  assigns its `input` slot by setting the `slot` attribute directly on this template's first
+  (and, for a correct render, only) top-level tag (see `ViewComponent::slotted()`) rather than
+  wrapping it — a wrapper would break `craft-input-money`'s own styling assumptions elsewhere.
+  The hidden locale input used to be its own sibling ahead of this div; with two top-level
+  elements, the slot attribute landed on the hidden input instead of the visible one, leaving
+  the actual money input (and everything else in here) unslotted and invisible.
+#}
 <div class="money-container">
+    {{ hiddenInput("#{name}[locale]", formattingLocale) }}
     {% if currencyLabel and showCurrency ?? true %}
         <div class="money-currency-label">
             <span>{{ currencyLabel }}</span>
         </div>
     {% endif %}
+    {#
+      `name` must be passed explicitly here, not just folded into `inputAttributes` above:
+      `text.twig`'s underlying `FormFields::textFromConfig()` sets the actual rendered
+      `<input>` name from the config's own top-level `name` key via a dedicated `->name()`
+      call, separate from (and taking priority over) whatever `inputAttributes['name']`
+      holds. Without this, `{% include %}`'s implicit scope inheritance (no `only`) leaks
+      this template's own ambient `name` (e.g. `baseRate`) through untouched, so the
+      rendered input posts as a plain scalar instead of `{name}[value]`.
+    #}
     {% include '_includes/forms/text' with {
+        name: inputAttributes.name,
         inputAttributes: inputAttributes,
     } %}
     {% if showClear %}
