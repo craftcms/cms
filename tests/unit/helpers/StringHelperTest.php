@@ -249,6 +249,17 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider containsNewlinesDataProvider
+     * @param bool $expected
+     * @param string $str
+     */
+    public function testContainsNewlines(bool $expected, string $str): void
+    {
+        $actual = StringHelper::containsNewlines($str);
+        self::assertSame($expected, $actual);
+    }
+
+    /**
      * @dataProvider convertToUtf8DataProvider
      * @param string $expected
      * @param string $string
@@ -2460,6 +2471,24 @@ class StringHelperTest extends TestCase
         ];
 
         return array_merge($singleNeedle, $provider);
+    }
+
+    /**
+     * @return array
+     */
+    public function containsNewlinesDataProvider(): array
+    {
+        return [
+            [false, 'Str contains no newlines'],
+            [false, ''],
+            [false, 'Str contains a tab	and spaces'],
+            [true, "Str contains a\nnewline"],
+            [true, "Str contains a\rcarriage return"],
+            [true, "Str contains a\r\nCRLF"],
+            [true, "\nStarts with a newline"],
+            [true, "Ends with a newline\n"],
+            [true, "Multiple\nnewlines\nhere"],
+        ];
     }
 
     /**

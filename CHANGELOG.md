@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `craft\helpers\StringHelper::containsNewlines()`.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-f6gf-r952-rxg6, GHSA-qcvp-ggx3-97r6)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-9hp6-3565-gvh5)
+
 ## 4.18.8 - 2026-09-01
 
 - Fixed a bug where cached GraphQL queries weren’t registering the original queries’ cache tags or cache expiration date. ([#19508](https://github.com/craftcms/cms/pull/19508)) 
