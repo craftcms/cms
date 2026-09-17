@@ -1861,7 +1861,7 @@ return [
     'You’re all up to date!' => 'Du er helt up-to-date!',
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
-    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{systemName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
@@ -1896,7 +1896,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'files' => 'filer',
     'five' => 'fem',
     'folders' => 'mapper',
-    'forgot_password_body' => "Hej {{user.friendlyName|e}}.\n\nFor at nulstille din {{siteName}} adgangskode skal du klikke på følgende link:\n\n<{{link}}>\n\nHvis du ikke forventede denne email, så bare ignorer den.",
+    'forgot_password_body' => "Hej {{user.friendlyName|e}}.\n\nFor at nulstille din {{systemName}} adgangskode skal du klikke på følgende link:\n\n<{{link}}>\n\nHvis du ikke forventede denne email, så bare ignorer den.",
     'forgot_password_heading' => 'Når nogen glemmer deres adgangskode:',
     'forgot_password_subject' => 'Nulstil din adgangskode',
     'four' => 'fire',

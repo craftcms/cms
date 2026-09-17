@@ -1861,7 +1861,7 @@ return [
     'You’re all up to date!' => '最新の状態に更新されています！',
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'リビジョンを表示しています。{type}のフィールドはいずれも編集できません。',
     'Zip Code' => '郵便番号',
-    'account_activation_body' => "こんにちは {{user.friendlyName|e}} さん、\n\n {{siteName}}のアカウントを作成してくださりありがとうございます！アカウントを有効にするには、以下のリンクをクリックしてください：\n\n<{{link}}>\n\nこのメールに心当たりがない場合は無視してください。",
+    'account_activation_body' => "こんにちは {{user.friendlyName|e}} さん、\n\n {{systemName}}のアカウントを作成してくださりありがとうございます！アカウントを有効にするには、以下のリンクをクリックしてください：\n\n<{{link}}>\n\nこのメールに心当たりがない場合は無視してください。",
     'account_activation_heading' => '誰かがアカウントを作成する時：',
     'account_activation_subject' => 'アカウントを有効にする',
     'address' => '住所',
