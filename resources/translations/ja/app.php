@@ -2273,7 +2273,7 @@ return [
     'files' => 'ファイル',
     'five' => '5',
     'folders' => 'フォルダ',
-    'forgot_password_body' => "こんにちは、{{user.friendlyName|e}} さん、\n\n{{siteName}}を再設定するには、このリンクをクリックしてください：\n\n<{{link}}>\n\nこのメールに心当たりがない場合は無視してください。",
+    'forgot_password_body' => "こんにちは、{{user.friendlyName|e}} さん、\n\n{{systemName}}を再設定するには、このリンクをクリックしてください：\n\n<{{link}}>\n\nこのメールに心当たりがない場合は無視してください。",
     'forgot_password_heading' => '誰かがパスワードを忘れた場合：',
     'forgot_password_subject' => 'パスワードを再設定する',
     'four' => '4',
