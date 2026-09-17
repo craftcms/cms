@@ -103,6 +103,17 @@ export default class CraftThumbnail extends LitElement {
    */
   @state() private frozen = false;
 
+  /** The captured first frame, kept so a later resize can redraw with it. */
+  private capturedFrame: HTMLImageElement | null = null;
+
+  /**
+   * Watches the real `<img>` for its box becoming (or staying) a real,
+   * non-zero size — covers both "wasn't visible/laid out yet when it
+   * loaded" (e.g. inside a closed tab or accordion) and later layout
+   * changes, with one mechanism.
+   */
+  private resizeObserver: ResizeObserver | null = null;
+
   private restoreSlottedSvgs() {
     for (const [svg, aspectRatio] of this.svgAspectRatios) {
       if (aspectRatio === null) {
@@ -140,6 +151,9 @@ export default class CraftThumbnail extends LitElement {
 
     if (changedProperties.has('src')) {
       this.frozen = false;
+      this.capturedFrame = null;
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = null;
     }
   }
 
@@ -151,6 +165,7 @@ export default class CraftThumbnail extends LitElement {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.restoreSlottedSvgs();
+    this.resizeObserver?.disconnect();
   }
 
   override render() {
@@ -213,7 +228,16 @@ export default class CraftThumbnail extends LitElement {
     }
 
     const frame = new Image();
-    frame.onload = () => this.paintCover(frame, image);
+    frame.onload = () => {
+      this.capturedFrame = frame;
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.capturedFrame) {
+          this.paintCover(this.capturedFrame, image);
+        }
+      });
+      this.resizeObserver.observe(image);
+    };
     frame.src = image.currentSrc;
   }
 
@@ -235,6 +259,13 @@ export default class CraftThumbnail extends LitElement {
 
     const width = image.clientWidth;
     const height = image.clientHeight;
+
+    // Not laid out yet (e.g. still inside a closed tab or accordion) — skip
+    // this attempt rather than freezing on a bogus 0x0 measurement. The
+    // resize observer in freezeFrame() retries once it actually has a box.
+    if (!width || !height) {
+      return;
+    }
     // Raster at the display's actual pixel density — sizing the canvas by
     // CSS pixels alone leaves it soft/blurry on high-DPI screens, since a
     // plain <img> gets that crispness for free but a canvas doesn't.
