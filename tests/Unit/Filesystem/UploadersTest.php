@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploaders;
 use CraftCms\Cms\Filesystem\Uploaders\TusUploader;
@@ -17,17 +16,15 @@ beforeEach(function () {
         Storage::fake($name);
     }
 
-    Cms::config()->tempAssetUploadFs = 'disk:upload-first';
+    Cms::config()->uploadSessionDisk = 'upload-first';
 });
 
 it('automatically selects the uploader for the supplied disk instead of the configured disk', function () {
     Cms::config()->uploader = null;
-    $filesystems = Mockery::mock(Filesystems::class);
-    $filesystems->shouldReceive('disk')->once()->with('disk:upload-s3')
+    Storage::shouldReceive('disk')->once()->with('upload-s3')
         ->andReturn(Mockery::mock(AwsS3V3Adapter::class));
-    app()->instance(Filesystems::class, $filesystems);
 
-    expect(app(Uploaders::class)->getDefaultDriver('disk:upload-s3'))->toBe('s3');
+    expect(app(Uploaders::class)->getDefaultDriver('upload-s3'))->toBe('s3');
 });
 
 it('routes custom uploader operations to each sessions disk', function () {
@@ -41,7 +38,7 @@ it('routes custom uploader operations to each sessions disk', function () {
     $sessions = [];
 
     foreach (['upload-first', 'upload-second'] as $disk) {
-        $session = new UploadSession(['id' => $disk, 'disk' => "disk:$disk", 'size' => 3, 'chunkSize' => 3]);
+        $session = new UploadSession(['id' => $disk, 'disk' => $disk, 'size' => 3, 'chunkSize' => 3]);
         $setup = $uploader->start($session);
         $session->chunkSize = $setup->chunkSize;
         $session->state = $setup->state;

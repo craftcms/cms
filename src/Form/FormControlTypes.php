@@ -19,7 +19,6 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\FieldSelect;
-use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Hidden;
@@ -64,7 +63,6 @@ class FormControlTypes extends TypeRegistry
         ElementSelect::class,
         FieldLayoutDesigner::class,
         FieldSelect::class,
-        FilesystemSelect::class,
         GroupedEntryTypeManager::class,
         Handle::class,
         Hidden::class,

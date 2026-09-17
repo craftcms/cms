@@ -28,7 +28,6 @@ use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
-use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
@@ -80,7 +79,6 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     WidgetData::class,
                     WidgetTypeData::class,
                     NodePayload::class,
-                    FilesystemsEditViewModel::class,
                     NavItem::class,
                     NotificationButtonData::class,
                     NotificationData::class,

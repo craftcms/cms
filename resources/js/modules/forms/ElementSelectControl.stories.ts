@@ -159,7 +159,7 @@ export const AssetsWithoutUpload: Story = {
 
 /**
  * An asset field that can upload: `AssetSelect` sends `canUpload`,
- * `uploadFolderId` and `fsType`, and the header gains the upload button.
+ * `uploadFolderId`, and the header gains the upload button.
  */
 export const AssetsWithUpload: Story = {
   decorators: [
@@ -174,7 +174,6 @@ export const AssetsWithUpload: Story = {
       ...ASSET_PROPS,
       canUpload: true,
       uploadFolderId: 1,
-      fsType: 'CraftCms\\Cms\\Filesystem\\Filesystems\\Local',
     }),
     editable: true,
   },
@@ -194,7 +193,6 @@ export const AssetsWithUploadEmpty: Story = {
       ...ASSET_PROPS,
       canUpload: true,
       uploadFolderId: 1,
-      fsType: 'CraftCms\\Cms\\Filesystem\\Filesystems\\Local',
     }),
     value: [],
     editable: true,

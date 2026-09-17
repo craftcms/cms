@@ -131,11 +131,6 @@ class Settings
             'iconName' => 'light/image',
             'label' => t('Assets'),
         ];
-        $settings[$label]['filesystems'] = [
-            'iconName' => 'light/folder-open',
-            'label' => t('Filesystems'),
-        ];
-
         $label = t('Plugins');
 
         foreach ($this->pluginsService->getAllPlugins() as $plugin) {

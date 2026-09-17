@@ -61,7 +61,7 @@ it('explains why transformers assigned to volumes cannot be deleted', function (
     app(Volumes::class)->saveVolume(new VolumeData([
         'name' => 'Assets',
         'handle' => 'assets',
-        'fsHandle' => 'disk:controller-test',
+        'fsHandle' => 'controller-test',
         'assetTransformer' => 'assigned',
     ]));
 

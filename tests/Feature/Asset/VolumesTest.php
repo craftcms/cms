@@ -35,7 +35,7 @@ it('can get all volumes', function () {
     expect($this->volumes->getAllVolumeIds())->toBeEmpty();
     expect($this->volumes->getTotalVolumes())->toBe(0);
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -45,7 +45,7 @@ it('can get all volumes', function () {
 });
 
 it('can get viewable volumes in console', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -56,7 +56,7 @@ it('can get viewable volumes in console', function () {
 });
 
 it('can get a volume by id', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -65,7 +65,7 @@ it('can get a volume by id', function () {
 });
 
 it('can get a volume by uid', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -74,7 +74,7 @@ it('can get a volume by uid', function () {
 });
 
 it('can get a volume by handle', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
@@ -284,7 +284,7 @@ it('generates the expected permission list through the new service', function ()
     Volumes::partialMock()
         ->shouldReceive('getAllVolumes')
         ->andReturn(collect([
-            new Local([
+            new Volume([
                 'id' => 1,
                 'name' => 'Test volume',
                 'uid' => 'volumeUid',

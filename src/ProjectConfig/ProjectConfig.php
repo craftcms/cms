@@ -101,8 +101,6 @@ class ProjectConfig
 
     public const string PATH_FIELDS = 'fields';
 
-    public const string PATH_FS = 'fs';
-
     public const string PATH_GRAPHQL = 'graphql';
 
     public const string PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL.'.'.'publicToken';

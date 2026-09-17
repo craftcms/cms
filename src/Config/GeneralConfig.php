@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
@@ -36,10 +35,6 @@ class GeneralConfig extends BaseConfig
     public const string PASCAL_CASE = 'pascal';
 
     public const string SNAKE_CASE = 'snake';
-
-    #[Override]
-    /** @var array<string, string> */
-    protected static array $renamedSettings = [];
 
     /**
      * @var array<string, bool|int|string> The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
@@ -2842,25 +2837,29 @@ class GeneralConfig extends BaseConfig
     public ?string $systemTemplateCss = null;
 
     /**
-     * @var string|null The filesystem target that should be used for storing temporary asset uploads.
-     *
-     *                  This can be set to a Craft filesystem handle, a Laravel disk in the format `disk:<name>`,
-     *                  or a plain legacy value (resolved as Craft FS first, then Laravel disk).
+     * @var string|null The Laravel filesystem disk that should be used for storing temporary asset uploads.
      *
      *                  A local temp folder will be used by default.
      *
      * ::: code
      * ```php Static Config
-     * ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     * ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
      * ```
      * ```shell Environment Override
-     * CRAFT_TEMP_ASSET_UPLOAD_FS=tempAssetUploads
+     * CRAFT_TEMP_ASSET_UPLOAD_DISK=tempAssetUploads
      * ```
      * :::
      *
      * @group Assets
      */
-    public ?string $tempAssetUploadFs = null;
+    public ?string $tempAssetUploadDisk = null;
+
+    /**
+     * @var string|null The Laravel filesystem disk that should stage upload sessions.
+     *
+     * @group Assets
+     */
+    public ?string $uploadSessionDisk = null;
 
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
@@ -6013,24 +6012,33 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The filesystem target that should be used for storing temporary asset uploads.
-     *
-     * This can be set to a Craft filesystem handle, a Laravel disk in the format `disk:<name>`,
-     * or a plain legacy value (resolved as Craft FS first, then Laravel disk).
+     * The Laravel filesystem disk that should be used for storing temporary asset uploads.
      *
      * A local temp folder will be used by default.
      *
      *  ```php
-     *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     *  ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
      *  ```
      *
      * @group Assets
      *
-     * @see $tempAssetUploadFs
+     * @see $tempAssetUploadDisk
      */
-    public function tempAssetUploadFs(?string $value): self
+    public function tempAssetUploadDisk(?string $value): self
     {
-        $this->tempAssetUploadFs = $value;
+        $this->tempAssetUploadDisk = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Laravel filesystem disk that should stage upload sessions.
+     *
+     * @group Assets
+     */
+    public function uploadSessionDisk(?string $value): self
+    {
+        $this->uploadSessionDisk = $value;
 
         return $this;
     }
@@ -6308,11 +6316,29 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Returns the temporary asset upload filesystem handle or disk reference.
+     * Returns the temporary asset upload disk name.
      */
-    public function getTempAssetUploadFs(): string
+    public function getTempAssetUploadDisk(): string
     {
-        return Env::parse($this->tempAssetUploadFs) ?: 'disk:'.Filesystems::TEMP_ASSET_DISK;
+        return $this->storageDiskName($this->tempAssetUploadDisk, 'craft-asset-temp');
+    }
+
+    /**
+     * Returns the upload session disk name.
+     */
+    public function getUploadSessionDisk(): string
+    {
+        return $this->storageDiskName($this->uploadSessionDisk, 'craft-tmp');
+    }
+
+    private function storageDiskName(?string $value, string $default): string
+    {
+        $disk = Env::parse($value);
+        if (! is_string($disk) || $disk === '') {
+            return $default;
+        }
+
+        return $disk;
     }
 
     /**

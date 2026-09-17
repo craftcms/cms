@@ -11,19 +11,17 @@ use Aws\Signature\S3SignatureV4;
 use CraftCms\Cms\Filesystem\Contracts\Uploader;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSetup;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 
 class S3Uploader implements Uploader
 {
-    public function __construct(private readonly Filesystems $filesystems) {}
-
     public function start(UploadSession $session): UploadSetup
     {
         // Match the default chunk sizing in @uppy/aws-s3.
@@ -210,7 +208,7 @@ class S3Uploader implements Uploader
 
     private function disk(UploadSession $session): AwsS3V3Adapter
     {
-        $disk = $this->filesystems->disk($session->disk);
+        $disk = Storage::disk($session->disk);
 
         if (! $disk instanceof AwsS3V3Adapter) {
             throw new InvalidArgumentException('The S3 uploader requires a Laravel S3 disk and league/flysystem-aws-s3-v3.');

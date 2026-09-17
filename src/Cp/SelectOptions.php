@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -381,39 +377,24 @@ class SelectOptions
     }
 
     /**
-     * Returns all options for a filesystem input.
+     * Returns all options for a Laravel filesystem disk input.
      */
     /** @return list<array{label: string, value: string}> */
-    public static function getFsOptions(): array
+    public static function getDiskOptions(): array
     {
-        $craftFilesystemOptions = Filesystems::getAllFilesystems()
-            ->reject(fn (FsInterface $fs): bool => AssetsHelper::isTempUploadFs($fs))
-            ->map(fn (FsInterface $fs) => [
-                'label' => t($fs->name, category: 'site'),
-                'value' => $fs->handle,
-            ]);
-
-        $diskOptions = Collection::make(Arr::wrap(config('filesystems.disks', [])))
+        return Collection::make(Arr::wrap(config('filesystems.disks', [])))
             ->keys()
             ->filter(function (mixed $diskName): bool {
                 if (! is_string($diskName)) {
                     return false;
                 }
 
-                if (in_array($diskName, FilesystemsService::INTERNAL_DISK_NAMES, true)) {
-                    return false;
-                }
-
-                return ! str_starts_with($diskName, FilesystemsService::DISK_PREFIX);
+                return ! in_array($diskName, Volume::INTERNAL_DISK_NAMES, true);
             })
             ->map(fn (string $diskName) => [
                 'label' => $diskName,
-                'value' => "disk:$diskName",
-            ]);
-
-        return $craftFilesystemOptions
-            ->concat($diskOptions)
-            ->unique('value')
+                'value' => $diskName,
+            ])
             ->sortBy(fn (array $option) => $option['label'])
             ->values()
             ->all();

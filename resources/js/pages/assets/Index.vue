@@ -50,7 +50,6 @@
     return {
       canUpload: data?.['can-upload'] === true,
       folderId: data?.['folder-id'] as number | undefined,
-      fsType: data?.['fs-type'] as string | undefined,
     };
   });
 

@@ -30,26 +30,10 @@ class ProjectConfigHelper
     }
 
     /**
-     * Ensures all filesystem config changes are processed immediately in a safe manner.
-     */
-    public static function ensureAllFilesystemsProcessed(): void
-    {
-        $projectConfig = app(ProjectConfig::class);
-
-        if (! $projectConfig->claimPath(ProjectConfig::PATH_FS)) {
-            return;
-        }
-
-        $projectConfig->processConfigChanges(ProjectConfig::PATH_FS);
-    }
-
-    /**
      * Ensures all field config changes are processed immediately in a safe manner.
      */
     public static function ensureAllFieldsProcessed(): void
     {
-        self::ensureAllFilesystemsProcessed();
-
         $projectConfig = app(ProjectConfig::class);
 
         if (! $projectConfig->claimPath(ProjectConfig::PATH_FIELDS)) {
