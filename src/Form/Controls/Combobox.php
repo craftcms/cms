@@ -66,12 +66,34 @@ class Combobox extends Control
         return 'craft:combobox';
     }
 
-    /** @param list<array<string, mixed>> $options */
+    /**
+     * @param list<array<string, mixed>> $options
+     *
+     * Every option's `value` is cast to a string here, matching the client's own
+     * `ComboboxOption.value: string` contract. A caller passing a raw int id (e.g. an
+     * Eloquent/Active Record primary key) is easy to miss — for a single-select combobox it's
+     * harmless, but for a `multiple()` one it silently breaks the "is this option already
+     * selected" comparisons `#renderOptions()` does against `modelValue` (always strings), which
+     * renders the same option twice (once as a synthetic "selected" entry, once as a normal
+     * unselected one) and doubles up the resulting value.
+     */
     public function options(array $options): static
     {
-        $this->options = $options;
+        $this->options = array_map(self::stringifyOptionValue(...), $options);
 
         return $this;
+    }
+
+    /** @param array<string, mixed> $option */
+    private static function stringifyOptionValue(array $option): array
+    {
+        if (($option['type'] ?? null) === 'optgroup') {
+            return [...$option, 'options' => array_map(self::stringifyOptionValue(...), $option['options'] ?? [])];
+        }
+
+        return array_key_exists('value', $option)
+            ? [...$option, 'value' => (string) $option['value']]
+            : $option;
     }
 
     public function placeholder(?string $placeholder): static

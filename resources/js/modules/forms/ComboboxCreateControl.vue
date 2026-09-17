@@ -7,6 +7,7 @@
 
   type ComboboxCreateControlProps = {
     options: ComboboxItem[];
+    multiple?: boolean;
     createUrl?: string;
     createValue?: string;
     resultKey?: string;
@@ -30,7 +31,7 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind: 'discrete'): void;
+    (event: 'update:value', value: string | string[], kind: 'discrete'): void;
   }>();
 
   function onModelValueChanged(event: Event): void {
@@ -39,9 +40,20 @@
     }
 
     const target = event.target as CraftComboboxCreate;
+    const value = target.modelValue;
 
-    if (target.modelValue !== target.createValue) {
-      emit('update:value', String(target.modelValue ?? ''), 'discrete');
+    // Skip the transient state where the trigger option itself is (still) selected — the
+    // control resets that back out on its own right after opening the create slideout.
+    const triggered = Array.isArray(value)
+      ? value.includes(target.createValue)
+      : value === target.createValue;
+
+    if (!triggered) {
+      emit(
+        'update:value',
+        Array.isArray(value) ? value.map(String) : String(value ?? ''),
+        'discrete'
+      );
     }
   }
 </script>
@@ -49,7 +61,14 @@
 <template>
   <craft-combobox-create
     :name="editable ? inputName(control.path) : ''"
-    .modelValue="String(value ?? '')"
+    :multiple-choice="control.props.multiple ?? false"
+    .modelValue="
+      control.props.multiple
+        ? Array.isArray(value)
+          ? value.map(String)
+          : []
+        : String(value ?? '')
+    "
     .options="control.props.options"
     .createUrl="control.props.createUrl ?? ''"
     .createValue="control.props.createValue ?? '__add__'"

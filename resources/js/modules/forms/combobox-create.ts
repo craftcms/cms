@@ -66,10 +66,17 @@ export default class CraftComboboxCreate extends CraftCombobox {
     super.disconnectedCallback();
   }
 
+  /** Whether the trigger option is (still) among the current selection. */
+  private isTriggered(): boolean {
+    return this.multipleChoice
+      ? Array.isArray(this.modelValue) && this.modelValue.includes(this.createValue)
+      : this.modelValue === this.createValue;
+  }
+
   private onModelValueChanged = (event: Event): void => {
     if (
       (event as CustomEvent).detail?.initialize ||
-      this.modelValue !== this.createValue ||
+      !this.isTriggered() ||
       this.creating
     ) {
       return;
@@ -84,8 +91,15 @@ export default class CraftComboboxCreate extends CraftCombobox {
     this.creating = true;
 
     // Reset back to nothing selected while the slideout is open, rather than leaving the
-    // trigger option itself "selected".
+    // trigger option itself "selected" — for multi-select, that just means dropping the
+    // trigger's own value back out of an otherwise-untouched selection.
     queueMicrotask(() => {
+      if (this.multipleChoice) {
+        const values = Array.isArray(this.modelValue) ? this.modelValue : [];
+        this.changeValues(values.filter((value) => value !== this.createValue));
+        return;
+      }
+
       this.modelValue = '';
       this._inputNode.value = '';
       this._notifyModelValueChanged();
@@ -116,6 +130,16 @@ export default class CraftComboboxCreate extends CraftCombobox {
         );
 
         void this.updateComplete.then(() => {
+          if (this.multipleChoice) {
+            // Multi-select's chips render straight off `modelValue`/`options` (see
+            // `_inputGroupInputTemplate()`/`valueLabel()`), not off a registered
+            // `craft-option` element, so there's no DOM lookup needed here the way
+            // single-select's textbox sync requires below.
+            const values = Array.isArray(this.modelValue) ? this.modelValue : [];
+            this.changeValues([...values, option.value]);
+            return;
+          }
+
           const selectedOption = Array.from(
             this._listboxNode.querySelectorAll('craft-option')
           ).find((item) => String(item.choiceValue) === String(option.value));
