@@ -39,7 +39,7 @@ export default css`
   /* Matches the main navigation's current item. */
   :host([active]) .action-item {
     background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
+    border-color: var(--c-color-accent-border-loud);
     color: var(--c-color-accent-on-quiet);
   }
 

@@ -132,7 +132,7 @@ export default css`
 
   :host([active]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
-    border: 1px solid var(--c-color-accent-border-quiet);
+    border: 1px solid var(--c-color-accent-border-normal);
   }
 
   /*
@@ -161,7 +161,7 @@ export default css`
    */
   :host([current]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
+    border-color: var(--c-color-accent-border-);
     color: var(--c-color-accent-on-quiet);
   }
 

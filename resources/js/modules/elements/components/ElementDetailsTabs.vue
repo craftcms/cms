@@ -225,7 +225,7 @@
   }
 
   craft-tab[selected='true'] {
-    border-color: var(--c-color-accent-border-quiet);
+    border-color: var(--c-color-accent-border-normal);
     background-color: var(--c-color-accent-fill-quiet);
     color: var(--c-color-accent-on-quiet);
 
