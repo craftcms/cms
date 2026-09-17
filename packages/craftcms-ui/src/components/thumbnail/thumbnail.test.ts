@@ -140,8 +140,6 @@ describe('craft-thumbnail animated', () => {
     expect(canvas!.getAttribute('aria-hidden')).toBe('true');
     expect(canvas!.getAttribute('role')).toBe('presentation');
 
-    // The image itself stays untouched (still accessible, still visible) —
-    // the canvas is a decorative overlay on top of it, not a replacement.
     const image = element.shadowRoot!.querySelector('img')!;
     expect(image.classList.contains('thumbnail__image')).toBe(true);
     expect(image.getAttribute('alt')).toBe('A thumbnail');
