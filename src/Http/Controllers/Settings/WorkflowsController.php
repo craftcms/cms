@@ -11,7 +11,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Workflow\Models\Workflow;
-use CraftCms\Cms\Workflow\WorkflowProjectConfig;
+use CraftCms\Cms\Workflow\Workflows;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -23,7 +23,7 @@ class WorkflowsController
     private bool $readOnly;
 
     public function __construct(
-        private readonly WorkflowProjectConfig $workflowProjectConfig,
+        private readonly Workflows $workflows,
         GeneralConfig $generalConfig,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -76,7 +76,7 @@ class WorkflowsController
             return $this->asFailure(t('This workflow cannot be deleted while it is assigned to a section.'));
         }
 
-        $this->workflowProjectConfig->delete($workflow);
+        $this->workflows->deleteWorkflow($workflow);
 
         return $this->asSuccess(t('Workflow deleted.'), redirect: action([self::class, 'index']));
     }
@@ -84,9 +84,9 @@ class WorkflowsController
     private function save(WorkflowRequest $request, Workflow $workflow): Response
     {
         $data = $request->workflowData();
-        $workflow->name = $data['name'];
+        $workflow->fill($data);
 
-        $this->workflowProjectConfig->save($workflow, $data['stages']);
+        $this->workflows->saveWorkflow($workflow);
 
         return $this->asSuccess(
             t('Workflow saved.'),

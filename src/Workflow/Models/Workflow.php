@@ -41,6 +41,18 @@ class Workflow extends BaseModel
         ];
     }
 
+    /** @return array{stages: list<array{uid: string, type: string, settings: array<string, mixed>}>} */
+    public function getExecutionConfig(): array
+    {
+        return [
+            'stages' => $this->stages->map(fn (WorkflowStageData $stage): array => [
+                'uid' => $stage->uid,
+                'type' => $stage->type,
+                'settings' => $stage->settings,
+            ])->all(),
+        ];
+    }
+
     #[\Override]
     protected function casts(): array
     {

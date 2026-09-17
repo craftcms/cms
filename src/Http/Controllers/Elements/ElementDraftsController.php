@@ -26,6 +26,10 @@ use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Models\WorkflowRun;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +54,7 @@ class ElementDraftsController
         private readonly Drafts $drafts,
         private readonly Elements $elements,
         private readonly ElementActivity $elementActivity,
+        private readonly Workflows $workflows,
     ) {}
 
     public function store(): Response
@@ -67,6 +72,10 @@ class ElementDraftsController
         }
 
         $provisional = $this->request->boolean('provisional');
+        $convertedByWorkflow = $this->request->boolean('workflowSave')
+            && $element instanceof WorkflowableInterface
+            && $this->workflows->forElement($element) !== null
+            && (! $element->getIsDraft() || $element->isProvisionalDraft);
 
         if (! $element->getIsDraft() && ! $provisional) {
             Gate::authorize('createDrafts', $element);
@@ -101,6 +110,7 @@ class ElementDraftsController
         });
 
         DB::beginTransaction();
+        $applyWithoutReview = false;
 
         try {
             // Are we creating the draft here?
@@ -122,35 +132,50 @@ class ElementDraftsController
 
             $this->applyParamsToElement($element);
 
-            // Make sure nothing just changed that would prevent the user from saving
-            if (! $this->canSave($element, $this->request->craftUser())) {
-                abort(403, 'User not authorized to save this element.');
+            // The editor actions reflect the status at render time. Re-evaluate
+            // the posted status so disabling a live element can save directly.
+            if ($convertedByWorkflow && ! $this->workflows->requiresApproval($element)) {
+                $applyWithoutReview = true;
+                DB::commit();
+            } else {
+                // Make sure nothing just changed that would prevent the user from saving
+                if (! $this->canSave($element, $this->request->craftUser())) {
+                    abort(403, 'User not authorized to save this element.');
+                }
+
+                if ($this->request->boolean('dropProvisional')) {
+                    $element->isProvisionalDraft = false;
+                }
+
+                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+
+                // If the field layout ID changed, save all content
+                $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
+
+                if (! $this->elements->saveElement($element, saveContent: $saveContent)) {
+                    DB::rollBack();
+
+                    return new ElementResponse()->failure($element, mb_ucfirst(t('Couldn’t save {type}.', [
+                        'type' => t('draft'),
+                    ])));
+                }
+
+                DB::commit();
             }
-
-            if ($this->request->boolean('dropProvisional')) {
-                $element->isProvisionalDraft = false;
-            }
-
-            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-
-            // If the field layout ID changed, save all content
-            $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
-
-            if (! $this->elements->saveElement($element, saveContent: $saveContent)) {
-                DB::rollBack();
-
-                return new ElementResponse()->failure($element, mb_ucfirst(t('Couldn’t save {type}.', [
-                    'type' => t('draft'),
-                ])));
-            }
-
-            DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
         }
 
+        if ($applyWithoutReview) {
+            return $this->applyElementDraft($element, $oldFieldLayoutId);
+        }
+
         $this->elementActivity->trackActivity($element, ElementActivityType::Save);
+
+        if ($convertedByWorkflow) {
+            session()->flash('workflowDraftCreated', $element->draftId);
+        }
 
         $data = [
             'canonicalId' => $element->getCanonicalId(),
@@ -199,7 +224,7 @@ class ElementDraftsController
 
         return new ElementResponse()->success($element, t('{type} saved.', [
             'type' => t('Draft'),
-        ]), $data, true);
+        ]), $data, true, $element->isProvisionalDraft ? null : $element->getCpEditUrl());
     }
 
     /**
@@ -296,11 +321,57 @@ class ElementDraftsController
             abort(400, 'No draft was identified by the request.');
         }
 
+        $paramsApplied = false;
+        if (
+            $element instanceof WorkflowableInterface &&
+            $element->isProvisionalDraft &&
+            $this->workflows->forElement($element) !== null
+        ) {
+            $this->applyParamsToElement($element);
+            $paramsApplied = true;
+
+            if ($this->workflows->requiresApproval($element)) {
+                $this->request->merge(['dropProvisional' => true]);
+
+                return $this->store();
+            }
+        }
+
         // keep track of the original field layout ID, in case it changes here
         $oldFieldLayoutId = $element->getFieldLayout()?->id;
 
-        $this->applyParamsToElement($element);
+        if (
+            $element instanceof WorkflowableInterface &&
+            ! $element->isProvisionalDraft &&
+            $this->workflows->requiresApproval($element)
+        ) {
+            $runId = $this->request->input('workflowRunId');
+            $currentStage = $this->request->input('workflowCurrentStage');
 
+            return $this->workflows->withApplicationLock(
+                $element,
+                is_numeric($runId) ? (int) $runId : null,
+                is_numeric($currentStage) ? (int) $currentStage : null,
+                function (WorkflowRun $run) use ($element, $oldFieldLayoutId): Response {
+                    $applyApproved = $run->status === WorkflowStatus::Approved;
+                    if (! $applyApproved) {
+                        $this->applyParamsToElement($element);
+                    }
+
+                    return $this->applyElementDraft($element, $oldFieldLayoutId);
+                },
+            );
+        }
+
+        if (! $paramsApplied) {
+            $this->applyParamsToElement($element);
+        }
+
+        return $this->applyElementDraft($element, $oldFieldLayoutId);
+    }
+
+    private function applyElementDraft(ElementInterface $element, ?int $oldFieldLayoutId): Response
+    {
         Gate::authorize('save', $element);
 
         $isUnpublishedDraft = $element->getIsUnpublishedDraft();
@@ -360,6 +431,11 @@ class ElementDraftsController
 
         $attributes = [];
 
+        if ($this->request->exists('workflowRunId')) {
+            $attributes['workflowRunId'] = $this->request->integer('workflowRunId');
+            $attributes['workflowCurrentStage'] = $this->request->integer('workflowCurrentStage');
+        }
+
         if ($element instanceof NestedElementInterface) {
             $attributes['updateSearchIndexForOwner'] = true;
         }
@@ -367,8 +443,8 @@ class ElementDraftsController
         try {
             $element->propagateRequired = false;
             $canonical = $this->drafts->applyDraft($element, $attributes);
-        } catch (InvalidElementException) {
-            return new ElementResponse()->applyDraftFailure($element);
+        } catch (InvalidElementException $exception) {
+            return new ElementResponse()->applyDraftFailure($exception->element);
         } finally {
             if (! $isUnpublishedDraft) {
                 $mutex->release();

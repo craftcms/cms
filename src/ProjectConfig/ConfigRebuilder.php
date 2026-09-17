@@ -20,7 +20,7 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
-use CraftCms\Cms\Workflow\WorkflowProjectConfig;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Database\DatabaseManager;
 use InvalidArgumentException;
 use RuntimeException;
@@ -40,7 +40,7 @@ class ConfigRebuilder
         private readonly Sites $sites,
         private readonly UserGroups $userGroups,
         private readonly Volumes $volumes,
-        private readonly WorkflowProjectConfig $workflowProjectConfig,
+        private readonly Workflows $workflows,
         private readonly DatabaseManager $database,
     ) {}
 
@@ -64,7 +64,7 @@ class ConfigRebuilder
         $config[ProjectConfig::PATH_SITES] = $this->components($this->sites->getAllSites(true));
         $config[ProjectConfig::PATH_SITE_GROUPS] = $this->components($this->siteGroups->getAllGroups());
         $config[ProjectConfig::PATH_VOLUMES] = $this->components($this->volumes->getAllVolumes());
-        $config[ProjectConfig::PATH_WORKFLOWS] = $this->components($this->workflowProjectConfig->getAllWorkflows());
+        $config[ProjectConfig::PATH_WORKFLOWS] = $this->components($this->workflows->getAllWorkflows());
         $config[ProjectConfig::PATH_USERS]['groups'] = $this->components($this->userGroups->getAllGroups());
         unset($config[ProjectConfig::PATH_USERS]['fieldLayouts']);
         $config[ProjectConfig::PATH_USERS] = array_replace($config[ProjectConfig::PATH_USERS], $this->fieldLayout(User::class));
