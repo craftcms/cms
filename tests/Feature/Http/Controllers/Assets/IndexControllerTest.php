@@ -67,7 +67,31 @@ it('renders with a default source', function () {
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets", ['defaultSource' => $volume->handle])->assertOk();
+    get("/{$cpTrigger}/assets?defaultSource={$volume->handle}")->assertOk();
+});
+
+it('sends the bare index to the first source it lists', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?search=cat")
+        ->assertRedirectContains("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertRedirectContains('search=cat');
+});
+
+it('leaves an index that names its source where it is', function () {
+    Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?source=temp")->assertOk();
 });
 
 it('preloads existing thumbnail indexes for the displayed assets', function (int $sourceWidth, int $sourceHeight, array $transforms) {
