@@ -3,16 +3,17 @@
 declare(strict_types=1);
 
 use craft\base\Fs;
+use craft\base\FsInterface;
+use craft\fs\Local;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
-use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToListContents;
@@ -29,6 +30,21 @@ it('resolves legacy bridge disks after Laravel rebinds the driver creator', func
 
     expect($disk->put('legacy.txt', 'legacy'))->toBeTrue()
         ->and($disk->get('legacy.txt'))->toBe('legacy');
+});
+
+it('keeps the Craft 5 filesystem classes in the Yii adapter', function() {
+    $local = new Local([
+        'path' => sys_get_temp_dir(),
+        'hasUrls' => true,
+        'url' => 'https://assets.example.test/root',
+    ]);
+
+    expect(new LegacyFilesystemCompatibilityTestFs())
+        ->toBeInstanceOf(Fs::class)
+        ->toBeInstanceOf(FsInterface::class)
+        ->and(is_subclass_of(Local::class, Fs::class))->toBeTrue()
+        ->and($local->getDiskConfig()['url'])->toBe('https://assets.example.test/root')
+        ->and(class_exists(\CraftCms\Cms\Filesystem\Filesystems::class))->toBeFalse();
 });
 
 it('generates permanent URLs with the scoped prefix once', function() {
@@ -133,7 +149,7 @@ class LegacyFilesystemCompatibilityTestFs extends Fs
 
     public function register(): void
     {
-        app()->instance(FilesystemsService::class, new class($this) extends FilesystemsService {
+        app()->instance(LegacyFilesystems::class, new class($this) extends LegacyFilesystems {
             public function __construct(
                 private readonly FsInterface $filesystem,
             ) {
@@ -142,6 +158,10 @@ class LegacyFilesystemCompatibilityTestFs extends Fs
             public function getFilesystemByHandle(string $handle): ?FsInterface
             {
                 return $handle === $this->filesystem->handle ? $this->filesystem : null;
+            }
+
+            public function syncDisks(): void
+            {
             }
         });
 
