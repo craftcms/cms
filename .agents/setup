@@ -97,18 +97,15 @@ fi
 step 'Install core PHP dependencies' composer install --prefer-dist --no-interaction --no-progress
 step 'Install adapter PHP dependencies' composer --working-dir=yii2-adapter install --prefer-dist --no-interaction --no-progress
 
-# Keep registry credentials out of the repository and the reusable snapshot.
-# Supply CRAFT_FONTAWESOME_TOKEN as an Amp project secret for cold installs.
-pnpm_auth=()
+# Keep registry credentials out of the repository. Supply
+# CRAFT_FONTAWESOME_TOKEN as an Amp project secret for cold installs.
 if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} ]]; then
-    printf '//npm.fontawesome.com/:_authToken=%s\n' "$CRAFT_FONTAWESOME_TOKEN" > "$scratch/npmrc"
-    chmod 600 "$scratch/npmrc"
-    pnpm_auth=(--config.userconfig="$scratch/npmrc")
+    pnpm config set '//npm.fontawesome.com/:_authToken' "$CRAFT_FONTAWESOME_TOKEN"
 fi
-step 'Install frontend dependencies' pnpm "${pnpm_auth[@]}" install --prefer-offline --frozen-lockfile --trust-lockfile
+step 'Install frontend dependencies' pnpm install --prefer-offline --frozen-lockfile --trust-lockfile
 # pnpm remembers skipped optional dependencies from an unauthenticated install.
 if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} && ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]]; then
-    step 'Retry private kit installation' pnpm "${pnpm_auth[@]}" --config.optimisticRepeatInstall=false install --prefer-offline --frozen-lockfile --trust-lockfile
+    step 'Retry private kit installation' pnpm --config.optimisticRepeatInstall=false install --prefer-offline --frozen-lockfile --trust-lockfile
 fi
 
 # SQLite needs no daemon and these files survive snapshot activation/resume.
