@@ -34,6 +34,7 @@ use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
+use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Update\Data\UpdaterState;
@@ -42,6 +43,10 @@ use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Data\UserSettings;
 use CraftCms\Cms\View\HtmlFragment;
+use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
+use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
+use CraftCms\Cms\Workflow\Data\WorkflowStageData;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use DateTimeInterface;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
@@ -99,6 +104,11 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UserPreferencesViewModel::class,
                     UserSettings::class,
                     UserSignInProvidersViewModel::class,
+                    WorkflowEditViewModel::class,
+                    WorkflowDraftReviewData::class,
+                    WorkflowReviewData::class,
+                    WorkflowStageData::class,
+                    WorkflowStatus::class,
                 ],
                 [
                     new EnumTransformer,

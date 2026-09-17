@@ -22,6 +22,7 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -103,6 +104,7 @@ readonly class SectionsController
             'values' => ['required', 'array'],
             'values.sectionId' => ['nullable', 'integer', Rule::exists(Table::SECTIONS, 'id')],
             'values.type' => ['required', Rule::enum(SectionType::class)],
+            'values.workflowId' => ['nullable', 'integer', Rule::exists(Workflow::class, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
         $values = $data['values'];
@@ -140,6 +142,7 @@ readonly class SectionsController
         $section->name = $request->input('name');
         $section->handle = $request->input('handle');
         $section->type = $request->enum('type', SectionType::class, SectionType::Channel);
+        $section->workflowId = $request->integer('workflowId') ?: null;
         $section->enableVersioning = $request->boolean('enableVersioning', true);
         $minAuthors = $request->input('minAuthors');
         $maxAuthors = $request->input('maxAuthors');

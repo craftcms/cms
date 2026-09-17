@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Workflow\WorkflowProjectConfig;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
@@ -134,6 +135,10 @@ class ProjectConfigServiceProvider extends ServiceProvider
             ->onAdd(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleChangedEntryType($event))
             ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleChangedEntryType($event))
             ->onRemove(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleDeletedEntryType($event))
+            // Workflows
+            ->onAdd(ProjectConfig::PATH_WORKFLOWS.'.{uid}', fn (ConfigEvent $event) => app(WorkflowProjectConfig::class)->handleChanged($event))
+            ->onUpdate(ProjectConfig::PATH_WORKFLOWS.'.{uid}', fn (ConfigEvent $event) => app(WorkflowProjectConfig::class)->handleChanged($event))
+            ->onRemove(ProjectConfig::PATH_WORKFLOWS.'.{uid}', fn (ConfigEvent $event) => app(WorkflowProjectConfig::class)->handleDeleted($event))
             // GraphQL schemas
             ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', fn (ConfigEvent $event) => Gql::handleChangedSchema($event))
             ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', fn (ConfigEvent $event) => Gql::handleChangedSchema($event))
