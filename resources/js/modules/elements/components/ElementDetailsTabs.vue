@@ -198,14 +198,6 @@
       </div>
     </div>
   </craft-tabs>
-
-  <craft-button
-    type="button"
-    class="fixed bottom-1 right-1"
-    icon="arrow-right-to-line"
-    aria-label="Expand details"
-    @click="toggleDetails"
-  ></craft-button>
 </template>
 
 <style scoped>
