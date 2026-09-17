@@ -2235,11 +2235,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => 'Hello {{user.friendlyName|e}},
+    'account_activation_body' => "Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>',
+<{{link}}>",
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',
@@ -2277,7 +2277,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'files' => 'fájlok',
     'five' => 'öt',
     'folders' => 'mappák',
-    'forgot_password_body' => "Szia {{user.friendlyName|e}}!\n\nA {{siteName}} jelszavad visszaállításához kattints erre a hivatkozásra:\n\n<{{link}}>\n\nHa nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.",
+    'forgot_password_body' => "Szia {{user.friendlyName|e}}!\n\nA {{systemName}} jelszavad visszaállításához kattints erre a hivatkozásra:\n\n<{{link}}>\n\nHa nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.",
     'forgot_password_heading' => 'Amikor valaki elfelejti a jelszavát:',
     'forgot_password_subject' => 'Új jelszó beállítása',
     'four' => 'négy',
