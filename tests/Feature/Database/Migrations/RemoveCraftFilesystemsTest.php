@@ -96,3 +96,58 @@ test('fails before mutation when a legacy filesystem has no matching Laravel dis
         ->toThrow(RuntimeException::class, 'Configure Laravel filesystem disks named [missing-storage]')
         ->and($volume->refresh()->fs)->toBe('missing-storage');
 });
+
+test('suggests an equivalent disk config for a missing Local filesystem', function () {
+    Volume::factory()->create(['fs' => 'missing-local']);
+    /** @var ProjectConfig&MockInterface $projectConfig */
+    $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
+    $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
+        'missing-local' => [
+            'type' => 'craft\fs\Local',
+            'settings' => [
+                'hasUrls' => true,
+                'path' => '/var/www/storage/uploads',
+                'url' => 'https://cdn.example.test/uploads',
+            ],
+        ],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
+        'volume' => ['fs' => 'missing-local'],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
+    app()->instance(ProjectConfig::class, $projectConfig);
+
+    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+
+    expect(fn () => $migration->up())->toThrow(RuntimeException::class, <<<'TEXT'
+        'missing-local' => [
+            'driver' => 'local',
+            'root' => '/var/www/storage/uploads',
+            'url' => 'https://cdn.example.test/uploads',
+        ],
+        TEXT);
+});
+
+test('falls back to a manual TODO for a missing filesystem of an unrecognized type', function () {
+    Volume::factory()->create(['fs' => 'missing-custom']);
+    /** @var ProjectConfig&MockInterface $projectConfig */
+    $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
+    $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
+        'missing-custom' => [
+            'type' => 'Vendor\S3\Fs',
+            'settings' => ['bucket' => 'my-bucket'],
+        ],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
+        'volume' => ['fs' => 'missing-custom'],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
+    app()->instance(ProjectConfig::class, $projectConfig);
+
+    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+
+    expect(fn () => $migration->up())->toThrow(
+        RuntimeException::class,
+        'no automatic Laravel disk equivalent for Craft filesystem type "Vendor\S3\Fs"',
+    );
+});
