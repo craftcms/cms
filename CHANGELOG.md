@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.11.3 - 2026-09-18
 
 - Fixed an error that could occur when registering or logging in with a passkey. ([#19657](https://github.com/craftcms/cms/issues/19657), [#19660](https://github.com/craftcms/cms/pull/19660))
 
