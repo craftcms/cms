@@ -7,8 +7,10 @@
    * same trees instead, which is why every control here writes through
    * `prefixedHandleAsArray` rather than a form input name.
    */
+  import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/checkbox/checkbox';
+  import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/select/select';
   import {computed, inject, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
@@ -49,6 +51,10 @@
 
   const canClear = computed(
     () => !props.col.isContainer && props.col.canBeCleared
+  );
+
+  const isMatchOnly = computed(
+    () => !props.col.isContainer && props.col.canBeSet === false
   );
 
   const matchCriteriaChecked = computed(() =>
@@ -97,7 +103,16 @@
 <template>
   <tr>
     <th scope="row">
-      {{ col.label }}<br />
+      {{ col.label }}
+      <craft-badge v-if="isMatchOnly" fill="gray">{{
+        t('Match only')
+      }}</craft-badge>
+      <craft-info-icon v-if="isMatchOnly">{{
+        t(
+          'This value can’t be imported directly — it can only be used to match against an existing element.'
+        )
+      }}</craft-info-icon>
+      <br />
       <code>{{ col.handle }}</code>
     </th>
     <td :class="{'best-guess': isBestGuess}">

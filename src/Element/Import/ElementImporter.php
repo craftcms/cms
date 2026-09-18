@@ -347,6 +347,7 @@ abstract class ElementImporter extends BaseImporter
                 'isContainer' => $prop['isContainer'] ?? false,
                 'canBeMatchCriteria' => $prop['canBeMatchCriteria'] ?? true,
                 'canBeCleared' => $prop['canBeCleared'] ?? true,
+                'canBeSet' => $prop['canBeSet'] ?? true,
                 'isProperty' => true,
             ], $props);
         }

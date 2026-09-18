@@ -85,7 +85,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var int|null The element's ID
      */
     #[AllowedInSandbox]
-    #[ImportableAttribute('id', 'ID', canBeCleared: false)]
+    #[ImportableAttribute('id', 'ID', canBeCleared: false, canBeSet: false)]
     public ?int $id = null;
 
     /**
@@ -97,7 +97,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s UID
      */
     #[AllowedInSandbox]
-    #[ImportableAttribute('uid', 'UID', canBeCleared: false)]
+    #[ImportableAttribute('uid', 'UID', canBeCleared: false, canBeSet: false)]
     public ?string $uid = null;
 
     /**

@@ -26,6 +26,7 @@ export interface MappingCol {
   isContainer: boolean;
   canBeMatchCriteria: boolean;
   canBeCleared: boolean;
+  canBeSet?: boolean;
   canKeepMissingNestedElements?: boolean;
   isProperty?: boolean;
   /** Containers only — the global field UID, for fetching the nested columns. */

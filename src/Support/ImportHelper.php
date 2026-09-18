@@ -93,6 +93,7 @@ class ImportHelper
                 'isContainer' => $arguments[3] ?? $arguments['isContainer'] ?? false,
                 'canBeMatchCriteria' => $arguments[4] ?? $arguments['canBeMatchCriteria'] ?? true,
                 'canBeCleared' => $arguments[5] ?? $arguments['canBeCleared'] ?? true,
+                'canBeSet' => $arguments[6] ?? $arguments['canBeSet'] ?? true,
                 'defaultValue' => $property->getDefaultValue(),
             ];
         }, $properties);

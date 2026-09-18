@@ -16,5 +16,6 @@ final readonly class Importable
         public bool $isContainer = false,
         public bool $canBeMatchCriteria = true,
         public bool $canBeCleared = true,
+        public bool $canBeSet = true,
     ) {}
 }
