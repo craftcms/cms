@@ -182,168 +182,179 @@
     :has-sidebar="hasSidebar"
     :additional-skip-links="additionalSkipLinks"
   />
-  <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
-  <div class="cp">
-    <div class="cp__sidebar">
-      <!-- No props: the sidebar reads the shared store directly, and renders
+  <div class="bg-header">
+    <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
+    <div class="cp">
+      <div class="cp__sidebar">
+        <!-- No props: the sidebar reads the shared store directly, and renders
         the toggle that writes to it. -->
-      <CpSidebar />
-    </div>
-    <div class="cp__main">
-      <div class="cp-page">
-        <div class="cp-page__header">
-          <FlashMessages />
-        </div>
-        <div class="cp-page__main">
-          <slot name="page-main">
-            <main id="main" tabindex="-1">
-              <form
-                method="post"
-                @submit.prevent="form && save()"
-                class="cp-main"
-              >
-                <LayoutSlotOutlet name="error-summary">
-                  <slot name="error-summary">
-                    <ErrorSummary
-                      v-if="form && form.hasErrors"
-                      :errors="form.errors"
-                    />
-                  </slot>
-                </LayoutSlotOutlet>
-                <CalloutReadOnly v-if="readOnly" />
-                <div
-                  ref="contentLayout"
-                  class="cp-content"
-                  :class="{
-                    'cp-content--sidebar': hasSidebar,
-                    'cp-content--details': hasDetails,
-                  }"
-                  :style="detailsResizer.style.value"
+        <CpSidebar />
+      </div>
+      <div class="cp__main">
+        <div class="cp-page">
+          <div class="cp-page__header">
+            <FlashMessages />
+          </div>
+          <div class="cp-page__main">
+            <slot name="page-main">
+              <main id="main" tabindex="-1">
+                <form
+                  method="post"
+                  @submit.prevent="form && save()"
+                  class="cp-main"
                 >
-                  <ContentSidebar
-                    :visible="hasSidebar"
-                    :subnav="subnav"
-                    :subnav-actions="subnavActions"
-                  >
-                    <template v-for="name in sidebarSlots" :key="name" #[name]>
-                      <slot :name="name"></slot>
-                    </template>
-                  </ContentSidebar>
-
-                  <div
-                    class="cp-content__main"
-                    :class="{
-                      'cp-content__main--constrained': contentConstrained,
-                      'cp-content__main--centered': centerContent,
-                      'cp-content__main--last-child': !hasDetails,
-                    }"
-                    :style="contentMainStyle"
-                  >
-                    <slot name="content-toolbar">
-                      <CpContainer v-show="hasToolbar">
-                        <div
-                          class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-[42px]"
-                        >
-                          <LayoutSlotOutlet name="content-toolbar">
-                            <div class="flex gap-2 items-center">
-                              <LayoutSlotOutlet name="content-toolbar-meta">
-                                <slot name="content-toolbar-meta"></slot>
-                              </LayoutSlotOutlet>
-                            </div>
-
-                            <div class="flex gap-2 items-center">
-                              <LayoutSlotOutlet name="content-toolbar-actions">
-                                <slot name="content-toolbar-actions"></slot>
-                              </LayoutSlotOutlet>
-                            </div>
-                          </LayoutSlotOutlet>
-                        </div>
-                      </CpContainer>
+                  <LayoutSlotOutlet name="error-summary">
+                    <slot name="error-summary">
+                      <ErrorSummary
+                        v-if="form && form.hasErrors"
+                        :errors="form.errors"
+                      />
                     </slot>
+                  </LayoutSlotOutlet>
+                  <CalloutReadOnly v-if="readOnly" />
+                  <div
+                    ref="contentLayout"
+                    class="cp-content"
+                    :class="{
+                      'cp-content--sidebar': hasSidebar,
+                      'cp-content--details': hasDetails,
+                    }"
+                    :style="detailsResizer.style.value"
+                  >
+                    <ContentSidebar
+                      :visible="hasSidebar"
+                      :subnav="subnav"
+                      :subnav-actions="subnavActions"
+                    >
+                      <template
+                        v-for="name in sidebarSlots"
+                        :key="name"
+                        #[name]
+                      >
+                        <slot :name="name"></slot>
+                      </template>
+                    </ContentSidebar>
 
-                    <slot name="content-header">
-                      <div id="cp-content-header">
-                        <CpContainer class="pt-xl pb-md">
-                          <div class="flex items-center justify-between">
-                            <LayoutSlotOutlet name="title">
-                              <slot name="title">
-                                <h1 class="text-xl">{{ title }}</h1>
-                              </slot>
+                    <div
+                      class="cp-content__main"
+                      :class="{
+                        'cp-content__main--constrained': contentConstrained,
+                        'cp-content__main--centered': centerContent,
+                        'cp-content__main--last-child': !hasDetails,
+                      }"
+                      :style="contentMainStyle"
+                    >
+                      <slot name="content-toolbar">
+                        <CpContainer v-show="hasToolbar">
+                          <div
+                            class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-[42px]"
+                          >
+                            <LayoutSlotOutlet name="content-toolbar">
+                              <div class="flex gap-2 items-center">
+                                <LayoutSlotOutlet name="content-toolbar-meta">
+                                  <slot name="content-toolbar-meta"></slot>
+                                </LayoutSlotOutlet>
+                              </div>
+
+                              <div class="flex gap-2 items-center">
+                                <LayoutSlotOutlet
+                                  name="content-toolbar-actions"
+                                >
+                                  <slot name="content-toolbar-actions"></slot>
+                                </LayoutSlotOutlet>
+                              </div>
                             </LayoutSlotOutlet>
-
-                            <div class="flex gap-2 items-center">
-                              <LayoutSlotOutlet name="content-actions">
-                                <slot name="content-actions"></slot>
-                              </LayoutSlotOutlet>
-                            </div>
                           </div>
                         </CpContainer>
-                      </div>
-                    </slot>
+                      </slot>
 
-                    <LayoutSlotOutlet name="content-tabs">
-                      <slot name="content-tabs"></slot>
-                    </LayoutSlotOutlet>
-                    <div>
-                      <slot></slot>
-                    </div>
-                    <div class="sticky bottom-0 z-sticky bg-default mt-lg">
-                      <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
+                      <slot name="content-header">
+                        <div id="cp-content-header">
+                          <CpContainer class="pt-xl pb-md">
+                            <div class="flex items-center justify-between">
+                              <LayoutSlotOutlet name="title">
+                                <slot name="title">
+                                  <h1 class="text-xl">{{ title }}</h1>
+                                </slot>
+                              </LayoutSlotOutlet>
+
+                              <div class="flex gap-2 items-center">
+                                <LayoutSlotOutlet name="content-actions">
+                                  <slot name="content-actions"></slot>
+                                </LayoutSlotOutlet>
+                              </div>
+                            </div>
+                          </CpContainer>
+                        </div>
+                      </slot>
+
+                      <LayoutSlotOutlet name="content-tabs">
+                        <slot name="content-tabs"></slot>
+                      </LayoutSlotOutlet>
+                      <div>
+                        <slot></slot>
+                      </div>
+                      <div class="sticky bottom-0 z-sticky bg-default mt-lg">
+                        <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
                         puts its notices, the legacy element editor's included. -->
-                      <div
-                        v-show="hasNotices"
-                        id="content-notice"
-                        class="cp-content__notices"
-                        role="status"
-                      >
-                        <LayoutSlotOutlet name="content-notices">
-                          <slot name="content-notices"></slot>
-                        </LayoutSlotOutlet>
-                      </div>
-                      <ContentFooter
-                        :read-only="readOnly"
-                        :form="form"
-                        :default-form-actions="defaultFormActions"
-                        :form-actions="formActions"
-                        :form-additional-actions="formAdditionalActions"
-                        :form-additional-buttons="formAdditionalButtons"
-                        :submit-button-label="submitButtonLabel"
-                        :contained="centerContent"
-                        @save="save"
-                      >
-                        <template
-                          v-for="name in footerSlots"
-                          :key="name"
-                          #[name]
+                        <div
+                          v-show="hasNotices"
+                          id="content-notice"
+                          class="cp-content__notices"
+                          role="status"
                         >
-                          <slot :name="name"></slot>
-                        </template>
-                      </ContentFooter>
+                          <LayoutSlotOutlet name="content-notices">
+                            <slot name="content-notices"></slot>
+                          </LayoutSlotOutlet>
+                        </div>
+                        <ContentFooter
+                          :read-only="readOnly"
+                          :form="form"
+                          :default-form-actions="defaultFormActions"
+                          :form-actions="formActions"
+                          :form-additional-actions="formAdditionalActions"
+                          :form-additional-buttons="formAdditionalButtons"
+                          :submit-button-label="submitButtonLabel"
+                          :contained="centerContent"
+                          @save="save"
+                        >
+                          <template
+                            v-for="name in footerSlots"
+                            :key="name"
+                            #[name]
+                          >
+                            <slot :name="name"></slot>
+                          </template>
+                        </ContentFooter>
+                      </div>
                     </div>
+
+                    <ContentDetails
+                      ref="detailsColumn"
+                      :visible="hasDetails"
+                      :resizer="detailsResizer"
+                    >
+                      <template
+                        v-if="slots['content-details']"
+                        #content-details
+                      >
+                        <slot name="content-details"></slot>
+                      </template>
+                    </ContentDetails>
                   </div>
+                </form>
+              </main>
+            </slot>
+          </div>
 
-                  <ContentDetails
-                    ref="detailsColumn"
-                    :visible="hasDetails"
-                    :resizer="detailsResizer"
-                  >
-                    <template v-if="slots['content-details']" #content-details>
-                      <slot name="content-details"></slot>
-                    </template>
-                  </ContentDetails>
-                </div>
-              </form>
-            </main>
-          </slot>
+          <footer class="cp-page__footer">
+            <LayoutSlotOutlet name="page-footer">
+              <div class="cp-container">
+                <slot name="page-footer"></slot>
+              </div>
+            </LayoutSlotOutlet>
+          </footer>
         </div>
-
-        <footer class="cp-page__footer">
-          <LayoutSlotOutlet name="page-footer">
-            <div class="cp-container">
-              <slot name="page-footer"></slot>
-            </div>
-          </LayoutSlotOutlet>
-        </footer>
       </div>
     </div>
   </div>

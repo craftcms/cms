@@ -32,6 +32,7 @@
   --background-color-sunken: var(--c-surface-sunken);
   --background-color-overlay: var(--c-surface-overlay);
   --background-color-form: var(--c-surface-form);
+  --background-color-header: var(--c-surface-header);
 
   /* ——— Text ——— */
   --color-text-default: var(--c-text-default);

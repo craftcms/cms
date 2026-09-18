@@ -510,8 +510,6 @@
   --color-static-base-800: #374256;
   --color-static-base-900: #252e41;
   --color-static-base-950: #161c29;
-
-  --c-header-bg: #273043;
 }
 
 [data-theme='dark'] {
