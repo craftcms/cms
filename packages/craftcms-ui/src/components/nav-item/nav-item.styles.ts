@@ -161,7 +161,7 @@ export default css`
    */
   :host([current]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-);
+    border-color: var(--c-color-accent-border-normal);
     color: var(--c-color-accent-on-quiet);
   }
 
@@ -276,6 +276,21 @@ export default css`
 
   :host([icon-only]) li {
     position: relative;
+  }
+
+  /*
+   * A rail shows one row per branch, so no child row is there to carry the
+   * current page's fill. The branch carries it instead, whether the page is the
+   * branch itself or somewhere inside it.
+   */
+  :host([icon-only][active]) .nav-item {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-normal);
+    color: var(--c-color-accent-on-quiet);
+
+    &::before {
+      content: none;
+    }
   }
 
   /* No room to indent, so the stand-ins sit directly under their parent. */

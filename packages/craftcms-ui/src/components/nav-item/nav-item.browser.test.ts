@@ -206,3 +206,64 @@ it("keeps a lent control's keyboard activation from reaching the row", async () 
   expect(opened()).toBe(2);
   expect(reachedRow).toEqual(['keydown:Escape', 'keyup:Escape']);
 });
+
+/** A rail holding the page itself, with no subnav, beside a branch it's in. */
+async function railPairFixture(): Promise<{
+  leaf: CraftNavItem;
+  branch: CraftNavItem;
+}> {
+  const list = document.createElement('craft-nav-list');
+
+  const leaf = document.createElement('craft-nav-item') as CraftNavItem;
+  leaf.setAttribute('icon', 'gauge');
+  leaf.setAttribute('href', '/admin/dashboard');
+  leaf.setAttribute('icon-only', '');
+  leaf.setAttribute('active', '');
+  leaf.setAttribute('current', '');
+  leaf.append(document.createTextNode('Dashboard'));
+
+  const branch = document.createElement('craft-nav-item') as CraftNavItem;
+  branch.setAttribute('icon', 'gear');
+  branch.setAttribute('href', '/admin/graphql');
+  branch.setAttribute('icon-only', '');
+  branch.setAttribute('active', '');
+  branch.append(document.createTextNode('GraphQL'));
+
+  const subnav = document.createElement('craft-nav-list');
+  subnav.slot = 'subnav';
+  const child = document.createElement('craft-nav-item');
+  child.setAttribute('href', '/admin/graphql/schemas');
+  child.textContent = 'Schemas';
+  subnav.append(child);
+  branch.append(subnav);
+
+  list.append(leaf, branch);
+  document.body.append(list);
+  await leaf.updateComplete;
+  await branch.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+  return {leaf, branch};
+}
+
+it('marks a rail branch exactly as it marks the page itself', async () => {
+  const {leaf, branch} = await railPairFixture();
+  const row = (item: CraftNavItem) =>
+    getComputedStyle(item.shadowRoot!.querySelector('.nav-item')!);
+
+  const page = row(leaf);
+  const inside = row(branch);
+
+  expect(inside.backgroundColor).toBe(page.backgroundColor);
+  expect(inside.borderColor).toBe(page.borderColor);
+  expect(inside.color).toBe(page.color);
+});
+
+it('drops the trail bar from a rail branch', async () => {
+  const {branch} = await railPairFixture();
+  const bar = getComputedStyle(
+    branch.shadowRoot!.querySelector('.nav-item')!,
+    '::before'
+  );
+
+  expect(bar.content).toBe('none');
+});
