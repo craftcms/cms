@@ -117,8 +117,9 @@
 
 <style scoped lang="scss">
   .cp-top-bar {
-    padding-block: var(--c-spacing-sm) var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
+    min-height: calc(42rem / 16);
     display: grid;
     gap: var(--spacing);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
