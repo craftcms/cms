@@ -354,13 +354,16 @@
 <style scoped lang="css">
   .cp {
     display: grid;
-    background-color: var(--c-surface-sunken);
-    border-start-start-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
-    border-start-end-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
+    background-color: var(--c-header-bg);
 
     @media screen and (min-width: 768px) {
       grid-template-columns: auto minmax(0, 1fr);
     }
+  }
+
+  .cp__sidebar {
+    border-start-start-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
+    background-color: var(--c-surface-sunken);
   }
 
   /* `inline-size`, not `size`: size containment resolves the height from the
@@ -369,6 +372,8 @@
   .cp__main {
     container-type: inline-size;
     container-name: cp-main;
+    border-start-end-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
+    background-color: var(--c-surface-default);
   }
 
   main {
