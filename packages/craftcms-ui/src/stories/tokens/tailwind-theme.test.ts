@@ -79,7 +79,7 @@ describe('themeEntries', () => {
       'sunken',
       'overlay',
       'form',
-      'header'
+      'header',
     ]);
     expect(entriesIn('color').length).toBeGreaterThan(0);
   });

@@ -23,7 +23,11 @@ export function withHoverInteraction({
   delayOut = 300,
 }: HoverInteractionOptions = {}) {
   return {
-    visibilityTriggerFunction: ({controller}: {controller: HoverController}) => {
+    visibilityTriggerFunction: ({
+      controller,
+    }: {
+      controller: HoverController;
+    }) => {
       let isFocused = false;
       let isHovered = false;
       let delayTimeout: ReturnType<typeof setTimeout> | undefined;

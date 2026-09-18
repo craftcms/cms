@@ -40,7 +40,11 @@
   --c-text-link: var(--color-blue-600);
 
   /* Transparent tokens */
-  --c-color-border-translucent: color-mix(in srgb, var(--color-slate-900), transparent 39%);
+  --c-color-border-translucent: color-mix(
+    in srgb,
+    var(--color-slate-900),
+    transparent 39%
+  );
 
   /* Shadows */
   --c-shadow-sunken: var(--inset-shadow-sm);
@@ -52,11 +56,12 @@
   --c-color-mix-active: currentColor 20%;
 
   --c-font-body:
-    system-ui, BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   --c-font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
 
   --c-radius-sm: 3px;
   --c-radius-md: 4px;
@@ -94,9 +99,12 @@
   --c-shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
   --c-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --c-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --c-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --c-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --c-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --c-shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --c-shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --c-shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --c-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
   /**
@@ -217,7 +225,8 @@
   --c-pane-border-style: solid;
   --c-pane-border-color: transparent;
   --c-pane-radius: var(--c-radius-md);
-  --c-pane-shadow: 0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
+  --c-pane-shadow:
+    0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
 
   /* Layers (z-index), lowest to highest.
      Only for things that stack against other parts of the page; a component
