@@ -56,8 +56,8 @@ return new class extends Migration
             ));
 
             throw new RuntimeException(
-                "Craft filesystems can no longer provide asset storage. Configure Laravel filesystem disks named $handles ".
-                "in config/filesystems.php with settings equivalent to the previous Craft filesystem definitions, then run the upgrade again:\n\n$suggestions",
+                "The Craft Filesystem concept has been removed. You should instead configure Laravel filesystem disks named $handles ".
+                "in config/filesystems.php with settings equivalent to the previous Craft Filesystem definitions, then run the upgrade again:\n\n$suggestions",
             );
         }
 
@@ -151,14 +151,14 @@ return new class extends Migration
         $type = $filesystem['type'] ?? null;
         $settings = is_array($filesystem['settings'] ?? null) ? $filesystem['settings'] : [];
 
-        if ($type === 'craft\fs\Local' || $type === 'craft\fs\Temp') {
+        if ($type === 'craft\fs\Local' || $type === 'craft\fs\Temp' || $type === 'CraftCms\Cms\Filesystem\Filesystems\Local') {
             return $this->localDiskConfig($handle, $filesystem, $settings);
         }
 
         $typeLabel = is_string($type) && $type !== '' ? $type : 'unknown';
 
         return "'$handle' => [\n".
-            "    // TODO: no automatic Laravel disk equivalent for Craft filesystem type \"$typeLabel\".\n".
+            "    // No automatic Laravel disk equivalent for Craft Filesystem type \"$typeLabel\". You will have to create this manually.\n".
             '    // Previous settings: '.json_encode($settings)."\n".
             '],';
     }
