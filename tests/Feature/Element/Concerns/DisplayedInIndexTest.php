@@ -159,7 +159,7 @@ describe('defaultTableAttributes', function () {
         expect($attributes)->toContain('link');
     });
 
-    test('returns default attributes for singles source', function () {
+    test('returns default attributes for the legacy singles source', function () {
         $attributes = Entry::defaultTableAttributes('singles');
         expect($attributes)->toBeArray();
         expect($attributes)->toContain('status');
@@ -176,19 +176,19 @@ describe('defineDefaultTableAttributes', function () {
         expect($attributes)->toContain('section');
     });
 
-    test('excludes section attribute for singles source', function () {
+    test('excludes section attribute for the legacy singles source', function () {
         $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('singles');
         expect($attributes)->not->toContain('section');
     });
 
-    test('excludes date and author attributes for singles source', function () {
+    test('excludes date and author attributes for the legacy singles source', function () {
         $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('singles');
         expect($attributes)->not->toContain('postDate');
         expect($attributes)->not->toContain('expiryDate');
         expect($attributes)->not->toContain('authors');
     });
 
-    test('includes date and author attributes for non-singles sources', function () {
+    test('includes date and author attributes for a non-single section source', function () {
         $attributes = TestEntryForDisplayedInIndex::exposeDefineDefaultTableAttributes('section:blog');
         expect($attributes)->toContain('postDate');
         expect($attributes)->toContain('expiryDate');

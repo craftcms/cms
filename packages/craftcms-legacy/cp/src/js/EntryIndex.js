@@ -34,10 +34,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       this.settings.context === 'index' &&
       typeof defaultSectionHandle !== 'undefined'
     ) {
-      if (defaultSectionHandle === 'singles') {
-        return 'singles';
-      }
-
       for (let i = 0; i < this.$sources.length; i++) {
         const $source = $(this.$sources[i]);
         if ($source.data('handle') === defaultSectionHandle) {
@@ -58,15 +54,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       return;
     }
 
-    let sectionHandle, entryTypeHandle;
-
     // Get the handle of the selected source
-    if (this.$source.data('key') === 'singles') {
-      sectionHandle = 'singles';
-    } else {
-      sectionHandle = this.$source.data('handle');
-      entryTypeHandle = this.$source.data('entry-type');
-    }
+    const sectionHandle = this.$source.data('handle');
+    const entryTypeHandle = this.$source.data('entry-type');
 
     // Update the New Entry button
     // ---------------------------------------------------------------------

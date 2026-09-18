@@ -230,7 +230,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
         return sprintf(
             'content/%s/%s',
             $page ? Str::slug($page) : 'entries',
-            $this->type === SectionType::Single ? 'singles' : $this->handle,
+            $this->handle,
         );
     }
 
@@ -240,8 +240,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
     public function getPage(): ?string
     {
         if (! isset($this->page)) {
-            $sourceKey = $this->type === SectionType::Single ? 'singles' : "section:$this->uid";
-            $source = ElementSources::findSource(Entry::class, $sourceKey);
+            $source = ElementSources::findSource(Entry::class, "section:$this->uid");
             $this->page = $source['page'] ?? false;
         }
 
