@@ -78,14 +78,14 @@ class SendUserReviewNotifications
         $context = $this->stageContext($event, $stage);
         $component = $stage?->component();
 
-        if (! $event->run->isPending() || ! $component instanceof UserReviewStage || $context === null || $this->decisions($context) !== []) {
+        if (! $event->run->isPending() || ! $component instanceof UserReviewStage || $context === null) {
             return;
         }
 
         $this->send(
             $event,
             $stage,
-            $component->reviewers($context),
+            $component->outstandingReviewers($context),
             'workflow_review_requested',
             t('Review requested'),
             t('“{entry}” is awaiting your approval in {stage}.', [
@@ -133,9 +133,7 @@ class SendUserReviewNotifications
             return collect();
         }
 
-        $reviewerIds = collect($this->decisions($context))->pluck('reviewerId');
-
-        return $component->reviewers($context)->whereNotIn('id', $reviewerIds);
+        return $component->outstandingReviewers($context);
     }
 
     private function stageContext(WorkflowTransitioned|WorkflowCommented $event, ?WorkflowStageData $stage): ?WorkflowStageContext
@@ -146,12 +144,6 @@ class SendUserReviewNotifications
             $stage,
             $event->run->payload[$stage->uid] ?? [],
         );
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function decisions(WorkflowStageContext $context): array
-    {
-        return is_array($context->payload['decisions'] ?? null) ? $context->payload['decisions'] : [];
     }
 
     /** @param Collection<int, mixed> $recipients */

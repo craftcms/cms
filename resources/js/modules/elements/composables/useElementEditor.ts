@@ -186,11 +186,11 @@ export function useElementEditor({saveData}: Options = {}) {
   const workflowReviewLocked = computed(
     () =>
       !editingReviewedDraft.value &&
-      ['pending', 'approved'].includes(props.workflow.current?.status ?? '')
+      ['pending', 'approved'].includes(props.workflow?.current?.status ?? '')
   );
 
   watch(
-    () => props.workflow.current?.status,
+    () => props.workflow?.current?.status,
     (status, previousStatus) => {
       if (
         status !== previousStatus &&

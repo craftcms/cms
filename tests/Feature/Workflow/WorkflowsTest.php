@@ -37,6 +37,7 @@ use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\Stages\MissingWorkflowStage;
 use CraftCms\Cms\Workflow\Stages\WorkflowStage as BaseWorkflowStage;
+use CraftCms\Cms\Workflow\UserReview\UserReviewApprovalMode;
 use CraftCms\Cms\Workflow\UserReview\UserReviewDecision;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use CraftCms\Cms\Workflow\Workflows;
@@ -135,6 +136,7 @@ it('renders registered stage types and inline settings forms', function () {
     expect($userReview['label'])->toBe('User review')
         ->and($userReview['settings'])->toBe([
             'approvalsRequired' => 1,
+            'approvalMode' => 'total',
             'userGroups' => [],
         ])
         ->and($userReview['settingsForm'])->not->toBeNull()
@@ -696,12 +698,19 @@ function assignWorkflow(Entry $entry, Workflow $workflow): void
 /** @return array{name: string, type: string, settings: array<string, mixed>} */
 function userReviewStage(string $name, UserGroup $group, int $approvals = 1): array
 {
+    return userReviewStageForGroups($name, [$group], $approvals);
+}
+
+/** @param list<UserGroup> $groups */
+function userReviewStageForGroups(string $name, array $groups, int $approvals = 1, UserReviewApprovalMode $approvalMode = UserReviewApprovalMode::Total): array
+{
     return [
         'name' => $name,
         'type' => UserReviewStage::class,
         'settings' => [
             'approvalsRequired' => $approvals,
-            'userGroups' => [$group->uid],
+            'approvalMode' => $approvalMode->value,
+            'userGroups' => collect($groups)->pluck('uid')->all(),
         ],
     ];
 }

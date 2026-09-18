@@ -202,6 +202,7 @@
 
       <TypeConfigurator
         :key="stage.type"
+        class="workflow-stage__configurator"
         :types="typePickerOptions"
         :selected-type-label="stageTypeLabel(stage)"
         :type-label="t('Type')"
@@ -237,5 +238,10 @@
 
   .workflow-stage__title :deep(craft-input) {
     min-inline-size: 8rem;
+  }
+
+  .workflow-stage__configurator
+    :deep(.type-configurator__fields > craft-field) {
+    flex: 0 0 auto;
   }
 </style>

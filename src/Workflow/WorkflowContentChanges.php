@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use Illuminate\Container\Attributes\Singleton;
 use WeakMap;
 
@@ -58,6 +60,13 @@ readonly class WorkflowContentChanges
                 $event->element->getDirtyAttributes() === [] &&
                 $event->element->getDirtyFields() === [])
         ) {
+            return;
+        }
+
+        if (($event->element->applyingDraft || $event->element->propagatingFrom?->applyingDraft) && WorkflowRun::query()
+            ->whereIn('draftId', $write['draftIds'])
+            ->where('status', WorkflowStatus::Approved)
+            ->exists()) {
             return;
         }
 

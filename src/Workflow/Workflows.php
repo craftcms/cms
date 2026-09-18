@@ -35,6 +35,7 @@ use CraftCms\Cms\Workflow\Events\WorkflowTransitioning;
 use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -479,7 +480,9 @@ class Workflows
             $stage = $this->currentStage($run);
             $context = $this->stageContext($draft, $run, $stage);
             $result = $stage->component()->evaluate($context);
-            $this->recordAutomatedTransition($draft, $run, $stage, $result);
+            if (! $stage->component() instanceof UserReviewStage) {
+                $this->recordAutomatedTransition($draft, $run, $stage, $result);
+            }
 
             if (! $this->advanceFromResult($run, $stage, $result)) {
                 return;

@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Workflow\UserReview;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\UserGroupSelect;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
 use CraftCms\Cms\Workflow\Data\WorkflowStageResult;
 use CraftCms\Cms\Workflow\Enums\WorkflowStageStatus;
 use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
 use CraftCms\Cms\Workflow\Stages\WorkflowStage;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
@@ -30,6 +30,8 @@ class UserReviewStage extends WorkflowStage
     protected bool $showDefaultReviewActions = false;
 
     public int $approvalsRequired = 1;
+
+    public UserReviewApprovalMode $approvalMode = UserReviewApprovalMode::Total;
 
     /** @var list<string> */
     public array $userGroups = [];
@@ -45,6 +47,7 @@ class UserReviewStage extends WorkflowStage
             'userGroups' => ['required', 'array', 'min:1'],
             'userGroups.*' => ['required', 'string', 'distinct', Rule::exists(Table::USERGROUPS, 'uid')],
             'approvalsRequired' => ['required', 'integer', 'min:1'],
+            'approvalMode' => ['required', Rule::enum(UserReviewApprovalMode::class)],
         ];
     }
 
@@ -55,24 +58,34 @@ class UserReviewStage extends WorkflowStage
                 ->required(),
             Field::make(t('Approvals required'), Number::make('approvalsRequired')->min(1))
                 ->required(),
+            Field::make(t('Approval mode'), Choice::make('approvalMode')->options([
+                ['label' => t('Total'), 'value' => UserReviewApprovalMode::Total->value],
+                ['label' => t('Per group'), 'value' => UserReviewApprovalMode::PerGroup->value],
+            ]))->required(),
         ]);
     }
 
     public function evaluate(WorkflowStageContext $context): WorkflowStageResult
     {
-        $decisions = $this->decisions($context->payload);
-        $failed = collect($decisions)->contains(fn (array $decision): bool => $decision['decision'] === UserReviewDecision::Rejected->value);
-
-        if ($failed) {
+        if (UserReviewDecisions::fromPayload($context->payload)->hasRejection()) {
             return new WorkflowStageResult(WorkflowStageStatus::Failed, t('Changes requested'), $context->payload);
         }
 
-        $reviewerIds = $this->reviewers($context)->pluck('id')->all();
-        $approvals = collect($decisions)->filter(fn (array $decision): bool => $decision['decision'] === UserReviewDecision::Approved->value &&
-            in_array($decision['reviewerId'], $reviewerIds, true)
-        )->count();
+        if ($this->hasMissingReviewerGroups()) {
+            return new WorkflowStageResult(
+                WorkflowStageStatus::Pending,
+                t('A configured reviewer group no longer exists.'),
+                $context->payload,
+            );
+        }
 
-        if (count($reviewerIds) < $this->approvalsRequired) {
+        $state = $this->state($context);
+
+        if ($this->approvalMode === UserReviewApprovalMode::PerGroup) {
+            return $this->evaluatePerGroup($context, $state);
+        }
+
+        if ($state->reviewers->count() < $this->approvalsRequired) {
             return new WorkflowStageResult(
                 WorkflowStageStatus::Pending,
                 t('Not enough eligible reviewers are available.'),
@@ -80,6 +93,7 @@ class UserReviewStage extends WorkflowStage
             );
         }
 
+        $approvals = $state->effectiveApprovalIds->count();
         if ($approvals >= $this->approvalsRequired) {
             return new WorkflowStageResult(WorkflowStageStatus::Approved, t('Approved'), $context->payload);
         }
@@ -110,18 +124,9 @@ class UserReviewStage extends WorkflowStage
 
     public function summaryProps(WorkflowStageContext $context, CraftUser $viewer): array
     {
-        $reviewers = $this->reviewers($context);
-        $reviewerIds = $reviewers->pluck('id');
-        $approvals = collect($this->decisions($context->payload))
-            ->where('decision', UserReviewDecision::Approved->value)
-            ->whereIn('reviewerId', $reviewerIds)
-            ->count();
+        $groups = $this->reviewerGroups();
 
-        return [
-            'approvalsRequired' => $this->approvalsRequired,
-            'approvals' => $approvals,
-            'reviewers' => $reviewers->map(fn (User $reviewer): array => ['name' => $reviewer->name])->all(),
-        ];
+        return UserReviewSummary::props($this, UserReviewState::for($context, $groups), $groups);
     }
 
     public function decide(UserReviewDecision $decision, ?string $message, WorkflowStageContext $context, CraftUser $reviewer): WorkflowStageResult
@@ -136,15 +141,7 @@ class UserReviewStage extends WorkflowStage
         }
 
         $payload = $context->payload;
-        $payload['decisions'] = [
-            ...$this->decisions($payload),
-            [
-                'reviewerId' => $reviewer->getCraftUserId(),
-                'decision' => $decision->value,
-                'message' => $message !== '' ? $message : null,
-                'decidedAt' => now()->toIso8601String(),
-            ],
-        ];
+        $payload['decisions'] = UserReviewDecisions::fromPayload($payload)->append($reviewer->getCraftUserId(), $decision, $message !== '' ? $message : null);
 
         return $this->evaluate(new WorkflowStageContext(
             draft: $context->draft,
@@ -156,38 +153,73 @@ class UserReviewStage extends WorkflowStage
 
     private function canReview(WorkflowStageContext $context, CraftUser $reviewer): bool
     {
+        if ($this->hasMissingReviewerGroups()) {
+            return false;
+        }
+
         $reviewerId = $reviewer->getCraftUserId();
+        $state = $this->state($context);
 
         return $reviewerId !== null
             && $reviewerId !== $context->run->authorId
-            && $this->reviewers($context)->contains('id', $reviewerId)
-            && collect($this->decisions($context->payload))->doesntContain('reviewerId', $reviewerId);
+            && $state->reviewers->contains('id', $reviewerId)
+            && $state->effectiveApprovalIds->doesntContain($reviewerId)
+            && ! UserReviewDecisions::fromPayload($context->payload)->hasDecisionFrom($reviewerId);
     }
 
     /** @return Collection<int, User> */
-    public function reviewers(WorkflowStageContext $context): Collection
+    public function outstandingReviewers(WorkflowStageContext $context): Collection
     {
-        $groupIds = array_filter(array_map(
-            fn (string $uid): ?int => UserGroups::getGroupByUid($uid)?->id,
-            $this->userGroups,
-        ));
+        if ($this->hasMissingReviewerGroups()) {
+            return collect();
+        }
 
-        return User::find()
-            ->groupId($groupIds)
-            ->status(User::STATUS_ACTIVE)
-            ->id(['not', $context->run->authorId])
-            ->can('accessCp')
-            ->collect()
-            ->filter(fn (User $user): bool => Gate::forUser($user)->allows('view', $context->draft))
+        $state = $this->state($context);
+        $decidedReviewerIds = collect(UserReviewDecisions::fromPayload($context->payload)->all)->pluck('reviewerId');
+
+        return $state->reviewers->whereNotIn('id', $state->effectiveApprovalIds->merge($decidedReviewerIds));
+    }
+
+    private function evaluatePerGroup(WorkflowStageContext $context, UserReviewState $state): WorkflowStageResult
+    {
+        $groups = $this->reviewerGroups()->map(function (UserGroup $group) use ($state): array {
+            $reviewerIds = $state->reviewersForGroup($group)->pluck('id');
+
+            return [
+                'reviewers' => $reviewerIds->count(),
+                'approvals' => $state->effectiveApprovalIds->intersect($reviewerIds)->count(),
+            ];
+        });
+
+        if ($groups->contains(fn (array $group): bool => $group['reviewers'] < $this->approvalsRequired)) {
+            return new WorkflowStageResult(WorkflowStageStatus::Pending, t('Not enough eligible reviewers are available.'), $context->payload);
+        }
+
+        if ($groups->every(fn (array $group): bool => $group['approvals'] >= $this->approvalsRequired)) {
+            return new WorkflowStageResult(WorkflowStageStatus::Approved, t('Approved'), $context->payload);
+        }
+
+        return new WorkflowStageResult(WorkflowStageStatus::Pending, t('Approvals are required from every reviewer group.'), $context->payload);
+    }
+
+    /** @return Collection<int, UserGroup> */
+    private function reviewerGroups(): Collection
+    {
+        $groups = UserGroup::query()->whereIn('uid', $this->userGroups)->get()->keyBy('uid');
+
+        return collect($this->userGroups)
+            ->map(fn (string $uid): ?UserGroup => $groups->get($uid))
+            ->filter()
             ->values();
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return list<array{reviewerId: int, decision: string, message: string|null, decidedAt: string}>
-     */
-    private function decisions(array $payload): array
+    private function hasMissingReviewerGroups(): bool
     {
-        return is_array($payload['decisions'] ?? null) ? $payload['decisions'] : [];
+        return $this->reviewerGroups()->count() !== count($this->userGroups);
+    }
+
+    private function state(WorkflowStageContext $context): UserReviewState
+    {
+        return UserReviewState::for($context, $this->reviewerGroups());
     }
 }

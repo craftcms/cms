@@ -80,9 +80,10 @@ function workflowRun(overrides: Partial<WorkflowRun> = {}): WorkflowRun {
         message: null,
         summaryComponent: 'craft:user-review-workflow-stage-summary',
         summaryProps: {
+          approvalMode: 'total',
           approvalsRequired: 1,
           approvals: 0,
-          reviewers: [{name: 'Ada'}],
+          remainingReviewers: [{name: 'Ada'}],
         },
         events: [],
       },
@@ -366,6 +367,47 @@ describe('WorkflowReviewPanel', () => {
     ]);
   });
 
+  it('presents approval progress for each reviewer group', () => {
+    mount(
+      review({
+        runs: [
+          workflowRun({
+            stages: [
+              {
+                ...workflowRun().stages[0]!,
+                summaryProps: {
+                  approvalMode: 'per-group',
+                  approvalsRequired: 2,
+                  groups: [
+                    {
+                      name: 'Editorial',
+                      approvals: 2,
+                      carriedReviewers: [{name: 'Ada'}],
+                      remainingReviewers: [],
+                    },
+                    {
+                      name: 'Legal',
+                      approvals: 1,
+                      carriedReviewers: [{name: 'Ada'}],
+                      remainingReviewers: [{name: 'Lin'}],
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+        ],
+      })
+    );
+
+    expect(container!.textContent).toContain('Editorial');
+    expect(container!.textContent).toContain('2 of 2 approved');
+    expect(container!.textContent).toContain('Legal');
+    expect(container!.textContent).toContain('1 of 2 approved');
+    expect(container!.textContent).toContain('Lin');
+    expect(container!.textContent).toContain('Approved previously');
+  });
+
   it('omits review choices when commenting is the only available action', () => {
     mount(
       review({
@@ -390,9 +432,10 @@ describe('WorkflowReviewPanel', () => {
             {
               ...workflowRun().stages[0]!,
               summaryProps: {
+                approvalMode: 'total',
                 approvalsRequired: 2,
                 approvals: 1,
-                reviewers: [{name: 'Ada'}, {name: 'Grace'}],
+                remainingReviewers: [{name: 'Grace'}],
               },
             },
           ],
@@ -557,9 +600,10 @@ describe('WorkflowReviewPanel', () => {
                 message: 'Changes requested',
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
                 summaryProps: {
+                  approvalMode: 'total',
                   approvalsRequired: 2,
                   approvals: 1,
-                  reviewers: [{name: 'Ada'}, {name: 'Grace'}, {name: 'Lin'}],
+                  remainingReviewers: [{name: 'Grace'}, {name: 'Lin'}],
                 },
                 events: [
                   timelineItem({
@@ -633,9 +677,11 @@ describe('WorkflowReviewPanel', () => {
                 message: null,
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
                 summaryProps: {
+                  approvalMode: 'total',
                   approvalsRequired: 1,
                   approvals: 1,
-                  reviewers: [{name: 'Ada'}],
+                  approvedReviewers: [{name: 'Ada'}],
+                  remainingReviewers: [],
                 },
                 events: [
                   timelineItem({
@@ -654,9 +700,10 @@ describe('WorkflowReviewPanel', () => {
                 message: null,
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
                 summaryProps: {
+                  approvalMode: 'total',
                   approvalsRequired: 2,
                   approvals: 0,
-                  reviewers: [{name: 'Grace'}, {name: 'Lin'}],
+                  remainingReviewers: [{name: 'Grace'}, {name: 'Lin'}],
                 },
                 events: [],
               },
@@ -690,6 +737,8 @@ describe('WorkflowReviewPanel', () => {
     )!;
 
     expect(editorial.opened).toBe(false);
+    expect(editorial.textContent).toContain('Ada');
+    expect(editorial.textContent).toContain('Approved');
     expect(legal.opened).toBe(true);
     expect(legal.textContent).toContain('Grace');
     expect(legal.textContent).toContain('Lin');

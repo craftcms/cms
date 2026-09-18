@@ -353,12 +353,12 @@ class ElementDraftsController
                 is_numeric($runId) ? (int) $runId : null,
                 is_numeric($currentStage) ? (int) $currentStage : null,
                 function (WorkflowRun $run) use ($element, $oldFieldLayoutId): Response {
-                    $applyApproved = $run->status === WorkflowStatus::Approved;
-                    if (! $applyApproved) {
+                    $validateOnly = $run->status === WorkflowStatus::Approved;
+                    if (! $validateOnly) {
                         $this->applyParamsToElement($element);
                     }
 
-                    return $this->applyElementDraft($element, $oldFieldLayoutId);
+                    return $this->applyElementDraft($element, $oldFieldLayoutId, $validateOnly);
                 },
             );
         }
@@ -370,7 +370,7 @@ class ElementDraftsController
         return $this->applyElementDraft($element, $oldFieldLayoutId);
     }
 
-    private function applyElementDraft(ElementInterface $element, ?int $oldFieldLayoutId): Response
+    private function applyElementDraft(ElementInterface $element, ?int $oldFieldLayoutId, bool $validateOnly = false): Response
     {
         Gate::authorize('save', $element);
 
@@ -383,29 +383,52 @@ class ElementDraftsController
             );
         }
 
+        $elementToSave = $validateOnly ? clone $element : $element;
+
         // Validate and save the draft
-        if ($element->enabled && $element->getEnabledForSite()) {
-            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        if ($elementToSave->enabled && $elementToSave->getEnabledForSite()) {
+            $elementToSave->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         // if we're about to apply an unpublished draft, set propagateRequired to true
         if ($isUnpublishedDraft) {
-            $element->propagateRequired = true;
+            $elementToSave->propagateRequired = true;
         }
 
-        $element->applyingDraft = true;
+        $elementToSave->applyingDraft = true;
 
         // If the field layout ID changed, save all content
-        $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
+        $saveContent = $elementToSave->getFieldLayout()?->id !== $oldFieldLayoutId;
 
         $namespace = $this->request->header('X-Craft-Namespace');
         $crossSiteValidate = $namespace === null && Sites::isMultiSite();
 
-        if (! $this->elements->saveElement(
-            element: $element,
-            crossSiteValidate: $crossSiteValidate,
-            saveContent: $saveContent,
-        )) {
+        if ($validateOnly) {
+            DB::beginTransaction();
+        }
+
+        $saved = false;
+        try {
+            $saved = $this->elements->saveElement(
+                element: $elementToSave,
+                crossSiteValidate: $crossSiteValidate,
+                saveContent: $saveContent,
+            );
+        } finally {
+            if ($validateOnly) {
+                $saved ? DB::commit() : DB::rollBack();
+            }
+        }
+
+        if (! $saved) {
+            if ($validateOnly) {
+                $element->clearErrors();
+                $element->errors()->merge($elementToSave->errors()->getMessages());
+                $element->addInvalidNestedElementIds($elementToSave->getInvalidNestedElementIds());
+
+                return new ElementResponse()->applyDraftFailure($element);
+            }
+
             // save the draft anyway, so we don’t lose the latest changes
             // (see https://github.com/craftcms/cms/issues/18657)
             /** @var MessageBag $errors */
@@ -420,10 +443,11 @@ class ElementDraftsController
             return new ElementResponse()->applyDraftFailure($element);
         }
 
-        $element->applyingDraft = false;
+        $elementToSave->applyingDraft = false;
+        $elementToApply = $validateOnly ? $elementToSave : $element;
 
         if (! $isUnpublishedDraft) {
-            $mutex = Cache::lock("element:$element->canonicalId", 15);
+            $mutex = Cache::lock("element:$elementToApply->canonicalId", 15);
             if (! $mutex->get()) {
                 abort(500, 'Could not acquire a lock to save the element.');
             }
@@ -436,13 +460,13 @@ class ElementDraftsController
             $attributes['workflowCurrentStage'] = $this->request->integer('workflowCurrentStage');
         }
 
-        if ($element instanceof NestedElementInterface) {
+        if ($elementToApply instanceof NestedElementInterface) {
             $attributes['updateSearchIndexForOwner'] = true;
         }
 
         try {
-            $element->propagateRequired = false;
-            $canonical = $this->drafts->applyDraft($element, $attributes);
+            $elementToApply->propagateRequired = false;
+            $canonical = $this->drafts->applyDraft($elementToApply, $attributes);
         } catch (InvalidElementException $exception) {
             return new ElementResponse()->applyDraftFailure($exception->element);
         } finally {

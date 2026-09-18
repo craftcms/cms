@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import CpLink from '@/common/components/CpLink.vue';
 
   defineProps<{
     drafts: CraftCms.Cms.Workflow.Data.WorkflowDraftReviewData[];
@@ -29,9 +30,9 @@
           }}
         </p>
       </div>
-      <craft-button :href="draft.url" variant="outline" size="small">
+      <CpLink as="craft-button" :href="draft.url" size="small">
         {{ t('View draft') }}
-      </craft-button>
+      </CpLink>
     </li>
   </ul>
 </template>
