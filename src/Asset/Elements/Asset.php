@@ -2035,7 +2035,7 @@ JS, [
 
         $volume = $this->getVolume();
 
-        if (! $volume->sourceHasUrls() || $volume->isTemporary()) {
+        if (! $volume->sourceHasUrls() || $volume->isTemporary() || is_null($volume->getResolvedFsTarget())) {
             return null;
         }
 

@@ -174,6 +174,13 @@ class Assets
 
         $extension = $asset->getExtension();
 
+        // A volume whose disk isn't configured can't produce a thumbnail
+        if (is_null($asset->getVolume()->getResolvedFsTarget())) {
+            return $iconFallback ? Url::actionUrl('assets/icon', [
+                'extension' => $extension,
+            ]) : null;
+        }
+
         try {
             $url = $this->assetTransformers->transform($asset, [
                 'width' => $width,
