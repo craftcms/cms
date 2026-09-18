@@ -137,11 +137,6 @@
 
   .cp-sidebar--collapsed {
     width: var(--global-sidebar-collapsed-width);
-
-    .cp-sidebar__body,
-    .cp-sidebar__footer {
-      padding-inline: var(--c-spacing-sm);
-    }
   }
 
   .cp-sidebar__header {
