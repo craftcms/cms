@@ -3,7 +3,6 @@
   import {ref} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import ActivityTimelineComment from './ActivityTimelineComment.vue';
-  import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import {
     type ActivityEvent,
     useActivityTimeline,
@@ -78,9 +77,11 @@
           :data-activity-day="group.key"
         >
           <h4 class="activity-timeline__day">{{ group.label }}</h4>
-          <ActivityTimelineEvent
+          <component
             v-for="(event, index) in group.events"
             :key="event.id"
+            :is="event.component"
+            v-bind="event.props"
             :event="event"
             :element-type="elementType"
             :element-id="elementId"

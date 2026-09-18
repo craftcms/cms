@@ -38,9 +38,11 @@ it('maps renamed general config settings in the adapter', function(): void {
 
     $config->allowAutoUpdates = false;
     $config->environmentVariables = ['@uploads' => '/path/to/uploads'];
+    $config->tempAssetUploadFs = 'asset-uploads';
 
     expect($config->allowUpdates)->toBeFalse()
-        ->and($config->aliases)->toBe(['@uploads' => '/path/to/uploads']);
+        ->and($config->aliases)->toBe(['@uploads' => '/path/to/uploads'])
+        ->and($config->tempAssetUploadDisk)->toBe('asset-uploads');
 });
 
 it('supports moved deprecated config settings', function(): void {

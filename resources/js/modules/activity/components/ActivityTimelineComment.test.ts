@@ -1,6 +1,7 @@
 import {actionClient, type CraftTextExpander} from '@craftcms/ui';
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
 import ActivityTimelineComment from './ActivityTimelineComment.vue';
 
 vi.mock('../../markdown-field/markdown-field', () => {
@@ -26,6 +27,53 @@ afterEach(() => {
   app.unmount();
   container.remove();
   vi.restoreAllMocks();
+});
+
+it('renders an existing comment with its activity metadata', async () => {
+  const event: ActivityEvent = {
+    id: 'comment-1',
+    component: 'craft:activity-timeline-comment',
+    props: {},
+    icon: 'comment',
+    occurredAt: '2026-09-15T09:41:00+00:00',
+    formattedOccurredAt: {
+      date: '2026-09-15',
+      dateLabel: 'Sep 15, 2026',
+      time: '9:41 AM',
+      full: 'September 15, 2026 at 9:41 AM UTC',
+    },
+    actor: {label: 'Ada', url: null, deleted: false},
+    impersonator: null,
+    source: {label: 'Craft'},
+    description: {text: 'Commented.', html: null},
+    changes: [],
+    comment: {
+      html: '<p>Please clarify this.</p>',
+      markdown: null,
+      edited: true,
+      deleted: false,
+      canEdit: false,
+      canDelete: false,
+    },
+  };
+
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(ActivityTimelineComment, {
+        event,
+        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        elementId: 12,
+        siteId: 1,
+      }),
+  });
+  app.mount(container);
+  await nextTick();
+
+  expect(container.textContent).toContain('Ada commented.');
+  expect(container.textContent).toContain('Please clarify this.');
+  expect(container.textContent).toContain('Edited');
+  expect(container.querySelector('time')?.textContent).toContain('9:41 AM');
 });
 
 it('inserts mentions into the active composer without changing another comment', async () => {

@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -104,10 +105,8 @@ class Volumes
     {
         $volume = new Volume([
             'name' => t('Temporary Uploads'),
+            'fs' => Cms::config()->getTempAssetUploadDisk(),
         ]);
-
-        $fs = app(Assets::class)->getTempAssetUploadFs();
-        $volume->setFs($fs);
         $volume->markAsTemporary();
 
         return $volume;
@@ -157,7 +156,6 @@ class Volumes
         $volumeUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        ProjectConfigHelper::ensureAllFilesystemsProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
         DB::beginTransaction();
@@ -168,6 +166,7 @@ class Volumes
             $volumeModel->name = $data['name'];
             $volumeModel->handle = $data['handle'];
             $volumeModel->fs = $data['fs'] ?? null;
+            $volumeModel->hasUrls = $data['hasUrls'] ?? false;
             $volumeModel->subpath = $data['subpath'] ?? null;
             $volumeModel->assetTransformer = $data['assetTransformer'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];

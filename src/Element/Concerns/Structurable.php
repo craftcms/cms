@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -386,7 +387,7 @@ trait Structurable
             $query = static::find()->siteId($this->siteId);
 
             if ($criteria) {
-                Typecast::configure($query, $criteria);
+                Typecast::configure($query, ElementHelper::cleanseQueryCriteria($criteria));
             }
         }
 
@@ -398,7 +399,7 @@ trait Structurable
             return null;
         }
 
-        return $query
+        return (clone $query)
             ->id($elementIds[$key + $direction])
             ->one();
     }

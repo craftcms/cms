@@ -9,6 +9,11 @@ use CraftCms\Cms\Support\Str;
 class SearchQuery
 {
     /**
+     * @var string[] The only term option names that may be set via `$defaultTermOptions`.
+     */
+    private const array ALLOWED_DEFAULT_TERM_OPTIONS = ['subLeft', 'subRight', 'exclude', 'exact'];
+
+    /**
      * @var array{subLeft:bool,subRight:bool,exclude:bool,exact:bool}
      */
     private readonly array $defaultTermOptions;
@@ -25,7 +30,10 @@ class SearchQuery
         private readonly string $query,
         array $defaultTermOptions = [],
     ) {
-        $this->defaultTermOptions = $defaultTermOptions + [
+        $this->defaultTermOptions = array_intersect_key(
+            $defaultTermOptions,
+            array_flip(self::ALLOWED_DEFAULT_TERM_OPTIONS),
+        ) + [
             'subLeft' => false,
             'subRight' => true,
             'exclude' => false,

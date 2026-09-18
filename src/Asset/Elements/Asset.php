@@ -54,8 +54,8 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
@@ -78,7 +78,6 @@ use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ElementSources;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -112,6 +111,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Imagick;
 use InvalidArgumentException;
+use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
 use Override;
 use RuntimeException;
@@ -157,7 +157,7 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-type TransformConfig array<string, bool|float|int|string|array<string, bool|float|int|string|null>|null>
  * @phpstan-type SourcePathInfo array{uri: string, folderId: int, hasChildren: bool, canView: bool, canCreate: bool, canMoveSubItems: bool, key: string, label: string, icon?: string, handle?: string|null, criteria?: array{folderId: int|null}, canRename?: bool, canMove?: bool, canDelete?: bool}
- * @phpstan-type SourceInfo array{key: string, label: string|null, hasThumbs: bool, criteria: array{folderId: int|null, uploaderId?: int|null}, defaultSort: array{string, string}, defaultSourcePath: list<SourcePathInfo>|null, data: array{volume-handle: string|false, folder-id: int|null, can-upload: bool, can-move-to: bool, can-move-peer-files-to?: bool, fs-type: class-string}}
+ * @phpstan-type SourceInfo array{key: string, label: string|null, hasThumbs: bool, criteria: array{folderId: int|null, uploaderId?: int|null}, defaultSort: array{string, string}, defaultSourcePath: list<SourcePathInfo>|null, data: array{volume-handle: string|false, folder-id: int|null, can-upload: bool, can-move-to: bool, can-move-peer-files-to?: bool}}
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
@@ -270,6 +270,9 @@ class Asset extends Element
      */
     #[Importable('tempFilePath', 'File Path', canBeMatchCriteria: false, canBeCleared: false)]
     public ?string $tempFilePath = null;
+
+    /** The staged upload, before it has been promoted into its volume. */
+    public ?UploadedFile $uploadSource = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -509,7 +512,7 @@ class Asset extends Element
     {
         $sources = [];
         $user = currentUserElement();
-        $volumeIds = $context === ElementSources::CONTEXT_INDEX
+        $volumeIds = in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])
             ? Volumes::getViewableVolumeIds()
             : Volumes::getAllVolumeIds();
 
@@ -524,7 +527,6 @@ class Asset extends Element
             ! app()->runningInConsole()
         ) {
             $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
-            $temporaryUploadVolume = $temporaryUploadFolder->getVolume();
             $sources[] = [
                 'key' => 'temp',
                 'label' => t('Temporary Uploads'),
@@ -537,7 +539,6 @@ class Asset extends Element
                     'can-upload' => true,
                     'can-move-to' => false,
                     'can-move-peer-files-to' => false,
-                    'fs-type' => $temporaryUploadVolume->sourceFilesystemType(),
                 ],
             ];
         }
@@ -1122,7 +1123,6 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'fs-type' => $volume->sourceFilesystemType(),
             ],
         ];
 
@@ -1345,7 +1345,6 @@ class Asset extends Element
                 'behavior' => [
                     'type' => 'replaceFile',
                     'assetId' => $this->id,
-                    'fsType' => $this->getVolume()->sourceFilesystemType(),
                 ],
             ];
         }
@@ -1374,22 +1373,6 @@ class Asset extends Element
                 ],
             ];
 
-            $fsHandle = $this->getVolume()->getFsHandle();
-
-            if (
-                is_string($fsHandle) &&
-                ! str_starts_with($fsHandle, Volume::STORAGE_DISK_PREFIX) &&
-                Filesystems::getFilesystemByHandle($fsHandle)
-            ) {
-                $items[] = [
-                    'label' => t('Filesystem settings'),
-                    'icon' => 'gear',
-                    'behavior' => [
-                        'type' => 'slideout',
-                        'url' => Url::cpUrl("settings/filesystems/$fsHandle/edit"),
-                    ],
-                ];
-            }
         }
 
         return $items;
@@ -1485,10 +1468,10 @@ JS, [
                 'showInChips' => false,
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $dimensionsLabel) => <<<JS
 $('#' + $id).on('activate', () => {
   const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-  const uploader = Craft.createUploader($fsType, fileInput, {
+  const uploader = Craft.createUploader(null, fileInput, {
     dropZone: null,
     fileInput: fileInput,
     paramName: 'replaceFile',
@@ -1609,7 +1592,6 @@ JS, [
                 InputNamespace::namespaceId($replaceId),
                 InputNamespace::get(),
                 $this->id,
-                $this->getVolume()->sourceFilesystemType(),
                 t('Dimensions'),
             ]);
         }
@@ -1672,26 +1654,6 @@ JS, [
                 ['volumeId' => $this->volumeId],
             ]);
 
-            $fsHandle = $this->getVolume()->getFsHandle();
-            if (is_string($fsHandle) && ! str_starts_with($fsHandle, Volume::STORAGE_DISK_PREFIX) && Filesystems::getFilesystemByHandle($fsHandle)) {
-                $fsEditId = sprintf('edit-fs-%s', mt_rand());
-                $items[] = [
-                    'id' => $fsEditId,
-                    'icon' => 'gear',
-                    'label' => t('Filesystem settings'),
-                ];
-
-                HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    new Craft.CpScreenSlideout($url);
-  });
-})();
-JS, [
-                    InputNamespace::namespaceId($fsEditId),
-                    Url::cpUrl("settings/filesystems/$fsHandle/edit"),
-                ]);
-            }
         }
 
         return $items;
@@ -2071,7 +2033,7 @@ JS, [
 
         $volume = $this->getVolume();
 
-        if (! $volume->sourceHasUrls() || $volume->isTemporary()) {
+        if (! $volume->sourceHasUrls() || $volume->isTemporary() || is_null($volume->getResolvedFsTarget())) {
             return null;
         }
 
@@ -2131,18 +2093,21 @@ JS, [
             [$width, $height],
             [$width * 2, $height * 2],
         ];
-        foreach ($thumbSizes as [$width, $height]) {
-            $url = AssetsService::getThumbUrl($this, $width, $height);
-            $srcsets[] = sprintf('%s %sw', $url, $width);
+        $src = null;
+        foreach ($thumbSizes as [$thumbWidth, $thumbHeight]) {
+            $url = AssetsService::getThumbUrl($this, $thumbWidth, $thumbHeight);
+            $srcsets[] = sprintf('%s %sw', $url, $thumbWidth);
+            $src ??= $url;
         }
 
-        return Html::tag('img', '', [
-            'sizes' => "{$thumbSizes[0][0]}px",
+        return Html::tag('craft-thumbnail', '', [
+            'src' => $src,
             'srcset' => implode(', ', $srcsets),
+            'sizes' => "{$width}px",
+            'width' => $width,
+            'height' => $height,
             'alt' => $this->thumbAlt(),
-            'data' => [
-                'animated' => $this->couldHaveAnimatedThumb(),
-            ],
+            'animated' => $this->couldHaveAnimatedThumb() ?: null,
         ]);
     }
 
@@ -2720,7 +2685,7 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         height: 190,
     },
 }).then(({data}) => {
-    $('#$thumbContainerId').find('img').replaceWith(data.img);
+    $('#$thumbContainerId').find('craft-thumbnail').replaceWith(data.img);
 }).finally(() => {
     $('#$thumbContainerId').removeClass('loading')
         .find('.spinner').remove();
@@ -2942,8 +2907,12 @@ JS;
             $folderId = $this->folderId;
         }
 
+        if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($this->_filename) === FileKind::Image->value) {
+            $this->tempFilePath ??= $this->uploadSource->localPath();
+        }
+
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
-        if (isset($this->newLocation) || isset($this->tempFilePath)) {
+        if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
             event(new AssetFileHandling($this, isNew: ! $this->id));
         }
 
@@ -3026,7 +2995,7 @@ JS;
             }
 
             // Relocate the file?
-            if (isset($this->newLocation) || isset($this->tempFilePath)) {
+            if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
                 $this->_relocateFile();
             }
 
@@ -3280,7 +3249,7 @@ JS;
 
         $hasNewFolder = $folderId !== $this->folderId;
 
-        $tempPath = null;
+        $tempPath = $this->tempFilePath;
 
         $oldFolder = $this->folderId ? Folders::getFolderById($this->folderId) : null;
         $oldVolume = $oldFolder?->getVolume();
@@ -3291,40 +3260,28 @@ JS;
         $oldPath = $this->folderId ? $this->getPath() : null;
         $newPath = ($newFolder->path ? rtrim((string) $newFolder->path, '/').'/' : '').$filename;
 
-        // Is this just a simple move/rename within the same volume?
-        if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId === $newFolder->volumeId) {
-            if (! $oldVolume->sourceDisk()->move($oldPath, $newPath)) {
-                throw new FilesystemException("Unable to move $oldPath to $newPath");
-            }
-        } else {
-            // Get the temp path
-            if (isset($this->tempFilePath)) {
-                if (! $this->_validateTempFilePath()) {
-                    Log::info("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
-                    throw new FileException(t('There was an error relocating the file.'));
-                }
+        $oldDisk = $oldVolume?->sourceDisk();
+        $newDisk = $newVolume->sourceDisk();
+        $sameFile = $oldDisk !== null && $oldPath !== null &&
+            $oldVolume?->getResolvedFsTarget() === $newVolume->getResolvedFsTarget() &&
+            $oldDisk->path($oldPath) === $newDisk->path($newPath);
 
-                $tempPath = $this->tempFilePath;
-            } else {
-                if ($oldVolume === null || $oldPath === null) {
-                    throw new FileException(t('There was an error relocating the file.'));
-                }
+        if ($tempPath !== null && ! $this->_validateTempFilePath()) {
+            Log::info("Prevented saving $tempPath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
+            throw new FileException(t('There was an error relocating the file.'));
+        }
 
-                $tempFilename = File::uniqueName($filename);
-                $tempPath = Path::temp($tempFilename);
-                AssetsHelper::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
-            }
-
-            // Try to open a file stream
+        if ($this->uploadSource !== null) {
+            $this->uploadSource->storeAs($newDisk, $newPath, $this->getMimeType() ?? 'application/octet-stream', $tempPath);
+        } elseif ($tempPath !== null) {
             if (($stream = fopen($tempPath, 'rb')) === false) {
                 File::delete($tempPath);
                 throw new FileException(t('Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
-            // Upload the file to the new location
             try {
-                if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
-                    Filesystem::CONFIG_MIMETYPE => File::getMimeType($tempPath),
+                if (! $newDisk->writeStream($newPath, $stream, [
+                    'mimetype' => File::getMimeType($tempPath),
                 ])) {
                     throw new FilesystemException("Unable to write stream to path: $newPath");
                 }
@@ -3332,20 +3289,35 @@ JS;
                 report($exception);
                 throw $exception;
             } finally {
-                // If the volume has not already disconnected the stream, clean it up.
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
             }
-
-            // if we got this far without an exception, it's okay to delete the file from the old volume
-            if (
-                $oldFolder &&
-                ($oldFolder->id !== $newFolder->id || $oldPath !== $newPath)
-            ) {
-                // Delete the old file
-                $oldVolume->sourceDisk()->delete($oldPath);
+        } elseif (! $sameFile) {
+            if ($oldDisk === null || $oldPath === null) {
+                throw new FileException(t('There was an error relocating the file.'));
             }
+
+            if ($oldVolume->id === $newVolume->id) {
+                if (! $oldDisk->move($oldPath, $newPath)) {
+                    throw new FilesystemException("Unable to move $oldPath to $newPath");
+                }
+            } else {
+                new MountManager([
+                    'source' => $oldDisk->getDriver(),
+                    'destination' => $newDisk->getDriver(),
+                ])->move("source://$oldPath", "destination://$newPath", [
+                    'visibility' => $newDisk->getConfig()['visibility'] ?? 'private',
+                ]);
+            }
+        }
+
+        if (
+            ($this->uploadSource !== null || $tempPath !== null) &&
+            $oldDisk !== null &&
+            ! $sameFile
+        ) {
+            $oldDisk->delete($oldPath);
         }
 
         if ($this->folderId) {
@@ -3359,6 +3331,12 @@ JS;
         $this->folderPath = $newFolder->path;
         $this->_filename = $filename;
         $this->_volume = $newVolume;
+
+        if ($this->uploadSource !== null && $tempPath === null) {
+            $this->size = $this->uploadSource->size();
+            $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
+            $this->_width = $this->_height = null;
+        }
 
         // If there was a new file involved, update file data.
         if ($tempPath && file_exists($tempPath)) {
@@ -3382,6 +3360,7 @@ JS;
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
+        $this->uploadSource = null;
     }
 
     /**

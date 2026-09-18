@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace craft\base;
 
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
+use craft\validators\HandleValidator;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
@@ -22,12 +22,8 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
 use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
-use CraftCms\Yii2Adapter\ModelWrapper;
-use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
-use Illuminate\Validation\Rule;
 use Override;
 use yii\base\InvalidConfigException;
 
@@ -43,12 +39,22 @@ use function CraftCms\Cms\t;
  * @since 4.0.0
  * @deprecated 6.0.0
  */
-abstract class Fs extends Filesystem implements BaseFsInterface, LegacySettingsComponent
+abstract class Fs extends SavableComponent implements FsInterface, LegacySettingsComponent
 {
     use FsTrait;
     use LegacySettingsForm {
         settingsForm as private legacySettingsForm;
     }
+
+    public const CONFIG_MIMETYPE = 'mimetype';
+
+    public const CONFIG_VISIBILITY = 'visibility';
+
+    public const VISIBILITY_DEFAULT = 'default';
+
+    public const VISIBILITY_HIDDEN = 'hidden';
+
+    public const VISIBILITY_PUBLIC = 'public';
 
     #[Override]
     public function settingsForm(FormContext $context = new FormContext()): ?Form
@@ -158,30 +164,29 @@ abstract class Fs extends Filesystem implements BaseFsInterface, LegacySettingsC
         return $config;
     }
 
-    public function getRules(): array
-    {
-        $rules = parent::getRules();
-        $rules['url'] = new EnvValueRule([
-            'nullable',
-            'string',
-            'max:255',
-            Rule::requiredIf(fn() => $this->hasUrls && $this->getShowUrlSetting()),
-        ]);
-
-        return LegacyYiiRules::mergeAttributeRules(
-            rules: $rules,
-            target: $this,
-            yiiRules: $this->defineRules(),
-            validatorTarget: fn() => new ModelWrapper($this),
-            allowMethodValidators: true,
-        );
-    }
-
-    /**
-     * @return array<int, array|string>
-     */
     protected function defineRules(): array
     {
-        return [];
+        $rules = parent::defineRules();
+        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [
+            'url',
+            'required',
+            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
+        ];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => [
+                'dateCreated',
+                'dateUpdated',
+                'edit',
+                'id',
+                'new',
+                'title',
+                'uid',
+            ],
+        ];
+
+        return $rules;
     }
 }

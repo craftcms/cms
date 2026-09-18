@@ -87,11 +87,7 @@
     }
 
     const folderId = data['folder-id'];
-    const fsType = data['fs-type'];
-
-    return typeof folderId === 'number' && typeof fsType === 'string'
-      ? {folderId, fsType}
-      : null;
+    return typeof folderId === 'number' ? {folderId} : null;
   });
 
   onMounted(() => {
@@ -138,7 +134,6 @@
       <AssetUploadButton
         :can-upload="true"
         :folder-id="uploadTarget.folderId"
-        :fs-type="uploadTarget.fsType"
         :reload-on-complete="false"
         @uploaded="() => index?.refresh()"
       />

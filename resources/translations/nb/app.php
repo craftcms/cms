@@ -2235,7 +2235,7 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser på en revisjon. Ingen av {type} sine felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge angis for en oppføring.',
-    'account_activation_body' => "Hei, {{user.friendlyName|e}}\n\nTakk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
+    'account_activation_body' => "Hei, {{user.friendlyName|e}}\n\nTakk for at du opprettet en konto hos {{systemName}}! For å aktivere kontoen din, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'account_activation_heading' => 'Når noen oppretter en konto:',
     'account_activation_subject' => 'Aktiver kontoen din',
     'address' => 'adresse',
@@ -2273,7 +2273,7 @@ return [
     'files' => 'filer',
     'five' => 'fem',
     'folders' => 'mapper',
-    'forgot_password_body' => "Hei, {{user.friendlyName|e}}\n\nFor å nullstille passordet ditt  på {{siteName}}, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
+    'forgot_password_body' => "Hei, {{user.friendlyName|e}}\n\nFor å nullstille passordet ditt på {{systemName}}, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'forgot_password_heading' => 'Når noen glemmer passordet sitt:',
     'forgot_password_subject' => 'Nullstill passordet ditt',
     'four' => 'fire',
@@ -2321,9 +2321,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -40,6 +41,8 @@ class ElementSelect extends Control
 
     /** @var array<string, mixed> */
     private array $criteria = [];
+
+    private string $context = ElementSources::CONTEXT_FIELD;
 
     private ?string $selectionLabel = null;
 
@@ -83,6 +86,7 @@ class ElementSelect extends Control
             'elementType' => $control->props['elementType'],
             'sources' => $control->props['sources'],
             'criteria' => $control->props['criteria'],
+            'context' => $control->props['context'],
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
@@ -132,6 +136,18 @@ class ElementSelect extends Control
     public function criteria(array $criteria): static
     {
         $this->criteria = $criteria;
+
+        return $this;
+    }
+
+    /**
+     * Sets the element source context, which determines which sources are shown
+     * (e.g. {@see ElementSources::CONTEXT_RESTRICTED_MODAL} limits sources to
+     * ones the current user can edit).
+     */
+    public function context(string $context): static
+    {
+        $this->context = $context;
 
         return $this;
     }
@@ -221,6 +237,7 @@ class ElementSelect extends Control
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
+            'context' => $this->context,
             'selectionLabel' => $this->selectionLabel ?? t('Choose'),
             'limit' => $this->single ? 1 : $this->limit,
             'single' => $this->single,

@@ -26,6 +26,7 @@
 {% set maintainHierarchy = maintainHierarchy ?? false %}
 {% set registerJs = registerJs ?? true %}
 {% set useCustomElement = useCustomElement ?? false %}
+{% set context = context ?? 'field' %}
 
 {% set allowAdd = allowAdd ?? true %}
 {% set allowRemove = allowRemove ?? true %}
@@ -43,6 +44,7 @@
     id: id|namespaceInputId,
     name: name ? name|namespaceInputName : null,
     elementType: elementType,
+    context,
     sources: sources,
     condition: condition ? condition.getConfig() : null,
     referenceElementId: referenceElement.id ?? null,
@@ -93,7 +95,7 @@
         {{ include('_elements/structurelist.twig', {
             id,
             elements,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% elseif viewMode in ['cards', 'cards-grid'] %}
@@ -101,7 +103,7 @@
             elements,
             showInGrid: showInGrid ?? (viewMode == 'cards-grid'),
             disabled,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% else %}
@@ -110,7 +112,7 @@
             size: size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small'),
             inline: inline ?? (viewMode in ['list-inline', 'thumbs', 'large']),
             disabled,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% endif %}

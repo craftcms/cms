@@ -13,12 +13,8 @@ use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
-use CraftCms\Cms\Filesystem\Filesystems\Temp;
-use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
@@ -404,6 +400,14 @@ class AssetsHelper
         return $uploadInBytes;
     }
 
+    /** The asset limit, independent of the size of individual upload requests. */
+    public static function getMaxAssetUploadSize(): int
+    {
+        $limit = PHP::sizeToBytes(Cms::config()->maxUploadFileSize);
+
+        return $limit > 0 ? $limit : PHP_INT_MAX;
+    }
+
     /**
      * Returns scaled width & height values for a maximum container size.
      *
@@ -514,35 +518,6 @@ class AssetsHelper
         ]);
 
         return Html::appendToTag($svg, $textNode);
-    }
-
-    /**
-     * Returns whether the given filesystem is used to store temporary asset uploads.
-     */
-    public static function isTempUploadFs(FsInterface $fs): bool
-    {
-        if ($fs instanceof Temp) {
-            return true;
-        }
-
-        if (! $fs->handle) {
-            return false;
-        }
-
-        $target = self::normalizedTempUploadTarget();
-
-        return $target !== null && $fs->handle === $target;
-    }
-
-    private static function normalizedTempUploadTarget(): ?string
-    {
-        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
-
-        if (! is_string($handle) || $handle === '') {
-            return null;
-        }
-
-        return Filesystems::resolve($handle)?->handle;
     }
 
     /**

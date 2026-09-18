@@ -19,7 +19,6 @@
     defineProps<{
       canUpload: boolean;
       folderId?: number;
-      fsType?: string;
       /**
        * An element that also accepts dropped files. The asset index doesn't
        * set one — its drop target is the whole page, handled elsewhere — but
@@ -46,9 +45,7 @@
   }>();
 
   const fileInput = ref<HTMLInputElement>();
-  const enabled = computed(
-    () => props.canUpload && !!props.folderId && !!props.fsType
-  );
+  const enabled = computed(() => props.canUpload && !!props.folderId);
   let uploader: Uploader | null = null;
 
   function createUploader(): void {
@@ -61,7 +58,7 @@
 
     const input = $(fileInput.value);
 
-    uploader = Craft.createUploader(props.fsType!, input, {
+    uploader = Craft.createUploader(null, input, {
       fileInput: input,
       // Files dropped on the caller's container upload as if picked, which is
       // what makes a relation field a drop target.
@@ -114,12 +111,7 @@
   // unrelated invalidations — each of which tears the uploader down and, if
   // the input isn't resolvable at that moment, leaves it null.
   watch(
-    [
-      () => props.canUpload,
-      () => props.folderId,
-      () => props.fsType,
-      () => props.dropZone,
-    ],
+    [() => props.canUpload, () => props.folderId, () => props.dropZone],
     createUploader
   );
   onBeforeUnmount(() => uploader?.destroy());

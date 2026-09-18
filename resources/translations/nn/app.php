@@ -684,7 +684,7 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du køyrer Craft {edition} med ein Craft {licensedEdition}-lisens.',
     'account_activation_body' => 'Hei {{user.friendlyName}},
 
-Takk for at du oppretta ein konto hos {{siteName}}! For å aktivere kontoen din, må du trykke på følgande link:
+Takk for at du oppretta ein konto hos {{systemName}}! For å aktivere kontoen din, må du trykke på følgande link:
 
 <{{link}}>
 
@@ -699,7 +699,7 @@ Har du ikkje bede om denne e-posten, kan du berre sjå vekkifrå han.',
     'five' => 'fem',
     'forgot_password_body' => 'Hei {{user.friendlyName}},
 
-For å nullstille passordet ditt på {{siteName}}, ver venleg å trykk på denne lenka:
+For å nullstille passordet ditt på {{systemName}}, ver venleg å trykk på denne lenka:
 
 <{{link}}>
 

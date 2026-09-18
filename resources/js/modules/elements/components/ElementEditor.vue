@@ -17,6 +17,7 @@
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {FormValues} from '@/modules/forms/types';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
+  import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 
   const props = defineProps<{
     /**
@@ -44,6 +45,14 @@
     sidebarRenderer,
     submitAction,
   } = useElementEditor({saveData: props.saveData});
+
+  const hasDetails = computed(
+    () =>
+      Boolean(sidebarPayload.value) ||
+      Boolean(payload.metadataHtml) ||
+      Boolean(payload.activityTimelineUrl) ||
+      elementDetailsTabRegistry.hasVisible(payload)
+  );
 
   // Alternate saves in the Save button's menu, and the buttons beside it.
   const formActionItems = computed(() =>
@@ -263,15 +272,7 @@
 
   <slot :payload="payload" />
 
-  <LayoutSlot
-    v-if="
-      sidebarPayload ||
-      payload.metadataHtml ||
-      payload.activityTimelineUrl ||
-      $slots['details-header']
-    "
-    name="details"
-  >
+  <LayoutSlot v-if="hasDetails || $slots['details-header']" name="details">
     <ElementDetailsTabs
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"

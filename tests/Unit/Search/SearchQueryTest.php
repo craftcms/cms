@@ -201,6 +201,18 @@ test('explicit wildcards override default options', function () {
     expect($tokens[0]->subRight)->toBeTrue();
 });
 
+test('unrecognized default term options are ignored', function () {
+    $query = new SearchQuery('foo', [
+        'subLeft' => true,
+        'attribute' => 'title',
+    ]);
+
+    $tokens = $query->getTokens();
+
+    expect($tokens[0]->subLeft)->toBeTrue();
+    expect($tokens[0]->attribute)->toBeNull();
+});
+
 test('getQuery returns original query string', function () {
     $query = new SearchQuery('foo bar');
 

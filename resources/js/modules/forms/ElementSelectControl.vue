@@ -79,6 +79,7 @@
     elementType: string;
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
+    context: string;
     sources: string[] | null;
     criteria: FormProperties;
     selectionCondition?: FormProperties;
@@ -92,7 +93,6 @@
     /** `AssetSelect` only; absent for every other element type. */
     canUpload?: boolean;
     uploadFolderId?: number | null;
-    fsType?: string | null;
     showFolders?: boolean;
   };
   const props = defineProps<{
@@ -317,6 +317,7 @@
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
       {
+        context: props.control.props.context,
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
@@ -638,7 +639,6 @@
           variant="dashed"
           :can-upload="control.props.canUpload"
           :folder-id="control.props.uploadFolderId ?? undefined"
-          :fs-type="control.props.fsType ?? undefined"
           :drop-zone="dropZone"
           :reload-on-complete="false"
           :disabled="!showUpload"

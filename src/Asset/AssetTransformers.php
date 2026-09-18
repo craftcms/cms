@@ -18,7 +18,6 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
@@ -230,35 +229,6 @@ class AssetTransformers
         throw new AssetTransformException('The Asset Transformers Project Config section cannot be removed.');
     }
 
-    public function handleFilesystemRenamed(FilesystemRenamed $event): void
-    {
-        $oldHandle = $event->filesystem->oldHandle;
-        $newHandle = $event->filesystem->handle;
-
-        if (! $oldHandle || ! $newHandle || $oldHandle === $newHandle) {
-            return;
-        }
-
-        $changed = false;
-
-        foreach ($this->getAllAssetTransformers() as $transformer) {
-            if ($transformer->driver !== 'craft' || ($transformer->settings['filesystem'] ?? null) !== $oldHandle) {
-                continue;
-            }
-
-            $this->projectConfig->set(
-                ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid.'.settings.filesystem',
-                $newHandle,
-                "Update the “{$transformer->handle}” Asset Transformer's output filesystem",
-            );
-            $changed = true;
-        }
-
-        if ($changed) {
-            $this->reset();
-        }
-    }
-
     public function transform(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
@@ -396,7 +366,8 @@ class AssetTransformers
                 'handle' => 'craft',
                 'driver' => 'craft',
                 'settings' => [
-                    'filesystem' => null,
+                    'disk' => null,
+                    'hasUrls' => false,
                     'subpath' => null,
                     'generateTransformsBeforePageLoad' => false,
                 ],

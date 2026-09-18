@@ -8,6 +8,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveDefaultValueFromAssignedPropertyRector;
 use Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
+use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
@@ -29,6 +30,10 @@ return RectorConfig::configure()
         cacheClass: FileCacheStorage::class
     )
     ->withSkip([
+        RestoreDefaultNullToNullableTypePropertyRector::class => [
+            // Uninitialized response properties represent omitted fields rather than explicit nulls.
+            __DIR__.'/src/Asset/Data/UploadResult.php',
+        ],
         AnonymousMigrationsRector::class => [
             __DIR__.'/src/Database/Migrations/BaseContentRefactorMigration.php',
             __DIR__.'/src/Database/Migrations/BaseEntryTypeMergeMigration.php',

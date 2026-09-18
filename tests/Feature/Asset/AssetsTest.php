@@ -17,14 +17,16 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->assets = app(Assets::class);
@@ -41,7 +43,7 @@ it('is a singleton', function () {
 });
 
 it('can get an asset by id', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $assetModel = AssetModel::factory()->create([
         'volumeId' => $volume->id,
@@ -60,7 +62,7 @@ it('returns null for non-existent asset id', function () {
 it('can get total assets', function () {
     expect($this->assets->getTotalAssets())->toBe(0);
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     AssetModel::factory()->count(3)->create([
         'volumeId' => $volume->id,
@@ -84,7 +86,7 @@ it('resolves thumbnail dimensions for table and card sizes', function (?int $wid
 it('dispatches ThumbUrlResolving event in getThumbUrl', function () {
     Event::fake([ThumbUrlResolving::class]);
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -106,7 +108,7 @@ it('uses ThumbUrlResolving event url when set', function () {
         $event->url = 'https://example.com/custom-thumb.jpg';
     });
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -124,7 +126,7 @@ it('renders non-image thumbnails and previews through the selected driver', func
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     Cms::config()->defaultAssetTransformer('test');
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -148,7 +150,7 @@ it('uses file-kind images only when the selected driver does not support the sou
         new NotSupportedException('unsupported'),
     )->register();
     Cms::config()->defaultAssetTransformer('test');
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -165,7 +167,7 @@ it('uses file-kind images only when the selected driver does not support the sou
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {
     Cms::config()->defaultAssetTransformer('missing');
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -183,7 +185,7 @@ it('does not disguise control-panel transform configuration failures as file-kin
 it('dispatches PreviewHandlerResolving event', function () {
     Event::fake([PreviewHandlerResolving::class]);
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -198,7 +200,7 @@ it('dispatches PreviewHandlerResolving event', function () {
 });
 
 it('returns default preview handler for known asset kinds', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 
     $textAsset = AssetModel::factory()->createElement([
@@ -214,7 +216,7 @@ it('returns default preview handler for known asset kinds', function () {
 });
 
 it('returns null preview handler for unknown asset kinds', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 
     $asset = AssetModel::factory()->createElement([
@@ -229,10 +231,10 @@ it('returns null preview handler for unknown asset kinds', function () {
     expect($handler)->toBeNull();
 });
 
-it('can get temp asset upload filesystem', function () {
-    $fs = $this->assets->getTempAssetUploadFs();
+it('can get the temporary asset upload disk', function () {
+    $disk = $this->assets->getTempAssetUploadDisk();
 
-    expect($fs)->toBeInstanceOf(FsInterface::class);
+    expect($disk)->toBeInstanceOf(FilesystemAdapter::class);
 });
 
 it('can create a temp asset query', function () {
@@ -242,7 +244,7 @@ it('can create a temp asset query', function () {
 });
 
 it('can get name replacement in folder when no conflict', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
 
@@ -256,7 +258,7 @@ it('can get name replacement in folder when no conflict', function () {
 it('dispatches AssetReplacing event with filename', function () {
     Event::fake([AssetReplacing::class]);
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -279,7 +281,7 @@ it('dispatches AssetReplacing event with filename', function () {
 });
 
 it('invalidates Asset Transforms once for each source lifecycle operation', function (Closure $operation) {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $rootFolder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $folder = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
@@ -324,6 +326,117 @@ it('invalidates Asset Transforms once for each source lifecycle operation', func
     }],
 ]);
 
+it('preserves visibility when renaming an asset within its volume', function (string $subpath) {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => $subpath]);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'document.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $disk->put($subpath.'document.txt', 'contents', 'public');
+
+    expect($this->assets->moveAsset($asset, $folder, 'renamed.txt'))->toBeTrue();
+
+    $disk->assertMissing($subpath.'document.txt');
+    expect($disk->get($subpath.'renamed.txt'))->toBe('contents')
+        ->and($disk->getVisibility($subpath.'renamed.txt'))->toBe('public')
+        ->and(Asset::findOne($asset->id)->filename)->toBe('renamed.txt');
+})->with(['root' => '', 'subpath' => 'uploads/']);
+
+it('uses the disk native move when renaming within a volume', function () {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'document.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $nativeDisk = Mockery::mock(FilesystemAdapter::class);
+    $nativeDisk->shouldReceive('path')->with('document.txt')->andReturn('/document.txt');
+    $nativeDisk->shouldReceive('path')->with('renamed.txt')->andReturn('/renamed.txt');
+    $nativeDisk->shouldReceive('exists')->with('renamed.txt')->andReturnFalse();
+    $nativeDisk->shouldReceive('move')->once()->with('document.txt', 'renamed.txt')->andReturnTrue();
+    Storage::set('test-disk', $nativeDisk);
+
+    expect($this->assets->moveAsset($asset, $folder, 'renamed.txt'))->toBeTrue();
+});
+
+it('keeps replacement bytes in a volume with a subpath', function () {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => 'uploads/']);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'document.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $disk->put('uploads/document.txt', 'original');
+    $replacement = UploadedFile::fake()->createWithContent('document.txt', 'replacement');
+
+    $this->assets->replaceAssetFile($asset, $replacement->getPathname(), 'document.txt');
+
+    expect($asset->errors()->getMessages())->toBe([]);
+    expect($disk->get('uploads/document.txt'))->toBe('replacement')
+        ->and(Asset::findOne($asset->id)->size)->toBe(11);
+});
+
+it('moves existing assets between volumes while preserving their contents and metadata', function (bool $sameDisk) {
+    config()->set('filesystems.disks.asset-move-destination', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-move-destination'),
+    ]);
+    $sourceDisk = Storage::fake('test-disk');
+    $destinationDisk = $sameDisk ? $sourceDisk : Storage::fake('asset-move-destination');
+    $sourceVolume = Volume::factory()->create(['fs' => 'test-disk']);
+    $destinationVolume = Volume::factory()->create(['fs' => $sameDisk ? 'test-disk' : 'asset-move-destination']);
+    $sourceFolder = app(Folders::class)->getRootFolderByVolumeId($sourceVolume->id);
+    $destinationFolder = app(Folders::class)->getRootFolderByVolumeId($destinationVolume->id);
+    $image = UploadedFile::fake()->image('photo.png', 13, 17);
+    $bytes = file_get_contents($image->getPathname());
+    $modified = now()->subDay()->startOfSecond();
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $sourceVolume->id,
+        'folderId' => $sourceFolder->id,
+        'filename' => 'photo.png',
+        'kind' => FileKind::Image->value,
+        'size' => strlen($bytes),
+        'width' => 13,
+        'height' => 17,
+        'dateModified' => $modified,
+    ]);
+    $sourceDisk->put('photo.png', $bytes);
+    $asset = Asset::findOne($asset->id);
+    $modified = $asset->dateModified;
+    $filename = 'moved.png';
+
+    expect($this->assets->moveAsset($asset, $destinationFolder, $filename))->toBeTrue();
+
+    expect($destinationDisk->get($filename))->toBe($bytes);
+    $sourceDisk->assertMissing('photo.png');
+
+    $saved = Asset::findOne($asset->id);
+    expect($saved->folderId)->toBe($destinationFolder->id)
+        ->and($saved->getVolumeId())->toBe($destinationVolume->id)
+        ->and($saved->getFilename())->toBe($filename)
+        ->and($saved->kind)->toBe(FileKind::Image->value)
+        ->and($saved->size)->toBe(strlen($bytes))
+        ->and($saved->getWidth())->toBe(13)
+        ->and($saved->getHeight())->toBe(17)
+        ->and($saved->dateModified->getTimestamp())->toBe($modified->getTimestamp());
+})->with([
+    'same disk' => [true],
+    'different disks' => [false],
+]);
+
 it('resets caches', function () {
     $this->assets->reset();
 
@@ -335,7 +448,8 @@ it('passes explicit modes and bounds to the driver without treating event mode a
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     Cms::config()->defaultAssetTransformer('test');
-    $asset = AssetModel::factory()->createElement();
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
     $requests = [];
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests) {
         $requests[] = [$event->asset, $event->width, $event->height, $event->mode];

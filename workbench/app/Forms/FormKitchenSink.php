@@ -18,7 +18,6 @@ use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
-use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\IconPicker;
@@ -80,7 +79,6 @@ class FormKitchenSink
             'date-time' => DateTime::class,
             'element-select' => ElementSelect::class,
             'field-layout-designer' => FieldLayoutDesigner::class,
-            'filesystem-select' => FilesystemSelect::class,
             'grouped-entry-type-manager' => GroupedEntryTypeManager::class,
             'handle' => Handle::class,
             'icon-picker' => IconPicker::class,
@@ -326,19 +324,6 @@ class FormKitchenSink
                         ->elementType(Entry::class)
                         ->customizableTabs(false)
                         ->value($value),
-                ),
-            ];
-        }
-
-        if ($component === FilesystemSelect::class) {
-            return [
-                'Default' => $this->control('Filesystem select', FilesystemSelect::make('filesystem')),
-                'Create and environment variables' => $this->control(
-                    'Filesystem select',
-                    FilesystemSelect::make('filesystem')
-                        ->emptyOption('Select a filesystem')
-                        ->includeEnvVars()
-                        ->create(),
                 ),
             ];
         }

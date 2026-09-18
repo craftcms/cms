@@ -5,7 +5,6 @@
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineActor from './ActivityTimelineActor.vue';
   import ActivityTimelineChanges from './ActivityTimelineChanges.vue';
-  import ActivityTimelineComment from './ActivityTimelineComment.vue';
 
   const props = defineProps<{
     event: ActivityEvent;
@@ -15,15 +14,8 @@
     last: boolean;
   }>();
 
-  const emit = defineEmits<{
-    updated: [event: ActivityEvent];
-  }>();
-
   const hasBody = computed(
-    () =>
-      props.event.source.label !== 'Craft' ||
-      !!(props.event.comment && !props.event.comment.deleted) ||
-      (!props.event.comment && props.event.changes.length > 0)
+    () => props.event.source.label !== 'Craft' || props.event.changes.length > 0
   );
 
   function sentenceFragment(text: string | null): string {
@@ -38,11 +30,7 @@
     <craft-timeline-item :last="last">
       <craft-icon slot="marker" :name="event.icon ?? 'wave-pulse'" />
 
-      <div
-        v-if="!event.comment || event.comment.deleted"
-        slot="heading"
-        class="activity-timeline__summary"
-      >
+      <div slot="heading" class="activity-timeline__summary">
         <ActivityTimelineActor
           :actor="event.actor"
           :impersonator="event.impersonator"
@@ -66,22 +54,13 @@
           {{ event.source.label }}
         </div>
 
-        <ActivityTimelineComment
-          v-if="event.comment && !event.comment.deleted"
-          :event="event"
-          :element-type="elementType"
-          :element-id="elementId"
-          :site-id="siteId"
-          @updated="emit('updated', $event)"
-        />
-
         <ActivityTimelineChanges
-          v-else-if="!event.comment && event.changes.length"
+          v-if="event.changes.length"
           :changes="event.changes"
         />
       </div>
 
-      <div v-if="!event.comment || event.comment.deleted" slot="meta">
+      <div slot="meta">
         <time
           :datetime="event.occurredAt"
           :title="event.formattedOccurredAt.full"

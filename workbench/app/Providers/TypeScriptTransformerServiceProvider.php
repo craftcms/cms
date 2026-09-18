@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
+use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Condition\ConditionBuilderPayload;
 use CraftCms\Cms\Condition\ConditionRulePayload;
 use CraftCms\Cms\Condition\Enums\GroupOperator;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Dashboard\Data\WidgetData;
 use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -26,7 +28,6 @@ use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
-use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
@@ -61,6 +62,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->provider(new ClassListTransformedProvider(
                 [
                     AssetTransformerIndexData::class,
+                    UploadResult::class,
+                    UploadSessionData::class,
                     GqlSchema::class,
                     GqlToken::class,
                     ImageTransform::class,
@@ -76,7 +79,6 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     WidgetData::class,
                     WidgetTypeData::class,
                     NodePayload::class,
-                    FilesystemsEditViewModel::class,
                     NavItem::class,
                     NotificationButtonData::class,
                     NotificationData::class,

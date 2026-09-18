@@ -18,7 +18,6 @@ use Override;
  * @method static string getImagePreviewUrl(\CraftCms\Cms\Asset\Elements\Asset $asset, int $maxWidth, int $maxHeight)
  * @method static string getNameReplacementInFolder(string $originalFilename, int $folderId)
  * @method static \CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface|null getAssetPreviewHandler(\CraftCms\Cms\Asset\Elements\Asset $asset)
- * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface getTempAssetUploadFs()
  * @method static \Illuminate\Filesystem\FilesystemAdapter getTempAssetUploadDisk()
  * @method static \CraftCms\Cms\Element\Queries\AssetQuery createTempAssetQuery()
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder getUserTemporaryUploadFolder(\CraftCms\Cms\User\Elements\User|null $user = null)

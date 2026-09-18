@@ -10,14 +10,12 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Filesystems;
-use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystemRenamed;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Throwable;
@@ -34,7 +32,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 4.0.0
- * @deprecated in 6.0.0. Use {@see Filesystems} instead.
+ * @deprecated in 6.0.0. Configure Laravel filesystem disks instead.
  */
 class Fs extends Component
 {
@@ -73,7 +71,16 @@ class Fs extends Component
      */
     public function getAllFilesystemTypes(): array
     {
-        return $this->service()->getAllFilesystemTypes()->values()->all();
+        $types = [\craft\fs\Local::class];
+
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $types]);
+            $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
+
+            return $event->types;
+        }
+
+        return $types;
     }
 
     /**
@@ -171,12 +178,11 @@ class Fs extends Component
     /** @internal */
     public static function finalizeRegistrationEvents(): void
     {
-        TypeRegistryCompatibility::reconcile(app(FilesystemTypes::class), Craft::$app->getFs(), self::EVENT_REGISTER_FILESYSTEM_TYPES);
     }
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(FilesystemRenamed::class, function(FilesystemRenamed $event) {
+        EventFacade::listen(LegacyFilesystemRenamed::class, function(LegacyFilesystemRenamed $event) {
             if (!Craft::$app->getFs()->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
                 return;
             }
@@ -185,8 +191,8 @@ class Fs extends Component
         });
     }
 
-    private function service(): Filesystems
+    private function service(): LegacyFilesystems
     {
-        return app(Filesystems::class);
+        return app(LegacyFilesystems::class);
     }
 }

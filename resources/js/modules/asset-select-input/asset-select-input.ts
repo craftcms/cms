@@ -128,11 +128,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-    this.uploader = Craft.createUploader(
-      this.settings.fsType,
-      this.$container,
-      options
-    );
+    this.uploader = Craft.createUploader(null, this.$container, options);
 
     const params: any = {fieldId: this.settings.fieldId};
     if (this.settings.sourceElementId) {

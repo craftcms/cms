@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -67,6 +68,24 @@ it('returns an Inertia response with elements and pagination', function () {
             ->has('pagination')
             ->has('sort')
             ->has('sources')
+        );
+});
+
+it('includes saved unpublished drafts in entry indexes', function () {
+    $entry = EntryModel::factory()->createElement();
+    $draft = app(EntryElement::class);
+    $draft->siteId = $entry->siteId;
+    $draft->sectionId = $entry->sectionId;
+    $draft->typeId = $entry->typeId;
+    $draft->title = 'Awaiting Review';
+    $draft->slug = 'awaiting-review';
+    $draft->setAuthorIds([auth()->id()]);
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data', fn ($entries) => collect($entries)->contains('id', $draft->id))
         );
 });
 

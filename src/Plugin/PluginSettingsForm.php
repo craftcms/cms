@@ -42,7 +42,6 @@ readonly class PluginSettingsForm
         $settings = $scope === ['settings']
             ? $values
             : data_set($settings, array_slice($scope, 1), $values);
-        $plugin->setSettings($settings);
 
         return $this->resolve($plugin, $settings)->forScope($scope);
     }
