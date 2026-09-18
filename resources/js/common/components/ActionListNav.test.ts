@@ -159,7 +159,7 @@ it("uses a plugin's own icon, which it ships rather than names", async () => {
   expect(icon?.querySelector('svg')).not.toBeNull();
 });
 
-it('shows a collapsed branch’s children only when you’re in it', async () => {
+it('flyouts every branch in a rail, the one you’re in included', async () => {
   await mount({
     iconOnly: true,
     items: [
@@ -177,12 +177,10 @@ it('shows a collapsed branch’s children only when you’re in it', async () =>
     ],
   });
 
-  // The branch you're in indents in place, as stand-in icons — there's no room
-  // for labels. Every other branch stays a flyout you have to hover for.
-  expect(display('Entries')).toBe('inline');
-  expect(item('Singles')?.hasAttribute('icon-only')).toBe(true);
-
+  expect(display('Entries')).toBe('flyout');
   expect(display('Assets')).toBe('flyout');
+
+  expect(item('Singles')?.hasAttribute('icon-only')).toBe(false);
   expect(item('Uploads')?.hasAttribute('icon-only')).toBe(false);
 });
 
@@ -203,27 +201,19 @@ it('makes every branch expandable when floating, but not expanded', async () => 
   expect(item('Settings')?.getAttribute('initial-state')).toBe('closed');
 });
 
-it('collapses a heading inside a collapsed branch too', async () => {
+it('collapses a heading in a rail to a separator', async () => {
   await mount({
     iconOnly: true,
     items: [
-      node('Entries', {
-        href: '/admin/content/entries',
-        icon: 'newspaper',
-        selected: true,
-        subnav: [
-          node('Channels', {
-            group: true,
-            subnav: [node('Posts', {href: '/admin/content/entries/posts'})],
-          }),
-        ],
+      node('Channels', {
+        group: true,
+        subnav: [node('Posts', {href: '/admin/content/entries/posts'})],
       }),
     ],
   });
 
-  // Groups take a different path through `navAttrs` than links do, and it was
-  // the one that didn't pass `icon-only` on — so the heading kept its label
-  // and its row in a rail that has room for neither.
+  // A rail has room for neither the heading's label nor its row, so it becomes
+  // the rule between the runs it separates.
   const channels = item('Channels');
   expect(channels?.hasAttribute('icon-only')).toBe(true);
   expect(

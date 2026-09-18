@@ -249,14 +249,18 @@
    *
    * A group is a heading over a run of siblings, so it always indents. Past
    * that it's the mode's call — `trail` indents the branch you're in and flies
-   * the rest out, which needs the room a docked sidebar has.
+   * the rest out, which needs the room a docked sidebar has. Collapsed to a
+   * rail there's no room to indent into, so every branch flies out — the one
+   * you're in included.
    */
   function subnavDisplay(action: NavItem): 'inline' | 'flyout' {
     if (isGroup(action) || mode === 'inline') {
       return 'inline';
     }
 
-    return mode === 'trail' && onTrail(action) ? 'inline' : 'flyout';
+    return mode === 'trail' && !iconOnly && onTrail(action)
+      ? 'inline'
+      : 'flyout';
   }
 
   /**
@@ -410,7 +414,7 @@
         <ActionList
           :actions="childrenOf(action)"
           as="craft-nav-item"
-          :mode="mode"
+          :mode="iconOnly ? 'flyout' : mode"
           :icon-only="iconOnly && subnavDisplay(action) === 'inline'"
         />
       </craft-nav-list>
