@@ -183,7 +183,6 @@ class WebauthnServer
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_RS256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_PS256),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ED256),
         ];
     }
 
