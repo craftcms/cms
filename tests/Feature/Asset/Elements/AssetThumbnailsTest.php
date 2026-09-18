@@ -3,16 +3,25 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use Symfony\Component\DomCrawler\Crawler;
 
+beforeEach(function () {
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-thumbnails-test/test-disk'),
+    ]);
+    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+});
+
 it('uses square bounds and explicit modes regardless of source dimensions or divisibility by 128', function (ImageTransformMode $mode, int $size, int $doubleSize, ?int $width, ?int $height) {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     Cms::config()->defaultAssetTransformer('test');
-    $asset = Asset::factory()->createElement(['width' => $width, 'height' => $height]);
+    $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id, 'width' => $width, 'height' => $height]);
 
     $thumbnail = new Crawler($asset->getThumbHtml($size, $mode))->filter('craft-thumbnail');
 
@@ -41,7 +50,7 @@ it('defaults native asset thumbnails to fit', function () {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     Cms::config()->defaultAssetTransformer('test');
-    $asset = Asset::factory()->createElement();
+    $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id]);
 
     expect($asset->getThumbHtml(128))->toContainTag('craft-thumbnail', ['mode' => 'fit'])
         ->and(array_column($driver->requests, 'parameters'))->toBe([

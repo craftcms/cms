@@ -49,10 +49,15 @@ return new class extends Migration
 
         if ($missingDisks !== []) {
             $handles = implode(', ', array_map(fn (string $handle): string => "[$handle]", array_keys($missingDisks)));
+            $suggestions = implode("\n\n", array_map(
+                $this->suggestedDiskConfig(...),
+                array_keys($missingDisks),
+                $missingDisks,
+            ));
 
             throw new RuntimeException(
                 "Craft filesystems can no longer provide asset storage. Configure Laravel filesystem disks named $handles ".
-                'in config/filesystems.php with settings equivalent to the previous Craft filesystem definitions, then run the upgrade again.',
+                "in config/filesystems.php with settings equivalent to the previous Craft filesystem definitions, then run the upgrade again:\n\n$suggestions",
             );
         }
 
@@ -121,7 +126,7 @@ return new class extends Migration
     /**
      * @param  array<string, array<string, mixed>>  $filesystems
      * @param  array<string, mixed>  $configuredDisks
-     * @param  array<string, true>  $missingDisks
+     * @param  array<string, array<string, mixed>>  $missingDisks
      */
     private function requireConfiguredDisk(mixed $reference, array $filesystems, array $configuredDisks, array &$missingDisks): void
     {
@@ -131,8 +136,69 @@ return new class extends Migration
         }
 
         if (! array_key_exists($disk, $configuredDisks)) {
-            $missingDisks[$disk] = true;
+            $missingDisks[$disk] = $filesystems[$disk];
         }
+    }
+
+    /**
+     * Renders a `config/filesystems.php` disk entry equivalent to a legacy Craft filesystem definition, for use in
+     * the upgrade error message.
+     *
+     * @param  array<string, mixed>  $filesystem
+     */
+    private function suggestedDiskConfig(string $handle, array $filesystem): string
+    {
+        $type = $filesystem['type'] ?? null;
+        $settings = is_array($filesystem['settings'] ?? null) ? $filesystem['settings'] : [];
+
+        if ($type === 'craft\fs\Local' || $type === 'craft\fs\Temp') {
+            return $this->localDiskConfig($handle, $filesystem, $settings);
+        }
+
+        $typeLabel = is_string($type) && $type !== '' ? $type : 'unknown';
+
+        return "'$handle' => [\n".
+            "    // TODO: no automatic Laravel disk equivalent for Craft filesystem type \"$typeLabel\".\n".
+            '    // Previous settings: '.json_encode($settings)."\n".
+            '],';
+    }
+
+    /**
+     * @param  array<string, mixed>  $filesystem
+     * @param  array<string, mixed>  $settings
+     */
+    private function localDiskConfig(string $handle, array $filesystem, array $settings): string
+    {
+        $path = $settings['path'] ?? null;
+        $root = is_string($path) && $path !== '' ? Env::parse($path) : null;
+
+        $lines = [
+            "'$handle' => [",
+            "    'driver' => 'local',",
+            $root !== null
+                ? '    '.$this->phpArrayLine('root', $root)
+                : "    'root' => null, // TODO: fill in the previous filesystem's base path",
+        ];
+
+        if ($this->hasUrls($filesystem)) {
+            $url = $settings['url'] ?? null;
+            $url = is_string($url) && $url !== '' ? rtrim((string) Env::parse($url), '/') : null;
+
+            $lines[] = $url !== null
+                ? '    '.$this->phpArrayLine('url', $url)
+                : "    'url' => null, // TODO: fill in the previous filesystem's base URL";
+        }
+
+        $lines[] = '],';
+
+        return implode("\n", $lines);
+    }
+
+    private function phpArrayLine(string $key, string $value): string
+    {
+        $escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+
+        return "'$key' => '$escaped',";
     }
 
     private function diskName(mixed $reference): ?string

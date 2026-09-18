@@ -24,6 +24,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
@@ -174,20 +175,13 @@ class Assets
 
         $extension = $asset->getExtension();
 
-        // A volume whose disk isn't configured can't produce a thumbnail
-        if (is_null($asset->getVolume()->getResolvedFsTarget())) {
-            return $iconFallback ? Url::actionUrl('assets/icon', [
-                'extension' => $extension,
-            ]) : null;
-        }
-
         try {
             $url = $this->assetTransformers->transform($asset, [
                 'width' => $width,
                 'height' => $height,
                 'mode' => $mode->value,
             ])->url;
-        } catch (NotSupportedException) {
+        } catch (NotSupportedException|FilesystemException) {
             return $iconFallback ? Url::actionUrl('assets/icon', [
                 'extension' => $extension,
             ]) : null;
