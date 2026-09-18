@@ -1952,7 +1952,7 @@ JS, [
     ): ?AssetTransformResult {
         try {
             return $this->transform($definition);
-        } catch (AssetTransformException|NotSupportedException $exception) {
+        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
             report($exception);
 
             return null;
@@ -2028,7 +2028,7 @@ JS, [
 
         $volume = $this->getVolume();
 
-        if (! $volume->sourceHasUrls() || $volume->isTemporary()) {
+        if (! $volume->sourceHasUrls() || $volume->isTemporary() || is_null($volume->getResolvedFsTarget())) {
             return null;
         }
 
