@@ -158,9 +158,10 @@
   .cp-sidebar__footer {
     flex: 0 0 auto;
     margin-block-start: auto;
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-lg);
     padding-inline: var(--c-spacing-md);
     position: sticky;
+    z-index: 1;
     inset-block-end: var(--cp-debug-bar-height, 0px);
     background-color: var(--c-surface-sunken);
     border-block-start: 1px solid var(--c-color-border-quiet);
