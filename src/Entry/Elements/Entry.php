@@ -147,7 +147,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               ```
      */
     #[AllowedInSandbox]
-    #[Importable('sectionId', 'Section ID', canBeCleared: false)]
+    #[Importable('sectionId', 'Section ID', excludeFromUiMapping: true, canBeCleared: false)]
     public ?int $sectionId = null;
 
     /**

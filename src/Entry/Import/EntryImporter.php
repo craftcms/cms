@@ -93,7 +93,6 @@ class EntryImporter extends ElementImporter
         }
         if (array_key_exists('entryType', $settings)) {
             $this->entryType($settings['entryType']);
-            $this->fieldLayout($settings['fieldLayout']);
         }
     }
 
@@ -243,7 +242,7 @@ class EntryImporter extends ElementImporter
             $entryType = null;
 
             // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
-            // we need to ensure the typeId is set
+            // we need to ensure the sectionId and typeId are both set
             if ($this->section) {
                 $section = Sections::getSectionByUid($this->section);
                 $data['sectionId'] = $section->id;
