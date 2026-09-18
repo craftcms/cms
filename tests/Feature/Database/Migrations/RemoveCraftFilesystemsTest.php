@@ -119,13 +119,13 @@ test('suggests an equivalent disk config for a missing Local filesystem', functi
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
-    expect(fn () => $migration->up())->toThrow(RuntimeException::class, <<<'TEXT'
+    expect(fn () => $migration->up())->toThrow(RuntimeException::class, str_replace("\r\n", "\n", <<<'TEXT'
         'missing-local' => [
             'driver' => 'local',
             'root' => '/var/www/storage/uploads',
             'url' => 'https://cdn.example.test/uploads',
         ],
-        TEXT);
+        TEXT));
 });
 
 test('falls back to a manual TODO for a missing filesystem of an unrecognized type', function () {
