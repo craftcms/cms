@@ -411,6 +411,7 @@
       var(--cp-content-details-max)
     );
 
+    background-color: var(--c-surface-default);
     display: grid;
     height: 100%;
 
