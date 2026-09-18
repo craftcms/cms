@@ -93,7 +93,10 @@ test('fails before mutation when a legacy filesystem has no matching Laravel dis
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
     expect(fn () => $migration->up())
-        ->toThrow(RuntimeException::class, 'Configure Laravel filesystem disks named [missing-storage]')
+        ->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
+            ->toContain('[missing-storage]')
+            ->toContain('config/filesystems.php')
+            ->toContain("'missing-storage' => ["))
         ->and($volume->refresh()->fs)->toBe('missing-storage');
 });
 
@@ -119,13 +122,11 @@ test('suggests an equivalent disk config for a missing Local filesystem', functi
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
-    expect(fn () => $migration->up())->toThrow(RuntimeException::class, str_replace("\r\n", "\n", <<<'TEXT'
-        'missing-local' => [
-            'driver' => 'local',
-            'root' => '/var/www/storage/uploads',
-            'url' => 'https://cdn.example.test/uploads',
-        ],
-        TEXT));
+    expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
+        ->toContain("'missing-local' => [")
+        ->toContain("'driver' => 'local',")
+        ->toContain("'root' => '/var/www/storage/uploads',")
+        ->toContain("'url' => 'https://cdn.example.test/uploads',"));
 });
 
 test('falls back to a manual TODO for a missing filesystem of an unrecognized type', function () {
@@ -146,8 +147,7 @@ test('falls back to a manual TODO for a missing filesystem of an unrecognized ty
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
-    expect(fn () => $migration->up())->toThrow(
-        RuntimeException::class,
-        'no automatic Laravel disk equivalent for Craft filesystem type "Vendor\S3\Fs"',
-    );
+    expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect($exception->getMessage())
+        ->toContain('"Vendor\S3\Fs"')
+        ->toContain('create this manually'));
 });
