@@ -117,7 +117,7 @@
 
 <style scoped lang="scss">
   .cp-top-bar {
-    padding-block: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-sm) var(--c-spacing-md);
     padding-inline: var(--c-spacing-sm);
     display: grid;
     gap: var(--spacing);

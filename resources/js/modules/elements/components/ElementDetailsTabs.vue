@@ -207,10 +207,9 @@
   }
 
   craft-tabs::part(strip) {
-    padding: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     background-color: var(--c-surface-sunken);
-    border-start-end-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
   }
 
   craft-tab {

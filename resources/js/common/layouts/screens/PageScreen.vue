@@ -355,8 +355,9 @@
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
-    border-start-end-radius: calc(var(--c-spacing-sm) + var(--c-radius-md));
+    border-start-start-radius: calc(var(--c-spacing-md) + var(--c-radius-md));
+    border-start-end-radius: calc(var(--c-spacing-md) + var(--c-radius-md));
+    overflow: clip;
 
     @media screen and (min-width: 768px) {
       grid-template-columns: auto minmax(0, 1fr);
