@@ -145,6 +145,7 @@ class WebauthnServer
 
                 Ed256::create(),
                 Ed512::create(),
+                Ed256::create(true), // removed as registration option; remove it in the next major release
             );
     }
 
