@@ -238,7 +238,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: calc(50rem / 16);
+    min-height: calc(62rem / 16);
     background-color: var(--c-surface-default);
   }
 </style>

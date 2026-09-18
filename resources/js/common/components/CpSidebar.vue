@@ -157,9 +157,12 @@
 
   .cp-sidebar__footer {
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
     margin-block-start: auto;
-    padding-block: var(--c-spacing-lg);
+    padding-block: var(--c-spacing-md);
     padding-inline: var(--c-spacing-md);
+    min-height: calc(62rem / 16);
     position: sticky;
     z-index: 1;
     inset-block-end: var(--cp-debug-bar-height, 0px);

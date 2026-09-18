@@ -79,8 +79,8 @@
 <template>
   <component :is="contained ? CpContainer : 'div'" v-show="visible">
     <div
-      class="content-footer border-t border-t-quiet"
-      :class="contained ? 'py-lg' : 'p-lg'"
+      class="content-footer border-t border-t-quiet py-md"
+      :class="!contained ? 'px-lg' : null"
     >
       <div class="flex gap-2 items-center justify-between">
         <FormActions
@@ -117,5 +117,6 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--c-spacing-md);
+    min-height: calc(62rem / 16);
   }
 </style>
