@@ -11,7 +11,7 @@ use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Plugin\PluginSettingsForm;
 
-it('refreshes nested settings without losing other values or replaying validation errors', function () {
+it('refreshes nested settings without changing the plugin settings', function () {
     $plugin = new class(app()) extends Plugin
     {
         public string $handle = 'nested-settings';
@@ -58,5 +58,5 @@ it('refreshes nested settings without losing other values or replaying validatio
             'content' => ['body' => 'Edited body'],
         ])
         ->and($refreshed->errors)->toBe([])
-        ->and($plugin->getSettings()->content)->toBe(['body' => 'Edited body']);
+        ->and($plugin->getSettings()->content)->toBe(['body' => 'Saved body']);
 });
