@@ -77,7 +77,11 @@
     :label="label ?? undefined"
     :searchable="searchable"
   >
-    <span slot="invoker" style="display: inline-flex; vertical-align: middle" v-once>
+    <span
+      slot="invoker"
+      style="display: inline-flex; vertical-align: middle"
+      v-once
+    >
       <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
         <craft-button
           type="button"
