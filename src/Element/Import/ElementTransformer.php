@@ -47,9 +47,22 @@ class ElementTransformer extends BaseTransformer
 
         $array = [];
 
+        // at this stage the $item contains the keys that have been run through the remapData() helper,
+        // so all the UI-based mapping is taken into consideration;
+        // we now want to compose an array of key-value pairs where the keys are the properties that are available on the element
+        // and the values are the raw values from the incoming data;
+        $incomingKeys = array_combine(array_keys($item), array_keys($item));
+        $incomingKeys = array_map(fn ($key) => ImportHelper::prepKeyForAutoMatching((string) $key), $incomingKeys);
+
         foreach ($this->props as $prop) {
+            // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
+            // use it and remove it from a list of keys we can mess with in the next step
             if (array_key_exists((string) $prop['name'], $item)) {
                 $array[$prop['name']] = $this->normalizePropertyValue($item, $prop, $element);
+                unset($incomingKeys[$prop['name']]);
+                // otherwise attempt to match auto-magically
+            } elseif ($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $prop['name']), $incomingKeys)) {
+                $array[$prop['name']] = $this->normalizePropertyValue($item[$key], $prop, $element);
             }
         }
 
@@ -75,9 +88,16 @@ class ElementTransformer extends BaseTransformer
                 )
             );
 
+            // and this is where auto-magical mapping happens between what's in the incoming data and in the field layout element handles
             foreach ($fieldHandles as $fieldHandle) {
+                // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
+                // use it and remove it from a list of keys we can mess with in the next step
                 if (array_key_exists((string) $fieldHandle, $item)) {
                     $array[$fieldHandle] = $item[$fieldHandle];
+                    unset($incomingKeys[$fieldHandle]);
+                    // otherwise attempt to match auto-magically
+                } elseif ($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $fieldHandle), $incomingKeys)) {
+                    $array[$fieldHandle] = $item[$key];
                 }
             }
         }

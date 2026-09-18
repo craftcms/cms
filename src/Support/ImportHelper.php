@@ -15,6 +15,11 @@ use CraftCms\Cms\Support\Facades\Fields;
 
 class ImportHelper
 {
+    public static function prepKeyForAutoMatching(string $key): string
+    {
+        return Str::toHandle(implode(' ', Str::toWords($key)));
+    }
+
     public static function flattenLabelValueArray(array $array): array
     {
         return collect($array)

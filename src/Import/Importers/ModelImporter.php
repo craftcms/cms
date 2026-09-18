@@ -9,6 +9,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\Schema;
 use Override;
@@ -113,8 +114,29 @@ abstract class ModelImporter extends BaseImporter
 
         $item = Import::processData($this, $data, $model);
 
+        // at this stage the $item contains the keys that have been run through the remapData() helper,
+        // so all the UI-based mapping is taken into consideration;
+        // we now want to compose an array of key-value pairs where the keys are the properties that are available on the element
+        // and the values are the raw values from the incoming data;
+        $incomingKeys = array_combine(array_keys($item), array_keys($item));
+        $incomingKeys = array_map(fn ($key) => ImportHelper::prepKeyForAutoMatching((string) $key), $incomingKeys);
+
         $attributeHandles = Schema::getColumnListing($model->getTable());
-        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
+        $attributes = [];
+
+        // and this is where auto-magical mapping happens between what's in the incoming data and in the field layout element handles
+        foreach ($attributeHandles as $attributeHandle) {
+            // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
+            // use it and remove it from a list of keys we can mess with in the next step
+            if (array_key_exists((string) $attributeHandle, $item)) {
+                $attributes[$attributeHandle] = $item[$attributeHandle];
+                unset($incomingKeys[$attributeHandle]);
+                // otherwise attempt to match auto-magically
+            } elseif ($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $attributeHandle), $incomingKeys)) {
+                $attributes[$attributeHandle] = $item[$key];
+            }
+        }
+        // $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
 
         $model->fill($attributes);
 
