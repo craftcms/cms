@@ -174,7 +174,7 @@
     </craft-tab>
     <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
       <div
-        class="py-1 px-lg border-b border-b-quiet flex justify-between items-center min-h-[42px]"
+        class="py-1 px-lg border-b border-b-quiet flex justify-between items-center min-h-(--global-header-height)"
       >
         <h3 class="text-md/4">{{ tab.label }}</h3>
 

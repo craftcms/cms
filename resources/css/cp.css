@@ -20,9 +20,10 @@ CP Styles
     var(--c-size-touch-target) + var(--c-spacing-md) * 2
   );
   --global-content-width: calc(1440rem / 16);
-  --cp-content-max-width: calc(960rem / 16);
-  --header-height: calc(44rem / 16);
+  --global-footer-height: calc(54rem / 16);
+  --global-header-height: calc(42rem / 16);
   --global-sidebar-z-index: var(--c-layer-sidebar);
+  --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
   --workspace-bg-color: var(--c-color-neutral-fill-quiet);
