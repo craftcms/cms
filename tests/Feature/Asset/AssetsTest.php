@@ -448,7 +448,8 @@ it('passes explicit modes and bounds to the driver without treating event mode a
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     Cms::config()->defaultAssetTransformer('test');
-    $asset = AssetModel::factory()->createElement();
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
     $requests = [];
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests) {
         $requests[] = [$event->asset, $event->width, $event->height, $event->mode];
