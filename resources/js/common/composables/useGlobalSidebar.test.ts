@@ -106,7 +106,7 @@ describe('useGlobalSidebar', () => {
     sidebar.mode = 'docked';
     sidebar.visibility = 'hidden';
     expect(collapsed.value).toBe(true);
-    expect(width.value).toBe('var(--global-sidebar-collapsed-width)');
+    expect(width.value).toBe('var(--cp-sidebar-collapsed-width)');
 
     // Floating and hidden has actually left the layout.
     sidebar.mode = 'floating';

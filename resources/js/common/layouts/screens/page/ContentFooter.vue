@@ -117,6 +117,6 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--c-spacing-md);
-    min-height: var(--global-footer-height);
+    min-height: var(--cp-footer-height);
   }
 </style>

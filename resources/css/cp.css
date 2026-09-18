@@ -15,14 +15,14 @@ CP Styles
 @import './slideout.css';
 
 :root {
-  --global-sidebar-width: calc(226rem / 16);
-  --global-sidebar-collapsed-width: calc(
+  --cp-sidebar-width: calc(226rem / 16);
+  --cp-sidebar-collapsed-width: calc(
     var(--c-size-touch-target) + var(--c-spacing-md) * 2
   );
-  --global-content-width: calc(1440rem / 16);
-  --global-footer-height: calc(54rem / 16);
-  --global-header-height: calc(42rem / 16);
-  --global-sidebar-z-index: var(--c-layer-sidebar);
+  --cp-content-width: calc(1440rem / 16);
+  --cp-footer-height: calc(54rem / 16);
+  --cp-header-height: calc(42rem / 16);
+  --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
@@ -51,7 +51,7 @@ CP Styles
 }
 
 .skip-link--global {
-  z-index: calc(var(--global-sidebar-z-index) + 1);
+  z-index: calc(var(--cp-sidebar-z-index) + 1);
 }
 
 html,

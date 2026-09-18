@@ -150,8 +150,8 @@ export const useGlobalSidebar = createGlobalState((): GlobalSidebar => {
   const width = computed(() => {
     if (sidebar.mode === 'docked') {
       return sidebar.visibility === 'visible'
-        ? 'var(--global-sidebar-width)'
-        : 'var(--global-sidebar-collapsed-width)';
+        ? 'var(--cp-sidebar-width)'
+        : 'var(--cp-sidebar-collapsed-width)';
     }
 
     return 'auto';

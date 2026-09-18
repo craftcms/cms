@@ -247,7 +247,7 @@
                       <slot name="content-toolbar">
                         <CpContainer v-show="hasToolbar">
                           <div
-                            class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--global-header-height)"
+                            class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
                           >
                             <LayoutSlotOutlet name="content-toolbar">
                               <div class="flex gap-2 items-center">

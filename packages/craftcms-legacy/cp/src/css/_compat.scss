@@ -499,10 +499,10 @@
   /**
    * Layout
    */
-  --header-height: var(--global-header-height);
+  --header-height: var(--cp-header-height);
   --header-padding: var(--c-spacing-lg);
   --content-padding: var(--c-pane-padding);
-  --global-sidebar-width: var(
+  --cp-sidebar-width: var(
     --CHANGE
   ); /* Layout-specific - needs manual value */
 

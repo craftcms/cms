@@ -97,9 +97,9 @@
 
 <style scoped lang="scss">
   .cp-sidebar {
-    z-index: var(--global-sidebar-z-index);
+    z-index: var(--cp-sidebar-z-index);
     height: 100dvh;
-    width: var(--global-sidebar-width);
+    width: var(--cp-sidebar-width);
     display: flex;
     flex-direction: column;
     inset-block-start: 0;
@@ -136,7 +136,7 @@
   }
 
   .cp-sidebar--collapsed {
-    width: var(--global-sidebar-collapsed-width);
+    width: var(--cp-sidebar-collapsed-width);
   }
 
   .cp-sidebar__header {
@@ -161,7 +161,7 @@
     margin-block-start: auto;
     padding-block: var(--c-spacing-md);
     padding-inline: var(--c-spacing-md);
-    min-height: var(--global-footer-height);
+    min-height: var(--cp-footer-height);
     position: sticky;
     z-index: 1;
     inset-block-end: var(--cp-debug-bar-height, 0px);
