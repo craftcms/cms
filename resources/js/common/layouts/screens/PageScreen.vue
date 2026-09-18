@@ -132,6 +132,15 @@
       regions.has('content-toolbar-actions')
   );
   const hasDetails = computed(() => regions.has('content-details'));
+  // Decided here rather than inside `ContentFooter`, so the sticky wrapper
+  // around it and the notices can be hidden together rather than left
+  // standing empty.
+  const hasFooter = computed(
+    () =>
+      Boolean(props.form) ||
+      regions.has('content-footer') ||
+      regions.has('additional-buttons')
+  );
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>
     typeof props.contentMaxWidth === 'string'
@@ -294,7 +303,10 @@
                       <div>
                         <slot></slot>
                       </div>
-                      <div class="sticky bottom-0 z-sticky bg-default mt-lg">
+                      <div
+                        v-show="hasNotices || hasFooter"
+                        class="sticky bottom-0 z-sticky bg-default mt-lg"
+                      >
                         <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
                         puts its notices, the legacy element editor's included. -->
                         <div
@@ -308,6 +320,7 @@
                           </LayoutSlotOutlet>
                         </div>
                         <ContentFooter
+                          v-show="hasFooter"
                           :read-only="readOnly"
                           :form="form"
                           :default-form-actions="defaultFormActions"
