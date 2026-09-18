@@ -1952,7 +1952,7 @@ JS, [
     ): ?AssetTransformResult {
         try {
             return $this->transform($definition);
-        } catch (AssetTransformException|NotSupportedException $exception) {
+        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
             report($exception);
 
             return null;
