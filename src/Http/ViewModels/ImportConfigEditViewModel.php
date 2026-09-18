@@ -143,6 +143,7 @@ class ImportConfigEditViewModel extends ViewModel
             'destinationCols' => $mapViewModel->destinationCols(),
             'sourceDataCols' => $mapViewModel->sourceDataCols(),
             'values' => $mapViewModel->values(),
+            'suggestions' => $mapViewModel->suggestions(),
             'submit' => $mapViewModel->submit(),
             'nestedColsUrl' => $mapViewModel->nestedColsUrl(),
             'readOnly' => $mapViewModel->readOnly(),

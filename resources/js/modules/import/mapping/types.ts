@@ -64,11 +64,24 @@ export interface MappingValues {
 export type MappingValueTree = keyof MappingValues;
 
 /**
+ * A handle-keyed tree shaped like `MappingValues['map']`, holding either the guessed
+ * source column for each leaf (what the server sends) or a flag marking the leaves a
+ * guess was written into (what the screen keeps).
+ */
+export type SuggestedMap = Record<string, unknown>;
+
+/**
  * What a row needs from the screen around it. Provided by both the page and the
  * nested panel, so the table renders identically in either.
  */
 export interface MappingContext {
   values: MappingValues;
+  /**
+   * Which `values.map` leaves hold a guessed value rather than an explicit choice,
+   * keyed the same way. Kept apart from `MappingValues` so it's never posted with the
+   * form.
+   */
+  suggestedMap: SuggestedMap;
   sourceDataCols: SourceDataCol[];
   editable: boolean;
   /** Opens a container column's own mapping in a nested panel. */

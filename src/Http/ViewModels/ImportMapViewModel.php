@@ -7,9 +7,14 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Support\ImportHelper;
 
 class ImportMapViewModel extends ViewModel
 {
+    private ?array $destinationCols = null;
+
+    private ?array $sourceDataCols = null;
+
     public function __construct(
         private readonly BaseImporter $importer,
         private readonly bool $readOnly = false,
@@ -30,13 +35,15 @@ class ImportMapViewModel extends ViewModel
     /** @return array<int, array<string, mixed>> */
     public function destinationCols(): array
     {
-        return $this->importer->getDestinationCols();
+        return $this->destinationCols ??= $this->importer->getDestinationCols();
     }
 
     /** @return array<array-key, mixed> */
     public function sourceDataCols(): array
     {
-        return $this->importer->getSourceDataCols();
+        // memoized alongside destinationCols(): both are asked for twice per page — once for
+        // the screen, once to work out the suggestions — and this one parses the data file
+        return $this->sourceDataCols ??= $this->importer->getSourceDataCols();
     }
 
     /**
@@ -55,6 +62,21 @@ class ImportMapViewModel extends ViewModel
                 ? $this->importer->keepMissingNestedElements ?? []
                 : [],
         ];
+    }
+
+    /**
+     * A best guess at a source column for each leaf the map doesn't already have a value at,
+     * keyed the same way as the map. The screen fills them in and flags them as guesses.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function suggestions(): array
+    {
+        return ImportHelper::suggestMapValues(
+            $this->destinationCols(),
+            $this->sourceDataCols(),
+            $this->importer->map,
+        );
     }
 
     /** @return array{method: 'post', url: string} */

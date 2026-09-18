@@ -12,12 +12,13 @@
  */
 import {actionClient} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
-import {cloneValues} from './paths';
+import {applySuggestions, cloneValues, toObjectTree} from './paths';
 import type {
   MappingCol,
   MappingGroup,
   MappingValues,
   SourceDataCol,
+  SuggestedMap,
 } from './types';
 
 export interface NestedMappingContext {
@@ -26,6 +27,8 @@ export interface NestedMappingContext {
   groups: MappingGroup[];
   sourceDataCols: SourceDataCol[];
   values: MappingValues;
+  /** Which of this panel's own `values.map` leaves hold a guessed value. */
+  suggestedMap: SuggestedMap;
   editable: boolean;
   /** Carried through so a container inside the panel can open a panel of its own. */
   importUid: string;
@@ -86,13 +89,22 @@ export async function openNestedMapping(
     import('./NestedMapping.vue'),
   ]);
 
+  const values = cloneValues(options.values);
+  const suggestedMap: SuggestedMap = {};
+  applySuggestions(
+    values.map,
+    toObjectTree(data.suggestions ?? {}),
+    suggestedMap
+  );
+
   const contextId = `import-nested-mapping-${++nextContextId}`;
   contexts.set(contextId, {
     col,
     fieldName: data.fieldName,
     groups: data.groups,
     sourceDataCols: data.sourceDataCols ?? [],
-    values: cloneValues(options.values),
+    values,
+    suggestedMap,
     editable: options.editable,
     importUid: options.importUid,
     colsUrl: options.colsUrl,

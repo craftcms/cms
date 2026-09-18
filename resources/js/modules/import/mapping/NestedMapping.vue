@@ -20,6 +20,7 @@
     type MappingCol,
     MappingContextKey,
     type MappingValues,
+    type SuggestedMap,
   } from './types';
 
   const props = defineProps<{
@@ -30,6 +31,7 @@
   const context = takeNestedMappingContext(props.contextId);
   const slideout = useSlideout();
   const values = reactive<MappingValues>(context.values);
+  const suggestedMap = reactive<SuggestedMap>(context.suggestedMap);
 
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
@@ -69,6 +71,7 @@
 
   provide(MappingContextKey, {
     values,
+    suggestedMap,
     sourceDataCols: context.sourceDataCols,
     editable: context.editable,
     openNested(col: MappingCol, opener: HTMLElement | null): void {

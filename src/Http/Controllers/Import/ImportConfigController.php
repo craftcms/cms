@@ -18,6 +18,7 @@ use CraftCms\Cms\Http\ViewModels\ImportConfigEditViewModel;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
@@ -318,12 +319,42 @@ class ImportConfigController
             ];
         }
 
+        $sourceDataCols = $import->getSourceDataCols();
+        $allDestinationCols = array_merge(...array_column($groups, 'destinationCols'));
+
+        // the top-level columns are thrown in so a heading that exactly matches one of them
+        // isn't also guessed at in here, then the guesses are narrowed back down to this panel
+        $suggestions = ImportHelper::suggestMapValues(
+            array_merge($import->getDestinationCols(), $allDestinationCols),
+            $sourceDataCols,
+            $import->map ?? [],
+        );
+        $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
+
         return $this->asJsonSuccess(null, [
             'title' => t('Edit map for {fieldName}', ['fieldName' => $fieldName]),
             'fieldName' => $fieldName,
             'groups' => $groups,
-            'sourceDataCols' => $import->getSourceDataCols(),
+            'sourceDataCols' => $sourceDataCols,
+            'suggestions' => self::subtree($suggestions, $rootPath),
         ]);
+    }
+
+    /**
+     * Returns a tree holding only `$path`'s branch of `$tree`, still rooted at the top level.
+     */
+    private static function subtree(array $tree, string $path): array
+    {
+        $branch = Arr::get($tree, $path);
+
+        if ($branch === null) {
+            return [];
+        }
+
+        $subtree = [];
+        Arr::set($subtree, $path, $branch);
+
+        return $subtree;
     }
 
     private function fieldImportUids(): array

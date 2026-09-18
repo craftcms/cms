@@ -7,6 +7,7 @@
     MappingColEntry,
     MappingValues,
     SourceDataCol,
+    SuggestedMap,
   } from '@/modules/import/mapping/types';
 
   defineProps<{
@@ -23,6 +24,7 @@
       destinationCols: MappingColEntry[];
       sourceDataCols: SourceDataCol[] | null;
       values: MappingValues;
+      suggestions: SuggestedMap;
       submit: UrlMethodPair;
       nestedColsUrl: string;
       readOnly: boolean;

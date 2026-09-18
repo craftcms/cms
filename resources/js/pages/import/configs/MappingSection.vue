@@ -13,7 +13,7 @@
   import FormActions from '@/common/components/FormActions.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import MappingTable from '@/modules/import/mapping/MappingTable.vue';
-  import {toObjectTree} from '@/modules/import/mapping/paths';
+  import {applySuggestions, toObjectTree} from '@/modules/import/mapping/paths';
   import {openNestedMapping} from '@/modules/import/mapping/nested-mapping';
   import {
     type MappingCol,
@@ -21,6 +21,7 @@
     MappingContextKey,
     type MappingValues,
     type SourceDataCol,
+    type SuggestedMap,
   } from '@/modules/import/mapping/types';
 
   const props = defineProps<{
@@ -33,6 +34,7 @@
     destinationCols: MappingColEntry[];
     sourceDataCols: SourceDataCol[] | null;
     values: MappingValues;
+    suggestions: SuggestedMap;
     submit: UrlMethodPair;
     nestedColsUrl: string;
     readOnly: boolean;
@@ -41,6 +43,11 @@
 
   const editable = !props.readOnly && props.canSave;
   const values = reactive<MappingValues>(toObjectTree(props.values));
+  const suggestedMap = reactive<SuggestedMap>({});
+
+  // Before `useForm` below, so the guesses are part of the form's baseline and the
+  // screen doesn't come up already dirty.
+  applySuggestions(values.map, toObjectTree(props.suggestions), suggestedMap);
 
   /**
    * Backs the Save button and the unsaved-changes prompt. Inertia diffs against the
@@ -69,6 +76,7 @@
 
   provide(MappingContextKey, {
     values,
+    suggestedMap,
     sourceDataCols: props.sourceDataCols ?? [],
     editable,
     openNested(col: MappingCol, opener: HTMLElement | null): void {
@@ -88,7 +96,14 @@
 <template>
   <form @submit.prevent="save()">
     <craft-pane appearance="raised">
-      <p>{{ t('File: {file}', {file: config.file ?? ''}) }}</p>
+      <p>
+        {{
+          t(
+            'If you see any selections marked in blue, they were auto-selected as closest matches from the incoming data. Change them if they’re not right. They won’t persist unless you save the screen they’re on.'
+          )
+        }}
+      </p>
+      <p>{{ t('') }}</p>
 
       <MappingTable :cols="destinationCols" />
 

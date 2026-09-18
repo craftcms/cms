@@ -4,6 +4,7 @@ import type {
   MappingCol,
   MappingColEntry,
   MappingValues,
+  SuggestedMap,
 } from '@/modules/import/mapping/types';
 import MappingSection from './MappingSection.vue';
 
@@ -70,7 +71,8 @@ function emptyValues(): MappingValues {
 
 function mount(
   destinationCols: MappingColEntry[],
-  values: MappingValues = emptyValues()
+  values: MappingValues = emptyValues(),
+  suggestions: SuggestedMap = {}
 ) {
   app = createApp(MappingSection, {
     config: {
@@ -83,8 +85,10 @@ function mount(
     sourceDataCols: [
       {label: 'Please select', value: ''},
       {label: 'Name', value: 'name'},
+      {label: 'Email', value: 'email'},
     ],
     values,
+    suggestions,
     submit: {method: 'post', url: '/actions/import/configs/save-map'},
     nestedColsUrl: '/actions/import/configs/nested-mapping-cols',
     readOnly: false,
@@ -223,6 +227,34 @@ it('shows a container column’s nested mapping rather than a source select', ()
     colsUrl: '/actions/import/configs/nested-mapping-cols',
     editable: true,
   });
+});
+
+it('fills in a suggested source column and flags it as a best guess', () => {
+  mount([title], emptyValues(), {title: 'name'});
+
+  const select = container.querySelector('select')!;
+
+  expect(select.value).toBe('name');
+  expect(select.closest('td')!.classList).toContain('best-guess');
+});
+
+it('leaves an already-mapped column alone rather than flagging it as a guess', () => {
+  mount([title], {...emptyValues(), map: {title: 'email'}}, {title: 'name'});
+
+  const select = container.querySelector('select')!;
+  expect(select.value).toBe('email');
+  expect(select.closest('td')!.classList).not.toContain('best-guess');
+});
+
+it('clears the best-guess flag once the user chooses a column themselves', async () => {
+  mount([title], emptyValues(), {title: 'name'});
+
+  const select = container.querySelector('select')!;
+  select.value = 'email';
+  select.dispatchEvent(new Event('change'));
+  await nextTick();
+
+  expect(select.closest('td')!.classList).not.toContain('best-guess');
 });
 
 it('merges a nested panel’s result back into the trees', async () => {

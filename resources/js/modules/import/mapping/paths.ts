@@ -126,3 +126,57 @@ export function toObjectTree<T>(value: T): T {
 export function cloneValues(values: MappingValues): MappingValues {
   return toObjectTree(JSON.parse(JSON.stringify(values)) as MappingValues);
 }
+
+/**
+ * Fills in every leaf of `map` that doesn't have a value yet from `suggestions`, and
+ * records each leaf it fills in `flags`.
+ *
+ * An explicit choice — saved, or made earlier in this editing session — is neither
+ * overwritten nor flagged as a guess. The server can't work that out on its own, since
+ * it only ever sees the saved map, so the flags have to come from the pass that writes
+ * the values.
+ */
+export function applySuggestions(
+  map: Record<string, unknown>,
+  suggestions: Record<string, unknown>,
+  flags: Record<string, unknown>
+): void {
+  for (const [key, suggested] of Object.entries(suggestions)) {
+    const current = map[key];
+
+    if (
+      suggested !== null &&
+      typeof suggested === 'object' &&
+      !Array.isArray(suggested)
+    ) {
+      if (
+        current === null ||
+        typeof current !== 'object' ||
+        Array.isArray(current)
+      ) {
+        map[key] = {};
+      }
+
+      if (
+        flags[key] === null ||
+        typeof flags[key] !== 'object' ||
+        Array.isArray(flags[key])
+      ) {
+        flags[key] = {};
+      }
+
+      applySuggestions(
+        map[key] as Record<string, unknown>,
+        suggested as Record<string, unknown>,
+        flags[key] as Record<string, unknown>
+      );
+
+      continue;
+    }
+
+    if (current === undefined || current === null || current === '') {
+      map[key] = suggested;
+      flags[key] = true;
+    }
+  }
+}

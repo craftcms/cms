@@ -307,6 +307,183 @@ it('still flattens a grouped-by-type nested container inside a block\'s fields',
     ]);
 });
 
+// suggestMapValues
+
+it('suggests a source column that exactly matches the destination handle', function () {
+    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
+    $sourceDataCols = [['label' => 'Please select', 'value' => ''], ['label' => 'myContent', 'value' => 'myContent']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe(['myContent' => 'myContent']);
+});
+
+it('suggests a source column whose normalized handle matches, even when spelled differently', function () {
+    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
+    $sourceDataCols = [['label' => 'My Content', 'value' => 'My Content']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe(['myContent' => 'My Content']);
+});
+
+it('leaves a destination column unmapped when no source column matches', function () {
+    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
+    $sourceDataCols = [['label' => 'unrelated', 'value' => 'unrelated']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([]);
+});
+
+it('suggests nothing for a destination the map already has a value for', function () {
+    $destinationCols = [['handle' => 'myContent', 'prefixedHandleAsArray' => ['myContent']]];
+    $sourceDataCols = [['label' => 'myContent', 'value' => 'myContent']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, ['myContent' => 'alreadyMapped']);
+
+    expect($result)->toBe([]);
+});
+
+it('skips container columns since they have no value of their own', function () {
+    $destinationCols = [['handle' => 'matrixField', 'prefixedHandleAsArray' => ['matrixField'], 'isContainer' => true]];
+    $sourceDataCols = [['label' => 'matrixField', 'value' => 'matrixField']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([]);
+});
+
+it('recurses into a MappingColSet\'s subfields', function () {
+    $destinationCols = [
+        [
+            'multiple' => true,
+            'subfields' => [
+                ['handle' => 'lat', 'prefixedHandleAsArray' => ['location', 'lat']],
+                ['handle' => 'lng', 'prefixedHandleAsArray' => ['location', 'lng']],
+            ],
+        ],
+    ];
+    $sourceDataCols = [['label' => 'lat', 'value' => 'lat'], ['label' => 'lng', 'value' => 'lng']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe(['location' => ['lat' => 'lat', 'lng' => 'lng']]);
+});
+
+it('suggests a nested leaf without repeating a sibling the map already has', function () {
+    $destinationCols = [['handle' => 'city', 'prefixedHandleAsArray' => ['address', 'city']]];
+    $sourceDataCols = [['label' => 'city', 'value' => 'city']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, ['address' => ['street' => 'streetCol']]);
+
+    expect($result)->toBe(['address' => ['city' => 'city']]);
+});
+
+it('prefers the source column that matches the destination\'s whole path over a bare handle match', function () {
+    $destinationCols = [
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['title']],
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+    ];
+    $sourceDataCols = [
+        ['label' => 'title', 'value' => 'title'],
+        ['label' => 'outerMatrix.withText.title', 'value' => 'outerMatrix.withText.title'],
+    ];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    // the more specific match is assigned (and so keyed) first
+    expect($result)->toBe([
+        'outerMatrix' => ['withText' => ['title' => 'outerMatrix.withText.title']],
+        'title' => 'title',
+    ]);
+});
+
+it('gives a source column that matches a destination\'s whole path to that destination alone', function () {
+    $destinationCols = [
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['title']],
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+    ];
+    $sourceDataCols = [['label' => 'title', 'value' => 'title']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe(['title' => 'title']);
+});
+
+it('falls back to a source column that only matches the tail of a nested destination\'s path', function () {
+    $destinationCols = [
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['title']],
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+    ];
+    $sourceDataCols = [['label' => 'withText.title', 'value' => 'withText.title']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([
+        'outerMatrix' => ['withText' => ['title' => 'withText.title']],
+    ]);
+});
+
+it('reuses a partially matched source column across every entry type that wants it', function () {
+    $destinationCols = [
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'title']],
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['outerMatrix', 'withImage', 'title']],
+    ];
+    $sourceDataCols = [['label' => 'title', 'value' => 'title']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([
+        'outerMatrix' => [
+            'withText' => ['title' => 'title'],
+            'withImage' => ['title' => 'title'],
+        ],
+    ]);
+});
+
+it('matches a source column that names only some of the destination\'s path segments', function () {
+    $destinationCols = [
+        ['handle' => 'plainText', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'fields', 'plainText']],
+    ];
+    // no `fields`, no entry type — the segments just have to line up in order
+    $sourceDataCols = [['label' => 'outerMatrix.plainText', 'value' => 'outerMatrix.plainText']];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([
+        'outerMatrix' => ['withText' => ['fields' => ['plainText' => 'outerMatrix.plainText']]],
+    ]);
+});
+
+it('does not match a source column whose last segment isn\'t the destination\'s own handle', function () {
+    $destinationCols = [
+        ['handle' => 'plainText', 'prefixedHandleAsArray' => ['outerMatrix', 'withText', 'fields', 'plainText']],
+    ];
+    $sourceDataCols = [
+        ['label' => 'outerMatrix.fields', 'value' => 'outerMatrix.fields'],
+        ['label' => 'outerMatrix.fields.plainText2', 'value' => 'outerMatrix.fields.plainText2'],
+    ];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([]);
+});
+
+it('never suggests a match criteria column, which belongs to a different tree', function () {
+    $destinationCols = [
+        ['handle' => 'title', 'prefixedHandleAsArray' => ['matrixOuter', 'withMatrix', 'title']],
+    ];
+    $sourceDataCols = [[
+        'label' => 'matrixOuter.matchCriteria.title',
+        'value' => 'matrixOuter.matchCriteria.title',
+    ]];
+
+    $result = ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, []);
+
+    expect($result)->toBe([]);
+});
+
 // remapData – path resolution
 
 it('resolves a rule path relative to the current base path', function () {

@@ -17,7 +17,12 @@ class ImportHelper
 {
     public static function prepKeyForAutoMatching(string $key): string
     {
-        return Str::toHandle(implode(' ', Str::toWords($key)));
+        $fragments = explode('.', $key);
+        foreach ($fragments as $i => $fragment) {
+            $fragments[$i] = Str::toHandle(implode(' ', Str::toWords($fragment)));
+        }
+
+        return Arr::join($fragments, '.');
     }
 
     public static function flattenLabelValueArray(array $array): array
@@ -597,5 +602,184 @@ class ImportHelper
     protected static function pathJoin(?string $basePath, string $key): string
     {
         return $basePath === null || $basePath === '' ? $key : $basePath.'.'.$key;
+    }
+
+    // ------------- best guess UI mapping ----------------- //
+    /**
+     * Returns a best-guess incoming column for each of `$map`'s unmapped leaves, as a tree keyed
+     * the same way as the map itself. It uses the same normalized-handle matching as the
+     * auto-magic mapping done at import time.
+     *
+     * Matching is done on a column's full path rather than just its leaf handle, so the most
+     * specific incoming column wins: given both `title` and `matrixOuter.title` headings, the
+     * former fills the top-level Title and the latter the Title inside the matrix. A column can
+     * still fall back to a heading that names less of its path, but a heading claimed by a
+     * full-path match is never offered as a fallback.
+     *
+     * @param  array  $destinationCols  Same shape sent to the mapping screen: a list of column
+     *                                  arrays, `MappingColSet` arrays (`subfields`), or gaps.
+     * @param  array  $sourceDataCols  List of `{label, value}` arrays.
+     * @param  array  $map  The current (possibly partially saved) map tree.
+     */
+    public static function suggestMapValues(array $destinationCols, array $sourceDataCols, array $map): array
+    {
+        $incomingCols = [];
+        foreach ($sourceDataCols as $sourceCol) {
+            if (($sourceCol['value'] ?? '') === '') {
+                continue;
+            }
+
+            $segments = self::matchSegments((string) $sourceCol['value']);
+
+            if ($segments === []) {
+                continue;
+            }
+
+            $incomingCols[implode('.', $segments)] = ['segments' => $segments, 'value' => $sourceCol['value']];
+        }
+
+        $leaves = [];
+        self::collectMappableLeaves($destinationCols, $map, $leaves);
+
+        $suggestions = [];
+        self::assignSuggestions($leaves, array_values($incomingCols), $suggestions);
+
+        return $suggestions;
+    }
+
+    /**
+     * Normalizes a key into the segments it should be auto-matched on. They're lowercased so a
+     * heading can be spelled however its author liked — `matrixouter`, `matrix-inner` and
+     * `plain-text` all line up with the handles they name.
+     */
+    private static function matchSegments(string|array $key): array
+    {
+        $segments = is_array($key) ? $key : explode('.', $key);
+
+        foreach ($segments as $i => $segment) {
+            $segments[$i] = Str::lower(Str::toHandle(implode(' ', Str::toWords((string) $segment))));
+        }
+
+        return array_values(array_filter($segments, fn (string $segment) => $segment !== ''));
+    }
+
+    /**
+     * Returns how many of an incoming column's segments line up with a destination's, or `null`
+     * if the column doesn't describe that destination at all.
+     *
+     * The column has to name the destination's own handle, and everything in front of that has
+     * to appear in order — but not necessarily back to back, because a destination path also
+     * carries segments the data never does, such as a nested entry's entry type handle.
+     */
+    private static function matchScore(array $destinationSegments, array $sourceSegments): ?int
+    {
+        $score = count($sourceSegments);
+
+        if ($score === 0 || $score > count($destinationSegments)) {
+            return null;
+        }
+
+        if (array_pop($sourceSegments) !== array_pop($destinationSegments)) {
+            return null;
+        }
+
+        foreach ($sourceSegments as $segment) {
+            $at = array_search($segment, $destinationSegments, true);
+
+            if ($at === false) {
+                return null;
+            }
+
+            $destinationSegments = array_slice($destinationSegments, $at + 1);
+        }
+
+        return $score;
+    }
+
+    /**
+     * Collects every destination leaf that still needs a value, keeping each one's map path
+     * alongside the normalized segments it should be matched on.
+     */
+    private static function collectMappableLeaves(array $destinationCols, array $map, array &$leaves): void
+    {
+        foreach ($destinationCols as $col) {
+            if (isset($col['subfields']) && is_array($col['subfields'])) {
+                self::collectMappableLeaves($col['subfields'], $map, $leaves);
+
+                continue;
+            }
+
+            if (empty($col['prefixedHandleAsArray']) || ! empty($col['isContainer'])) {
+                continue;
+            }
+
+            $path = implode('.', $col['prefixedHandleAsArray']);
+
+            if (Arr::get($map, $path, '') !== '') {
+                continue;
+            }
+
+            $leaves[] = [
+                'path' => $path,
+                'segments' => self::matchSegments($col['prefixedHandleAsArray']),
+            ];
+        }
+    }
+
+    /**
+     * Scores each leaf against every incoming column that describes it, then assigns the most
+     * specific matches first.
+     */
+    private static function assignSuggestions(array $leaves, array $incomingCols, array &$suggestions): void
+    {
+        $candidates = [];
+
+        foreach ($leaves as $i => $leaf) {
+            $segmentCount = count($leaf['segments']);
+
+            foreach ($incomingCols as $incomingCol) {
+                $score = self::matchScore($leaf['segments'], $incomingCol['segments']);
+
+                if ($score === null) {
+                    continue;
+                }
+
+                $candidates[] = [
+                    'leaf' => $i,
+                    'value' => $incomingCol['value'],
+                    'full' => $score === $segmentCount,
+                    'length' => $score,
+                ];
+            }
+        }
+
+        // most specific first: full-path matches, then the longest tail match, then
+        // destination order so the result doesn't depend on sort stability
+        usort(
+            $candidates,
+            fn (array $a, array $b) => [$b['full'], $b['length'], $a['leaf']] <=> [$a['full'], $a['length'], $b['leaf']],
+        );
+
+        $assigned = [];
+        $claimed = [];
+
+        foreach ($candidates as $candidate) {
+            if (isset($assigned[$candidate['leaf']])) {
+                continue;
+            }
+
+            // a heading that exactly matches some other column's whole path belongs to it
+            if (! $candidate['full'] && isset($claimed[$candidate['value']])) {
+                continue;
+            }
+
+            $assigned[$candidate['leaf']] = true;
+
+            if ($candidate['full']) {
+                $claimed[$candidate['value']] = true;
+            }
+
+            Arr::set($suggestions, $leaves[$candidate['leaf']]['path'], $candidate['value']);
+        }
     }
 }

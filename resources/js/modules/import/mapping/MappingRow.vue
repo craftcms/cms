@@ -35,6 +35,10 @@
     return value === null || value === undefined ? '' : String(value);
   });
 
+  const isBestGuess = computed(() =>
+    Boolean(getAt(context.suggestedMap, path.value))
+  );
+
   /**
    * A container has no value of its own to match on or clear — each of its nested
    * columns carries its own decision, inside the panel.
@@ -61,6 +65,7 @@
     }
 
     setAt(context!.values.map, path.value, event.target.value);
+    setAt(context!.suggestedMap, path.value, false);
   }
 
   // `craft-checkbox` announces its starting state too, which would write to the
@@ -95,7 +100,7 @@
       {{ col.label }}<br />
       <code>{{ col.handle }}</code>
     </th>
-    <td>
+    <td :class="{'best-guess': isBestGuess}">
       <craft-button
         v-if="col.isContainer"
         ref="nestedTrigger"
@@ -109,6 +114,7 @@
       <craft-select v-else :disabled="!context.editable">
         <select
           slot="input"
+          :value="mapValue"
           :disabled="!context.editable"
           :aria-label="col.label"
           @change="onMapChanged"
@@ -161,3 +167,9 @@
     </td>
   </tr>
 </template>
+
+<style scoped lang="scss">
+  .best-guess select {
+    background: var(--color-blue-100);
+  }
+</style>
