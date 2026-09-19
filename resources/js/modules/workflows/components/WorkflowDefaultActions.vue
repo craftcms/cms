@@ -1,29 +1,16 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {HttpResponseError} from '@inertiajs/core';
-  import {useHttp} from '@inertiajs/vue3';
   import {computed, shallowRef, useId} from 'vue';
   import controller from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {
+    useWorkflowTransition,
+    type WorkflowIdentity,
+  } from '../composables/useWorkflowTransition';
   import '../../markdown-field/markdown-field';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
-  type WorkflowIdentity = {
-    elementType: string;
-    elementId: number | null;
-    draftId: number | null;
-    siteId: number | null;
-  };
-  type WorkflowTransitionRequest = WorkflowIdentity & {
-    note?: string;
-  };
-  type WorkflowResponse = {
-    workflowReview: WorkflowReviewData;
-    editorActions: ElementEditorActions;
-    message?: string;
-  };
 
   const props = defineProps<{
     review: WorkflowReviewData;
@@ -41,16 +28,9 @@
   }>();
 
   const note = shallowRef('');
-  const error = shallowRef<string | null>(null);
-  const {flash} = useFlashMessages();
-  const transitionRequest = useHttp<
-    WorkflowTransitionRequest,
-    WorkflowResponse
-  >(identity());
   const id = useId();
   const noteId = `workflow-review-note-${id}`;
   const commentId = `workflow-review-comment-${id}`;
-  const busy = computed(() => transitionRequest.processing);
   const noteIsEmpty = computed(() => !note.value.trim());
   const canShowActions = computed(
     () =>
@@ -68,31 +48,16 @@
     };
   }
 
-  async function transition(url: string): Promise<void> {
-    error.value = null;
-    transitionRequest.transform(() => ({
-      ...identity(),
-      note: note.value,
-    }));
-
-    try {
-      const data = await transitionRequest.post(url);
-      emit('reviewUpdated', data.workflowReview, data.editorActions);
+  const {error, processing, transition} = useWorkflowTransition(
+    identity,
+    (review, actions) => {
+      emit('reviewUpdated', review, actions);
       note.value = '';
-      if (data.message) {
-        flash('success', data.message);
-      }
-    } catch (exception) {
-      error.value =
-        responseMessage(exception) ??
-        (exception instanceof Error
-          ? exception.message
-          : t('The workflow could not be updated.'));
     }
-  }
+  );
 
   async function submitForReview(): Promise<void> {
-    await transition(controller.submit.url());
+    await transition(controller.submit.url(), {note: note.value});
   }
 
   function onNoteKeydown(event: KeyboardEvent): void {
@@ -100,7 +65,7 @@
       event.key !== 'Enter' ||
       (!event.metaKey && !event.ctrlKey) ||
       !props.review.canSubmit ||
-      busy.value
+      processing.value
     ) {
       return;
     }
@@ -110,7 +75,7 @@
   }
 
   async function addComment(): Promise<void> {
-    if (noteIsEmpty.value || busy.value) {
+    if (noteIsEmpty.value || processing.value) {
       return;
     }
 
@@ -122,12 +87,15 @@
     }
 
     await transition(
-      controller.comment.url({workflowRun: runId, stage: stageUid})
+      controller.comment.url({workflowRun: runId, stage: stageUid}),
+      {
+        note: note.value,
+      }
     );
   }
 
   async function overrideApproval(): Promise<void> {
-    if (busy.value) {
+    if (processing.value) {
       return;
     }
 
@@ -153,22 +121,6 @@
   function staleReview(): void {
     error.value = t('This review is no longer current. Refresh and try again.');
   }
-
-  function responseMessage(exception: unknown): string | null {
-    if (!(exception instanceof HttpResponseError)) {
-      return null;
-    }
-
-    try {
-      const response = JSON.parse(exception.response.data) as {
-        message?: unknown;
-      };
-
-      return typeof response.message === 'string' ? response.message : null;
-    } catch {
-      return null;
-    }
-  }
 </script>
 
 <template>
@@ -186,7 +138,7 @@
       show-toolbar
       .toolbarButtons="commentToolbarButtons"
       .value="note"
-      :disabled="busy"
+      :disabled="processing"
       @input="note = ($event.target as HTMLTextAreaElement).value"
       @keydown="onNoteKeydown"
     />
@@ -196,7 +148,7 @@
         v-if="review.canSubmit"
         type="button"
         :variant="ButtonVariant.Primary"
-        :disabled="busy"
+        :disabled="processing"
         @click="submitForReview"
       >
         {{ review.submitLabel }}
@@ -208,7 +160,7 @@
             :id="commentId"
             type="button"
             :variant="ButtonVariant.Solid"
-            :disabled="busy || noteIsEmpty"
+            :disabled="processing || noteIsEmpty"
             focusable-when-disabled
             @click="addComment"
           >
@@ -224,7 +176,7 @@
         <craft-button
           type="button"
           :variant="ButtonVariant.DangerPlain"
-          :disabled="busy"
+          :disabled="processing"
           @click="overrideApproval"
         >
           {{ t('Override approval') }}

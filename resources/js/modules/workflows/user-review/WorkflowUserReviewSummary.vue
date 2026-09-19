@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {computed} from 'vue';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
   type WorkflowRun = WorkflowReviewData['runs'][number];
@@ -13,7 +14,13 @@
     remainingReviewers: Reviewer[];
   };
 
-  defineProps<{
+  type ReviewerSection = {
+    reviewers: Reviewer[];
+    label: string;
+    fill: 'green' | 'orange';
+  };
+
+  const props = defineProps<{
     run: WorkflowRun;
     stage: WorkflowStage;
     approvalMode: 'total' | 'per-group';
@@ -24,6 +31,30 @@
     remainingReviewers?: Reviewer[];
     groups?: Group[];
   }>();
+
+  function reviewerSections(
+    approved: Reviewer[] | undefined,
+    carried: Reviewer[] | undefined,
+    remaining: Reviewer[] | undefined
+  ): ReviewerSection[] {
+    return [
+      {reviewers: approved ?? [], label: t('Approved'), fill: 'green'},
+      {
+        reviewers: carried ?? [],
+        label: t('Approved previously'),
+        fill: 'green',
+      },
+      {reviewers: remaining ?? [], label: t('Pending'), fill: 'orange'},
+    ];
+  }
+
+  const totalReviewerSections = computed(() =>
+    reviewerSections(
+      props.approvedReviewers,
+      props.carriedReviewers,
+      props.remainingReviewers
+    )
+  );
 </script>
 
 <template>
@@ -38,11 +69,13 @@
         }}
       </span>
       <ul
-        v-if="approvedReviewers?.length"
+        v-for="section in totalReviewerSections"
+        v-show="section.reviewers.length"
+        :key="section.label"
         class="workflow-user-review-summary__reviewers"
       >
         <li
-          v-for="reviewer in approvedReviewers"
+          v-for="reviewer in section.reviewers"
           :key="reviewer.name"
           class="workflow-user-review-summary__reviewer-row"
         >
@@ -52,48 +85,8 @@
               {{ reviewer.name }}
             </span>
           </span>
-          <craft-badge fill="green" size="small">
-            {{ t('Approved') }}
-          </craft-badge>
-        </li>
-      </ul>
-      <ul
-        v-if="carriedReviewers?.length"
-        class="workflow-user-review-summary__reviewers"
-      >
-        <li
-          v-for="reviewer in carriedReviewers"
-          :key="reviewer.name"
-          class="workflow-user-review-summary__reviewer-row"
-        >
-          <span class="workflow-user-review-summary__reviewer">
-            <craft-avatar :label="reviewer.name" />
-            <span class="workflow-user-review-summary__name">
-              {{ reviewer.name }}
-            </span>
-          </span>
-          <craft-badge fill="green" size="small">
-            {{ t('Approved previously') }}
-          </craft-badge>
-        </li>
-      </ul>
-      <ul
-        v-if="remainingReviewers?.length"
-        class="workflow-user-review-summary__reviewers"
-      >
-        <li
-          v-for="reviewer in remainingReviewers"
-          :key="reviewer.name"
-          class="workflow-user-review-summary__reviewer-row"
-        >
-          <span class="workflow-user-review-summary__reviewer">
-            <craft-avatar :label="reviewer.name" />
-            <span class="workflow-user-review-summary__name">
-              {{ reviewer.name }}
-            </span>
-          </span>
-          <craft-badge fill="orange" size="small">
-            {{ t('Pending') }}
+          <craft-badge :fill="section.fill" size="small">
+            {{ section.label }}
           </craft-badge>
         </li>
       </ul>
@@ -116,11 +109,17 @@
           }}
         </span>
         <ul
-          v-if="group.approvedReviewers?.length"
+          v-for="section in reviewerSections(
+            group.approvedReviewers,
+            group.carriedReviewers,
+            group.remainingReviewers
+          )"
+          v-show="section.reviewers.length"
+          :key="section.label"
           class="workflow-user-review-summary__reviewers"
         >
           <li
-            v-for="reviewer in group.approvedReviewers"
+            v-for="reviewer in section.reviewers"
             :key="reviewer.name"
             class="workflow-user-review-summary__reviewer-row"
           >
@@ -130,48 +129,8 @@
                 {{ reviewer.name }}
               </span>
             </span>
-            <craft-badge fill="green" size="small">
-              {{ t('Approved') }}
-            </craft-badge>
-          </li>
-        </ul>
-        <ul
-          v-if="group.carriedReviewers.length"
-          class="workflow-user-review-summary__reviewers"
-        >
-          <li
-            v-for="reviewer in group.carriedReviewers"
-            :key="reviewer.name"
-            class="workflow-user-review-summary__reviewer-row"
-          >
-            <span class="workflow-user-review-summary__reviewer">
-              <craft-avatar :label="reviewer.name" />
-              <span class="workflow-user-review-summary__name">
-                {{ reviewer.name }}
-              </span>
-            </span>
-            <craft-badge fill="green" size="small">
-              {{ t('Approved previously') }}
-            </craft-badge>
-          </li>
-        </ul>
-        <ul
-          v-if="group.remainingReviewers.length"
-          class="workflow-user-review-summary__reviewers"
-        >
-          <li
-            v-for="reviewer in group.remainingReviewers"
-            :key="reviewer.name"
-            class="workflow-user-review-summary__reviewer-row"
-          >
-            <span class="workflow-user-review-summary__reviewer">
-              <craft-avatar :label="reviewer.name" />
-              <span class="workflow-user-review-summary__name">
-                {{ reviewer.name }}
-              </span>
-            </span>
-            <craft-badge fill="orange" size="small">
-              {{ t('Pending') }}
+            <craft-badge :fill="section.fill" size="small">
+              {{ section.label }}
             </craft-badge>
           </li>
         </ul>

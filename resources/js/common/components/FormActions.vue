@@ -136,10 +136,3 @@
     <ActionMenu v-if="additionalActions?.length" :actions="additionalActions" />
   </div>
 </template>
-
-<style scoped lang="scss">
-  craft-button[aria-disabled='true'] {
-    cursor: default;
-    opacity: 0.25;
-  }
-</style>

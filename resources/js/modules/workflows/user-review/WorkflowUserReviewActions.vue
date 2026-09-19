@@ -1,33 +1,19 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {HttpResponseError} from '@inertiajs/core';
-  import {useHttp} from '@inertiajs/vue3';
   import {computed, shallowRef, useId} from 'vue';
   import transitionsController from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
   import userReviewController from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/UserReviewController';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
   import {isModifierKeyPressed} from '@/modules/markdown-field/behaviors/utilities';
   import '@/modules/markdown-field/markdown-field';
+  import {
+    useWorkflowTransition,
+    type WorkflowIdentity,
+  } from '../composables/useWorkflowTransition';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
-  type WorkflowIdentity = {
-    elementType: string;
-    elementId: number | null;
-    draftId: number | null;
-    siteId: number | null;
-  };
   type ReviewDecision = 'comment' | 'approve' | 'requestChanges';
-  type WorkflowActionRequest = WorkflowIdentity & {
-    message?: string;
-    note?: string;
-  };
-  type WorkflowResponse = {
-    workflowReview: WorkflowReviewData;
-    editorActions: ElementEditorActions;
-    message?: string;
-  };
 
   const props = defineProps<{
     review: WorkflowReviewData;
@@ -49,11 +35,6 @@
   const decision = shallowRef<ReviewDecision>(
     props.review.canComment ? 'comment' : 'approve'
   );
-  const error = shallowRef<string | null>(null);
-  const {flash} = useFlashMessages();
-  const actionRequest = useHttp<WorkflowActionRequest, WorkflowResponse>({
-    ...identity(),
-  });
   const id = useId();
   const messageIsEmpty = computed(() => !message.value.trim());
   const currentRun = computed(() =>
@@ -94,9 +75,17 @@
     };
   }
 
+  const {error, processing, transition} = useWorkflowTransition(
+    identity,
+    (review, actions) => {
+      emit('reviewUpdated', review, actions);
+      message.value = '';
+    }
+  );
+
   async function submitReview(): Promise<void> {
     error.value = null;
-    if (disabledReason.value || actionRequest.processing) {
+    if (disabledReason.value || processing.value) {
       return;
     }
 
@@ -138,7 +127,7 @@
 
   async function overrideApproval(): Promise<void> {
     error.value = null;
-    if (actionRequest.processing) {
+    if (processing.value) {
       return;
     }
 
@@ -161,44 +150,6 @@
       transitionsController.override.url({workflowRun: props.review.runId}),
       {note: message.value}
     );
-  }
-
-  async function transition(
-    url: string,
-    values: Partial<Pick<WorkflowActionRequest, 'message' | 'note'>>
-  ): Promise<void> {
-    actionRequest.transform(() => ({...identity(), ...values}));
-
-    try {
-      const data = await actionRequest.post(url);
-      emit('reviewUpdated', data.workflowReview, data.editorActions);
-      message.value = '';
-      if (data.message) {
-        flash('success', data.message);
-      }
-    } catch (exception) {
-      error.value =
-        responseMessage(exception) ??
-        (exception instanceof Error
-          ? exception.message
-          : t('The workflow could not be updated.'));
-    }
-  }
-
-  function responseMessage(exception: unknown): string | null {
-    if (!(exception instanceof HttpResponseError)) {
-      return null;
-    }
-
-    try {
-      const response = JSON.parse(exception.response.data) as {
-        message?: unknown;
-      };
-
-      return typeof response.message === 'string' ? response.message : null;
-    } catch {
-      return null;
-    }
   }
 </script>
 
@@ -230,7 +181,7 @@
       show-toolbar
       .toolbarButtons="commentToolbarButtons"
       .value="message"
-      :disabled="actionRequest.processing"
+      :disabled="processing"
       @input="message = ($event.target as HTMLTextAreaElement).value"
       @keydown="onMessageKeydown"
     />
@@ -254,7 +205,7 @@
         </span>
       </label>
 
-      <label v-if="canReview" class="workflow-user-review-actions__choice">
+      <label class="workflow-user-review-actions__choice">
         <input
           v-model="decision"
           type="radio"
@@ -267,7 +218,7 @@
         </span>
       </label>
 
-      <label v-if="canReview" class="workflow-user-review-actions__choice">
+      <label class="workflow-user-review-actions__choice">
         <input
           v-model="decision"
           type="radio"
@@ -286,7 +237,7 @@
         v-if="review.canOverride"
         type="button"
         :variant="ButtonVariant.DangerPlain"
-        .disabled="actionRequest.processing"
+        .disabled="processing"
         @click="overrideApproval"
       >
         {{ t('Override approval') }}
@@ -298,7 +249,7 @@
         <craft-button
           type="button"
           :variant="ButtonVariant.Primary"
-          .disabled="actionRequest.processing || Boolean(disabledReason)"
+          .disabled="processing || Boolean(disabledReason)"
           focusable-when-disabled
           @click="submitReview"
         >

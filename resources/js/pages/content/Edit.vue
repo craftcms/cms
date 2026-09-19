@@ -19,8 +19,7 @@
     sectionHandle: string | null;
   }>();
 
-  const isSlideout = useIsSlideout();
-  const editor = isSlideout ? ElementEditor : ElementEditScreen;
+  const editor = useIsSlideout() ? ElementEditor : ElementEditScreen;
 
   // What `entries/save-entry` needs to resolve the entry it's saving. The
   // field layout and meta fields are collected by the pipeline itself.
