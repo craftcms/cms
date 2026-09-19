@@ -81,12 +81,12 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage :route="route" customizable-sources>
     <template #navbar>
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>
-    <template #actions>
-      <AssetUploadButton v-bind="uploadSource" />
+    <template #toolbar-actions>
+      <AssetUploadButton variant="primary" v-bind="uploadSource" />
     </template>
   </ElementIndexPage>
 

@@ -19,6 +19,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     title: string;
@@ -108,12 +109,13 @@
           CpLink,
           {
             href: edit.url({site: row.original.id}),
+            block: true,
           },
           () =>
             h(
               'div',
               {
-                class: 'flex gap-2',
+                class: 'flex gap-2 items-center',
               },
               [
                 h('craft-indicator', {
@@ -132,11 +134,11 @@
       header: () => t('Status'),
       cell: (info) =>
         h(
-          Badge,
+          'craft-badge',
           {
-            variant: info.getValue() ? 'success' : 'default',
+            fill: info.getValue() ? 'success' : 'default',
           },
-          () => (info.getValue() ? t('Enabled') : t('Disabled'))
+          info.getValue() ? t('Enabled') : t('Disabled')
         ),
     }),
     columnHelper.accessor('language', {
@@ -204,7 +206,18 @@
     }
   }
 
-  useAppLayout(() => ({title: props.title}));
+  useAppLayout(() => ({
+    title: props.title,
+    // Described rather than slotted so the secondary nav can render it as a
+    // button when it's expanded and as a menu item once it collapses.
+    subnavActions: [
+      {
+        label: t('New Group'),
+        icon: 'plus',
+        onClick: () => openModal('create'),
+      },
+    ],
+  }));
 </script>
 
 <template>
@@ -234,29 +247,18 @@
       </craft-action-menu>
     </div>
   </LayoutSlot>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       v-if="!readOnly"
       as="craft-button"
       :href="create({}, {query: {groupId: group?.id}}).url"
-      variant="accent"
-      appearance="button"
+      icon="plus"
     >
-      <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('New Site') }}
     </CpLink>
   </LayoutSlot>
 
-  <LayoutSlot name="subnav-actions">
-    <div class="mt-4 flex gap-2" v-if="!readOnly">
-      <craft-button type="button" @click="openModal('create')" size="small">
-        <craft-icon name="plus" slot="prefix"></craft-icon>
-        {{ t('New Group') }}
-      </craft-button>
-    </div>
-  </LayoutSlot>
-
-  <craft-pane appearance="raised" padding="0" class="@container">
+  <CpContainer class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -265,6 +267,8 @@
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
+      :full-width="true"
+      spacing="spacious"
       @reorder="handleReorder"
     >
       <template #empty-row>
@@ -281,7 +285,7 @@
         </Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </CpContainer>
 
   <ModalForm
     :is-active="modalActive"

@@ -58,7 +58,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="title-badge">
+  <LayoutSlot name="content-toolbar-meta">
     <Badge :variant="site.enabled ? 'success' : 'default'">
       {{ site.enabled ? t('Enabled') : t('Disabled') }}
     </Badge>

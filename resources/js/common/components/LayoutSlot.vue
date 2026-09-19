@@ -5,7 +5,7 @@
    * all page bindings (props, form state, refs, …) remain reactive even
    * though the DOM is teleported into the shell.
    */
-  import {computed, onBeforeUnmount, onMounted} from 'vue';
+  import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
   import {useLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 
   const props = defineProps<{
@@ -34,12 +34,25 @@
   // re-render while this subtree is still mounting, which races the
   // deferred Teleport. Outlet targets are always in the DOM (hidden while
   // unfilled), so the teleport doesn't depend on registration timing.
+  // A replaced target strands whatever was teleported into it, so remount the
+  // teleport against the new one. The first target to appear isn't a
+  // replacement: the outlet can mount after this does on a page's first render.
+  const teleportKey = ref(0);
+  watch(
+    () => registry.targetRevision(props.name),
+    (_revision, previous) => {
+      if (previous > 0) {
+        teleportKey.value++;
+      }
+    }
+  );
+
   onMounted(() => registry.register(props.name));
   onBeforeUnmount(() => registry.unregister(props.name));
 </script>
 
 <template>
-  <Teleport defer :to="target">
+  <Teleport :key="teleportKey" defer :to="target">
     <slot></slot>
   </Teleport>
 </template>

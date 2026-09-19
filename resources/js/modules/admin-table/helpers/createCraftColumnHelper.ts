@@ -1,5 +1,6 @@
 import {t} from '@craftcms/ui';
 import {h, type VNodeChild} from 'vue';
+import type {InertiaLinkProps} from '@inertiajs/vue3';
 import {
   type AccessorColumnDef,
   type CellContext,
@@ -19,7 +20,9 @@ type ComponentProperties = Record<
 >;
 
 type LinkColumnDef<T extends object> = AccessorColumnDef<T> & {
-  props: (cellContext: CellContext<T, unknown>) => ComponentProperties;
+  props: (
+    cellContext: CellContext<T, unknown>
+  ) => ComponentProperties & {href: InertiaLinkProps['href']};
 };
 
 type HtmlColumnDef<T extends object> = AccessorColumnDef<T> & {
@@ -109,20 +112,23 @@ export function createCraftColumnHelper<T extends object>() {
     },
 
     link(accessor, config = {}) {
-      const {props = () => ({}), ...rest} = config;
+      const {props, ...rest} = config;
 
       const columnDef: Parameters<ColumnHelper<T>['accessor']>[1] = {
         id: String(accessor),
+        // With nothing to link to, the value is shown as it is.
         cell: (cellContext: CellContext<T, any>) =>
           h('div', [
-            h(
-              CpLink,
-              {
-                class: 'font-bold',
-                ...props(cellContext),
-              },
-              () => cellContext.getValue()
-            ),
+            props
+              ? h(
+                  CpLink,
+                  {
+                    class: 'font-bold',
+                    ...props(cellContext),
+                  },
+                  () => cellContext.getValue()
+                )
+              : cellContext.getValue(),
           ]),
         ...rest,
       };

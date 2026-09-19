@@ -41,6 +41,7 @@
   import {firstMessages} from '@/common/slideouts/errors';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
+  import {useScreenRegions} from './useScreenRegions';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -98,16 +99,11 @@
   const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
-  const hasToolbar = computed(
-    () => Boolean(slots.toolbar) || registry.has('toolbar')
-  );
-  const hasTabs = computed(() => Boolean(slots.tabs) || registry.has('tabs'));
-  const hasContentNotice = computed(
-    () => Boolean(slots['content-notice']) || registry.has('content-notice')
-  );
-  const hasDetails = computed(
-    () => Boolean(slots.details) || registry.has('details')
-  );
+  const regions = useScreenRegions(slots, registry);
+  const hasToolbarMeta = computed(() => regions.has('content-toolbar-meta'));
+  const hasTabs = computed(() => regions.has('content-tabs'));
+  const hasNotices = computed(() => regions.has('content-notices'));
+  const hasDetails = computed(() => regions.has('content-details'));
 
   const submitLabel = computed(
     () =>
@@ -364,13 +360,16 @@
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
       <div ref="toolbarEl" class="slideout-screen__toolbar">
-        <LayoutSlotOutlet name="toolbar">
-          <slot name="toolbar"></slot>
+        <LayoutSlotOutlet name="content-toolbar-meta">
+          <slot name="content-toolbar-meta"></slot>
+        </LayoutSlotOutlet>
+        <LayoutSlotOutlet name="content-toolbar-actions">
+          <slot name="content-toolbar-actions"></slot>
         </LayoutSlotOutlet>
       </div>
 
-      <LayoutSlotOutlet name="actions">
-        <slot name="actions"></slot>
+      <LayoutSlotOutlet name="content-actions">
+        <slot name="content-actions"></slot>
       </LayoutSlotOutlet>
 
       <a
@@ -395,13 +394,19 @@
     </header>
 
     <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
-      <LayoutSlotOutlet name="tabs">
-        <slot name="tabs"></slot>
+      <LayoutSlotOutlet name="content-tabs">
+        <slot name="content-tabs"></slot>
       </LayoutSlotOutlet>
     </div>
 
     <div class="slideout-screen__body">
       <div ref="contentEl" class="slideout-screen__content">
+        <div v-show="hasNotices" class="slideout-screen__notices" role="status">
+          <LayoutSlotOutlet name="content-notices">
+            <slot name="content-notices"></slot>
+          </LayoutSlotOutlet>
+        </div>
+
         <LayoutSlotOutlet name="error-summary">
           <slot name="error-summary">
             <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
@@ -409,12 +414,6 @@
             <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
           </slot>
         </LayoutSlotOutlet>
-
-        <div v-show="hasContentNotice" role="status">
-          <LayoutSlotOutlet name="content-notice">
-            <slot name="content-notice"></slot>
-          </LayoutSlotOutlet>
-        </div>
 
         <CalloutReadOnly v-if="readOnly" />
 
@@ -434,8 +433,8 @@
         ref="detailsEl"
         class="slideout-screen__details"
       >
-        <LayoutSlotOutlet name="details">
-          <slot name="details"></slot>
+        <LayoutSlotOutlet name="content-details">
+          <slot name="content-details"></slot>
         </LayoutSlotOutlet>
       </aside>
     </div>
@@ -476,10 +475,10 @@
       <LayoutSlotOutlet name="breadcrumbs" />
       <LayoutSlotOutlet name="context-menu" />
       <LayoutSlotOutlet name="title" />
-      <LayoutSlotOutlet name="title-badge" />
-      <LayoutSlotOutlet name="sidebar" />
+      <LayoutSlotOutlet name="content-toolbar" />
+      <LayoutSlotOutlet name="content-sidebar" />
       <LayoutSlotOutlet name="subnav-actions" />
-      <LayoutSlotOutlet name="footer" />
+      <LayoutSlotOutlet name="page-footer" />
     </div>
   </form>
 </template>
@@ -534,6 +533,11 @@
     @container slideout (width >= 44rem) {
       flex-direction: row;
     }
+  }
+
+  .slideout-screen__notices {
+    display: grid;
+    gap: var(--c-spacing-sm, 0.5rem);
   }
 
   .slideout-screen__content {

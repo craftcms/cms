@@ -41,6 +41,17 @@ Add the boolean `inherit` property to a button placed inside a [Colorable](?path
 
 <Canvas of={ButtonStories.Icons} />
 
+## Flush
+
+A `plain` button has no background, so the space around its label only shows on hover. Add `flush` to pull the button out by that space, so its label or icon lines up with the text beside it.
+
+- `flush` with no value applies on every side.
+- Otherwise, pass a space-separated list of sides: `inline`, `block`, `inline-start`, `inline-end`, `block-start` or `block-end`. For example, `flush="inline-end"` for a close button at the end of a heading.
+
+The offset follows the button's size, and an icon-only button aligns its icon rather than its box.
+
+<Canvas of={ButtonStories.Flush} />
+
 ## Loading state
 
 <Canvas of={ButtonStories.Loading} />

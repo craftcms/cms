@@ -85,6 +85,7 @@ export default css`
 
   .tabs__panels {
     min-width: 0;
+    background-color: var(--c-surface-default);
   }
 
   /*

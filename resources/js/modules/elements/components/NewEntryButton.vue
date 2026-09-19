@@ -2,18 +2,25 @@
   import {computed} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/types';
+  import type {ActionItem, ActionItemLink} from '@/common/types';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import useCraftData from '@/common/composables/useCraftData';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
 
+  type EntryType = {
+    handle: string;
+    id: number;
+    name: string;
+    /** `Icons::resolveIconData()`: the resolved name and its family. */
+    icon: {name: string; family?: string} | null;
+  };
+
   export type PublishableSection = {
-    entryTypes: Array<{
-      handle: string;
-      id: number;
-      name: string;
-      icon: string | null;
-    }>;
+    /**
+     * A nested resource collection, so it arrives wrapped as `{data: [...]}`
+     * rather than as the bare array it is on the server.
+     */
+    entryTypes: Array<EntryType> | {data: Array<EntryType>};
     handle: string;
     id: number;
     name: string;
@@ -23,12 +30,13 @@
     canSave: boolean;
   };
 
+  /** One thing the button can create: an entry type, in a section. */
+  type CreatableType = {section: PublishableSection; entryType: EntryType};
+
   const props = defineProps<{
-    // The full source list, used to limit creation to the sections actually
-    // shown on this index.
+    // Every source on this index, to limit creation to the sections it shows.
     sources: Array<Source>;
-    // The active source; when it maps to a creatable section the primary button
-    // defaults to it.
+    // The source being viewed, which narrows what's on screen further.
     source?: SourceItem;
     publishableSections: Array<PublishableSection>;
     // Singular element display name (e.g. "Entry") used for the button label.
@@ -37,89 +45,131 @@
 
   const {site} = useCraftData();
 
-  // The sections the current user can create entries in, limited to the ones
-  // shown as sources and available on the active site — mirrors the gating the
-  // legacy EntryIndex applied before rendering its "New entry" button.
-  const creatableSections = computed(() => {
-    const sourceHandles = props.sources
-      .filter((source) => source.type !== 'heading')
-      .map((source) => source.data?.handle)
-      .filter((handle): handle is string => !!handle);
+  function entryTypesOf(section: PublishableSection): Array<EntryType> {
+    return Array.isArray(section.entryTypes)
+      ? section.entryTypes
+      : (section.entryTypes?.data ?? []);
+  }
 
-    return props.publishableSections
-      .filter(
-        (section) =>
-          site.value?.id != null && section.sites.includes(site.value.id)
-      )
-      .filter((section) => sourceHandles.includes(section.handle));
-  });
-
-  // The creatable section matching the active source, or null when the source
-  // isn't a single creatable section (e.g. the "all entries" view or Singles).
-  // This is what makes the button default to the section you're viewing.
-  const currentSection = computed(
-    () =>
-      creatableSections.value.find(
-        (section) => section.handle === props.source?.data?.handle
-      ) ?? null
+  /** Sources can arrive grouped under headings; creation cares about both. */
+  const sourceItems = computed<Array<SourceItem>>(() =>
+    props.sources.flatMap((source) =>
+      source.type === 'heading' ? (source.children ?? []) : [source]
+    )
   );
 
-  // Custom sources can be pinned to a single entry type; when so, the primary
-  // button should create that type.
-  const currentEntryTypeHandle = computed<string | undefined>(() => {
-    const handle = props.source?.data?.['entry-type'];
-    return Object(handle).constructor === String ? String(handle) : undefined;
+  // The sections this user can publish in, shown on this index, and available
+  // on the site being viewed.
+  const creatableSections = computed(() => {
+    const handles = new Set(
+      sourceItems.value
+        .map((source) => source.data?.handle)
+        .filter((handle): handle is string => typeof handle === 'string')
+    );
+
+    return props.publishableSections.filter(
+      (section) =>
+        handles.has(section.handle) &&
+        site.value?.id != null &&
+        section.sites.includes(site.value.id)
+    );
   });
 
-  // Builds the create-entry URL the legacy button used: a GET request to
-  // `entries/{section}/new` (optionally scoped to an entry type + the active
-  // site) that creates a draft and redirects to the editor.
-  function createUrl(sectionHandle: string, entryTypeHandle?: string): string {
-    const query: Record<string, string> = {};
-    if (entryTypeHandle) {
-      query.type = entryTypeHandle;
-    }
+  /**
+   * The entry types on screen, which is what the button can create.
+   *
+   * A section source shows its own section; anything else — the "all entries"
+   * view, a custom source — shows every creatable section on the index. A
+   * source's entry type ids narrow that to the types it lists, and a custom
+   * source pinned to one entry type narrows it to that one.
+   */
+  const creatableTypes = computed<Array<CreatableType>>(() => {
+    const data = props.source?.data ?? {};
+    const sectionHandle = typeof data.handle === 'string' ? data.handle : null;
+    const pinnedHandle =
+      typeof data['entry-type'] === 'string' ? data['entry-type'] : null;
+    const typeIds = Array.isArray(data['entry-type-ids'])
+      ? data['entry-type-ids'].map(Number)
+      : null;
+
+    const ownSection = creatableSections.value.find(
+      (section) => section.handle === sectionHandle
+    );
+    const sections = ownSection ? [ownSection] : creatableSections.value;
+
+    return sections.flatMap((section) =>
+      entryTypesOf(section)
+        .filter(
+          (entryType) => !pinnedHandle || entryType.handle === pinnedHandle
+        )
+        .filter(
+          (entryType) =>
+            !ownSection || !typeIds || typeIds.includes(entryType.id)
+        )
+        .map((entryType) => ({section, entryType}))
+    );
+  });
+
+  // The URL the legacy button used: a GET to `entries/{section}/new`, scoped to
+  // an entry type and the active site, which creates a draft and redirects to
+  // the editor.
+  function createUrl({section, entryType}: CreatableType): string {
+    const query: Record<string, string> = {type: entryType.handle};
+
     if (site.value?.id != null) {
       query.siteId = String(site.value.id);
     }
 
     return CreateEntryController['/{cpTrigger?}/entries/{section}/new'].url(
-      {section: sectionHandle},
-      Object.keys(query).length ? {query} : undefined
+      {section: section.handle},
+      {query}
     );
   }
 
-  // Sections shown in the dropdown: on a specific section it's the *other*
-  // creatable sections; on the "all entries" view it's all of them.
-  const menuSections = computed(() =>
-    currentSection.value
-      ? creatableSections.value.filter(
-          (section) => section.handle !== currentSection.value!.handle
-        )
-      : creatableSections.value
+  /** One per type, grouped under its section when more than one contributes. */
+  const menuItems = computed<Array<ActionItem>>(() => {
+    const link = (creatable: CreatableType): ActionItemLink => ({
+      type: 'link',
+      href: createUrl(creatable),
+      label: creatable.entryType.name,
+      ...(creatable.entryType.icon
+        ? {icon: creatable.entryType.icon.name}
+        : {}),
+      // A full navigation: the entry editor these point at is still the legacy
+      // stack.
+      external: true,
+    });
+
+    const sections = [
+      ...new Set(creatableTypes.value.map((creatable) => creatable.section)),
+    ];
+
+    if (sections.length < 2) {
+      return creatableTypes.value.map(link);
+    }
+
+    return sections.map((section) => ({
+      type: 'group' as const,
+      heading: section.name,
+      items: creatableTypes.value
+        .filter((creatable) => creatable.section === section)
+        .map(link),
+    }));
+  });
+
+  const label = computed(() =>
+    t('New {type}', {type: props.elementDisplayName})
   );
 
-  // Each dropdown entry is a section-level "New {section} entry" link, matching
-  // the legacy menu (the editor lets you switch entry type after creation).
-  const createMenuItems = computed<ActionItem[]>(() =>
-    menuSections.value.map(
-      (section): ActionItem => ({
-        type: 'link',
-        href: createUrl(section.handle),
-        label: t('New {section} entry', {section: section.name}),
-      })
-    )
-  );
+  // Keeps the legacy button's Ctrl/⌘-click "open in a new tab".
+  function createOnly(event: MouseEvent) {
+    const [only] = creatableTypes.value;
 
-  // Navigate to the create URL for the active section, preserving the legacy
-  // button's Ctrl/⌘-click "open in a new tab" affordance.
-  function createInCurrentSection(event: MouseEvent) {
-    const section = currentSection.value;
-    if (!section) {
+    if (!only) {
       return;
     }
 
-    const href = createUrl(section.handle, currentEntryTypeHandle.value);
+    const href = createUrl(only);
 
     if (event.metaKey || event.ctrlKey) {
       window.open(href);
@@ -130,49 +180,22 @@
 </script>
 
 <template>
-  <!-- Viewing a section you can publish in: a primary "New entry" that defaults
-       to that section, plus a menu of the other sections. -->
-  <craft-button-group v-if="currentSection && menuSections.length">
-    <craft-button
-      type="button"
-      variant="accent"
-      icon="plus"
-      @click="createInCurrentSection"
-    >
-      {{ t('New {type}', {type: elementDisplayName}) }}
-    </craft-button>
-    <ActionMenu
-      icon="chevron-down"
-      :actions="createMenuItems"
-      :label="t('New entry, choose a section')"
-    >
-      <template #invoker="{label}">
-        <craft-button slot="invoker" type="button" variant="accent" icon>
-          <craft-icon name="chevron-down" :label="label"></craft-icon>
-        </craft-button>
-      </template>
-    </ActionMenu>
-  </craft-button-group>
-
-  <!-- The current section is the only one you can publish in: just the primary
-       button. -->
+  <!-- One entry type on screen: the button creates it. -->
   <craft-button
-    v-else-if="currentSection"
+    v-if="creatableTypes.length === 1"
     type="button"
-    variant="accent"
+    :variant="ButtonVariant.Primary"
     icon="plus"
-    @click="createInCurrentSection"
+    @click="createOnly"
   >
-    {{ t('New {type}', {type: elementDisplayName}) }}
+    {{ label }}
   </craft-button>
 
-  <!-- The "all entries" view (or Singles): only a menu of creatable sections,
-       defaulting to none. -->
+  <!-- Several: the button opens a menu of them. -->
   <ActionMenu
-    v-else-if="creatableSections.length"
-    icon="chevron-down"
-    :actions="createMenuItems"
-    :label="t('New entry, choose a section')"
+    v-else-if="creatableTypes.length > 1"
+    :actions="menuItems"
+    :label="t('New entry, choose an entry type')"
   >
     <template #invoker>
       <craft-button
@@ -181,7 +204,7 @@
         :variant="ButtonVariant.Primary"
         icon="plus"
       >
-        {{ t('New {type}', {type: elementDisplayName}) }}
+        {{ label }}
       </craft-button>
     </template>
   </ActionMenu>

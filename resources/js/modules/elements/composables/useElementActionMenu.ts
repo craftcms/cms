@@ -1,6 +1,7 @@
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
+import {openSlideout} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {FormProperties, FormValues} from '@/modules/forms/types';
@@ -42,9 +43,7 @@ export type ElementActionBehavior =
     }
   | {
       type: 'slideout';
-      url?: string;
-      action?: string;
-      params?: FormValues;
+      url: string;
       entryTypeFromField?: boolean;
     }
   // The asset behaviors below all hand off to a legacy modal or uploader, and
@@ -158,22 +157,12 @@ export function createElementActionMenu({currentEntryTypeId}: Options = {}) {
 
       case 'slideout': {
         const entryTypeId = currentEntryTypeId?.();
-        const url =
+
+        void openSlideout(
           behavior.entryTypeFromField && entryTypeId
             ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
-            : behavior.url;
-
-        if (url) {
-          new Craft.CpScreenSlideout(url);
-
-          return;
-        }
-
-        if (behavior.action) {
-          const slideoutSettings = {};
-          Object.assign(slideoutSettings, {params: behavior.params});
-          new Craft.CpScreenSlideout(behavior.action, slideoutSettings);
-        }
+            : behavior.url
+        );
 
         return;
       }

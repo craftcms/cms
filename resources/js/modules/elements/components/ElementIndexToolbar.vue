@@ -132,11 +132,10 @@
         @reorder="(options) => emit('reorder', options)"
       />
 
-      <div>
-        <craft-button type="submit" :loading="processing">{{
-          t('Update')
-        }}</craft-button>
-      </div>
+      <!-- The index's own actions: the entries index puts its New Entry button
+        here. Search still submits on Enter — the field is the form's only text
+        input, so the browser submits it implicitly. -->
+      <slot name="actions"></slot>
     </div>
   </form>
 </template>

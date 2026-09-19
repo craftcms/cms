@@ -35,7 +35,7 @@
 </script>
 
 <template>
-  <div class="p-4">
+  <div>
     <h2 class="mb-3">{{ t('Clear Caches') }}</h2>
 
     <Form

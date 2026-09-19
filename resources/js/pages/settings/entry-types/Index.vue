@@ -131,27 +131,28 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <Link as="craft-button" :href="create().url" variant="primary" icon="plus">
       {{ t('New entry type') }}
     </Link>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
+  <div>
     <AdminTable
       :table="table"
       :reorderable="false"
       :from="pagination.from"
       :to="pagination.to"
       :total="pagination.total"
+      :full-width="true"
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
         <Empty icon="light/files" :label="t('No entry types exist yet.')" />
       </template>
-      <template #search-form>
+      <template #table-header>
         <SearchForm :action="index()" v-model="searchTerm" />
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 </template>

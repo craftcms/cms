@@ -42,7 +42,7 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="metadataHtml" name="details">
+  <LayoutSlot v-if="metadataHtml" name="content-details">
     <DynamicHtmlRenderer :html="metadataHtml" />
   </LayoutSlot>
 

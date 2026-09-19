@@ -1,7 +1,17 @@
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import {createApp, defineComponent, h, nextTick, ref, type App} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  provide,
+  ref,
+  type App,
+  type Ref,
+} from 'vue';
 import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+import {ScreenContentWidthKey} from '@/common/composables/screen';
 import ElementDetailsTabs from './ElementDetailsTabs.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
@@ -65,6 +75,28 @@ function tabs(): HTMLElement & {selectedIndex: number} {
 function select(index: number): void {
   tabs().selectedIndex = index;
   tabs().dispatchEvent(new Event('selected-changed'));
+}
+
+function mountWithShellWidth(width?: Ref<number>): void {
+  container = document.createElement('div');
+  document.body.append(container);
+  app = createApp(
+    defineComponent({
+      setup() {
+        if (width) {
+          provide(ScreenContentWidthKey, width);
+        }
+
+        return () =>
+          h(
+            ElementDetailsTabs,
+            {payload: payload(), activityTimelineVersion: 0},
+            {info: () => h('div', 'Info content')}
+          );
+      },
+    })
+  );
+  app.mount(container);
 }
 
 afterEach(() => {
@@ -223,5 +255,32 @@ describe('ElementDetailsTabs', () => {
     width.value = 700;
     await nextTick();
     expect(tabs().selectedIndex).toBe(-1);
+  });
+
+  it('folds away when the shell reports a narrow content area', async () => {
+    const width = ref(1000);
+    mountWithShellWidth(width);
+    await nextTick();
+    await nextTick();
+
+    expect(tabs().selectedIndex).toBe(0);
+
+    width.value = 700;
+    await nextTick();
+
+    expect(tabs().selectedIndex).toBe(-1);
+
+    width.value = 1000;
+    await nextTick();
+
+    expect(tabs().selectedIndex).toBe(0);
+  });
+
+  it('stays open when the shell reports no width', async () => {
+    mountWithShellWidth();
+    await nextTick();
+    await nextTick();
+
+    expect(tabs().selectedIndex).toBe(0);
   });
 });

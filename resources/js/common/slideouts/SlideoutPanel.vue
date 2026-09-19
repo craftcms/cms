@@ -132,6 +132,14 @@
       closeSlideout(props.instance.id);
     });
 
+    // Registering hides everything behind this panel from assistive
+    // technology, including whatever opened it. Focus has to leave first —
+    // browsers refuse `aria-hidden` on a focused element's ancestor — so park
+    // it on the panel itself until the screen loads and focus moves inside.
+    if (!el.contains(document.activeElement)) {
+      el.focus({preventScroll: true});
+    }
+
     // After `addLayer`, which the stack relies on to work out which container
     // to leave visible to assistive technology.
     registerPanel(stackPanel);
@@ -172,6 +180,7 @@
   <div
     ref="panel"
     class="slideout-panel"
+    tabindex="-1"
     :data-slideout-id="instance.id"
     :style="{
       ...(instance.width ? {'--slideout-width': instance.width} : {}),
@@ -187,6 +196,9 @@
     <AppLayout v-else-if="instance.component">
       <component :is="instance.component" v-bind="instance.props" />
     </AppLayout>
+    <!-- Where `Craft.cp.announce()` speaks while this panel is the top modal
+      layer; the page's global region sits behind `aria-hidden` by then. -->
+    <span class="sr-only" role="status" data-slideout-live-region></span>
   </div>
 </template>
 
@@ -213,7 +225,7 @@
     box-shadow: 0 0 16px rgb(0 0 0 / 15%);
     overflow: hidden;
     /* Same as the legacy `.slideout-container`. */
-    z-index: 100;
+    z-index: var(--c-layer-overlay);
     /* Leading corners only — the trailing edge meets the viewport. */
     border-start-start-radius: var(--c-radius-lg, 0.5rem);
     border-end-start-radius: var(--c-radius-lg, 0.5rem);

@@ -7,7 +7,7 @@ the shade, the positioned container, the panel itself, and the generic
 sidebar, preview thumb, image actions) are not included here.
  */
 .slideout-shade {
-  z-index: 100;
+  z-index: var(--c-layer-overlay);
   position: fixed;
   inset-block-start: 0;
   inset-inline-start: 0;
@@ -31,7 +31,7 @@ sidebar, preview thumb, image actions) are not included here.
 }
 
 .slideout-container {
-  z-index: 100;
+  z-index: var(--c-layer-overlay);
   box-sizing: border-box;
   position: fixed;
   inset-block-start: 0;
@@ -55,7 +55,7 @@ body.has-debug-toolbar .slideout-container {
 }
 
 .slideout {
-  z-index: 100;
+  z-index: var(--c-layer-overlay);
   box-sizing: border-box;
   position: absolute;
   background-color: var(--c-modal-fill);

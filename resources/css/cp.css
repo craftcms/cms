@@ -15,13 +15,15 @@ CP Styles
 @import './slideout.css';
 
 :root {
-  --global-sidebar-width: calc(226rem / 16);
-  --global-sidebar-collapsed-width: calc(
-    var(--c-size-touch-target) + var(--c-spacing-md)
+  --cp-sidebar-width: calc(226rem / 16);
+  --cp-sidebar-collapsed-width: calc(
+    var(--c-size-touch-target) + var(--c-spacing-md) * 2
   );
-  --global-content-width: calc(1440rem / 16);
-  --header-height: calc(44rem / 16);
-  --global-sidebar-z-index: 10;
+  --cp-content-width: calc(1440rem / 16);
+  --cp-footer-height: calc(54rem / 16);
+  --cp-header-height: calc(42rem / 16);
+  --cp-sidebar-z-index: var(--c-layer-sidebar);
+  --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
   --workspace-bg-color: var(--c-color-neutral-fill-quiet);
@@ -41,8 +43,20 @@ CP Styles
     var(--workspace-bg-image);
 }
 
+/* Laravel Debugbar pins its header row to the bottom of the viewport, and a
+   closed bar leaves its restore button there. Its open height is set inline
+   and isn't matched here. */
+:root:has(.phpdebugbar) {
+  --cp-debug-bar-height: calc(33rem / 16);
+}
+
 .skip-link--global {
-  z-index: calc(var(--global-sidebar-z-index) + 1);
+  z-index: calc(var(--cp-sidebar-z-index) + 1);
+}
+
+html,
+body {
+  background-color: var(--c-surface-default);
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The
@@ -235,4 +249,38 @@ doesn't leave a trail of selected text behind it.
 
 .radio-thumbnail img {
   display: block;
+}
+
+/*
+ * The field a deep link points at — see `useFieldHighlight`. Styled on the host
+ * element rather than inside `craft-field`'s shadow root, so the ring can sit
+ * outside the field's own box without the component knowing about it.
+ */
+craft-field[data-highlighted] {
+  background-color: var(--c-color-accent-fill-quiet);
+  outline: 1px solid
+    var(--c-color-focus-ring, var(--c-color-accent-border-quiet));
+  outline-offset: var(--c-spacing-xs);
+  transition-property: outline, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  craft-field[data-highlighted] {
+    transition: none;
+  }
+}
+
+.cp-container {
+  --c-container-padding: var(--c-spacing-lg);
+  display: grid;
+  grid-template-columns: var(--c-container-padding) 1fr var(
+      --c-container-padding
+    );
+  grid-template-areas: '. content .';
+}
+
+.cp-container > * {
+  grid-column: 2;
 }
