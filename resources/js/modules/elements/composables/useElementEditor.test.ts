@@ -209,6 +209,16 @@ describe('useElementEditor', () => {
     expect(editor.activityTimelineVersion.value).toBe(1);
   });
 
+  it('supplies an empty workflow payload when a visit omits workflow data', () => {
+    const {editor} = mount(payload({workflow: undefined as never}));
+
+    expect(editor.props.workflow).toEqual({
+      convertedToDraft: false,
+      current: null,
+      draftReviews: [],
+    });
+  });
+
   it.each(['pending', 'approved'] as const)(
     'locks a %s workflow review until editing is explicitly started',
     async (status) => {

@@ -126,11 +126,21 @@ export interface ElementEditPayload {
   };
 }
 
+type IncomingElementEditPayload = Omit<ElementEditPayload, 'workflow'> & {
+  workflow?: ElementEditPayload['workflow'];
+};
+
 export type ElementEditPayloadUpdater = (
   patch:
     | Partial<ElementEditPayload>
     | ((payload: ElementEditPayload) => Partial<ElementEditPayload>)
 ) => void;
+
+const emptyWorkflow = {
+  convertedToDraft: false,
+  current: null,
+  draftReviews: [],
+};
 
 /*
  * `origin/6.x` added an `isElementEditPayload()` guard here that threw when the
@@ -176,10 +186,15 @@ export function useElementEditor({saveData}: Options = {}) {
   // an element with no drafts — does that without remounting this component, so
   // the title, notices, and timestamps below have to track the live payload.
   const props = toReactive(
-    computed(() => ({
-      ...(pageProps() as unknown as ElementEditPayload),
-      ...savedScreen.value,
-    }))
+    computed(() => {
+      const page = pageProps() as unknown as IncomingElementEditPayload;
+
+      return {
+        ...page,
+        ...savedScreen.value,
+        workflow: savedScreen.value?.workflow ?? page.workflow ?? emptyWorkflow,
+      };
+    })
   );
 
   const editingReviewedDraft = shallowRef(false);
