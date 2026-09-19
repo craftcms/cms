@@ -29,7 +29,7 @@
       align="start"
       class="workflow-review-run__heading"
     >
-      <strong>{{ t('Review {number}', {number}) }}</strong>
+      <strong slot="prefix">{{ t('Review {number}', {number}) }}</strong>
       <span slot="suffix" class="workflow-review-run__status">
         <craft-status
           :status="run.statusIndicator"
@@ -95,6 +95,7 @@
 
   .workflow-review-run__status {
     display: flex;
+    margin-inline-start: auto;
     align-items: center;
     gap: var(--c-spacing-xs);
     color: var(--c-text-quiet);
