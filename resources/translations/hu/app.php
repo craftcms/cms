@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'A navigáció megjelenítése',
     'Show nested sources' => 'Beágyazott források megjelenítése',
     'Show sidebar' => 'Oldalsáv mutatása',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'A helyőrző mező megjelenítése',
     'Show the Status field' => 'Státusz mező megjelenítése',
     'Show the search input' => 'Keresés bemenetének a megjelenítése',
