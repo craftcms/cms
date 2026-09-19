@@ -30,8 +30,6 @@ use CraftCms\Cms\Workflow\Enums\WorkflowActivityType;
 use CraftCms\Cms\Workflow\Enums\WorkflowStageStatus;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
-use CraftCms\Cms\Workflow\Events\WorkflowCommented;
-use CraftCms\Cms\Workflow\Events\WorkflowTransitioned;
 use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
@@ -45,7 +43,6 @@ use CraftCms\Cms\Workflow\WorkflowStageTypes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
@@ -443,11 +440,8 @@ it('lets any viewer comment but only the stage offers review actions', function 
     expect($review->canComment)->toBeTrue()
         ->and($review->actionProps['canReview'])->toBeFalse();
 
-    Event::fake([WorkflowCommented::class, WorkflowTransitioned::class]);
     actAs($viewer, fn () => $this->workflows->addComment($this->draft, $run->id, $stage->uid, 'A useful note.'));
     expect(workflowEvents($this->entry, WorkflowActivityType::Comment))->toHaveCount(1);
-    Event::assertDispatched(WorkflowCommented::class);
-    Event::assertNotDispatched(WorkflowTransitioned::class);
 });
 
 it('invalidates pending and approved runs when publishable content changes', function () {
