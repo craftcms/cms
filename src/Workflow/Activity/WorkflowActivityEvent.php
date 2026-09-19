@@ -30,6 +30,7 @@ class WorkflowActivityEvent extends ActivityEventType implements ShouldBeRetaine
         private readonly ?string $stage = null,
         private readonly ?int $stageNumber = null,
         private readonly ?string $note = null,
+        private readonly ?int $runId = null,
         /** @var array{id: int, uid: string, name: string, stages: list<array{uid: string, name: string, type: string, settings: array<string, mixed>}>}|null */
         private readonly ?array $workflow = null,
         /** @var array{elementId: int, draftId: int, elementType: string, siteId: int}|null */
@@ -46,6 +47,7 @@ class WorkflowActivityEvent extends ActivityEventType implements ShouldBeRetaine
             'stage' => $this->stage,
             'stageNumber' => $this->stageNumber,
             'note' => $this->note,
+            ...($this->runId === null ? [] : ['runId' => $this->runId]),
             ...($this->workflow === null ? [] : ['workflow' => $this->workflow]),
             ...($this->draft === null ? [] : ['draft' => $this->draft]),
         ];

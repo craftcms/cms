@@ -719,8 +719,9 @@ class Workflows
             stage: $stage?->name,
             stageNumber: $stageIndex === false ? null : $stageIndex + 1,
             note: $note,
+            runId: $run->id,
             actor: $actor,
-        ), $run->activityRootEventId);
+        ));
     }
 
     /**
@@ -736,14 +737,16 @@ class Workflows
         $runIdsByRootEvent = $runs->mapWithKeys(fn (WorkflowRun $run): array => [$run->activityRootEventId => $run->id]);
         $rootEventIds = $runIdsByRootEvent->keys();
         $events = ActivityEvent::query()->subject(ActivitySubject::fromElement($draft))->eventTypes(WorkflowActivityEvent::class)
-            ->where(fn (Builder $query) => $query->whereIn('id', $rootEventIds)->orWhereIn('rootEventId', $rootEventIds))
+            ->where(fn (Builder $query) => $query
+                ->whereIn('id', $rootEventIds)
+                ->orWhereIn('payload->data->runId', $runs->pluck('id')))
             ->oldest('occurredAt')->orderBy('id')->get();
         $presented = $this->activityTimelinePresenter->events($events, $viewer->asElement())->keyBy('id');
 
         return $events->map(function (ActivityEvent $event) use ($presented, $runIdsByRootEvent): WorkflowTimelineItemData {
             $presentation = $presented->get($event->id);
             $type = WorkflowActivityType::from($event->data['type']);
-            $rootEventId = $event->rootEventId ?? $event->id;
+            $runId = $event->data['runId'] ?? $runIdsByRootEvent->get($event->id);
             $impersonator = $presentation['impersonator'];
 
             return new WorkflowTimelineItemData(
@@ -775,7 +778,7 @@ class Workflows
                 noteHtml: $presentation['props']['noteHtml'] ?? null,
                 occurredAt: $presentation['occurredAt'],
                 formattedOccurredAt: (array) $presentation['formattedOccurredAt'],
-                runId: (int) $runIdsByRootEvent->get($rootEventId),
+                runId: (int) $runId,
                 stageNumber: isset($event->data['stageNumber']) ? (int) $event->data['stageNumber'] : null,
             );
         })->all();

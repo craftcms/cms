@@ -411,10 +411,13 @@ it('presents workflow activity as a grouped review and snapshots the workflow de
 
     $review = $this->workflows->reviewData($this->draft, $this->author);
     $presentedRun = collect($review->runs)->firstWhere('current');
+    $approval = workflowEvents($this->entry, WorkflowTransition::Approve)->sole();
 
     expect($presentedRun->submission->noteHtml)->toContain('Ready for review.')
         ->and($presentedRun->stages[0]->events)->toHaveCount(1)
-        ->and($presentedRun->stages[0]->events[0]->decision)->toBe('approved');
+        ->and($presentedRun->stages[0]->events[0]->decision)->toBe('approved')
+        ->and($approval->rootEventId)->toBeNull()
+        ->and($approval->data['runId'])->toBe($run->id);
 
     $workflow->stages = $workflow->stages->map(fn (WorkflowStageData $workflowStage): array => [
         'uid' => $workflowStage->uid,

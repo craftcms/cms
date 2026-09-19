@@ -28,6 +28,8 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
+use CraftCms\Cms\Workflow\Activity\WorkflowActivityEvent;
+use CraftCms\Cms\Workflow\Enums\WorkflowActivityType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -148,6 +150,41 @@ it('returns the requested site timeline oldest first with safe formatted details
             ->where('events.1.changes.0.old', 'Draft')
             ->where('events.1.changes.0.new', 'Release notes')
             ->etc());
+});
+
+it('includes workflow events that belong to a workflow submission', function () {
+    $activities = app(Activities::class);
+    $submission = $activities->record(new WorkflowActivityEvent(
+        subject: $this->entry,
+        type: WorkflowActivityType::Submit,
+        workflow: ['id' => 1, 'uid' => fake()->uuid(), 'name' => 'Editorial review', 'stages' => []],
+        draft: ['elementId' => $this->entry->id, 'draftId' => 1, 'elementType' => Entry::class, 'siteId' => $this->entry->siteId],
+    ));
+    $approval = $activities->record(new WorkflowActivityEvent(
+        subject: $this->entry,
+        type: WorkflowActivityType::Approve,
+        stage: 'Editorial review',
+        stageNumber: 1,
+    ));
+    $comment = $activities->record(new WorkflowActivityEvent(
+        subject: $this->entry,
+        type: WorkflowActivityType::Comment,
+        stage: 'Editorial review',
+        stageNumber: 1,
+        note: 'Looks good.',
+    ));
+
+    postJson(action(ActivityTimelineController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $this->entry->id,
+        'siteId' => $this->entry->siteId,
+    ])
+        ->assertOk()
+        ->assertJsonPath('events.0.id', (string) $submission->id)
+        ->assertJsonPath('events.1.id', (string) $approval->id)
+        ->assertJsonPath('events.1.component', 'craft:workflow-activity-event')
+        ->assertJsonPath('events.2.id', (string) $comment->id)
+        ->assertJsonPath('events.2.props.noteHtml', "<p>Looks good.</p>\n");
 });
 
 it('returns impersonator details', function () {
