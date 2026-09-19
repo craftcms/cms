@@ -150,6 +150,8 @@ export interface EntryType {
   slugTranslationMethod: TranslationMethod;
   slugTranslationKeyFormat: null;
   showStatusField: boolean;
+  showPostDateField: boolean;
+  showExpiryDateField: boolean;
   uid: string;
   validateHandleUniqueness: boolean;
   group: null;
