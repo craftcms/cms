@@ -593,6 +593,8 @@ class Install extends Migration
             $table->string('slugTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('slugTranslationKeyFormat')->nullable();
             $table->boolean('showStatusField')->default(true)->nullable();
+            $table->boolean('showPostDateField')->default(true);
+            $table->boolean('showExpiryDateField')->default(true);
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->dateTime('dateDeleted')->nullable()->default(null);

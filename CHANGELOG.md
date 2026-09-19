@@ -8,6 +8,7 @@
 - Added support for upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API. ([#19604](https://github.com/craftcms/cms/pull/19604))
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Improved performance of element queries, control panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
+- Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
 - Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - The image editor now supports Undo/Redo. ([#19600](https://github.com/craftcms/cms/pull/19600))
