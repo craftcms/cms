@@ -76,6 +76,7 @@
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where element queries could select the wrong site variant when requesting unique results across sites. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where user group metadata could be saved before permission elevation was checked. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where users in single-site installations could be denied access to localized elements because they lacked an unavailable site permission. ([#19666](https://github.com/craftcms/cms/pull/19666))
 - Fixed a bug where duplicating an entry could apply submitted changes to the original entry. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where rejected user permission changes could leave some permissions updated. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where verification email delivery addresses could alter account identity or be lost when notifications were queued. ([#19568](https://github.com/craftcms/cms/pull/19568))
