@@ -2,7 +2,7 @@
 
 Approval workflows control when changes to an entry may be published. A workflow is an ordered list of stages assigned to a section. When an author submits a draft for review, Craft evaluates each stage in sequence and only allows the approved draft to be applied after every stage has approved it.
 
-Workflows require Craft Pro.
+Workflows require Craft Pro or Enterprise.
 
 ## How workflows work
 
@@ -16,7 +16,7 @@ When an enabled entry has a workflow:
 4. An approved stage advances the run to the next stage. A pending stage waits for an external decision, and a failed stage ends the run with changes requested.
 5. After every stage approves, an authorized user can apply the draft to the canonical entry.
 
-Disabled entries can be created and saved canonically without review. Enabling one routes the save into a draft and starts the workflow process.
+Disabled entries can be created and saved canonically without review. Enabling one routes the save into a draft, which can then be submitted for review.
 
 ```mermaid
 stateDiagram-v2
@@ -40,7 +40,7 @@ Stages are evaluated in their configured order. Craft evaluates a stage when the
 | `Approved` | Continue to the next stage, or approve the run if this is the last one. |
 | `Failed`   | Stop the run with changes requested.                                    |
 
-The built-in **User review** stage waits for approval from members of its configured user groups. It can require one or more approvals. The draft author cannot review their own work, and each reviewer can decide only once per run.
+The built-in **User review** stage waits for approval from members of its configured user groups. It can require one or more approvals. The draft author cannot review their own work, and each reviewer can decide only once per stage in a run.
 
 ### Runs use a configuration snapshot
 
@@ -66,7 +66,7 @@ Applying an approved draft validates the current element state before publishing
 
 ### Permissions and write boundaries
 
-Workflow actions also enforce the existing element `view`, `save`, and `saveCanonical` authorization rules. Approval override is currently restricted to administrators.
+Submitting a draft requires `save` authorization, commenting requires `view` authorization, and applying an approved draft requires both `save` and `saveCanonical` authorization. Approval override is currently restricted to administrators.
 
 The control panel and other user-facing HTTP saves route workflow-controlled canonical changes into drafts. Craft does not globally intercept low-level element writes from plugins, console commands, or other trusted application code. Code that writes elements directly is responsible for choosing whether to create a draft or intentionally update the canonical element.
 
@@ -124,12 +124,13 @@ Registered types appear in the stage type selector when an administrator configu
 
 `WorkflowStageContext` gives a stage the state needed to make its decision:
 
-| Property  | Description                                                    |
-| --------- | -------------------------------------------------------------- |
-| `draft`   | The named draft under review.                                  |
-| `run`     | The current `WorkflowRun` model.                                |
-| `stage`   | The snapshotted `WorkflowStageData` for this stage.             |
-| `payload` | Stage-owned data persisted from its previous result in the run. |
+| Property         | Description                                                           |
+| ---------------- | --------------------------------------------------------------------- |
+| `draft`          | The named draft under review.                                         |
+| `run`            | The current `WorkflowRun` model.                                      |
+| `stage`          | The snapshotted `WorkflowStageData` for this stage.                    |
+| `payload`        | Stage-owned data persisted from its previous result in the run.        |
+| `previousStages` | The preceding snapshotted stages and the payload stored for each one. |
 
 `evaluate()` returns a `WorkflowStageResult` containing a `WorkflowStageStatus`, a human-readable message, and the next payload. Payloads must contain JSON-encodable values. Craft stores each payload under the stage UID, isolating one stage's state from the others.
 
@@ -220,7 +221,7 @@ $run = Workflows::reportStageResult(
 );
 ```
 
-The callback receives a fresh context while Craft holds the workflow lock. This lets the integration compare external identifiers with current payload state without a read-then-write race. `reportStageResult()` only changes a run when the supplied stage is still its current pending stage; stale responses do not advance a newer run or stage.
+The callback receives the current run, stage, and payload while Craft holds the workflow lock. This lets the integration compare external identifiers with current payload state without a read-then-write race. `reportStageResult()` only changes a run when the supplied stage is still its current pending stage; stale responses do not advance a newer run or stage.
 
 Authenticate and authorize webhook or control panel endpoints before calling the facade. `reportStageResult()` protects workflow consistency, but it does not establish whether an incoming caller is trusted.
 
@@ -261,21 +262,22 @@ public function summaryProps(WorkflowStageContext $context, CraftUser $viewer): 
 Register those components from the plugin's control panel JavaScript entry point:
 
 ```typescript
-import Cp from '@/bootstrap/cp';
 import ExternalApprovalActions from './ExternalApprovalActions.vue';
 import ExternalApprovalSummary from './ExternalApprovalSummary.vue';
 
-Cp.$components.register(
-  'acme:external-approval-actions',
-  ExternalApprovalActions
-);
-Cp.$components.register(
-  'acme:external-approval-summary',
-  ExternalApprovalSummary
-);
+Cp.booting((cp) => {
+  cp.$components.register(
+    'acme:external-approval-actions',
+    ExternalApprovalActions
+  );
+  cp.$components.register(
+    'acme:external-approval-summary',
+    ExternalApprovalSummary
+  );
+});
 ```
 
-Use a plugin-prefixed component name to avoid collisions. `actionProps()` and `summaryProps()` must return JSON-safe values because they are sent to the control panel.
+Register the components before the Inertia application mounts. Use a plugin-prefixed component name to avoid collisions. `actionProps()` and `summaryProps()` must return JSON-safe values because they are sent to the control panel.
 
 Craft passes the action component its configured action props together with `review`, `elementType`, `elementId`, `draftId`, and `siteId`. After a successful action, emit `reviewUpdated` with the updated workflow review data and editor actions returned by the endpoint. Craft passes a summary component its configured summary props together with the containing `run` and `stage`.
 
@@ -289,13 +291,13 @@ Plugin action endpoints remain responsible for authorization and input validatio
 
 ## Listening for workflow activity
 
-Craft dispatches lifecycle events for plugins that need to enforce policy or react to completed activity.
+Craft dispatches lifecycle events for plugins that need to enforce policy or react to completed activity. Event coverage depends on the transition:
 
-| Event                   | Timing                                                    |
-| ----------------------- | --------------------------------------------------------- |
-| `WorkflowTransitioning` | Synchronously before a transition; may cancel it.         |
-| `WorkflowTransitioned`  | After the transaction commits successfully.               |
-| `WorkflowCommented`     | After a workflow comment's transaction commits.           |
+| Event                   | Timing                                                                                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WorkflowTransitioning` | Synchronously before `Submit`, `Override`, `Approve`, or `Reject`; may cancel the transition.                                                             |
+| `WorkflowTransitioned`  | After commit for those transitions, invalidation, and an `Approved` or `Failed` result reported for an asynchronous stage through `reportStageResult()`. |
+| `WorkflowCommented`     | After a workflow comment's transaction commits.                                                                                                          |
 
 Set `$event->cancel = true` in a `WorkflowTransitioning` listener to prevent the transition. Keep pre-transition listeners synchronous and side-effect free, because the surrounding transaction can still roll back. Use `WorkflowTransitioned` for notifications and other effects that should happen only after a successful commit.
 
@@ -305,23 +307,24 @@ use CraftCms\Cms\Workflow\Events\WorkflowTransitioning;
 use Illuminate\Support\Facades\Event;
 
 Event::listen(function (WorkflowTransitioning $event): void {
-    if ($event->transition !== WorkflowTransition::Publish) {
+    if ($event->transition !== WorkflowTransition::Submit) {
         return;
     }
 
-    if (! $this->releaseWindow->isOpen()) {
+    if (! $this->reviewWindow->isOpen()) {
         $event->cancel = true;
     }
 });
 ```
 
-Transitions are represented by `WorkflowTransition`: `Submit`, `Override`, `Approve`, `Reject`, `StageApproved`, `StageFailed`, `Invalidate`, and `Publish`. Comments are deliberately separate because adding a comment does not change workflow state.
+Transitions and workflow activity use `WorkflowTransition`: `Submit`, `Override`, `Approve`, `Reject`, `StageApproved`, `StageFailed`, `Invalidate`, and `Publish`. Applying an approved draft records `Publish` activity but does not dispatch a workflow lifecycle event. Automatic stage results evaluated synchronously while submitting or advancing a run also record activity without dispatching a separate lifecycle event. Comments are separate because adding a comment does not change workflow state.
 
 ## Supporting another element type
 
 Entries provide Craft's built-in workflow assignment UI. A plugin-owned element type can opt into the workflow runtime by implementing `WorkflowableInterface`:
 
 ```php
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Models\Workflow;
 
