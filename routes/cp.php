@@ -28,6 +28,9 @@ use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
 use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
+use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
+use CraftCms\Cms\Http\Controllers\Import\ImportController;
+use CraftCms\Cms\Http\Controllers\Import\ImportRunController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\NotificationsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
@@ -215,6 +218,20 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         ->name('content.index')
         ->where('page', '[^\/]+');
 
+    /**
+     * Import
+     */
+    Route::get('import', [ImportController::class, 'index']);
+    Route::middleware('can:viewImportConfigs')->group(function () {
+        Route::get('import/configs', [ImportConfigController::class, 'index']);
+        Route::middleware('can:saveImportConfigs')->get('import/configs/new', [ImportConfigController::class, 'create']);
+        Route::get('import/configs/{handle}', [ImportConfigController::class, 'edit']);
+    });
+    Route::middleware('can:viewImportRuns')->group(function () {
+        Route::get('import/runs', [ImportRunController::class, 'index']);
+        Route::middleware('can:saveImportRuns')->get('import/runs/new', [ImportRunController::class, 'create']);
+        Route::get('import/runs/{handle}', [ImportRunController::class, 'edit']);
+    });
     /**
      * Users
      */
