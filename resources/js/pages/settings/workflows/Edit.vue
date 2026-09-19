@@ -6,10 +6,23 @@
   import WorkflowStagesInput from '@/modules/workflows/components/WorkflowStagesInput.vue';
   import FormPage from '@/pages/Form.vue';
 
-  type Props = CraftCms.Cms.Http.ViewModels.WorkflowEditViewModel;
   type WorkflowStage = CraftCms.Cms.Workflow.Data.WorkflowStageData;
+  type StageType =
+    CraftCms.Cms.Http.ViewModels.WorkflowEditViewModel['stageTypes'][number];
 
-  const props = defineProps<Props>();
+  const props = defineProps<{
+    form: CraftCms.Cms.Form.FormPayload;
+    stageTypes: StageType[];
+    submit: {
+      method: 'patch' | 'post';
+      url: string;
+    };
+    deleteAction: {
+      confirm: string;
+      label: string;
+      url: string;
+    } | null;
+  }>();
   const formPayload = props.form as unknown as FormPayload;
   const actions: ActionItem[] = props.deleteAction
     ? [
