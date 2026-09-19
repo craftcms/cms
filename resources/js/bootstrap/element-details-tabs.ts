@@ -1,6 +1,21 @@
 import {shallowReactive} from 'vue';
 import type {Component} from 'vue';
-import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+import type {
+  ElementEditPayload,
+  ElementEditPayloadUpdater,
+} from '@/modules/elements/composables/useElementEditor';
+
+export interface ElementDetailsTabContext {
+  payload: ElementEditPayload;
+  active: boolean;
+  refreshToken: number;
+  updatePayload: ElementEditPayloadUpdater;
+}
+
+export interface ElementDetailsTabStatus {
+  label: string;
+  indicator: string;
+}
 
 export interface ElementDetailsTabDescriptor {
   /** A plugin-scoped identifier that remains stable across registrations. */
@@ -10,6 +25,8 @@ export interface ElementDetailsTabDescriptor {
   component: Component;
   order?: number;
   visible?: (payload: ElementEditPayload) => boolean;
+  status?: (payload: ElementEditPayload) => ElementDetailsTabStatus | null;
+  props?: (context: ElementDetailsTabContext) => Record<string, unknown>;
 }
 
 export interface ElementDetailsTabRegistry {

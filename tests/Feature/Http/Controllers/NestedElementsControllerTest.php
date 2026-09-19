@@ -17,9 +17,14 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Models\Workflow;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -355,4 +360,33 @@ it('deletes query-backed nested elements that primarily belong to the owner', fu
 
     expect(DB::table(Table::ELEMENTS)->where('id', $nestedEntry->id)->value('dateDeleted'))
         ->not->toBeNull();
+});
+
+it('invalidates a review when a primary nested element is deleted', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = nestedElementsControllerCreateMatrixOwnerFixture();
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'uid' => Str::uuid7()->toString(),
+            'name' => 'External review',
+            'type' => AutomaticApprovalStage::class,
+            'settings' => [],
+        ]],
+    ]);
+    SectionModel::query()->whereKey($owner->sectionId)->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id(), name: 'Reviewed draft');
+    $nestedEntry = nestedElementsControllerCreateMatrixNestedEntry($draft, $field, $entryType, 1, 'Draft block');
+    $run = app(Workflows::class)->submitForReview($draft);
+
+    $this->withSession([
+        SessionAuth::$authAccessParam => [sprintf('manageNestedElements::%s::%s', $owner->id, 'field:matrixField')],
+    ])->postJson(action([NestedElementsController::class, 'destroy']), [
+        ...nestedElementsControllerPayload($draft, 'field:matrixField'),
+        'elementId' => $nestedEntry->id,
+    ])->assertOk();
+
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Invalidated);
 });

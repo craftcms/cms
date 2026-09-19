@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Search;
 require dirname(__DIR__).'/vendor/autoload.php';
 
 $lightIcons = [
+    'clipboard-list-check',
     'earth-africa',
     'earth-americas',
     'earth-asia',

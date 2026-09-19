@@ -23,8 +23,10 @@ use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Auth;
@@ -136,6 +138,53 @@ it('can update an existing entry', function () {
 
     $entry = Entry::find()->id($entryModel->id)->status(null)->one();
     expect($entry->title)->toBe('Updated Title');
+});
+
+it('saves canonical workflow changes as a draft', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->createElement([
+        'title' => 'Canonical Title',
+    ]);
+
+    $response = postJson(action(StoreEntryController::class), [
+        'entryId' => $entry->id,
+        'title' => 'Draft Title',
+    ])->assertOk();
+
+    /** @var Entry $draft */
+    $draft = Entry::find()->draftOf($entry->id)->drafts()->status(null)->one();
+    expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Canonical Title')
+        ->and($draft->title)->toBe('Draft Title')
+        ->and($draft->isProvisionalDraft)->toBeFalse()
+        ->and($response->json('id'))->toBe($draft->id);
+});
+
+it('creates disabled workflow entries without requiring review', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+
+    $response = postJson(action(StoreEntryController::class), [
+        'sectionId' => $this->section->id,
+        'typeId' => $this->entryType->id,
+        'title' => 'Disabled Entry',
+        'slug' => 'disabled-entry',
+        'enabled' => false,
+    ])->assertOk();
+
+    /** @var Entry $entry */
+    $entry = Entry::find()->id($response->json('id'))->status(null)->one();
+    expect($entry->getIsCanonical())->toBeTrue()
+        ->and($entry->enabled)->toBeFalse()
+        ->and(Entry::find()->draftOf($entry->id)->drafts()->status(null)->count())->toBe(0);
 });
 
 it('clears existing plain text field values', function () {

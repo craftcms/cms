@@ -6,7 +6,7 @@
    * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
-  import {computed, ref, useSlots} from 'vue';
+  import {computed, provide, ref, useSlots, useTemplateRef} from 'vue';
   import {useElementSize} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
@@ -15,11 +15,16 @@
   import FormActions from '@/common/components/FormActions.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
+  import {
+    elementFormActionSubmitterKey,
+    useElementEditor,
+  } from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
+  import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
   import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
@@ -55,8 +60,13 @@
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
+    startEditingReviewedDraft,
     submitAction,
+    updatePayload,
+    workflowReviewLocked,
   } = useElementEditor({saveData: props.saveData});
+
+  provide(elementFormActionSubmitterKey, submitAction);
 
   const crumbs = computed(
     () => (payload.crumbs ?? []) as Array<BreadcrumbItem>
@@ -64,16 +74,19 @@
 
   // Alternate saves in the Save button's menu, and the buttons beside it.
   const formActionItems = computed(() =>
-    payload.formActions.map((action) => ({
+    payload.editorActions.menu.map((action) => ({
       label: action.label,
+      shortcut: action.shortcut ? {key: 'S', shift: action.shift} : undefined,
       onClick: () => submitAction(action),
     }))
   );
 
   const headerButtons = computed(() =>
-    payload.headerActions.map((action) => ({
+    payload.editorActions.buttons.map((action) => ({
       label: action.label,
       variant: action.variant,
+      disabled: action.disabled,
+      disabledReason: action.disabledReason,
       onClick: () => submitAction(action),
     }))
   );
@@ -105,6 +118,9 @@
 
   /** Measured here because this component owns the body; see ElementDetailsTabs. */
   const editorBody = ref<HTMLElement | null>(null);
+  const detailsTabs = useTemplateRef<{select: (tabId: string) => void}>(
+    'detailsTabs'
+  );
   const {width: bodyWidth} = useElementSize(editorBody);
   const slots = useSlots();
 
@@ -116,7 +132,6 @@
       elementDetailsTabRegistry.hasVisible(payload)
   );
   const hasSidebar = computed(() => Boolean(slots.sidebar));
-
   // Mirrors the legacy wording: a changed draft names the draft, anything else
   // names the element type.
   const staleMessage = computed(() =>
@@ -133,6 +148,19 @@
   function reload(): void {
     router.reload();
   }
+
+  function primaryAction(): void {
+    if (workflowReviewLocked.value) {
+      return;
+    }
+
+    if (payload.editorActions.primary.tabId) {
+      detailsTabs.value?.select(payload.editorActions.primary.tabId);
+      return;
+    }
+
+    save();
+  }
 </script>
 
 <template>
@@ -146,7 +174,7 @@
         <!-- No drafts-and-revisions switcher beside the crumbs: the Revisions
         tab in the details column is that list now. -->
 
-        <form method="post" @submit.prevent="save()">
+        <form method="post" @submit.prevent="primaryAction">
           <!-- Below the overlay band (slideout shade 99, panels and modal
             shade 100) so the header never paints over a slideout or the image
             editor modal, which stack above the page. -->
@@ -194,6 +222,11 @@
                       v-html="entry.userThumb"
                     />
                   </div>
+
+                  <WorkflowDraftsStatus
+                    v-if="payload.workflow.draftReviews.length"
+                    :drafts="payload.workflow.draftReviews"
+                  />
                 </div>
 
                 <FormActions
@@ -201,12 +234,32 @@
                   :action-items="formActionItems"
                   :additional-actions="actionMenuItems"
                   :additional-buttons="additionalButtons"
-                  :submit-label="payload.submitButtonLabel"
+                  :submit-label="payload.editorActions.primary.label"
                   :read-only="payload.readOnly"
+                  :save-disabled="workflowReviewLocked"
                 />
               </div>
             </header>
             <div class="element-notices">
+              <craft-callout
+                v-if="payload.workflow.convertedToDraft"
+                variant="warning"
+                icon="triangle-exclamation"
+                rounded="none"
+                appearance="fill"
+              >
+                {{
+                  t(
+                    'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
+                  )
+                }}
+              </craft-callout>
+
+              <WorkflowEditLockCallout
+                v-if="workflowReviewLocked"
+                @start-editing="startEditingReviewedDraft"
+              />
+
               <craft-callout
                 v-if="payload.notice"
                 variant="info"
@@ -297,6 +350,7 @@
                       :payload="formPayload"
                       :errors="errors"
                       :modified="autosave.modified.value"
+                      :disabled="workflowReviewLocked"
                       @update:mutation="onMutation"
                     />
 
@@ -311,9 +365,12 @@
               class="element-editor__details"
             >
               <ElementDetailsTabs
+                ref="detailsTabs"
                 :payload="payload"
                 :activity-timeline-version="activityTimelineVersion"
                 :available-width="bodyWidth"
+                :update-payload="updatePayload"
+                sync-location-hash
                 pane
               >
                 <template #info>
@@ -335,6 +392,7 @@
                             :payload="sidebarPayload"
                             :errors="sidebarErrors"
                             :modified="autosave.modified.value"
+                            :disabled="workflowReviewLocked"
                             @update:mutation="onSidebarMutation"
                           />
                         </craft-field-group>

@@ -13,6 +13,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Testing\Fluent\AssertableJson;
 
@@ -71,7 +72,7 @@ it('forbids creating an element when the user cannot save it', function () {
 });
 
 it('returns a failure response when saving the draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class), app(Workflows::class)) extends Drafts
     {
         public function saveElementAsDraft(
             ElementInterface $element,

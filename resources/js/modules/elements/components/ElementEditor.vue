@@ -6,18 +6,23 @@
    * full-page counterpart.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, provide, useTemplateRef} from 'vue';
   import {router} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import ElementContextMenu from '@/modules/elements/components/ElementContextMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
+  import {
+    elementFormActionSubmitterKey,
+    useElementEditor,
+  } from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {FormValues} from '@/modules/forms/types';
   import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
   import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+  import type {FormSaveOptions} from '@/common/types';
+  import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
 
   const props = defineProps<{
     /**
@@ -43,8 +48,13 @@
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
+    startEditingReviewedDraft,
     submitAction,
+    updatePayload,
+    workflowReviewLocked,
   } = useElementEditor({saveData: props.saveData});
+
+  provide(elementFormActionSubmitterKey, submitAction);
 
   const hasDetails = computed(
     () =>
@@ -53,19 +63,24 @@
       Boolean(payload.activityTimelineUrl) ||
       elementDetailsTabRegistry.hasVisible(payload)
   );
-
+  const detailsTabs = useTemplateRef<{select: (tabId: string) => void}>(
+    'detailsTabs'
+  );
   // Alternate saves in the Save button's menu, and the buttons beside it.
   const formActionItems = computed(() =>
-    payload.formActions.map((action) => ({
+    payload.editorActions.menu.map((action) => ({
       label: action.label,
+      shortcut: action.shortcut ? {key: 'S', shift: action.shift} : undefined,
       onClick: () => submitAction(action),
     }))
   );
 
   const headerButtons = computed(() =>
-    payload.headerActions.map((action) => ({
+    payload.editorActions.buttons.map((action) => ({
       label: action.label,
       variant: action.variant,
+      disabled: action.disabled,
+      disabledReason: action.disabledReason,
       onClick: () => submitAction(action),
     }))
   );
@@ -111,6 +126,15 @@
     router.reload();
   }
 
+  function primaryAction(options?: FormSaveOptions): void {
+    if (payload.editorActions.primary.tabId) {
+      detailsTabs.value?.select(payload.editorActions.primary.tabId);
+      return;
+    }
+
+    save(options);
+  }
+
   const autosaveMessage = computed(() => {
     switch (autosave.status.value) {
       case 'saving':
@@ -136,8 +160,9 @@
   useAppLayout(() => ({
     title: payload.title,
     form,
-    onSave: save,
-    submitButtonLabel: payload.submitButtonLabel,
+    onSave: workflowReviewLocked.value ? undefined : primaryAction,
+    saveDisabled: workflowReviewLocked.value,
+    submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
@@ -207,6 +232,27 @@
   </LayoutSlot>
 
   <craft-callout
+    v-if="payload.workflow.convertedToDraft"
+    variant="warning"
+    icon="triangle-exclamation"
+    class="mb-4"
+    rounded="none"
+    appearance="fill"
+  >
+    {{
+      t(
+        'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
+      )
+    }}
+  </craft-callout>
+
+  <WorkflowEditLockCallout
+    v-if="workflowReviewLocked"
+    class="mb-4"
+    @start-editing="startEditingReviewedDraft"
+  />
+
+  <craft-callout
     v-if="activity.isStale.value"
     variant="warning"
     icon="triangle-exclamation"
@@ -267,6 +313,7 @@
     :payload="formPayload"
     :errors="errors"
     :modified="autosave.modified.value"
+    :disabled="workflowReviewLocked"
     @update:mutation="onMutation"
   />
 
@@ -274,8 +321,10 @@
 
   <LayoutSlot v-if="hasDetails || $slots['details-header']" name="details">
     <ElementDetailsTabs
+      ref="detailsTabs"
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
+      :update-payload="updatePayload"
     >
       <template #info>
         <!-- Anything the element type shows above its meta fields, e.g. an
@@ -292,6 +341,7 @@
           :payload="sidebarPayload"
           :errors="sidebarErrors"
           :modified="autosave.modified.value"
+          :disabled="workflowReviewLocked"
           @update:mutation="onSidebarMutation"
         />
 

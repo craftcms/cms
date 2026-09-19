@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -18,9 +19,17 @@ use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\Workflow\Models\Workflow;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
+use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -162,7 +171,7 @@ it('offers a Create a draft button on a canonical entry', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('headerActions', function (Collection $actions) {
+            ->where('editorActions.buttons', function (Collection $actions) {
                 $create = $actions->firstWhere('label', 'Create a draft');
 
                 return $create !== null
@@ -178,7 +187,7 @@ it('offers the alternate save actions beside Save', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('formActions', function (Collection $actions) {
+            ->where('editorActions.menu', function (Collection $actions) {
                 $labels = $actions->pluck('label');
 
                 return $labels->contains('Save and continue editing')
@@ -207,8 +216,8 @@ it('renders a named draft in the Inertia editor', function () {
             ->where('draftId', $draft->draftId)
             ->where('isProvisionalDraft', false)
             ->where('readOnly', false)
-            ->where('submitButtonLabel', 'Save draft')
-            ->where('headerActions', fn (Collection $actions) => $actions
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.buttons', fn (Collection $actions) => $actions
                 ->pluck('label')->contains('Apply draft'))
             ->etc()
         );
@@ -234,7 +243,7 @@ it('renders a revision read-only in the Inertia editor', function () {
             ->where('canAutosave', false)
             ->where('notice', fn (?string $notice) => is_string($notice)
                 && str_contains($notice, 'viewing a revision'))
-            ->where('headerActions', fn (Collection $actions) => $actions
+            ->where('editorActions.buttons', fn (Collection $actions) => $actions
                 ->pluck('label')->contains('Revert content from this revision'))
             ->etc()
         );
@@ -332,8 +341,248 @@ it('renders an unpublished draft as a create screen', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Edit')
-            ->where('submitButtonLabel', 'Create entry')
+            ->where('editorActions.primary.label', 'Create entry')
             ->where('contextMenu', null)
+            ->etc()
+        );
+});
+
+it('creates a workflow entry as a draft before offering review', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Unpublished Draft';
+    $draft->slug = 'unpublished-draft';
+    $draft->setAuthorIds([auth()->id()]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
+
+    get(Url::urlWithParams($draft->getCpEditUrl(), ['fresh' => 1]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('editorActions.primary.label', 'Create entry')
+            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
+            ->where('editorActions.primary.params.dropProvisional', 1)
+            ->where('editorActions.primary.params.workflowSave', 1)
+            ->where('workflow.current.canSubmit', true)
+            ->where('editorActions.menu', function (Collection $actions) {
+                $save = $actions->firstWhere('label', 'Save draft');
+                $duplicate = $actions->firstWhere('label', 'Save as a new entry');
+
+                return $save !== null
+                    && str_contains($save['actionUrl'], 'elements/save-draft')
+                    && $save['params']['workflowSave'] === 1
+                    && $save['shortcut'] === true
+                    && $duplicate !== null
+                    && str_contains($duplicate['actionUrl'], 'elements/duplicate')
+                    && $duplicate['params']['asUnpublishedDraft'] === 1;
+            })
+            ->etc()
+        );
+});
+
+it('offers canonical creation for a disabled workflow entry', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Disabled Entry';
+    $draft->slug = 'disabled-entry';
+    $draft->enabled = false;
+    $draft->setAuthorIds([auth()->id()]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
+
+    get(Url::urlWithParams($draft->getCpEditUrl(), ['fresh' => 1]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('editorActions.primary.label', 'Create entry')
+            ->where('editorActions.primary.actionUrl', null)
+            ->where('editorActions.primary.tabId', null)
+            ->where('workflow.current.canSubmit', false)
+            ->etc()
+        );
+});
+
+it('offers review instead of canonical save actions for an unpublished workflow draft', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'uid' => Str::uuid7()->toString(),
+            'name' => 'Automatic approval',
+            'type' => AutomaticApprovalStage::class,
+            'settings' => [],
+        ]],
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Unpublished Draft';
+    $draft->slug = 'unpublished-draft';
+    $draft->setAuthorIds([auth()->id()]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('editorActions.primary.label', 'Request review')
+            ->where('editorActions.primary.tabId', 'workflow')
+            ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
+            ->where('editorActions.primary.params.workflowSave', 1)
+            ->where('workflow.current.canSubmit', true)
+            ->where('editorActions.menu', function (Collection $actions) {
+                $save = $actions->firstWhere('label', 'Save draft');
+                $duplicate = $actions->firstWhere('label', 'Save as a new entry');
+
+                return $save !== null
+                    && str_contains($save['actionUrl'], 'elements/save-draft')
+                    && $save['params']['workflowSave'] === 1
+                    && $save['shortcut'] === true
+                    && $duplicate !== null
+                    && str_contains($duplicate['actionUrl'], 'elements/duplicate')
+                    && $duplicate['params']['asUnpublishedDraft'] === 1;
+            })
+            ->where('editorActions.buttons', function (Collection $actions) {
+                $apply = $actions->firstWhere('label', 'Apply draft');
+
+                return $apply !== null
+                    && $apply['disabled'] === true
+                    && $apply['disabledReason'] === 'This draft must be approved before it can be applied.';
+            })
+            ->etc()
+        );
+
+    app(Workflows::class)->submitForReview($draft);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
+            ->where('editorActions.primary.params.workflowSave', 1)
+            ->where('workflow.current.canSubmit', false)
+            ->where('editorActions.buttons', function (Collection $actions) {
+                $apply = $actions->firstWhere('label', 'Apply draft');
+
+                return $apply !== null && $apply['disabled'] === false;
+            })
+            ->etc()
+        );
+});
+
+it('keeps draft actions visible and disables applying until workflow approval', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('workflow.convertedToDraft', false)
+            ->where('editorActions.menu', function (Collection $actions) {
+                $save = $actions->firstWhere('label', 'Save and continue editing');
+
+                return $save !== null
+                    && str_contains($save['actionUrl'], 'elements/save-draft')
+                    && $save['params']['workflowSave'] === 1;
+            })
+            ->where('editorActions.buttons', function (Collection $actions) {
+                $apply = $actions->firstWhere('label', 'Apply draft');
+
+                return $apply !== null
+                    && $apply['disabled'] === true
+                    && $apply['disabledReason'] === 'This draft must be approved before it can be applied.';
+            })
+            ->etc()
+        );
+});
+
+it('links reviewers from the canonical entry to drafts awaiting their review', function () {
+    Edition::set(Edition::Pro);
+    $author = User::findOne();
+    $reviewer = UserModel::factory()->admin()->createElement(['fullName' => 'Ada Reviewer']);
+    $reviewerGroup = UserGroup::factory()->create();
+    $reviewerGroup->users()->sync([$reviewer->id]);
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'uid' => Str::uuid7()->toString(),
+            'name' => 'Editorial review',
+            'type' => UserReviewStage::class,
+            'settings' => [
+                'approvalsRequired' => 1,
+                'userGroups' => [$reviewerGroup->uid],
+            ],
+        ]],
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Homepage refresh');
+    app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Not submitted');
+    actingAs($author);
+    app(Workflows::class)->submitForReview($draft);
+    actingAs($reviewer);
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('workflow.draftReviews', 1)
+            ->where('workflow.draftReviews.0.name', 'Homepage refresh')
+            ->where('workflow.draftReviews.0.requester', $author->name)
+            ->where('workflow.draftReviews.0.stage', 'Editorial review')
+            ->where('workflow.draftReviews.0.statusLabel', 'Awaiting approval')
+            ->where('workflow.draftReviews.0.url', fn (string $url): bool => str_contains($url, 'draftId='.$draft->draftId)
+                && str_ends_with($url, '#workflow'))
+            ->etc()
+        );
+});
+
+it('uses the standard draft publishing controls below Craft Pro', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+    Edition::set(Edition::Team);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('workflow.current', null)
+            ->where('editorActions.menu', fn (Collection $actions) => $actions->isNotEmpty())
+            ->where('editorActions.buttons', fn (Collection $actions) => $actions
+                ->pluck('label')->contains('Apply draft'))
             ->etc()
         );
 });

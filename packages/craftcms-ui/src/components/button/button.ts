@@ -143,6 +143,17 @@ export default class CraftButton extends LionButtonSubmit {
       this.syncLinkHostState();
     }
 
+    if (
+      changedProperties.has('disabled') ||
+      changedProperties.has('focusableWhenDisabled')
+    ) {
+      if (this.disabled) {
+        this.tabIndex = this.focusableWhenDisabled ? 0 : -1;
+      } else if (!this.isLink) {
+        this.tabIndex = 0;
+      }
+    }
+
     // Only while `toggle` is set: a plain button may carry an `aria-pressed`
     // its owner manages (`craft-button-group` sets one on every child), and
     // overwriting that would be worse than leaving it alone.
@@ -298,6 +309,10 @@ export default class CraftButton extends LionButtonSubmit {
 
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
+
+  /** Keep the button in the tab order when disabled. */
+  @property({attribute: 'focusable-when-disabled', type: Boolean})
+  focusableWhenDisabled: boolean = false;
 
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';

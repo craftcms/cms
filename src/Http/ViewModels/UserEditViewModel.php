@@ -118,7 +118,7 @@ class UserEditViewModel extends ElementEditViewModel
     }
 
     #[Override]
-    public function submitButtonLabel(): string
+    protected function primaryActionLabel(): string
     {
         if (! $this->user->getIsUnpublishedDraft()) {
             return t('Save');

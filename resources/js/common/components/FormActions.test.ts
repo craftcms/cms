@@ -11,7 +11,7 @@ describe('FormActions', () => {
     container?.remove();
   });
 
-  it('keeps an unavailable additional action focusable with an explanation', () => {
+  it('keeps an unavailable additional action focusable with an explanation', async () => {
     const onClick = vi.fn();
     container = document.createElement('div');
     document.body.append(container);
@@ -44,10 +44,11 @@ describe('FormActions', () => {
       container.querySelector<HTMLElementTagNameMap['craft-tooltip']>(
         'craft-tooltip'
       )!;
+    await applyButton.updateComplete;
 
-    expect(applyButton.disabled).toBe(false);
-    expect(applyButton.getAttribute('aria-disabled')).toBe('true');
-    expect(applyButton.id).toBe('disabled-form-action-0');
+    expect(applyButton.disabled).toBe(true);
+    expect(applyButton.tabIndex).toBe(0);
+    expect(applyButton.id).not.toBe('');
     expect(tooltip.for).toBe(applyButton.id);
     expect(tooltip.textContent).toContain(
       'This draft must be approved before it can be applied.'
@@ -56,5 +57,34 @@ describe('FormActions', () => {
     applyButton.click();
 
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('hides save controls without hiding non-save actions', () => {
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(FormActions, {
+          form: {
+            processing: false,
+            recentlySuccessful: false,
+            hasErrors: false,
+          },
+          saveDisabled: true,
+          actionItems: [{label: 'Save and continue editing'}],
+          additionalActions: [{label: 'Duplicate'}],
+          additionalButtons: [{label: 'View'}],
+        }),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+
+    expect(container.querySelector('[type="submit"]')).toBeNull();
+    expect(container.textContent).toContain('View');
+    expect(
+      container.querySelector<HTMLElementTagNameMap['craft-action-menu']>(
+        'craft-action-menu'
+      )?.actions
+    ).toEqual([expect.objectContaining({label: 'Duplicate'})]);
   });
 });

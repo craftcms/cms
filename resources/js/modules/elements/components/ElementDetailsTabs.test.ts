@@ -30,8 +30,17 @@ function payload(): ElementEditPayload {
     statusLabelHtml: null,
     saveUrl: '',
     applyDraftUrl: '',
-    formActions: [],
-    headerActions: [],
+    editorActions: {
+      primary: {
+        label: 'Save',
+        actionUrl: null,
+        params: {},
+        redirect: null,
+        tabId: null,
+      },
+      menu: [],
+      buttons: [],
+    },
     autosaveUrl: '',
     discardDraftUrl: '',
     isProvisionalDraft: false,
@@ -40,7 +49,6 @@ function payload(): ElementEditPayload {
     notice: null,
     mergeNotice: null,
     canDiscardDraft: false,
-    submitButtonLabel: 'Save',
     actionMenu: [],
     previewTargets: [],
     elementDisplayName: 'Entry',
@@ -49,6 +57,10 @@ function payload(): ElementEditPayload {
     activityPageUrl: null,
     updatedTimestamps: {element: null, canonical: null},
     contextMenu: null,
+    workflow: {
+      current: null,
+      draftReviews: [],
+    },
   };
 }
 
@@ -72,6 +84,7 @@ afterEach(() => {
   container?.remove();
   app = undefined;
   container = undefined;
+  window.history.replaceState({}, '', '/');
 });
 
 describe('ElementDetailsTabs', () => {
@@ -79,13 +92,13 @@ describe('ElementDetailsTabs', () => {
     const PluginTab = defineComponent({
       props: {
         payload: Object,
-        activeTabId: String,
+        active: Boolean,
       },
       setup: (props) => () =>
         h(
           'div',
           {class: 'plugin-content'},
-          `${props.payload?.elementId}:${props.activeTabId}`
+          `${props.payload?.elementId}:${props.active}`
         ),
     });
     const HiddenTab = defineComponent({render: () => null});
@@ -113,6 +126,7 @@ describe('ElementDetailsTabs', () => {
                 payload: payload(),
                 activityTimelineVersion: 0,
                 availableWidth: width.value,
+                updatePayload: vi.fn(),
               },
               {info: () => h('div', {class: 'info-content'}, 'Info content')}
             );
@@ -127,12 +141,16 @@ describe('ElementDetailsTabs', () => {
       'element-details-tab-revisions',
     ]);
 
+    select(1);
+    expect(window.location.hash).toBe('');
+
     elementDetailsTabRegistry.register({
       id: 'plugin:details',
       label: 'Plugin details',
       icon: 'puzzle-piece',
       component: PluginTab,
       order: 5,
+      props: ({payload, active}) => ({payload, active}),
     });
     await nextTick();
 
@@ -149,6 +167,7 @@ describe('ElementDetailsTabs', () => {
       component: PluginTab,
       order: 6,
       visible: () => conditionalVisible.value,
+      props: ({payload, active}) => ({payload, active}),
     });
     await nextTick();
 
@@ -169,6 +188,7 @@ describe('ElementDetailsTabs', () => {
       component: PluginTab,
       order: 30,
       visible: () => finalVisible.value,
+      props: ({payload, active}) => ({payload, active}),
     });
     await nextTick();
     await nextTick();
@@ -187,7 +207,7 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
 
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
-      '1:plugin:details'
+      '1:true'
     );
 
     select(2);
@@ -204,7 +224,7 @@ describe('ElementDetailsTabs', () => {
     ]);
     expect(tabs().selectedIndex).toBe(0);
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
-      '1:info'
+      '1:false'
     );
 
     select(4);
@@ -223,5 +243,81 @@ describe('ElementDetailsTabs', () => {
     width.value = 700;
     await nextTick();
     expect(tabs().selectedIndex).toBe(-1);
+  });
+
+  it('persists the selected full-page tab in the URL', async () => {
+    elementDetailsTabRegistry.register({
+      id: 'workflow',
+      label: 'Workflow',
+      icon: 'clipboard-list-check',
+      component: defineComponent({render: () => null}),
+      order: 5,
+    });
+    window.history.replaceState({}, '', '/entries/1#workflow');
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(ElementDetailsTabs, {
+      payload: payload(),
+      activityTimelineVersion: 0,
+      updatePayload: vi.fn(),
+      syncLocationHash: true,
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+    await nextTick();
+    await nextTick();
+
+    const workflowIndex = tabIds().indexOf('element-details-tab-workflow');
+    const revisionsIndex = tabIds().indexOf('element-details-tab-revisions');
+
+    expect(tabs().selectedIndex).toBe(workflowIndex);
+
+    select(revisionsIndex);
+    expect(window.location.hash).toBe('#revisions');
+
+    window.location.hash = 'workflow';
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await nextTick();
+    await nextTick();
+    expect(tabs().selectedIndex).toBe(workflowIndex);
+  });
+
+  it('allows its host to select a visible tab', async () => {
+    elementDetailsTabRegistry.register({
+      id: 'host-selectable',
+      label: 'Host selectable',
+      icon: 'clipboard-list-check',
+      component: defineComponent({render: () => null}),
+      order: 5,
+    });
+    const detailsTabs = ref<{select: (tabId: string) => void} | null>(null);
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(
+      defineComponent({
+        setup: () => () =>
+          h(ElementDetailsTabs, {
+            ref: detailsTabs,
+            payload: payload(),
+            activityTimelineVersion: 0,
+            updatePayload: vi.fn(),
+            syncLocationHash: true,
+          }),
+      })
+    );
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+    await nextTick();
+
+    detailsTabs.value?.select('host-selectable');
+    await nextTick();
+    await nextTick();
+
+    expect(tabs().selectedIndex).toBe(
+      tabIds().indexOf('element-details-tab-host-selectable')
+    );
+    expect(window.location.hash).toBe('#host-selectable');
   });
 });

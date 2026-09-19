@@ -1,24 +1,30 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {useEventListener} from '@vueuse/core';
   import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
     elementDetailsTabRegistry,
     type ElementDetailsTabDescriptor,
+    type ElementDetailsTabStatus,
   } from '@/bootstrap/element-details-tabs';
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+  import type {ElementEditPayloadUpdater} from '@/modules/elements/composables/useElementEditor';
 
   type ElementDetailsTab = Omit<ElementDetailsTabDescriptor, 'component'> & {
     component?: Component;
     slot?: string;
+    statusData?: ElementDetailsTabStatus | null;
   };
 
   const props = defineProps<{
     payload: ElementEditPayload;
     activityTimelineVersion: number;
+    updatePayload: ElementEditPayloadUpdater;
     pane?: boolean;
+    syncLocationHash?: boolean;
     /**
      * How much room the editor body has. The column folds itself away when
      * that runs short — see {@link COLLAPSE_WIDTH}.
@@ -41,6 +47,11 @@
       component: ElementActivityTimeline,
       order: 10,
       visible: (payload) => payload.activityTimelineUrl !== null,
+      props: ({payload, active, refreshToken}) => ({
+        payload,
+        active,
+        refreshToken,
+      }),
     },
     {
       id: 'revisions',
@@ -48,6 +59,7 @@
       icon: 'clock-rotate-left',
       component: RevisionsList,
       order: 20,
+      props: ({payload}) => ({payload}),
     },
   ];
 
@@ -57,6 +69,10 @@
       .sort(
         (firstTab, secondTab) => (firstTab.order ?? 0) - (secondTab.order ?? 0)
       )
+      .map((tab) => ({
+        ...tab,
+        statusData: tab.status?.(props.payload) ?? null,
+      }))
   );
 
   /**
@@ -71,7 +87,11 @@
    */
   const COLLAPSE_WIDTH = 880;
   const tabs = useTemplateRef<HTMLElement & {selectedIndex: number}>('tabs');
-  const selectedTabId = shallowRef<string | null>('info');
+  const selectedTabId = shallowRef<string | null>(
+    props.syncLocationHash && window.location.hash
+      ? window.location.hash.slice(1)
+      : 'info'
+  );
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
   let collapsedByWidth = false;
 
@@ -98,7 +118,7 @@
   });
 
   watch(
-    [tabs, visibleTabs],
+    [tabs, visibleTabs, selectedTabId],
     async ([element, tabs]) => {
       if (!element || !selectedTabId.value) {
         return;
@@ -123,12 +143,15 @@
     {flush: 'post'}
   );
 
-  function componentProps(): Record<string, unknown> {
-    return {
+  function componentProps(tab: ElementDetailsTab): Record<string, unknown> {
+    const context = {
       payload: props.payload,
-      activeTabId: selectedTabId.value,
+      active: selectedTabId.value === tab.id,
       refreshToken: props.activityTimelineVersion,
+      updatePayload: props.updatePayload,
     };
+
+    return tab.props?.(context) ?? {};
   }
 
   function onSelectedChanged(event: Event): void {
@@ -138,7 +161,39 @@
       selectedIndex === undefined || selectedIndex < 0
         ? null
         : (visibleTabs.value[selectedIndex]?.id ?? null);
+
+    updateLocationHash();
   }
+
+  function select(tabId: string): void {
+    if (!visibleTabs.value.some((tab) => tab.id === tabId)) {
+      return;
+    }
+
+    selectedTabId.value = tabId;
+    updateLocationHash();
+  }
+
+  function updateLocationHash(): void {
+    if (props.syncLocationHash && selectedTabId.value) {
+      const url = new URL(window.location.href);
+      url.hash = selectedTabId.value;
+      window.history.replaceState(window.history.state, '', url);
+    }
+  }
+
+  useEventListener(window, 'hashchange', () => {
+    if (!props.syncLocationHash) {
+      return;
+    }
+
+    const tabId = window.location.hash.slice(1);
+    if (visibleTabs.value.some((tab) => tab.id === tabId)) {
+      selectedTabId.value = tabId;
+    }
+  });
+
+  defineExpose({select});
 </script>
 
 <template>
@@ -167,14 +222,23 @@
         <div
           v-if="pane"
           slot="header"
-          class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
+          class="flex items-center gap-1 px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
         >
           <h3 slot="title" class="text-xs/4">{{ tab.label }}</h3>
+          <span v-if="tab.statusData" class="ms-auto flex items-center gap-1">
+            <craft-status
+              :status="tab.statusData.indicator"
+              :label="tab.statusData.label"
+            ></craft-status>
+            <span class="text-xs/4 text-neutral-text-quiet">
+              {{ tab.statusData.label }}
+            </span>
+          </span>
         </div>
         <component
           v-if="tab.component"
           :is="tab.component"
-          v-bind="componentProps()"
+          v-bind="componentProps(tab)"
         />
       </component>
     </div>
