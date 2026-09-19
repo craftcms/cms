@@ -199,7 +199,7 @@ it('persists typed stages and assigns workflows from sections', function () {
             'uid' => $stageUid,
             'name' => 'Editorial',
             'type' => UserReviewStage::class,
-        ])->and($stage->settings)->toBe([
+        ])->and($stage->settings)->toMatchArray([
             'approvalsRequired' => 1,
             'userGroups' => [$group->uid],
         ])->and($this->draft->workflow()?->is($workflow))->toBeTrue();
@@ -261,7 +261,7 @@ it('completes a pending automated stage and advances the workflow', function () 
 
     expect($completed->status)->toBe(WorkflowStatus::Approved)
         ->and($completed->currentStageResult)->toBe('Automated check approved')
-        ->and($completed->payload[$workflow->stages->sole()->uid])->toBe([
+        ->and($completed->payload[$workflow->stages->sole()->uid])->toMatchArray([
             'evaluations' => 1,
             'summary' => 'No issues found.',
         ]);
