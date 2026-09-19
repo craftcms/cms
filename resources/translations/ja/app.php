@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'ナビゲーションを表示',
     'Show nested sources' => 'ネストされたソースを表示',
     'Show sidebar' => 'サイドバーを表示する',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'スラッグフィールドを表示',
     'Show the Status field' => 'ステータスフィールドを表示',
     'Show the search input' => '検索入力を表示',
