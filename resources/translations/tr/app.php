@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Gezinti menüsünü göster',
     'Show nested sources' => 'İç içe geçmiş kaynakları göster',
     'Show sidebar' => 'Kenar çubuğunu göster',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Ek alanını göster',
     'Show the Status field' => 'Durum alanını göster',
     'Show the search input' => 'Arama girişini göster',
