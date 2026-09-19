@@ -66,10 +66,7 @@
         <li v-for="(event, eventIndex) in stage.events" :key="event.id">
           <TimelineItem
             :event="event"
-            :last="
-              eventIndex === stage.events.length - 1 &&
-              stage.summaryComponent === null
-            "
+            :last="eventIndex === stage.events.length - 1"
           />
         </li>
       </ol>
