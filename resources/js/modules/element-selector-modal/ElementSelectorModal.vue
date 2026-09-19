@@ -35,6 +35,11 @@
   }
 
   const transformable = computed(() => asTransformCapable(props.controller));
+  const uploadKinds = computed(() => {
+    const kind = props.controller.options.criteria?.kind;
+
+    return kind === undefined ? undefined : ([kind].flat() as string[]);
+  });
 
   /**
    * No emits: the controller is the event bus.
@@ -134,8 +139,9 @@
       <AssetUploadButton
         :can-upload="true"
         :folder-id="uploadTarget.folderId"
+        :allowed-kinds="uploadKinds"
         :reload-on-complete="false"
-        @uploaded="() => index?.refresh()"
+        @uploaded="({id}) => index?.refresh(id)"
       />
     </div>
 

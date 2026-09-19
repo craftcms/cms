@@ -8,7 +8,7 @@ use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use Illuminate\Http\Request;
 
 /**
- * @event UploadSessionStarting The event triggered after upload authorization, before selecting its temporary disk and uploader.
+ * @event UploadSessionStarting The event triggered after upload authorization, before selecting its session disk and uploader.
  *
  * Set $disk to a Laravel filesystem disk name, and $uploader to a registered
  * uploader name. Leave either null to use the configured default or automatic selection.
