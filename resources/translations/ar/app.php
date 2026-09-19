@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'إظهار قائمة التنقل',
     'Show nested sources' => 'إظهار المصادر المتداخلة',
     'Show sidebar' => 'إظهار الشريط الجانبي',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'العرض في حقل العنوان الفرعي',
     'Show the Status field' => 'إظهار حقل الحالة',
     'Show the search input' => 'إظهار إدخال البحث',
