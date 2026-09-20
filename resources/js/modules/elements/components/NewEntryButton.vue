@@ -111,22 +111,11 @@
     )
   );
 
-  // Navigate to the create URL for the active section, preserving the legacy
-  // button's Ctrl/⌘-click "open in a new tab" affordance.
-  function createInCurrentSection(event: MouseEvent) {
-    const section = currentSection.value;
-    if (!section) {
-      return;
-    }
-
-    const href = createUrl(section.handle, currentEntryTypeHandle.value);
-
-    if (event.metaKey || event.ctrlKey) {
-      window.open(href);
-    } else {
-      window.location.href = href;
-    }
-  }
+  const currentSectionUrl = computed(() =>
+    currentSection.value
+      ? createUrl(currentSection.value.handle, currentEntryTypeHandle.value)
+      : undefined
+  );
 </script>
 
 <template>
@@ -137,7 +126,7 @@
       type="button"
       variant="accent"
       icon="plus"
-      @click="createInCurrentSection"
+      :href="currentSectionUrl"
     >
       {{ t('New {type}', {type: elementDisplayName}) }}
     </craft-button>
@@ -161,7 +150,7 @@
     type="button"
     variant="accent"
     icon="plus"
-    @click="createInCurrentSection"
+    :href="currentSectionUrl"
   >
     {{ t('New {type}', {type: elementDisplayName}) }}
   </craft-button>
