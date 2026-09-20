@@ -130,6 +130,7 @@ class LegacyFilesystems
     {
         $currentDisks = $this->currentDiskConfigs();
         $craftDisks = $this->craftDisksFromProjectConfig();
+        $craftDiskNames = array_keys($craftDisks);
 
         $manualDisks = [];
         foreach ($currentDisks as $diskName => $diskConfig) {
@@ -137,14 +138,11 @@ class LegacyFilesystems
                 continue;
             }
 
-            if (array_key_exists($diskName, $craftDisks)) {
-                throw new FilesystemException("Laravel disk [$diskName] conflicts with a legacy Craft filesystem handle.");
-            }
-
             if (str_starts_with($diskName, self::DISK_PREFIX)) {
                 throw new FilesystemException("Laravel disk [$diskName] uses Craft's reserved disk prefix.");
             }
 
+            unset($craftDisks[$diskName]);
             $manualDisks[$diskName] = $diskConfig;
         }
 
@@ -161,7 +159,7 @@ class LegacyFilesystems
 
         $this->forgetDisks([
             ...$staleDiskNames,
-            ...array_keys($craftDisks),
+            ...$craftDiskNames,
         ]);
     }
 
@@ -189,6 +187,10 @@ class LegacyFilesystems
         $diskConfigs = $this->currentDiskConfigs();
         foreach ($this->diskNames($handle) as $diskName) {
             if (array_key_exists($diskName, $diskConfigs) && !$this->isGeneratedDiskConfig($diskName, $diskConfigs[$diskName])) {
+                if ($diskName === $handle && !str_starts_with($diskName, self::DISK_PREFIX)) {
+                    continue;
+                }
+
                 throw new FilesystemException("Laravel disk [$diskName] conflicts with a legacy Craft filesystem handle.");
             }
 

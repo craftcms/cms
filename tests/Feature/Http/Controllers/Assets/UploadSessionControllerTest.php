@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Assets as AssetsService;
 use CraftCms\Cms\Asset\AssetUploads;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Filesystem\Uploaders\S3Uploader;
 use CraftCms\Cms\Filesystem\Uploaders\TusUploader;
 use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Http\Controllers\Assets\UploadSessionController;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -36,10 +38,12 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::findOne());
     config()->set('filesystems.disks.upload-parts', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-parts')]);
+    config()->set('filesystems.disks.temp-assets', ['driver' => 'local', 'root' => storage_path('framework/testing/temp-assets')]);
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('upload-parts');
+    Storage::fake('temp-assets');
     Storage::fake('upload-destination');
-    Cms::config()->tempAssetUploadDisk = 'upload-parts';
+    Cms::config()->tempAssetUploadDisk = 'temp-assets';
     Cms::config()->uploadSessionDisk = 'upload-parts';
     Cms::config()->uploadChunkSize = 3;
 
@@ -94,7 +98,8 @@ it('allows per-upload storage and uploader selection without changing config', f
     $stored = UploadSession::findOrFail($session['id']);
     expect($stored->disk)->toBe('upload-destination')
         ->and($stored->uploader)->toBe($uploader ?? 'tus')
-        ->and(Cms::config()->uploadSessionDisk)->toBe('upload-parts');
+        ->and(Cms::config()->uploadSessionDisk)->toBe('upload-parts')
+        ->and(Cms::config()->tempAssetUploadDisk)->toBe('temp-assets');
 
     $this->call('PATCH', $session['transport']['options']['url'], server: [
         'CONTENT_TYPE' => 'application/offset+octet-stream',
@@ -307,6 +312,43 @@ it('resolves a fields dynamic upload folder from its element context', function 
     $completed = postJson($session['urls']['complete'])->assertOk()->json();
 
     expect(Asset::findOne($completed['assetId'])->getPath())->toBe("{$result->element->uid}/example.txt");
+});
+
+it('stages an upload until an unsaved element dynamic folder can be resolved', function () {
+    $result = Entry::factory()
+        ->withField('attachment', Assets::class, [
+            'defaultUploadLocationSource' => "volume:{$this->volume->uid}",
+            'defaultUploadLocationSubpath' => '{id}',
+        ])->createElementWithFields(save: false);
+
+    $session = postJson(action([UploadSessionController::class, 'store']), [
+        'filename' => 'example.txt', 'size' => 3,
+        'fieldId' => $result->fields->get('attachment')->id,
+    ])->assertCreated()->json();
+    $this->call('PATCH', $session['transport']['options']['url'], server: [
+        'CONTENT_TYPE' => 'application/offset+octet-stream',
+        'HTTP_TUS_RESUMABLE' => '1.0.0',
+        'HTTP_UPLOAD_OFFSET' => 0,
+    ], content: 'abc')->assertNoContent();
+    $completed = postJson($session['urls']['complete'])->assertOk()->json();
+
+    $temporaryFolder = app(AssetsService::class)->getUserTemporaryUploadFolder();
+    $asset = Asset::findOne($completed['assetId']);
+    $temporaryPath = $asset->getPath();
+
+    expect($asset->volumeId)->toBeNull()
+        ->and($asset->folderId)->toBe($temporaryFolder->id)
+        ->and(Storage::disk('temp-assets')->get($temporaryPath))->toBe('abc');
+    Storage::disk('upload-parts')->assertDirectoryEmpty('upload-sessions');
+
+    $result->element->setFieldValue('attachment', [$asset->id]);
+    expect(Elements::saveElement($result->element))->toBeTrue();
+
+    $asset = Asset::findOne($asset->id);
+    expect($asset->volumeId)->toBe($this->volume->id)
+        ->and($asset->getPath())->toBe("{$result->element->id}/example.txt")
+        ->and(Storage::disk('upload-destination')->get($asset->getPath()))->toBe('abc');
+    Storage::disk('temp-assets')->assertMissing($temporaryPath);
 });
 
 it('keeps the staged bytes when required processing fails and retries completion', function () {

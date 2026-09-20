@@ -268,11 +268,7 @@ interface CraftStatic {
     assetId: number,
     settings?: LegacyWidgetSettings
   ) => LegacyModalInstance;
-  createUploader(
-    fsType: string | null,
-    $element: JQuery,
-    settings?: LegacyWidgetSettings
-  ): {setParams(params: LegacyWidgetSettings): void};
+  Uploaders: typeof import('@/modules/uploader');
 }
 
 // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
