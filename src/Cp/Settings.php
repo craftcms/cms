@@ -121,7 +121,15 @@ class Settings
             'iconName' => 'light/files',
             'label' => t('Entry Types'),
         ];
+        $settings[$label]['assets'] = [
+            'iconName' => 'light/image',
+            'label' => t('Assets'),
+        ];
 
+        // CONFLICT-REVIEW: 6.x moved "Assets" out of the "Media" section into "Content"
+        // between "Entry Types" and "Fields"; this branch added "Workflows" in that same
+        // spot. Both are kept, with "Assets" left directly after "Entry Types" to preserve
+        // 6.x's ordering and "Workflows" ahead of "Fields". Confirm the intended nav order.
         if (Edition::isAtLeast(Edition::Pro)) {
             $settings[$label]['workflows'] = [
                 'iconName' => 'light/clipboard-list-check',
@@ -134,12 +142,6 @@ class Settings
             'label' => t('Fields'),
         ];
 
-        $label = t('Media');
-
-        $settings[$label]['assets'] = [
-            'iconName' => 'light/image',
-            'label' => t('Assets'),
-        ];
         $label = t('Plugins');
 
         foreach ($this->pluginsService->getAllPlugins() as $plugin) {

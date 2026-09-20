@@ -1617,6 +1617,8 @@ return [
     'Show nav' => '显示导航',
     'Show nested sources' => '显示嵌套源',
     'Show sidebar' => '显示边栏',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => '显示“缩略名”字段',
     'Show the Status field' => '显示“状态”字段',
     'Show the search input' => '显示搜索输入',

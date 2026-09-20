@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Sýna nav',
     'Show nested sources' => 'Sýna hreiður heimildir',
     'Show sidebar' => 'Sýna hliðarstiku',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Sýndu Slug reitinn',
     'Show the Status field' => 'Sýndu Staða reitinn',
     'Show the search input' => 'Sýna leitarinntakið',
