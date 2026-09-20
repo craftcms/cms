@@ -161,22 +161,13 @@
     t('New {type}', {type: props.elementDisplayName})
   );
 
-  // Keeps the legacy button's Ctrl/⌘-click "open in a new tab".
-  function createOnly(event: MouseEvent) {
+  // A real href, rather than a click handler, so the browser keeps the legacy
+  // button's Ctrl/⌘-click "open in a new tab".
+  const onlyUrl = computed(() => {
     const [only] = creatableTypes.value;
 
-    if (!only) {
-      return;
-    }
-
-    const href = createUrl(only);
-
-    if (event.metaKey || event.ctrlKey) {
-      window.open(href);
-    } else {
-      window.location.href = href;
-    }
-  }
+    return only ? createUrl(only) : undefined;
+  });
 </script>
 
 <template>
@@ -186,7 +177,7 @@
     type="button"
     :variant="ButtonVariant.Primary"
     icon="plus"
-    @click="createOnly"
+    :href="onlyUrl"
   >
     {{ label }}
   </craft-button>

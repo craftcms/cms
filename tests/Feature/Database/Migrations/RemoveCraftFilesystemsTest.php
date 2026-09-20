@@ -131,8 +131,7 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
-    expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
-        ->toBe(<<<'MESSAGE'
+    $expectedMessage = str_replace(["\r\n", "\r"], "\n", <<<'MESSAGE'
             The Craft Filesystem concept has been removed.
 
             Configure Laravel filesystem disks named [siteAssets] in config/filesystems.php with settings equivalent to the previous Craft Filesystem definitions.
@@ -150,7 +149,10 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
                     ],
 
             Then run the upgrade again.
-            MESSAGE));
+            MESSAGE);
+
+    expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace(["\r\n", "\r"], "\n", $exception->getMessage()))
+        ->toBe($expectedMessage));
 });
 
 test('suggests an equivalent disk config for a missing Local filesystem', function () {
