@@ -5,9 +5,9 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19574](https://github.com/craftcms/cms/pull/19574), [#19563](https://github.com/craftcms/cms/pull/19563), [#19588](https://github.com/craftcms/cms/pull/19588), [#19585](https://github.com/craftcms/cms/pull/19585), and [#19650](https://github.com/craftcms/cms/pull/19650) for details.
 
-- Added background uploads in the Assets index that continue during Control Panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
 - Migrated Control Panel uploads to the native Uppy picker and shared upload sessions, including user photos.
 - Added support for upload sessions, tus and direct S3 multipart transports, and an extensible JavaScript upload API. ([#19604](https://github.com/craftcms/cms/pull/19604))
+- Added background uploads in the Assets index that continue during Control Panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Improved performance of element queries, control panel rendering, asset transforms, date formatting, and queue status checks, and fixed related SQLite index and timezone issues.
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
