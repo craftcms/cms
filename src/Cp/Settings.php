@@ -128,7 +128,7 @@ class Settings
                 'label' => t('Workflows'),
             ];
         }
-        
+
         $settings[$label]['assets'] = [
             'iconName' => 'light/image',
             'label' => t('Assets'),
