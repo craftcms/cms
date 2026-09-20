@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Visa navigeringsfält',
     'Show nested sources' => 'Visa inbäddade källor',
     'Show sidebar' => 'Visa sidofält',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Visa sluggfältet',
     'Show the Status field' => 'Visa statusfältet',
     'Show the search input' => 'Visa sökningens indata',
