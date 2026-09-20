@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements as ElementsService;
@@ -120,6 +121,18 @@ describe('destroy', function () {
 
         expect(Entry::find()->id($first->id)->status(null)->trashed()->one()?->dateDeleted)->not->toBeNull()
             ->and(Entry::find()->id($second->id)->status(null)->trashed()->one()?->dateDeleted)->not->toBeNull();
+    });
+
+    it('soft deletes the canonical element selected through a provisional draft', function () {
+        $entry = EntryModel::factory()->createElement();
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+        postJson(action([DeleteElementsController::class, 'destroy']), [
+            'elementType' => Entry::class,
+            'elementIds' => [$draft->id],
+        ])->assertOk();
+
+        expect(Entry::find()->id($entry->id)->status(null)->trashed()->one()?->dateDeleted)->not->toBeNull();
     });
 
     it('hard deletes selected elements when requested', function () {

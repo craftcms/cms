@@ -67,6 +67,7 @@
 - Migrated the reassign entries, replace relations, and replace references modals to the Form API. ([#19589](https://github.com/craftcms/cms/pull/19589))
 - Replaced the project config implementation with separate change handling, storage, and rebuild components.
 - Removed HTMX.
+- Fixed a bug where unsaved drafts could not be deleted from element indexes. ([#19668](https://github.com/craftcms/cms/pull/19668))
 - Fixed a bug where saved drafts without canonical elements were missing from element indexes. ([#19649](https://github.com/craftcms/cms/pull/19649))
 - Fixed a bug where submitting a form after signing in through an elevated or expired session modal could fail CSRF validation.
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
