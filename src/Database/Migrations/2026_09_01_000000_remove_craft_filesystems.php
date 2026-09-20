@@ -135,7 +135,8 @@ return new class extends Migration
             return;
         }
 
-        if (! array_key_exists($disk, $configuredDisks)) {
+        $diskConfig = $configuredDisks[$disk] ?? null;
+        if (! array_key_exists($disk, $configuredDisks) || (is_array($diskConfig) && ($diskConfig['_craft'] ?? false) === true)) {
             $missingDisks[$disk] = $filesystems[$disk];
         }
     }
@@ -181,7 +182,7 @@ return new class extends Migration
         ];
 
         if ($this->hasUrls($filesystem)) {
-            $url = $settings['url'] ?? null;
+            $url = $settings['url'] ?? $filesystem['url'] ?? null;
             $url = is_string($url) && $url !== '' ? rtrim((string) Env::parse($url), '/') : null;
 
             $lines[] = $url !== null
