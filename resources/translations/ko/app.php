@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'nav 표시',
     'Show nested sources' => '중첩된 소스 표시',
     'Show sidebar' => '사이드바 표시',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => '슬러그 필드 표시',
     'Show the Status field' => '상태 필드 표시',
     'Show the search input' => '검색 입력 표시',

@@ -1618,6 +1618,8 @@ return [
     'Show nav' => 'แสดงการนำทาง',
     'Show nested sources' => 'แสดงแหล่งที่มาที่ซ้อนกัน',
     'Show sidebar' => 'แสดงแถบข้าง',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'แสดงฟิลด์ Slug',
     'Show the Status field' => 'แสดงฟิลด์สถานะ',
     'Show the search input' => 'แสดงอินพุตการค้นหา',

@@ -319,6 +319,7 @@ readonly class DeleteElementsController
             ->unique()
             ->status(null)
             ->drafts(null)
+            ->provisionalDrafts(null)
             ->savedDraftsOnly(false);
 
         $withDescendants = ! $this->hardDelete && $this->request->boolean('withDescendants');
@@ -350,6 +351,10 @@ readonly class DeleteElementsController
         foreach ($query->all() as $element) {
             if (! $element instanceof ElementInterface) {
                 continue;
+            }
+
+            if ($element->isProvisionalDraft) {
+                $element = $element->getCanonical(true);
             }
 
             if (isset($elementIds[$element->id])) {

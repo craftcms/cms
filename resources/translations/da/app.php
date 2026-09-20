@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Vis nav',
     'Show nested sources' => 'Vis indlejrede kilder',
     'Show sidebar' => 'Vis sidebjælke',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Vis i Slug-felt',
     'Show the Status field' => 'Vis statusfeltet',
     'Show the search input' => 'Vis søgeinputtet',

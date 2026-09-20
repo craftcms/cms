@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Zobrazit navigaci',
     'Show nested sources' => 'Zobrazit vnořené zdroje',
     'Show sidebar' => 'Zobrazit postranní lištu',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Zobrazit pole Slug',
     'Show the Status field' => 'Zobrazit pole Stav',
     'Show the search input' => 'Zobrazit vstup vyhledávání',

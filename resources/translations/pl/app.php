@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Pokaż nawigację',
     'Show nested sources' => 'Pokaż zagnieżdżone źródła',
     'Show sidebar' => 'Pokaż pasek boczny',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Pokaż pole Slug',
     'Show the Status field' => 'Pokaż pole Status',
     'Show the search input' => 'Pokaż dane wejściowe wyszukiwania',
