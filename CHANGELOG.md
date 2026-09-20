@@ -26,6 +26,7 @@
 - Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 - Removed the “Show unpermitted files” and “Allowed File Types” settings from Assets, Link, and Markdown fields, in favor of “Viewable” and “File Type” condition rules in the “Selectable Assets Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
+- The “Assets” system settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - Added support for fluent plugin settings classes. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Added support for refreshable standard plugin settings forms and conditional configuration of core form nodes. ([#19545](https://github.com/craftcms/cms/pull/19545))
 - Added an optional `$mode` argument to core thumbnail APIs, defaulting to `Fit` for thumbnail HTML and `Crop` for `CraftCms\Cms\Asset\Assets::getThumbUrl()`. Implementations of `CraftCms\Cms\Component\Contracts\Thumbable` and `CraftCms\Cms\Field\Contracts\ThumbableFieldInterface`, and overrides of thumbnail layout methods and `thumbUrl()`, must update their signatures for Craft 6, including through existing Yii aliases; existing calls remain valid. The Yii Assets service wrapper and legacy thumbnail event are unchanged.
@@ -160,6 +161,7 @@
 - Fixed a bug where parallel test cleanup could delete another worker’s files. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
+- Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicking on some control panel links wasn’t opening the link in a new tab.
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
