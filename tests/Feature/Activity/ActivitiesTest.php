@@ -165,7 +165,7 @@ it('queries fixed criteria and paginates equal timestamps without gaps', functio
 
     $subject = new ActivitySubject('document', 'one', 'Document one');
     $otherSubject = new ActivitySubject('document', 'two', 'Document two');
-    $craftSubject = Entry::factory()->createElement();
+    $craftSubject = Entry::factory()->createElement(['postDate' => Date::now()]);
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
     $craftEvent = $this->activities->record(new ElementStatusChanged(
