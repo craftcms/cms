@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Εμφάνιση πλοήγησης',
     'Show nested sources' => 'Εμφάνιση εμφωλευμένων πηγών',
     'Show sidebar' => 'Εμφάνιση πλευρικής στήλης',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Εμφάνιση του πεδίου Slug',
     'Show the Status field' => 'Εμφάνιση του πεδίου Κατάστασης',
     'Show the search input' => 'Εμφάνιση του πεδίου αναζήτησης',

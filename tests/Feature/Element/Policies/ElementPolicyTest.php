@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
@@ -109,6 +110,8 @@ it('denies gate save canonical checks when the delegated save check is denied', 
 
 it('returns false for view when the site does not exist', function () {
     $user = UserModel::factory()->create();
+    Site::factory()->create();
+    Sites::refreshSites();
     $element = createElementPolicyElement(siteId: 999999);
 
     $result = $this->policy->before($user, 'view', $element);
@@ -116,9 +119,19 @@ it('returns false for view when the site does not exist', function () {
     expect($result)->toBeFalse();
 });
 
+it('bypasses site authorization in single-site installations', function () {
+    $user = UserModel::factory()->create();
+    $element = createElementPolicyElement(siteId: Site::query()->sole()->id);
+
+    $result = $this->policy->before($user, 'view', $element);
+
+    expect($result)->toBeNull();
+});
+
 it('returns false for save when the user cannot edit the site', function () {
     $user = UserModel::factory()->create();
     $site = Site::factory()->create();
+    Sites::refreshSites();
     $element = createElementPolicyElement(siteId: $site->id);
 
     $result = $this->policy->before($user, 'save', $element);
@@ -128,6 +141,7 @@ it('returns false for save when the user cannot edit the site', function () {
 
 it('continues save checks when the user can edit the site', function () {
     $site = Site::factory()->create();
+    Sites::refreshSites();
     $user = UserModel::factory()->withPermissions(["editSite:$site->uid"])->create();
     $element = createElementPolicyElement(siteId: $site->id);
 
@@ -345,6 +359,11 @@ function createElementPolicyElement(?int $siteId = null, ?ElementInterface $cano
     $element = new class extends Element
     {
         public ?ElementInterface $canonicalResult = null;
+
+        public static function isLocalized(): bool
+        {
+            return true;
+        }
 
         public function getCanonical(bool $anySite = false): ElementInterface
         {
