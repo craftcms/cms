@@ -132,10 +132,25 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
     expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
-        ->toContain('[siteAssets]')
-        ->toContain("'siteAssets' => [")
-        ->toContain("'root' => '@assetBasePath/site',")
-        ->toContain("'url' => '@assetBaseUrl/site',"));
+        ->toBe(<<<'MESSAGE'
+            The Craft Filesystem concept has been removed.
+
+            Configure Laravel filesystem disks named [siteAssets] in config/filesystems.php with settings equivalent to the previous Craft Filesystem definitions.
+
+            If config/filesystems.php does not exist, publish it first:
+
+                php artisan config:publish filesystems --no-interaction
+
+            Add these entries to its `disks` array:
+
+                    'siteAssets' => [
+                        'driver' => 'local',
+                        'root' => '@assetBasePath/site',
+                        'url' => '@assetBaseUrl/site',
+                    ],
+
+            Then run the upgrade again.
+            MESSAGE));
 });
 
 test('suggests an equivalent disk config for a missing Local filesystem', function () {

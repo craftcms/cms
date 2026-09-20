@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -54,11 +55,23 @@ return new class extends Migration
                 array_keys($missingDisks),
                 $missingDisks,
             ));
+            $suggestions = Str::indent($suggestions, '        ');
 
-            throw new RuntimeException(
-                "The Craft Filesystem concept has been removed. You should instead configure Laravel filesystem disks named $handles ".
-                "in config/filesystems.php with settings equivalent to the previous Craft Filesystem definitions, then run the upgrade again:\n\n$suggestions",
-            );
+            throw new RuntimeException(<<<MESSAGE
+                The Craft Filesystem concept has been removed.
+
+                Configure Laravel filesystem disks named $handles in config/filesystems.php with settings equivalent to the previous Craft Filesystem definitions.
+
+                If config/filesystems.php does not exist, publish it first:
+
+                    php artisan config:publish filesystems --no-interaction
+
+                Add these entries to its `disks` array:
+
+                $suggestions
+
+                Then run the upgrade again.
+                MESSAGE);
         }
 
         if (! Schema::hasColumn(Table::VOLUMES, 'hasUrls')) {
