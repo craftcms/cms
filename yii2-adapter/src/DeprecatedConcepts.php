@@ -455,7 +455,7 @@ class DeprecatedConcepts
             CpVariable::class,
             Cms::config()->allowAdminChanges ? CpVariable::EVENT_REGISTER_CP_SETTINGS : CpVariable::EVENT_REGISTER_READ_ONLY_CP_SETTINGS,
             function(RegisterCpSettingsEvent $event) {
-                $label = t('Content');
+                $label = t('Deprecated');
                 if (DeprecatedConcepts::supportsGlobalSets()) {
                     $event->settings[$label]['globals'] = [
                         'iconName' => 'light/globe',

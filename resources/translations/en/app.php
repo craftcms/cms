@@ -1072,7 +1072,6 @@ return [
     'Max Value' => 'Max Value',
     'Max {type}' => 'Max {type}',
     'Maximum' => 'Maximum',
-    'Media' => 'Media',
     'Medium' => 'Medium',
     'Meet the Craft community' => 'Meet the Craft community',
     'Merge the folder (any conflicting files will be replaced)' => 'Merge the folder (any conflicting files will be replaced)',
@@ -2491,4 +2490,5 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
+    'Deprecated' => 'Deprecated',
 ];
