@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Navigatiebalk weergeven',
     'Show nested sources' => 'Geneste bronnen tonen',
     'Show sidebar' => 'Toon zijbalk',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Slugveld weergeven',
     'Show the Status field' => 'Statusveld weergeven',
     'Show the search input' => 'Zoekinvoer weergeven',

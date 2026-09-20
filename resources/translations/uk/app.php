@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Показати навігацію',
     'Show nested sources' => 'Показати вкладені джерела',
     'Show sidebar' => 'Показати бічну панель',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Показувати поле змінюваних даних',
     'Show the Status field' => 'Показати поле статусу',
     'Show the search input' => 'Показати рядок пошуку',
