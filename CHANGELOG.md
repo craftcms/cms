@@ -161,7 +161,8 @@
 - Fixed a bug where parallel test cleanup could delete another worker’s files. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
-- Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicking on some control panel links wasn’t opening the link in a new tab.
+- Fixed a bug where modifier-clicking or middle-clicking on some control panel links wasn’t opening the link in a new tab.
+- Fixed a bug where modifier-clicking or middle-clicking the New Entry button didn’t open the creation page in a new tab. ([#19669](https://github.com/craftcms/cms/pull/19669))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
