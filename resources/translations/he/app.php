@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'הצג nav',
     'Show nested sources' => 'הצג מקורות מקוננים',
     'Show sidebar' => 'הצג תפריט צדדי',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'הצג את שדה ה-Slug',
     'Show the Status field' => 'הצג את שדה הסטטוס',
     'Show the search input' => 'הצג את קלט החיפוש',

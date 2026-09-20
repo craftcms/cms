@@ -100,6 +100,59 @@ test('fails before mutation when a legacy filesystem has no matching Laravel dis
         ->and($volume->refresh()->fs)->toBe('missing-storage');
 });
 
+test('suggests disk config for an adapter-generated Craft 5 filesystem disk', function () {
+    config()->set('filesystems.disks.siteAssets', [
+        'driver' => 'local',
+        'root' => '/runtime/generated/root',
+        '_craft' => true,
+    ]);
+
+    Volume::factory()->create(['fs' => 'siteAssets']);
+    /** @var ProjectConfig&MockInterface $projectConfig */
+    $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
+    $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
+        'siteAssets' => [
+            'type' => 'craft\\fs\\Local',
+            'hasUrls' => true,
+            'url' => '@assetBaseUrl/site',
+            'settings' => [
+                'path' => '@assetBasePath/site',
+            ],
+        ],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
+        '0193dc64-5499-4e28-95dd-f8f603154851' => ['fs' => 'siteAssets'],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
+    $projectConfig->shouldNotReceive('set');
+    $projectConfig->shouldNotReceive('remove');
+    $projectConfig->shouldNotReceive('saveModifiedConfigData');
+    app()->instance(ProjectConfig::class, $projectConfig);
+
+    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+
+    expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
+        ->toBe(<<<'MESSAGE'
+            The Craft Filesystem concept has been removed.
+
+            Configure Laravel filesystem disks named [siteAssets] in config/filesystems.php with settings equivalent to the previous Craft Filesystem definitions.
+
+            If config/filesystems.php does not exist, publish it first:
+
+                php artisan config:publish filesystems --no-interaction
+
+            Add these entries to its `disks` array:
+
+                    'siteAssets' => [
+                        'driver' => 'local',
+                        'root' => '@assetBasePath/site',
+                        'url' => '@assetBaseUrl/site',
+                    ],
+
+            Then run the upgrade again.
+            MESSAGE));
+});
+
 test('suggests an equivalent disk config for a missing Local filesystem', function () {
     Volume::factory()->create(['fs' => 'missing-local']);
     /** @var ProjectConfig&MockInterface $projectConfig */

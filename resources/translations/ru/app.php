@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Показать навигацию',
     'Show nested sources' => 'Показать вложенные источники',
     'Show sidebar' => 'Показать боковую панель',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Показывать служебное поле',
     'Show the Status field' => 'Показать поле статуса',
     'Show the search input' => 'Показать строку поиска',

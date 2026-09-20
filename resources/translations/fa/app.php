@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'نمایش نوار راهبری',
     'Show nested sources' => 'نشان دادن منابع تودرتو',
     'Show sidebar' => 'نمایش نوار کناری',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'نمایش فیلد اسلاگ',
     'Show the Status field' => 'نمایش فیلد وضعیت',
     'Show the search input' => 'نمایش ورودی جستجو',

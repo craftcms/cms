@@ -1617,6 +1617,8 @@ return [
     'Show nav' => 'Vis navigering',
     'Show nested sources' => 'Vis nestede kilder',
     'Show sidebar' => 'Vis marg',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Vis Lenke-feltet',
     'Show the Status field' => 'Vis Status-feltet',
     'Show the search input' => 'Vis søkeinndata',
@@ -2321,9 +2323,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName|e}}
+    'test_email_body' => 'Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',
