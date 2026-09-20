@@ -1,149 +1,266 @@
-import {BaseUploader} from './base-uploader';
+import Uppy from '@uppy/core';
+import DropTarget from '@uppy/drop-target';
+import {t} from '@craftcms/ui';
+import './uploader.css';
+import {
+  BaseUploader,
+  type UploadControls,
+  type UploaderSettings,
+} from './base-uploader';
+import {UploadQueue} from './upload-queue';
+import {store} from '@/routes/craft/actions/craft/cp/uploads';
 
-// blueimp jQuery File Upload plugin seam — see base-uploader.ts.
-declare const $: any;
 declare const Craft: any;
 
-const DEFAULTS = {
-  autoUpload: false,
-  sequentialUploads: true,
-  // Resolved from `Craft.maxUploadSize` via the static getter (see below).
-  // SAFETY: Upload size is nullable until the runtime Craft config is available.
-  maxFileSize: null as number | null,
-  replaceFileInput: false,
-  createAction: 'assets/upload',
-  replaceAction: 'assets/replace-file',
-  deleteAction: 'assets/delete-asset',
-};
-
-/**
- * Uploader — a port of `Craft.Uploader` onto {@link BaseUploader}. Wires the
- * blueimp jQuery File Upload plugin (`$element.fileupload(...)`) to Craft's
- * validation (allowed kinds, max size, field limits) before submitting each
- * file. The default uploader class for `Craft.createUploader`.
- */
+/** Native file selection and Uppy drop targets feeding Craft upload sessions. */
 export class Uploader extends BaseUploader {
-  uploader: any = null;
-  _totalFileCounter = 0;
-  _validFileCounter = 0;
-  _onFileAdd: any = null;
+  private selectionCount = 0;
+  private rejectedFiles: string[] = [];
+  private picker: Uppy | null = null;
+  private listeners = new AbortController();
+  private inputAccept = new Map<HTMLInputElement, string>();
+  private dropZones: HTMLElement[] = [];
+  private destroyed = false;
+  private uploads = new UploadQueue();
 
-  static override get defaults(): any {
-    return {...DEFAULTS, maxFileSize: Craft.maxUploadSize};
+  static get defaults(): UploaderSettings {
+    return {
+      url: store.url(),
+      maxFileSize: Craft.maxAssetUploadSize,
+    };
   }
 
-  constructor($element?: any, settings?: any) {
-    super();
-    if (new.target === Uploader) {
-      this.init($element, settings);
-    }
+  constructor(element: HTMLElement, settings: UploaderSettings = {}) {
+    super(element, {...Uploader.defaults, ...settings});
+    this.createPicker();
   }
 
-  override init($element: any, settings: any): void {
-    settings = $.extend({}, Uploader.defaults, settings);
-    super.init($element, settings);
-    delete this.settings.events;
-
-    this.uploader = this.$element.fileupload(this.settings);
-
-    Object.entries(this.events).forEach(([name, handler]) => {
-      this.$element.on(name, handler);
-    });
-
-    this._onFileAdd = this.onFileAdd.bind(this);
-    this.$element.on('fileuploadadd', this._onFileAdd);
-  }
-
-  /**
-   * Set uploader parameters.
-   */
-  override setParams(paramObject: any): void {
-    super.setParams(paramObject);
-
-    // Only set params if the uploader has been initialized
-    // It won't be if the input is disabled
-    if (this.uploader.data('blueimpFileupload')) {
-      this.uploader.fileupload('option', {formData: this.formData});
-    }
-  }
-
-  /**
-   * Get the number of uploads in progress.
-   */
-  override getInProgress(): number {
-    return this.uploader.fileupload('active');
-  }
-
-  /**
-   * Called on file add.
-   */
-  onFileAdd(e: any, data: any): boolean {
-    e.stopPropagation();
-
-    let validateExtension = false;
-
-    if (this.allowedKinds) {
-      if (!this._extensionList) {
-        this._createExtensionList();
+  private createPicker(): void {
+    const inputs = [
+      ...new Set(
+        [this.settings.fileInput ?? this.element]
+          .flat()
+          .flatMap((element) =>
+            element instanceof HTMLInputElement && element.type === 'file'
+              ? [element]
+              : Array.from(
+                  element.querySelectorAll<HTMLInputElement>('input[type=file]')
+                )
+          )
+      ),
+    ];
+    const {allowedKinds} = this.settings;
+    const allowedFileTypes: string[] = allowedKinds?.length
+      ? allowedKinds
+          .flatMap((kind) => Craft.fileKinds[kind]?.extensions ?? [])
+          .map((extension: string) => `.${extension}`)
+      : inputs.flatMap((input) =>
+          input.accept
+            .split(',')
+            .map((type) => type.trim())
+            .filter(Boolean)
+        );
+    const picker = (this.picker = new Uppy({
+      autoProceed: false,
+      restrictions: {
+        maxFileSize: this.settings.maxFileSize,
+        allowedFileTypes:
+          allowedFileTypes.length || allowedKinds?.length
+            ? allowedFileTypes
+            : null,
+        maxNumberOfFiles:
+          inputs.length && inputs.every((input) => !input.multiple) ? 1 : null,
+      },
+      locale: {
+        pluralize: (count) => (count === 1 ? 0 : 1),
+        strings: {
+          exceedsSize: t('{file} exceeds the maximum allowed size of {size}.', {
+            file: '%{file}',
+            size: '%{size}',
+          }),
+          youCanOnlyUploadFileTypes: t('Allowed file types: {types}', {
+            types: '%{types}',
+          }),
+          youCanOnlyUploadX: {
+            0: t('You can only upload one file.'),
+            1: t('You can only upload {count} files.', {
+              count: '%{smart_count}',
+            }),
+          },
+          noDuplicates: t('The file “{filename}” has already been added.', {
+            filename: '%{fileName}',
+          }),
+        },
+      },
+    }));
+    picker.on('restriction-failed', (_file, error) => {
+      if (!this.destroyed) {
+        Craft.cp.displayError(error.message);
       }
-
-      validateExtension = true;
-    }
-
-    // Make sure that file API is there before relying on it
-    data.process().done(() => {
-      const file = data.files[0];
-      let pass = true;
-      if (validateExtension) {
-        const matches = file.name.match(/\.([a-z0-4_]+)$/i);
-        const fileExtension = matches[1];
-        if (
-          $.inArray(fileExtension.toLowerCase(), this._extensionList) === -1
-        ) {
-          pass = false;
-          this._rejectedFiles.type.push('“' + file.name + '”');
+    });
+    picker.on('files-added', (files) => {
+      if (this.destroyed) {
+        return;
+      }
+      const originalFiles = files.map((file) => file.data as File);
+      picker.removeFiles(files.map((file) => file.id));
+      this.selectionCount = 0;
+      try {
+        for (const file of originalFiles) {
+          this.acceptFile(file, originalFiles);
+        }
+      } finally {
+        this.selectionCount = 0;
+        if (this.rejectedFiles.length) {
+          Craft.cp.displayError(
+            t(
+              this.rejectedFiles.length === 1
+                ? 'The file {files} could not be uploaded, because the field limit has been reached.'
+                : 'The files {files} could not be uploaded, because the field limit has been reached.',
+              {files: this.rejectedFiles.join(', ')}
+            )
+          );
+          this.rejectedFiles = [];
         }
       }
-
-      if (file.size > this.settings.maxFileSize) {
-        this._rejectedFiles.size.push('“' + file.name + '”');
-        pass = false;
-      }
-
-      // If the validation has passed for this file up to now, check if we're not hitting any limits
-      if (
-        pass &&
-        this.settings.canAddMoreFiles instanceof Function &&
-        !this.settings.canAddMoreFiles(this._validFileCounter)
-      ) {
-        this._rejectedFiles.limit.push('“' + file.name + '”');
-        pass = false;
-      }
-
-      if (pass) {
-        this._validFileCounter++;
-        data.submit();
-      }
-
-      if (++this._totalFileCounter === data.originalFiles.length) {
-        this._totalFileCounter = 0;
-        this._validFileCounter = 0;
-        this.processErrorMessages();
-      }
     });
 
-    return true;
+    for (const input of inputs) {
+      this.inputAccept.set(input, input.accept);
+      if (allowedFileTypes.length) {
+        input.accept = allowedFileTypes.join(',');
+      }
+      input.addEventListener(
+        'change',
+        () => {
+          if (input.disabled) {
+            return;
+          }
+          const files = Array.from(input.files ?? []);
+          input.value = '';
+          this.addFiles(files);
+        },
+        {signal: this.listeners.signal}
+      );
+    }
+
+    this.dropZones = [this.settings.dropZone ?? []].flat();
+    this.dropZones.forEach((target, index) => {
+      picker.use(DropTarget, {id: `DropTarget-${index}`, target});
+    });
+    for (const target of [this.settings.pasteZone ?? []].flat()) {
+      target.addEventListener(
+        'paste',
+        (event) => {
+          const files = Array.from(event.clipboardData?.files ?? []);
+          if (files.length) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.addFiles(files);
+          }
+        },
+        {signal: this.listeners.signal}
+      );
+    }
+  }
+
+  addFiles(files: File[]): void {
+    if (this.destroyed) {
+      return;
+    }
+    this.picker!.addFiles(
+      files.map((file) => ({name: file.name, type: file.type, data: file}))
+    );
+  }
+
+  acceptFile(
+    file: File,
+    originalFiles: File[] = [file]
+  ): UploadControls | undefined {
+    if (this.destroyed) {
+      return;
+    }
+    const slotsTaken = this.settings.enqueueUpload
+      ? this.selectionCount
+      : this.inProgress;
+    if (
+      this.settings.canAddMoreFiles &&
+      !this.settings.canAddMoreFiles(slotsTaken)
+    ) {
+      this.rejectedFiles.push(`“${file.name}”`);
+      return;
+    }
+
+    this.selectionCount++;
+    if (this.settings.enqueueUpload) {
+      this.settings.enqueueUpload(file, originalFiles);
+    } else {
+      return this.uploadFile(file, originalFiles);
+    }
+  }
+
+  private uploadFile(file: File, originalFiles: File[]): UploadControls {
+    const upload = {
+      file,
+      originalFiles,
+      cancel: () => this.uploads.cancel(job),
+      retry: () => this.uploads.retry(job),
+    };
+    const job = this.uploads.add(
+      file,
+      {
+        url: this.settings.url!,
+        parameters: {
+          ...this.formData,
+          ...(this.settings.replace ? {operation: 'replace'} : {}),
+        },
+        csrfToken: Craft.csrfTokenValue,
+      },
+      undefined,
+      {
+        queued: () => {
+          if (++this.inProgress === 1) {
+            this.uploadCallbacks.start?.();
+          }
+        },
+        progress: (loaded, total) =>
+          this.uploadCallbacks.progress?.({loaded, total}),
+        done: (result) => this.uploadCallbacks.done?.({...upload, result}),
+        fail: (error, canceled) => {
+          if (!this.destroyed) {
+            this.uploadCallbacks.fail?.({...upload, error, canceled});
+          }
+        },
+        settled: () => {
+          if (!this.destroyed) {
+            this.uploadCallbacks.settled?.(upload);
+          }
+
+          this.inProgress--;
+          if (!this.destroyed) {
+            if (this.inProgress === 0) {
+              this.uploadCallbacks.stop?.();
+            }
+          }
+        },
+      }
+    );
+    return upload;
   }
 
   override destroy(): void {
-    if (this.uploader.fileupload('instance')) {
-      this.uploader.fileupload('destroy');
+    this.destroyed = true;
+    void this.uploads.cancelAll();
+
+    this.listeners.abort();
+    this.picker?.destroy();
+    this.picker = null;
+    for (const [input, accept] of this.inputAccept) {
+      input.accept = accept;
     }
-
-    this.$element.off('fileuploadadd', this._onFileAdd);
-
-    Object.entries(this.events).forEach(([name, handler]) => {
-      this.$element.off(name, handler);
-    });
+    this.inputAccept.clear();
+    for (const target of this.dropZones) {
+      target.classList.remove('uppy-is-drag-over');
+    }
   }
 }
