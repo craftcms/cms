@@ -8,7 +8,6 @@ use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\fs\Local;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Data\FsListing;
-use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\FormContext;
@@ -51,20 +50,33 @@ it('registers legacy filesystem handles as disks for native volume operations', 
         ->and($volume->sourceDisk()->get('legacy.txt'))->toBe('legacy');
 });
 
-it('rejects Laravel disks that conflict with legacy filesystem handles', function() {
+it('preserves configured Laravel disks that match legacy filesystem handles', function() {
     app(ProjectConfig::class)->set('fs.legacy-volume', [
         'name' => 'Legacy Volume',
         'type' => LegacyFilesystemCompatibilityTestFs::class,
         'settings' => [],
     ]);
     app(LegacyFilesystems::class)->reset();
-    config()->set('filesystems.disks.legacy-volume', [
-        'driver' => 'local',
-        'root' => sys_get_temp_dir(),
-    ]);
+    Storage::disk('legacy-volume');
 
-    expect(fn() => app(LegacyFilesystems::class)->syncDisks())
-        ->toThrow(FilesystemException::class, 'conflicts with a legacy Craft filesystem handle');
+    $diskConfig = [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/legacy-volume-disk'),
+    ];
+    config()->set('filesystems.disks.legacy-volume', $diskConfig);
+
+    $filesystems = app(LegacyFilesystems::class);
+    $filesystems->syncDisks();
+    $volume = new Volume(['fs' => 'legacy-volume']);
+
+    expect(config('filesystems.disks.legacy-volume'))->toBe($diskConfig)
+        ->and(config('filesystems.disks.craft-fs-legacy-volume._craft'))->toBeTrue()
+        ->and($volume->sourceDisk()->getConfig()['root'])->toBe($diskConfig['root']);
+
+    $filesystems->registerDisk('legacy-volume');
+
+    expect(config('filesystems.disks.legacy-volume'))->toBe($diskConfig)
+        ->and($volume->sourceDisk()->getConfig()['root'])->toBe($diskConfig['root']);
 });
 
 it('keeps the Craft 5 filesystem classes in the Yii adapter', function() {

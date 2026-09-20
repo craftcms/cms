@@ -1,15 +1,36 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
   import {router} from '@inertiajs/vue3';
   import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
-  import {upload} from '@actions/Assets/UploadController';
+  import ResolveUploadConflictController from '@/actions/CraftCms/Cms/Http/Controllers/Assets/ResolveUploadConflictController';
+  import {deleteAsset} from '@/actions/CraftCms/Cms/Http/Controllers/Assets/ActionController';
+  import {store} from '@/routes/craft/actions/craft/cp/uploads';
+  import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
+  import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
+  import {PromptHandler} from '@/modules/prompt-handler/prompt-handler';
+  import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
-  declare const $: any;
+  import {Uploader as FileUploader} from '@/modules/uploader/uploader';
 
   interface Uploader {
     destroy(): void;
     isLastUpload(): boolean;
     setParams(params: Record<string, unknown>): void;
+  }
+
+  type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
+
+  interface ConflictPrompt extends UploadResult {
+    assetId: number;
+    filename: string;
+    conflict: string;
+    choice?: string;
+    prompt: {
+      message: string;
+      choices: {value: string; title: string}[];
+      modalSettings: {hideOnEsc: boolean; hideOnShadeClick: boolean};
+    };
   }
 
   // `withDefaults`, because Vue casts an absent optional Boolean prop to
@@ -19,6 +40,9 @@
     defineProps<{
       canUpload: boolean;
       folderId?: number;
+      allowedKinds?: string[];
+      /** Assets index uploads belong to the application queue when a destination is supplied. */
+      destination?: AssetUploadDestination;
       /**
        * An element that also accepts dropped files. The asset index doesn't
        * set one — its drop target is the whole page, handled elsewhere — but
@@ -40,13 +64,84 @@
   );
 
   const emit = defineEmits<{
-    /** One completed upload, as `assets/upload` reported it. */
+    /** One completed upload, as the upload session reported it. */
     (event: 'uploaded', asset: {id: number; label: string}): void;
   }>();
 
   const fileInput = ref<HTMLInputElement>();
   const enabled = computed(() => props.canUpload && !!props.folderId);
+  const promptHandler = new PromptHandler(
+    () =>
+      fileInput.value?.closest<HTMLElement>('craft-element-selector-modal') ??
+      document.body
+  );
   let uploader: Uploader | null = null;
+
+  function reportUploaded(result: UploadResult): void {
+    if (!result.assetId) {
+      return;
+    }
+
+    emit('uploaded', {
+      id: Number(result.assetId),
+      label: String(result.filename ?? result.assetId),
+    });
+  }
+
+  function queueConflict(result: Omit<ConflictPrompt, 'prompt'>): void {
+    promptHandler.addPrompt({
+      ...result,
+      prompt: {
+        message: result.conflict,
+        choices: [
+          {value: 'keepBoth', title: t('Keep both')},
+          {value: 'replace', title: t('Replace it')},
+        ],
+        modalSettings: {hideOnEsc: false, hideOnShadeClick: false},
+      },
+    });
+  }
+
+  function finishUploads(): void {
+    promptHandler.resetPrompts();
+
+    if (props.reloadOnComplete) {
+      router.reload({only: ['data', 'pagination']});
+    }
+  }
+
+  async function resolveConflicts(conflicts: ConflictPrompt[]): Promise<void> {
+    try {
+      for (const conflict of conflicts) {
+        if (conflict.choice === 'keepBoth') {
+          reportUploaded({
+            ...conflict,
+            filename: conflict.suggestedFilename ?? conflict.filename,
+          });
+        } else if (conflict.choice === 'replace') {
+          const target = conflict.conflictingAssetId
+            ? {assetId: conflict.conflictingAssetId}
+            : {targetFilename: conflict.filename};
+          const {data} = await actionClient.post<UploadResult>(
+            ResolveUploadConflictController.url(),
+            {sourceAssetId: Number(conflict.assetId), ...target}
+          );
+
+          reportUploaded(data);
+        } else {
+          await actionClient.post(deleteAsset.url(), {
+            assetId: Number(conflict.assetId),
+          });
+        }
+      }
+    } catch (error) {
+      Craft.cp?.displayError?.(
+        error instanceof Error ? error.message : t('Upload failed.')
+      );
+    } finally {
+      finishUploads();
+    }
+  }
 
   function createUploader(): void {
     uploader?.destroy();
@@ -56,50 +151,52 @@
       return;
     }
 
-    const input = $(fileInput.value);
+    const input = fileInput.value;
+    const destination = props.destination ? {...props.destination} : null;
 
-    uploader = Craft.createUploader(null, input, {
+    uploader = new FileUploader(input, {
       fileInput: input,
-      // Files dropped on the caller's container upload as if picked, which is
-      // what makes a relation field a drop target.
-      ...(props.dropZone ? {dropZone: $(props.dropZone)} : {}),
-      url: upload.url(),
-      events: {
-        // jQuery File Upload calls this as `(event, data)` with the parsed
-        // response on `data.result`; the CustomEvent branch covers an uploader
-        // class that re-dispatches natively instead.
-        fileuploaddone: (event: Event, data: any = null) => {
+      allowedKinds: props.allowedKinds,
+      ...(props.dropZone ? {dropZone: props.dropZone} : {}),
+      url: store.url(),
+      ...(destination
+        ? {
+            enqueueUpload: (file: File, selection: File[]) =>
+              assetUploadQueue.enqueue(file, destination, selection),
+          }
+        : {}),
+      on: {
+        start: () => promptHandler.resetPrompts(),
+        done: ({result}: {result: UploadResult}) => {
           Craft.cp?.runQueue?.();
 
-          // `assets/upload` answers with the new asset's id and filename. A
-          // filename conflict answers with `conflict` instead and is resolved
-          // separately, so there is nothing to attach yet.
-          const result =
-            event instanceof CustomEvent && event.detail
-              ? event.detail
-              : (data?.result ?? data?.jqXHR?.responseJSON);
+          if (result.assetId && result.filename && result.conflict) {
+            queueConflict(result as Omit<ConflictPrompt, 'prompt'>);
+          } else {
+            reportUploaded(result);
+          }
+        },
+        fail: ({error, canceled}) => {
+          if (!canceled) {
+            Craft.cp?.displayError?.(
+              error instanceof Error ? error.message : t('Upload failed.')
+            );
+          }
+        },
+        settled: () => {
+          if (!uploader?.isLastUpload()) {
+            return;
+          }
 
-          if (result?.assetId && !result?.conflict) {
-            emit('uploaded', {
-              id: Number(result.assetId),
-              label: String(result.filename ?? result.assetId),
+          if (promptHandler.getPromptCount()) {
+            promptHandler.showBatchPrompts((conflicts) => {
+              void resolveConflicts(conflicts as ConflictPrompt[]);
             });
+          } else {
+            finishUploads();
           }
         },
-        fileuploadfail: (event: Event, data: any = null) => {
-          const response =
-            event instanceof CustomEvent && event.detail
-              ? event.detail
-              : data?.jqXHR?.responseJSON;
-
-          Craft.cp?.displayError?.(response?.message ?? t('Upload failed.'));
-        },
-        fileuploadalways: () => {
-          if (uploader?.isLastUpload() && props.reloadOnComplete) {
-            router.reload({only: ['data', 'pagination']});
-          }
-        },
-      },
+      } satisfies UploaderCallbacks,
     }) as Uploader;
 
     uploader.setParams({folderId: props.folderId});
@@ -111,7 +208,15 @@
   // unrelated invalidations — each of which tears the uploader down and, if
   // the input isn't resolvable at that moment, leaves it null.
   watch(
-    [() => props.canUpload, () => props.folderId, () => props.dropZone],
+    [
+      () => props.canUpload,
+      () => props.folderId,
+      () => props.allowedKinds,
+      () => props.dropZone,
+      () => props.destination?.folderId,
+      () => props.destination?.url,
+      () => props.destination?.label,
+    ],
     createUploader
   );
   onBeforeUnmount(() => uploader?.destroy());
