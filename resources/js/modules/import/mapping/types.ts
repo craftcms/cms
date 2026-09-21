@@ -57,6 +57,21 @@ export interface MappingGroup {
   destinationCols: MappingColEntry[];
 }
 
+/**
+ * One import step, as the edit screen holds it and as it's posted to the server.
+ *
+ * A step is only ever persisted as part of its import, so the mapping endpoints are
+ * handed the draft step itself rather than a UID to look up.
+ */
+export interface StepPayload {
+  uid: string;
+  type: string | null;
+  file: string | null;
+  transformer: string | null;
+  batchSize: number | null;
+  settings: Record<string, unknown>;
+}
+
 /** The four parallel trees the mapping screen edits, all keyed alike. */
 export interface MappingValues {
   map: Record<string, unknown>;

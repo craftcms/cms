@@ -71,10 +71,13 @@ class EntryImporter extends ElementImporter
                     ->reactive())
                     ->instructions(t('The section to import into.')),
                 Group::make('entry-type-group', [
+                    // reactive: choosing an entry type is what resolves the field layout,
+                    // which the step's mapping is gated on
                     FormField::make(t('Entry Type'), Choice::make('entryType')
                         ->value($this->entryType)
                         ->placeholder(t('Please select'))
-                        ->options($this->availableEntryTypes()))
+                        ->options($this->availableEntryTypes())
+                        ->reactive())
                         ->instructions(t('The entry type to import into.')),
                 ])
                     ->dependsOn('settings.section')

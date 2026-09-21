@@ -7,17 +7,16 @@ namespace CraftCms\Cms\Import;
 use CraftCms\Cms\Asset\Import\AssetImporter;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Import\EntryImporter;
-use CraftCms\Cms\Import\Data\ImportRun;
+use CraftCms\Cms\Import\Data\Import as ImportData;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
 use CraftCms\Cms\Import\DataTypes\Xml;
 use CraftCms\Cms\Import\Events\DataImported;
 use CraftCms\Cms\Import\Events\DataImporting;
-use CraftCms\Cms\Import\Events\ImportRunDispatched;
-use CraftCms\Cms\Import\Events\ImportRunDispatching;
+use CraftCms\Cms\Import\Events\ImportDispatched;
+use CraftCms\Cms\Import\Events\ImportDispatching;
 use CraftCms\Cms\Import\Events\RegisterDataTypes;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
-use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
@@ -37,11 +36,13 @@ use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
 class Import
 {
     public function __construct(
-        private readonly ImportConfig $importConfig,
+        private readonly Imports $imports,
     ) {}
 
     /**
@@ -124,47 +125,59 @@ class Import
     }
 
     /**
-     * Resolves each step's config/file into a queued Import job, fires dispatching/dispatched events, and dispatches an ImportPipeline job chain.
+     * Resolves each of the import's steps into a queued Import job, fires
+     * dispatching/dispatched events, and dispatches an ImportPipeline job chain.
      *
-     * @param  ImportRun  $run  The import run to dispatch.
+     * @param  ImportData  $import  The import to dispatch.
      */
-    public function dispatchImport(ImportRun $run): bool
+    public function dispatchImport(ImportData $import): bool
     {
         $steps = [];
 
-        // for each step in the $run
-        foreach ($run->steps as $key => $step) {
-            $importerConfig = $this->importConfig->getConfigByUid($step['config']) ?? $this->importConfig->getConfigByHandle($step['config']);
-            if (! $importerConfig) {
-                throw new InvalidConfigException($step['config']);
-            }
-
-            $file = $importerConfig->file ?? $step['file'];
-            $filePath = BaseImporter::resolvedFilePath($file);
+        // for each step in the $import
+        foreach ($import->steps as $key => $step) {
+            $importer = $this->imports->createImporter($step);
+            $filePath = BaseImporter::resolvedFilePath($importer->file);
 
             // name for this batch of jobs
-            $steps[$key]['name'] = $importerConfig->name;
-            $steps[$key]['job'] = new ImportJob($step, $filePath, 0);
-
+            $steps[$key]['name'] = self::stepLabel($import, $step);
+            $steps[$key]['job'] = new ImportJob($import->uid ?? $import->handle, $step['uid'], $filePath, 0);
         }
 
-        event($event = new ImportRunDispatching($steps, $run));
+        event($event = new ImportDispatching($steps, $import));
 
         if (! $event->isValid) {
             return false;
         }
 
         $steps = $event->steps;
-        $run = $event->run;
+        $import = $event->import;
 
         // todo (iwona): think about scheduling batch pruning
 
         // we need to go through a single job because we want to name our chain
-        dispatch(new ImportPipeline($steps, $run));
+        dispatch(new ImportPipeline($steps, $import));
 
-        event(new ImportRunDispatched($steps, $run));
+        event(new ImportDispatched($steps, $import));
 
         return true;
+    }
+
+    /**
+     * Returns a human-readable label for one of an import's steps.
+     *
+     * @param  ImportData  $import  The import the step belongs to.
+     * @param  array  $step  The step to label.
+     */
+    public static function stepLabel(ImportData $import, array $step): string
+    {
+        $type = $step['type'] ?? null;
+
+        return sprintf(
+            '%s: %s',
+            $import->name,
+            is_string($type) && class_exists($type) ? $type::displayName() : t('Unknown importer'),
+        );
     }
 
     /**
@@ -379,12 +392,11 @@ class Import
         return false;
     }
 
-    // todo (iwona): might be able to delete this; currently only used by ImportConfigController::run()
     /**
-     * Reads and formats the importer's source file, then imports each item one by one.
-     * It's used by ImportConfigController::run() (which we might delete).
+     * Reads and formats the importer's source file, then imports each item one by one,
+     * synchronously. Queued imports go through `dispatchImport()` instead.
      *
-     * @param  BaseImporter  $importer  The importer config to use.
+     * @param  BaseImporter  $importer  The importer to use.
      */
     public function import(BaseImporter $importer): void
     {

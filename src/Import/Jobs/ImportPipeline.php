@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
-use CraftCms\Cms\Import\Data\ImportRun;
+use CraftCms\Cms\Import\Data\Import as ImportData;
 use CraftCms\Cms\Queue\Job;
 use Illuminate\Support\Facades\Bus;
 use Override;
@@ -14,14 +14,14 @@ use function CraftCms\Cms\t;
 class ImportPipeline extends Job
 {
     /**
-     * Promotes steps and run, then calls the parent constructor.
+     * Promotes steps and import, then calls the parent constructor.
      *
      * @param  array  $steps  The steps to run in this pipeline.
-     * @param  ImportRun  $run  The import run this pipeline belongs to.
+     * @param  ImportData  $import  The import this pipeline belongs to.
      */
     public function __construct(
         public array $steps,
-        public ImportRun $run,
+        public ImportData $import,
     ) {
         parent::__construct();
     }
@@ -48,6 +48,6 @@ class ImportPipeline extends Job
     #[Override]
     protected function defaultDescription(): string
     {
-        return t("Importing “{$this->run->name}” run data");
+        return t("Importing “{$this->import->name}” data");
     }
 }

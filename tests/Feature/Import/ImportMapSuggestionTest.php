@@ -10,7 +10,7 @@ use CraftCms\Cms\Tests\Support\ImportFixtures;
 
 /**
  * Builds matrixOuter > withMatrix > matrixInner > withPlainText, and collects its destination
- * columns the way the mapping screen and ImportConfigController::nestedMappingCols() do — one
+ * columns the way the mapping screen and ImportController::nestedMappingCols() do — one
  * level per request, each nested level prefixed with its container's prefixedHandle.
  */
 function nestedMatrixDestinationCols(): array

@@ -38,11 +38,11 @@ it('reads a quoted value containing a comma as one field', function () {
 
 // getHeadings()
 
-it('returns the heading row as sorted label/value pairs', function () {
+it('returns the heading row as sorted label/value pairs, each hinting at its first value', function () {
     $result = Csv::getHeadings(CSV);
 
     expect($result)->toBe([
-        ['label' => 'plainText', 'value' => 'plainText'],
-        ['label' => 'title', 'value' => 'title'],
+        ['label' => 'plainText', 'value' => 'plainText', 'data' => ['hint' => 'text one']],
+        ['label' => 'title', 'value' => 'title', 'data' => ['hint' => 'first entry']],
     ]);
 });

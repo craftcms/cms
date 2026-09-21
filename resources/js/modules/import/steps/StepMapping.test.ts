@@ -1,28 +1,37 @@
 import {createApp, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {applySuggestions, cloneValues} from '@/modules/import/mapping/paths';
 import type {
   MappingCol,
   MappingColEntry,
   MappingValues,
+  StepPayload,
   SuggestedMap,
 } from '@/modules/import/mapping/types';
-import MappingSection from './MappingSection.vue';
+import StepMapping from './StepMapping.vue';
 
 const state = vi.hoisted(() => ({
-  save: vi.fn(),
+  layout: vi.fn(),
   openNested: vi.fn(),
+  context: null as any,
 }));
 
-vi.mock('@/modules/settings/composables/useSettingsSave', () => ({
-  useSettingsSave: (...args: unknown[]) => {
-    state.save(...args);
-
-    return {save: vi.fn()};
+vi.mock('@/common/composables/useAppLayout', () => ({
+  useAppLayout: (options: unknown) => {
+    state.layout(options instanceof Function ? options() : options);
   },
+}));
+
+vi.mock('@/common/slideouts', () => ({
+  useSlideout: () => null,
 }));
 
 vi.mock('@/modules/import/mapping/nested-mapping', () => ({
   openNestedMapping: state.openNested,
+}));
+
+vi.mock('./step-mapping', () => ({
+  takeStepMappingContext: () => state.context,
 }));
 
 function col(
@@ -60,6 +69,21 @@ const outerMatrix = col({
   canBeCleared: true,
 });
 
+const step: StepPayload = {
+  uid: 'step-uid',
+  type: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter',
+  file: 'people.csv',
+  transformer: null,
+  batchSize: null,
+  settings: {},
+};
+
+const urls = {
+  settingsUrl: '/actions/import/step-settings',
+  mappingUrl: '/actions/import/step-mapping',
+  nestedColsUrl: '/actions/import/nested-mapping-cols',
+};
+
 function emptyValues(): MappingValues {
   return {
     map: {},
@@ -69,18 +93,14 @@ function emptyValues(): MappingValues {
   };
 }
 
+let applied: MappingValues | null;
+
 function mount(
   destinationCols: MappingColEntry[],
   values: MappingValues = emptyValues(),
-  suggestions: SuggestedMap = {}
+  suggestedMap: SuggestedMap = {}
 ) {
-  app = createApp(MappingSection, {
-    config: {
-      uid: 'import-uid',
-      handle: 'people',
-      name: 'People',
-      file: 'people.csv',
-    },
+  state.context = {
     destinationCols,
     sourceDataCols: [
       {label: 'Please select', value: ''},
@@ -88,20 +108,23 @@ function mount(
       {label: 'Email', value: 'email'},
     ],
     values,
-    suggestions,
-    submit: {method: 'post', url: '/actions/import/configs/save-map'},
-    nestedColsUrl: '/actions/import/configs/nested-mapping-cols',
-    readOnly: false,
-    canSave: true,
-  });
+    suggestedMap,
+    editable: true,
+    step,
+    urls,
+    apply: (next: MappingValues) => (applied = next),
+  };
+
+  app = createApp(StepMapping, {contextId: 'ctx', title: 'Edit mapping'});
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
 }
 
-/** What the section would post right now. It copies its props, so this is the
- * only faithful view of its state. */
-function posted(): MappingValues & {importUid: string} {
-  return state.save.mock.calls[0]![2].transform();
+/** What the panel would hand back to the step right now. */
+function apply(): MappingValues {
+  state.layout.mock.calls.at(-1)![0].onSave();
+
+  return applied!;
 }
 
 /** The `td`s of the first body row, in column order. */
@@ -127,12 +150,39 @@ function toggleCheckbox(column: 'match' | 'clear', checked = true): void {
   );
 }
 
+/**
+ * `craft-combobox` rejects a value that doesn't match one of its options, and it only
+ * renders those an animation frame or so after mounting, so the tests below have to
+ * let it settle before reading or writing its value.
+ */
+function settle(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 50));
+}
+
+/** The combobox in the first row's Incoming data cell. */
+function combobox(): HTMLElement & {modelValue?: string} {
+  return cells()[0]!.querySelector(
+    'craft-combobox'
+  ) as unknown as HTMLElement & {modelValue?: string};
+}
+
+/** Picks a source column the way `craft-combobox` reports one. */
+function chooseSource(value: string): void {
+  const host = combobox();
+  host.modelValue = value;
+
+  host.dispatchEvent(
+    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
+  );
+}
+
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.save.mockClear();
+  state.layout.mockClear();
   state.openNested.mockReset();
+  applied = null;
   container = document.createElement('div');
   document.body.append(container);
 });
@@ -144,29 +194,12 @@ afterEach(() => {
 
 it('writes a chosen source column to the destination column’s path', async () => {
   mount([title]);
+  await settle();
 
-  const select = container.querySelector('select')!;
-  select.value = 'name';
-  select.dispatchEvent(new Event('change'));
+  chooseSource('name');
   await nextTick();
 
-  expect(posted().map).toEqual({title: 'name'});
-});
-
-it('keeps edits to trees the server sent as empty arrays', () => {
-  // PHP has one array type, so an empty tree arrives as `[]`, not `{}`. Writing a
-  // handle key onto a JS array works in memory but is dropped by JSON.stringify, so
-  // the edit would never reach the server.
-  mount([title], {
-    map: {},
-    matchCriteria: [],
-    clearableItems: [],
-    keepMissingNestedElements: [],
-  } as unknown as MappingValues);
-
-  toggleCheckbox('match');
-
-  expect(posted().matchCriteria).toEqual({title: '1'});
+  expect(apply().map).toEqual({title: 'name'});
 });
 
 it('keeps the Match and Clear columns on their own trees', () => {
@@ -175,8 +208,8 @@ it('keeps the Match and Clear columns on their own trees', () => {
   toggleCheckbox('match');
   toggleCheckbox('clear');
 
-  expect(posted().matchCriteria).toEqual({body: '1'});
-  expect(posted().clearableItems).toEqual({body: '1'});
+  expect(apply().matchCriteria).toEqual({body: '1'});
+  expect(apply().clearableItems).toEqual({body: '1'});
 });
 
 it('offers no Match or Clear on a container row', () => {
@@ -201,11 +234,10 @@ it('leaves the option cells empty when neither applies', () => {
   expect(clear!.textContent!.trim()).toBe('');
 });
 
-it('posts the mapping trees alongside the config UID', () => {
+it('hands the step’s mapping trees back on apply', () => {
   mount([title], {...emptyValues(), map: {title: 'name'}});
 
-  expect(posted()).toEqual({
-    importUid: 'import-uid',
+  expect(apply()).toEqual({
     map: {title: 'name'},
     matchCriteria: {},
     clearableItems: {},
@@ -213,48 +245,54 @@ it('posts the mapping trees alongside the config UID', () => {
   });
 });
 
-it('shows a container column’s nested mapping rather than a source select', () => {
+it('opens a container column’s nested mapping against the draft step', () => {
   mount([outerMatrix]);
 
-  expect(container.querySelector('select')).toBeNull();
+  expect(container.querySelector('craft-combobox')).toBeNull();
 
   container.querySelector('craft-button')!.dispatchEvent(new Event('click'));
 
   expect(state.openNested).toHaveBeenCalledOnce();
   expect(state.openNested.mock.calls[0]![0]).toMatchObject({
     col: outerMatrix,
-    importUid: 'import-uid',
-    colsUrl: '/actions/import/configs/nested-mapping-cols',
+    step,
+    colsUrl: urls.nestedColsUrl,
     editable: true,
   });
 });
 
-it('fills in a suggested source column and flags it as a best guess', () => {
-  mount([title], emptyValues(), {title: 'name'});
+it('shows a suggested source column and flags it as a best guess', async () => {
+  mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
+  await settle();
 
-  const select = container.querySelector('select')!;
-
-  expect(select.value).toBe('name');
-  expect(select.closest('td')!.classList).toContain('best-guess');
-});
-
-it('leaves an already-mapped column alone rather than flagging it as a guess', () => {
-  mount([title], {...emptyValues(), map: {title: 'email'}}, {title: 'name'});
-
-  const select = container.querySelector('select')!;
-  expect(select.value).toBe('email');
-  expect(select.closest('td')!.classList).not.toContain('best-guess');
+  expect(combobox().modelValue).toBe('name');
+  expect(cells()[0]!.classList).toContain('best-guess');
 });
 
 it('clears the best-guess flag once the user chooses a column themselves', async () => {
-  mount([title], emptyValues(), {title: 'name'});
+  mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
+  await settle();
 
-  const select = container.querySelector('select')!;
-  select.value = 'email';
-  select.dispatchEvent(new Event('change'));
+  chooseSource('email');
   await nextTick();
 
-  expect(select.closest('td')!.classList).not.toContain('best-guess');
+  expect(cells()[0]!.classList).not.toContain('best-guess');
+});
+
+it('keeps a freshly guessed column flagged once the combobox settles', async () => {
+  // The context the way `step-mapping.ts` builds it: an empty map from the server,
+  // filled by the real `applySuggestions`. The other best-guess tests hand the flags
+  // in ready-made, which skips this — and it's where the flag was being lost.
+  const values = cloneValues(emptyValues());
+  const suggestedMap: SuggestedMap = {};
+  applySuggestions(values.map, {title: 'name'}, suggestedMap);
+
+  mount([title], values, suggestedMap);
+  await settle();
+
+  expect(combobox().modelValue).toBe('name');
+  expect(cells()[0]!.classList).toContain('best-guess');
+  expect(apply().map).toEqual({title: 'name'});
 });
 
 it('merges a nested panel’s result back into the trees', async () => {
@@ -262,17 +300,17 @@ it('merges a nested panel’s result back into the trees', async () => {
 
   container.querySelector('craft-button')!.dispatchEvent(new Event('click'));
 
-  const applied: MappingValues = {
+  const next: MappingValues = {
     ...emptyValues(),
     map: {outerMatrix: {outerEt: {title: 'name'}}},
     // A container's own keep decision lives under a reserved `__keep__` leaf.
     keepMissingNestedElements: {outerMatrix: {__keep__: '1'}},
   };
-  state.openNested.mock.calls[0]![0].apply(applied);
+  state.openNested.mock.calls[0]![0].apply(next);
   await nextTick();
 
-  expect(posted().map).toEqual(applied.map);
-  expect(posted().keepMissingNestedElements).toEqual(
-    applied.keepMissingNestedElements
+  expect(apply().map).toEqual(next.map);
+  expect(apply().keepMissingNestedElements).toEqual(
+    next.keepMissingNestedElements
   );
 });

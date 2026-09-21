@@ -8,23 +8,30 @@ use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Import\ImportConfig;
+use CraftCms\Cms\Import\Data\Import as ImportData;
+use CraftCms\Cms\Import\Imports;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-it('getSettingsRules excludes name/handle while getRules includes them', function () {
+it('getSettingsRules covers a step’s settings while getRules adds its file and transformer', function () {
     $settingsRules = ElementImporter::getSettingsRules();
     $fullRules = ElementImporter::getRules();
 
-    expect($settingsRules)->not->toHaveKey('name')
-        ->and($settingsRules)->not->toHaveKey('handle')
+    expect($settingsRules)->not->toHaveKey('file')
+        ->and($settingsRules)->not->toHaveKey('transformer')
         ->and($settingsRules)->toHaveKeys(['settings.map', 'settings.site'])
-        ->and($fullRules)->toHaveKeys(['name', 'handle', 'settings.map', 'settings.site']);
+        ->and($fullRules)->toHaveKeys(['file', 'transformer', 'settings.map', 'settings.site']);
 });
 
-it('validateSettings throws with settings-only errors for an ad-hoc importer missing file/site, even without a name/handle', function () {
+it('keeps the import’s own name and handle off the step rules', function () {
+    expect(ElementImporter::getRules())->not->toHaveKey('name')
+        ->and(ElementImporter::getRules())->not->toHaveKey('handle')
+        ->and(new ImportData()->getRules())->toHaveKeys(['name', 'handle', 'steps']);
+});
+
+it('validateSettings throws with settings-only errors for an ad-hoc importer missing file/site', function () {
     $importer = EntryImporter::create();
 
     try {
@@ -38,16 +45,15 @@ it('validateSettings throws with settings-only errors for an ad-hoc importer mis
     }
 });
 
-it('validate throws for an invalid importer, including missing name/handle', function () {
+it('validate throws for a step missing its file', function () {
     $importer = EntryImporter::create();
 
     try {
         $importer->validate();
         expect(false)->toBeTrue('Expected a ValidationException to be thrown.');
     } catch (ValidationException $e) {
-        expect($e->errors())->toHaveKey('name')
-            ->and($e->errors())->toHaveKey('handle')
-            ->and($e->errors())->toHaveKey('file');
+        expect($e->errors())->toHaveKey('file')
+            ->and($e->errors())->toHaveKey('settings.site');
     }
 });
 
@@ -123,16 +129,17 @@ it('validateTransformer still passes for a valid class, arrow function, and empt
         ->and($failing)->toHaveKey('transformer');
 });
 
-it('excludes an invalid file-based import config from getAllConfigs', function () {
+it('excludes an invalid file-based import from getAllImports', function () {
     Config::set('craft.import', [
-        'invalidFileConfig' => fn () => EntryImporter::create()
-            ->name('Invalid File Config')
-            ->handle('invalidFileConfig'),
+        'invalidFileImport' => fn () => new ImportData()
+            ->name('Invalid File Import')
+            ->handle('invalidFileImport')
+            ->steps([]),
     ]);
 
-    $importConfig = app(ImportConfig::class);
+    $imports = app(Imports::class);
 
-    expect($importConfig->getAllConfigs()->has('invalidFileConfig'))->toBeFalse()
-        ->and($importConfig->getNonEditableConfigs()->has('invalidFileConfig'))->toBeFalse()
-        ->and($importConfig->getConfigByHandle('invalidFileConfig'))->toBeNull();
+    expect($imports->getAllImports()->has('invalidFileImport'))->toBeFalse()
+        ->and($imports->getNonEditableImports()->has('invalidFileImport'))->toBeFalse()
+        ->and($imports->getImportByHandle('invalidFileImport'))->toBeNull();
 });

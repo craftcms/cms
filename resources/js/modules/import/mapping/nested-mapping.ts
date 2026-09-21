@@ -2,9 +2,10 @@
  * Opening a container column's mapping in a slideout panel.
  *
  * Opened with `openSlideoutWith()` rather than `openSlideout()`: the mapping being
- * edited is unsaved client state the map page already holds, with no URL to GET. The
- * server is asked only for the container's *structure* — which columns exist under it
- * — and the panel edits a copy of the screen's trees, handing them back on Apply.
+ * edited is unsaved client state the panel above already holds, with no URL to GET.
+ * The server is POSTed the draft step and asked only for the container's *structure*
+ * — which columns exist under it — and the panel edits a copy of the trees, handing
+ * them back on Apply. Nothing needs to have been saved for this to work.
  *
  * That copy is the whole set of trees rather than just the container's branch, so a
  * nested column's absolute `prefixedHandleAsArray` addresses the same place in the
@@ -18,6 +19,7 @@ import type {
   MappingGroup,
   MappingValues,
   SourceDataCol,
+  StepPayload,
   SuggestedMap,
 } from './types';
 
@@ -31,14 +33,15 @@ export interface NestedMappingContext {
   suggestedMap: SuggestedMap;
   editable: boolean;
   /** Carried through so a container inside the panel can open a panel of its own. */
-  importUid: string;
+  step: StepPayload;
   colsUrl: string;
   apply(values: MappingValues): void;
 }
 
 export interface OpenNestedMappingOptions {
   col: MappingCol;
-  importUid: string;
+  /** The draft step being mapped. Posted so the server can build its importer. */
+  step: StepPayload;
   /** Endpoint returning the container's destination columns. */
   colsUrl: string;
   values: MappingValues;
@@ -75,13 +78,11 @@ export async function openNestedMapping(
 ): Promise<boolean> {
   const {col} = options;
 
-  const {data} = await actionClient.get(options.colsUrl, {
-    params: {
-      importUid: options.importUid,
-      fieldUid: col.fieldUid ?? '',
-      fieldHandle: col.prefixedHandle,
-      fieldIsProperty: col.isProperty ? 1 : 0,
-    },
+  const {data} = await actionClient.post(options.colsUrl, {
+    step: options.step,
+    fieldUid: col.fieldUid ?? '',
+    fieldHandle: col.prefixedHandle,
+    fieldIsProperty: col.isProperty ? 1 : 0,
   });
 
   const [{openSlideoutWith}, {default: NestedMapping}] = await Promise.all([
@@ -106,7 +107,7 @@ export async function openNestedMapping(
     values,
     suggestedMap,
     editable: options.editable,
-    importUid: options.importUid,
+    step: options.step,
     colsUrl: options.colsUrl,
     apply: options.apply,
   });

@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\Facades\ImportConfig;
+use CraftCms\Cms\Support\Facades\Imports;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
@@ -106,7 +106,7 @@ class Element extends Command implements PromptsForMissingInput
             'settings' => $settings,
         ];
 
-        $importConfig = ImportConfig::createImporter($config);
+        $importConfig = Imports::createImporter($config);
 
         if ($matchCriteria) {
             $importConfig->matchCriteria($matchCriteria);

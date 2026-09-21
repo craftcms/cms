@@ -11,30 +11,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable(Table::IMPORT_CONFIGS)) {
-            Schema::create(Table::IMPORT_CONFIGS, function (Blueprint $table) {
-                $table->integer('id', true);
-                $table->string('type');
-                $table->string('name');
-                $table->string('handle');
-                $table->text('description')->nullable();
-                $table->string('file');
-                $table->string('transformer')->nullable();
-                $table->mediumText('settings')->nullable();
-                $table->dateTime('dateCreated');
-                $table->dateTime('dateUpdated');
-                $table->dateTime('dateDeleted')->nullable()->default(null);
-                $table->char('uid', 36)->default('0');
-            });
-        }
-
-        if (! Schema::hasTable(Table::IMPORT_RUNS)) {
-            Schema::create(Table::IMPORT_RUNS, function (Blueprint $table) {
+        if (! Schema::hasTable(Table::IMPORTS)) {
+            Schema::create(Table::IMPORTS, function (Blueprint $table) {
                 $table->integer('id', true);
                 $table->string('name');
                 $table->string('handle');
                 $table->text('description')->nullable();
-                $table->text('steps');
+                $table->mediumText('steps');
                 $table->dateTime('dateCreated');
                 $table->dateTime('dateUpdated');
                 $table->dateTime('dateDeleted')->nullable()->default(null);
@@ -45,7 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(Table::IMPORT_CONFIGS);
-        Schema::dropIfExists(Table::IMPORT_RUNS);
+        Schema::dropIfExists(Table::IMPORTS);
     }
 };

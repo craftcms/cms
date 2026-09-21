@@ -2,7 +2,7 @@
   import {actionClient} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
-  import {shallowRef, toRaw} from 'vue';
+  import {shallowRef, toRaw, watch} from 'vue';
   import {
     useAppLayout,
     type UseAppLayoutOptions,
@@ -24,6 +24,13 @@
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+    /**
+     * State the page owns outside the rendered form — a repeatable list edited in a
+     * slideout, say — posted alongside the form's own values and counted towards the
+     * unsaved-changes prompt. `transform` replaces the posted data wholesale, so the
+     * serialization below that backs the dirty check never reaches the server.
+     */
+    additionalData?: Record<string, unknown>;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -35,8 +42,24 @@
   const elevatedFields = props.elevatedFields;
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
+  if (props.additionalData !== undefined) {
+    watch(
+      () => props.additionalData,
+      (additionalData) => {
+        Object.assign(inertiaForm, {
+          __additionalData: JSON.stringify(additionalData),
+        });
+      },
+      {deep: true, immediate: true}
+    );
+    inertiaForm.defaults();
+  }
+
   const {save} = useSettingsSave(inertiaForm, () => props.submit, {
-    transform: () => renderer.value?.currentValues() ?? props.form.values,
+    transform: () => ({
+      ...(renderer.value?.currentValues() ?? props.form.values),
+      ...props.additionalData,
+    }),
     onSuccess: () => {
       elevatedBaseline.value = structuredClone(
         toRaw(renderer.value?.currentValues() ?? props.form.values)

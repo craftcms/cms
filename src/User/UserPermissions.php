@@ -766,41 +766,24 @@ class UserPermissions
             heading: t('Import'),
             permissions: collect([
                 new Permission(
-                    key: 'viewImportConfigs',
-                    label: t('View import configs'),
-                    info: t('Allows viewing existing import configs.'),
+                    key: 'viewImports',
+                    label: t('View imports'),
+                    info: t('Allows viewing existing imports.'),
                     nested: collect([
                         new Permission(
-                            key: 'saveImportConfigs',
-                            label: t('Save import configs'),
-                            info: t('Allows creating and saving import configs.'),
+                            key: 'saveImports',
+                            label: t('Save imports'),
+                            info: t('Allows creating and saving imports.'),
                         ),
                         new Permission(
-                            key: 'deleteImportConfigs',
-                            label: t('Delete import configs'),
-                            info: t('Allows deleting import configs.'),
-                        ),
-                    ])->filter(),
-                ),
-                new Permission(
-                    key: 'viewImportRuns',
-                    label: t('View import runs'),
-                    info: t('Allows viewing existing import runs.'),
-                    nested: collect([
-                        new Permission(
-                            key: 'saveImportRuns',
-                            label: t('Save import runs'),
-                            info: t('Allows creating and saving of import runs.'),
+                            key: 'deleteImports',
+                            label: t('Delete imports'),
+                            info: t('Allows deleting imports.'),
                         ),
                         new Permission(
-                            key: 'deleteImportRuns',
-                            label: t('Delete import runs'),
-                            info: t('Allows deleting import runs.'),
-                        ),
-                        new Permission(
-                            key: 'triggerImportRuns',
-                            label: t('Trigger import runs'),
-                            info: t('Allows user to trigger an Import Run.'),
+                            key: 'triggerImports',
+                            label: t('Run imports'),
+                            info: t('Allows user to run an import.'),
                         ),
                     ])->filter(),
                 ),

@@ -90,23 +90,11 @@ readonly class Navigation
                 ->icon('user-group'));
         }
 
-        if (Gate::check('viewImportConfigs') || Gate::check('viewImportRuns')) {
-            $subNavItems = collect();
-
-            if (Gate::check('viewImportConfigs')) {
-                $subNavItems->add(new NavItem()->label(t('Configs'))->url(cp_url('import/configs')));
-            }
-
-            if (Gate::check('viewImportRuns')) {
-                $subNavItems->add(new NavItem()->label(t('Runs'))->url(cp_url('import/runs')));
-            }
-
+        if (Gate::check('viewImports')) {
             $navItems->add(new NavItem()
                 ->label(t('Import'))
                 ->url('import')
-                ->icon('arrow-up-to-bracket')
-                ->subnav($subNavItems->all())
-            );
+                ->icon('arrow-up-to-bracket'));
         }
 
         // Add any Plugin nav items

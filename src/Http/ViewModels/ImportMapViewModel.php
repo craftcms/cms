@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Element\Import\ElementImporter;
-use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\ImportHelper;
 
@@ -21,13 +20,11 @@ class ImportMapViewModel extends ViewModel
         private readonly bool $canSave = true,
     ) {}
 
-    /** @return array{uid: string|null, handle: string|null, name: string|null, file: string|null} */
-    public function config(): array
+    /** @return array{uid: string|null, file: string|null} */
+    public function step(): array
     {
         return [
             'uid' => $this->importer->uid,
-            'handle' => $this->importer->handle,
-            'name' => $this->importer->name,
             'file' => $this->importer->file,
         ];
     }
@@ -77,20 +74,6 @@ class ImportMapViewModel extends ViewModel
             $this->sourceDataCols(),
             $this->importer->map,
         );
-    }
-
-    /** @return array{method: 'post', url: string} */
-    public function submit(): array
-    {
-        return [
-            'method' => 'post',
-            'url' => action([ImportConfigController::class, 'storeMap']),
-        ];
-    }
-
-    public function nestedColsUrl(): string
-    {
-        return action([ImportConfigController::class, 'nestedMappingCols']);
     }
 
     public function readOnly(): bool

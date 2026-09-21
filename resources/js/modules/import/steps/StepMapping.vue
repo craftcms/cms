@@ -1,34 +1,32 @@
 <script setup lang="ts">
   /**
-   * A container column's mapping, as a slideout panel.
+   * One import step's field mapping, as a slideout panel.
    *
-   * Opened with `openSlideoutWith()` — see `nested-mapping.ts` for why. The panel
-   * edits its own copy of the screen's trees and hands them back on Apply, so
-   * cancelling leaves the screen behind untouched.
+   * Opened from the step's own panel — see `step-mapping.ts`. The panel edits its own
+   * copy of the step's four mapping trees and hands them back on Apply, so cancelling
+   * leaves the step behind untouched.
    */
-  import '@craftcms/ui/components/checkbox/checkbox';
-  import {computed, provide, reactive, watch} from 'vue';
+  import {provide, reactive, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
-  import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
-  import MappingTable from './MappingTable.vue';
-  import {checkedValue, getAt, isChecked, keepFlagPath, setAt} from './paths';
-  import {openNestedMapping, takeNestedMappingContext} from './nested-mapping';
+  import MappingTable from '@/modules/import/mapping/MappingTable.vue';
+  import {openNestedMapping} from '@/modules/import/mapping/nested-mapping';
   import {
     type MappingCol,
     MappingContextKey,
     type MappingValues,
     type SuggestedMap,
-  } from './types';
+  } from '@/modules/import/mapping/types';
+  import {takeStepMappingContext} from './step-mapping';
 
   const props = defineProps<{
     contextId: string;
     title: string;
   }>();
 
-  const context = takeNestedMappingContext(props.contextId);
+  const context = takeStepMappingContext(props.contextId);
   const slideout = useSlideout();
   const values = reactive<MappingValues>(context.values);
   const suggestedMap = reactive<SuggestedMap>(context.suggestedMap);
@@ -55,20 +53,6 @@
     onSave: apply,
   }));
 
-  const keepPath = computed(() => keepFlagPath(context.col));
-
-  const keepMissingChecked = computed(() =>
-    isChecked(getAt(values.keepMissingNestedElements, keepPath.value))
-  );
-
-  const onKeepMissingChanged = ignoreModelValueInitialization((event) => {
-    setAt(
-      values.keepMissingNestedElements,
-      keepPath.value,
-      checkedValue(event)
-    );
-  });
-
   provide(MappingContextKey, {
     values,
     suggestedMap,
@@ -78,7 +62,7 @@
       void openNestedMapping({
         col,
         step: context.step,
-        colsUrl: context.colsUrl,
+        colsUrl: context.urls.nestedColsUrl,
         values,
         editable: context.editable,
         opener,
@@ -98,19 +82,14 @@
 
 <template>
   <div>
-    <craft-checkbox
-      v-if="context.col.canKeepMissingNestedElements"
-      :label="
-        t('Keep existing nested elements missing from the imported data.')
-      "
-      .checked="keepMissingChecked"
-      :disabled="!context.editable"
-      @model-value-changed="onKeepMissingChanged"
-    ></craft-checkbox>
+    <p>
+      {{
+        t(
+          'If you see any selections marked in blue, they were auto-selected as closest matches from the incoming data. Change them if they’re not right.'
+        )
+      }}
+    </p>
 
-    <section v-for="(group, index) in context.groups" :key="index">
-      <h3>{{ group.providerName ?? context.fieldName }}</h3>
-      <MappingTable :cols="group.destinationCols" />
-    </section>
+    <MappingTable :cols="context.destinationCols" />
   </div>
 </template>

@@ -180,7 +180,7 @@
 </template>
 
 <style scoped lang="scss">
-  .best-guess craft-combobox {
+  .best-guess {
     background: var(--color-blue-100);
   }
 </style>

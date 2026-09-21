@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
+use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
-use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Facades\Imports;
 use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Bus\Batchable;
 use Illuminate\Validation\ValidationException;
@@ -22,14 +23,17 @@ class Import extends Job
     private int $defaultBatchSize = 5;
 
     /**
-     * Promotes step config, file path, and starting offset, then calls the parent constructor.
+     * Promotes the owning import's UID/handle, the step's UID, the file path and the starting
+     * offset, then calls the parent constructor.
      *
-     * @param  array  $step  The step configuration.
+     * @param  string  $importId  The UID (or, for file-based imports, the handle) of the import.
+     * @param  string  $stepUid  The UID of the step being run.
      * @param  string  $filePath  The path to the file being imported.
      * @param  int  $start  The offset to start processing from.
      */
     public function __construct(
-        private readonly array $step,
+        private readonly string $importId,
+        private readonly string $stepUid,
         private readonly string $filePath,
         private readonly int $start = 0,
     ) {
@@ -51,12 +55,29 @@ class Import extends Job
             return;
         }
 
-        $importerConfig = ImportConfig::getConfigByUid($this->step['config']) ?? ImportConfig::getConfigByHandle($this->step['config']);
+        $import = Imports::getImportByUid($this->importId) ?? Imports::getImportByHandle($this->importId);
+
+        if ($import === null) {
+            ImportLog::warning("Skipping import job for missing import \"{$this->importId}\".");
+
+            return;
+        }
+
+        $step = collect($import->steps ?? [])->firstWhere('uid', $this->stepUid);
+
+        if ($step === null) {
+            ImportLog::warning("Skipping import job for missing step \"{$this->stepUid}\" of import \"{$import->name}\".");
+
+            return;
+        }
+
+        $stepLabel = ImportService::stepLabel($import, $step);
+        $importer = Imports::createImporter($step);
 
         try {
-            $importerConfig->validateSettings();
+            $importer->validateSettings();
         } catch (ValidationException $e) {
-            ImportLog::warning("Skipping import job for invalid config \"{$importerConfig->name}\": ".implode(' ', $e->validator->errors()->all()));
+            ImportLog::warning("Skipping import job for invalid step \"$stepLabel\": ".implode(' ', $e->validator->errors()->all()));
 
             return;
         }
@@ -68,11 +89,11 @@ class Import extends Job
         // count how many items we have to process
         $dataCount = count($data);
         // figure out our batch limit
-        $batchLimit = $this->getBatchSize($this->step);
+        $batchLimit = $this->getBatchSize($step);
 
-        // normalizing the UI/config-based matchCriteria only depends on the importer config, so it
-        // could be done once per config rather than for each root item that is being imported
-        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importerConfig);
+        // normalizing the UI/config-based matchCriteria only depends on the importer, so it
+        // could be done once per step rather than for each root item that is being imported
+        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
 
         // if batch limit is 0, it means this step's batch size was set to zero to disable batching of this step
         // so we want to go through all the data in one go
@@ -88,16 +109,16 @@ class Import extends Job
 
             // import data
             try {
-                ImportFacade::importItem($importerConfig, $data[$i], $matchCriteria);
+                ImportFacade::importItem($importer, $data[$i], $matchCriteria);
             } catch (\Exception $e) {
                 // log and proceed further
-                ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $importerConfig->name, 'data' => $data[$i]]);
+                ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['step' => $stepLabel, 'data' => $data[$i]]);
             }
         }
 
         // if there's any data items left - add another job to the batch
         if ($dataCount - $batchLimit > 0) {
-            $this->batch()->add(new Import($this->step, $this->filePath, ($this->start + $batchLimit)));
+            $this->batch()->add(new Import($this->importId, $this->stepUid, $this->filePath, ($this->start + $batchLimit)));
         }
     }
 
@@ -107,7 +128,7 @@ class Import extends Job
     private function getBatchSize(array $step): int
     {
         // if batch size was left empty, it was cast to a null, and we should use the default batch size
-        if ($step['batchSize'] === null) {
+        if (($step['batchSize'] ?? null) === null) {
             return $this->defaultBatchSize;
         }
 

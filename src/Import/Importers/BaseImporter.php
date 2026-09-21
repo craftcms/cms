@@ -12,10 +12,8 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
@@ -25,12 +23,6 @@ use function CraftCms\Cms\t;
 
 abstract class BaseImporter
 {
-    public protected(set) ?string $name = null;
-
-    public protected(set) ?string $handle = null;
-
-    public protected(set) ?string $description = null;
-
     public protected(set) ?string $file = null;
 
     public protected(set) string|BaseTransformer|null $transformer = null;
@@ -117,42 +109,6 @@ abstract class BaseImporter
     abstract public static function getDefaultTransformer(): ?string;
 
     /**
-     * Sets the name for the importer.
-     *
-     * @param  string  $name  The name to set.
-     */
-    public function name(?string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Sets the handle for the importer.
-     *
-     * @param  string|null  $handle  The handle to be assigned.
-     */
-    public function handle(?string $handle): self
-    {
-        $this->handle = $handle;
-
-        return $this;
-    }
-
-    /**
-     * Sets the description for the importer.
-     *
-     * @param  string|null  $description  The description to be assigned.
-     */
-    public function description(?string $description): self
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    /**
      * Sets the path to the file that contains the data to be imported.
      *
      * @param  string|null  $file  The file name or path to set.
@@ -231,31 +187,11 @@ abstract class BaseImporter
     }
 
     /**
-     * Defines the validation rules for the importer, including its persistable metadata.
+     * Defines the validation rules for an import step using this importer.
      */
     public static function getRules(): array
     {
         return array_merge([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'handle' => [
-                'required',
-                'string',
-                'max:255',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                function ($attribute, $value, Closure $fail, Validator $validator) {
-                    $found = ImportConfig::getConfigByHandle($value, true);
-                    if ($found !== null && $found->uid !== $validator->getValue('uid')) {
-                        $fail(t('{attribute} "{value}" has already been taken.', [
-                            'attribute' => $attribute,
-                            'value' => $value,
-                        ]));
-                    }
-                },
-            ],
             'file' => [
                 'required',
                 'string',
@@ -285,17 +221,15 @@ abstract class BaseImporter
     }
 
     /**
-     * Builds the data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
+     * Builds the step data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
      */
     protected function toValidationData(): array
     {
         return [
             'uid' => $this->uid,
-            'name' => $this->name,
-            'handle' => $this->handle,
+            'file' => $this->file,
+            'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
             'settings' => [
-                'file' => $this->file,
-                'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
                 'map' => $this->map,
             ],
         ];
@@ -512,16 +446,6 @@ abstract class BaseImporter
         }
 
         return null;
-    }
-
-    /**
-     * Determines if the importer is editable.
-     * If the importer has a UID, it means it's stored in the database, and therefore it's editable via the Control Panel.
-     * Otherwise, it's a custom importer that comes e.g. from a file.'
-     */
-    public function isEditable(): bool
-    {
-        return isset($this->uid);
     }
 
     public static function isElementImporter(): bool

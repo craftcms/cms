@@ -171,7 +171,7 @@ it('names the keep flag for a container field inside a content block without rep
 
     $field = app(FieldsService::class)->getFieldByHandle('myContentBlock');
 
-    // as ImportConfigController::nestedMappingCols() does for a container column
+    // as ImportController::nestedMappingCols() does for a container column
     $provider = $field->getFieldLayoutProviders()[0];
     $cols = ImportHelper::getDestinationColsForFieldLayout($provider->getFieldLayout(), $field, $provider, 'myContentBlock');
     $col = collect($cols)->firstWhere('handle', 'cbMatrix');

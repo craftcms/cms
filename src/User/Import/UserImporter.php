@@ -41,6 +41,16 @@ class UserImporter extends ElementImporter
     {
         parent::storeSettings($settings);
 
+        $this->resolveDefaultFieldLayout();
+    }
+
+    /**
+     * Users have one field layout for the element type, so there's nothing for the step to
+     * choose — resolve it as soon as the importer is built.
+     */
+    #[Override]
+    public function resolveDefaultFieldLayout(): void
+    {
         $fieldLayout = Fields::getLayoutByType(User::class, false);
         $this->fieldLayout($fieldLayout ? $fieldLayout->uid : User::class);
     }

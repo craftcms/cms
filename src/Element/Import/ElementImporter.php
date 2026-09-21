@@ -15,7 +15,6 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -108,7 +107,6 @@ abstract class ElementImporter extends BaseImporter
                     ->options($availableSites))
                     ->instructions(t('The site you want to import the data into'))
                     ->required(),
-                Heading::make('temp-save', t('TEMPORARY: for now, you need to save before the mapping will show or change according to your selection.')),
             ],
         ];
     }
@@ -189,6 +187,15 @@ abstract class ElementImporter extends BaseImporter
 
         return $this;
     }
+
+    /**
+     * Gives an importer whose field layout isn't chosen by the user a chance to resolve one.
+     *
+     * Called once the importer has been built from a step's settings. Most element types
+     * resolve their layout from a setting (an entry type, a volume), so the default does
+     * nothing; override it where the layout is fixed for the element type instead.
+     */
+    public function resolveDefaultFieldLayout(): void {}
 
     /**
      * Sets the container field handles that should keep nested elements missing from the
