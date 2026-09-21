@@ -8,6 +8,7 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, h, ref, watch} from 'vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Text from '@/common/components/Text.vue';
@@ -107,11 +108,27 @@
     | TableIcon
     | TableHtml;
 
+  interface TableStatus {
+    fill: string;
+    label: string | null;
+  }
+
   type TableRow = Record<string, TableCellValue> & {
     /** Required when the table is reorderable and/or deletable. */
     id?: string | number;
     /** Opts a single row out of an otherwise-deletable table. */
     _deletable?: boolean;
+    /**
+     * A colored status indicator dot, already resolved server-side (see PHP `Table::rows()`) —
+     * this component just draws it, prefixed onto the *first* column's own cell content.
+     */
+    _status?: TableStatus | null;
+    /**
+     * The plain text this row's own search box (see {@link searchable}) matches against, when
+     * anything worth searching isn't itself a visible column. Falls back to the row's own
+     * column text when absent.
+     */
+    _search?: string;
   };
 
   const props = defineProps<{
@@ -127,6 +144,8 @@
       deleteConfirmMessage: string | null;
       bulkDeletable: boolean;
       bulkActions: BulkAction[];
+      searchable: boolean;
+      searchPlaceholder: string | null;
     }>;
   }>();
 
@@ -140,6 +159,38 @@
       rows.value = [...newRows];
     }
   );
+
+  const search = ref('');
+
+  /** Plain text a cell's own rendered content reduces to, for {@link rowSearchText}. */
+  function cellText(value: TableCellValue): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value !== 'object') return String(value);
+    if (Array.isArray(value)) return value.map((link) => link.label).join(' ');
+    // `html` cells could hold anything (a working custom element, not just markup) — there's no
+    // safe, generic way to reduce that to plain text, so a row relying on one for its primary
+    // content needs its own explicit `_search` to stay searchable.
+    if ('html' in value) return '';
+    return value.label ?? '';
+  }
+
+  function rowSearchText(row: TableRow): string {
+    const text =
+      row._search ??
+      props.node.props.columns
+        .map((column) => cellText(row[column.key] ?? null))
+        .join(' ');
+
+    return text.toLowerCase();
+  }
+
+  const filteredRows = computed(() => {
+    const query = search.value.trim().toLowerCase();
+
+    return query
+      ? rows.value.filter((row) => rowSearchText(row).includes(query))
+      : rows.value;
+  });
 
   const columnHelper = createCraftColumnHelper<TableRow>();
 
@@ -214,27 +265,39 @@
 
   const columns = computed(() => {
     const cols: ColumnDef<TableRow, any>[] = props.node.props.columns.map(
-      (column) =>
+      (column, columnIndex) =>
         columnHelper.accessor(column.key, {
           header: column.label,
-          cell: ({getValue}) => {
+          cell: ({getValue, row}) => {
             const value = getValue();
+            let rendered;
 
             if (Array.isArray(value)) {
-              return value.flatMap((link, index) => [
+              rendered = value.flatMap((link, index) => [
                 index > 0 ? ', ' : '',
                 renderLink(link),
               ]);
+            } else if (value !== null && typeof value === 'object') {
+              if (isMenu(value)) rendered = renderMenu(value);
+              else if (isIcon(value)) rendered = renderIcon(value);
+              else if (isHtml(value)) rendered = renderHtmlCell(value);
+              else rendered = renderLink(value);
+            } else {
+              rendered = value ?? '';
             }
 
-            if (value !== null && typeof value === 'object') {
-              if (isMenu(value)) return renderMenu(value);
-              if (isIcon(value)) return renderIcon(value);
-              if (isHtml(value)) return renderHtmlCell(value);
-              return renderLink(value);
+            const status = row.original._status;
+            if (columnIndex === 0 && status) {
+              return h('div', {class: 'flex flex-nowrap gap-1 items-center'}, [
+                h('craft-indicator', {
+                  fill: status.fill,
+                  label: status.label ?? undefined,
+                }),
+                rendered,
+              ]);
             }
 
-            return value ?? '';
+            return rendered;
           },
         })
     );
@@ -267,7 +330,7 @@
 
   const table = useVueTable({
     get data() {
-      return rows.value;
+      return filteredRows.value;
     },
     get columns() {
       return columns.value;
@@ -426,14 +489,43 @@
     </LayoutSlot>
 
     <craft-pane padding="0" appearance="raised">
+      <div v-if="node.props.searchable" slot="header-actions">
+        <CraftInput
+          name="search"
+          :label="t('Search')"
+          :placeholder="node.props.searchPlaceholder ?? t('Search')"
+          label-sr-only
+          v-model="search"
+        >
+          <div slot="suffix" class="flex">
+            <craft-button
+              v-if="search"
+              type="button"
+              icon
+              size="small"
+              variant="plain"
+              @click="search = ''"
+            >
+              <craft-icon name="x" :label="t('Clear search')"></craft-icon>
+            </craft-button>
+          </div>
+        </CraftInput>
+      </div>
+
       <AdminTable
         :table="table"
-        :reorderable="!!node.props.reorderUrl"
+        :reorderable="!!node.props.reorderUrl && !search"
         :selectable="hasBulkFooter"
         @reorder="onReorder"
       >
         <template #empty-row>
-          <Empty :label="node.props.emptyMessage ?? t('Nothing to show.')" />
+          <Empty
+            :label="
+              search
+                ? t('No results for “{search}”.', {search})
+                : (node.props.emptyMessage ?? t('Nothing to show.'))
+            "
+          />
         </template>
       </AdminTable>
 
@@ -449,7 +541,7 @@
         same background, border, and copy — driven by this component's own
         `rows`/`selectedIds` instead.
       -->
-      <div v-if="rows.length" class="admin-table-footer">
+      <div v-if="filteredRows.length" class="admin-table-footer">
         <template v-if="selectedIds.length">
           <Text
             as="span"
@@ -511,7 +603,11 @@
           v-else
           as="span"
           template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
-          :params="{from: 1, to: rows.length, total: rows.length}"
+          :params="{
+            from: 1,
+            to: filteredRows.length,
+            total: filteredRows.length,
+          }"
         />
       </div>
     </craft-pane>

@@ -9,6 +9,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Traits\Conditionable;
 
@@ -51,6 +52,10 @@ class Table implements Node
     /** @var list<array<string, mixed>> */
     private array $bulkActions = [];
 
+    private bool $searchable = false;
+
+    private ?string $searchPlaceholder = null;
+
     public function __construct(private readonly string $uid) {}
 
     public static function make(string $uid): self
@@ -86,12 +91,42 @@ class Table implements Node
      *   page. Prefer one of the structured shapes above when it fits; `html` exists for what
      *   doesn't. A row may set `_deletable => false` to suppress its own delete action even when
      *   the table as a whole is {@see deletable()} (e.g. a "primary" row that can't be removed).
+     *   A row may also set `_status` to get a colored status indicator dot before the *first*
+     *   column's own content — the same dot a Craft element index chip shows, for a row whose
+     *   underlying model isn't a real element (so an actual chip, and the `Statusable` status it'd
+     *   need, aren't available). `true`/`false` renders the plain enabled/disabled dot most rows
+     *   want; a string is resolved the same way {@see \CraftCms\Cms\Shared\Enums\Color::
+     *   tryFromStatus()} resolves one elsewhere (`'live'`, `'pending'`, `'expired'`, an arbitrary
+     *   custom status name, ...), for a row whose model has a richer status than a plain boolean.
+     *   When {@see searchable()} is on, a row may also set `_search` to the plain text its own
+     *   search box should match against — needed whenever anything worth searching isn't itself a
+     *   visible column (a discount's description, or its coupon codes, say — legacy's own search
+     *   matched both, neither ever a column here either). A row without `_search` falls back to
+     *   matching its declared columns' own rendered text.
      */
     public function rows(array $rows): static
     {
-        $this->rows = $rows;
+        $this->rows = array_map(self::resolveRowStatus(...), $rows);
 
         return $this;
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function resolveRowStatus(array $row): array
+    {
+        if (!array_key_exists('_status', $row) || $row['_status'] === null) {
+            return $row;
+        }
+
+        $status = $row['_status'];
+        $status = is_bool($status) ? ($status ? 'enabled' : 'disabled') : $status;
+
+        $row['_status'] = [
+            'fill' => (Color::tryFromStatus($status) ?? Color::Gray)->value,
+            'label' => ucfirst($status),
+        ];
+
+        return $row;
     }
 
     public function emptyMessage(?string $emptyMessage): static
@@ -189,6 +224,21 @@ class Table implements Node
         return $this;
     }
 
+    /**
+     * Shows a text search box above the table, filtering rows entirely client-side — every row
+     * is already loaded (there's no pagination to search across, unlike the legacy
+     * `Craft.VueAdminTable` screen this usually replaces, which searched server-side against a
+     * paginated result set). See {@see rows()} for how a row controls what it matches against.
+     * Most tables don't need this — reach for it only where legacy actually had `search: true`.
+     */
+    public function searchable(?string $placeholder = null): static
+    {
+        $this->searchable = true;
+        $this->searchPlaceholder = $placeholder;
+
+        return $this;
+    }
+
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
         $columns = $node->props['columns'];
@@ -219,37 +269,35 @@ class Table implements Node
                 ? Html::a(Html::encode($link['label']), $link['url'])
                 : Html::encode($link['label']);
 
+            $firstColumnKey = $columns[0]['key'] ?? null;
+
             // Reordering, deleting, and bulk actions are inherently interactive (drag handles,
             // confirmation dialogs, row selection, CSRF-protected requests) with no sensible
             // plain-HTML equivalent, so this fallback renders a menu's links inline but
             // otherwise omits those affordances — consistent with the rest of the CP treating
             // this renderer as JS-less read access, not a full replacement for the Vue control.
-            $renderCell = function(array $column, array $row) use ($renderLink): string {
+            $renderCell = function(array $column, array $row) use ($renderLink, $firstColumnKey): string {
                 $value = $row[$column['key']] ?? '';
 
-                if (is_array($value) && array_key_exists('items', $value)) {
-                    return implode(', ', array_map($renderLink, $value['items']));
-                }
-
-                if (is_array($value) && array_key_exists('icon', $value)) {
-                    return Html::encode($value['label'] ?? '');
-                }
-
-                if (is_array($value) && array_key_exists('html', $value)) {
+                $rendered = match (true) {
+                    is_array($value) && array_key_exists('items', $value) => implode(', ', array_map($renderLink, $value['items'])),
+                    is_array($value) && array_key_exists('icon', $value) => Html::encode($value['label'] ?? ''),
                     // Not re-encoded — this is meant to be markup, and rows() no longer
                     // sanitizes it (see its docblock); the caller owns that trust boundary.
-                    return $value['html'];
+                    is_array($value) && array_key_exists('html', $value) => $value['html'],
+                    is_array($value) && array_is_list($value) => implode(', ', array_map($renderLink, $value)),
+                    is_array($value) => $renderLink($value),
+                    default => Html::encode((string) $value),
+                };
+
+                // The dot itself is inherently visual, so — same reasoning as the icon-cell
+                // case above — this fallback substitutes its resolved label as plain text
+                // instead, right before whatever the first column already rendered.
+                if ($column['key'] === $firstColumnKey && !empty($row['_status']['label'])) {
+                    $rendered = Html::encode($row['_status']['label']).': '.$rendered;
                 }
 
-                if (is_array($value) && array_is_list($value)) {
-                    return implode(', ', array_map($renderLink, $value));
-                }
-
-                if (is_array($value)) {
-                    return $renderLink($value);
-                }
-
-                return Html::encode((string) $value);
+                return $rendered;
             };
 
             $head = Html::tag('tr', implode('', array_map(
@@ -300,6 +348,8 @@ class Table implements Node
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
             'bulkDeletable' => $this->bulkDeletable,
             'bulkActions' => $this->bulkActions,
+            'searchable' => $this->searchable,
+            'searchPlaceholder' => $this->searchPlaceholder,
         ];
     }
 
