@@ -126,6 +126,37 @@ it('returns bad request when moving a missing folder', function (bool $missingSo
     'missing destination' => false,
 ]);
 
+it('can move a folder whose parent has a null path', function () {
+    $sourceName = fake()->uuid();
+    $destinationName = fake()->uuid();
+
+    $source = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->folder->id,
+        'path' => "$sourceName/",
+        'name' => $sourceName,
+    ]);
+
+    $destination = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->folder->id,
+        'path' => "$destinationName/",
+        'name' => $destinationName,
+    ]);
+
+    expect($this->folder->path)->toBeNull();
+
+    postJson(action([FolderController::class, 'move']), [
+        'folderId' => $source->id,
+        'parentId' => $destination->id,
+    ])->assertOk();
+
+    expect(VolumeFolderModel::query()
+        ->where('parentId', $destination->id)
+        ->where('path', "$destinationName/$sourceName/")
+        ->exists())->toBeTrue();
+});
+
 it('handles folder move conflicts', function () {
     $subfolder = VolumeFolderModel::factory()->create([
         'volumeId' => $this->volume->id,
