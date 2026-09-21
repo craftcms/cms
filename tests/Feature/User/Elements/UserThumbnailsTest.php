@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -16,11 +17,16 @@ use CraftCms\Cms\User\Models\User;
 
 beforeEach(function () {
     ThumbnailField::$requests = [];
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/user-thumbnails-test/test-disk'),
+    ]);
     $this->driver = new ControlPanelAssetTransformDriver;
     $this->driver->register();
     Cms::config()->defaultAssetTransformer('test');
     $this->user = User::factory()->createElement();
-    $this->user->setPhoto(Asset::factory()->createElement(['width' => 800, 'height' => 400]));
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $this->user->setPhoto(Asset::factory()->createElement(['volumeId' => $volume->id, 'width' => 800, 'height' => 400]));
 });
 
 it('preserves native square photo crops at both resolutions with a non-crop mode', function () {

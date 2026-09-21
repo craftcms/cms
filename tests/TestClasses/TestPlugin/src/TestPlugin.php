@@ -335,7 +335,7 @@ class TestPlugin extends Plugin
 
         return Form::make([
             Field::make('Foo', Text::make('foo')->reactive()),
-        ])->when($this->getSettings()?->foo === 'show-bar', fn (Form $form) => $form->add(
+        ])->when(($context->values['settings']['foo'] ?? null) === 'show-bar', fn (Form $form) => $form->add(
             Group::make('test-plugin-bar', [
                 Field::make('Bar', Text::make('bar')),
             ])->dependsOn('settings.foo'),

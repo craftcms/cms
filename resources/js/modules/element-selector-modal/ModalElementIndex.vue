@@ -83,8 +83,17 @@
     selectedElements,
     hasSelection,
     clearSelection,
-    /** Re-requests the current query — what an upload leaves stale. */
-    refresh: () => index.load(index.query.value),
+    /** Re-requests the current query and selects an uploaded element. */
+    refresh: async (selectId?: number) => {
+      await index.load(index.query.value);
+
+      if (selectId !== undefined) {
+        index.rowSelection.value = {
+          ...index.rowSelection.value,
+          [String(selectId)]: true,
+        };
+      }
+    },
   });
 
   const showSidebar = computed(() => elementIndex.sources.length > 1);

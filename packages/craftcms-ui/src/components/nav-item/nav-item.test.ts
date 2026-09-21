@@ -70,7 +70,8 @@ async function hover(item: CraftNavItem, type: string) {
 /**
  * The group is shared across every item, so each test starts from cold. The
  * warm-up is off by default here — the tests that care about it turn it back
- * on — so the rest can assert on hover without waiting one out.
+ * on — so the rest can assert on hover without waiting one out. So is the
+ * safe area, since there's no layout to aim across without a real browser.
  */
 const viewportHeight = window.innerHeight;
 
@@ -87,6 +88,7 @@ beforeEach(() => {
     warmUpDelay: 0,
     closeDelay: 30,
     coolDownDelay: 1000,
+    graceDelay: 0,
   };
 });
 

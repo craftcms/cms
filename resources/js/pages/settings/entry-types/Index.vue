@@ -16,6 +16,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import CpLink from '@/common/components/CpLink.vue';
 
   type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
 
@@ -133,9 +134,14 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <Link as="craft-button" :href="create().url" variant="primary" icon="plus">
+    <CpLink
+      :href="create().url"
+      variant="accent"
+      appearance="button"
+      icon="plus"
+    >
       {{ t('New entry type') }}
-    </Link>
+    </CpLink>
   </LayoutSlot>
 
   <CpContainer>

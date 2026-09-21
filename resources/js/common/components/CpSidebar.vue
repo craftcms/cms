@@ -158,6 +158,7 @@
   .cp-sidebar__footer {
     flex: 0 0 auto;
     display: grid;
+    align-items: center;
     margin-block-start: auto;
     padding-block: var(--c-spacing-md);
     padding-inline: var(--c-spacing-md);

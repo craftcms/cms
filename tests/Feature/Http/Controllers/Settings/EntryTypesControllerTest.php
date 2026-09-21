@@ -108,6 +108,8 @@ it('refreshes fields that depend on the entry type settings', function () {
         'slugTranslationMethod' => 'custom',
         'slugTranslationKeyFormat' => '',
         'showStatusField' => true,
+        'showPostDateField' => true,
+        'showExpiryDateField' => true,
         'fieldLayout' => [],
     ];
 
@@ -138,6 +140,8 @@ it('refreshes a single-site form without translation controls', function () {
             'allowLineBreaksInTitles' => false,
             'showSlugField' => false,
             'showStatusField' => true,
+            'showPostDateField' => true,
+            'showExpiryDateField' => true,
             'fieldLayout' => [],
         ],
         'scope' => [],

@@ -30,6 +30,7 @@
       loading?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
+      withBottomBorder?: boolean;
     }>(),
 
     {
@@ -37,6 +38,7 @@
       selectable: false,
       loading: false,
       layout: 'auto',
+      withBottomBorder: true,
     }
   );
 
@@ -221,6 +223,13 @@
     };
   });
 
+  function hideBottomBorder(rowIdx: number) {
+    return (
+      !props.withBottomBorder &&
+      rowIdx === props.table.getRowModel().rows.length - 1
+    );
+  }
+
   function getRowPosition(index: number) {
     if (index === 0) {
       return 'first';
@@ -401,7 +410,7 @@
           @keydown="onRowKeydown(row, rowIdx, $event)"
         >
           <template v-if="reorderable && !readOnly">
-            <td>
+            <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
               <div>
                 <craft-reorder-button
                   @reorder="
@@ -423,7 +432,14 @@
               <DropIndicator :edge="getClosestEdge(row.id)" />
             </td>
           </template>
-          <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+          <td
+            v-if="selectable"
+            :class="{
+              'cp-table-cell': true,
+              'cp-table-cell--select': true,
+              'border-b-0': hideBottomBorder(rowIdx),
+            }"
+          >
             <craft-checkbox
               label-sr-only
               .checked="row.getIsSelected()"
@@ -448,6 +464,7 @@
                 'cp-table-cell': true,
                 [`cp-table-cell--${cell.column.id}`]: true,
                 'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
+                'border-b-0': hideBottomBorder(rowIdx),
               },
               resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
               resolveMetaClasses(cell.column.columnDef.meta?.cellClass),

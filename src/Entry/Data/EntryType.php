@@ -74,6 +74,10 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
 
     public ?bool $showStatusField = true;
 
+    public ?bool $showPostDateField = true;
+
+    public ?bool $showExpiryDateField = true;
+
     public ?string $uid = null;
 
     public bool $validateHandleUniqueness = true;
@@ -287,6 +291,8 @@ JS, [
             'slugTranslationMethod' => $this->slugTranslationMethod->value,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,
             'showStatusField' => $this->showStatusField,
+            'showPostDateField' => $this->showPostDateField,
+            'showExpiryDateField' => $this->showExpiryDateField,
         ];
 
         $fieldLayout = $this->getFieldLayout();

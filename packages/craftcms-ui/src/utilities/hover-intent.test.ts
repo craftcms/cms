@@ -5,16 +5,48 @@ import {HoverIntentGroup, type HoverIntentMember} from './hover-intent.js';
  * Members are identified by their element, since that's how the group tells
  * nesting from adjacency. A detached tree is enough for `contains()`.
  */
-function member(element: Element): HoverIntentMember & {open: boolean} {
+function member(
+  element: Element,
+  overlay?: DOMRect
+): HoverIntentMember & {open: boolean} {
   const state = {
     element,
     open: false,
     setOpen(open: boolean) {
       state.open = open;
     },
+    ...(overlay ? {overlayRect: () => overlay} : {}),
   };
 
   return state;
+}
+
+function box(
+  left: number,
+  right: number,
+  top: number,
+  bottom: number
+): DOMRect {
+  return {
+    left,
+    right,
+    top,
+    bottom,
+    x: left,
+    y: top,
+    width: right - left,
+    height: bottom - top,
+  } as DOMRect;
+}
+
+/**
+ * The group only learns where the pointer is from a real event, so a test that
+ * never moves it gets no safe area at all.
+ */
+function movePointer(x: number, y: number) {
+  document.dispatchEvent(
+    new MouseEvent('pointermove', {clientX: x, clientY: y, bubbles: true})
+  );
 }
 
 function tree() {
@@ -32,6 +64,19 @@ function tree() {
   };
 }
 
+/** A trigger whose overlay sits to its right, plus the row between the two. */
+function aimedTree() {
+  const trigger = document.createElement('div');
+  const neighbour = document.createElement('div');
+
+  document.body.append(trigger, neighbour);
+
+  return {
+    trigger: member(trigger, box(100, 200, 0, 100)),
+    neighbour: member(neighbour),
+  };
+}
+
 let group: HoverIntentGroup;
 
 beforeEach(() => {
@@ -41,10 +86,12 @@ beforeEach(() => {
     warmUpDelay: 100,
     closeDelay: 50,
     coolDownDelay: 200,
+    graceDelay: 300,
   });
 });
 
 afterEach(() => {
+  group.reset();
   vi.useRealTimers();
 });
 
@@ -192,5 +239,111 @@ describe('bookkeeping', () => {
     vi.advanceTimersByTime(500);
 
     expect(parent.open).toBe(false);
+  });
+});
+
+describe('safe area', () => {
+  it('holds a neighbour hovered on the way to an open overlay', () => {
+    const {trigger, neighbour} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+
+    movePointer(60, 40);
+    group.requestOpen(neighbour);
+    vi.advanceTimersByTime(200);
+
+    expect(neighbour.open).toBe(false);
+    expect(trigger.open).toBe(true);
+  });
+
+  it('lets the neighbour through once the pointer leaves the triangle', () => {
+    const {trigger, neighbour} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(60, 40);
+    group.requestOpen(neighbour);
+
+    movePointer(20, 300);
+
+    expect(neighbour.open).toBe(true);
+    expect(trigger.open).toBe(false);
+  });
+
+  it('opens the neighbour anyway once the grace runs out', () => {
+    const {trigger, neighbour} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(60, 40);
+    group.requestOpen(neighbour);
+    vi.advanceTimersByTime(300);
+
+    expect(trigger.open).toBe(false);
+    expect(neighbour.open).toBe(true);
+  });
+
+  it('hands over at once when the pointer is nowhere near the triangle', () => {
+    const {trigger, neighbour} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(10, 400);
+    group.requestOpen(neighbour);
+
+    expect(trigger.open).toBe(false);
+    expect(neighbour.open).toBe(true);
+  });
+
+  it('gives no grace to an overlay with nothing to measure', () => {
+    const {parent, sibling} = tree();
+
+    group.requestOpen(parent, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(parent);
+    movePointer(60, 40);
+    group.requestOpen(sibling);
+
+    expect(parent.open).toBe(false);
+    expect(sibling.open).toBe(true);
+  });
+
+  it('drops a held hover the pointer moved on from', () => {
+    const {trigger, neighbour} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(60, 40);
+    group.requestOpen(neighbour);
+    group.requestClose(neighbour);
+
+    movePointer(20, 300);
+    vi.advanceTimersByTime(500);
+
+    expect(neighbour.open).toBe(false);
+    expect(trigger.open).toBe(false);
+  });
+
+  it('spares the trigger the pointer doubles back into', () => {
+    const {trigger, neighbour} = aimedTree();
+
+    group.requestOpen(trigger, {immediate: true});
+    movePointer(10, 10);
+    group.requestClose(trigger);
+    movePointer(60, 40);
+    group.requestOpen(neighbour);
+
+    group.requestClose(neighbour);
+    group.requestOpen(trigger);
+    vi.advanceTimersByTime(500);
+
+    expect(trigger.open).toBe(true);
+    expect(neighbour.open).toBe(false);
   });
 });

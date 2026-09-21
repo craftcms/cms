@@ -139,6 +139,7 @@
             :selectable="true"
             :loading="loading"
             :spacing="TableSpacing.Spacious"
+            :with-bottom-border="false"
           />
         </div>
       </template>

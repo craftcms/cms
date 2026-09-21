@@ -129,6 +129,14 @@ export default class CraftNavItem extends LitElement {
     setOpen: (open) => {
       this.flyoutOpen = open;
     },
+    // Where the flyout landed, so the group can tell a pointer travelling
+    // towards it from one leaving for good. This is the same box `fitFlyout`
+    // measures. While the flyout is shut there's nothing laid out, and the
+    // group falls back to plain timing.
+    overlayRect: () =>
+      this.shadowRoot
+        ?.querySelector<HTMLElement>('.flyout')
+        ?.getBoundingClientRect(),
   };
 
   #hoverListeners?: AbortController;

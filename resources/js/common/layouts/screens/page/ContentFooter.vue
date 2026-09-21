@@ -11,7 +11,6 @@
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import type {ActionItem, FormSaveOptions} from '@/common/types';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from '../types';
-  import {useScreenRegions} from '../useScreenRegions';
 
   const props = withDefaults(
     defineProps<
@@ -47,17 +46,6 @@
       >
     >();
 
-  const regions = useScreenRegions(slots);
-
-  // Hidden rather than removed, so the outlets stay in the DOM for page-side
-  // content to teleport into.
-  const visible = computed(
-    () =>
-      Boolean(props.form) ||
-      regions.has('content-footer') ||
-      regions.has('additional-buttons')
-  );
-
   const formActionItems = computed(() => [
     ...props.defaultFormActions.map(defaultFormActionItem),
     ...(props.formActions ?? []),
@@ -77,7 +65,7 @@
 </script>
 
 <template>
-  <CpContainer class="content-footer" v-show="visible">
+  <CpContainer class="content-footer">
     <div
       class="flex gap-2 items-center justify-between border-t border-t-quiet py-md"
     >

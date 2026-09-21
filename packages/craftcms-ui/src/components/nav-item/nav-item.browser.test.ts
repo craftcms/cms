@@ -1,5 +1,6 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import type CraftNavItem from './nav-item.js';
+import {flyoutHoverIntent} from '@src/utilities/hover-intent.js';
 import './nav-item.js';
 import '../nav-list/nav-list.js';
 import '../../styles/cp.css';
@@ -266,4 +267,100 @@ it('drops the trail bar from a rail branch', async () => {
   );
 
   expect(bar.content).toBe('none');
+});
+
+/** Two rail branches, the first flying out past the second's row. */
+async function diagonalFixture(): Promise<{
+  above: CraftNavItem;
+  below: CraftNavItem;
+}> {
+  const list = document.createElement('craft-nav-list');
+
+  const branch = (name: string, children: number) => {
+    const item = document.createElement('craft-nav-item') as CraftNavItem;
+    item.setAttribute('icon', 'gear');
+    item.setAttribute('href', `/admin/${name}`);
+    item.setAttribute('icon-only', '');
+    item.append(document.createTextNode(name));
+
+    const subnav = document.createElement('craft-nav-list');
+    subnav.slot = 'subnav';
+
+    for (let index = 0; index < children; index++) {
+      const child = document.createElement('craft-nav-item');
+      child.setAttribute('href', `/admin/${name}/${index}`);
+      child.textContent = `${name} ${index}`;
+      subnav.append(child);
+    }
+
+    item.append(subnav);
+
+    return item;
+  };
+
+  const above = branch('above', 8);
+  const below = branch('below', 2);
+
+  list.append(above, below);
+  document.body.append(list);
+  await above.updateComplete;
+  await below.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+  return {above, below};
+}
+
+function movePointer(x: number, y: number) {
+  document.dispatchEvent(
+    new MouseEvent('pointermove', {clientX: x, clientY: y, bubbles: true})
+  );
+}
+
+it('keeps a flyout open while the pointer cuts across a neighbour', async () => {
+  flyoutHoverIntent.reset();
+  flyoutHoverIntent.options = {...flyoutHoverIntent.options, warmUpDelay: 0};
+
+  const {above, below} = await diagonalFixture();
+  const rowOf = (item: CraftNavItem) =>
+    item.shadowRoot!.querySelector('.nav-item')!.getBoundingClientRect();
+
+  const row = rowOf(above);
+  above.dispatchEvent(new MouseEvent('mouseenter'));
+  movePointer(row.left + row.width / 2, row.top + row.height / 2);
+  await above.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+  expect(above.flyoutOpen).toBe(true);
+
+  const flyout = above
+    .shadowRoot!.querySelector('.flyout')!
+    .getBoundingClientRect();
+  const neighbour = rowOf(below);
+
+  // The safe area is the triangle out to the flyout's near edge, so this test
+  // proves nothing unless the flyout really does open beside the row and reach
+  // past the neighbour being cut across.
+  expect(flyout.left).toBeGreaterThan(row.right);
+  expect(neighbour.top).toBeGreaterThan(flyout.top);
+  expect(neighbour.bottom).toBeLessThan(flyout.bottom);
+
+  above.dispatchEvent(new MouseEvent('mouseleave'));
+  movePointer(
+    (row.right + flyout.left) / 2,
+    neighbour.top + neighbour.height / 2
+  );
+  below.dispatchEvent(new MouseEvent('mouseenter'));
+  await below.updateComplete;
+
+  expect(above.flyoutOpen).toBe(true);
+  expect(below.flyoutOpen).toBe(false);
+
+  await new Promise((resolve) =>
+    setTimeout(resolve, flyoutHoverIntent.options.closeDelay + 50)
+  );
+
+  expect(above.flyoutOpen).toBe(true);
+
+  flyoutHoverIntent.reset();
 });
