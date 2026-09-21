@@ -14,6 +14,8 @@
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import {ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
+  import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+  import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -22,11 +24,16 @@
     sourceHref?: string;
     /** Overrides the pinned first column (defaults to the element's title). */
     pinnedColumn?: {key: string; label: string};
+    /** Type-specific item attributes and interaction handlers. */
+    itemBehavior?: ElementIndexItemBehavior;
+    /** Additional type-specific params included with filter submissions. */
+    filterParams?: IndexQueryParams;
   }>();
 
   const page = useElementIndexPage({
     route: props.route,
     pinnedColumn: props.pinnedColumn,
+    filterParams: () => props.filterParams ?? {},
   });
 
   // Double-click an element to edit it in a slideout.
@@ -114,9 +121,15 @@
           v-model:table-columns="tableColumns"
           @submit="filters.submit"
           @reorder="reorder"
-        />
+        >
+          <template v-if="$slots.navbar" #search-prefix>
+            <slot name="navbar"></slot>
+          </template>
+          <template #search-options>
+            <slot name="search-options"></slot>
+          </template>
+        </ElementIndexToolbar>
       </template>
-      <template #navbar><slot name="navbar"></slot></template>
       <template #body="{selection}">
         <!-- Delegated so every view mode gets double-click-to-edit without
           any of them knowing about it, matching Craft 5's element container
@@ -128,6 +141,7 @@
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
+            :item-behavior="itemBehavior"
           />
           <ElementThumbs
             v-else-if="mode === 'thumbs'"
@@ -135,6 +149,7 @@
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
+            :item-behavior="itemBehavior"
           />
           <DataTable
             v-else
@@ -142,6 +157,7 @@
             :selectable="true"
             :loading="loading"
             :spacing="TableSpacing.Spacious"
+            :item-behavior="itemBehavior"
           />
         </div>
       </template>

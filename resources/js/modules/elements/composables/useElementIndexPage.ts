@@ -21,6 +21,7 @@ import {useElementIndexViewState} from '@/modules/elements/composables/useElemen
 import {
   createIndexVisitor,
   type ElementIndexRoute,
+  type IndexQueryParams,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
 
@@ -32,6 +33,8 @@ interface UseElementIndexPageOptions {
    * `title` labeled with the payload's `elementDisplayName`.
    */
   pinnedColumn?: {key: string; label: string};
+  /** Additional type-specific params included with filter submissions. */
+  filterParams?: () => IndexQueryParams;
 }
 
 /**
@@ -56,7 +59,8 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     elementIndex,
     viewState,
     options.route,
-    conditions
+    conditions,
+    options.filterParams
   );
   const {
     columns,
@@ -182,9 +186,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
       },
     },
     getRowId: (row) => String(row.id),
-    // Folder rows (asset index) navigate rather than select, so they opt out of
-    // selection and bulk actions.
-    enableRowSelection: (row) => !row.original?.isFolder,
+    enableRowSelection: true,
     onRowSelectionChange: (updater) => {
       rowSelection.value =
         updater instanceof Function ? updater(rowSelection.value) : updater;

@@ -42,8 +42,15 @@
 </script>
 
 <template>
-  <form @submit="emit('submit')" class="w-full">
-    <div class="flex gap-2 items-center">
+  <form @submit.prevent="emit('submit')" class="w-full">
+    <div class="flex flex-wrap gap-2 items-start">
+      <div
+        v-if="$slots['search-prefix']"
+        class="flex min-w-0 max-w-full items-center overflow-x-auto py-1"
+      >
+        <slot name="search-prefix"></slot>
+      </div>
+
       <div v-if="statusOptions?.length">
         <CraftSelectRich
           v-model="status"
@@ -64,7 +71,7 @@
         </CraftSelectRich>
       </div>
 
-      <div ref="filterAnchor" class="relative flex-1">
+      <div ref="filterAnchor" class="relative flex-1 min-w-48">
         <CraftInput
           name="search"
           :label="t('Search term')"
@@ -105,6 +112,8 @@
           @apply="emit('submit')"
           v-model="conditions"
         />
+
+        <slot name="search-options"></slot>
       </div>
 
       <craft-button-group

@@ -118,6 +118,25 @@ describe('useElementIndexFilters', () => {
     expect(data.condition).toEqual(condition);
   });
 
+  it('submits type-specific filters alongside a refined search', () => {
+    const {submit} = useElementIndexFilters(
+      {search: 'file', status: null},
+      shallowRef<ViewState>(makeViewState()),
+      stubRoute,
+      undefined,
+      () => ({includeSubfolders: 1})
+    );
+
+    submit();
+
+    expect(
+      transformState.callback({search: 'file 2', status: ''})
+    ).toMatchObject({
+      search: 'file 2',
+      includeSubfolders: 1,
+    });
+  });
+
   it('requests index-style query array serialization, which PHP can parse', () => {
     // Inertia's default 'brackets' format serializes an array of objects as
     // repeated `conditionRules[][key]=...` params; PHP's parse_str allocates a
