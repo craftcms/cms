@@ -12,10 +12,15 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 
 /**
@@ -95,13 +100,32 @@ function matrixActionLabels(MatrixControl $control, string $uid): array
     )));
 }
 
+function makeMatrixActionsMultisite(EntryElement $owner): string
+{
+    $site = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $owner->sectionId,
+        'siteId' => $site->id,
+        'hasUrls' => true,
+    ]);
+    Sections::refreshSections();
+
+    return t($owner->getSite()->getName(), category: 'site');
+}
+
 beforeEach(fn () => actingAs(User::findOne()));
 
 it('ships each block with the state it needs to render', function () {
     [$owner, $uid] = matrixActionsFixture();
 
     expect(matrixActionsControl($owner)->getValue()['entries'][$uid])
-        ->toBe(['type' => 'actionBlock', 'enabled' => true, 'collapsed' => false]);
+        ->toBe([
+            'type' => 'actionBlock',
+            'enabled' => true,
+            'enabledForSite' => true,
+            'collapsed' => false,
+        ]);
 });
 
 it('names each block for when it is folded up', function () {
@@ -126,6 +150,18 @@ it('builds a menu for each block', function () {
         ->toContain('Add Action Block above')
         // Needs a saved entry to have a CP edit URL to point at.
         ->toContain('Open in a new tab');
+});
+
+it('offers independent site and global status actions for localized blocks', function () {
+    [$owner, $uid] = matrixActionsFixture();
+    $siteName = makeMatrixActionsMultisite($owner);
+    $control = matrixActionsControl($owner);
+
+    expect(matrixActionLabels($control, $uid))
+        ->toContain("Disable for {$siteName}")
+        ->toContain("Enable for {$siteName}")
+        ->toContain('Disable globally')
+        ->toContain('Enable globally');
 });
 
 it('keeps a block collapsed across a save', function () {
@@ -157,6 +193,29 @@ it('disables a block when the posted value says so', function () {
 
     expect(matrixActionsControl($reloaded)->getValue()['entries'][$uid]['enabled'])
         ->toBeFalse();
+});
+
+it('applies a posted site status without changing the global status', function () {
+    [$owner, $uid] = matrixActionsFixture();
+    makeMatrixActionsMultisite($owner);
+
+    $owner->setFieldValueFromRequest('actionsMatrix', [
+        'entries' => [$uid => [
+            'type' => 'actionBlock',
+            'enabled' => '1',
+            'enabledForSite' => '',
+        ]],
+        'sortOrder' => [$uid],
+    ]);
+    Elements::saveElement($owner);
+
+    /** @var EntryElement $reloaded */
+    $reloaded = entryQuery()->id($owner->id)->status(null)->one();
+    $entries = $reloaded->getFieldValue('actionsMatrix')->status(null)->all();
+
+    expect($entries)->toHaveCount(1)
+        ->and($entries[0]->enabled)->toBeTrue()
+        ->and($entries[0]->getEnabledForSite())->toBeFalse();
 });
 
 it('offers the selection’s actions from the field menu, hidden until blocks are selected', function () {
