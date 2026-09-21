@@ -16,3 +16,14 @@ it('can query users in groups', function () {
     expect(userQuery()->group(['not', $userGroup->handle])->count())->toBe(1);
     expect(userQuery()->group('notavalidhandle')->count())->toBe(0);
 });
+
+it('can eager-load user groups', function () {
+    $userGroup = UserGroup::factory()->create();
+    $user = User::factory()->create();
+    $userGroup->users()->attach($user);
+
+    $user = userQuery()->id($user->id)->withGroups()->one();
+
+    expect($user->getGroups())->toHaveCount(1)
+        ->and($user->getGroups()[0]->id)->toBe($userGroup->id);
+});
