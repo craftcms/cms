@@ -163,7 +163,7 @@
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
 - Fixed a bug where modifier-clicking or middle-clicking on some control panel links wasn’t opening the link in a new tab.
 - Fixed a bug where modifier-clicking or middle-clicking the New Entry button didn’t open the creation page in a new tab. ([#19669](https://github.com/craftcms/cms/pull/19669))
-- Fixed an error that occurred when loading the Users index if a user belonged to a user group. ([#19672](https://github.com/craftcms/cms/issues/19672))
+- Fixed an error that occurred when loading the Users index if a user belonged to a user group. ([#19673](https://github.com/craftcms/cms/pull/19673))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
