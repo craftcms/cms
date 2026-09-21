@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -162,6 +163,25 @@ it('offers independent site and global status actions for localized blocks', fun
         ->toContain("Enable for {$siteName}")
         ->toContain('Disable globally')
         ->toContain('Enable globally');
+});
+
+it('keeps single-site status actions when the field does not propagate blocks', function () {
+    [$owner, $uid] = matrixActionsFixture();
+    makeMatrixActionsMultisite($owner);
+
+    /** @var Matrix $field */
+    $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
+    $field->propagationMethod = PropagationMethod::None;
+    /** @var MatrixControl $control */
+    $control = $field->formControl(new FieldContext(
+        path: 'actionsMatrix',
+        value: $owner->getFieldValue('actionsMatrix'),
+        element: $owner,
+    ));
+
+    expect(matrixActionLabels($control, $uid))
+        ->toContain('Disable')
+        ->not->toContain('Disable globally');
 });
 
 it('keeps a block collapsed across a save', function () {

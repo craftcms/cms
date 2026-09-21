@@ -121,6 +121,7 @@ describe('selectionMenuItem', () => {
       disabled: true,
       disabledForSite: true,
       globallyDisabled: false,
+      anyGloballyDisabled: false,
     };
 
     expect(
@@ -138,7 +139,11 @@ describe('selectionMenuItem', () => {
       action: {detail: {action: 'disableGlobally'}},
     });
 
-    const globallyDisabled = {...mixed, globallyDisabled: true};
+    const globallyDisabled = {
+      ...mixed,
+      globallyDisabled: true,
+      anyGloballyDisabled: true,
+    };
 
     expect(
       selectionMenuItem(statusItem('disableForSite'), globallyDisabled).hidden
@@ -149,6 +154,14 @@ describe('selectionMenuItem', () => {
       label: 'Enable selected entries globally',
       action: {detail: {action: 'enableGlobally'}},
     });
+
+    expect(
+      selectionMenuItem(statusItem('disableForSite'), {
+        ...mixed,
+        disabledForSite: false,
+        anyGloballyDisabled: true,
+      }).hidden
+    ).toBe(true);
   });
 
   it('offers select all while any block is unselected, and deselect all while any is selected', () => {

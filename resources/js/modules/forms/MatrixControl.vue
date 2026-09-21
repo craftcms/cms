@@ -1018,6 +1018,11 @@
 
   /** Collapse/Expand and status actions, resolved against the block right now. */
   function stateActions(uid: string): ActionItems {
+    const targets = actionTargets(uid);
+    const bulk = targets.length > 1;
+    const globallyDisabled = targets.every(isGloballyDisabled);
+    const anyGloballyDisabled = targets.some(isGloballyDisabled);
+    const disabledForSite = targets.every(isDisabledForSite);
     const actions: ActionItems = [
       isCollapsed(uid)
         ? {
@@ -1033,51 +1038,48 @@
     ];
 
     if (!props.control.props.siteName) {
-      actions.push(
-        isGloballyDisabled(uid)
-          ? {
-              label: t('Enable'),
-              icon: 'circle',
-              action: blockEvent(uid, 'enable'),
-            }
-          : {
-              label: t('Disable'),
-              icon: 'circle-dashed',
-              action: blockEvent(uid, 'disable'),
-            }
-      );
-
-      return actions;
-    }
-
-    if (isGloballyDisabled(uid)) {
+      const action = targets.every(isDisabled) ? 'enable' : 'disable';
       actions.push({
-        label: t('Enable globally'),
-        icon: 'circle',
-        action: blockEvent(uid, 'enableGlobally'),
+        label: bulk
+          ? BULK_LABEL[action]!()
+          : action === 'enable'
+            ? t('Enable')
+            : t('Disable'),
+        icon: action === 'enable' ? 'circle' : 'circle-dashed',
+        action: blockEvent(uid, action),
       });
 
       return actions;
     }
 
+    if (anyGloballyDisabled) {
+      const action = globallyDisabled ? 'enableGlobally' : 'disableGlobally';
+      actions.push({
+        label: bulk
+          ? BULK_LABEL[action]!()
+          : action === 'enableGlobally'
+            ? t('Enable globally')
+            : t('Disable globally'),
+        icon: action === 'enableGlobally' ? 'circle' : 'circle-dashed',
+        action: blockEvent(uid, action),
+      });
+
+      return actions;
+    }
+
+    const siteAction = disabledForSite ? 'enableForSite' : 'disableForSite';
     actions.push(
-      isDisabledForSite(uid)
-        ? {
-            label: t('Enable for {site}', {
-              site: props.control.props.siteName,
-            }),
-            icon: 'circle',
-            action: blockEvent(uid, 'enableForSite'),
-          }
-        : {
-            label: t('Disable for {site}', {
-              site: props.control.props.siteName,
-            }),
-            icon: 'circle-dashed',
-            action: blockEvent(uid, 'disableForSite'),
-          },
       {
-        label: t('Disable globally'),
+        label: bulk
+          ? BULK_LABEL[siteAction]!()
+          : siteAction === 'enableForSite'
+            ? t('Enable for {site}', {site: props.control.props.siteName})
+            : t('Disable for {site}', {site: props.control.props.siteName}),
+        icon: siteAction === 'enableForSite' ? 'circle' : 'circle-dashed',
+        action: blockEvent(uid, siteAction),
+      },
+      {
+        label: bulk ? BULK_LABEL.disableGlobally!() : t('Disable globally'),
         icon: 'circle-dashed',
         action: blockEvent(uid, 'disableGlobally'),
       }
@@ -1202,7 +1204,8 @@
       return localActions(uid);
     }
 
-    const bulk = actionTargets(uid).length > 1;
+    const targets = actionTargets(uid);
+    const bulk = targets.length > 1;
 
     return server.map((item) => {
       const action = 'action' in item ? item.action : undefined;
@@ -1226,7 +1229,7 @@
               }),
             }
           : {}),
-        ...actionState(name, uid),
+        ...actionState(name, uid, targets),
       };
     });
   }
@@ -1234,25 +1237,31 @@
   /** Whether one of the server's items is shown, and whether it can be used. */
   function actionState(
     name: string,
-    uid: string
+    uid: string,
+    targets: readonly string[] = [uid]
   ): {hidden?: boolean; disabled?: boolean} {
+    const globallyDisabled = targets.every(isGloballyDisabled);
+    const anyGloballyDisabled = targets.some(isGloballyDisabled);
+    const disabledForSite = targets.every(isDisabledForSite);
+    const disabled = targets.every(isDisabled);
+
     switch (name) {
       case 'collapse':
         return {hidden: isCollapsed(uid)};
       case 'expand':
         return {hidden: !isCollapsed(uid)};
       case 'disable':
-        return {hidden: isDisabled(uid)};
+        return {hidden: disabled};
       case 'enable':
-        return {hidden: !isDisabled(uid)};
+        return {hidden: !disabled};
       case 'disableForSite':
-        return {hidden: isGloballyDisabled(uid) || isDisabledForSite(uid)};
+        return {hidden: anyGloballyDisabled || disabledForSite};
       case 'enableForSite':
-        return {hidden: isGloballyDisabled(uid) || !isDisabledForSite(uid)};
+        return {hidden: anyGloballyDisabled || !disabledForSite};
       case 'disableGlobally':
-        return {hidden: isGloballyDisabled(uid)};
+        return {hidden: globallyDisabled};
       case 'enableGlobally':
-        return {hidden: !isGloballyDisabled(uid)};
+        return {hidden: !globallyDisabled};
       case 'add':
       case 'duplicate':
         return {hidden: !canAdd.value, disabled: busy.value};
@@ -1280,6 +1289,10 @@
 
     for (const uid of uids) {
       if (next.entries[uid]) {
+        if (scope === 'site' && next.entries[uid].enabled === false) {
+          continue;
+        }
+
         next.entries[uid][scope === 'global' ? 'enabled' : 'enabledForSite'] =
           enabled;
 
@@ -1494,6 +1507,7 @@
       disabled: selected.length > 0 && selected.every(isDisabled),
       globallyDisabled:
         selected.length > 0 && selected.every(isGloballyDisabled),
+      anyGloballyDisabled: selected.some(isGloballyDisabled),
       disabledForSite: selected.length > 0 && selected.every(isDisabledForSite),
     };
   });

@@ -30,6 +30,8 @@ export type MatrixSelectionState = {
   disabled: boolean;
   /** Whether every selected block is globally disabled. */
   globallyDisabled?: boolean;
+  /** Whether any selected block is globally disabled. */
+  anyGloballyDisabled?: boolean;
   /** Whether every selected block is disabled for the current site. */
   disabledForSite?: boolean;
   /** Whether any block is collapsed, so there's something to expand. */
@@ -163,7 +165,7 @@ export function selectionMenuItem<Item extends object>(
 
       return {
         ...item,
-        hidden: hidden || state.globallyDisabled === true,
+        hidden: hidden || state.anyGloballyDisabled === true,
         label: enable
           ? t('Enable selected {type} for {site}', {type, site})
           : t('Disable selected {type} for {site}', {type, site}),
@@ -260,6 +262,9 @@ export function syncSelectionMenu(field: Element): void {
     collapsed: every('data-collapsed'),
     disabled: every('data-disabled'),
     globallyDisabled: every('data-disabled-global'),
+    anyGloballyDisabled: selected.some((block) =>
+      block.hasAttribute('data-disabled-global')
+    ),
     disabledForSite: every('data-disabled-site'),
     anyCollapsed: blocks.some((block) => block.hasAttribute('data-collapsed')),
     anyExpanded: blocks.some((block) => !block.hasAttribute('data-collapsed')),

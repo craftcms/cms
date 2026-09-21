@@ -189,20 +189,24 @@ export class MatrixEntry extends Base {
   private prepareActionMenu(): void {
     this.container.classList.add('active');
     const hideActions: string[] = [];
+    const targets = this.actionTargets();
+    const every = (attribute: string): boolean =>
+      targets.every((target) => target.hasAttribute(attribute));
+    const some = (attribute: string): boolean =>
+      targets.some((target) => target.hasAttribute(attribute));
 
     hideActions.push(this.collapsed ? 'collapse' : 'expand');
+    hideActions.push(every('data-disabled') ? 'disable' : 'enable');
+    const globallyDisabled = every('data-disabled-global');
+    const anyGloballyDisabled = some('data-disabled-global');
+    const disabledForSite = every('data-disabled-site');
     hideActions.push(
-      this.container.hasAttribute('data-disabled') ? 'disable' : 'enable'
-    );
-    const globallyDisabled = this.container.hasAttribute(
-      'data-disabled-global'
-    );
-    const disabledForSite = this.container.hasAttribute('data-disabled-site');
-    hideActions.push(
-      globallyDisabled || disabledForSite ? 'disableForSite' : 'enableForSite'
+      anyGloballyDisabled || disabledForSite
+        ? 'disableForSite'
+        : 'enableForSite'
     );
     hideActions.push(globallyDisabled ? 'disableGlobally' : 'enableGlobally');
-    if (globallyDisabled) {
+    if (anyGloballyDisabled) {
       hideActions.push('disableForSite', 'enableForSite');
     }
 
@@ -514,6 +518,13 @@ export class MatrixEntry extends Base {
     attribute: 'enabled' | 'enabledForSite',
     enabled: boolean
   ): void {
+    if (
+      attribute === 'enabledForSite' &&
+      this.container.hasAttribute('data-disabled-global')
+    ) {
+      return;
+    }
+
     const input = blockPart<HTMLInputElement>(
       this.container,
       `input[name$="[${attribute}]"]`
@@ -538,13 +549,16 @@ export class MatrixEntry extends Base {
       '[data-matrix-block-actions] > .status'
     );
     if (status) {
-      const label = this.container.hasAttribute('data-disabled-global')
-        ? t('Disabled globally')
-        : this.container.hasAttribute('data-disabled-site')
-          ? t('Disabled for {site}', {
-              site: this.container.dataset.siteName ?? '',
-            })
-          : t('Disabled');
+      const label =
+        this.container.dataset.siteName &&
+        this.container.hasAttribute('data-disabled-global')
+          ? t('Disabled globally')
+          : this.container.dataset.siteName &&
+              this.container.hasAttribute('data-disabled-site')
+            ? t('Disabled for {site}', {
+                site: this.container.dataset.siteName,
+              })
+            : t('Disabled');
       status.title = label;
       const accessibleLabel = status.querySelector('.visually-hidden');
       if (accessibleLabel) {
@@ -592,6 +606,12 @@ export class MatrixEntry extends Base {
       (this.matrix.entrySelect?.totalSelected ?? 0) > 1 &&
       (this.matrix.entrySelect?.isSelected(this.container) ?? false)
     );
+  }
+
+  private actionTargets(): HTMLElement[] {
+    return this.bulkActionMode()
+      ? Array.from(this.matrix.entrySelect?.getSelectedItems() ?? [])
+      : [this.container];
   }
 
   onActionSelect(option: HTMLElement): void {

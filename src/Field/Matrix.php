@@ -725,7 +725,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ],
         ];
 
-        $siteName = $this->localizedSiteName($entry);
+        $siteName = $this->localizedSiteName($entry->getOwner());
 
         if ($siteName === null) {
             $items[] = [
@@ -1253,18 +1253,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $items;
     }
 
-    private function localizedSiteName(?ElementInterface $element): ?string
+    private function localizedSiteName(?ElementInterface $owner): ?string
     {
-        if ($element === null) {
+        if ($owner === null) {
             return null;
         }
 
-        $siteIds = $element instanceof Entry
-            ? array_column(ElementHelper::supportedSitesForElement($element), 'siteId')
-            : $this->entryManager()->getSupportedSiteIds($element);
+        $siteIds = $this->entryManager()->getSupportedSiteIds($owner);
 
         return count($siteIds) > 1
-            ? t($element->getSite()->getName(), category: 'site')
+            ? t($owner->getSite()->getName(), category: 'site')
             : null;
     }
 
@@ -1448,7 +1446,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ]);
     }
 
-    /** @return array{formPayload: array<string, mixed>} */
+    /** @return array{formPayload: array<string, mixed>, siteName: string|null} */
     public function blockFormVariables(Entry $entry, bool $static): array
     {
         $namespace = InputNamespace::namespaceInputName("{$this->handle}[entries][uid:{$entry->uid}]");
@@ -1464,6 +1462,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return [
             'formPayload' => $payload->jsonSerialize(),
+            'siteName' => $this->localizedSiteName($entry->getOwner()),
         ];
     }
 

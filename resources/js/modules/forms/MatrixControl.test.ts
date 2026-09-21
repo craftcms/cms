@@ -579,6 +579,10 @@ describe('MatrixControl', () => {
     const serverActions = (uid: string) => [
       serverItem(uid, 'collapse', 'Collapse'),
       serverItem(uid, 'expand', 'Expand', {hidden: true}),
+      serverItem(uid, 'disableForSite', 'Disable for English'),
+      serverItem(uid, 'enableForSite', 'Enable for English', {hidden: true}),
+      serverItem(uid, 'disableGlobally', 'Disable globally'),
+      serverItem(uid, 'enableGlobally', 'Enable globally', {hidden: true}),
       serverItem(uid, 'delete', 'Delete'),
       serverItem(uid, 'duplicate', 'Duplicate'),
       serverItem(uid, 'copy', 'Copy'),
@@ -675,6 +679,62 @@ describe('MatrixControl', () => {
         'Duplicate selected blocks'
       );
       expect(item('block-a', 'copy')?.label).toBe('Copy selected blocks');
+    });
+
+    it('resolves scoped status actions against the whole selection', async () => {
+      mountWithMenu(
+        {siteName: 'English'},
+        {
+          entries: {
+            'block-a': {
+              type: 'newType',
+              enabled: false,
+              enabledForSite: true,
+            },
+            'block-b': {
+              type: 'newType',
+              enabled: true,
+              enabledForSite: true,
+            },
+          },
+          sortOrder: ['block-a', 'block-b'],
+        }
+      );
+      await nextTick();
+
+      for (const box of container!.querySelectorAll('craft-checkbox')) {
+        box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+        Object.assign(box, {checked: true});
+        box.dispatchEvent(
+          new CustomEvent('model-value-changed', {bubbles: true})
+        );
+      }
+      await nextTick();
+
+      expect(item('block-a', 'disableGlobally')?.hidden).toBe(false);
+      expect(item('block-a', 'enableGlobally')?.hidden).toBe(true);
+      expect(item('block-b', 'disableGlobally')?.hidden).toBe(false);
+      expect(item('block-b', 'enableGlobally')?.hidden).toBe(true);
+      expect(item('block-a', 'disableForSite')?.hidden).toBe(true);
+      expect(item('block-b', 'disableForSite')?.hidden).toBe(true);
+
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-block-action', {
+          detail: {
+            action: 'disableForSite',
+            uid: 'block-b',
+            trigger: container!.querySelector('[data-id="block-b"]'),
+          },
+        })
+      );
+      await nextTick();
+
+      expect(emitted.at(-1)).toMatchObject({
+        entries: {
+          'block-a': {enabled: false, enabledForSite: true},
+          'block-b': {enabled: true, enabledForSite: false},
+        },
+      });
     });
 
     it('hides what there is no room for', async () => {
@@ -1457,7 +1517,7 @@ describe('MatrixControl', () => {
   it('selects blocks and applies a menu action across the selection', async () => {
     mount({
       entries: {
-        'block-a': {type: 'newType', enabled: true},
+        'block-a': {type: 'newType', enabled: false},
         'block-b': {type: 'newType', enabled: true},
         'block-c': {type: 'newType', enabled: true},
       },
@@ -1477,8 +1537,9 @@ describe('MatrixControl', () => {
     expect(blocks[2]!.hasAttribute('data-selected')).toBe(false);
 
     // Craft 5's `bulkActionMode()`: a menu action on a block that's part of a
-    // multi-selection applies to the whole selection.
-    invoke('block-a', 'Disable');
+    // multi-selection applies to the whole selection. A mixed selection still
+    // offers Disable, even when the menu belongs to its disabled block.
+    invoke('block-a', 'Disable selected blocks');
     await nextTick();
 
     expect(emitted.at(-1)).toMatchObject({
