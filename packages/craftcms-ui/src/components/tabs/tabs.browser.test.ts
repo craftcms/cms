@@ -22,7 +22,8 @@ async function fixture(hostStyle: string): Promise<HTMLElement> {
   tabs.append(tab, panel);
   document.body.append(tabs);
 
-  await (tabs as HTMLElement & {updateComplete?: Promise<unknown>}).updateComplete;
+  await (tabs as HTMLElement & {updateComplete?: Promise<unknown>})
+    .updateComplete;
   await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
   return tabs;
 }
@@ -35,7 +36,9 @@ it('scrolls its panels inside a host that was given a height', async () => {
   const tabs = await fixture('display: block; block-size: 300px;');
   const region = panels(tabs);
 
-  expect(Math.round(region.getBoundingClientRect().height)).toBeLessThanOrEqual(300);
+  expect(Math.round(region.getBoundingClientRect().height)).toBeLessThanOrEqual(
+    300
+  );
   expect(region.scrollHeight).toBeGreaterThan(region.clientHeight);
 
   region.scrollTop = 500;

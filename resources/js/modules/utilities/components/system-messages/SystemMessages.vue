@@ -46,7 +46,7 @@
 </script>
 
 <template>
-  <CpContainer id="messages">
+  <div id="messages">
     <div v-for="message in localMessages" :key="message.key" class="mb-6">
       <h2 class="text-lg mb-2">{{ message.heading }}</h2>
       <craft-pane appearance="outline">
@@ -67,7 +67,7 @@
         <div class="font-mono text-xs" v-html="formatBody(message.body)"></div>
       </craft-pane>
     </div>
-  </CpContainer>
+  </div>
 
   <SystemMessageEditModal
     v-if="editingMessage"

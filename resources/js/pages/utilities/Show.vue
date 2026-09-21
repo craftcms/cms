@@ -2,6 +2,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   // No nav of its own: the utilities hang off the Utilities item in the main
   // navigation, so a utility is a plain page with no sidebar beside it.
@@ -24,8 +25,8 @@
       :html="toolbarHtml"
     ></DynamicHtmlRenderer>
   </LayoutSlot>
-  <div class="py-4">
+  <CpContainer class="py-lg">
     <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
-  </div>
+  </CpContainer>
   <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
 </template>

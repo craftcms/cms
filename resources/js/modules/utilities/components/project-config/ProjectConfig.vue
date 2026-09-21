@@ -236,10 +236,6 @@
 </template>
 
 <style scoped lang="scss">
-  .project-config-utility {
-    padding: var(--c-spacing-lg);
-  }
-
   .config-viewer {
     max-height: 500px;
     overflow: auto;
