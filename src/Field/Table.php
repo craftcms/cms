@@ -121,6 +121,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         return TableControl::make($context->path)
             ->columns($columns)
+            ->defaultValues($this->defaultRowValues)
             ->allowAdd(! $this->staticRows)
             ->allowDelete(! $this->staticRows)
             ->allowReorder(! $this->staticRows)
@@ -174,6 +175,13 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->allowDelete()
                         ->allowReorder()
                         ->value($this->defaults ?? [])),
+                FormField::make(t('Default Row Values'))
+                    ->instructions(t('Define the default values for new rows.'))
+                    ->control(TableControl::make('defaultRowValues')
+                        ->columns($defaultColumns)
+                        ->minRows(1)
+                        ->maxRows(1)
+                        ->value([$this->defaultRowValues])),
             ])->dependsOn('settings.columns'),
             FormField::make(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
@@ -222,6 +230,9 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     /** @var list<TableRowData>|null The default row values that new elements should have */
     public ?array $defaults = [[]];
 
+    /** @var TableRowData The default values for newly added rows */
+    public array $defaultRowValues = [];
+
     public function __construct($config = [])
     {
         // Config normalization
@@ -260,15 +271,32 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             }
         }
 
+        if (isset($config['defaultRowValues'])) {
+            $defaultRowValues = $config['defaultRowValues'];
+
+            $config['defaultRowValues'] = match (true) {
+                ! is_array($defaultRowValues) => [],
+                count($defaultRowValues) === 1
+                    && is_array($defaultRowValues[0] ?? null) => $defaultRowValues[0],
+                default => $defaultRowValues,
+            };
+        }
+
         // handle some default cell values
-        if (! empty($config['columns']) && isset($config['defaults'])) {
+        if (! empty($config['columns'])) {
             foreach ($config['columns'] as $colId => $col) {
                 // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
-                    foreach ($config['defaults'] as &$row) {
-                        if (isset($row[$colId])) {
-                            $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                    if (isset($config['defaults'])) {
+                        foreach ($config['defaults'] as &$row) {
+                            if (isset($row[$colId])) {
+                                $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                            }
                         }
+                        unset($row);
+                    }
+                    if (isset($config['defaultRowValues'][$colId])) {
+                        $config['defaultRowValues'][$colId] = DateTimeHelper::toIso8601($config['defaultRowValues'][$colId]) ?: null;
                     }
                 }
             }
@@ -842,6 +870,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             'name' => $this->handle,
             'cols' => $columns,
             'rows' => $value,
+            'defaultValues' => $this->defaultRowValues,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'static' => false,

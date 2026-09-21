@@ -19,6 +19,9 @@ class Table extends Control
     /** @var array<string, array<string, mixed>> */
     private array $columns = [];
 
+    /** @var array<string, mixed> */
+    private array $defaultValues = [];
+
     private bool $allowAdd = false;
 
     private bool $allowDelete = false;
@@ -45,6 +48,7 @@ class Table extends Control
             'name' => $attributes['name'],
             'cols' => $control->props['columns'],
             'rows' => $rows,
+            'defaultValues' => $control->props['defaultValues'] ?? [],
             'allowAdd' => (bool) ($control->props['allowAdd'] ?? false),
             'allowDelete' => (bool) ($control->props['allowDelete'] ?? false),
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
@@ -64,6 +68,14 @@ class Table extends Control
     public function columns(array $columns): static
     {
         $this->columns = $columns;
+
+        return $this;
+    }
+
+    /** @param array<string, mixed> $defaultValues */
+    public function defaultValues(array $defaultValues): static
+    {
+        $this->defaultValues = $defaultValues;
 
         return $this;
     }
@@ -130,6 +142,7 @@ class Table extends Control
     {
         return Arr::whereNotNull([
             'columns' => $this->columns,
+            'defaultValues' => $this->defaultValues,
             'allowAdd' => $this->allowAdd,
             'allowDelete' => $this->allowDelete,
             'allowReorder' => $this->allowReorder,

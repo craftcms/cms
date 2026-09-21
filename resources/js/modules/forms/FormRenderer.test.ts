@@ -270,7 +270,10 @@ vi.mock('../editable-table', () => ({
         string,
         {type: string; textExpanderTriggers?: TextExpanderTriggers}
       >,
-      settings: {minRows?: number | null} = {}
+      settings: {
+        defaultValues?: FormValues;
+        minRows?: number | null;
+      } = {}
     ) {
       const body = required(
         document.querySelector<HTMLTableSectionElement>(`#${id} tbody`),
@@ -282,7 +285,7 @@ vi.mock('../editable-table', () => ({
           String(body.children.length),
           columns,
           baseName,
-          {}
+          settings.defaultValues ?? {}
         ).appendTo(body);
       }
     }
@@ -2946,6 +2949,7 @@ describe('FormRenderer', () => {
             allowDelete: true,
             allowReorder: true,
             minRows: 2,
+            defaultValues: {name: '<New row>', enabled: false},
           },
           [{name: '<Row>', enabled: true}],
         ],
@@ -3097,6 +3101,16 @@ describe('FormRenderer', () => {
         'input[name="settings[rows][0][enabled]"][type="checkbox"]'
       )?.checked
     ).toBe(true);
+    expect(
+      container.querySelector<HTMLTextAreaElement>(
+        'textarea[name="settings[rows][1][name]"]'
+      )?.value
+    ).toBe('<New row>');
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[rows][1][enabled]"][type="checkbox"]'
+      )?.checked
+    ).toBe(false);
     await vi.waitFor(() =>
       expect(
         container.querySelector<HTMLInputElement>(
@@ -3136,7 +3150,7 @@ describe('FormRenderer', () => {
         )?.value
       ).toEqual([
         {name: '<Row>', enabled: true},
-        {name: '', enabled: false},
+        {name: '<New row>', enabled: false},
       ])
     );
 
@@ -3172,7 +3186,7 @@ describe('FormRenderer', () => {
       settings: {
         rows: [
           {name: '<Changed row>', enabled: true},
-          {name: '', enabled: false},
+          {name: '<New row>', enabled: false},
         ],
       },
     });
