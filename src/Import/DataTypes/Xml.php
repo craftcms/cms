@@ -38,13 +38,21 @@ class Xml implements DataTypeInterface
 
         // iterate through the array and get all unique properties;
         $keys = Arr::uniqueDotifiedKeys($array);
-        sort($keys);
 
-        array_walk($keys, function (&$value, $key) {
-            $value = ['label' => $value, 'value' => $value];
-        });
+        $headings = [];
+        foreach ($keys as $key) {
+            $sample = Arr::sampleValueAtDotifiedKey($array, $key);
+            $hint = is_scalar($sample) && $sample !== '' ? (string) $sample : null;
+            $headings[] = array_filter([
+                'label' => $key,
+                'value' => $key,
+                'data' => $hint !== null ? ['hint' => $hint] : null,
+            ], fn ($value) => $value !== null);
+        }
 
-        return $keys;
+        usort($headings, fn ($a, $b) => $a['label'] <=> $b['label']);
+
+        return $headings;
     }
 
     /**

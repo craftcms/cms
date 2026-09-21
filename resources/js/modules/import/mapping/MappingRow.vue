@@ -11,7 +11,7 @@
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/info-icon/info-icon';
-  import '@craftcms/ui/components/select/select';
+  import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
   import {computed, inject, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
@@ -65,12 +65,15 @@
     isChecked(getAt(context.values.clearableItems, path.value))
   );
 
-  function onMapChanged(event: Event): void {
-    if (!(event.target instanceof HTMLSelectElement)) {
-      throw new TypeError('Expected a select event target.');
+  function onMapChanged(event: CustomEvent): void {
+    if (event.detail?.initialize) {
+      return;
     }
 
-    setAt(context!.values.map, path.value, event.target.value);
+    const value = (event.target as HTMLElement & {modelValue?: unknown})
+      .modelValue;
+
+    setAt(context!.values.map, path.value, value == null ? '' : String(value));
     setAt(context!.suggestedMap, path.value, false);
   }
 
@@ -126,24 +129,17 @@
       >
         {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
       </craft-button>
-      <craft-select v-else :disabled="!context.editable">
-        <select
-          slot="input"
-          :value="mapValue"
-          :disabled="!context.editable"
-          :aria-label="col.label"
-          @change="onMapChanged"
-        >
-          <option
-            v-for="option in context.sourceDataCols"
-            :key="option.value"
-            :value="option.value"
-            :selected="option.value === mapValue"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </craft-select>
+      <CraftCombobox
+        v-else
+        :model-value="mapValue"
+        :options="context.sourceDataCols"
+        :disabled="!context.editable"
+        :label="col.label"
+        label-sr-only
+        require-option-match
+        show-all-on-empty
+        @model-value-changed="onMapChanged"
+      />
     </td>
 
     <!-- The column header names these; the row is named by its `th`. An empty
@@ -184,7 +180,7 @@
 </template>
 
 <style scoped lang="scss">
-  .best-guess select {
+  .best-guess craft-combobox {
     background: var(--color-blue-100);
   }
 </style>

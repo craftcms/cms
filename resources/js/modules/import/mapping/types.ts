@@ -1,9 +1,12 @@
 import type {InjectionKey} from 'vue';
+import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
 
 /** One `sourceDataCols` entry — a heading in the imported file. */
 export interface SourceDataCol {
   label: string;
   value: string;
+  /** `hint` is the incoming file's first-row value for this column, if any. */
+  data?: ComboboxOptionData | null;
 }
 
 /**

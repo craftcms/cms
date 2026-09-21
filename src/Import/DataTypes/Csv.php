@@ -39,13 +39,21 @@ class Csv implements DataTypeInterface
         }
 
         $keys = array_shift($data);
-        sort($keys);
+        $firstRow = $data[0] ?? null;
 
-        array_walk($keys, function (&$value, $key) {
-            $value = ['label' => $value, 'value' => $value];
-        });
+        $headings = [];
+        foreach ($keys as $index => $key) {
+            $hint = $firstRow[$index] ?? null;
+            $headings[] = array_filter([
+                'label' => $key,
+                'value' => $key,
+                'data' => $hint !== null && $hint !== '' ? ['hint' => (string) $hint] : null,
+            ], fn ($value) => $value !== null);
+        }
 
-        return $keys;
+        usort($headings, fn ($a, $b) => $a['label'] <=> $b['label']);
+
+        return $headings;
     }
 
     /**

@@ -338,4 +338,39 @@ class Arr extends \Illuminate\Support\Arr
 
         return array_values(array_unique($keys));
     }
+
+    /**
+     * Returns the value at a dot-notated key produced by `uniqueDotifiedKeys()`, descending into
+     * the first element of any list encountered (mirroring that method's own list transparency).
+     *
+     * @param  array<array-key, mixed>  $array
+     */
+    public static function sampleValueAtDotifiedKey(array $array, string $key): mixed
+    {
+        $value = $array;
+
+        foreach (explode('.', $key) as $segment) {
+            $value = self::firstListElement($value);
+
+            if (! is_array($value) || ! array_key_exists($segment, $value)) {
+                return null;
+            }
+
+            $value = $value[$segment];
+        }
+
+        return self::firstListElement($value);
+    }
+
+    /**
+     * Descends into the first element of a list, repeating until the value isn't a list.
+     */
+    private static function firstListElement(mixed $value): mixed
+    {
+        while (is_array($value) && self::isList($value)) {
+            $value = $value[0] ?? null;
+        }
+
+        return $value;
+    }
 }
