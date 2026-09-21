@@ -251,32 +251,34 @@ describe('field input action listeners', () => {
     const blocks = [
       ...document.querySelectorAll<HTMLElement>('[data-matrix-block]'),
     ];
-    const entries = blocks.map(() => ({
-      collapse: vi.fn(),
-      expand: vi.fn(),
-      disable: vi.fn(),
-      enable: vi.fn(),
-    }));
+    const actions = [
+      'collapse',
+      'disable',
+      'disableForSite',
+      'enableForSite',
+      'disableGlobally',
+      'enableGlobally',
+    ] as const;
+    const entries = blocks.map(() =>
+      Object.fromEntries(actions.map((action) => [action, vi.fn()]))
+    );
     forContainer.mockImplementation(
       (el: Element) => entries[blocks.indexOf(el as HTMLElement)]
     );
     const trigger = document.querySelector('#trigger');
 
-    window.dispatchEvent(
-      new CustomEvent('craft:matrix-selection-action', {
-        detail: {action: 'collapse', trigger},
-      })
-    );
-    window.dispatchEvent(
-      new CustomEvent('craft:matrix-selection-action', {
-        detail: {action: 'disable', trigger},
-      })
-    );
+    for (const action of actions) {
+      window.dispatchEvent(
+        new CustomEvent('craft:matrix-selection-action', {
+          detail: {action, trigger},
+        })
+      );
+    }
 
-    expect(entries[0]!.collapse).toHaveBeenCalled();
-    expect(entries[0]!.disable).toHaveBeenCalled();
-    expect(entries[1]!.collapse).not.toHaveBeenCalled();
-    expect(entries[1]!.disable).not.toHaveBeenCalled();
+    for (const action of actions) {
+      expect(entries[0]![action]).toHaveBeenCalledOnce();
+      expect(entries[1]![action]).not.toHaveBeenCalled();
+    }
   });
 
   it('selects and deselects the field’s blocks through its Matrix input', () => {

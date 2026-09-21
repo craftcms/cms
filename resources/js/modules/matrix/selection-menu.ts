@@ -28,6 +28,10 @@ export type MatrixSelectionState = {
   collapsed: boolean;
   /** Whether every selected block is disabled, so the item enables instead. */
   disabled: boolean;
+  /** Whether every selected block is globally disabled. */
+  globallyDisabled?: boolean;
+  /** Whether every selected block is disabled for the current site. */
+  disabledForSite?: boolean;
   /** Whether any block is collapsed, so there's something to expand. */
   anyCollapsed: boolean;
   /** Whether any block is expanded, so there's something to collapse. */
@@ -151,6 +155,48 @@ export function selectionMenuItem<Item extends object>(
       };
     }
 
+    case 'disableForSite':
+    case 'enableForSite': {
+      const enable = state.disabledForSite === true;
+      const site =
+        typeof action.detail?.site === 'string' ? action.detail.site : '';
+
+      return {
+        ...item,
+        hidden: hidden || state.globallyDisabled === true,
+        label: enable
+          ? t('Enable selected {type} for {site}', {type, site})
+          : t('Disable selected {type} for {site}', {type, site}),
+        action: {
+          ...action,
+          detail: {
+            ...action.detail,
+            action: enable ? 'enableForSite' : 'disableForSite',
+          },
+        },
+      };
+    }
+
+    case 'disableGlobally':
+    case 'enableGlobally': {
+      const enable = state.globallyDisabled === true;
+
+      return {
+        ...item,
+        hidden,
+        label: enable
+          ? t('Enable selected {type} globally', {type})
+          : t('Disable selected {type} globally', {type}),
+        action: {
+          ...action,
+          detail: {
+            ...action.detail,
+            action: enable ? 'enableGlobally' : 'disableGlobally',
+          },
+        },
+      };
+    }
+
     default:
       return item;
   }
@@ -213,6 +259,8 @@ export function syncSelectionMenu(field: Element): void {
     count: selected.length,
     collapsed: every('data-collapsed'),
     disabled: every('data-disabled'),
+    globallyDisabled: every('data-disabled-global'),
+    disabledForSite: every('data-disabled-site'),
     anyCollapsed: blocks.some((block) => block.hasAttribute('data-collapsed')),
     anyExpanded: blocks.some((block) => !block.hasAttribute('data-collapsed')),
   };
