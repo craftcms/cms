@@ -2192,31 +2192,35 @@ JS, [
                     );
             }
 
-            $nodes[] = Field::make(t('Post Date'))
-                ->control(
-                    DateTime::make('postDate')
-                        ->showTime()
-                        // Stored times aren't constrained to a picker step, and
-                        // the screen submits natively — a coarser increment
-                        // would make any off-step value fail validation and
-                        // silently block saving.
-                        ->minuteIncrement(1)
-                        ->value(self::dateTimeControlValue($this->postDate))
-                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                );
+            if ($this->getType()->showPostDateField) {
+                $nodes[] = Field::make(t('Post Date'))
+                    ->control(
+                        DateTime::make('postDate')
+                            ->showTime()
+                            // Stored times aren't constrained to a picker step, and
+                            // the screen submits natively — a coarser increment
+                            // would make any off-step value fail validation and
+                            // silently block saving.
+                            ->minuteIncrement(1)
+                            ->value(self::dateTimeControlValue($this->postDate))
+                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                    );
+            }
 
-            $nodes[] = Field::make(t('Expiry Date'))
-                ->control(
-                    DateTime::make('expiryDate')
-                        ->showTime()
-                        // Stored times aren't constrained to a picker step, and
-                        // the screen submits natively — a coarser increment
-                        // would make any off-step value fail validation and
-                        // silently block saving.
-                        ->minuteIncrement(1)
-                        ->value(self::dateTimeControlValue($this->expiryDate))
-                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                );
+            if ($this->getType()->showExpiryDateField) {
+                $nodes[] = Field::make(t('Expiry Date'))
+                    ->control(
+                        DateTime::make('expiryDate')
+                            ->showTime()
+                            // Stored times aren't constrained to a picker step, and
+                            // the screen submits natively — a coarser increment
+                            // would make any off-step value fail validation and
+                            // silently block saving.
+                            ->minuteIncrement(1)
+                            ->value(self::dateTimeControlValue($this->expiryDate))
+                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                    );
+            }
         }
 
         return $nodes;
@@ -2382,26 +2386,30 @@ JS, [
             });
 
             // Post Date
-            $fields['postDate'] = FormFields::dateTimeFieldHtml([
-                'status' => $this->getAttributeStatus('postDate'),
-                'label' => t('Post Date'),
-                'id' => 'postDate',
-                'name' => 'postDate',
-                'value' => $this->postDate,
-                'errors' => $this->errors()->get('postDate'),
-                'disabled' => $static,
-            ]);
+            if ($this->getType()->showPostDateField) {
+                $fields['postDate'] = FormFields::dateTimeFieldHtml([
+                    'status' => $this->getAttributeStatus('postDate'),
+                    'label' => t('Post Date'),
+                    'id' => 'postDate',
+                    'name' => 'postDate',
+                    'value' => $this->postDate,
+                    'errors' => $this->errors()->get('postDate'),
+                    'disabled' => $static,
+                ]);
+            }
 
             // Expiry Date
-            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
-                'status' => $this->getAttributeStatus('expiryDate'),
-                'label' => t('Expiry Date'),
-                'id' => 'expiryDate',
-                'name' => 'expiryDate',
-                'value' => $this->expiryDate,
-                'errors' => $this->errors()->get('expiryDate'),
-                'disabled' => $static,
-            ]);
+            if ($this->getType()->showExpiryDateField) {
+                $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
+                    'status' => $this->getAttributeStatus('expiryDate'),
+                    'label' => t('Expiry Date'),
+                    'id' => 'expiryDate',
+                    'name' => 'expiryDate',
+                    'value' => $this->expiryDate,
+                    'errors' => $this->errors()->get('expiryDate'),
+                    'disabled' => $static,
+                ]);
+            }
         }
 
         $fields[] = parent::metaFieldsHtml($static);

@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Url;
@@ -308,7 +309,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         ]);
 
         if (! $disk instanceof FilesystemAdapter) {
-            throw new RuntimeException("Unable to create a scoped Laravel filesystem disk for volume [$this->name].");
+            throw new FilesystemException("Unable to create a scoped Laravel filesystem disk for volume [$this->name].");
         }
 
         return $disk;
@@ -346,7 +347,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
     {
         $target = $this->resolveStorageTargetKey($handle ?? $this->_fsHandle);
         if ($target === null) {
-            throw new RuntimeException('Volume is missing or has an invalid disk.');
+            throw new FilesystemException('Volume is missing or has an invalid disk.');
         }
 
         return $target;

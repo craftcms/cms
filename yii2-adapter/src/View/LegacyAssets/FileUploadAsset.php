@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\View\LegacyAssets;
+namespace CraftCms\Yii2Adapter\View\LegacyAssets;
 
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\JqueryUiAsset;
+use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 
 use function CraftCms\Cms\craftAsset;
 

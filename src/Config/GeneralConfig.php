@@ -1871,7 +1871,7 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
-     * The registered upload transport to use, or null to select one from the temporary disk.
+     * The registered upload transport to use, or null to select one from the upload session disk.
      *
      * @group Assets
      */

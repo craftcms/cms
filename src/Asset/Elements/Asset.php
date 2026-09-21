@@ -1471,17 +1471,15 @@ JS, [
             HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $dimensionsLabel) => <<<JS
 $('#' + $id).on('activate', () => {
   const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-  const uploader = Craft.createUploader(null, fileInput, {
+  const uploader = new Craft.Uploaders.Uploader(fileInput[0], {
     dropZone: null,
-    fileInput: fileInput,
-    paramName: 'replaceFile',
+    fileInput: fileInput[0],
     replace: true,
-    events: {
-      fileuploadstart: () => {
+    on: {
+      start: () => {
         $('#' + Craft.namespaceId('thumb-container', $namespace)).addClass('loading');
       },
-      fileuploaddone: (event, data) => {
-        const result = event instanceof CustomEvent ? event.detail : data.result;
+      done: ({result}) => {
 
         // Update the filename input and serialized param value
         const filenameInput = $('#' + Craft.namespaceId('new-filename', $namespace))
@@ -1555,15 +1553,14 @@ $('#' + $id).on('activate', () => {
           }
         }
       },
-      fileuploadfail: (event, data) => {
-        const file = data.data.getAll('replaceFile');
-        const backupFilename = file[0].name;
+      fail: ({error, canceled, file}) => {
+        if (canceled) {
+          return;
+        }
 
-        const response = event instanceof Event
-          ? event.detail
-          : data?.jqXHR?.responseJSON;
-
-        let {message, filename} = response || {};
+        const backupFilename = file?.name;
+        let message = error instanceof Error ? error.message : undefined;
+        let filename = error?.data?.filename;
 
         if (!message) {
           if (!filename) {
@@ -1576,7 +1573,7 @@ $('#' + $id).on('activate', () => {
 
         Craft.cp.displayError(message);
       },
-      fileuploadalways: (event, data) => {
+      settled: () => {
         $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
       },
     }
@@ -1957,7 +1954,7 @@ JS, [
     ): ?AssetTransformResult {
         try {
             return $this->transform($definition);
-        } catch (AssetTransformException|NotSupportedException $exception) {
+        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
             report($exception);
 
             return null;

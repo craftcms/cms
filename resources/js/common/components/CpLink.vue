@@ -4,6 +4,37 @@
 
   defineOptions({inheritAttrs: false});
 
+  type MouseHandler = (event: MouseEvent) => void;
+
+  /**
+   * Inertia's `<Link>` only skips SPA navigation for a modified click (a held
+   * modifier key or a non-primary button) when its root element is a real
+   * `<a>` tag. Since custom elements render as something else, its own check
+   * never kicks in, so we replicate it here for any mouse handlers it hands
+   * us before they reach the custom element.
+   */
+  function isModifiedClick(event: MouseEvent): boolean {
+    return (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.button !== 0
+    );
+  }
+
+  function guardMouseHandler(handler: unknown): MouseHandler | undefined {
+    if (typeof handler !== 'function') {
+      return undefined;
+    }
+
+    return (event: MouseEvent) => {
+      if (!isModifiedClick(event)) {
+        (handler as MouseHandler)(event);
+      }
+    };
+  }
+
   const CustomElementLink = defineComponent({
     inheritAttrs: false,
     props: {
@@ -13,7 +44,17 @@
       },
     },
     setup(props, {attrs, slots}) {
-      return () => h(props.tag, attrs, slots.default?.());
+      return () =>
+        h(
+          props.tag,
+          {
+            ...attrs,
+            onClick: guardMouseHandler(attrs.onClick),
+            onMousedown: guardMouseHandler(attrs.onMousedown),
+            onMouseup: guardMouseHandler(attrs.onMouseup),
+          },
+          slots.default?.()
+        );
     },
   });
 

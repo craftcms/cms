@@ -278,7 +278,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly) {
         this.currentFolderId =
           this.currentFolderId || this.$source.data('folder-id');
-        const fsType = this.$source.data('fs-type');
 
         this.createUploadInputs();
 
@@ -290,26 +289,25 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           this.$uploadButton.removeClass('disabled');
 
           const options = {
-            fileInput: this.$uploadInput,
-            dropZone: this.$container,
-            events: {
-              fileuploadstart: this._onUploadStart.bind(this),
-              fileuploadprogressall: this._onUploadProgress.bind(this),
-              fileuploaddone: this._onUploadSuccess.bind(this),
-              fileuploadalways: this._onUploadAlways.bind(this),
-              fileuploadfail: this._onUploadFailure.bind(this),
+            fileInput: this.$uploadInput.toArray(),
+            dropZone: this.$container.toArray(),
+            on: {
+              start: this._onUploadStart.bind(this),
+              progress: this._onUploadProgress.bind(this),
+              done: this._onUploadSuccess.bind(this),
+              settled: this._onUploadAlways.bind(this),
+              fail: this._onUploadFailure.bind(this),
             },
           };
 
           if (this.settings?.criteria?.kind) {
-            options.allowedKinds = this.settings.criteria.kind;
+            options.allowedKinds = [this.settings.criteria.kind].flat();
           }
 
           this._currentUploaderSettings = options;
 
-          this.uploader = Craft.createUploader(
-            fsType,
-            this.$uploadButton,
+          this.uploader = new Craft.Uploaders.Uploader(
+            this.$uploadButton[0],
             options
           );
           this.uploader.setParams({
@@ -478,9 +476,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * Update uploaded byte count.
      */
-    _onUploadProgress: function (event, data = null) {
-      data = event instanceof CustomEvent ? event.detail : data;
-
+    _onUploadProgress: function (data) {
       var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
@@ -492,9 +488,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @param {Object} data
      * @private
      */
-    _onUploadSuccess: function (event, data = null) {
-      const result = event instanceof CustomEvent ? event.detail : data.result;
-
+    _onUploadSuccess: function ({result}) {
       // Add the uploaded file to the selected ones, if appropriate
       this.selectElementAfterUpdate(result.assetId);
 
@@ -537,12 +531,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data = null) {
-      const response =
-        event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+    _onUploadFailure: function ({error, canceled, file}) {
+      if (canceled) {
+        return;
+      }
 
-      let {message, filename, errors} = response || {};
-      filename = filename || data?.files?.[0].name;
+      let message = error instanceof Error ? error.message : undefined;
+      const {errors = {}} = error?.data || {};
+      const filename = error?.data?.filename || file?.name;
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
@@ -596,7 +592,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       var doFollowup = (parameterArray, parameterIndex, callback) => {
         var data = {};
         var action = null;
-        const {replaceAction, deleteAction} = this.uploader.settings;
+        const {resolveConflictAction, deleteAction} = this.uploader.settings;
 
         const followupAlways = () => {
           parameterIndex++;
@@ -622,7 +618,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         };
 
         if (parameterArray[parameterIndex].choice === 'replace') {
-          action = replaceAction;
+          action = resolveConflictAction;
           data.sourceAssetId = parameterArray[parameterIndex].assetId;
 
           if (parameterArray[parameterIndex].conflictingAssetId) {
