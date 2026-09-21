@@ -3,7 +3,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {Source} from '@/modules/elements/types/sources';
 
 const router = vi.hoisted(() => ({
-  visit: vi.fn(),
+  get: vi.fn(),
   prefetch: vi.fn(),
 }));
 
@@ -71,7 +71,7 @@ function sourceLink(host: HTMLElement, label: string): HTMLElement {
 
 beforeEach(() => {
   document.body.innerHTML = '';
-  router.visit.mockClear();
+  router.get.mockClear();
   router.prefetch.mockClear();
 });
 
@@ -80,15 +80,28 @@ afterEach(() => {
 });
 
 describe('ElementSources', () => {
-  it('navigates the page with Inertia by default', async () => {
-    const {host, unmount} = await mount({activeSource: 'section:news'});
+  it('navigates to a canonical source URL with Inertia GET data', async () => {
+    const {host, unmount} = await mount({
+      activeSource: 'section:news',
+      sourceHref: '/admin/entries',
+      viewMode: 'cards',
+    });
 
     sourceLink(host, 'Pages').dispatchEvent(
       new MouseEvent('click', {bubbles: true, cancelable: true})
     );
     await nextTick();
 
-    expect(router.visit).toHaveBeenCalledTimes(1);
+    expect(router.get).toHaveBeenCalledTimes(1);
+    expect(router.get.mock.calls[0]![0]).toBe('/admin/entries');
+    expect(router.get.mock.calls[0]![1]).toMatchObject({
+      source: 'section:pages',
+      site: 'default',
+      viewMode: 'cards',
+    });
+    expect(sourceLink(host, 'Pages').getAttribute('href')).toBe(
+      '/admin/entries?source=section%3Apages&site=default&viewMode=cards'
+    );
     unmount();
   });
 
@@ -107,7 +120,7 @@ describe('ElementSources', () => {
       );
       await nextTick();
 
-      expect(router.visit).not.toHaveBeenCalled();
+      expect(router.get).not.toHaveBeenCalled();
       expect(indexVisitor.merge).toHaveBeenCalledTimes(1);
       expect(indexVisitor.merge.mock.calls[0]![0]).toMatchObject({
         source: 'section:pages',

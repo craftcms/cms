@@ -31,10 +31,12 @@
         query
       ),
   };
+
+  const sourceHref = index.url({page: page.props.page ?? ''});
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage :route="route" :source-href="sourceHref">
     <template #actions="{elementIndex}">
       <NewEntryButton
         :sources="elementIndex.sources"
