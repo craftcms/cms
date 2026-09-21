@@ -19,7 +19,6 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {t} from '@craftcms/ui';
-  import {computed, getCurrentInstance} from 'vue';
 
   withDefaults(
     defineProps<{
@@ -30,33 +29,6 @@
       separator: '/',
     }
   );
-
-  const emit = defineEmits<{navigate: [url: string]}>();
-
-  // Opt-in SPA navigation: when a parent listens for `navigate`, intercept
-  // plain left-clicks and hand the URL up (e.g. to preserve the current view
-  // state) instead of letting CpLink do a full Inertia visit. Without a
-  // listener, breadcrumbs behave as ordinary CpLinks.
-  const instance = getCurrentInstance();
-  const interceptNavigation = computed(
-    () => !!instance?.vnode.props?.onNavigate
-  );
-
-  function onNavigate(event: MouseEvent, url: string) {
-    // Leave modified clicks (open in new tab/window) to the real href.
-    if (
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey ||
-      event.button !== 0
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    emit('navigate', url);
-  }
 </script>
 
 <template>
@@ -73,12 +45,7 @@
         <DynamicHtmlRenderer :html="item.html" />
       </template>
       <template v-else-if="item.href">
-        <CpLink
-          :href="item.href"
-          :inertia="interceptNavigation ? false : undefined"
-          @click="interceptNavigation && onNavigate($event, item.href)"
-          >{{ item.label }}</CpLink
-        >
+        <CpLink :href="item.href">{{ item.label }}</CpLink>
       </template>
       <template v-else>
         {{ item.label }}
