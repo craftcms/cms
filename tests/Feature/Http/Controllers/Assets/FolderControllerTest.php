@@ -107,7 +107,8 @@ it('can rename a folder', function () {
         'newName' => 'Renamed Folder',
     ])
         ->assertOk()
-        ->assertJsonPath('newName', 'Renamed-Folder');
+        ->assertJsonPath('newName', 'Renamed-Folder')
+        ->assertJsonPath('folderUrl', fn (string $url): bool => str_ends_with($url, '/Renamed-Folder'));
 });
 
 it('validates move folder input', function () {
@@ -149,7 +150,9 @@ it('can move a folder whose parent has a null path', function () {
     postJson(action([FolderController::class, 'move']), [
         'folderId' => $source->id,
         'parentId' => $destination->id,
-    ])->assertOk();
+    ])
+        ->assertOk()
+        ->assertJsonPath('newFolderUrl', fn (string $url): bool => str_ends_with($url, "/$destinationName/$sourceName"));
 
     expect(VolumeFolderModel::query()
         ->where('parentId', $destination->id)

@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\Requests\MoveAssetFolderRequest;
 use CraftCms\Cms\Http\Requests\RenameAssetFolderRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,8 +72,12 @@ readonly class FolderController
         Gate::authorize('renameFolder', $folder);
 
         $newName = $this->folders->renameFolderById($request->folderId(), $request->newName());
+        $folder = $this->folders->getFolderById($request->folderId()) ?? abort(500);
 
-        return $this->asSuccess(data: ['newName' => $newName]);
+        return $this->asSuccess(data: [
+            'newName' => $newName,
+            'folderUrl' => $this->folderUrl($folder),
+        ]);
     }
 
     public function move(MoveAssetFolderRequest $request): Response
@@ -155,6 +160,14 @@ readonly class FolderController
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
             'newFolderId' => $newFolderId,
+            'newFolderUrl' => $this->folderUrl($newFolder),
         ]);
+    }
+
+    private function folderUrl(VolumeFolder $folder): string
+    {
+        $sourcePathInfo = $folder->getSourcePathInfo() ?? abort(500);
+
+        return Url::cpUrl($sourcePathInfo['uri']);
     }
 }
