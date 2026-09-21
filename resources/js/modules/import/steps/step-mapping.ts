@@ -10,6 +10,10 @@
 import {actionClient} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {
+  createContextRegistry,
+  openContextSlideout,
+} from '@/modules/import/context-slideout';
+import {
   applySuggestions,
   cloneValues,
   toObjectTree,
@@ -42,19 +46,12 @@ export interface OpenStepMappingOptions {
   apply(values: MappingValues): void;
 }
 
-const contexts = new Map<string, StepMappingContext>();
-let nextContextId = 0;
+const registry = createContextRegistry<StepMappingContext>(
+  'import-step-mapping'
+);
 
 export function takeStepMappingContext(contextId: string): StepMappingContext {
-  const context = contexts.get(contextId);
-
-  if (!context) {
-    throw new Error(`Unknown import step mapping context: ${contextId}`);
-  }
-
-  contexts.delete(contextId);
-
-  return context;
+  return registry.take(contextId);
 }
 
 export interface StepMappingStructure {
@@ -106,36 +103,23 @@ export async function openStepMapping(
     suggestedMap
   );
 
-  const [{openSlideoutWith}, {default: StepMapping}] = await Promise.all([
-    import('@/common/slideouts'),
-    import('./StepMapping.vue'),
-  ]);
-
-  const contextId = `import-step-mapping-${++nextContextId}`;
-  contexts.set(contextId, {
-    destinationCols: data.destinationCols ?? [],
-    sourceDataCols: data.sourceDataCols ?? [],
-    values,
-    suggestedMap,
-    editable: options.editable,
-    step: options.step,
-    urls: options.urls,
-    apply: options.apply,
-  });
-
-  // SAFETY: The slideout host renders this imported Vue SFC exactly like its Inertia
-  // page components; it does not require an Inertia page module.
-  const panel = openSlideoutWith(
-    StepMapping as InertiaPageComponent,
-    {contextId, title},
-    {opener: options.opener}
+  return openContextSlideout(
+    registry,
+    () =>
+      import('./StepMapping.vue').then(
+        (m) => m.default as InertiaPageComponent
+      ),
+    {
+      destinationCols: data.destinationCols ?? [],
+      sourceDataCols: data.sourceDataCols ?? [],
+      values,
+      suggestedMap,
+      editable: options.editable,
+      step: options.step,
+      urls: options.urls,
+      apply: options.apply,
+    },
+    title,
+    options.opener
   );
-
-  if (!panel) {
-    contexts.delete(contextId);
-
-    return false;
-  }
-
-  return true;
 }

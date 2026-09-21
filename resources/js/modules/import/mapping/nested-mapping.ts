@@ -13,6 +13,10 @@
  */
 import {actionClient} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import {
+  createContextRegistry,
+  openContextSlideout,
+} from '@/modules/import/context-slideout';
 import {applySuggestions, cloneValues, toObjectTree} from './paths';
 import type {
   MappingCol,
@@ -50,23 +54,14 @@ export interface OpenNestedMappingOptions {
   apply(values: MappingValues): void;
 }
 
-// Callbacks can't ride in `ScreenPageProps`, so the panel is handed a key instead and
-// claims its context on setup.
-const contexts = new Map<string, NestedMappingContext>();
-let nextContextId = 0;
+const registry = createContextRegistry<NestedMappingContext>(
+  'import-nested-mapping'
+);
 
 export function takeNestedMappingContext(
   contextId: string
 ): NestedMappingContext {
-  const context = contexts.get(contextId);
-
-  if (!context) {
-    throw new Error(`Unknown nested mapping context: ${contextId}`);
-  }
-
-  contexts.delete(contextId);
-
-  return context;
+  return registry.take(contextId);
 }
 
 /**
@@ -85,11 +80,6 @@ export async function openNestedMapping(
     fieldIsProperty: col.isProperty ? 1 : 0,
   });
 
-  const [{openSlideoutWith}, {default: NestedMapping}] = await Promise.all([
-    import('@/common/slideouts'),
-    import('./NestedMapping.vue'),
-  ]);
-
   const values = cloneValues(options.values);
   const suggestedMap: SuggestedMap = {};
   applySuggestions(
@@ -98,33 +88,25 @@ export async function openNestedMapping(
     suggestedMap
   );
 
-  const contextId = `import-nested-mapping-${++nextContextId}`;
-  contexts.set(contextId, {
-    col,
-    fieldName: data.fieldName,
-    groups: data.groups,
-    sourceDataCols: data.sourceDataCols ?? [],
-    values,
-    suggestedMap,
-    editable: options.editable,
-    step: options.step,
-    colsUrl: options.colsUrl,
-    apply: options.apply,
-  });
-
-  // SAFETY: The slideout host renders this imported Vue SFC exactly like its Inertia
-  // page components; it does not require an Inertia page module.
-  const panel = openSlideoutWith(
-    NestedMapping as InertiaPageComponent,
-    {contextId, title: data.title},
-    {opener: options.opener}
+  return openContextSlideout(
+    registry,
+    () =>
+      import('./NestedMapping.vue').then(
+        (m) => m.default as InertiaPageComponent
+      ),
+    {
+      col,
+      fieldName: data.fieldName,
+      groups: data.groups,
+      sourceDataCols: data.sourceDataCols ?? [],
+      values,
+      suggestedMap,
+      editable: options.editable,
+      step: options.step,
+      colsUrl: options.colsUrl,
+      apply: options.apply,
+    },
+    data.title,
+    options.opener
   );
-
-  if (!panel) {
-    contexts.delete(contextId);
-
-    return false;
-  }
-
-  return true;
 }

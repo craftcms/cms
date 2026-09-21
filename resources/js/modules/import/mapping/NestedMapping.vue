@@ -7,21 +7,13 @@
    * cancelling leaves the screen behind untouched.
    */
   import '@craftcms/ui/components/checkbox/checkbox';
-  import {computed, provide, reactive, watch} from 'vue';
+  import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import {useForm} from '@inertiajs/vue3';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
-  import {useSlideout} from '@/common/slideouts';
   import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
   import MappingTable from './MappingTable.vue';
   import {checkedValue, getAt, isChecked, keepFlagPath, setAt} from './paths';
-  import {openNestedMapping, takeNestedMappingContext} from './nested-mapping';
-  import {
-    type MappingCol,
-    MappingContextKey,
-    type MappingValues,
-    type SuggestedMap,
-  } from './types';
+  import {takeNestedMappingContext} from './nested-mapping';
+  import {useMappingPanel} from './useMappingPanel';
 
   const props = defineProps<{
     contextId: string;
@@ -29,31 +21,17 @@
   }>();
 
   const context = takeNestedMappingContext(props.contextId);
-  const slideout = useSlideout();
-  const values = reactive<MappingValues>(context.values);
-  const suggestedMap = reactive<SuggestedMap>(context.suggestedMap);
 
-  /**
-   * Backs the shell's Apply button and gives it an accurate dirty check for the
-   * unsaved-changes prompt. Inertia diffs against the value it was created with, so
-   * a serialization of the trees stands in for them.
-   */
-  const form = useForm({state: JSON.stringify(values)});
-
-  watch(
-    values,
-    () => {
-      form.state = JSON.stringify(values);
-    },
-    {deep: true}
-  );
-
-  useAppLayout(() => ({
+  const {values} = useMappingPanel({
     title: props.title,
-    submitButtonLabel: t('Apply'),
-    form,
-    onSave: apply,
-  }));
+    values: context.values,
+    suggestedMap: context.suggestedMap,
+    sourceDataCols: context.sourceDataCols,
+    editable: context.editable,
+    step: context.step,
+    nestedColsUrl: context.colsUrl,
+    apply: context.apply,
+  });
 
   const keepPath = computed(() => keepFlagPath(context.col));
 
@@ -68,32 +46,6 @@
       checkedValue(event)
     );
   });
-
-  provide(MappingContextKey, {
-    values,
-    suggestedMap,
-    sourceDataCols: context.sourceDataCols,
-    editable: context.editable,
-    openNested(col: MappingCol, opener: HTMLElement | null): void {
-      void openNestedMapping({
-        col,
-        step: context.step,
-        colsUrl: context.colsUrl,
-        values,
-        editable: context.editable,
-        opener,
-        apply: (applied) => Object.assign(values, applied),
-      });
-    },
-  });
-
-  function apply(): void {
-    context.apply(JSON.parse(JSON.stringify(values)) as MappingValues);
-
-    // Before close(): closing drops the panel from the store, and its handler with it.
-    slideout?.saved();
-    slideout?.close({force: true});
-  }
 </script>
 
 <template>

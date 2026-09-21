@@ -3,7 +3,7 @@
    * One import step's settings, as a slideout panel.
    *
    * Opened with `openSlideoutWith()` — see `step-slideout.ts` for why. The panel edits
-   * a copy of the step and hands it back on Done; the step only reaches the database
+   * a copy of the step and hands it back on Apply; the step only reaches the database
    * when the import itself is saved.
    */
   import '@craftcms/ui/components/button/button';
@@ -44,14 +44,14 @@
   const mappingMessage = ref<string | null>(null);
 
   /**
-   * Backs the shell's Done button and gives it an accurate dirty check for the
+   * Backs the shell's Apply button and gives it an accurate dirty check for the
    * unsaved-changes prompt.
    */
   const form = useForm({state: JSON.stringify(context.step)});
 
   useAppLayout(() => ({
     title: props.title,
-    submitButtonLabel: t('Done'),
+    submitButtonLabel: t('Apply'),
     form,
     onSave: done,
   }));

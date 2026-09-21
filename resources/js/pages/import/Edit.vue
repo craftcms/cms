@@ -11,7 +11,7 @@
   import FormPage from '@/pages/Form.vue';
   import type {FormPayload} from '@/modules/forms/types';
   import type {StepPayload} from '@/modules/import/mapping/types';
-  import {cloneSteps} from '@/modules/import/steps/clone';
+  import {cloneSteps} from '@/modules/import/mapping/paths';
   import StepList from '@/modules/import/steps/StepList.vue';
 
   const props = defineProps<{

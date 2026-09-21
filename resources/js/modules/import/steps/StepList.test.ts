@@ -1,7 +1,7 @@
 import {createApp, nextTick, reactive, ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {cloneStep, cloneSteps} from '@/modules/import/mapping/paths';
 import type {StepPayload} from '@/modules/import/mapping/types';
-import {cloneStep, cloneSteps} from './clone';
 import StepList from './StepList.vue';
 
 const state = vi.hoisted(() => ({
