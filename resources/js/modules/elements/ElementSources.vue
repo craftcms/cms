@@ -73,8 +73,8 @@
   }
 
   // The source the user just clicked. It's activated immediately instead of
-  // waiting for the round-trip; once the visit settles, the server-provided
-  // `activeSource` becomes authoritative again.
+  // waiting for the round-trip; once the page props catch up, the
+  // server-provided `activeSource` becomes authoritative again.
   const pendingSource = ref<string | null>(null);
 
   // Optimistic active source: a pending click wins until it resolves, otherwise
@@ -124,11 +124,14 @@
       return;
     }
 
-    const onFinish = () => {
-      // Hand control back to the server prop once this visit settles. The key
-      // guard means a superseded (cancelled) visit from rapid switching won't
-      // clear the highlight for a newer selection.
-      if (pendingSource.value === key) {
+    const onFinish = (visit: {
+      completed: boolean;
+      cancelled: boolean;
+      interrupted: boolean;
+    }) => {
+      // A completed visit finishes before Vue receives the new page props, so
+      // the watcher releases its highlight once `activeSource` catches up.
+      if (!visit.completed && pendingSource.value === key) {
         pendingSource.value = null;
       }
     };
