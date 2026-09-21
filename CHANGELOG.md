@@ -77,7 +77,6 @@
 - Fixed a bug where submitting a form after signing in through an elevated or expired session modal could fail CSRF validation.
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
 - Fixed a bug where visiting the logout path while signed out would store it as the post-login redirect, so signing in would immediately sign the user back out. ([#19551](https://github.com/craftcms/cms/pull/19551))
-- Fixed a bug where modifier-clicking or middle-clicking the New Entry button didn’t open the creation page in a new tab. ([#19669](https://github.com/craftcms/cms/pull/19669))
 - Fixed a bug where no confirmation dialog was shown when deleting entry types and custom fields. ([#19582](https://github.com/craftcms/cms/pull/19582))
 - Fixed a bug where Save and continue editing left newly created control panel items on their creation page. ([#19619](https://github.com/craftcms/cms/pull/19619))
 - Fixed a bug where failed structure moves could leave locks held and block subsequent operations. ([#19568](https://github.com/craftcms/cms/pull/19568))
@@ -162,7 +161,8 @@
 - Fixed a bug where parallel test cleanup could delete another worker’s files. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where command-line update listings could evaluate update criticality more than once using incomplete update information. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
-- Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicking on some control panel links wasn’t opening the link in a new tab.
+- Fixed a bug where modifier-clicking or middle-clicking on some control panel links wasn’t opening the link in a new tab.
+- Fixed a bug where modifier-clicking or middle-clicking the New Entry button didn’t open the creation page in a new tab. ([#19669](https://github.com/craftcms/cms/pull/19669))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 
