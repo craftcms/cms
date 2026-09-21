@@ -573,7 +573,7 @@ return [
     'Delete icon' => 'Icon löschen',
     'Delete it' => 'Löschen',
     'Delete logo' => 'Logo löschen',
-    'Delete other users’ {type} for site' => 'Adere {type} von Benutzern für Website löschen',
+    'Delete other users’ {type} for site' => 'Andere {type} von Benutzern für Website löschen',
     'Delete other users’ {type}' => 'Den {type} anderer Benutzer löschen',
     'Delete permanently' => 'Endgültig löschen',
     'Delete photo' => 'Foto löschen',
