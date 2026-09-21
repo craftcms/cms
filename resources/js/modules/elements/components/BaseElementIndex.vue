@@ -221,6 +221,7 @@
 <style scoped lang="scss">
   .element-index {
     overflow-y: clip;
+    overflow-x: auto;
   }
 
   .element-index__header {
