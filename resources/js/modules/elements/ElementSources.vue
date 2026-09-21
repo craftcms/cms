@@ -2,15 +2,19 @@
   import {computed, ref, watch} from 'vue';
   import {router} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
-  import type {
-    ElementIndexRoute,
-    IndexVisitor,
+  import {
+    appendIndexQuery,
+    type ElementIndexRoute,
+    type IndexQueryParams,
+    type IndexVisitor,
   } from '@/modules/elements/composables/useElementIndexVisits';
   import type {Source, SourceHeading} from '@/modules/elements/types/sources';
 
   const props = defineProps<{
     sources: Array<Source>;
     route: ElementIndexRoute;
+    /** Canonical page URL for source-switch GET requests. */
+    sourceHref?: string;
     activeSource?: string | null;
     viewMode?: string | null;
     /**
@@ -52,12 +56,20 @@
   // is actually showing. Without it, the source visit would fall back to the
   // default `table` mode while the restored local view state still shows cards
   // (mirrors how `useElementIndexViewMode` pushes a `viewMode` query param).
-  function sourceUrl(key: string) {
-    return props.route.url({
+  function sourceData(key: string): IndexQueryParams {
+    return {
       source: key,
       site: site.value?.handle,
       viewMode: props.viewMode || undefined,
-    });
+    };
+  }
+
+  function sourceUrl(key: string) {
+    const data = sourceData(key);
+
+    return props.sourceHref
+      ? appendIndexQuery(props.sourceHref, data)
+      : props.route.url(data);
   }
 
   // The source the user just clicked. It's activated immediately instead of
@@ -112,22 +124,37 @@
       return;
     }
 
-    router.visit(sourceUrl(key), {
-      // Switching sources rebuilds the list view (data, columns, sort, actions,
-      // pagination…), but the source nav itself and the publishable sections
-      // behind the New-entry button don't change — so skip re-sending those two
-      // rather than re-fetching the entire page. Mirrors the partial-reload
-      // approach the sort/pagination/view-mode composables already use.
-      ...visitOptions,
-      onFinish: () => {
-        // Hand control back to the server prop once this visit settles. The
-        // key guard means a superseded (cancelled) visit from rapid switching
-        // won't clear the highlight for a newer selection.
-        if (pendingSource.value === key) {
-          pendingSource.value = null;
-        }
-      },
-    });
+    const onFinish = () => {
+      // Hand control back to the server prop once this visit settles. The key
+      // guard means a superseded (cancelled) visit from rapid switching won't
+      // clear the highlight for a newer selection.
+      if (pendingSource.value === key) {
+        pendingSource.value = null;
+      }
+    };
+
+    if (props.sourceHref) {
+      router.get(props.sourceHref, sourceData(key), {
+        ...visitOptions,
+        onFinish,
+      });
+
+      return;
+    }
+
+    router.get(
+      sourceUrl(key),
+      {},
+      {
+        // Switching sources rebuilds the list view (data, columns, sort, actions,
+        // pagination…), but the source nav itself and the publishable sections
+        // behind the New-entry button don't change — so skip re-sending those two
+        // rather than re-fetching the entire page. Mirrors the partial-reload
+        // approach the sort/pagination/view-mode composables already use.
+        ...visitOptions,
+        onFinish,
+      }
+    );
   }
 
   // Folder/volume sources double as drag-and-drop move targets: their `data`
