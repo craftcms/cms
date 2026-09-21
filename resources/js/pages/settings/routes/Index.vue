@@ -14,6 +14,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpLink from '@/common/components/CpLink.vue';
 
   const props = defineProps<{
     title: string;
@@ -141,14 +142,9 @@
       </div>
 
       <div class="route__actions" v-if="!readOnly" @click.stop>
-        <Link
-          as="craft-button"
-          size="small"
-          appearance="plain"
-          :href="edit({uid: route.uid})"
-        >
+        <CpLink size="small" appearance="button" :href="edit({uid: route.uid})">
           <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
-        </Link>
+        </CpLink>
         <craft-reorder-button
           :ref="(el: any) => setHandleRef(el, route.uid)"
           :position="getRowPosition(index)"
