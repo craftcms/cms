@@ -8,6 +8,7 @@
   import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/status/status';
   import '@craftcms/ui/components/spinner/spinner';
+  import '@craftcms/ui/components/tooltip/tooltip';
   import {actionClient, t} from '@craftcms/ui';
   import {
     computed,
@@ -89,6 +90,8 @@
      */
     /** The blocks' element class, for the CP's element clipboard. */
     elementType?: string | null;
+    /** Current site name when entries propagate to multiple sites. */
+    siteName?: string | null;
     create?: {
       fieldId: number;
       ownerId: number;
@@ -111,6 +114,10 @@
       | 'expand'
       | 'disable'
       | 'enable'
+      | 'disableForSite'
+      | 'enableForSite'
+      | 'disableGlobally'
+      | 'enableGlobally'
       | 'delete'
       | 'add'
       | 'duplicate'
@@ -554,7 +561,31 @@
   }
 
   function isDisabled(uid: string): boolean {
+    return isGloballyDisabled(uid) || isDisabledForSite(uid);
+  }
+
+  function isGloballyDisabled(uid: string): boolean {
     return props.value.entries[uid]?.enabled === false;
+  }
+
+  function isDisabledForSite(uid: string): boolean {
+    return props.value.entries[uid]?.enabledForSite === false;
+  }
+
+  function disabledLabel(uid: string): string {
+    if (isGloballyDisabled(uid) && props.control.props.siteName) {
+      return t('Disabled globally');
+    }
+
+    if (isDisabledForSite(uid) && props.control.props.siteName) {
+      return t('Disabled for {site}', {site: props.control.props.siteName});
+    }
+
+    return t('Disabled');
+  }
+
+  function statusId(uid: string): string {
+    return `${matrixId}-${uid}-status`;
   }
 
   onMounted(() => {
@@ -812,7 +843,12 @@
         values = isRecord(blockValues) ? blockValues : {};
       }
 
-      next.entries[added.uid] = {...values, type: added.type, enabled: true};
+      next.entries[added.uid] = {
+        ...values,
+        type: added.type,
+        enabled: true,
+        enabledForSite: true,
+      };
       next.sortOrder.splice(index + offset, 0, added.uid);
     });
 
@@ -930,8 +966,9 @@
       'data-color': presentation?.color ?? undefined,
       'data-ui-label': uiLabel(uid) || undefined,
       'data-collapsed': isCollapsed(uid) ? '' : undefined,
-      'data-disabled':
-        props.value.entries[uid]?.enabled === false ? '' : undefined,
+      'data-disabled': isDisabled(uid) ? '' : undefined,
+      'data-disabled-global': isGloballyDisabled(uid) ? '' : undefined,
+      'data-disabled-site': isDisabledForSite(uid) ? '' : undefined,
       [NEW_BLOCK_ATTRIBUTE]: justAdded.value.has(uid) ? '' : undefined,
       // No Craft 5 class names: the legacy stylesheet styles them, and would
       // restyle the card. Behavior hangs off these data attributes instead.
@@ -979,11 +1016,9 @@
     };
   }
 
-  /** Collapse/Expand and Disable/Enable, resolved against the block right now. */
+  /** Collapse/Expand and status actions, resolved against the block right now. */
   function stateActions(uid: string): ActionItems {
-    const block = props.value.entries[uid];
-
-    return [
+    const actions: ActionItems = [
       isCollapsed(uid)
         ? {
             label: t('Expand'),
@@ -995,18 +1030,60 @@
             icon: 'down-left-and-up-right-to-center',
             action: blockEvent(uid, 'collapse'),
           },
-      block?.enabled === false
+    ];
+
+    if (!props.control.props.siteName) {
+      actions.push(
+        isGloballyDisabled(uid)
+          ? {
+              label: t('Enable'),
+              icon: 'circle',
+              action: blockEvent(uid, 'enable'),
+            }
+          : {
+              label: t('Disable'),
+              icon: 'circle-dashed',
+              action: blockEvent(uid, 'disable'),
+            }
+      );
+
+      return actions;
+    }
+
+    if (isGloballyDisabled(uid)) {
+      actions.push({
+        label: t('Enable globally'),
+        icon: 'circle',
+        action: blockEvent(uid, 'enableGlobally'),
+      });
+
+      return actions;
+    }
+
+    actions.push(
+      isDisabledForSite(uid)
         ? {
-            label: t('Enable'),
+            label: t('Enable for {site}', {
+              site: props.control.props.siteName,
+            }),
             icon: 'circle',
-            action: blockEvent(uid, 'enable'),
+            action: blockEvent(uid, 'enableForSite'),
           }
         : {
-            label: t('Disable'),
+            label: t('Disable for {site}', {
+              site: props.control.props.siteName,
+            }),
             icon: 'circle-dashed',
-            action: blockEvent(uid, 'disable'),
+            action: blockEvent(uid, 'disableForSite'),
           },
-    ];
+      {
+        label: t('Disable globally'),
+        icon: 'circle-dashed',
+        action: blockEvent(uid, 'disableGlobally'),
+      }
+    );
+
+    return actions;
   }
 
   /**
@@ -1091,6 +1168,20 @@
     expand: () => t('Expand selected blocks'),
     disable: () => t('Disable selected {type}', {type: t('blocks')}),
     enable: () => t('Enable selected {type}', {type: t('blocks')}),
+    disableForSite: () =>
+      t('Disable selected {type} for {site}', {
+        type: t('blocks'),
+        site: props.control.props.siteName ?? '',
+      }),
+    enableForSite: () =>
+      t('Enable selected {type} for {site}', {
+        type: t('blocks'),
+        site: props.control.props.siteName ?? '',
+      }),
+    disableGlobally: () =>
+      t('Disable selected {type} globally', {type: t('blocks')}),
+    enableGlobally: () =>
+      t('Enable selected {type} globally', {type: t('blocks')}),
     duplicate: () => t('Duplicate selected {type}', {type: t('blocks')}),
     copy: () => t('Copy selected {type}', {type: t('blocks')}),
     delete: () => t('Delete selected {type}', {type: t('blocks')}),
@@ -1154,6 +1245,14 @@
         return {hidden: isDisabled(uid)};
       case 'enable':
         return {hidden: !isDisabled(uid)};
+      case 'disableForSite':
+        return {hidden: isGloballyDisabled(uid) || isDisabledForSite(uid)};
+      case 'enableForSite':
+        return {hidden: isGloballyDisabled(uid) || !isDisabledForSite(uid)};
+      case 'disableGlobally':
+        return {hidden: isGloballyDisabled(uid)};
+      case 'enableGlobally':
+        return {hidden: !isGloballyDisabled(uid)};
       case 'add':
       case 'duplicate':
         return {hidden: !canAdd.value, disabled: busy.value};
@@ -1169,20 +1268,33 @@
    * 5's enable did too.
    */
   function setEnabledMany(uids: readonly string[], enabled: boolean): void {
+    setStatusMany(uids, 'global', enabled);
+  }
+
+  function setStatusMany(
+    uids: readonly string[],
+    scope: 'global' | 'site',
+    enabled: boolean
+  ): void {
     const next = structuredClone(toRaw(props.value));
 
     for (const uid of uids) {
       if (next.entries[uid]) {
-        next.entries[uid].enabled = enabled;
+        next.entries[uid][scope === 'global' ? 'enabled' : 'enabledForSite'] =
+          enabled;
+
+        const effective =
+          next.entries[uid].enabled !== false &&
+          next.entries[uid].enabledForSite !== false;
 
         // Written straight onto `next` rather than through `setCollapsed`,
         // whose own emit this one would clobber.
         if (uid.startsWith(NESTED_ELEMENT_UID_PREFIX)) {
-          next.entries[uid].collapsed = !enabled;
+          next.entries[uid].collapsed = !effective;
         }
-      }
 
-      setBlockCollapsed(uid, !enabled);
+        setBlockCollapsed(uid, !effective);
+      }
     }
     collapsedTick.value++;
 
@@ -1223,6 +1335,18 @@
       case 'disable':
       case 'enable':
         setEnabledMany(targets, detail.action === 'enable');
+
+        return;
+
+      case 'disableForSite':
+      case 'enableForSite':
+        setStatusMany(targets, 'site', detail.action === 'enableForSite');
+
+        return;
+
+      case 'disableGlobally':
+      case 'enableGlobally':
+        setStatusMany(targets, 'global', detail.action === 'enableGlobally');
 
         return;
 
@@ -1338,6 +1462,18 @@
           setEnabledMany(targets, detail.action === 'enable');
         }
         break;
+      case 'disableForSite':
+      case 'enableForSite':
+        if (targets.length) {
+          setStatusMany(targets, 'site', detail.action === 'enableForSite');
+        }
+        break;
+      case 'disableGlobally':
+      case 'enableGlobally':
+        if (targets.length) {
+          setStatusMany(targets, 'global', detail.action === 'enableGlobally');
+        }
+        break;
     }
   }
 
@@ -1356,6 +1492,9 @@
       count: selected.length,
       collapsed: selected.length > 0 && selected.every(isCollapsed),
       disabled: selected.length > 0 && selected.every(isDisabled),
+      globallyDisabled:
+        selected.length > 0 && selected.every(isGloballyDisabled),
+      disabledForSite: selected.length > 0 && selected.every(isDisabledForSite),
     };
   });
 
@@ -1457,9 +1596,13 @@
         <template #actions="{id: uid}">
           <craft-status
             v-if="isDisabled(uid)"
+            :id="statusId(uid)"
             status="disabled"
-            :label="t('Disabled')"
+            :label="disabledLabel(uid)"
           />
+          <craft-tooltip v-if="isDisabled(uid)" :for="statusId(uid)">
+            {{ disabledLabel(uid) }}
+          </craft-tooltip>
           <ActionMenu
             v-if="editable"
             :actions="blockActions(uid)"

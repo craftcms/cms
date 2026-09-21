@@ -159,6 +159,13 @@ describe('MatrixControl', () => {
     );
   }
 
+  function menuLabels(menu = menus.at(-1)): string[] {
+    return (
+      menu?.actions.flatMap((item) => ('label' in item ? [item.label] : [])) ??
+      []
+    );
+  }
+
   it('renders empty when it is handed its empty value', async () => {
     // A block minted in the browser is keyed `uid:<uuid>` in the values tree,
     // but the server strips that prefix and scopes the block's nested Form to
@@ -184,11 +191,7 @@ describe('MatrixControl', () => {
     });
     await nextTick();
 
-    const labels = menus[0]!.actions.flatMap((item) =>
-      'label' in item ? [item.label] : []
-    );
-
-    expect(labels).toEqual([
+    expect(menuLabels(menus[0])).toEqual([
       'Collapse',
       'Disable',
       'Delete',
@@ -216,11 +219,8 @@ describe('MatrixControl', () => {
         .hasAttribute('data-collapsed')
     ).toBe(true);
 
-    const labels = menus
-      .at(-1)!
-      .actions.flatMap((item) => ('label' in item ? [item.label] : []));
-    expect(labels).toContain('Expand');
-    expect(labels).not.toContain('Collapse');
+    expect(menuLabels()).toContain('Expand');
+    expect(menuLabels()).not.toContain('Collapse');
   });
 
   it('also posts collapsed state for a block the browser just minted', async () => {
@@ -372,6 +372,58 @@ describe('MatrixControl', () => {
         ?.collapsed
     ).toBe(false);
     expect(block.querySelector('craft-status')).toBeNull();
+  });
+
+  it('updates site and global statuses independently', async () => {
+    mount(
+      {
+        entries: {
+          'block-a': {
+            type: 'newType',
+            enabled: true,
+            enabledForSite: true,
+          },
+        },
+        sortOrder: ['block-a'],
+      },
+      {siteName: 'English'}
+    );
+    await nextTick();
+
+    invoke('block-a', 'Disable for English');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: true, enabledForSite: false},
+      },
+    });
+
+    expect(menuLabels()).toEqual(
+      expect.arrayContaining(['Enable for English', 'Disable globally'])
+    );
+
+    invoke('block-a', 'Disable globally');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: false, enabledForSite: false},
+      },
+    });
+    expect(menuLabels()).not.toContain('Enable for English');
+
+    invoke('block-a', 'Enable globally');
+    await nextTick();
+
+    expect(emitted.at(-1)).toMatchObject({
+      entries: {
+        'block-a': {enabled: true, enabledForSite: false},
+      },
+    });
+    expect(menuLabels()).toEqual(
+      expect.arrayContaining(['Enable for English', 'Expand'])
+    );
   });
 
   it('folds a block when its titlebar is double-clicked', async () => {
@@ -1511,7 +1563,12 @@ describe('MatrixControl', () => {
     // its own path, dropping anything under the block that wasn't part of it.
     expect(
       (emitted.at(-1) as {entries: Record<string, unknown>}).entries[uid]
-    ).toEqual({type: 'newType', enabled: true, fields: {body: 'hi'}});
+    ).toEqual({
+      type: 'newType',
+      enabled: true,
+      enabledForSite: true,
+      fields: {body: 'hi'},
+    });
     // The Control re-keys its whole subtree when sortOrder changes, so the
     // button that was busy is not the button that's there now.
     await vi.waitFor(() =>
