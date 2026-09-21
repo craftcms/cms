@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -46,6 +47,7 @@ it('selects nav items from paths with the cp trigger', function () {
         Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
         Cms::config(),
         Mockery::mock(ElementSources::class),
+        Mockery::mock(Entries::class),
     );
 
     $settingsItem = collect($navigation->getItems())->firstWhere('label', 'Settings');
@@ -62,6 +64,7 @@ it('selects parent nav items when a subnav item matches the cp path', function (
         Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
         Cms::config(),
         Mockery::mock(ElementSources::class),
+        Mockery::mock(Entries::class),
     );
 
     $graphqlItem = collect($navigation->getItems())->firstWhere('label', 'GraphQL');

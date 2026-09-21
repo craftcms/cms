@@ -26,12 +26,36 @@ export type DragState =
 // States for items being dragged over
 export type DropState =
   | {type: 'idle'}
-  | {type: 'is-over'; closestEdge: Edge; draggingRect: DOMRect};
+  | {type: 'is-over'; closestEdge: Edge; draggingRect: DOMRect}
+  // A row from another list is over this one, and would land at closestEdge.
+  | {type: 'is-over-foreign'; closestEdge: Edge};
+
+/** The extra data a list attaches to its rows, for other lists to read. */
+export type DragData = Record<string, unknown>;
+
+/** Where a row from another list was dropped, relative to this list's rows. */
+export interface ForeignDropTarget {
+  id: string | number;
+  index: number;
+  edge: Edge | null;
+}
 
 export interface UseDragAndDropOptions {
   onReorder: (startIndex: number, finishIndex: number) => void;
   axis?: Axis;
   allowedEdges?: Edge[];
+  /**
+   * Extra data to attach to a row's drag payload. Only another list reads it —
+   * reordering within this one goes by index.
+   */
+  dragData?: (id: string | number, index: number) => DragData;
+  /**
+   * Whether a row dragged out of another list may be dropped onto a row of
+   * this one. Without it, foreign drags are ignored.
+   */
+  canDropForeign?: (data: DragData) => boolean;
+  /** A foreign row was dropped on this list, at the given position. */
+  onForeignDrop?: (data: DragData, target: ForeignDropTarget) => void;
 }
 
 export interface UseDragAndDropReturn {
@@ -72,12 +96,22 @@ export function useDragAndDrop(
     return data[itemDataKey] === true;
   }
 
+  /** Whether the payload comes from a list other than this one. */
+  function isForeign(data: ElementDragPayload['data']): boolean {
+    return isItemData(data) && data.instanceId !== instanceId;
+  }
+
+  function canDropForeign(data: ElementDragPayload['data']): boolean {
+    return isForeign(data) && (options.canDropForeign?.(data) ?? false);
+  }
+
   function getItemData(
     id: string | number,
     index: number,
     rect: DOMRect
   ): ItemData {
     return {
+      ...options.dragData?.(id, index),
       [itemDataKey]: true,
       id,
       index,
@@ -172,8 +206,9 @@ export function useDragAndDrop(
         getIsSticky: () => true,
         canDrop({source}) {
           return (
-            source.data[itemDataKey] === true &&
-            source.data.instanceId === instanceId
+            (source.data[itemDataKey] === true &&
+              source.data.instanceId === instanceId) ||
+            canDropForeign(source.data)
           );
         },
         getData({input}) {
@@ -189,6 +224,14 @@ export function useDragAndDrop(
         onDragEnter({source, self}) {
           if (!isItemData(source.data)) return;
 
+          if (isForeign(source.data)) {
+            const closestEdge = extractClosestEdge(self.data);
+            if (!closestEdge) return;
+
+            setDropState(id, {type: 'is-over-foreign', closestEdge});
+            return;
+          }
+
           // Ignore if dragging over self
           if (source.data.id === id) return;
 
@@ -203,6 +246,21 @@ export function useDragAndDrop(
         },
         onDrag({source, self}) {
           if (!isItemData(source.data)) return;
+
+          if (isForeign(source.data)) {
+            const closestEdge = extractClosestEdge(self.data);
+            if (!closestEdge) return;
+
+            const current = getDropState(id);
+            if (
+              current.type !== 'is-over-foreign' ||
+              current.closestEdge !== closestEdge
+            ) {
+              setDropState(id, {type: 'is-over-foreign', closestEdge});
+            }
+
+            return;
+          }
 
           // Ignore if dragging over self
           if (source.data.id === id) return;
@@ -228,6 +286,11 @@ export function useDragAndDrop(
         onDragLeave({source}) {
           if (!isItemData(source.data)) return;
 
+          if (isForeign(source.data)) {
+            setDropState(id, idleDropState);
+            return;
+          }
+
           // If the dragged item is leaving itself, update its drag state
           if (source.data.id === id) {
             setDragState(id, {type: 'is-dragging-and-left-self'});
@@ -247,7 +310,10 @@ export function useDragAndDrop(
   function setupMonitor(): () => void {
     return monitorForElements({
       canMonitor({source}) {
-        return isItemData(source.data) && source.data.instanceId === instanceId;
+        return (
+          (isItemData(source.data) && source.data.instanceId === instanceId) ||
+          canDropForeign(source.data)
+        );
       },
       onDrop({location, source}) {
         const target = location.current.dropTargets[0];
@@ -257,6 +323,23 @@ export function useDragAndDrop(
         const targetData = target.data;
 
         if (!isItemData(sourceData) || !isItemData(targetData)) return;
+
+        if (isForeign(sourceData)) {
+          // A foreign row landed on this list. Only this list knows what that
+          // means, so it reports the position rather than reordering.
+          if (targetData.instanceId === instanceId) {
+            options.onForeignDrop?.(sourceData, {
+              id: targetData.id,
+              index: targetData.index,
+              edge: extractClosestEdge(targetData),
+            });
+          }
+
+          return;
+        }
+
+        // One of our rows was dropped onto another list, which reports it.
+        if (targetData.instanceId !== instanceId) return;
 
         const startIndex = sourceData.index;
         const indexOfTarget = targetData.index;

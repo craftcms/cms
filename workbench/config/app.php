@@ -183,7 +183,11 @@ return [
     |
     */
 
-    'aliases' => Facade::defaultAliases()->merge([
+    'aliases' => Facade::defaultAliases()->merge(
+        // Craft's own facade aliases, which aren't registered via package discovery
+        // since craftcms/cms is the root package here rather than a dependency.
+        json_decode((string) file_get_contents(__DIR__.'/../../composer.json'), true)['extra']['laravel']['aliases'] ?? [],
+    )->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 

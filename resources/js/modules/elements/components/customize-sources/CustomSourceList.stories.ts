@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import type {ActionItem} from '@/common/types';
 import CustomSourceList from './CustomSourceList.vue';
 
@@ -180,4 +180,93 @@ export const LongLabels: Story = {
     ],
     LIST
   ),
+};
+
+/**
+ * Two lists that trade rows: drag a source into the pages list and it becomes a
+ * page of its own, beside the pages it was dropped between.
+ *
+ * `dragData` says what a source row carries, `canDropForeign` lets the pages
+ * list take a row carrying it, and `foreign-drop` reports the index it landed
+ * at. Reordering inside either list is unaffected — a page dragged onto a page
+ * still just moves.
+ */
+export const AcrossLists: Story = {
+  render: () => ({
+    components: {CustomSourceList},
+    setup() {
+      const pages = ref<Row[]>(PAGES.map((page) => ({...page})));
+      const sources = ref<Array<Row & {page: string}>>(
+        SOURCES.map((source) => ({...source, page: 'Entries'}))
+      );
+      const selectedPage = ref<string | null>('Entries');
+      const selectedSource = ref<string | null>(SOURCES[0]!.id);
+
+      // Only the selected page's sources are listed, so reordering has to act
+      // on indexes into the full list.
+      const visible = computed(() =>
+        sources.value.filter((source) => source.page === selectedPage.value)
+      );
+
+      return {
+        pages,
+        visible,
+        selectedPage,
+        selectedSource,
+        itemId: (row: Row) => row.id,
+        label: (row: Row) => row.label,
+        icon: (row: Row) => row.icon ?? null,
+        dragData: (row: Row) => ({sourceKey: row.id, sourceLabel: row.label}),
+        canDropForeign: (data: Record<string, unknown>) =>
+          typeof data.sourceKey === 'string',
+        onForeignDrop: (data: Record<string, unknown>, index: number) => {
+          const source = sources.value.find((row) => row.id === data.sourceKey);
+          if (!source) return;
+
+          pages.value.splice(index, 0, {id: source.label, label: source.label});
+          source.page = source.label;
+          selectedPage.value = source.label;
+        },
+        onReorderSources: (from: number, to: number) => {
+          const items = visible.value;
+          const fromIndex = sources.value.indexOf(items[from]!);
+          const toIndex = sources.value.indexOf(items[to]!);
+          const [moved] = sources.value.splice(fromIndex, 1);
+          if (moved) sources.value.splice(toIndex, 0, moved);
+        },
+        onReorderPages: (from: number, to: number) => {
+          const [moved] = pages.value.splice(from, 1);
+          if (moved) pages.value.splice(to, 0, moved);
+        },
+      };
+    },
+    template: `
+      <div style="display: flex; gap: 24px">
+        <div style="width: 180px">
+          <CustomSourceList
+            :items="pages"
+            :item-id="itemId"
+            :label="label"
+            :icon="icon"
+            :selected="selectedPage"
+            :can-drop-foreign="canDropForeign"
+            @select="(id) => (selectedPage = id)"
+            @reorder="onReorderPages"
+            @foreign-drop="onForeignDrop"
+          />
+        </div>
+        <div style="width: 220px">
+          <CustomSourceList
+            :items="visible"
+            :item-id="itemId"
+            :label="label"
+            :selected="selectedSource"
+            :drag-data="dragData"
+            @select="(id) => (selectedSource = id)"
+            @reorder="onReorderSources"
+          />
+        </div>
+      </div>
+    `,
+  }),
 };
