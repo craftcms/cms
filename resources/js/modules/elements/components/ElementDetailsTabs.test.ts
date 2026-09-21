@@ -11,7 +11,7 @@ import {
 } from 'vue';
 import {elementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
-import {ScreenContentWidthKey} from '@/common/composables/screen';
+import {ScreenDetailsOverlayKey} from '@/common/composables/screen';
 import ElementDetailsTabs from './ElementDetailsTabs.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
@@ -77,14 +77,14 @@ function select(index: number): void {
   tabs().dispatchEvent(new Event('selected-changed'));
 }
 
-function mountWithShellWidth(width?: Ref<number>): void {
+function mountWithOverlay(overlaid?: Ref<boolean>): void {
   container = document.createElement('div');
   document.body.append(container);
   app = createApp(
     defineComponent({
       setup() {
-        if (width) {
-          provide(ScreenContentWidthKey, width);
+        if (overlaid) {
+          provide(ScreenDetailsOverlayKey, overlaid);
         }
 
         return () =>
@@ -121,7 +121,7 @@ describe('ElementDetailsTabs', () => {
         ),
     });
     const HiddenTab = defineComponent({render: () => null});
-    const width = ref(1000);
+    const overlaid = ref(false);
     const conditionalVisible = ref(true);
     const finalVisible = ref(true);
 
@@ -138,13 +138,14 @@ describe('ElementDetailsTabs', () => {
     app = createApp(
       defineComponent({
         setup() {
+          provide(ScreenDetailsOverlayKey, overlaid);
+
           return () =>
             h(
               ElementDetailsTabs,
               {
                 payload: payload(),
                 activityTimelineVersion: 0,
-                availableWidth: width.value,
               },
               {info: () => h('div', {class: 'info-content'}, 'Info content')}
             );
@@ -252,32 +253,32 @@ describe('ElementDetailsTabs', () => {
     ]);
     expect(tabs().selectedIndex).toBe(0);
 
-    width.value = 700;
+    overlaid.value = true;
     await nextTick();
     expect(tabs().selectedIndex).toBe(-1);
   });
 
-  it('folds away when the shell reports a narrow content area', async () => {
-    const width = ref(1000);
-    mountWithShellWidth(width);
+  it('folds away when the shell overlays the column', async () => {
+    const overlaid = ref(false);
+    mountWithOverlay(overlaid);
     await nextTick();
     await nextTick();
 
     expect(tabs().selectedIndex).toBe(0);
 
-    width.value = 700;
+    overlaid.value = true;
     await nextTick();
 
     expect(tabs().selectedIndex).toBe(-1);
 
-    width.value = 1000;
+    overlaid.value = false;
     await nextTick();
 
     expect(tabs().selectedIndex).toBe(0);
   });
 
-  it('stays open when the shell reports no width', async () => {
-    mountWithShellWidth();
+  it('stays open in a shell that never overlays', async () => {
+    mountWithOverlay();
     await nextTick();
     await nextTick();
 

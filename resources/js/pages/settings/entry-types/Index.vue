@@ -15,6 +15,7 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
 
@@ -137,14 +138,13 @@
     </Link>
   </LayoutSlot>
 
-  <div>
+  <CpContainer>
     <AdminTable
       :table="table"
       :reorderable="false"
       :from="pagination.from"
       :to="pagination.to"
       :total="pagination.total"
-      :full-width="true"
       :enable-adjust-page-size="true"
     >
       <template #empty-row>
@@ -154,5 +154,5 @@
         <SearchForm :action="index()" v-model="searchTerm" />
       </template>
     </AdminTable>
-  </div>
+  </CpContainer>
 </template>

@@ -9,7 +9,7 @@
   import {usePage} from '@inertiajs/vue3';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
 
-  const isSmall = cpBreakpoints.smaller('sm');
+  const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
   // Mode and visibility come from the shared store rather than from props: this
   // component renders the toggle that changes them, so taking them as props too
@@ -58,7 +58,7 @@
     :inert="sidebar.mode === 'floating' && sidebar.visibility === 'hidden'"
     :aria-label="t('Primary')"
   >
-    <div class="cp-sidebar__header" v-if="isSmall">
+    <div class="cp-sidebar__header" v-if="!isLarge">
       <SystemInfo />
       <craft-button
         id="sidebar-toggle"

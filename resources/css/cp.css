@@ -16,13 +16,18 @@ CP Styles
 
 :root {
   --cp-sidebar-width: calc(226rem / 16);
-  --cp-sidebar-collapsed-width: calc(
-    var(--c-size-touch-target) + var(--c-spacing-md) * 2
-  );
+
+  /* What a collapsed navigation folds down to: one touch target plus its
+     padding. Shared so every rail in the CP is the same width. */
+  --cp-rail-width: calc(var(--c-size-touch-target) + var(--c-spacing-md) * 2);
+  --cp-sidebar-collapsed-width: var(--cp-rail-width);
   --cp-content-width: calc(1440rem / 16);
   --cp-footer-height: calc(54rem / 16);
   --cp-header-height: calc(42rem / 16);
   --cp-sidebar-z-index: var(--c-layer-sidebar);
+
+  /* Inline padding for the CpContainer element */
+  --cp-container-padding: var(--c-spacing-lg);
   --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
@@ -56,6 +61,7 @@ CP Styles
 
 html,
 body {
+  height: 100%;
   background-color: var(--c-surface-default);
 }
 
@@ -275,7 +281,7 @@ craft-field[data-highlighted] {
 .cp-container {
   --c-container-padding: var(--c-spacing-lg);
   display: grid;
-  grid-template-columns: var(--c-container-padding) 1fr var(
+  grid-template-columns: var(--cp-container-padding) 1fr var(
       --c-container-padding
     );
   grid-template-areas: '. content .';

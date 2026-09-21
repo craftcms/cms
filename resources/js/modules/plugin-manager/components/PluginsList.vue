@@ -120,11 +120,7 @@
         </div>
       </craft-callout>
     </div>
-    <AdminTable
-      :full-width="true"
-      :table="table"
-      @action:change-state="handleStateChange"
-    >
+    <AdminTable :table="table" @action:change-state="handleStateChange">
       <template #empty-row>
         <Empty
           icon="plugin"

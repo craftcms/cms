@@ -77,46 +77,39 @@
 </script>
 
 <template>
-  <component :is="contained ? CpContainer : 'div'" v-show="visible">
+  <CpContainer class="content-footer" v-show="visible">
     <div
-      class="content-footer border-t border-t-quiet py-md"
-      :class="!contained ? 'px-lg' : null"
+      class="flex gap-2 items-center justify-between border-t border-t-quiet py-md"
     >
-      <div class="flex gap-2 items-center justify-between">
-        <FormActions
-          v-if="form"
-          :form="form"
-          :action-items="formActionItems"
-          :additional-actions="formAdditionalActions"
-          :additional-buttons="formAdditionalButtons"
-          :submit-label="submitButtonLabel"
-          :read-only="readOnly"
-        >
-          <template v-if="slots['submit-button']" #submit-button>
-            <slot name="submit-button"></slot>
-          </template>
-        </FormActions>
+      <FormActions
+        v-if="form"
+        :form="form"
+        :action-items="formActionItems"
+        :additional-actions="formAdditionalActions"
+        :additional-buttons="formAdditionalButtons"
+        :submit-label="submitButtonLabel"
+        :read-only="readOnly"
+      >
+        <template v-if="slots['submit-button']" #submit-button>
+          <slot name="submit-button"></slot>
+        </template>
+      </FormActions>
 
-        <LayoutSlotOutlet name="additional-buttons">
-          <slot name="additional-buttons"></slot>
-        </LayoutSlotOutlet>
-      </div>
-
-      <div>
-        <LayoutSlotOutlet name="content-footer">
-          <slot name="content-footer"></slot>
-        </LayoutSlotOutlet>
-      </div>
+      <LayoutSlotOutlet name="additional-buttons">
+        <slot name="additional-buttons"></slot>
+      </LayoutSlotOutlet>
     </div>
-  </component>
+
+    <div>
+      <LayoutSlotOutlet name="content-footer">
+        <slot name="content-footer"></slot>
+      </LayoutSlotOutlet>
+    </div>
+  </CpContainer>
 </template>
 
 <style scoped lang="css">
   .content-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--c-spacing-md);
     min-height: var(--cp-footer-height);
   }
 </style>

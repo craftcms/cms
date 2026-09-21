@@ -19,7 +19,8 @@
     ref,
     useTemplateRef,
   } from 'vue';
-  import {useEventListener} from '@vueuse/core';
+  import {useElementSize, useEventListener} from '@vueuse/core';
+  import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import {router} from '@inertiajs/vue3';
   import {submitScreenForm} from '@/common/slideouts/submitScreenForm';
   import {setSlideoutDirtyCheck} from '@/common/slideouts/store';
@@ -35,6 +36,7 @@
     type ScreenPageProps as GenericScreenPageProps,
     useScreenPageProps,
     useScreenPropsStore,
+    ScreenDetailsOverlayKey,
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
@@ -42,6 +44,7 @@
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -123,6 +126,13 @@
   const detailsEl = useTemplateRef<HTMLElement>('detailsEl');
   const toolbarEl = useTemplateRef<HTMLElement>('toolbarEl');
   const tabsEl = useTemplateRef<HTMLElement>('tabsEl');
+
+  // The overlay threshold lives in the stylesheet below; this reads it back.
+  const {width: detailsWidth} = useElementSize(detailsEl);
+  provide(
+    ScreenDetailsOverlayKey,
+    useDetailsOverlay(() => detailsEl.value, detailsWidth)
+  );
 
   const submittingHtml = ref(false);
   const screenErrors = ref<Record<string, string> | null>(null);
@@ -354,43 +364,56 @@
     @submit.prevent="save"
   >
     <header class="slideout-screen__header">
-      <h2 class="slideout-screen__title">{{ title }}</h2>
+      <CpContainer>
+        <div class="flex items-center gap-sm justify-between">
+          <div class="flex gap-md items-center">
+            <h2 class="slideout-screen__title">{{ title }}</h2>
+            <LayoutSlotOutlet name="content-toolbar-meta">
+              <slot name="content-toolbar-meta"></slot>
+            </LayoutSlotOutlet>
+          </div>
 
-      <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
+          <div class="flex gap-sm items-center">
+            <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
         and draft status icon here, and a screen with no toolbar still has
         drafts to report on. -->
-      <div ref="toolbarEl" class="slideout-screen__toolbar">
-        <LayoutSlotOutlet name="content-toolbar-meta">
-          <slot name="content-toolbar-meta"></slot>
-        </LayoutSlotOutlet>
-        <LayoutSlotOutlet name="content-toolbar-actions">
-          <slot name="content-toolbar-actions"></slot>
-        </LayoutSlotOutlet>
-      </div>
+            <div ref="toolbarEl" class="slideout-screen__toolbar">
+              <LayoutSlotOutlet name="content-toolbar-actions">
+                <slot name="content-toolbar-actions"></slot>
+              </LayoutSlotOutlet>
+            </div>
 
-      <LayoutSlotOutlet name="content-actions">
-        <slot name="content-actions"></slot>
-      </LayoutSlotOutlet>
+            <LayoutSlotOutlet name="content-actions">
+              <slot name="content-actions"></slot>
+            </LayoutSlotOutlet>
 
-      <a
-        v-if="editUrl"
-        :href="editUrl"
-        target="_blank"
-        rel="noopener"
-        class="slideout-screen__edit-link"
-      >
-        <craft-icon name="external-link" :label="t('Open in a new tab')" />
-      </a>
+            <a
+              v-if="editUrl"
+              :href="editUrl"
+              target="_blank"
+              rel="noopener"
+              class="slideout-screen__edit-link"
+            >
+              <craft-icon
+                name="external-link"
+                :label="t('Open in a new tab')"
+              />
+            </a>
 
-      <craft-button
-        icon
-        type="button"
-        :variant="ButtonVariant.Plain"
-        @click="close"
-        data-slideout-close
-      >
-        <craft-icon name="xmark" :label="t('Close')"></craft-icon>
-      </craft-button>
+            <craft-button
+              icon
+              type="button"
+              size="small"
+              :variant="ButtonVariant.Plain"
+              flush
+              @click="close"
+              data-slideout-close
+            >
+              <craft-icon name="xmark" :label="t('Close')"></craft-icon>
+            </craft-button>
+          </div>
+        </div>
+      </CpContainer>
     </header>
 
     <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
@@ -492,11 +515,10 @@
   }
 
   .slideout-screen__header {
-    display: flex;
+    border-block-end: 1px solid var(--c-color-border-quiet, #e5e5e5);
+    min-height: var(--cp-header-height);
+    display: grid;
     align-items: center;
-    gap: var(--c-spacing-sm, 0.5rem);
-    padding: var(--c-spacing-md, 1rem);
-    border-block-end: 1px solid var(--c-border-quiet, #e5e5e5);
   }
 
   .slideout-screen__title {
@@ -519,20 +541,17 @@
 
   .slideout-screen__body {
     display: flex;
-    /* Stacked by default: a fixed-width details column beside the content
-       squeezes it below a usable width on a narrow panel. Legacy makes the
-       same call at ~700px. */
-    flex-direction: column;
-    gap: var(--c-spacing-md, 1rem);
+    /* One layout at every width: the details column collapses to its rail
+       rather than dropping below the content. */
+    flex-direction: row;
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
-    padding: var(--c-spacing-md, 1rem);
+    /* The positioning context for the overlaid column, which is why the content
+       scrolls and not this — an absolutely positioned child of a scroll
+       container scrolls away with it. */
+    position: relative;
+    overflow: hidden;
     background-color: var(--c-surface-overlay);
-
-    @container slideout (width >= 44rem) {
-      flex-direction: row;
-    }
   }
 
   .slideout-screen__notices {
@@ -546,16 +565,74 @@
     align-content: start;
     flex: 1;
     min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .slideout-screen__details {
     display: grid;
     gap: var(--c-spacing-md, 1rem);
-    align-content: start;
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    align-content: stretch;
+    align-self: stretch;
 
-    /* Only claim a fixed column once the panel is wide enough to spare it. */
-    @container slideout (width >= 44rem) {
-      flex: 0 0 16rem;
+    /* Overlaid by default, a panel being narrower than the threshold more often
+       than not. Only the tab panels lift out; the strip stays in the flow as
+       the rail. The width itself is in the query below. */
+    --cp-details-overlay: 1;
+
+    /* The panels anchor to this, above the scrim so the rail stays lit. */
+    position: relative;
+    z-index: var(--c-layer-sticky);
+
+    &:has(craft-tabs[collapsed]) {
+      border-inline-start-color: transparent;
+    }
+  }
+
+  /* The panels, and only the panels, sit over the content. Flat rather than
+     nested in the rule above, where `:deep()` loses its parent selector and
+     would reach every craft-tabs in the shell. */
+  .slideout-screen__details :deep(craft-tabs::part(panels)) {
+    position: absolute;
+    inset-block: 0;
+    /* The rail's leading edge: at 0 it would open on top of the rail. */
+    inset-inline-end: 100%;
+    z-index: var(--c-layer-sticky);
+    /* `cqi`, not a percentage: percentages resolve against the rail this hangs
+       off rather than against the content. */
+    inline-size: clamp(calc(300rem / 16), 80cqi, calc(400rem / 16));
+    max-inline-size: 80cqi;
+    overflow-y: auto;
+    background-color: var(--c-surface-overlay);
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    box-shadow: var(--c-shadow-overlay);
+  }
+
+  /* Wide enough to seat the column in the flow beside the content. */
+  @container slideout (width >= 960px) {
+    .slideout-screen__details {
+      --cp-details-overlay: 0;
+
+      flex: 0 1 calc(350rem / 16);
+      min-inline-size: calc(300rem / 16);
+
+      /* Closed, it hands the track back — the floor included, or the rail
+         would keep reserving it. */
+      &:has(craft-tabs[collapsed]) {
+        flex: 0 0 auto;
+        min-inline-size: 0;
+      }
+    }
+
+    /* Room of its own, so the panels stay in the flow. */
+    .slideout-screen__details :deep(craft-tabs::part(panels)) {
+      position: static;
+      inline-size: auto;
+      min-inline-size: 0;
+      max-inline-size: none;
+      overflow: visible;
+      border-inline-start: 0;
     }
   }
 
@@ -565,6 +642,7 @@
     gap: var(--c-spacing-sm, 0.5rem);
     padding: var(--c-spacing-md, 1rem);
     border-block-start: 1px solid var(--c-border-quiet, #e5e5e5);
+    min-height: var(--cp-footer-height);
   }
 
   .slideout-screen__footer-actions {

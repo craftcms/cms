@@ -10,8 +10,8 @@
 <style scoped lang="scss">
   .cp-container {
     display: grid;
-    grid-template-columns: var(--c-container-padding) 1fr var(
-        --c-container-padding
+    grid-template-columns: var(--cp-container-padding) minmax(0, 1fr) var(
+        --cp-container-padding
       );
     gap: 0;
   }

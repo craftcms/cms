@@ -75,8 +75,3 @@
     </ActionMenu>
   </div>
 </template>
-
-<style scoped lang="css">
-  @media screen and (min-width: 1024px) {
-  }
-</style>

@@ -114,7 +114,7 @@
   </LayoutSlot>
 
   <CpContainer class="@container">
-    <AdminTable :table="table" :full-width="true">
+    <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">
           <CpLink

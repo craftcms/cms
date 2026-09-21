@@ -147,7 +147,6 @@
       :table="table"
       :reorderable="true"
       :read-only="readOnly"
-      :full-width="true"
       @reorder="handleReorder"
     >
       <template #empty-row>

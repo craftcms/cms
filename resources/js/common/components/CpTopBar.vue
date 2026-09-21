@@ -3,7 +3,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import UserMenu from '@/common/components/UserMenu.vue';
-  import {computed} from 'vue';
+  import {computed, type ComponentPublicInstance} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import type {CraftData} from '@/common/composables/useCraftData';
   import {index as generalSettings} from '@routes/cp/settings/general';
@@ -12,9 +12,7 @@
     type BreadcrumbItem,
   } from '@/common/components/Breadcrumbs.vue';
   import {fieldId} from '@/modules/forms/runtime';
-  import {useMediaQuery} from '@vueuse/core';
   import SystemInfo from '@/common/components/SystemInfo.vue';
-  import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
 
@@ -27,7 +25,13 @@
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
-  const {toggle: toggleSidebar, icon: toggleIcon} = useGlobalSidebar();
+  const {toggle: toggleSidebar, toggleButton} = useGlobalSidebar();
+
+  // The composable returns focus here when the floating sidebar closes, and it
+  // can't reach into a template of its own to find the button.
+  function registerToggle(el: Element | ComponentPublicInstance | null): void {
+    toggleButton.value = (el as HTMLElement | null) ?? null;
+  }
 
   const page = usePage<{craft: CraftData}>();
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
@@ -49,6 +53,7 @@
   <div class="cp-top-bar" data-theme="dark">
     <div class="cp-top-bar__start" v-if="!isLarge">
       <craft-button
+        :ref="registerToggle"
         id="sidebar-toggle"
         type="button"
         size="small"
@@ -115,7 +120,7 @@
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
   .cp-top-bar {
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
@@ -129,8 +134,7 @@
     grid-template-rows: repeat(2, auto);
     align-items: center;
 
-    // TODO: consolidate breakpoints
-    @media screen and (min-width: 768px) {
+    @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
       gap: calc(var(--spacing) * 3);
       grid-template-areas: 'breadcrumbs indicators end';

@@ -18,6 +18,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type FieldRow = {
     id: number;
@@ -208,13 +209,12 @@
     </CpLink>
   </LayoutSlot>
 
-  <div>
+  <CpContainer>
     <AdminTable
       :table="table"
       :reorderable="false"
       :from="pagination.from"
       :to="pagination.to"
-      :full-width="true"
       :total="pagination.total"
       :enable-adjust-page-size="true"
     >
@@ -225,5 +225,5 @@
         <SearchForm v-model="searchTerm" />
       </template>
     </AdminTable>
-  </div>
+  </CpContainer>
 </template>

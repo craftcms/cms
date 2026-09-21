@@ -267,7 +267,6 @@
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
-      :full-width="true"
       spacing="spacious"
       @reorder="handleReorder"
     >

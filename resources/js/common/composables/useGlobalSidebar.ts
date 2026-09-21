@@ -2,6 +2,10 @@ import {computed, nextTick, reactive, ref, watch, type Ref} from 'vue';
 import {createGlobalState, useMediaQuery} from '@vueuse/core';
 import useCraftData from '@/common/composables/useCraftData';
 import {useLocalStorage} from '@/common/composables/useStorage';
+import {
+  cpBreakpoints,
+  useCpBreakpoints,
+} from '@/common/composables/useCpBreakpoints';
 
 export interface GlobalSidebarState {
   mode: 'docked' | 'floating';
@@ -46,7 +50,7 @@ export const useGlobalSidebar = createGlobalState((): GlobalSidebar => {
    */
   const toggleButton = ref<HTMLElement | null>(null);
 
-  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+  const isLargeScreen = cpBreakpoints.greaterOrEqual('lg');
 
   // Persisted in localStorage rather than a cookie: no request needs to carry
   // it, since nothing on the server reads it. Craft 5 used a cookie because PHP

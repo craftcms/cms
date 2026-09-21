@@ -19,7 +19,7 @@
     settings: Record<string, Record<string, SettingItem>>;
   }>();
 
-  useAppLayout({contentMaxWidth: true, centerContent: true});
+  useAppLayout({contentMaxWidth: true});
 </script>
 
 <template>

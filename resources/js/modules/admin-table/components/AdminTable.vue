@@ -25,7 +25,6 @@
       elementType?: string;
       source?: string | null;
       context?: string;
-      fullWidth?: boolean;
     }>(),
     {
       reorderable: false,
@@ -37,7 +36,6 @@
       actions: () => [],
       source: null,
       context: 'index',
-      fullWidth: false,
       spacing: TableSpacing.Spacious,
     }
   );
@@ -72,7 +70,6 @@
     layout: props.layout,
     spacing: props.spacing,
     title: props.title,
-    fullWidth: props.fullWidth,
   }));
 </script>
 

@@ -68,7 +68,7 @@
   </LayoutSlot>
 
   <CpContainer class="@container">
-    <AdminTable :table="table" :full-width="true">
+    <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
           <CpLink :href="create().url" icon="plus" appearance="button">{{

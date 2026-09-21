@@ -89,7 +89,7 @@ Nav states:
 </script>
 
 <template>
-  <div v-if="!isLarge" class="flex gap-1 p-1">
+  <div v-if="!isLarge" class="flex gap-1">
     <craft-popover
       class="flex-1 relative"
       placement="bottom-start"
@@ -110,7 +110,7 @@ Nav states:
       </div>
     </craft-popover>
 
-    <craft-action-menu>
+    <craft-action-menu v-if="actions.length">
       <craft-button type="button" size="small" slot="invoker">
         <craft-icon name="ellipsis" :label="t('Customize')"></craft-icon>
       </craft-button>

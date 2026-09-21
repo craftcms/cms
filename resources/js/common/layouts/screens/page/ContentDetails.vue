@@ -11,11 +11,6 @@
   import type {ScreenSlots} from '../types';
 
   defineProps<{
-    /**
-     * `v-show`, not `v-if`: the outlet is a teleport target and must stay in
-     * the DOM so page-side content can mount before it flips this on.
-     */
-    visible: boolean;
     resizer: UseResizableReturn;
   }>();
 
@@ -27,31 +22,33 @@
 </script>
 
 <template>
-  <aside v-show="visible" class="cp-content__details">
-    <div class="relative h-full">
-      <ResizeHandle
-        class="cp-details-resize-handle"
-        :resizer="resizer"
-        :label="t('Resize details')"
-        :controls="detailsId"
-      />
-      <div :id="detailsId" class="cp-details sticky top-0">
-        <LayoutSlotOutlet name="content-details">
-          <slot name="content-details"></slot>
-        </LayoutSlotOutlet>
-      </div>
+  <div class="relative h-full">
+    <ResizeHandle
+      class="cp-details-resize-handle"
+      :resizer="resizer"
+      :label="t('Resize details')"
+      :controls="detailsId"
+    />
+    <div :id="detailsId" class="cp-details sticky top-0">
+      <LayoutSlotOutlet name="content-details">
+        <slot name="content-details"></slot>
+      </LayoutSlotOutlet>
     </div>
-  </aside>
+  </div>
 </template>
 
 <style scoped lang="css">
-  .cp-content__details:has(craft-tabs[collapsed]) {
-    --resize-handle-display: none;
-  }
-
   .cp-details {
     display: grid;
+    align-items: start;
     gap: var(--c-spacing-md);
     height: 100%;
+    min-block-size: 0;
+  }
+
+  /* The height the tabs get; craft-tabs scrolls its own panels within it. */
+  .cp-details :deep(craft-tabs) {
+    block-size: 100%;
+    min-block-size: 0;
   }
 </style>

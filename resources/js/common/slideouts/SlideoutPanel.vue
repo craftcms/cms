@@ -240,7 +240,7 @@
     }
   }
 
-  @media screen and (max-width: 640px) {
+  @media (width < var(--breakpoint-sm)) {
     .slideout-panel {
       /* Full-width sheet on small screens, matching the legacy slideout —
          there isn't room to peek, so stacked panels sit on top of each other.
@@ -250,6 +250,8 @@
       inset-block-start: 15vh;
       border-start-end-radius: var(--c-radius-lg, 0.5rem);
       border-end-start-radius: 0;
+      container-name: slideout;
+      container-type: inline-size;
     }
   }
 

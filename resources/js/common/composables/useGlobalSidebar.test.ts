@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {reactive} from 'vue';
+import {nextTick, reactive} from 'vue';
 
 const page = vi.hoisted(() => ({current: null as any}));
 
@@ -96,6 +96,55 @@ describe('useGlobalSidebar', () => {
     sidebar.visibility = 'hidden';
     await Promise.resolve();
     expect(localStorage.getItem(key)).toBe('true');
+  });
+
+  it('returns focus to the registered toggle when it closes', async () => {
+    const useGlobalSidebar = await freshSidebar();
+    const {sidebar, toggleButton} = useGlobalSidebar();
+
+    const toggle = document.createElement('button');
+    const panel = document.createElement('div');
+    const inside = document.createElement('button');
+
+    panel.className = 'cp-sidebar';
+    panel.append(inside);
+    document.body.append(toggle, panel);
+    toggleButton.value = toggle;
+
+    sidebar.mode = 'floating';
+    sidebar.visibility = 'visible';
+    inside.focus();
+
+    sidebar.visibility = 'hidden';
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(toggle);
+
+    document.body.replaceChildren();
+  });
+
+  it('leaves focus alone when it was never inside the sidebar', async () => {
+    const useGlobalSidebar = await freshSidebar();
+    const {sidebar, toggleButton} = useGlobalSidebar();
+
+    const toggle = document.createElement('button');
+    const elsewhere = document.createElement('input');
+
+    document.body.append(toggle, elsewhere);
+    toggleButton.value = toggle;
+
+    sidebar.mode = 'floating';
+    sidebar.visibility = 'visible';
+    elsewhere.focus();
+
+    sidebar.visibility = 'hidden';
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(elsewhere);
+
+    document.body.replaceChildren();
   });
 
   it('reports collapsed only for a docked sidebar', async () => {

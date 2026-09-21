@@ -72,7 +72,6 @@
     form: inertiaForm,
     defaultFormActions: props.defaultFormActions,
     contentMaxWidth: true,
-    centerContent: true,
     onSave: save,
   });
 

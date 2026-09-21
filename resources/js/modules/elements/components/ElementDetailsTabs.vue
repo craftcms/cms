@@ -9,7 +9,7 @@
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
-  import {useScreenContentWidth} from '@/common/composables/screen';
+  import {useScreenDetailsOverlay} from '@/common/composables/screen';
 
   type ElementDetailsTab = Omit<ElementDetailsTabDescriptor, 'component'> & {
     component?: Component;
@@ -20,12 +20,6 @@
     payload: ElementEditPayload;
     activityTimelineVersion: number;
     pane?: boolean;
-    /**
-     * How much room the editor body has. The column folds itself away when
-     * that runs short — see {@link COLLAPSE_WIDTH}. Defaults to the width the
-     * shell reports.
-     */
-    availableWidth?: number;
   }>();
 
   const coreTabs: ElementDetailsTab[] = [
@@ -62,46 +56,40 @@
   );
 
   /**
-   * The details column stops being worth its track once the editor body gets
-   * narrow, so it folds down to its rail and hands the width back.
+   * The column folds to its tab rail once the shell overlays it. The width that
+   * happens at is the shell's call, so this follows the flag rather than
+   * measuring.
    *
    * `collapsed` on `craft-tabs` is reflected output, not an input — selection
-   * is what drives it, so this sets `selectedIndex`. The width is the shell's
-   * content area rather than the viewport, because the global sidebar takes
-   * from the same space. A slideout reports none, so its tabs stay put.
+   * drives it, so this sets `selectedIndex`.
    */
-  const COLLAPSE_WIDTH = 880;
-  const shellWidth = useScreenContentWidth();
-  const availableWidth = computed(
-    () => props.availableWidth ?? shellWidth?.value
-  );
+  const overlaid = useScreenDetailsOverlay();
   const tabs = useTemplateRef<
     HTMLElement & {selectedIndex: number; open(): void; close(): void}
   >('tabs');
   const selectedTabId = shallowRef<string | null>('info');
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
-  let collapsedByWidth = false;
+  let collapsedByShell = false;
 
-  watch([availableWidth, tabs], ([width, element]) => {
-    // 0 while the element is still being measured — not a real narrow body.
-    if (!element || !width) {
+  watch([() => overlaid?.value ?? false, tabs], ([isOverlaid, element]) => {
+    if (!element) {
       return;
     }
 
-    if (width < COLLAPSE_WIDTH) {
+    if (isOverlaid) {
       if (element.selectedIndex >= 0) {
         element.selectedIndex = -1;
-        collapsedByWidth = true;
+        collapsedByShell = true;
       }
 
       return;
     }
 
-    if (collapsedByWidth && element.selectedIndex < 0) {
+    if (collapsedByShell && element.selectedIndex < 0) {
       element.selectedIndex = 0;
     }
 
-    collapsedByWidth = false;
+    collapsedByShell = false;
   });
 
   watch(
@@ -203,10 +191,14 @@
 <style scoped>
   craft-tabs::part(base) {
     gap: 0;
-    height: 100%;
   }
 
   craft-tabs::part(strip) {
+    /* The rail the collapsed panel folds to. Sized explicitly because the
+       preflight's border-box doesn't cross the shadow boundary, so the border
+       would otherwise widen it past the variable. */
+    box-sizing: border-box;
+    inline-size: var(--cp-rail-width);
     padding: var(--c-spacing-md);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     background-color: var(--c-surface-sunken);

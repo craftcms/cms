@@ -35,17 +35,12 @@ export interface ScreenProps {
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
   /**
-   * Caps the content column's width and, unless it's centered, rules off its
-   * end: `true` for the default (`--cp-content-max-width`, 960px), or any CSS
-   * length. Full pages only; a slideout is narrow already.
+   * Caps the content column's width and centres it in the space it has, with
+   * the footer's rule kept to the content: `true` for the default
+   * (`--cp-content-max-width`, 960px), or any CSS length. Full pages only; a
+   * slideout is narrow already.
    */
   contentMaxWidth?: boolean | string;
-  /**
-   * Centers the content column in the space it has, and keeps the footer's
-   * rule to the width of the content. Only visible alongside
-   * `contentMaxWidth`, since a full-width column already fills that space.
-   */
-  centerContent?: boolean;
 }
 
 export interface ScreenEmits {
