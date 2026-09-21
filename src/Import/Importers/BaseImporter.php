@@ -287,11 +287,10 @@ abstract class BaseImporter
         $dataTypes = array_unique(array_filter(array_keys(Import::getAllDataTypes())));
 
         // validate file type (e.g. csv, json, xml)
-        $newValidator = ValidatorFacade::make([
-            'file' => $file,
-        ], [
-            'file' => ['mimes:'.implode(',', $dataTypes)],
-        ]);
+        $newValidator = ValidatorFacade::make(
+            ['file' => $file],
+            ['file' => ['mimes:'.implode(',', $dataTypes)]]
+        );
 
         if ($newValidator->fails()) {
             $fail($attribute, t('Only files with these MIME types are allowed: {mimeTypes}.', [
@@ -367,6 +366,31 @@ abstract class BaseImporter
     public function importItem(array $data): void
     {
         // by default, this doesn't do anything
+    }
+
+    /**
+     * Returns whether a file is specified and points to an existing, importable file.
+     * It's used e.g. to determine whether an "Edit mapping" button can be shown.
+     *
+     * @param  string|null  $file  The file alias or relative path to check.
+     */
+    public static function isFileValid(?string $file): bool
+    {
+        if (empty($file)) {
+            return false;
+        }
+
+        $filePath = self::resolvedFilePath($file);
+        if (! file_exists($filePath)) {
+            return false;
+        }
+
+        $dataTypes = array_unique(array_filter(array_keys(Import::getAllDataTypes())));
+
+        return ValidatorFacade::make(
+            ['file' => new File($filePath)],
+            ['file' => ['mimes:'.implode(',', $dataTypes)]],
+        )->passes();
     }
 
     /**

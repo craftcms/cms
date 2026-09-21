@@ -7,9 +7,11 @@ import StepSlideout from './StepSlideout.vue';
 const state = vi.hoisted(() => ({
   layout: vi.fn(),
   fetchStepForm: vi.fn(),
+  validateStep: vi.fn(),
   openStepMapping: vi.fn(),
   context: null as any,
   refresh: null as ((values: unknown) => Promise<FormPayload>) | null,
+  errors: null as FormPayload['errors'] | null,
 }));
 
 vi.mock('@/common/composables/useAppLayout', () => ({
@@ -29,6 +31,7 @@ vi.mock('./step-mapping', () => ({
 vi.mock('./step-slideout', () => ({
   takeStepSlideoutContext: () => state.context,
   fetchStepForm: state.fetchStepForm,
+  validateStep: state.validateStep,
 }));
 
 // Stubbed so the test can invoke the refresh callback the panel hands it, which is what
@@ -41,7 +44,11 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
       state.refresh = props.refresh;
       expose({currentValues: () => ({settings: {}})});
 
-      return () => h('div', {class: 'form-renderer'});
+      return () => {
+        state.errors = props.errors;
+
+        return h('div', {class: 'form-renderer'});
+      };
     },
   },
 }));
@@ -68,6 +75,7 @@ const step: StepPayload = {
 
 const urls = {
   settingsUrl: '/actions/import/step-settings',
+  validateUrl: '/actions/import/validate-step',
   mappingUrl: '/actions/import/step-mapping',
   nestedColsUrl: '/actions/import/nested-mapping-cols',
 };
@@ -98,8 +106,10 @@ function mappingSection(): HTMLElement | null {
 beforeEach(() => {
   state.layout.mockClear();
   state.fetchStepForm.mockReset();
+  state.validateStep.mockReset();
   state.openStepMapping.mockReset();
   state.refresh = null;
+  state.errors = null;
   container = document.createElement('div');
   document.body.append(container);
 });
@@ -142,4 +152,32 @@ it('hides the mapping section again when a refresh reports it unmappable', async
   await nextTick();
 
   expect(mappingSection()).toBeNull();
+});
+
+it('keeps the slideout open and shows the errors when the draft step is invalid', async () => {
+  mount(true);
+  state.validateStep.mockRejectedValue({
+    response: {data: {errors: {file: ['File must be provided.']}}},
+  });
+
+  const onSave = state.layout.mock.calls.at(-1)![0].onSave;
+  await onSave();
+  await nextTick();
+
+  expect(state.context.apply).not.toHaveBeenCalled();
+  expect(state.errors).toEqual([
+    {path: ['file'], messages: ['File must be provided.']},
+  ]);
+});
+
+it('applies the step and lets the slideout close once it validates', async () => {
+  mount(true);
+  state.validateStep.mockResolvedValue(undefined);
+
+  const onSave = state.layout.mock.calls.at(-1)![0].onSave;
+  await onSave();
+
+  expect(state.context.apply).toHaveBeenCalledWith(
+    expect.objectContaining({uid: 'step-1'})
+  );
 });

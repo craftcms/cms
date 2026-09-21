@@ -105,6 +105,11 @@ class ImportEditViewModel extends ViewModel
         return $this->readOnly ? null : action([ImportController::class, 'stepSettings']);
     }
 
+    public function validateStepUrl(): ?string
+    {
+        return $this->readOnly ? null : action([ImportController::class, 'validateStep']);
+    }
+
     public function stepMappingUrl(): string
     {
         return action([ImportController::class, 'stepMapping']);

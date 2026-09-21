@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use Override;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -133,7 +134,7 @@ class Import extends Component implements CpEditable, Validatable
      * Defines validation rules for the import itself. Each step is validated separately,
      * against its own importer's rules, in `afterValidate()`.
      */
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [
@@ -174,7 +175,7 @@ class Import extends Component implements CpEditable, Validatable
     /**
      * Defines custom validation messages for the import.
      */
-    #[\Override]
+    #[Override]
     public function getMessages(): array
     {
         return [
@@ -187,7 +188,7 @@ class Import extends Component implements CpEditable, Validatable
      * Validates each step against its own importer type's rules, folding any errors back into
      * the import's error bag under `steps.<step uid>.<attribute>`.
      */
-    #[\Override]
+    #[Override]
     public function afterValidate(?Validator $validator = null): void
     {
         if ($validator === null) {
@@ -196,30 +197,38 @@ class Import extends Component implements CpEditable, Validatable
 
         foreach ($this->steps ?? [] as $i => $step) {
             $key = $step['uid'] ?? $i;
-            $type = $step['type'] ?? null;
 
-            $typeValidator = ValidatorFacade::make(['type' => $type], [
-                'type' => ['required', 'string', Rule::in(ImportFacade::getAllImporterTypes())],
-            ]);
-
-            if ($typeValidator->fails()) {
-                foreach ($typeValidator->errors()->get('type') as $message) {
-                    $validator->errors()->add("steps.$key.type", $message);
-                }
-
-                continue;
-            }
-
-            $stepValidator = ValidatorFacade::make($step, array_merge([
-                'batchSize' => ['nullable', 'integer', 'min:0', 'max:1000'],
-            ], $type::getRules()));
-
-            if ($stepValidator->fails()) {
-                foreach ($stepValidator->errors()->messages() as $attribute => $messages) {
-                    $validator->errors()->add("steps.$key.$attribute", ...$messages);
-                }
+            foreach (self::stepErrors($step) as $attribute => $messages) {
+                $validator->errors()->add("steps.$key.$attribute", ...$messages);
             }
         }
+    }
+
+    /**
+     * Validates a single step's data against its importer type's rules. Used both when
+     * validating the import as a whole, and by the step slideout to check a draft step
+     * before it lets the step close.
+     *
+     * @param  array<string, mixed>  $step  The step to validate.
+     * @return array<string, array<int, string>> Validation messages keyed by attribute.
+     */
+    public static function stepErrors(array $step): array
+    {
+        $type = $step['type'] ?? null;
+
+        $typeValidator = ValidatorFacade::make(['type' => $type], [
+            'type' => ['required', 'string', Rule::in(ImportFacade::getAllImporterTypes())],
+        ]);
+
+        if ($typeValidator->fails()) {
+            return ['type' => $typeValidator->errors()->get('type')];
+        }
+
+        $stepValidator = ValidatorFacade::make($step, array_merge([
+            'batchSize' => ['nullable', 'integer', 'min:0', 'max:1000'],
+        ], $type::getRules()));
+
+        return $stepValidator->fails() ? $stepValidator->errors()->messages() : [];
     }
 
     /**

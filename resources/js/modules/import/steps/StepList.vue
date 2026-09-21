@@ -206,7 +206,11 @@
         <span class="flex-1">
           <span class="font-bold">{{ index + 1 }}. {{ summary(step) }}</span>
           <span v-if="errorsByStep[step.uid]" class="error block">
-            {{ errorsByStep[step.uid]?.join(' ') }}
+            {{
+              t('The step “{step}” is invalid. Edit it to fix the problem.', {
+                step: summary(step),
+              })
+            }}
           </span>
         </span>
 

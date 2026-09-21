@@ -14,6 +14,7 @@ vi.mock('./step-slideout', () => ({
 
 const urls = {
   settingsUrl: '/actions/import/step-settings',
+  validateUrl: '/actions/import/validate-step',
   mappingUrl: '/actions/import/step-mapping',
   nestedColsUrl: '/actions/import/nested-mapping-cols',
 };
@@ -201,7 +202,7 @@ it('shows a server error on the step it belongs to', () => {
 
   expect(rows[0]!.querySelector('.error')).toBeNull();
   expect(rows[1]!.querySelector('.error')!.textContent).toContain(
-    'File does not exist.'
+    'The step “Entries — people.csv” is invalid. Edit it to fix the problem.'
   );
 });
 
@@ -229,7 +230,7 @@ it('keeps a list error and a row error apart', () => {
     'File does not exist.'
   );
   expect(container.querySelector('li .error')!.textContent).toContain(
-    'File does not exist.'
+    'The step “Entries — people.csv” is invalid. Edit it to fix the problem.'
   );
 });
 

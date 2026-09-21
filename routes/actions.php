@@ -332,6 +332,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('import/save', [ImportController::class, 'store']);
             Route::post('import/duplicate', [ImportController::class, 'duplicate']);
             Route::post('import/step-settings', [ImportController::class, 'stepSettings']);
+            Route::post('import/validate-step', [ImportController::class, 'validateStep']);
             Route::post('import/step-mapping', [ImportController::class, 'stepMapping']);
             Route::post('import/nested-mapping-cols', [ImportController::class, 'nestedMappingCols']);
         });

@@ -160,6 +160,26 @@ it('reports a step’s own validation errors against that step', function () {
     expect(app(Imports::class)->getImportByHandle('fixtureImport'))->toBeNull();
 });
 
+it('validates a draft step without saving the import', function () {
+    $response = $this->postJson(action([ImportController::class, 'validateStep']), [
+        'step' => ($this->entryStep)(),
+    ]);
+
+    $response->assertOk();
+    expect(app(Imports::class)->getImportByHandle('fixtureImport'))->toBeNull();
+});
+
+it('reports a draft step’s validation errors before the import is ever saved', function () {
+    $step = ($this->entryStep)([], ['file' => 'tests/Fixtures/Import/does-not-exist.json']);
+
+    $response = $this->postJson(action([ImportController::class, 'validateStep']), [
+        'step' => $step,
+    ]);
+
+    $response->assertStatus(422);
+    expect(array_keys($response->json('errors')))->toContain('file');
+});
+
 it('returns a container field’s destination columns for an unsaved step', function () {
     $response = $this->postJson(action([ImportController::class, 'nestedMappingCols']), [
         'step' => ($this->entryStep)(),

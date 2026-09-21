@@ -18,7 +18,11 @@
     MappingValues,
     StepPayload,
   } from '@/modules/import/mapping/types';
-  import {fetchStepForm, takeStepSlideoutContext} from './step-slideout';
+  import {
+    fetchStepForm,
+    takeStepSlideoutContext,
+    validateStep,
+  } from './step-slideout';
   import {openStepMapping} from './step-mapping';
 
   const props = defineProps<{
@@ -29,6 +33,7 @@
   const context = takeStepSlideoutContext(props.contextId);
   const slideout = useSlideout();
   const payload = shallowRef<FormPayload>(context.payload);
+  const errors = shallowRef<FormPayload['errors']>([]);
   const renderer = ref<{
     currentValues(): FormPayload['values'];
   } | null>(null);
@@ -160,8 +165,31 @@
     return response.form;
   }
 
-  function done(): void {
+  function setErrors(next: Record<string, string | string[]>): void {
+    errors.value = Object.entries(next).map(([path, messages]) => ({
+      path: path.split('.'),
+      messages: Array.isArray(messages) ? messages : [messages],
+    }));
+  }
+
+  async function done(): Promise<void> {
     syncFromForm();
+    errors.value = [];
+
+    if (context.urls.validateUrl) {
+      try {
+        await validateStep(context.urls.validateUrl, step.value);
+      } catch (error: any) {
+        const responseErrors = error?.response?.data?.errors;
+
+        if (responseErrors) {
+          setErrors(responseErrors);
+        }
+
+        return;
+      }
+    }
+
     context.apply(JSON.parse(JSON.stringify(step.value)) as StepPayload);
 
     // Before close(): closing drops the panel from the store, and its handler with it.
@@ -175,6 +203,7 @@
     <FormRenderer
       ref="renderer"
       :payload="payload"
+      :errors="errors"
       :refresh="payload.refreshable ? refresh : undefined"
       @change="onChange"
     />

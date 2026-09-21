@@ -219,17 +219,44 @@ class ImportController
      *
      * An element importer resolves its field layout from whatever it's importing into — an
      * entry type, a volume — so until that's chosen there are no destination columns to map
-     * onto, and without a file there are no incoming ones either.
+     * onto, and without a valid file there are no incoming ones either.
      *
      * @param  BaseImporter|null  $importer  The step's importer, or null when it has no type yet.
      */
     private function canMapStep(?BaseImporter $importer): bool
     {
-        if ($importer === null || empty($importer->file)) {
+        if ($importer === null || ! BaseImporter::isFileValid($importer->file)) {
             return false;
         }
 
         return ! $importer instanceof ElementImporter || ! empty($importer->fieldLayout);
+    }
+
+    /**
+     * Validates a single draft step, for the slideout to check before it lets the step close.
+     */
+    public function validateStep(): JsonResponse
+    {
+        $data = $this->request->validate([
+            'step' => ['required', 'array'],
+            'step.uid' => ['nullable', 'string', 'max:36'],
+            'step.type' => ['nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
+            'step.file' => ['nullable', 'string'],
+            'step.transformer' => ['nullable', 'string'],
+            'step.batchSize' => ['nullable', 'integer'],
+            'step.settings' => ['nullable', 'array'],
+        ]);
+
+        $step = $data['step'];
+        $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
+
+        $errors = ImportData::stepErrors($step);
+
+        if (! empty($errors)) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        return new JsonResponse(['success' => true]);
     }
 
     /**

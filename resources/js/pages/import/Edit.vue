@@ -20,6 +20,7 @@
     steps: StepPayload[];
     importerTypes: Array<{value: string; label: string}>;
     stepSettingsUrl: string | null;
+    validateStepUrl: string | null;
     stepMappingUrl: string;
     nestedColsUrl: string;
     readOnly: boolean;
@@ -33,6 +34,7 @@
 
   const urls = {
     settingsUrl: props.stepSettingsUrl ?? props.stepMappingUrl,
+    validateUrl: props.validateStepUrl,
     mappingUrl: props.stepMappingUrl,
     nestedColsUrl: props.nestedColsUrl,
   };

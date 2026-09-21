@@ -15,6 +15,7 @@ import {cloneStep} from './clone';
 
 export interface StepUrls {
   settingsUrl: string;
+  validateUrl: string | null;
   mappingUrl: string;
   nestedColsUrl: string;
 }
@@ -76,6 +77,17 @@ export async function fetchStepForm(
   }
 
   return {form: data.form as FormPayload, canMap: Boolean(data.canMap)};
+}
+
+/**
+ * Validates a draft step against its importer type's rules. Rejects with the axios error
+ * (carrying `response.data.errors`) when the step is invalid.
+ */
+export async function validateStep(
+  validateUrl: string,
+  step: StepPayload
+): Promise<void> {
+  await actionClient.post(validateUrl, {step});
 }
 
 /**

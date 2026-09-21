@@ -80,6 +80,7 @@ const step: StepPayload = {
 
 const urls = {
   settingsUrl: '/actions/import/step-settings',
+  validateUrl: '/actions/import/validate-step',
   mappingUrl: '/actions/import/step-mapping',
   nestedColsUrl: '/actions/import/nested-mapping-cols',
 };
