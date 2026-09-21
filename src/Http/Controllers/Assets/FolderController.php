@@ -88,6 +88,19 @@ readonly class FolderController
 
         Gate::authorize('moveFolder', [$folderToMove, $destinationFolder]);
 
+        if ($folderToMove->parentId === $destinationFolder->id) {
+            return $this->asFailure(t('The folder is already in the selected location.'));
+        }
+
+        $ancestor = $destinationFolder;
+        while ($ancestor !== null) {
+            if ($ancestor->id === $folderToMove->id) {
+                return $this->asFailure(t('A folder can’t be moved into itself or one of its subfolders.'));
+            }
+
+            $ancestor = $ancestor->getParent();
+        }
+
         $targetVolume = $destinationFolder->getVolume();
 
         $existingFolder = $this->folders->findFolder([
@@ -97,6 +110,17 @@ readonly class FolderController
 
         if (! $existingFolder) {
             $existingFolder = $targetVolume->sourceDisk()->directoryExists(Str::ltrim(Str::finish($destinationFolder->path, '/').$folderToMove->name, '/'));
+        }
+
+        if ($existingFolder instanceof VolumeFolder) {
+            $ancestor = $folderToMove->getParent();
+            while ($ancestor !== null) {
+                if ($ancestor->id === $existingFolder->id) {
+                    return $this->asFailure(t('A folder can’t replace or merge with one of its parent folders.'));
+                }
+
+                $ancestor = $ancestor->getParent();
+            }
         }
 
         // If there's a conflict and `force`/`merge` flags weren't passed in, then stop
