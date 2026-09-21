@@ -36,6 +36,7 @@
         query
       ),
   };
+  const sourceHref = index.url();
 
   // The breadcrumb trail is built server-side (labels, folder links, drop-target
   // attrs, and the current folder's action menu) — see
@@ -98,7 +99,11 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route" customizable-sources>
+  <ElementIndexPage
+    :route="route"
+    :source-href="sourceHref"
+    customizable-sources
+  >
     <template #navbar>
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>

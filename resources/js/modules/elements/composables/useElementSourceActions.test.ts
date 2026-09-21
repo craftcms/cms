@@ -1,13 +1,13 @@
-import {effectScope, nextTick, ref} from 'vue';
+import {computed, effectScope, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
 import type {Source} from '@/modules/elements/types/sources';
 
-const router = vi.hoisted(() => ({visit: vi.fn(), prefetch: vi.fn()}));
+const router = vi.hoisted(() => ({get: vi.fn(), prefetch: vi.fn()}));
 
 vi.mock('@inertiajs/vue3', () => ({router}));
 vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => ({site: {handle: 'default'}}),
+  default: () => ({site: computed(() => ({handle: 'default'}))}),
 }));
 
 const {useElementSourceActions} = await import('./useElementSourceActions');
@@ -39,9 +39,25 @@ function run<T>(fn: () => T): T {
 
 afterEach(() => {
   scope?.stop();
-  router.visit.mockClear();
+  router.get.mockClear();
   router.prefetch.mockClear();
 });
+
+function finishVisit(options: unknown, state: 'completed' | 'cancelled') {
+  const {onFinish} = options as {
+    onFinish: (visit: {
+      completed: boolean;
+      cancelled: boolean;
+      interrupted: boolean;
+    }) => void;
+  };
+
+  onFinish({
+    completed: state === 'completed',
+    cancelled: state === 'cancelled',
+    interrupted: false,
+  });
+}
 
 describe('useElementSourceActions', () => {
   it('groups the sources under their headings', () => {
@@ -71,13 +87,80 @@ describe('useElementSourceActions', () => {
 
     // The source list and the publishable sections don't change when the
     // source does, so they're left out rather than the whole page re-fetched.
-    const [url, options] = router.visit.mock.calls[0]!;
+    const [url, data, options] = router.get.mock.calls[0]!;
 
     expect(url).toBe('/admin/entries?source=section:blog');
+    expect(data).toEqual({});
     expect(options).toMatchObject({
       except: ['sources', 'publishableSections'],
       preserveState: true,
       preserveScroll: true,
+    });
+  });
+
+  it('keeps the clicked source active while a completed visit updates the page', async () => {
+    const active = ref<string | null>('*');
+    const {actions} = run(() =>
+      useElementSourceActions({sources: SOURCES, route, activeSource: active})
+    );
+
+    const blog = (
+      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
+    ).items[0]!;
+
+    blog.onClick!(new MouseEvent('click', {cancelable: true}));
+
+    finishVisit(router.get.mock.calls[0]![2], 'completed');
+    await nextTick();
+
+    const grouped = actions.value[1] as {
+      items: Array<{label: string; selected?: boolean}>;
+    };
+
+    expect(grouped.items[0]!.selected).toBe(true);
+  });
+
+  it('restores the current source when a visit is cancelled', async () => {
+    const active = ref<string | null>('*');
+    const {actions} = run(() =>
+      useElementSourceActions({sources: SOURCES, route, activeSource: active})
+    );
+
+    const blog = (
+      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
+    ).items[0]!;
+
+    blog.onClick!(new MouseEvent('click', {cancelable: true}));
+
+    finishVisit(router.get.mock.calls[0]![2], 'cancelled');
+    await nextTick();
+
+    expect((actions.value[0] as {selected?: boolean}).selected).toBe(true);
+  });
+
+  it('routes a source switch through a canonical source href when given one', () => {
+    const {actions} = run(() =>
+      useElementSourceActions({
+        sources: SOURCES,
+        route,
+        sourceHref: '/admin/entries',
+        activeSource: '*',
+        viewMode: 'cards',
+      })
+    );
+
+    const blog = (
+      actions.value[1] as {items: Array<{onClick?: (event: Event) => void}>}
+    ).items[0]!;
+
+    blog.onClick!(new MouseEvent('click', {cancelable: true}));
+
+    expect(router.get).toHaveBeenCalledTimes(1);
+    expect(router.get.mock.calls[0]![0]).toBe('/admin/entries');
+    expect(router.get.mock.calls[0]![1]).toMatchObject({
+      source: 'section:blog',
+      site: 'default',
+      viewMode: 'cards',
     });
   });
 
@@ -161,7 +244,7 @@ describe('useElementSourceActions', () => {
 
     // An Inertia visit inside the selector modal would navigate the page
     // behind it.
-    expect(router.visit).not.toHaveBeenCalled();
+    expect(router.get).not.toHaveBeenCalled();
     expect(merge).toHaveBeenCalledWith(
       {source: 'section:blog', viewMode: null},
       {resetPage: true}

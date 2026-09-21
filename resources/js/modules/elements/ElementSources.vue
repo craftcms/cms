@@ -17,6 +17,8 @@
   const props = defineProps<{
     sources: Array<Source>;
     route: ElementIndexRoute;
+    /** Canonical page URL for source-switch GET requests. */
+    sourceHref?: string;
     activeSource?: string | null;
     viewMode?: string | null;
     /**
@@ -31,6 +33,7 @@
   const {actions} = useElementSourceActions({
     sources: () => props.sources,
     route: () => props.route,
+    sourceHref: () => props.sourceHref,
     activeSource: () => props.activeSource,
     viewMode: () => props.viewMode,
     indexVisitor: () => props.indexVisitor,

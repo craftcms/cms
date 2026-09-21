@@ -18,6 +18,8 @@
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
     route: ElementIndexRoute;
+    /** Canonical URL used when switching sources, when it differs from route. */
+    sourceHref?: string;
     /** Overrides the pinned first column (defaults to the element's title). */
     pinnedColumn?: {key: string; label: string};
     /**

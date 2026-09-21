@@ -74,6 +74,8 @@
 - Removed HTMX.
 - Fixed a bug where unsaved drafts could not be deleted from element indexes. ([#19668](https://github.com/craftcms/cms/pull/19668))
 - Fixed a bug where saved drafts without canonical elements were missing from element indexes. ([#19649](https://github.com/craftcms/cms/pull/19649))
+- Fixed an error that could occur when rendering element table rows with strict Twig variables enabled. ([#19679](https://github.com/craftcms/cms/pull/19679))
+- Fixed an error that occurred when moving folders directly beneath an asset volume’s root folder. ([#19680](https://github.com/craftcms/cms/pull/19680))
 - Fixed a bug where submitting a form after signing in through an elevated or expired session modal could fail CSRF validation.
 - Fixed a bug where nested Content Block fields’ content could be lost during a batched resave that included revisions. ([#19543](https://github.com/craftcms/cms/issues/19543))
 - Fixed a bug where visiting the logout path while signed out would store it as the post-login redirect, so signing in would immediately sign the user back out. ([#19551](https://github.com/craftcms/cms/pull/19551))
@@ -163,6 +165,7 @@
 - Fixed an error that occurred when upgrading to Craft 6. ([#19658](https://github.com/craftcms/cms/pull/19658))
 - Fixed a bug where modifier-clicking or middle-clicking on some control panel links wasn’t opening the link in a new tab.
 - Fixed a bug where modifier-clicking or middle-clicking the New Entry button didn’t open the creation page in a new tab. ([#19669](https://github.com/craftcms/cms/pull/19669))
+- Fixed an error that occurred when loading the Users index if a user belonged to a user group. ([#19673](https://github.com/craftcms/cms/pull/19673))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 

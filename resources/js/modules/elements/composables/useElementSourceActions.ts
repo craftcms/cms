@@ -1,9 +1,11 @@
 import {computed, ref, watch, type MaybeRefOrGetter, toValue} from 'vue';
 import {router} from '@inertiajs/vue3';
 import useCraftData from '@/common/composables/useCraftData';
-import type {
-  ElementIndexRoute,
-  IndexVisitor,
+import {
+  appendIndexQuery,
+  type ElementIndexRoute,
+  type IndexQueryParams,
+  type IndexVisitor,
 } from '@/modules/elements/composables/useElementIndexVisits';
 import type {
   Source,
@@ -19,6 +21,8 @@ import type {
 export interface ElementSourceActionsOptions {
   sources: MaybeRefOrGetter<Array<Source>>;
   route: MaybeRefOrGetter<ElementIndexRoute>;
+  /** Canonical page URL for source-switch GET requests. */
+  sourceHref?: MaybeRefOrGetter<string | undefined>;
   activeSource?: MaybeRefOrGetter<string | null | undefined>;
   viewMode?: MaybeRefOrGetter<string | null | undefined>;
   /**
@@ -44,8 +48,8 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
 
   /**
    * The source the user just clicked, activated before the round-trip so the
-   * selection doesn't lag the pointer. Once the visit settles the server's
-   * `activeSource` is authoritative again.
+   * selection doesn't lag the pointer. Once the page props catch up, the
+   * server's `activeSource` is authoritative again.
    */
   const pendingSource = ref<string | null>(null);
 
@@ -66,12 +70,21 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
   // Carry the active view mode so the server renders data for the mode the
   // page is actually showing, rather than falling back to `table` while the
   // restored local view state still shows cards.
-  function sourceUrl(key: string): string {
-    return toValue(options.route).url({
+  function sourceData(key: string): IndexQueryParams {
+    return {
       source: key,
       site: site.value?.handle,
       viewMode: toValue(options.viewMode) || undefined,
-    });
+    };
+  }
+
+  function sourceUrl(key: string): string {
+    const data = sourceData(key);
+    const href = toValue(options.sourceHref);
+
+    return href
+      ? appendIndexQuery(href, data)
+      : toValue(options.route).url(data);
   }
 
   function prefetchSource(key: string): void {
@@ -101,16 +114,29 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
       return;
     }
 
-    router.visit(sourceUrl(key), {
-      ...visitOptions,
-      onFinish: () => {
-        // The key guard means a superseded (cancelled) visit from rapid
-        // switching won't clear the highlight for a newer selection.
-        if (pendingSource.value === key) {
-          pendingSource.value = null;
-        }
-      },
-    });
+    const onFinish = (visit: {
+      completed: boolean;
+      cancelled: boolean;
+      interrupted: boolean;
+    }) => {
+      // A completed visit finishes before Vue receives the new page props, so
+      // the watcher below releases the highlight once `activeSource` catches
+      // up. The key guard means a superseded (cancelled) visit from rapid
+      // switching won't clear the highlight for a newer selection.
+      if (!visit.completed && pendingSource.value === key) {
+        pendingSource.value = null;
+      }
+    };
+
+    const href = toValue(options.sourceHref);
+
+    if (href) {
+      router.get(href, sourceData(key), {...visitOptions, onFinish});
+
+      return;
+    }
+
+    router.get(sourceUrl(key), {}, {...visitOptions, onFinish});
   }
 
   // A visitor-driven index has no `onFinish` to hook, so the optimistic
