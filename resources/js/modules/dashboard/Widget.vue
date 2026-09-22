@@ -155,6 +155,7 @@
     position: relative;
     perspective: 1000px;
     height: auto !important;
+    --c-card-header-min-height: var(--c-size-control-md);
   }
 
   .dashboard-widget > .front,
