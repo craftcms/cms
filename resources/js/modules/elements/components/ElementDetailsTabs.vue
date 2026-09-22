@@ -12,6 +12,7 @@
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
   import type {ElementEditPayloadUpdater} from '@/modules/elements/composables/useElementEditor';
+  import {useScreenDetailsOverlay} from '@/common/composables/screen';
 
   type ElementDetailsTab = Omit<ElementDetailsTabDescriptor, 'component'> & {
     component?: Component;
@@ -23,13 +24,7 @@
     payload: ElementEditPayload;
     activityTimelineVersion: number;
     updatePayload: ElementEditPayloadUpdater;
-    pane?: boolean;
     syncLocationHash?: boolean;
-    /**
-     * How much room the editor body has. The column folds itself away when
-     * that runs short — see {@link COLLAPSE_WIDTH}.
-     */
-    availableWidth?: number;
   }>();
 
   const coreTabs: ElementDetailsTab[] = [
@@ -76,45 +71,44 @@
   );
 
   /**
-   * The details column stops being worth its track once the editor body gets
-   * narrow, so it folds down to its rail and hands the width back.
+   * The column folds to its tab rail once the shell overlays it. The width that
+   * happens at is the shell's call, so this follows the flag rather than
+   * measuring.
    *
    * `collapsed` on `craft-tabs` is reflected output, not an input — selection
-   * is what drives it, so this sets `selectedIndex`. The width is measured on
-   * the body rather than the viewport, because the global sidebar and a
-   * slideout both take from the same space; the parent owns that element, so
-   * it does the measuring and passes the number down.
+   * drives it, so this sets `selectedIndex`.
    */
-  const COLLAPSE_WIDTH = 880;
-  const tabs = useTemplateRef<HTMLElement & {selectedIndex: number}>('tabs');
+  const overlaid = useScreenDetailsOverlay();
+  const tabs = useTemplateRef<
+    HTMLElement & {selectedIndex: number; open(): void; close(): void}
+  >('tabs');
   const selectedTabId = shallowRef<string | null>(
     props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
       : 'info'
   );
   /** Whether the last collapse was ours, so a deliberate one is left alone. */
-  let collapsedByWidth = false;
+  let collapsedByShell = false;
 
-  watch([() => props.availableWidth, tabs], ([width, element]) => {
-    // 0 while the element is still being measured — not a real narrow body.
-    if (!element || !width) {
+  watch([() => overlaid?.value ?? false, tabs], ([isOverlaid, element]) => {
+    if (!element) {
       return;
     }
 
-    if (width < COLLAPSE_WIDTH) {
+    if (isOverlaid) {
       if (element.selectedIndex >= 0) {
         element.selectedIndex = -1;
-        collapsedByWidth = true;
+        collapsedByShell = true;
       }
 
       return;
     }
 
-    if (collapsedByWidth && element.selectedIndex < 0) {
+    if (collapsedByShell && element.selectedIndex < 0) {
       element.selectedIndex = 0;
     }
 
-    collapsedByWidth = false;
+    collapsedByShell = false;
   });
 
   watch(
@@ -152,6 +146,14 @@
     };
 
     return tab.props?.(context) ?? {};
+  }
+
+  function toggleDetails(): void {
+    if (selectedTabId.value) {
+      tabs.value?.close();
+    } else {
+      tabs.value?.open();
+    }
   }
 
   function onSelectedChanged(event: Event): void {
@@ -213,19 +215,12 @@
       <craft-icon :name="tab.icon" :label="tab.label" />
     </craft-tab>
     <div v-for="tab in visibleTabs" :key="tab.id" slot="panel">
-      <slot v-if="tab.slot" :name="tab.slot" />
-      <component
-        v-else
-        :is="pane ? 'craft-pane' : 'div'"
-        :appearance="pane ? 'plain' : undefined"
+      <div
+        class="py-1 px-lg border-b border-b-quiet flex justify-between items-center min-h-(--cp-header-height)"
       >
-        <div
-          v-if="pane"
-          slot="header"
-          class="flex items-center gap-1 px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
-        >
-          <h3 slot="title" class="text-xs/4">{{ tab.label }}</h3>
-          <span v-if="tab.statusData" class="ms-auto flex items-center gap-1">
+        <div class="flex items-center gap-1">
+          <h3 class="text-md/4">{{ tab.label }}</h3>
+          <span v-if="tab.statusData" class="flex items-center gap-1">
             <craft-status
               :status="tab.statusData.indicator"
               :label="tab.statusData.label"
@@ -235,23 +230,43 @@
             </span>
           </span>
         </div>
+
+        <craft-button
+          type="button"
+          icon="x"
+          :aria-label="t('Close {tab}', {tab: tab.label})"
+          variant="plain"
+          size="small"
+          @click="tabs?.close()"
+          flush="inline-end"
+        ></craft-button>
+      </div>
+      <slot v-if="tab.slot" :name="tab.slot" />
+      <div v-else class="p-lg">
         <component
           v-if="tab.component"
           :is="tab.component"
           v-bind="componentProps(tab)"
         />
-      </component>
+      </div>
     </div>
   </craft-tabs>
 </template>
 
 <style scoped>
   craft-tabs::part(base) {
-    gap: var(--c-spacing-sm);
+    gap: 0;
   }
 
   craft-tabs::part(strip) {
-    border: 0;
+    /* The rail the collapsed panel folds to. Sized explicitly because the
+       preflight's border-box doesn't cross the shadow boundary, so the border
+       would otherwise widen it past the variable. */
+    box-sizing: border-box;
+    inline-size: var(--cp-rail-width);
+    padding: var(--c-spacing-md);
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    background-color: var(--c-surface-sunken);
   }
 
   craft-tab {
@@ -262,13 +277,14 @@
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     aspect-ratio: 1;
-    background-color: white;
+    background-color: var(--c-surface-raised);
+    border: 1px solid var(--c-color-border-quiet);
   }
 
   craft-tab[selected='true'] {
-    border-color: var(--c-color-neutral-border-normal);
-    background-color: var(--c-color-neutral-fill-normal);
-    color: var(--c-color-neutral-on-normal);
+    border-color: var(--c-color-accent-border-normal);
+    background-color: var(--c-color-accent-fill-quiet);
+    color: var(--c-color-accent-on-quiet);
 
     &::after {
       display: none;

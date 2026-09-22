@@ -16,6 +16,10 @@ export interface UseAppLayoutOptions {
   formActions?: Array<ActionItem>;
   formAdditionalActions?: Array<ActionItem>;
   formAdditionalButtons?: Array<ActionItemButton>;
+  /** Controls below the secondary nav. See `ScreenProps.subnavActions`. */
+  subnavActions?: Array<ActionItem>;
+  /** Caps and centres the content column. See `ScreenProps.contentMaxWidth`. */
+  contentMaxWidth?: boolean | string;
   onSave?: (options?: FormSaveOptions) => void;
 }
 

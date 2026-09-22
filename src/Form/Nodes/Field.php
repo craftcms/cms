@@ -68,7 +68,7 @@ class Field implements Node
         $input = $renderer->renderControl(
             $control,
             $payload->values,
-            $id,
+            $renderer->inputId($control->path),
             $errors !== [],
             (bool) ($node->props['required'] ?? false),
         );
@@ -76,6 +76,9 @@ class Field implements Node
         $actions = $node->children ?? [];
 
         return FieldComponent::make()
+            // Derived from the control's path, the same path the input's
+            // name comes from. The input sits inside on `{$id}-input`.
+            ->id($id)
             ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
             ->label($label)
             ->labelSrOnly((bool) ($node->props['labelSrOnly'] ?? false))

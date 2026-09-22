@@ -227,8 +227,8 @@ readonly class UserGroups
 
             // Create batches of user groups by user ID
             foreach ($assignments as $assignment) {
-                if (isset($groups[$assignment['groupId']])) {
-                    $groupsByUserId[$assignment['userId']][] = $groups[$assignment['groupId']];
+                if (isset($groups[$assignment->groupId])) {
+                    $groupsByUserId[$assignment->userId][] = $groups[$assignment->groupId];
                 }
             }
         }

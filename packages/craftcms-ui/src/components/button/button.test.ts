@@ -337,3 +337,70 @@ describe('craft-button toggle', () => {
     expect(fired).toBe(false);
   });
 });
+
+describe('craft-button icon spacing', () => {
+  function content(element: CraftButton): DOMTokenList {
+    return element.shadowRoot!.querySelector('.button-content')!.classList;
+  }
+
+  it('spaces a prefix icon from the label', async () => {
+    const element = await createButton({icon: 'pen'});
+
+    expect(content(element)).toContain('button-content--spaced-prefix');
+    expect(content(element)).not.toContain('button-content--spaced-suffix');
+  });
+
+  it('spaces a suffix icon from the label', async () => {
+    const element = await createButton({
+      icon: 'chevron-down',
+      'icon-position': 'suffix',
+    });
+
+    expect(content(element)).toContain('button-content--spaced-suffix');
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+
+  it('spaces slotted icons on either side', async () => {
+    const element = await createButton();
+    const prefix = document.createElement('craft-icon');
+    prefix.slot = 'prefix';
+    const suffix = document.createElement('craft-icon');
+    suffix.slot = 'suffix';
+    element.append(prefix, suffix);
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(content(element)).toContain('button-content--spaced-prefix');
+    expect(content(element)).toContain('button-content--spaced-suffix');
+  });
+
+  it('adds no space to an icon-only button', async () => {
+    const element = await createButton({icon: 'x', 'aria-label': 'Close'}, '');
+
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+
+  it('ignores whitespace-only content', async () => {
+    const element = await createButton(
+      {icon: 'x', 'aria-label': 'Close'},
+      '\n  '
+    );
+
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+
+  it('follows the label as it comes and goes', async () => {
+    const element = await createButton({icon: 'pen'}, '');
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+
+    element.textContent = 'Edit';
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(content(element)).toContain('button-content--spaced-prefix');
+
+    element.firstChild!.textContent = '';
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+});

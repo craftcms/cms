@@ -767,26 +767,26 @@
   </craft-dialog>
 </template>
 
-<style scoped lang="scss">
-  // Every ancestor of `.image` needs a definite height: the editor measures it
-  // to size the canvas. The body is edge to edge; header and footer keep their
-  // padding.
+<style scoped lang="css">
+  /* Every ancestor of `.image` needs a definite height: the editor measures it
+     to size the canvas. The body is edge to edge; header and footer keep their
+     padding. */
   craft-dialog::part(body) {
     padding: 0;
   }
 
   .image-editor {
     flex: 1;
-    // The fullscreen dialog's surface is a header/body/footer grid whose body
-    // row takes the remaining height, so `100%` resolves against a real number
-    // here — no viewport arithmetic needed.
+    /* The fullscreen dialog's surface is a header/body/footer grid whose body
+       row takes the remaining height, so `100%` resolves against a real number
+       here — no viewport arithmetic needed. */
     block-size: 100%;
     min-block-size: 0;
     display: flex;
     flex-direction: column;
     max-width: 100dvw;
 
-    @media screen and (min-width: 768px) {
+    @media (width >= var(--breakpoint-md)) {
       flex-direction: row;
     }
   }
@@ -794,7 +794,7 @@
   .image-editor__sidebar {
     flex: 0 0 clamp(calc(260rem / 16), 25%, calc(320rem / 16));
 
-    @media screen and (min-width: 768px) {
+    @media (width >= var(--breakpoint-md)) {
       border-inline-end: 1px solid var(--c-color-neutral-border-quiet);
     }
   }
@@ -809,8 +809,8 @@
   .image-editor__image {
     display: flex;
     flex: 1;
-    // A flex item won't shrink past its min-content without this, and the
-    // canvas side would push the sidebar out instead of giving way.
+    /* A flex item won't shrink past its min-content without this, and the
+       canvas side would push the sidebar out instead of giving way. */
     min-inline-size: 0;
   }
 
@@ -833,10 +833,10 @@
   .image {
     flex: 1;
     position: relative;
-    // Without this the browser claims touch drags for panning and the pointer
-    // stream is cancelled mid-gesture.
+    /* Without this the browser claims touch drags for panning and the pointer
+       stream is cancelled mid-gesture. */
     touch-action: none;
-    // Without this a flex item refuses to shrink below its content.
+    /* Without this a flex item refuses to shrink below its content. */
     min-block-size: 0;
 
     canvas {

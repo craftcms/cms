@@ -82,9 +82,9 @@ describe('FormActions', () => {
     expect(container.querySelector('[type="submit"]')).toBeNull();
     expect(container.textContent).toContain('View');
     expect(
-      container.querySelector<HTMLElementTagNameMap['craft-action-menu']>(
-        'craft-action-menu'
-      )?.actions
-    ).toEqual([expect.objectContaining({label: 'Duplicate'})]);
+      [...container.querySelectorAll('craft-action-item')].map((item) =>
+        item.textContent?.trim()
+      )
+    ).toContain('Duplicate');
   });
 });

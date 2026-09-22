@@ -25,9 +25,24 @@ export interface ScreenProps {
   formActions?: Array<ActionItem>;
   formAdditionalActions?: Array<ActionItem>;
   formAdditionalButtons?: Array<ActionItemButton>;
+  /**
+   * Controls below the secondary nav, as descriptors rather than markup.
+   *
+   * The nav renders these twice over — as buttons where it has the room, and
+   * as items appended to its action menu once it collapses — so describing
+   * them beats filling the `subnav-actions` slot with one of the two.
+   */
+  subnavActions?: Array<ActionItem>;
   /** Overrides the submit button's text. Craft 5: `submitButtonLabel`. */
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
+  /**
+   * Caps the content column's width and centres it in the space it has, with
+   * the footer's rule kept to the content: `true` for the default
+   * (`--cp-content-max-width`, 960px), or any CSS length. Full pages only; a
+   * slideout is narrow already.
+   */
+  contentMaxWidth?: boolean | string;
 }
 
 export interface ScreenEmits {
@@ -38,48 +53,75 @@ export interface ScreenEmits {
  * The shells' extension points, mirroring Craft 5's `_layouts/cp.twig` blocks
  * and variables (noted per slot).
  *
- * A slideout has no room for some of these (`breadcrumbs`, `sidebar`,
- * `subnav-actions`, `footer`). `SlideoutScreen` still renders their outlets,
- * hidden, so a page written for full-page use doesn't drop teleported content
- * on the floor when it opens in a slideout.
+ * Names carry the level they belong to: `page-` for regions the current page
+ * owns end to end, `content-` for regions inside the primary content area.
+ * Unprefixed names sit inside `content-header` or apply to every level.
+ *
+ * A slideout has no room for some of these (`breadcrumbs`, `content-sidebar`,
+ * `subnav-actions`, `page-footer`). `SlideoutScreen` still renders their
+ * outlets, hidden, so a page written for full-page use doesn't drop teleported
+ * content on the floor when it opens in a slideout.
  */
 export interface ScreenSlots {
   /** Page content inside the content column. Craft 5: `block content`. */
   default?: () => any;
   /** Replaces the entire main column: breadcrumb bar, page header, and content. Craft 5: `block main`. */
-  main?: () => any;
+  'page-main'?: () => any;
+  /**
+   * Notices about the page's state — a draft, a stale copy, a read-only view —
+   * at the top of the content column, above the page header. Craft 5:
+   * `contentNotice`.
+   */
+  'content-notices'?: () => any;
   /** Replaces the breadcrumb bar. Default renders the `crumbs` page prop and the `context-menu` slot. */
   breadcrumbs?: () => any;
   /** Extra controls next to the breadcrumbs, e.g. a site picker. Craft 5: `contextMenu`. */
   'context-menu'?: () => any;
-  /** Replaces the page header (title through action buttons). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
-  header?: () => any;
+  /** Replaces the page header (the title). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
+  'content-header'?: () => any;
   /** Replaces the default `<h1>` page title. Craft 5: `block pageTitle`. */
   title?: () => any;
-  /** Status badges next to the title. Craft 5: `#revision-indicators`. */
-  'title-badge'?: () => any;
-  /** Controls between the title and the action buttons. Craft 5: `toolbar`. */
-  toolbar?: () => any;
-  /** Replaces the whole action-buttons area, including the form save UI. Craft 5: `actionButton`. */
-  actions?: () => any;
-  /** Extra buttons before the form save UI. Craft 5: `additionalButtons`. */
+  /**
+   * Replaces the toolbar above the page header, which holds
+   * `content-toolbar-meta` and `content-toolbar-actions`.
+   */
+  'content-toolbar'?: () => any;
+  /**
+   * About what the page shows, at the start of the toolbar: status badges,
+   * who else is editing, View buttons, a server screen's toolbar HTML.
+   * Craft 5: `#revision-indicators`, `toolbar`.
+   */
+  'content-toolbar-meta'?: () => any;
+  /**
+   * Actions on what the page shows, at the end of the toolbar, usually as an
+   * action menu: editing an entry's entry type, Validate entry, and the like.
+   */
+  'content-toolbar-actions'?: () => any;
+  /**
+   * Page-level actions beside the title, e.g. New … or Upload. Craft 5:
+   * `actionButton`.
+   */
+  'content-actions'?: () => any;
+  /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
   /** Replaces the save button while keeping the form action menu. Craft 5: `block submitButton`. */
   'submit-button'?: () => any;
   /** Replaces the default form error summary. Craft 5: `errorSummary`. */
   'error-summary'?: () => any;
-  /** Status notice at the top of the content column. Craft 5: `contentNotice`. */
-  'content-notice'?: () => any;
   /** Tabs above the content. Craft 5: `tabs`. */
-  tabs?: () => any;
+  'content-tabs'?: () => any;
   /** Left column beside the content. Defaults to a secondary nav built from the `subnav` page prop. Craft 5: `sidebar`. */
-  sidebar?: () => any;
-  /** Extra controls below the default secondary nav. */
+  'content-sidebar'?: () => any;
+  /**
+   * Extra controls below the default secondary nav, for anything the
+   * `subnavActions` prop can't describe. Markup placed here only appears in
+   * the expanded nav — the collapsed action menu is built from descriptors.
+   */
   'subnav-actions'?: () => any;
-  /** Bottom of the content column (pagination, meta info, …). Craft 5: `footer` (content pane). */
+  /** Bottom of the content column (pagination, meta info, …), beside the form save UI. Craft 5: `footer` (content pane). */
   'content-footer'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
-  details?: () => any;
+  'content-details'?: () => any;
   /** Global page footer. */
-  footer?: () => any;
+  'page-footer'?: () => any;
 }

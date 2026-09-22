@@ -408,6 +408,7 @@ class Input extends ViewComponent
             'name' => $this->name !== null && $this->name !== '' ? $this->name : null,
             'disabled' => $this->isDisabled(),
             'readonly' => $this->readOnly,
+            'aria-invalid' => $this->inputAttributes['aria-invalid'] ?? null,
         ];
     }
 

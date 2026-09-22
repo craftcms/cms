@@ -39,7 +39,7 @@ export default css`
     max-width: none;
     max-height: none;
     overflow: visible;
-    margin: 0;
+    margin: auto;
   }
 
   dialog::backdrop {
@@ -61,7 +61,7 @@ export default css`
     position: fixed;
     inset: 0;
     margin: auto;
-    z-index: 100;
+    z-index: var(--c-layer-overlay, 100);
   }
 
   .surface {

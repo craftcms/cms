@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -322,7 +323,7 @@ abstract class ElementEditViewModel extends ViewModel
      * preview control already covers it, and "Edit" never appears — this screen
      * is the edit screen.
      *
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     public function actionMenu(): array
     {
@@ -593,7 +594,7 @@ abstract class ElementEditViewModel extends ViewModel
      * leads with a site crumb whose menu switches sites, mirroring the legacy
      * editor.
      *
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     public function crumbs(): array
     {

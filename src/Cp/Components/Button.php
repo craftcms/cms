@@ -53,6 +53,8 @@ class Button extends ViewComponent
 
     protected ?string $align = null;
 
+    protected bool|string|null $flush = null;
+
     protected ?string $href = null;
 
     protected ?string $target = null;
@@ -191,6 +193,20 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /**
+     * Pulls the button out by the space around its content, so its label or
+     * icon lines up with the text beside it. Meant for buttons with no
+     * background, like `plain`. `true` applies on every side; otherwise pass
+     * a space-separated list of `inline`, `block`, `inline-start`,
+     * `inline-end`, `block-start` and `block-end`.
+     */
+    public function flush(bool|string $flush = true): static
+    {
+        $this->flush = $flush;
+
+        return $this;
+    }
+
     /** Renders the button as a link. */
     public function href(?string $href, ?string $target = null): static
     {
@@ -271,6 +287,7 @@ class Button extends ViewComponent
             'disabled' => $this->isDisabled(),
             'accessible-name' => $this->accessibleName,
             'align' => $this->align,
+            'flush' => $this->flush,
             'href' => $this->href,
             'target' => $this->target,
             'command' => $this->command,
