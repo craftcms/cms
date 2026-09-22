@@ -103,13 +103,13 @@
           <template #header>
             <div
               v-if="widget.title || widget.subtitle"
-              slot="title"
+              slot="label"
               class="widget-heading"
             >
               <h2
                 v-if="widget.title"
                 :id="`widget-heading-${widget.id}`"
-                class="text-base"
+                class="text-sm"
               >
                 {{ widget.title }}
               </h2>
@@ -118,7 +118,7 @@
             <craft-button
               v-if="widget.settingsForm"
               ref="settingsButton"
-              slot="header-actions"
+              slot="actions"
               class="widget-settings-button"
               type="button"
               icon="gear"
@@ -138,13 +138,13 @@
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
       <div v-if="settings" class="settings-face">
-        <craft-pane appearance="raised">
+        <craft-card>
           <WidgetSettings
             :widget="widget"
             @saved="saved"
             @cancel="closeSettings"
           />
-        </craft-pane>
+        </craft-card>
       </div>
     </Transition>
   </div>
@@ -189,7 +189,7 @@
       transition: none;
     }
   }
-  craft-pane {
+  craft-card {
     display: block;
     position: relative;
   }

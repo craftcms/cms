@@ -69,7 +69,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -85,5 +85,5 @@
         :aria-label="t('New Users')"
       ></div>
     </div>
-  </craft-pane>
+  </craft-card>
 </template>

@@ -69,7 +69,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -93,5 +93,5 @@
         t('Loading…')
       }}</craft-spinner>
     </div>
-  </craft-pane>
+  </craft-card>
 </template>
