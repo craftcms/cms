@@ -40,6 +40,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
+use craft\web\User as WebUser;
 use DateTime;
 use DateTimeZone;
 use Throwable;
@@ -1075,6 +1076,34 @@ class Users extends Component
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
         }
+    }
+
+    /**
+     * Destroys all of a user’s sessions, besides the one the current request was made from
+     * (if it belongs to the same user).
+     *
+     * This should be called whenever a security-sensitive change is made to a user’s account, such as
+     * enabling a new authentication method, so that any sessions which were established beforehand
+     * are no longer trusted.
+     *
+     * @param User $user The user.
+     * @since 5.11.4
+     */
+    public function destroyOtherSessions(User $user): void
+    {
+        $condition = ['userId' => $user->id];
+
+        // Leave the current request’s session alone, if it belongs to the same user
+        $userSession = Craft::$app->getUser();
+        if (
+            $userSession instanceof WebUser &&
+            $user->getIsCurrent() &&
+            $token = $userSession->getToken()
+        ) {
+            $condition = ['and', $condition, ['not', ['token' => $token]]];
+        }
+
+        Db::delete(Table::SESSIONS, $condition);
     }
 
     /**

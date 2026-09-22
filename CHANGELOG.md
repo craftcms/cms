@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `craft\services\Users::destroyOtherSessions()`.
+- Setting up a two-step verification method now destroys the user’s other sessions.
+- Deleting a passkey now requires an elevated session.
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
 - Added `craft\helpers\StringHelper::containsNewlines()`.
 - Added `craft\services\ElementSources::CONTEXT_RESTRICTED_MODAL`.
