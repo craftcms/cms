@@ -127,10 +127,12 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::prefix('workflows')->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
+        Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
         Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
             Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
             Route::post('user-review/approve', [UserReviewController::class, 'approve']);
             Route::post('user-review/request-changes', [UserReviewController::class, 'requestChanges']);
+            Route::post('user-review/request-review', [UserReviewController::class, 'requestReview']);
         });
     });
 

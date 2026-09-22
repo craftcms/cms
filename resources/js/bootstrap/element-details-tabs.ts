@@ -23,6 +23,8 @@ export interface ElementDetailsTabDescriptor {
   label: string;
   icon: string;
   component: Component;
+  /** Optional controls rendered at the end of the panel header. */
+  headerActionsComponent?: Component;
   order?: number;
   visible?: (payload: ElementEditPayload) => boolean;
   status?: (payload: ElementEditPayload) => ElementDetailsTabStatus | null;

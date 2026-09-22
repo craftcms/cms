@@ -123,11 +123,12 @@ function review(
     stageUid: 'publishers-stage',
     actionComponent: 'craft:user-review-workflow-stage-actions',
     showDefaultActions: false,
-    actionProps: {canReview: true},
+    actionProps: {canReview: true, canRequestReviewAgain: false},
     runs: [workflowRun()],
     canSubmit: false,
     canComment: true,
     canOverride: false,
+    canRestart: true,
     canApply: false,
     ...overrides,
   };
@@ -241,9 +242,6 @@ describe('WorkflowReviewPanel', () => {
           message: 'Changes requested.',
           workflowReview: overridableReview,
         })
-      )
-      .mockResolvedValueOnce(
-        response({message: 'Workflow approved.', workflowReview: review()})
       );
     mount(overridableReview);
 
@@ -315,29 +313,6 @@ describe('WorkflowReviewPanel', () => {
       )
     );
 
-    const override = actionButton(
-      'Override approval'
-    ) as HTMLElementTagNameMap['craft-button'];
-    await override.updateComplete;
-    expect(override.disabled).toBe(false);
-
-    await enterReviewMessage('Reviewed outside the normal approval path.');
-    vi.mocked(window.confirm).mockReturnValueOnce(false);
-    override.click();
-    await nextTick();
-
-    expect(requests()).toHaveLength(3);
-    expect(window.confirm).toHaveBeenCalledWith(
-      'This will bypass the remaining workflow requirements and approve the draft. Are you sure?'
-    );
-
-    override.click();
-    await vi.waitFor(() => {
-      expect(useFlashMessages().messages.value.success).toBe(
-        'Workflow approved.'
-      );
-    });
-
     expect(requests()).toEqual([
       expect.objectContaining({
         method: 'post',
@@ -355,13 +330,6 @@ describe('WorkflowReviewPanel', () => {
         url: '/admin/workflows/41/stages/publishers-stage/user-review/request-changes',
         data: expect.objectContaining({
           message: 'The legal claim needs support.',
-        }),
-      }),
-      expect.objectContaining({
-        method: 'post',
-        url: '/admin/workflows/41/override',
-        data: expect.objectContaining({
-          note: 'Reviewed outside the normal approval path.',
         }),
       }),
     ]);
@@ -411,7 +379,7 @@ describe('WorkflowReviewPanel', () => {
   it('omits review choices when commenting is the only available action', () => {
     mount(
       review({
-        actionProps: {canReview: false},
+        actionProps: {canReview: false, canRequestReviewAgain: false},
         canComment: true,
         canOverride: false,
       })
@@ -422,9 +390,29 @@ describe('WorkflowReviewPanel', () => {
     expect(actionButton('Comment')).toBeTruthy();
   });
 
+  it('requests another review after changes were requested', async () => {
+    const changesRequested = review({
+      actionProps: {canReview: false, canRequestReviewAgain: true},
+    });
+    requestSpy.mockResolvedValueOnce(
+      response({message: 'Review requested.', workflowReview: review()})
+    );
+    mount(changesRequested);
+
+    actionButton('Request review again').click();
+    await vi.waitFor(() => expect(requests()).toHaveLength(1));
+
+    expect(requests()[0]).toEqual(
+      expect.objectContaining({
+        method: 'post',
+        url: '/admin/workflows/41/stages/publishers-stage/user-review/request-review',
+      })
+    );
+  });
+
   it('comments after a partial approval removes the reviewers remaining actions', async () => {
     const partialApproval = review({
-      actionProps: {canReview: false},
+      actionProps: {canReview: false, canRequestReviewAgain: false},
       canComment: true,
       runs: [
         workflowRun({
@@ -450,7 +438,10 @@ describe('WorkflowReviewPanel', () => {
         })
       )
       .mockResolvedValueOnce(
-        response({message: 'Comment added.', workflowReview: partialApproval})
+        response({
+          message: 'Comment added.',
+          workflowReview: partialApproval,
+        })
       );
     mount(review());
 
@@ -544,6 +535,7 @@ describe('WorkflowReviewPanel', () => {
         actionProps: {canReview: false},
         runs: [],
         canSubmit: true,
+        canRestart: false,
       })
     );
 

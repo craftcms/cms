@@ -182,25 +182,57 @@ class Workflows
                 throw new WorkflowException('A workflow must contain at least one stage.');
             }
 
-            $this->beforeTransition(WorkflowTransition::Submit, $submittedDraft, $author, note: $note);
-            $rootEvent = $this->recordSubmission($submittedDraft, $author, $workflow, $note);
-            $run = WorkflowRun::query()->create([
-                'workflowId' => $workflow->id,
-                'draftId' => $draft->draftId,
-                'authorId' => $author->getCraftUserId(),
-                'activityRootEventId' => $rootEvent->id,
-                'currentStage' => 0,
-                'currentStageResult' => null,
-                'status' => WorkflowStatus::Pending,
-                'payload' => [],
-            ]);
-
-            $this->advance($submittedDraft, $run);
-
-            return $run->refresh()->load('activityRootEvent');
+            return $this->createRun($submittedDraft, $author, $workflow, $note);
         });
 
         $this->afterTransition(WorkflowTransition::Submit, $submittedDraft, $author, $run, $note);
+
+        return $run;
+    }
+
+    public function restartWorkflow(ElementInterface $draft, int $runId): WorkflowRun
+    {
+        $this->ensureAvailable();
+        $actor = $this->actor();
+        $submittedDraft = $draft;
+        $restartedRun = null;
+
+        $run = DB::transaction(function () use ($draft, $runId, $actor, &$submittedDraft, &$restartedRun): WorkflowRun {
+            $this->lockDraft($draft);
+            $submittedDraft = $draft::find()
+                ->draftId($draft->draftId)
+                ->provisionalDrafts(null)
+                ->siteId($draft->siteId)
+                ->status(null)
+                ->one()
+                ?? throw new WorkflowException('This draft could not be found.');
+            $this->ensureReviewableDraft($submittedDraft);
+
+            if (! Gate::forUser($actor)->allows('save', $submittedDraft)) {
+                throw new WorkflowException('You are not allowed to edit this draft.');
+            }
+
+            $workflow = $this->forElement($submittedDraft)
+                ?? throw new WorkflowException('This element does not have an approval workflow.');
+            $restartedRun = $this->latestRun($submittedDraft);
+
+            if ($restartedRun?->id !== $runId || ! in_array($restartedRun->status, [WorkflowStatus::Pending, WorkflowStatus::Approved], true)) {
+                throw new WorkflowException('This review can no longer be restarted.');
+            }
+
+            $stage = $this->currentStage($restartedRun);
+            $this->beforeTransition(WorkflowTransition::Restart, $submittedDraft, $actor, $restartedRun);
+            $restartedRun->update([
+                'status' => WorkflowStatus::Invalidated,
+                'currentStageResult' => null,
+            ]);
+            $this->recordTransition($submittedDraft, $actor, $restartedRun, WorkflowTransition::Restart, $stage);
+
+            return $this->createRun($submittedDraft, $actor, $workflow);
+        });
+
+        $this->afterTransition(WorkflowTransition::Restart, $submittedDraft, $actor, $restartedRun);
+        $this->afterTransition(WorkflowTransition::Submit, $submittedDraft, $actor, $run);
 
         return $run;
     }
@@ -239,7 +271,9 @@ class Workflows
                 return null;
             }
 
-            if (! $run->isPending()) {
+            $canRequestReviewAgain = $activityTransition === WorkflowTransition::RequestReview
+                && $run->status === WorkflowStatus::Failed;
+            if (! $run->isPending() && ! $canRequestReviewAgain) {
                 return $run;
             }
 
@@ -400,10 +434,7 @@ class Workflows
     /** @param list<int> $draftIds */
     public function contentChangedByDraftIds(array $draftIds): void
     {
-        $this->invalidateActiveRuns(
-            WorkflowRun::query()->whereIn('draftId', $draftIds),
-            'The draft changed.',
-        );
+        $this->resetApprovalsForContentChanges(WorkflowRun::query()->whereIn('draftId', $draftIds));
     }
 
     public function invalidateRuns(Workflow $workflow, string $reason): void
@@ -495,6 +526,10 @@ class Workflows
         $this->storeStageResult($run, $stage, $result);
 
         if ($result->status === WorkflowStageStatus::Pending) {
+            if (! $run->isPending()) {
+                $run->update(['status' => WorkflowStatus::Pending]);
+            }
+
             return false;
         }
 
@@ -569,6 +604,52 @@ class Workflows
                 $actor = currentUser();
                 $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, note: $reason);
                 $this->afterTransition(WorkflowTransition::Invalidate, $draft, $actor, $run, $reason);
+            });
+    }
+
+    /** @param Builder<WorkflowRun> $query */
+    private function resetApprovalsForContentChanges($query): void
+    {
+        $query->whereIn('status', [WorkflowStatus::Pending, WorkflowStatus::Approved])
+            ->with('activityRootEvent')
+            ->get()
+            ->each(function (WorkflowRun $run): void {
+                $draft = $this->draftForRun($run);
+                if ($draft === null) {
+                    return;
+                }
+
+                $stage = $this->currentStage($run);
+                $component = $stage->component();
+                $context = $this->stageContext($draft, $run, $stage);
+                if ($component instanceof UserReviewStage) {
+                    $contentChangeResult = $component->contentChanged($context);
+                    if ($contentChangeResult === null) {
+                        return;
+                    }
+
+                    $stagePayload = $contentChangeResult->payload;
+                } else {
+                    if ($run->isPending()) {
+                        return;
+                    }
+
+                    $stagePayload = [];
+                }
+
+                $payload = $run->payload ?? [];
+                $payload[$stage->uid] = $stagePayload;
+                $run->update([
+                    'status' => WorkflowStatus::Pending,
+                    'currentStageResult' => null,
+                    'payload' => $payload,
+                ]);
+
+                $actor = currentUser();
+                $this->recordTransition($draft, $actor, $run, WorkflowTransition::RequestReview, $stage);
+                $this->advance($draft, $run);
+                $run->refresh();
+                $this->afterTransition(WorkflowTransition::RequestReview, $draft, $actor, $run);
             });
     }
 
@@ -654,6 +735,26 @@ class Workflows
     private function afterTransition(WorkflowTransition $transition, ElementInterface $draft, ?CraftUser $actor, WorkflowRun $run, ?string $note = null): void
     {
         DB::afterCommit(fn () => event(new WorkflowTransitioned($transition, $draft, $actor, $run, $note)));
+    }
+
+    private function createRun(ElementInterface $draft, CraftUser $author, Workflow $workflow, ?string $note = null): WorkflowRun
+    {
+        $this->beforeTransition(WorkflowTransition::Submit, $draft, $author, note: $note);
+        $rootEvent = $this->recordSubmission($draft, $author, $workflow, $note);
+        $run = WorkflowRun::query()->create([
+            'workflowId' => $workflow->id,
+            'draftId' => $draft->draftId,
+            'authorId' => $author->getCraftUserId(),
+            'activityRootEventId' => $rootEvent->id,
+            'currentStage' => 0,
+            'currentStageResult' => null,
+            'status' => WorkflowStatus::Pending,
+            'payload' => [],
+        ]);
+
+        $this->advance($draft, $run);
+
+        return $run->refresh()->load('activityRootEvent');
     }
 
     private function recordSubmission(ElementInterface $draft, CraftUser $actor, Workflow $workflow, ?string $note): ActivityEvent
@@ -757,6 +858,7 @@ class Workflows
                     WorkflowActivityType::Comment => 'comment',
                     WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => 'check',
                     WorkflowActivityType::Reject, WorkflowActivityType::StageFailed => 'xmark',
+                    WorkflowActivityType::RequestReview, WorkflowActivityType::Restart => 'rotate',
                     default => 'rotate',
                 },
                 description: match ($type) {
@@ -764,6 +866,8 @@ class Workflows
                     WorkflowActivityType::Comment => t('commented.'),
                     WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => t('approved'),
                     WorkflowActivityType::Reject => t('requested changes'),
+                    WorkflowActivityType::RequestReview => t('requested another review'),
+                    WorkflowActivityType::Restart => t('restarted the workflow'),
                     WorkflowActivityType::StageFailed => t('failed the stage'),
                     default => t('updated the workflow stage'),
                 },
@@ -772,6 +876,7 @@ class Workflows
                 decision: match ($type) {
                     WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => WorkflowStageStatus::Approved->value,
                     WorkflowActivityType::Reject => 'rejected',
+                    WorkflowActivityType::RequestReview, WorkflowActivityType::Restart => 'reset',
                     WorkflowActivityType::StageFailed => WorkflowStageStatus::Failed->value,
                     default => null,
                 },

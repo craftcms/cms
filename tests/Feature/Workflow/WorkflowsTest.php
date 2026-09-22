@@ -301,7 +301,7 @@ it('records a failed automatic stage with its result message', function () {
         ->and($stageData->events[0]->noteHtml)->toContain('Automated check failed');
 });
 
-it('ignores stale automated stage completions', function () {
+it('allows a pending automated stage to complete after content changes', function () {
     app(WorkflowStageTypes::class)->register(TestAutomatedWorkflowStage::class);
     $workflow = workflowFor($this->entry, [automatedStage('External check', 'pending')]);
     $run = submitAs($this->workflows, $this->draft, $this->author);
@@ -327,7 +327,7 @@ it('ignores stale automated stage completions', function () {
         result: $result,
     );
 
-    expect($completed->status)->toBe(WorkflowStatus::Invalidated);
+    expect($completed->status)->toBe(WorkflowStatus::Approved);
 
     expect($this->workflows->reportStageResult(
         runId: PHP_INT_MAX,
@@ -365,7 +365,7 @@ it('requires live eligible reviewers and excludes the requester', function () {
     expect($run->status)->toBe(WorkflowStatus::Approved);
 });
 
-it('fails on a change request and preserves history when resubmitted', function () {
+it('fails on a change request and restores the current stage when review is requested again', function () {
     $group = reviewerGroup([$this->reviewers[0]]);
     $workflow = workflowFor($this->entry, [userReviewStage('Review', $group)]);
     $stage = $workflow->stages->sole();
@@ -380,19 +380,44 @@ it('fails on a change request and preserves history when resubmitted', function 
         'Clarify the claim.',
     );
     $this->workflows->addComment($this->draft, $firstRun->id, $stage->uid, 'I will revise it.');
-    submitAs($this->workflows, $this->draft, $this->author, 'Revised.');
+
+    $failedReview = $this->workflows->reviewData($this->draft, $this->author);
+    expect($firstRun->status)->toBe(WorkflowStatus::Failed)
+        ->and(collect($failedReview->runs)->first()->stages[0]->icon)->toBe('xmark')
+        ->and($failedReview->actionProps['canRequestReviewAgain'])->toBeTrue()
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->actionProps['canRequestReviewAgain'])->toBeFalse();
+
+    actingAs($this->reviewers[0]);
+    postJson(action([UserReviewController::class, 'requestReview'], [
+        'workflowRun' => $firstRun,
+        'stage' => $stage->uid,
+    ]), elementIdentity($this->entry, $this->draft))
+        ->assertUnprocessable()
+        ->assertJsonPath('message', 'This stage cannot be requested again.');
+
+    actingAs($this->author);
+    postJson(action([UserReviewController::class, 'requestReview'], [
+        'workflowRun' => $firstRun,
+        'stage' => $stage->uid,
+    ]), elementIdentity($this->entry, $this->draft))
+        ->assertOk()
+        ->assertJsonPath('workflowReview.status', 'pending');
     $review = $this->workflows->reviewData($this->draft, $this->author);
 
-    expect($firstRun->status)->toBe(WorkflowStatus::Failed)
-        ->and($review->runs)->toHaveCount(2)
-        ->and(collect($review->runs)->last()->stages[0]->icon)->toBe('xmark')
-        ->and(collect($review->runs)->last()->stages[0]->events)->toHaveCount(2)
-        ->and(collect($review->runs)->last()->stages[0]->events[0]->icon)->toBe('xmark')
-        ->and(collect($review->runs)->last()->stages[0]->events[0]->description)->toBe('requested changes')
-        ->and(collect($review->runs)->last()->stages[0]->events[1]->icon)->toBe('comment')
-        ->and(collect($review->runs)->last()->stages[0]->events[1]->description)->toBe('commented.')
-        ->and(collect($review->runs)->first()->submission->icon)->toBe('clipboard-list-check')
-        ->and(collect($review->runs)->first()->submission->description)->toBe('requested review');
+    $resetRun = $firstRun->fresh();
+    expect($resetRun->status)->toBe(WorkflowStatus::Pending)
+        ->and($resetRun->payload[$stage->uid])->toBe([
+            'decisions' => [],
+            'previousApprovalsReset' => true,
+        ])
+        ->and($review->runs)->toHaveCount(1)
+        ->and(collect($review->runs)->first()->stages[0]->icon)->toBe('clock')
+        ->and(collect($review->runs)->first()->stages[0]->events)->toHaveCount(3)
+        ->and(collect($review->runs)->first()->stages[0]->events[0]->description)->toBe('requested changes')
+        ->and(collect($review->runs)->first()->stages[0]->events[1]->description)->toBe('commented.')
+        ->and(collect($review->runs)->first()->stages[0]->events[2]->description)->toBe('requested another review')
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->actionProps['canReview'])->toBeTrue()
+        ->and($this->reviewers[0]->notifications()->count())->toBe(2);
 });
 
 it('presents workflow activity as a grouped review and snapshots the workflow definition', function () {
@@ -448,28 +473,68 @@ it('lets any viewer comment but only the stage offers review actions', function 
     expect(workflowEvents($this->entry, WorkflowActivityType::Comment))->toHaveCount(1);
 });
 
-it('invalidates pending and approved runs when publishable content changes', function () {
-    $group = reviewerGroup([$this->reviewers[0]]);
-    $workflow = workflowFor($this->entry, [userReviewStage('Review', $group)]);
-    $stage = $workflow->stages->sole();
+it('resets current-stage approvals after pending and approved content changes', function () {
+    $firstGroup = reviewerGroup([$this->reviewers[0]]);
+    $finalGroup = reviewerGroup([$this->reviewers[1], $this->reviewers[2]]);
+    $workflow = workflowFor($this->entry, [
+        userReviewStage('Editorial review', $firstGroup),
+        userReviewStage('Final review', $finalGroup, approvals: 2),
+    ]);
     $pending = submitAs($this->workflows, $this->draft, $this->author);
 
-    $this->draft->title = 'Changed during review';
-    expect(Elements::saveElement($this->draft, updateSearchIndex: false))->toBeTrue();
-    expect($pending->fresh()->status)->toBe(WorkflowStatus::Invalidated);
-
-    $approved = submitAs($this->workflows, $this->draft, $this->author);
-    reviewStageAs(
+    $pending = reviewStageAs(
         $this->workflows,
         $this->reviewers[0],
+        $pending,
+        $workflow->stages->first(),
+        UserReviewDecision::Approved,
+    );
+    $pending = reviewStageAs(
+        $this->workflows,
+        $this->reviewers[1],
+        $pending,
+        $workflow->stages->last(),
+        UserReviewDecision::Approved,
+    );
+    $this->draft->title = 'Changed during review';
+    expect(Elements::saveElement($this->draft, updateSearchIndex: false))->toBeTrue();
+
+    $resetPending = $pending->fresh();
+    expect($resetPending->status)->toBe(WorkflowStatus::Pending)
+        ->and($resetPending->currentStage)->toBe(1)
+        ->and($resetPending->payload[$workflow->stages->first()->uid]['decisions'])->toHaveCount(1)
+        ->and($resetPending->payload[$workflow->stages->last()->uid])->toBe([
+            'decisions' => [],
+            'previousApprovalsReset' => true,
+        ])
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->actionProps['canReview'])->toBeTrue();
+
+    $approved = reviewStageAs(
+        $this->workflows,
+        $this->reviewers[1],
+        $resetPending,
+        $workflow->stages->last(),
+        UserReviewDecision::Approved,
+    );
+    $approved = reviewStageAs(
+        $this->workflows,
+        $this->reviewers[2],
         $approved,
-        $stage,
+        $workflow->stages->last(),
         UserReviewDecision::Approved,
     );
     $this->draft->title = 'Changed after approval';
     expect(Elements::saveElement($this->draft, updateSearchIndex: false))->toBeTrue();
 
-    expect($approved->fresh()->status)->toBe(WorkflowStatus::Invalidated);
+    $reopened = $approved->fresh();
+    expect($reopened->status)->toBe(WorkflowStatus::Pending)
+        ->and($reopened->currentStage)->toBe(1)
+        ->and($reopened->payload[$workflow->stages->first()->uid]['decisions'])->toHaveCount(1)
+        ->and($reopened->payload[$workflow->stages->last()->uid])->toBe([
+            'decisions' => [],
+            'previousApprovalsReset' => true,
+        ])
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->actionProps['canReview'])->toBeTrue();
 });
 
 it('invalidates an approved run when its workflow assignment changes', function () {
@@ -593,7 +658,10 @@ it('exposes stage components and safely handles user review decisions', function
     $review = $this->workflows->reviewData($this->draft, $this->reviewers[0]);
     expect($review->actionComponent)->toBe('craft:user-review-workflow-stage-actions')
         ->and($review->showDefaultActions)->toBeFalse()
-        ->and($review->actionProps)->toBe(['canReview' => true]);
+        ->and($review->actionProps)->toBe([
+            'canReview' => true,
+            'canRequestReviewAgain' => false,
+        ]);
 
     postJson(action([UserReviewController::class, 'approve'], [
         'workflowRun' => $run,

@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +38,7 @@ readonly class WorkflowReviewData implements Arrayable
         public bool $canSubmit,
         public bool $canComment,
         public bool $canOverride,
+        public bool $canRestart,
         public bool $canApply,
     ) {}
 
@@ -59,7 +61,10 @@ readonly class WorkflowReviewData implements Arrayable
             $stage,
             $run->payload[$stage->uid] ?? [],
         ) : null;
-        $component = $run?->isPending() && $context !== null ? $stage->component() : null;
+        $stageComponent = $context !== null ? $stage->component() : null;
+        $canActOnStage = $run?->isPending()
+            || ($run?->status === WorkflowStatus::Failed && $stageComponent instanceof UserReviewStage);
+        $component = $canActOnStage ? $stageComponent : null;
         $canSubmit = $draft->enabled && $draft->getEnabledForSite()
             && $draft->getIsDraft() && ! $draft->isProvisionalDraft && (bool) $draft->draftId
             && $draft->markDraftAsSaved
@@ -70,6 +75,8 @@ readonly class WorkflowReviewData implements Arrayable
             && Gate::forUser($viewer)->allows('view', $draft);
         $canOverride = $viewer->isAdmin()
             && in_array($run?->status, [WorkflowStatus::Pending, WorkflowStatus::Failed], true);
+        $canRestart = in_array($run?->status, [WorkflowStatus::Pending, WorkflowStatus::Approved], true)
+            && Gate::forUser($viewer)->allows('save', $draft);
         $canApply = $run?->status === WorkflowStatus::Approved
             && Gate::forUser($viewer)->allows('save', $draft)
             && Gate::forUser($viewer)->allows('saveCanonical', $draft);
@@ -90,6 +97,7 @@ readonly class WorkflowReviewData implements Arrayable
             canSubmit: $canSubmit,
             canComment: $canComment,
             canOverride: $canOverride,
+            canRestart: $canRestart,
             canApply: $canApply,
         );
     }

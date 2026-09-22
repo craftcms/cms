@@ -28,11 +28,12 @@ function review(
     stageUid: 'publishers-stage',
     actionComponent: 'craft:user-review-workflow-stage-actions',
     showDefaultActions: false,
-    actionProps: {canReview: true},
+    actionProps: {canReview: true, canRequestReviewAgain: false},
     runs: [],
     canSubmit: false,
     canComment: false,
     canOverride: false,
+    canRestart: true,
     canApply: false,
     ...overrides,
   };

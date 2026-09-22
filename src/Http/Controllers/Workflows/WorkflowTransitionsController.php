@@ -70,6 +70,15 @@ class WorkflowTransitionsController
         return $this->response($draft, t('Workflow approval overridden.'));
     }
 
+    public function restart(WorkflowRun $workflowRun): JsonResponse
+    {
+        $draft = $this->draft();
+
+        $this->workflows->restartWorkflow($draft, $workflowRun->id);
+
+        return $this->response($draft, t('Workflow restarted.'));
+    }
+
     private function draft(): ElementInterface
     {
         $element = $this->request->element();

@@ -30,7 +30,7 @@ class SendUserReviewNotifications
             WorkflowTransition::Approve => $run->status === WorkflowStatus::Approved
                 ? $this->sendApproved($event, $stage)
                 : $this->sendReviewRequested($event, $stage),
-            WorkflowTransition::Submit, WorkflowTransition::StageApproved => $this->sendReviewRequested($event, $stage),
+            WorkflowTransition::Submit, WorkflowTransition::StageApproved, WorkflowTransition::RequestReview => $this->sendReviewRequested($event, $stage),
             WorkflowTransition::Reject => $this->sendChangesRequested($event, $stage),
             WorkflowTransition::Invalidate => $this->sendInvalidated($event, $stage),
             default => null,

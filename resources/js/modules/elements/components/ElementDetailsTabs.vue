@@ -220,6 +220,9 @@
       >
         <div class="flex items-center gap-1">
           <h3 class="text-md/4">{{ tab.label }}</h3>
+        </div>
+
+        <div class="flex items-center gap-1">
           <span v-if="tab.statusData" class="flex items-center gap-1">
             <craft-status
               :status="tab.statusData.indicator"
@@ -229,17 +232,21 @@
               {{ tab.statusData.label }}
             </span>
           </span>
+          <component
+            :is="tab.headerActionsComponent"
+            v-if="tab.headerActionsComponent"
+            v-bind="componentProps(tab)"
+          />
+          <craft-button
+            type="button"
+            icon="x"
+            :aria-label="t('Close {tab}', {tab: tab.label})"
+            variant="plain"
+            size="small"
+            @click="tabs?.close()"
+            flush="inline-end"
+          ></craft-button>
         </div>
-
-        <craft-button
-          type="button"
-          icon="x"
-          :aria-label="t('Close {tab}', {tab: tab.label})"
-          variant="plain"
-          size="small"
-          @click="tabs?.close()"
-          flush="inline-end"
-        ></craft-button>
       </div>
       <slot v-if="tab.slot" :name="tab.slot" />
       <div v-else class="p-lg">

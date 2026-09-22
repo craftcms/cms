@@ -13,7 +13,7 @@ When an enabled entry has a workflow:
 1. Saving changes creates or updates a named draft instead of publishing directly to the canonical entry.
 2. The author submits the draft for review from its **Workflow** tab.
 3. Craft evaluates the first stage.
-4. An approved stage advances the run to the next stage. A pending stage waits for an external decision, and a failed stage ends the run with changes requested.
+4. An approved stage advances the run to the next stage. A pending stage waits for a decision. A reviewer who requests changes fails a user-review stage until someone requests another review.
 5. After every stage approves, an authorized user can apply the draft to the canonical entry.
 
 Disabled entries can be created and saved canonically without review. Enabling one routes the save into a draft, which can then be submitted for review.
@@ -23,24 +23,25 @@ stateDiagram-v2
     [*] --> NotSubmitted: Save draft
     NotSubmitted --> Pending: Request review
     Pending --> Pending: Stage awaits a result
-    Pending --> Failed: Stage fails
+    Pending --> Failed: Changes requested
     Pending --> Approved: All stages approve
-    Pending --> Invalidated: Draft or workflow changes
-    Approved --> Invalidated: Draft or workflow changes
-    Approved --> Published: Apply draft
+    Pending --> Invalidated: Workflow changes or manual restart
     Failed --> Pending: Request another review
+    Approved --> Pending: Draft changes reopen final stage
+    Approved --> Invalidated: Workflow changes or manual restart
+    Approved --> Published: Apply draft
     Invalidated --> Pending: Request another review
 ```
 
 Stages are evaluated in their configured order. Craft evaluates a stage when the run reaches it and whenever the stage reports new state. A stage returns one of three statuses:
 
-| Status     | Result                                                                       |
-| ---------- | ---------------------------------------------------------------------------- |
-| `Pending`  | Stop and wait at the current stage.                                    |
+| Status     | Result                                                                  |
+| ---------- | ----------------------------------------------------------------------- |
+| `Pending`  | Stop and wait at the current stage.                                     |
 | `Approved` | Continue to the next stage, or approve the run if this is the last one. |
 | `Failed`   | Stop the run with changes requested.                                    |
 
-The built-in **User review** stage waits for approval from members of its configured user groups. It can require one or more approvals. The draft author cannot review their own work, and each reviewer can decide only once per stage in a run.
+The built-in **User review** stage waits for approval from members of its configured user groups. It can require one or more approvals. The draft author cannot review their own work, and each reviewer can decide only once per stage until another review is requested. Requesting another review clears the current stage’s decisions but preserves approvals from earlier stages.
 
 ### Runs use a configuration snapshot
 
@@ -48,21 +49,23 @@ Submitting a draft creates a workflow run and stores a snapshot of the configure
 
 Editing an assigned workflow invalidates any pending or approved runs whose executable configuration changed. The draft must be submitted again to start a new run with the updated configuration. Names are descriptive and do not affect execution, so renaming a workflow or stage does not invalidate a run.
 
-### Invalidation
+### Draft changes and resets
 
-An approval applies to the exact content that reviewers saw. Craft invalidates pending and approved runs when:
+Changing publishable content does not restart a pending workflow. It clears approvals from the current user-review stage while preserving completed stages. External stage results can still arrive after the draft changes.
 
-- the draft's publishable content changes;
-- nested content in the draft changes or is deleted;
+If an approved draft changes, Craft reopens its final stage and clears that stage’s decisions. Earlier stages remain approved. The final stage is evaluated again, so an automated stage may approve immediately while a user-review stage waits for fresh approvals.
+
+An authorized editor can use **Restart workflow** to invalidate the current run and start a new run from the first stage. Workflow runs are also invalidated when:
+
 - the section's workflow assignment changes;
 - a stage's type, order, or settings change; or
 - the workflow is deleted.
 
-The draft remains available after invalidation and can be submitted again. Published runs and their activity history are retained.
+The draft remains available after invalidation. Published and invalidated runs and their activity history are retained.
 
-Drafts are locked in the editor while a review is pending or approved, preventing accidental changes from invalidating the review. An author can choose **Start editing** to unlock the draft; saving any publishable changes then invalidates the run and requires a new review.
+Drafts are initially locked in the editor while a review is pending or approved. An author can choose **Start editing** to unlock the draft without resetting completed stages.
 
-Applying an approved draft validates the current element state before publishing. If validation fails without changing the draft, the approval remains valid. Correcting publishable content changes the reviewed draft, so it invalidates the run and requires another review.
+Applying an approved draft validates the current element state before publishing. If validation fails without changing the draft, the approval remains valid. Correcting publishable content reopens the final stage.
 
 ### Permissions and write boundaries
 
@@ -128,8 +131,8 @@ Registered types appear in the stage type selector when an administrator configu
 | ---------------- | --------------------------------------------------------------------- |
 | `draft`          | The named draft under review.                                         |
 | `run`            | The current `WorkflowRun` model.                                      |
-| `stage`          | The snapshotted `WorkflowStageData` for this stage.                    |
-| `payload`        | Stage-owned data persisted from its previous result in the run.        |
+| `stage`          | The snapshotted `WorkflowStageData` for this stage.                   |
+| `payload`        | Stage-owned data persisted from its previous result in the run.       |
 | `previousStages` | The preceding snapshotted stages and the payload stored for each one. |
 
 `evaluate()` returns a `WorkflowStageResult` containing a `WorkflowStageStatus`, a human-readable message, and the next payload. Payloads must contain JSON-encodable values. Craft stores each payload under the stage UID, isolating one stage's state from the others.
@@ -262,17 +265,17 @@ public function summaryProps(WorkflowStageContext $context, CraftUser $viewer): 
 Register those components from the plugin's control panel JavaScript entry point:
 
 ```typescript
-import ExternalApprovalActions from './ExternalApprovalActions.vue';
-import ExternalApprovalSummary from './ExternalApprovalSummary.vue';
+import ExternalApprovalActions from "./ExternalApprovalActions.vue";
+import ExternalApprovalSummary from "./ExternalApprovalSummary.vue";
 
 Cp.booting((cp) => {
   cp.$components.register(
-    'acme:external-approval-actions',
-    ExternalApprovalActions
+    "acme:external-approval-actions",
+    ExternalApprovalActions,
   );
   cp.$components.register(
-    'acme:external-approval-summary',
-    ExternalApprovalSummary
+    "acme:external-approval-summary",
+    ExternalApprovalSummary,
   );
 });
 ```
@@ -293,9 +296,9 @@ Plugin action endpoints remain responsible for authorization and input validatio
 
 Craft dispatches lifecycle events for plugins that need to enforce policy or react to completed activity. Event coverage depends on the transition:
 
-| Event                   | Timing                                                                                                                                                    |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `WorkflowTransitioning` | Synchronously before `Submit`, `Override`, `Approve`, or `Reject`; may cancel the transition.                                                             |
+| Event                   | Timing                                                                                                                                                   |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WorkflowTransitioning` | Synchronously before `Submit`, `Override`, `Approve`, `Reject`, `RequestReview`, or `Restart`; may cancel the transition.                                |
 | `WorkflowTransitioned`  | After commit for those transitions, invalidation, and an `Approved` or `Failed` result reported for an asynchronous stage through `reportStageResult()`. |
 | `WorkflowCommented`     | After a workflow comment's transaction commits.                                                                                                          |
 
@@ -317,7 +320,7 @@ Event::listen(function (WorkflowTransitioning $event): void {
 });
 ```
 
-Transitions and workflow activity use `WorkflowTransition`: `Submit`, `Override`, `Approve`, `Reject`, `StageApproved`, `StageFailed`, `Invalidate`, and `Publish`. Applying an approved draft records `Publish` activity but does not dispatch a workflow lifecycle event. Automatic stage results evaluated synchronously while submitting or advancing a run also record activity without dispatching a separate lifecycle event. Comments are separate because adding a comment does not change workflow state.
+Transitions and workflow activity use `WorkflowTransition`: `Submit`, `Override`, `Approve`, `Reject`, `RequestReview`, `Restart`, `StageApproved`, `StageFailed`, `Invalidate`, and `Publish`. Applying an approved draft records `Publish` activity but does not dispatch a workflow lifecycle event. Automatic stage results evaluated synchronously while submitting or advancing a run also record activity without dispatching a separate lifecycle event. Comments are separate because adding a comment does not change workflow state.
 
 ## Supporting another element type
 

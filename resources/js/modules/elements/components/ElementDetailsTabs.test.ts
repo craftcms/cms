@@ -137,6 +137,18 @@ describe('ElementDetailsTabs', () => {
           `${props.payload?.elementId}:${props.active}`
         ),
     });
+    const PluginTabActions = defineComponent({
+      props: {
+        payload: Object,
+        active: Boolean,
+      },
+      setup: (props) => () =>
+        h(
+          'button',
+          {class: 'plugin-actions'},
+          `${props.payload?.elementId}:${props.active}`
+        ),
+    });
     const HiddenTab = defineComponent({render: () => null});
     const overlaid = ref(false);
     const conditionalVisible = ref(true);
@@ -165,7 +177,9 @@ describe('ElementDetailsTabs', () => {
                 activityTimelineVersion: 0,
                 updatePayload: vi.fn(),
               },
-              {info: () => h('div', {class: 'info-content'}, 'Info content')}
+              {
+                info: () => h('div', {class: 'info-content'}, 'Info content'),
+              }
             );
         },
       })
@@ -186,6 +200,7 @@ describe('ElementDetailsTabs', () => {
       label: 'Plugin details',
       icon: 'puzzle-piece',
       component: PluginTab,
+      headerActionsComponent: PluginTabActions,
       order: 5,
       props: ({payload, active}) => ({payload, active}),
     });
@@ -244,6 +259,9 @@ describe('ElementDetailsTabs', () => {
     await nextTick();
 
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
+      '1:true'
+    );
+    expect(container.querySelector('.plugin-actions')?.textContent).toBe(
       '1:true'
     );
 

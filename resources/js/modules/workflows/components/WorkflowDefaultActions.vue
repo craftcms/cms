@@ -33,10 +33,7 @@
   const commentId = `workflow-review-comment-${id}`;
   const noteIsEmpty = computed(() => !note.value.trim());
   const canShowActions = computed(
-    () =>
-      props.review.canSubmit ||
-      props.review.canComment ||
-      props.review.canOverride
+    () => props.review.canSubmit || props.review.canComment
   );
 
   function identity(): WorkflowIdentity {
@@ -94,30 +91,6 @@
     );
   }
 
-  async function overrideApproval(): Promise<void> {
-    if (processing.value) {
-      return;
-    }
-
-    if (
-      !window.confirm(
-        t(
-          'This will bypass the remaining workflow requirements and approve the draft. Are you sure?'
-        )
-      )
-    ) {
-      return;
-    }
-
-    const runId = props.review.runId;
-    if (runId === null) {
-      staleReview();
-      return;
-    }
-
-    await transition(controller.override.url({workflowRun: runId}));
-  }
-
   function staleReview(): void {
     error.value = t('This review is no longer current. Refresh and try again.');
   }
@@ -171,17 +144,6 @@
           {{ t('Enter a comment before submitting.') }}
         </craft-tooltip>
       </template>
-
-      <span v-if="review.canOverride" class="workflow-default-actions__button">
-        <craft-button
-          type="button"
-          :variant="ButtonVariant.DangerPlain"
-          :disabled="processing"
-          @click="overrideApproval"
-        >
-          {{ t('Override approval') }}
-        </craft-button>
-      </span>
     </div>
 
     <craft-callout

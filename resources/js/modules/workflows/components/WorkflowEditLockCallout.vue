@@ -10,7 +10,7 @@
   <craft-callout variant="warning" icon="lock" appearance="fill">
     {{
       t(
-        'This draft is in review. Editing it will invalidate the current review and require a new review.'
+        'You can edit this draft without resetting completed stages. If it has already been approved, editing it will reopen the final stage.'
       )
     }}
 

@@ -10,6 +10,8 @@ enum WorkflowTransition: string
     case Override = 'override';
     case Approve = 'approve';
     case Reject = 'reject';
+    case RequestReview = 'request-review';
+    case Restart = 'reset';
     case StageApproved = 'stage-approved';
     case StageFailed = 'stage-failed';
     case Invalidate = 'invalidate';

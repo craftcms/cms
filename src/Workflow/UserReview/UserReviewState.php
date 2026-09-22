@@ -40,11 +40,13 @@ readonly class UserReviewState
             ->values();
         $reviewerIds = $reviewers->pluck('id');
         $localApprovalIds = UserReviewDecisions::fromPayload($context->payload)->approvalIds();
-        $carriedApprovalIds = $context->previousStages
-            ->filter(fn ($previous): bool => $previous->stage->component() instanceof UserReviewStage)
-            ->flatMap(fn ($previous): Collection => UserReviewDecisions::fromPayload($previous->payload)->approvalIds())
-            ->unique()
-            ->values();
+        $carriedApprovalIds = ($context->payload['previousApprovalsReset'] ?? false)
+            ? collect()
+            : $context->previousStages
+                ->filter(fn ($previous): bool => $previous->stage->component() instanceof UserReviewStage)
+                ->flatMap(fn ($previous): Collection => UserReviewDecisions::fromPayload($previous->payload)->approvalIds())
+                ->unique()
+                ->values();
 
         return new self(
             $reviewers,

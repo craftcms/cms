@@ -38,6 +38,28 @@ class UserReviewController
         return $this->decide($workflowRun, $stage, UserReviewDecision::Rejected);
     }
 
+    public function requestReview(WorkflowRun $workflowRun, string $stage): JsonResponse
+    {
+        $draft = $this->draft();
+
+        $this->workflows->reportStageResult(
+            runId: $workflowRun->id,
+            stageUid: $stage,
+            result: function (WorkflowStageContext $context) {
+                $component = $context->stage->component();
+                if (! $component instanceof UserReviewStage) {
+                    throw new WorkflowException('The current workflow stage does not accept user reviews.');
+                }
+
+                return $component->requestReviewAgain($context, $this->request->craftUser());
+            },
+            actor: $this->request->craftUser(),
+            activityTransition: WorkflowTransition::RequestReview,
+        );
+
+        return $this->response($draft, t('Review requested.'));
+    }
+
     private function decide(WorkflowRun $workflowRun, string $stage, UserReviewDecision $decision): JsonResponse
     {
         $draft = $this->draft();
@@ -71,6 +93,19 @@ class UserReviewController
             activityNote: trim((string) $message) ?: null,
         );
 
+        return $this->response($draft, t('Review updated.'));
+    }
+
+    private function draft(): ElementInterface
+    {
+        $element = $this->request->element();
+        abort_unless($element instanceof ElementInterface && $element->getIsDraft(), Response::HTTP_BAD_REQUEST, 'A draft element is required.');
+
+        return $element;
+    }
+
+    private function response(ElementInterface $draft, string $message): JsonResponse
+    {
         $review = $this->workflows->reviewData($draft, $this->request->craftUser());
 
         return new JsonResponse([
@@ -80,15 +115,7 @@ class UserReviewController
                 canSave: $this->request->craftUser()->can('save', $draft),
                 review: $review,
             ),
-            'message' => t('Review updated.'),
+            'message' => $message,
         ]);
-    }
-
-    private function draft(): ElementInterface
-    {
-        $element = $this->request->element();
-        abort_unless($element instanceof ElementInterface && $element->getIsDraft(), Response::HTTP_BAD_REQUEST, 'A draft element is required.');
-
-        return $element;
     }
 }

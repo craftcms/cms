@@ -11,6 +11,7 @@ use Override;
  * @method static \CraftCms\Cms\Workflow\Models\Workflow|null forElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static \CraftCms\Cms\Workflow\Models\WorkflowRun|null latestRun(\CraftCms\Cms\Element\Contracts\ElementInterface $draft)
  * @method static \CraftCms\Cms\Workflow\Models\WorkflowRun submitForReview(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, string|null $note = null)
+ * @method static \CraftCms\Cms\Workflow\Models\WorkflowRun restartWorkflow(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, int $runId)
  * @method static \CraftCms\Cms\Workflow\Models\WorkflowRun|null reportStageResult(int $runId, string $stageUid, \CraftCms\Cms\Workflow\Data\WorkflowStageResult|\Closure $result, \CraftCms\Cms\User\Contracts\CraftUser|null $actor = null, \CraftCms\Cms\Workflow\Enums\WorkflowTransition|null $activityTransition = null, string|null $activityNote = null)
  * @method static \CraftCms\Cms\Workflow\Models\WorkflowRun addComment(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, int $runId, int|string $stage, string $note)
  * @method static \CraftCms\Cms\Workflow\Models\WorkflowRun overrideApproval(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, int $runId, string|null $reason = null)

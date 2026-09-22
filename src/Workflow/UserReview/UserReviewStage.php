@@ -13,11 +13,8 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
 use CraftCms\Cms\Workflow\Data\WorkflowStageResult;
-use CraftCms\Cms\Workflow\Enums\WorkflowStageStatus;
-use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
 use CraftCms\Cms\Workflow\Stages\WorkflowStage;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -67,42 +64,7 @@ class UserReviewStage extends WorkflowStage
 
     public function evaluate(WorkflowStageContext $context): WorkflowStageResult
     {
-        if (UserReviewDecisions::fromPayload($context->payload)->hasRejection()) {
-            return new WorkflowStageResult(WorkflowStageStatus::Failed, t('Changes requested'), $context->payload);
-        }
-
-        if ($this->hasMissingReviewerGroups()) {
-            return new WorkflowStageResult(
-                WorkflowStageStatus::Pending,
-                t('A configured reviewer group no longer exists.'),
-                $context->payload,
-            );
-        }
-
-        $state = $this->state($context);
-
-        if ($this->approvalMode === UserReviewApprovalMode::PerGroup) {
-            return $this->evaluatePerGroup($context, $state);
-        }
-
-        if ($state->reviewers->count() < $this->approvalsRequired) {
-            return new WorkflowStageResult(
-                WorkflowStageStatus::Pending,
-                t('Not enough eligible reviewers are available.'),
-                $context->payload,
-            );
-        }
-
-        $approvals = $state->effectiveApprovalIds->count();
-        if ($approvals >= $this->approvalsRequired) {
-            return new WorkflowStageResult(WorkflowStageStatus::Approved, t('Approved'), $context->payload);
-        }
-
-        return new WorkflowStageResult(
-            WorkflowStageStatus::Pending,
-            t('{count} of {required} approved', ['count' => $approvals, 'required' => $this->approvalsRequired]),
-            $context->payload,
-        );
+        return $this->stateMachine($context)->result();
     }
 
     public function actionComponent(): string
@@ -112,9 +74,7 @@ class UserReviewStage extends WorkflowStage
 
     public function actionProps(WorkflowStageContext $context, CraftUser $viewer): array
     {
-        return [
-            'canReview' => $this->canReview($context, $viewer),
-        ];
+        return $this->stateMachine($context)->actionsFor($viewer);
     }
 
     public function summaryComponent(): string
@@ -124,102 +84,34 @@ class UserReviewStage extends WorkflowStage
 
     public function summaryProps(WorkflowStageContext $context, CraftUser $viewer): array
     {
-        $groups = $this->reviewerGroups();
+        $stateMachine = $this->stateMachine($context);
 
-        return UserReviewSummary::props($this, UserReviewState::for($context, $groups), $groups);
+        return UserReviewSummary::props($this, $stateMachine->state(), $stateMachine->groups());
     }
 
     public function decide(UserReviewDecision $decision, ?string $message, WorkflowStageContext $context, CraftUser $reviewer): WorkflowStageResult
     {
-        if (! $this->canReview($context, $reviewer)) {
-            throw new WorkflowException('This stage action is not available to you.');
-        }
-
-        $message = trim((string) $message);
-        if ($decision === UserReviewDecision::Rejected && $message === '') {
-            throw new WorkflowException('A message is required when requesting changes.');
-        }
-
-        $payload = $context->payload;
-        $payload['decisions'] = UserReviewDecisions::fromPayload($payload)->append($reviewer->getCraftUserId(), $decision, $message !== '' ? $message : null);
-
-        return $this->evaluate(new WorkflowStageContext(
-            draft: $context->draft,
-            run: $context->run,
-            stage: $context->stage,
-            payload: $payload,
-        ));
+        return $this->stateMachine($context)->decide($decision, $message, $reviewer);
     }
 
-    private function canReview(WorkflowStageContext $context, CraftUser $reviewer): bool
+    public function requestReviewAgain(WorkflowStageContext $context, CraftUser $requester): WorkflowStageResult
     {
-        if ($this->hasMissingReviewerGroups()) {
-            return false;
-        }
+        return $this->stateMachine($context)->requestReviewAgain($requester);
+    }
 
-        $reviewerId = $reviewer->getCraftUserId();
-        $state = $this->state($context);
-
-        return $reviewerId !== null
-            && $reviewerId !== $context->run->authorId
-            && $state->reviewers->contains('id', $reviewerId)
-            && $state->effectiveApprovalIds->doesntContain($reviewerId)
-            && ! UserReviewDecisions::fromPayload($context->payload)->hasDecisionFrom($reviewerId);
+    public function contentChanged(WorkflowStageContext $context): ?WorkflowStageResult
+    {
+        return $this->stateMachine($context)->contentChanged();
     }
 
     /** @return Collection<int, User> */
     public function outstandingReviewers(WorkflowStageContext $context): Collection
     {
-        if ($this->hasMissingReviewerGroups()) {
-            return collect();
-        }
-
-        $state = $this->state($context);
-        $decidedReviewerIds = collect(UserReviewDecisions::fromPayload($context->payload)->all)->pluck('reviewerId');
-
-        return $state->reviewers->whereNotIn('id', $state->effectiveApprovalIds->merge($decidedReviewerIds));
+        return $this->stateMachine($context)->outstandingReviewers();
     }
 
-    private function evaluatePerGroup(WorkflowStageContext $context, UserReviewState $state): WorkflowStageResult
+    private function stateMachine(WorkflowStageContext $context): UserReviewStateMachine
     {
-        $groups = $this->reviewerGroups()->map(function (UserGroup $group) use ($state): array {
-            $reviewerIds = $state->reviewersForGroup($group)->pluck('id');
-
-            return [
-                'reviewers' => $reviewerIds->count(),
-                'approvals' => $state->effectiveApprovalIds->intersect($reviewerIds)->count(),
-            ];
-        });
-
-        if ($groups->contains(fn (array $group): bool => $group['reviewers'] < $this->approvalsRequired)) {
-            return new WorkflowStageResult(WorkflowStageStatus::Pending, t('Not enough eligible reviewers are available.'), $context->payload);
-        }
-
-        if ($groups->every(fn (array $group): bool => $group['approvals'] >= $this->approvalsRequired)) {
-            return new WorkflowStageResult(WorkflowStageStatus::Approved, t('Approved'), $context->payload);
-        }
-
-        return new WorkflowStageResult(WorkflowStageStatus::Pending, t('Approvals are required from every reviewer group.'), $context->payload);
-    }
-
-    /** @return Collection<int, UserGroup> */
-    private function reviewerGroups(): Collection
-    {
-        $groups = UserGroup::query()->whereIn('uid', $this->userGroups)->get()->keyBy('uid');
-
-        return collect($this->userGroups)
-            ->map(fn (string $uid): ?UserGroup => $groups->get($uid))
-            ->filter()
-            ->values();
-    }
-
-    private function hasMissingReviewerGroups(): bool
-    {
-        return $this->reviewerGroups()->count() !== count($this->userGroups);
-    }
-
-    private function state(WorkflowStageContext $context): UserReviewState
-    {
-        return UserReviewState::for($context, $this->reviewerGroups());
+        return UserReviewStateMachine::for($this, $context);
     }
 }

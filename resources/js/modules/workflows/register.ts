@@ -2,6 +2,7 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
 import {t} from '@craftcms/ui';
 import WorkflowDefaultActions from './components/WorkflowDefaultActions.vue';
+import WorkflowDetailsActions from './components/WorkflowDetailsActions.vue';
 import WorkflowDetailsTab from './components/WorkflowDetailsTab.vue';
 import WorkflowUserReviewActions from './user-review/WorkflowUserReviewActions.vue';
 import WorkflowUserReviewSummary from './user-review/WorkflowUserReviewSummary.vue';
@@ -30,6 +31,7 @@ export function registerWorkflowComponents(
     },
     icon: 'clipboard-list-check',
     component: WorkflowDetailsTab,
+    headerActionsComponent: WorkflowDetailsActions,
     order: 5,
     visible: (payload) =>
       Boolean(payload.workflow.current || payload.workflow.draftReviews.length),

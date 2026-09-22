@@ -18,6 +18,7 @@
   const props = defineProps<{
     review: WorkflowReviewData;
     canReview: boolean;
+    canRequestReviewAgain: boolean;
     elementType: string;
     elementId: number | null;
     draftId: number | null;
@@ -58,7 +59,8 @@
     return t('Enter a comment before submitting.');
   });
   const canShowActions = computed(
-    () => props.canReview || props.review.canComment || props.review.canOverride
+    () =>
+      props.canReview || props.canRequestReviewAgain || props.review.canComment
   );
   const submitLabel = computed(() =>
     !props.canReview && props.review.canComment
@@ -125,30 +127,22 @@
     error.value = t('This review is no longer current. Refresh and try again.');
   }
 
-  async function overrideApproval(): Promise<void> {
+  async function requestReviewAgain(): Promise<void> {
     error.value = null;
     if (processing.value) {
       return;
     }
 
-    if (
-      !window.confirm(
-        t(
-          'This will bypass the remaining workflow requirements and approve the draft. Are you sure?'
-        )
-      )
-    ) {
-      return;
-    }
-
-    if (props.review.runId === null) {
+    if (props.review.runId === null || props.review.stageUid === null) {
       staleReview();
       return;
     }
 
     await transition(
-      transitionsController.override.url({workflowRun: props.review.runId}),
-      {note: message.value}
+      userReviewController.requestReview.url({
+        workflowRun: props.review.runId,
+        stage: props.review.stageUid,
+      })
     );
   }
 </script>
@@ -234,13 +228,13 @@
 
     <div class="workflow-user-review-actions__footer">
       <craft-button
-        v-if="review.canOverride"
+        v-if="canRequestReviewAgain"
         type="button"
-        :variant="ButtonVariant.DangerPlain"
+        :variant="ButtonVariant.Solid"
         .disabled="processing"
-        @click="overrideApproval"
+        @click="requestReviewAgain"
       >
-        {{ t('Override approval') }}
+        {{ t('Request review again') }}
       </craft-button>
       <span
         :id="`workflow-user-review-submit-${id}`"

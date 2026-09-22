@@ -162,23 +162,33 @@ it('carries approvals only when the reviewer remains eligible for the destinatio
         ->and(collect($review->runs)->firstWhere('current')->stages[1]->summaryProps['approvals'])->toBe(0);
 });
 
-it('does not carry approvals from an earlier workflow run', function () {
-    $group = userReviewGroup([$this->reviewers[0], $this->reviewers[1]]);
-    $workflow = userReviewWorkflow($this->entry, [makeUserReviewStage('Editorial review', $group, approvals: 2)]);
+it('does not carry approvals into a manually restarted workflow run', function () {
+    $editorial = userReviewGroup([$this->reviewers[0]]);
+    $legal = userReviewGroup([$this->reviewers[1]]);
+    $workflow = userReviewWorkflow($this->entry, [
+        makeUserReviewStage('Editorial review', $editorial),
+        makeUserReviewStage('Legal review', $legal),
+    ]);
     $firstRun = submitUserReview($this->workflows, $this->draft, $this->author);
 
     decideUserReview(
         $this->workflows,
         $this->reviewers[0],
         $firstRun,
-        $workflow->stages->sole(),
+        $workflow->stages->first(),
         UserReviewDecision::Approved,
     );
-    $this->workflows->contentChanged($this->draft);
-    $secondRun = submitUserReview($this->workflows, $this->draft, $this->author);
+    expect($firstRun->fresh()->currentStage)->toBe(1);
+
+    $secondRun = actAsUserReview(
+        $this->author,
+        fn (): WorkflowRun => $this->workflows->restartWorkflow($this->draft, $firstRun->id),
+    );
 
     $review = $this->workflows->reviewData($this->draft, $this->reviewers[0]);
-    expect($secondRun->status)->toBe(WorkflowStatus::Pending)
+    expect($firstRun->fresh()->status)->toBe(WorkflowStatus::Invalidated)
+        ->and($secondRun->status)->toBe(WorkflowStatus::Pending)
+        ->and($secondRun->currentStage)->toBe(0)
         ->and($review->actionProps['canReview'])->toBeTrue()
         ->and(collect($review->runs)->firstWhere('current')->stages[0]->summaryProps['approvals'])->toBe(0);
 });
