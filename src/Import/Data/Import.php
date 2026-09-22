@@ -265,9 +265,7 @@ class Import extends Component implements CpEditable, Validatable
             return ['type' => $typeValidator->errors()->get('type')];
         }
 
-        $stepValidator = ValidatorFacade::make($stepArray, array_merge([
-            'batchSize' => ['nullable', 'integer', 'min:0', 'max:1000'],
-        ], $type::getRules()));
+        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules());
 
         return $stepValidator->fails() ? $stepValidator->errors()->messages() : [];
     }

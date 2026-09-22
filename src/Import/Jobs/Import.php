@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
@@ -71,14 +72,9 @@ class Import extends Job
         }
 
         $stepLabel = ImportFacade::stepLabel($import, $step);
-        $importer = Imports::createImporter($step);
-
-        if ($importer === null) {
-            return;
-        }
 
         try {
-            $importer->validateSettings();
+            $step->validateSettings();
         } catch (ValidationException $e) {
             ImportLog::warning("Skipping import job for invalid step \"$stepLabel\": ".implode(' ', $e->validator->errors()->all()));
 
@@ -96,7 +92,7 @@ class Import extends Job
 
         // normalizing the UI/config-based matchCriteria only depends on the importer, so it
         // could be done once per step rather than for each root item that is being imported
-        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
+        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($step);
 
         // if batch limit is 0, it means this step's batch size was set to zero to disable batching of this step
         // so we want to go through all the data in one go
@@ -112,7 +108,7 @@ class Import extends Job
 
             // import data
             try {
-                ImportFacade::importItem($importer, $data[$i], $matchCriteria);
+                ImportFacade::importItem($step, $data[$i], $matchCriteria);
             } catch (\Exception $e) {
                 // log and proceed further
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['step' => $stepLabel, 'data' => $data[$i]]);
@@ -128,14 +124,14 @@ class Import extends Job
     /**
      * Returns the step's configured batch size, or the default batch size if null.
      */
-    private function getBatchSize(array $step): int
+    private function getBatchSize(BaseImporter $step): int
     {
         // if batch size was left empty, it was cast to a null, and we should use the default batch size
-        if (($step['batchSize'] ?? null) === null) {
+        if (($step->batchSize ?? null) === null) {
             return $this->defaultBatchSize;
         }
 
         // otherwise, return the number specified in the step
-        return (int) $step['batchSize'];
+        return $step->batchSize;
     }
 }

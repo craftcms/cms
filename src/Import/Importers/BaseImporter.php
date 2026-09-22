@@ -29,6 +29,8 @@ abstract class BaseImporter
 
     public protected(set) string|BaseTransformer|null $transformer = null;
 
+    public protected(set) ?int $batchSize = null;
+
     public protected(set) array $map = [];
 
     /**
@@ -72,6 +74,7 @@ abstract class BaseImporter
             $this->uid = $config['uid'] ?? null;
             $this->file($config['file'] ?? null);
             $this->transformer($config['transformer'] ?? null);
+            $this->batchSize($config['batchSize'] ?? null);
 
             $settings = $config['settings'] ?? [];
             if (is_string($settings)) {
@@ -157,6 +160,13 @@ abstract class BaseImporter
         return $this;
     }
 
+    public function batchSize(?int $batchSize): self
+    {
+        $this->batchSize = $batchSize;
+
+        return $this;
+    }
+
     /**
      * Sets the mapping configuration for the importer.
      *
@@ -228,6 +238,7 @@ abstract class BaseImporter
                 'max:255',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => self::validateTransformer($value, $attribute, $fail, $validator),
             ],
+            'batchSize' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ], static::getSettingsRules());
     }
 

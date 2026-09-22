@@ -136,12 +136,11 @@ class Import
 
         // for each step in the $import
         foreach ($import->steps as $key => $step) {
-            $importer = $this->imports->createImporter($step);
-            $filePath = BaseImporter::resolvedFilePath($importer->file);
+            $filePath = BaseImporter::resolvedFilePath($step->file);
 
             // name for this batch of jobs
             $steps[$key]['name'] = self::stepLabel($import, $step);
-            $steps[$key]['job'] = new ImportJob($import->uid ?? $import->handle, $step['uid'], $filePath, 0);
+            $steps[$key]['job'] = new ImportJob($import->uid ?? $import->handle, $step->uid, $filePath, 0);
         }
 
         event($event = new ImportDispatching($steps, $import));
@@ -167,11 +166,11 @@ class Import
      * Returns a human-readable label for one of an import's steps.
      *
      * @param  ImportData  $import  The import the step belongs to.
-     * @param  array  $step  The step to label.
+     * @param  BaseImporter  $step  The step to label.
      */
-    public static function stepLabel(ImportData $import, array $step): string
+    public static function stepLabel(ImportData $import, BaseImporter $step): string
     {
-        $type = $step['type'] ?? null;
+        $type = $step::class ?? null;
 
         return sprintf(
             '%s: %s',

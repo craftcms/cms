@@ -61,7 +61,7 @@ class ImportStepFormViewModel extends ViewModel
                 ->instructions(t('The fully qualified class name of the transformer you’d like to use.'))
                 ->visible($hasType),
             FormField::make(t('Custom batch size'), Number::make('batchSize'))
-                ->instructions(t('By default, this step will be run in batches containing up to 5 items. You can provide a different size, if you wish. Set to 0 to disable batching.'))
+                ->instructions(t('By default, this step will be run in batches containing up to 100 items. You can provide a different size, if you wish. Set to 0 to disable batching.'))
                 ->visible($hasType),
         ]), new FormContext(
             values: [
