@@ -41,6 +41,12 @@ export interface ScreenProps {
    * slideout is narrow already.
    */
   contentMaxWidth?: boolean | string;
+  /**
+   * Fits the shell to the viewport instead of letting the document scroll,
+   * so `page-main` gets a definite height to fill (e.g. a full-bleed editor).
+   * Full pages only; a slideout is bounded already.
+   */
+  fillViewport?: boolean;
 }
 
 export interface ScreenEmits {

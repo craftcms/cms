@@ -40,7 +40,7 @@
 </script>
 
 <template>
-  <AppLayout>
+  <AppLayout fill-viewport>
     <template #page-main>
       <main id="main" tabindex="-1" class="cp-graphiql" data-theme="light">
         <div class="cp-graphiql__header">
@@ -78,7 +78,7 @@
   .cp-graphiql {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    height: 100dvh;
+    height: 100%;
     min-height: 0;
     overflow: hidden;
   }
