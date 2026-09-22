@@ -6,7 +6,6 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
@@ -214,18 +213,15 @@ it('can upload a photo for new user', function () {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 
-    ProjectConfig::set('fs.test', [
-        'hasUrls' => true,
-        'name' => 'Test',
-        'settings' => [
-            'path' => public_path('test'),
-        ],
-        'type' => Local::class,
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
         'url' => '/test',
     ]);
 
     $volume = Volume::factory()->create([
         'fs' => 'test',
+        'hasUrls' => true,
     ]);
 
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);

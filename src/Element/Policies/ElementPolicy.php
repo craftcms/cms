@@ -117,7 +117,7 @@ class ElementPolicy
 
     protected function shouldCheckSiteAuthorization(ElementInterface $element): bool
     {
-        return true;
+        return Sites::isMultiSite() && $element::isLocalized();
     }
 
     private function checkSiteAuthorization(CraftUser $user, ElementInterface $element): ?bool

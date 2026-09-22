@@ -24,15 +24,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
-use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -42,6 +38,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
@@ -184,7 +181,7 @@ class Assets
                 'height' => $height,
                 'mode' => $mode->value,
             ])->url;
-        } catch (NotSupportedException) {
+        } catch (NotSupportedException|FilesystemException) {
             return $iconFallback ? Url::actionUrl('assets/icon', [
                 'extension' => $extension,
             ]) : null;
@@ -337,28 +334,15 @@ class Assets
     /**
      * @throws RuntimeException
      */
-    public function getTempAssetUploadFs(): FsInterface
-    {
-        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
-
-        if (! $handle) {
-            return new Temp([
-                'handle' => 'disk:'.FilesystemsService::TEMP_ASSET_DISK,
-            ]);
-        }
-
-        return Filesystems::resolve($handle)
-            ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
-    }
-
-    /**
-     * @throws RuntimeException
-     */
     public function getTempAssetUploadDisk(): FilesystemAdapter
     {
-        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
+        $disk = Storage::disk(Cms::config()->getTempAssetUploadDisk());
 
-        return Filesystems::disk($handle ?: 'disk:'.FilesystemsService::TEMP_ASSET_DISK);
+        if (! $disk instanceof FilesystemAdapter) {
+            throw new RuntimeException('The temporary asset upload disk did not resolve to a Laravel filesystem adapter.');
+        }
+
+        return $disk;
     }
 
     public function createTempAssetQuery(): AssetQuery

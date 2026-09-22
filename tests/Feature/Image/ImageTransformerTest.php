@@ -22,7 +22,6 @@ use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
@@ -39,7 +38,10 @@ beforeEach(function () {
     ]);
     Storage::disk('test-disk')->deleteDirectory('');
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $this->volume = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'hasUrls' => true,
+    ]);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
     $this->transformer = new ImageTransformer;
     $this->createImageAsset = fn (array $attributes = []) => AssetModel::factory()->createElement([
@@ -255,7 +257,7 @@ it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
         ->and($storedDateIndexed)->not->toContain('+');
 });
 
-it('uses Craft driver output settings from the source filesystem', function () {
+it('uses Craft driver output disk settings', function () {
     config()->set('filesystems.disks.configured-transform-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/configured-source'),
@@ -273,12 +275,13 @@ it('uses Craft driver output settings from the source filesystem', function () {
         'handle' => 'configured-transform',
         'driver' => 'craft',
         'settings' => [
-            'filesystem' => 'disk:configured-transform-target',
+            'disk' => 'configured-transform-target',
+            'hasUrls' => true,
             'subpath' => 'transforms',
         ],
     ]), false);
     $volume = Volume::factory()->create([
-        'fs' => 'disk:configured-transform-source',
+        'fs' => 'configured-transform-source',
         'assetTransformer' => 'configured-transform',
     ]);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -318,7 +321,7 @@ it('does not reuse similar transform results across Craft transformer profiles',
             'name' => ucfirst($handle),
             'handle' => $handle,
             'driver' => 'craft',
-            'settings' => ['filesystem' => "disk:{$handle}-transform-target"],
+            'settings' => ['disk' => "{$handle}-transform-target"],
         ]);
         app(AssetTransformers::class)->saveAssetTransformer($profile, false);
 
@@ -346,7 +349,7 @@ it('does not reuse similar transform results across Craft transformer profiles',
         ->and(Storage::disk('second-transform-target')->allFiles())->toHaveCount(1);
 });
 
-it('fails when the configured Craft driver output filesystem is missing', function () {
+it('fails when the configured Craft driver output disk is missing', function () {
     config()->set('filesystems.disks.missing-transform-target-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/missing-target-source'),
@@ -356,10 +359,10 @@ it('fails when the configured Craft driver output filesystem is missing', functi
         'name' => 'Missing transform target',
         'handle' => 'missing-transform-target',
         'driver' => 'craft',
-        'settings' => ['filesystem' => 'disk:missing-transform-target'],
+        'settings' => ['disk' => 'missing-transform-target'],
     ]), false);
     $volume = Volume::factory()->create([
-        'fs' => 'disk:missing-transform-target-source',
+        'fs' => 'missing-transform-target-source',
         'assetTransformer' => 'missing-transform-target',
     ]);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
@@ -387,9 +390,8 @@ it('cleans the Craft transform index when an Asset is invalidated', function () 
 it('reports Craft cleanup failures with redacted context', function () {
     $asset = ($this->createImageAsset)();
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
-    $asset->getVolume()->getFs();
     Exceptions::fake();
-    Filesystems::shouldReceive('disk')->andThrow(new RuntimeException('/secret/source/path.jpg'));
+    Storage::shouldReceive('disk')->with('test-disk')->andThrow(new RuntimeException('/secret/source/path.jpg'));
 
     $this->transformer->deleteImageTransformFile($asset, $index);
 
@@ -400,12 +402,16 @@ it('reports Craft cleanup failures with redacted context', function () {
 
 it('removes transformer indexes when transform cleanup fails', function (Closure $invalidate) {
     $asset = ($this->createImageAsset)();
+    config()->set('filesystems.disks.unavailable', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/unavailable'),
+    ]);
     $assetTransformer = new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'Unavailable',
         'handle' => 'unavailable',
         'driver' => 'craft',
-        'settings' => ['filesystem' => 'disk:unavailable'],
+        'settings' => ['disk' => 'unavailable'],
     ]);
     $index = new ImageTransformIndex([
         'assetId' => $asset->id,
@@ -416,7 +422,7 @@ it('removes transformer indexes when transform cleanup fails', function (Closure
     ]);
     $this->transformer->storeTransformIndexData($index);
     Exceptions::fake();
-    Filesystems::shouldReceive('disk')->once()->andThrow(new RuntimeException('Unavailable output disk'));
+    Storage::shouldReceive('disk')->once()->with('unavailable')->andThrow(new RuntimeException('Unavailable output disk'));
 
     $invalidate($this->transformer, $assetTransformer);
 
@@ -502,7 +508,7 @@ it('rejects invalid Craft driver settings', function () {
         'name' => 'Invalid',
         'handle' => 'invalid',
         'driver' => 'craft',
-        'settings' => ['filesystem' => []],
+        'settings' => ['disk' => []],
     ]);
 
     expect(fn () => app(AssetTransformDrivers::class)->driver('craft')->transform(new AssetTransformRequest(

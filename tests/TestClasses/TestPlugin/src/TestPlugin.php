@@ -11,7 +11,6 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -127,12 +126,6 @@ class TestPlugin extends Plugin
     public function setFieldTypes(array $fieldTypes): void
     {
         $this->fieldTypes = $fieldTypes;
-    }
-
-    /** @param array<int, class-string<FsInterface>> $filesystemTypes */
-    public function setFilesystemTypes(array $filesystemTypes): void
-    {
-        $this->filesystemTypes = $filesystemTypes;
     }
 
     /** @param array<int, class-string<SingularTypeInterface>> $gqlTypes */
@@ -342,7 +335,7 @@ class TestPlugin extends Plugin
 
         return Form::make([
             Field::make('Foo', Text::make('foo')->reactive()),
-        ])->when($this->getSettings()?->foo === 'show-bar', fn (Form $form) => $form->add(
+        ])->when(($context->values['settings']['foo'] ?? null) === 'show-bar', fn (Form $form) => $form->add(
             Group::make('test-plugin-bar', [
                 Field::make('Bar', Text::make('bar')),
             ])->dependsOn('settings.foo'),

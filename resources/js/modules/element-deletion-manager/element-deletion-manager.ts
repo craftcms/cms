@@ -325,22 +325,36 @@ class Blocker extends Base {
           if (action.callback) {
             let message;
             try {
-              // The action callback is a server-provided code string that
-              // resolves/rejects using these locals (a legacy contract).
-              /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-this-alias */
               message = await new Promise((resolve, reject) => {
-                const blocker = this;
-                const {
-                  elementType,
-                  elementIds,
-                  siteId,
-                  ownerId,
-                  withDescendants,
-                  hardDelete,
-                } = this.manager.getParams();
-                eval(action.callback);
+                const params = this.manager.getParams();
+                // oxlint-disable-next-line @typescript-eslint/no-implied-eval -- the action callback is a server-provided code string that resolves/rejects using these named arguments (a legacy contract)
+                const callback = new Function(
+                  'elementType',
+                  'elementIds',
+                  'siteId',
+                  'ownerId',
+                  'withDescendants',
+                  'hardDelete',
+                  'resolve',
+                  'reject',
+                  'blocker',
+                  'action',
+                  action.callback
+                );
+                callback.call(
+                  this,
+                  params.elementType,
+                  params.elementIds,
+                  params.siteId,
+                  params.ownerId,
+                  params.withDescendants,
+                  params.hardDelete,
+                  resolve,
+                  reject,
+                  this,
+                  action
+                );
               });
-              /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-this-alias */
             } catch {
               return;
             }

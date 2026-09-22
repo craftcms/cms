@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
+use craft\base\Fs;
+use craft\base\FsInterface;
+use craft\fs\MissingFs;
 use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Asset\LegacyVolumeTransformData;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
 use Generator;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -33,6 +34,34 @@ class VolumeMixin
         $this->transformData = new LegacyVolumeTransformData();
     }
 
+    public function getFs(): Closure
+    {
+        return function(): FsInterface {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $handle = $this->getFsHandle(false);
+            if ($handle === null) {
+                throw new RuntimeException('Volume is missing its filesystem handle.');
+            }
+
+            return app(LegacyFilesystems::class)->resolve($handle)
+                ?? new MissingFs(['handle' => $handle]);
+        };
+    }
+
+    public function setFs(): Closure
+    {
+        return function(FsInterface|string|null $filesystem): void {
+            /**
+             * @var Volume $this
+             * @phpstan-ignore-next-line Macro closure is rebound to Volume.
+             */
+            $this->setFsHandle($filesystem instanceof FsInterface ? $filesystem->handle : $filesystem);
+        };
+    }
+
     public function getTransformFs(): Closure
     {
         $data = $this->transformData;
@@ -47,14 +76,14 @@ class VolumeMixin
                 return $this->getFs();
             }
 
-            $filesystem = Filesystems::resolve($handle);
+            $filesystem = app(LegacyFilesystems::class)->resolve($handle);
             if ($filesystem) {
                 return $filesystem;
             }
 
             Log::error("Invalid transform filesystem handle: {$handle} for the {$this->name} volume.");
 
-            return new \CraftCms\Cms\Filesystem\Filesystems\MissingFs(['handle' => $handle]);
+            return new MissingFs(['handle' => $handle]);
         };
     }
 
@@ -157,7 +186,7 @@ class VolumeMixin
                 throw new RuntimeException('Volume is missing or has an invalid transform filesystem handle.');
             }
 
-            return Filesystems::disk($target, $values->subpath);
+            return app(LegacyFilesystems::class)->disk($target, $values->subpath);
         };
     }
 
@@ -522,13 +551,13 @@ class VolumeMixin
      */
     private function legacyConfigForDisk(array $config): array
     {
-        if (empty($config[FilesystemComponent::CONFIG_VISIBILITY])) {
+        if (empty($config[Fs::CONFIG_VISIBILITY])) {
             return $config;
         }
 
-        $visibility = Arr::pull($config, FilesystemComponent::CONFIG_VISIBILITY);
+        $visibility = Arr::pull($config, Fs::CONFIG_VISIBILITY);
 
-        if ($visibility === FilesystemComponent::VISIBILITY_HIDDEN) {
+        if ($visibility === Fs::VISIBILITY_HIDDEN) {
             $config['visibility'] = 'private';
         }
 

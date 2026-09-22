@@ -9,7 +9,7 @@
  */
 #notifications {
   position: fixed;
-  z-index: 101;
+  z-index: var(--c-layer-notification);
   inset-block-end: var(--c-spacing-md);
   inset-inline-start: var(--c-spacing-md);
   display: flex;

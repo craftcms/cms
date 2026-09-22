@@ -88,7 +88,7 @@ class Cp extends Component
     /** @return array<array-key, mixed> */
     public function nav(): array
     {
-        return app(Navigation::class)->getItems();
+        return app(Navigation::class)->getShallowItems();
     }
 
     /**
@@ -259,16 +259,6 @@ class Cp extends Component
                 ]),
             ],
         ], SelectOptions::getLanguageOptions($showLocaleIds, $showLocalizedNames, $appLocales));
-    }
-
-    /**
-     * Returns all options for a filesystem input.
-     */
-    /** @return list<array<string, mixed>> */
-    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.')]
-    public function getFsOptions(): array
-    {
-        return SelectOptions::getFsOptions();
     }
 
     /**

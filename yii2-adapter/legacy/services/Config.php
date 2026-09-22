@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -29,7 +31,9 @@ use yii\base\Component;
  * @property-read DbConfig $db the DB config settings
  * @property-read LegacyGeneralConfig $general the general config settings
  * @property-read object $custom the custom config settings
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Config extends Component
@@ -38,7 +42,9 @@ class Config extends Component
      * @since 4.0.0
      */
     public const CATEGORY_CUSTOM = 'custom';
+
     public const CATEGORY_DB = 'db';
+
     public const CATEGORY_GENERAL = 'general';
 
     /**
@@ -71,18 +77,11 @@ class Config extends Component
      */
     public string $appDefaultsDir = '';
 
-    /**
-     * @var array
-     */
     private array $_configSettings = [];
 
-    /**
-     * @var string|null
-     */
     private ?string $_dotEnvPath = null;
 
     /**
-     * @var string|null
      * @see getConfigFromFile()
      * @see getLoadingConfigFile()
      */
@@ -91,8 +90,9 @@ class Config extends Component
     /**
      * Returns all of the config settings for a given category.
      *
-     * @param string $category The config category
+     * @param  string  $category  The config category
      * @return object The config settings
+     *
      * @throws InvalidArgumentException if $category is invalid
      */
     public function getConfigSettings(string $category): object
@@ -130,7 +130,7 @@ class Config extends Component
         } else {
             switch ($category) {
                 case self::CATEGORY_CUSTOM:
-                    return (object)$config;
+                    return (object) $config;
                 case self::CATEGORY_DB:
                     $configClass = DbConfig::class;
                     $envPrefix = 'CRAFT_DB_';
@@ -159,6 +159,7 @@ class Config extends Component
                 // Use the fluent methods when possible, in case it has any value normalization logic
                 if (method_exists($config, $name)) {
                     $config->$name($value);
+
                     continue;
                 }
                 $config->$name = $value;
@@ -186,6 +187,7 @@ class Config extends Component
         }
 
         $this->_loadingConfigFile = $loadingConfig;
+
         return $config;
     }
 
@@ -201,7 +203,6 @@ class Config extends Component
      * {% set myCustomSetting = craft.app.config.custom.myCustomSetting %}
      * ```
      *
-     * @return object
      * @since 4.0.0
      */
     public function getCustom(): object
@@ -220,8 +221,6 @@ class Config extends Component
      * ```twig
      * {% set username = craft.app.config.db.username %}
      * ```
-     *
-     * @return DbConfig
      */
     public function getDb(): DbConfig
     {
@@ -243,7 +242,6 @@ class Config extends Component
      * </a>
      * ```
      *
-     * @return LegacyGeneralConfig
      * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `app.config.craft.general` (Twig) instead.
      */
     public function getGeneral(): LegacyGeneralConfig
@@ -257,8 +255,7 @@ class Config extends Component
     /**
      * Returns the path to a config file.
      *
-     * @param string $filename The filename (sans .php extension)
-     * @return string
+     * @param  string  $filename  The filename (sans .php extension)
      */
     public function getConfigFilePath(string $filename): string
     {
@@ -276,9 +273,7 @@ class Config extends Component
      * $settings = Craft::$app->config->getConfigFromFile('foo');
      * ```
      *
-     * @param string $filename
      *
-     * @return array|callable|BaseConfig
      * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Config::get("craft.$filename")` instead.
      */
     public function getConfigFromFile(string $filename): array|callable|BaseConfig
@@ -289,7 +284,6 @@ class Config extends Component
     /**
      * Returns the config filename currently being loaded.
      *
-     * @return string|null
      * @since 4.2.0
      */
     public function getLoadingConfigFile(): ?string
@@ -300,7 +294,6 @@ class Config extends Component
     /**
      * Returns the path to the .env file (regardless of whether it exists).
      *
-     * @return string
      * @deprecated in 6.0.0. Use `app()->environmentFilePath()` instead.
      */
     public function getDotEnvPath(): string
@@ -311,8 +304,8 @@ class Config extends Component
     /**
      * Returns whether an environment variable exists in the project’s `.env` file.
      *
-     * @param string $name The environment variable name
-     * @return bool
+     * @param  string  $name  The environment variable name
+     *
      * @since 5.11.0
      * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::variableExists()` instead.
      */
@@ -324,9 +317,11 @@ class Config extends Component
     /**
      * Sets an environment variable value in the project's `.env` file.
      *
-     * @param string $name The environment variable name
-     * @param string|false $value The environment variable value, or `false` if it should be removed.
+     * @param  string  $name  The environment variable name
+     * @param  string|false  $value  The environment variable value, or `false` if it should be removed.
+     *
      * @throws RuntimeException if the .env file doesn't exist
+     *
      * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::writeVariable()` or `\CraftCms\Cms\Support\Env::removeVariable()` instead.
      */
     public function setDotEnvVar(string $name, string|false $value): void
@@ -353,15 +348,16 @@ class Config extends Component
      * If the environment variable is already set to a boolean-esque value, its counterpart will be used.
      * For example, if `true` is passed and the current value is `no`, the variable will be set to `yes`.
      *
-     * @param string $name The environment variable name
-     * @param bool $value The environment variable value
+     * @param  string  $name  The environment variable name
+     * @param  bool  $value  The environment variable value
      *
      * @throws RuntimeException if the .env file doesn't exist
+     *
      * @since 3.7.24
      */
     public function setBooleanDotEnvVar(string $name, bool $value): void
     {
-        $value = match (strtolower((string)Env::get($name))) {
+        $value = match (strtolower((string) Env::get($name))) {
             'yes', 'no' => $value ? 'yes' : 'no',
             'on', 'off' => $value ? 'on' : 'off',
             '1', '0' => $value ? '1' : '0',

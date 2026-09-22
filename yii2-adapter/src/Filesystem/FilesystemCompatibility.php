@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Filesystem;
 
+use Craft;
 use craft\base\BaseFsInterface;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\fs\bridge\LegacyFsPathPrefixedAdapter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystemAdapter;
 use Illuminate\Filesystem\FilesystemManager;
@@ -28,7 +28,7 @@ readonly class FilesystemCompatibility
                 throw new InvalidArgumentException('Missing `fsHandle` configuration for craft-fs-bridge disk.');
             }
 
-            $filesystem = Filesystems::getFilesystemByHandle($handle);
+            $filesystem = Craft::$app->getFs()->getFilesystemByHandle($handle);
             if (!$filesystem instanceof BaseFsInterface) {
                 throw new InvalidArgumentException("Craft filesystem [$handle] does not implement the legacy filesystem API.");
             }
@@ -44,6 +44,8 @@ readonly class FilesystemCompatibility
 
             return $legacyFilesystemAdapter($filesystem, $config);
         });
+
+        $app->booted(fn() => $app->make(LegacyFilesystems::class)->syncDisks());
     }
 
     private static function legacyFilesystemAdapter(BaseFsInterface $filesystem, array $config): LaravelFilesystemAdapter

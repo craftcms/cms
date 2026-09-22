@@ -9,8 +9,8 @@ namespace crafttests\fixtures;
 
 use craft\records\Volume;
 use craft\test\ActiveFixture;
-use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Yii2Adapter\Filesystem\LegacyFilesystems;
 
 /**
  * Class VolumesFixture.
@@ -42,7 +42,7 @@ class VolumesFixture extends ActiveFixture
         parent::load();
 
         Volumes::reset();
-        app(Filesystems::class)->syncDisks();
+        app(LegacyFilesystems::class)->syncDisks();
     }
 
     public function unload(): void
@@ -50,6 +50,6 @@ class VolumesFixture extends ActiveFixture
         parent::unload();
 
         Volumes::reset();
-        app(Filesystems::class)->syncDisks();
+        app(LegacyFilesystems::class)->syncDisks();
     }
 }

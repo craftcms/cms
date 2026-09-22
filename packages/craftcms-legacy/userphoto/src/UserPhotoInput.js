@@ -22,7 +22,6 @@ import './user-photo-input.scss';
           uploadButtonSelector: '.btn.upload-photo',
           deleteButtonSelector: '.btn.delete-photo',
           fileInputSelector: 'input[type=file]',
-          uploadParamName: 'photo',
 
           onAfterRefreshImage: (response) => {
             if (typeof response.html !== 'undefined') {

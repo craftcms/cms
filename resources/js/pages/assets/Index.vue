@@ -18,8 +18,10 @@
   import {useAssetMoveDrag} from '@/modules/elements/composables/useAssetMoveDrag';
   import {useNewSubfolder} from '@/modules/elements/composables/useNewSubfolder';
   import AssetUploadButton from './AssetUploadButton.vue';
+  import {useAssetUploadRefresh} from '@/modules/uploader/useAssetUploadRefresh';
 
   const page = usePage<CraftCms.Cms.Http.ViewModels.AssetIndexViewModel>();
+  const dropZone = document.body;
 
   // Breadcrumb clicks navigate the same way folder rows do, so the current view
   // (mode, columns, sort) carries across when moving up the folder tree.
@@ -34,6 +36,7 @@
         query
       ),
   };
+  const sourceHref = index.url();
 
   // The breadcrumb trail is built server-side (labels, folder links, drop-target
   // attrs, and the current folder's action menu) — see
@@ -50,9 +53,23 @@
     return {
       canUpload: data?.['can-upload'] === true,
       folderId: data?.['folder-id'] as number | undefined,
-      fsType: data?.['fs-type'] as string | undefined,
     };
   });
+
+  const uploadDestination = computed(() => ({
+    folderId: uploadSource.value.folderId!,
+    url: index.url(
+      {defaultSource: page.props.defaultSource ?? undefined},
+      {
+        query: {source: page.props.source?.key},
+      }
+    ),
+    label:
+      breadcrumbs.value.map((crumb) => crumb.label).join(' / ') ||
+      String(page.props.source?.label ?? t('Assets')),
+  }));
+
+  useAssetUploadRefresh(() => uploadSource.value.folderId);
 
   // "New subfolder" prompt for the current folder. Its breadcrumb menu item is a
   // server-driven `event` action (AssetIndexViewModel::NEW_SUBFOLDER_EVENT); we
@@ -82,12 +99,21 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
+  <ElementIndexPage
+    :route="route"
+    :source-href="sourceHref"
+    customizable-sources
+  >
     <template #navbar>
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>
-    <template #actions>
-      <AssetUploadButton v-bind="uploadSource" />
+    <template #toolbar-actions>
+      <AssetUploadButton
+        variant="primary"
+        v-bind="uploadSource"
+        :destination="uploadDestination"
+        :drop-zone="dropZone"
+      />
     </template>
   </ElementIndexPage>
 

@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
+use InvalidArgumentException;
 use Override;
 use ReflectionProperty;
 use RuntimeException;
@@ -64,6 +65,20 @@ class Env extends \Illuminate\Support\Env
         }
 
         return $value;
+    }
+
+    /**
+     * @throws InvalidArgumentException if `$value` contains a newline, which could otherwise be used to inject
+     *                                  additional environment variable definitions into the file
+     */
+    #[Override]
+    public static function writeVariable(string $key, mixed $value, string $pathToFile, bool $overwrite = false): void
+    {
+        if (is_string($value) && Str::containsNewlines($value)) {
+            throw new InvalidArgumentException("Invalid environment variable value: $value");
+        }
+
+        parent::writeVariable($key, $value, $pathToFile, $overwrite);
     }
 
     /**

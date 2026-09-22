@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -60,18 +61,42 @@ it('sets the CP-relative path for legacy URL generation', function () {
 
 it('renders with a default source', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets", ['defaultSource' => $volume->handle])->assertOk();
+    get("/{$cpTrigger}/assets?defaultSource={$volume->handle}")->assertOk();
+});
+
+it('sends the bare index to the first source it lists', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?search=cat")
+        ->assertRedirectContains("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertRedirectContains('search=cat');
+});
+
+it('leaves an index that names its source where it is', function () {
+    Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?source=temp")->assertOk();
 });
 
 it('preloads existing thumbnail indexes for the displayed assets', function (int $sourceWidth, int $sourceHeight, array $transforms) {
     Queue::fake();
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = Folders::getRootFolderByVolumeId($volume->id);
     $imageTransformer = new ImageTransformer;
 
@@ -127,7 +152,7 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
 ]);
 
 it('preserves custom thumbnail URLs without resolving the configured transformer', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -151,7 +176,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
 });
 
 it('preserves thumbnail overrides on asset subclasses', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -174,7 +199,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
 });
 
 it('reports thumbnail jobs created while rendering the requested page data', function (bool $inertia, bool $queueOnly) {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -230,7 +255,7 @@ it('reports thumbnail jobs created while rendering the requested page data', fun
 
 it('includes a volume’s subfolders in the index results', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -253,7 +278,7 @@ it('includes a volume’s subfolders in the index results', function () {
 
 it('scopes the results to the subfolder named in the path', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -276,7 +301,7 @@ it('scopes the results to the subfolder named in the path', function () {
 
 it('passes the route path segment through as defaultSource', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -300,3 +325,42 @@ class CustomThumbnailIndexAsset extends AssetElement
         return 'https://example.test/subclass-thumbnail.jpg';
     }
 }
+
+it('gives the index a header trail like every other index has', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'testvolume',
+        'name' => 'Test Volume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    // The folder chain in the pane is the trail *within* a volume. These are
+    // the trail *to* it, which the header had none of.
+    get("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->count() === 2
+                && $crumbs->first()['label'] === 'Assets'
+                && str_ends_with((string) $crumbs->first()['href'], '/assets')
+                && $crumbs->last()['label'] === 'Test Volume'
+                // Linked by the URL the nav and the rest of the CP use, not a
+                // `?source=` query naming the same thing.
+                && str_ends_with((string) $crumbs->last()['href'], "/assets/{$volume->handle}")
+            )
+            ->etc()
+        );
+});
+
+it('leaves the bare index a single crumb', function () {
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->isNotEmpty()
+                && $crumbs->first()['label'] === 'Assets'
+            )
+            ->etc()
+        );
+});

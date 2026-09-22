@@ -1,4 +1,4 @@
-import {reactive, shallowReadonly} from 'vue';
+import {markRaw, reactive, shallowReadonly} from 'vue';
 import {t} from '@craftcms/ui/utilities/translate';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {fetchSlideoutPage, type SlideoutPage} from './request';
@@ -168,7 +168,9 @@ export function openSlideoutWith(
     id,
     containerId: id,
     href: '',
-    component,
+    // Raw: a component definition only renders, and making it reactive costs
+    // a deep proxy (and a Vue warning) for nothing.
+    component: markRaw(component),
     props,
     loading: false,
     error: null,
@@ -307,7 +309,7 @@ async function loadInto(panel: SlideoutInstance): Promise<void> {
   try {
     const page = await loadSlideoutPage(panel.href, panel.containerId);
 
-    panel.component = page.component;
+    panel.component = markRaw(page.component);
     panel.props = page.props;
   } catch (error) {
     // A navigation fallback (stale assets, non-Inertia screen) already

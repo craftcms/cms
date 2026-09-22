@@ -47,6 +47,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -128,7 +129,7 @@ class EntryTypes
 
     private function _createEntryTypeQuery(): Builder
     {
-        return DB::table(Table::ENTRYTYPES)
+        $query = DB::table(Table::ENTRYTYPES)
             ->select([
                 'id',
                 'fieldLayoutId',
@@ -150,6 +151,19 @@ class EntryTypes
                 'uid',
             ])
             ->whereNull('dateDeleted');
+
+        // `craft:up` reads entry types (to diff project config) before running
+        // pending migrations, so a DB that hasn't been migrated yet doesn't
+        // have these columns.
+        if (Schema::hasColumn(Table::ENTRYTYPES, 'showPostDateField')) {
+            $query->addSelect('showPostDateField');
+        }
+
+        if (Schema::hasColumn(Table::ENTRYTYPES, 'showExpiryDateField')) {
+            $query->addSelect('showExpiryDateField');
+        }
+
+        return $query;
     }
 
     /**
@@ -338,6 +352,8 @@ class EntryTypes
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? TranslationMethod::Site->value;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeModel->showStatusField = $data['showStatusField'] ?? true;
+            $entryTypeModel->showPostDateField = $data['showPostDateField'] ?? true;
+            $entryTypeModel->showExpiryDateField = $data['showExpiryDateField'] ?? true;
             $entryTypeModel->uid = $entryTypeUid;
             $entryTypeModel->description = $data['description'] ?? null;
 

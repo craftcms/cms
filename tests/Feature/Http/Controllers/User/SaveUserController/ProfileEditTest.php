@@ -55,7 +55,7 @@ describe('photo selection', function () {
             'root' => storage_path('framework/testing/profile-photos'),
         ]);
         $this->disk = Storage::fake('profile-photos');
-        $this->volume = Volume::factory()->create(['fs' => 'disk:profile-photos']);
+        $this->volume = Volume::factory()->create(['fs' => 'profile-photos']);
         ProjectConfig::set('users.photoVolumeUid', $this->volume->uid);
         ProjectConfig::set('users.photoSubpath', 'profiles/{id}');
         $this->folder = app(Users::class)->userPhotoFolder($this->user);
@@ -100,7 +100,7 @@ describe('photo selection', function () {
 
     it('rejects assets outside the configured photo folder', function (string $location) {
         $volume = $location === 'other volume'
-            ? Volume::factory()->create(['fs' => 'disk:profile-photos'])
+            ? Volume::factory()->create(['fs' => 'profile-photos'])
             : $this->volume;
         Volumes::reset();
         $path = match ($location) {
@@ -172,7 +172,7 @@ describe('photo selection', function () {
         expect(User::findOne($user->id)->photoId)->toBeNull();
     });
 
-    it('creates the configured folder and restricts the photo selector to it', function () {
+    it('creates the configured folder and enables uploads to it', function () {
         ProjectConfig::set('users.photoSubpath', 'new-photos/{id}');
         $path = "new-photos/{$this->user->id}";
         $this->disk->assertMissing($path);
@@ -184,6 +184,8 @@ describe('photo selection', function () {
 
             expect($control['props']['sources'])->toBe(["volume:{$this->volume->uid}/folder:{$folder->uid}"])
                 ->and($control['props']['criteria'])->toBe(['volumeId' => $this->volume->id, 'folderId' => $folder->id, 'kind' => 'image'])
+                ->and($control['props']['canUpload'])->toBeTrue()
+                ->and($control['props']['uploadFolderId'])->toBe($folder->id)
                 ->and($control['props']['showFolders'])->toBeFalse();
         });
 

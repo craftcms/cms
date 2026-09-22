@@ -32,7 +32,7 @@ beforeEach(function () {
         'root' => $this->remoteRoot,
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:image-transform-helper-test-remote-disk']);
+    $this->volume = Volume::factory()->create(['fs' => 'image-transform-helper-test-remote-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 
     File::deleteDirectory(Path::assetSources());

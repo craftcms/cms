@@ -49,7 +49,6 @@ use CraftCms\Yii2Adapter\Console\DropCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
-use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\OffCommand;
 use CraftCms\Yii2Adapter\Console\OnCommand;
@@ -302,7 +301,6 @@ class Yii2ServiceProvider extends ServiceProvider
             DropCategoriesSupportCommand::class,
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
-            MigrateMigrationTableCommand::class,
             MigrateSessionsTableCommand::class,
             OffCommand::class,
             OnCommand::class,

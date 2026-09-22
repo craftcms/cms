@@ -38,7 +38,6 @@ use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
@@ -502,22 +501,4 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
     });
 
-    Route::prefix('settings/filesystems')->group(function () {
-        Route::middleware([
-            RequireAdmin::class,
-        ])->group(function () {
-            Route::get('/', [FilesystemsController::class, 'index']);
-            Route::get('new', [FilesystemsController::class, 'create']);
-            Route::get('{handle}', [FilesystemsController::class, 'edit']);
-            Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
-        });
-
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('/', [FilesystemsController::class, 'store']);
-            Route::post('form', [FilesystemsController::class, 'renderForm']);
-            Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
-        });
-    });
 });

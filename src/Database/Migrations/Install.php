@@ -306,6 +306,24 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
+        $logger?->subLabel('upload_sessions');
+        Schema::create(Table::UPLOADSESSIONS, function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('owner');
+            $table->string('handler');
+            $table->string('uploader');
+            $table->string('disk');
+            $table->string('filename');
+            $table->unsignedBigInteger('size');
+            $table->unsignedBigInteger('chunkSize')->default(1);
+            $table->jsonb('parameters');
+            $table->jsonb('state');
+            $table->jsonb('result')->nullable();
+            $table->dateTime('expiresAt')->index();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+        });
+
         $logger?->subLabel('assets_sites');
         Schema::create(Table::ASSETS_SITES, function (Blueprint $table) {
             $table->integer('assetId');
@@ -575,6 +593,8 @@ class Install extends Migration
             $table->string('slugTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('slugTranslationKeyFormat')->nullable();
             $table->boolean('showStatusField')->default(true)->nullable();
+            $table->boolean('showPostDateField')->default(true);
+            $table->boolean('showExpiryDateField')->default(true);
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->dateTime('dateDeleted')->nullable()->default(null);
@@ -985,6 +1005,7 @@ class Install extends Migration
             $table->string('name');
             $table->string('handle');
             $table->string('fs');
+            $table->boolean('hasUrls')->default(false);
             $table->string('subpath')->nullable();
             $table->string('assetTransformer')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);

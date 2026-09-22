@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -94,26 +95,22 @@ class UserEditViewModel extends ElementEditViewModel
      * The user's own crumbs, ending in a chip for the account being edited —
      * the same trail the sibling account screens render.
      *
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     #[Override]
     public function crumbs(): array
     {
         return [
-            ...array_map(function (array $crumb): array {
-                if (isset($crumb['url'])) {
-                    $crumb['url'] = Url::cpUrl($crumb['url']);
-                }
-
-                return $crumb;
-            }, $this->user->getCrumbs()),
-            [
-                'html' => app(ElementHtml::class)->elementChipHtml($this->user, [
+            // The user's own crumbs already carry absolute URLs; this used to
+            // re-resolve a `url` key that stopped existing, which was a no-op
+            // for core and quietly wrong for anything else.
+            ...$this->user->getCrumbs(),
+            new ActionItem()
+                ->html(app(ElementHtml::class)->elementChipHtml($this->user, [
                     'showDraftName' => false,
                     'class' => 'chromeless',
-                ]),
-                'current' => true,
-            ],
+                ]))
+                ->current(true),
         ];
     }
 

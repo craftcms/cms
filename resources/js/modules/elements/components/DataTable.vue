@@ -54,6 +54,7 @@
        * structure rows reorder as a tree and emit `moveStructureRow`.
        */
       canMoveRow?: (id: string | number, move: StructureMove) => boolean;
+      withBottomBorder?: boolean;
     }>(),
 
     {
@@ -65,6 +66,7 @@
       isRowCollapsed: () => false,
       isRowPending: () => false,
       canMoveRow: () => false,
+      withBottomBorder: true,
     }
   );
 
@@ -316,6 +318,13 @@
     return row.original.label ?? String(row.original.id);
   }
 
+  function hideBottomBorder(rowIdx: number) {
+    return (
+      !props.withBottomBorder &&
+      rowIdx === props.table.getRowModel().rows.length - 1
+    );
+  }
+
   function getRowPosition(index: number) {
     if (index === 0) {
       return 'first';
@@ -516,7 +525,11 @@
           @click="onRowClick(row, $event)"
           @keydown="onRowKeydown(row, rowIdx, $event)"
         >
-          <td v-if="structure" class="cp-table-cell cp-table-cell--structure">
+          <td
+            v-if="structure"
+            class="cp-table-cell cp-table-cell--structure"
+            :class="{'border-b-0': hideBottomBorder(rowIdx)}"
+          >
             <craft-button
               v-if="row.original.hasDescendants"
               class="cp-table-structure-toggle"
@@ -551,6 +564,7 @@
           <td
             v-if="reorderable && !readOnly && structure"
             class="cp-table-cell--structure-reorder"
+            :class="{'border-b-0': hideBottomBorder(rowIdx)}"
           >
             <div>
               <craft-reorder-button
@@ -564,7 +578,7 @@
             </div>
           </td>
           <template v-else-if="reorderable && !readOnly">
-            <td>
+            <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
               <div>
                 <craft-reorder-button
                   @reorder="
@@ -586,7 +600,14 @@
               <DropIndicator :edge="getClosestEdge(row.id)" />
             </td>
           </template>
-          <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+          <td
+            v-if="selectable"
+            :class="{
+              'cp-table-cell': true,
+              'cp-table-cell--select': true,
+              'border-b-0': hideBottomBorder(rowIdx),
+            }"
+          >
             <craft-checkbox
               label-sr-only
               .checked="row.getIsSelected()"
@@ -611,6 +632,7 @@
                 'cp-table-cell': true,
                 [`cp-table-cell--${cell.column.id}`]: true,
                 'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
+                'border-b-0': hideBottomBorder(rowIdx),
               },
               resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
               resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
@@ -664,8 +686,8 @@
   :deep(.cp-table-cell--header[aria-sort]) {
     &:hover,
     &:focus-within {
-      background-color: var(--c-color-neutral-fill-loud);
-      color: var(--c-color-neutral-on-loud);
+      background-color: var(--c-color-fill-loud);
+      color: var(--c-color-on-loud);
     }
   }
 
@@ -680,7 +702,7 @@
   // Selection column hugs its checkbox rather than claiming a data-column share.
   :deep(.cp-table-cell--select) {
     width: 1px;
-    max-width: calc(30rem / 16);
+    // max-width: calc(30rem / 16);
     white-space: nowrap;
   }
 
@@ -747,5 +769,21 @@
   :deep(.cp-table-row.sel > td) {
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-quiet);
+  }
+
+  // Cells carry a bottom border only, so a run of selected rows is bounded by
+  // the bottom border of the row above it and the bottom border of its own last
+  // row. Borders between selected rows are interior and stay quiet.
+  :deep(.cp-table-row.sel:not(:has(+ .cp-table-row.sel)) > td) {
+    border-block-end-color: var(--c-color-accent-border-normal);
+  }
+
+  :deep(.cp-table-row:not(.sel):has(+ .cp-table-row.sel) > td) {
+    border-block-end-color: var(--c-color-accent-border-normal);
+  }
+
+  // Nothing above the first row to carry its edge, so it keeps its own.
+  :deep(.cp-table-row.sel:first-child > td) {
+    border-block-start-color: var(--c-color-accent-border-normal);
   }
 </style>

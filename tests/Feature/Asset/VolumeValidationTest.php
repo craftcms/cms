@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function () {
-    Cms::config()->tempAssetUploadFs = null;
+    Cms::config()->tempAssetUploadDisk = null;
     putenv('CRAFT_TEST_VOLUME_SUBPATH');
 });
 
@@ -192,7 +192,7 @@ it('rejects the temp upload filesystem target for fsHandle', function () {
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-validation/temp-reserved'),
     ]);
-    Cms::config()->tempAssetUploadFs = 'disk:temp-reserved';
+    Cms::config()->tempAssetUploadDisk = 'temp-reserved';
 
     $volumeFs = new Volume([
         'fsHandle' => 'temp-reserved',
@@ -211,7 +211,7 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
     insertVolumeValidationRow([
         'name' => 'Existing Shared',
         'handle' => 'existingShared',
-        'fs' => 'disk:shared-validation-disk',
+        'fs' => 'shared-validation-disk',
         'subpath' => 'foo/bar',
     ]);
 
@@ -289,7 +289,7 @@ function insertVolumeValidationRow(array $overrides = []): void
     DB::table(Table::VOLUMES)->insert(array_merge([
         'name' => "Volume {$counter}",
         'handle' => "volume{$counter}",
-        'fs' => 'disk:default-validation-disk',
+        'fs' => 'default-validation-disk',
         'subpath' => null,
         'titleTranslationMethod' => 'site',
         'titleTranslationKeyFormat' => null,

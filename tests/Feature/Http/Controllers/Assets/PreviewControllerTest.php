@@ -20,7 +20,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/preview-controller-test/test-disk'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
@@ -48,13 +48,33 @@ it('can preview a thumb', function () {
         'kind' => 'image',
     ]);
 
-    postJson(action([PreviewController::class, 'previewThumb']), [
+    $response = postJson(action([PreviewController::class, 'previewThumb']), [
         'assetId' => $asset->id,
         'width' => 100,
         'height' => 100,
     ])
         ->assertOk()
         ->assertJsonStructure(['img']);
+
+    expect($response->json('img'))->toContain('<craft-thumbnail');
+});
+
+it('flags an animated preview thumb', function () {
+    Queue::fake();
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $this->volume->id,
+        'folderId' => $this->folder->id,
+        'filename' => 'test.gif',
+        'kind' => 'image',
+    ]);
+
+    $response = postJson(action([PreviewController::class, 'previewThumb']), [
+        'assetId' => $asset->id,
+        'width' => 100,
+        'height' => 100,
+    ])->assertOk();
+
+    expect($response->json('img'))->toContain('animated');
 });
 
 it('validates preview file input', function () {

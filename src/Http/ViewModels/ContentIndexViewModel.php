@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 
@@ -227,10 +229,31 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * The element index page title: a custom index page's own name wins,
-     * otherwise the element type's plural display name.
+     * The element index page title: the selected source's name — “All entries”,
+     * “Posts”, a volume, a user group — since that's what the screen is
+     * actually showing.
+     *
+     * The screen it belongs to is named by the breadcrumb above it
+     * ({@see crumbs()}), so the title doesn't repeat it. Falls back to the
+     * index's own name — a custom index page's, otherwise the element type's
+     * plural display name — when no source resolves.
      */
     public function title(): string
+    {
+        $sourceLabel = $this->sourceState()[1]['label'] ?? null;
+
+        if (is_string($sourceLabel) && $sourceLabel !== '') {
+            return $sourceLabel;
+        }
+
+        return $this->indexTitle();
+    }
+
+    /**
+     * The index screen's own name: a custom index page's wins, otherwise the
+     * element type's plural display name.
+     */
+    protected function indexTitle(): string
     {
         if ($this->page !== null) {
             $pageName = $this->sources()[0]['page'] ?? null;
@@ -241,6 +264,66 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $this->elementType::pluralDisplayName();
+    }
+
+    /**
+     * The breadcrumb trail for the CP header bar (`PageScreen`'s `crumbs` page
+     * prop): the index screen itself, then the selected source — including the
+     * “all elements” source the bare index opens on, which gets a crumb of its
+     * own (“All entries”, “All users”) rather than being left implicit.
+     *
+     * The source crumb carries the screen's other sources as an action menu, so
+     * it doubles as a source switcher. That's the same trail, in the same
+     * shape, that an element's own edit screen opens with (see the element
+     * types' own `crumbs()`) — so stepping from an index into an element on it
+     * doesn't move the breadcrumbs around.
+     *
+     * Screens with no URL of their own ({@see indexUrl()}) opt out: the element
+     * selector modal has no header to put a trail in.
+     *
+     * @return list<ActionItem|array<string, mixed>>
+     */
+    public function crumbs(): array
+    {
+        $indexUrl = $this->indexUrl();
+
+        if ($indexUrl === null) {
+            return [];
+        }
+
+        $crumbs = [
+            // The index's own name, not title() — that now names the selected
+            // source, which is the crumb below this one.
+            new ActionItem()->label($this->indexTitle())->href($indexUrl),
+        ];
+
+        [$sourceKey] = $this->sourceState();
+
+        if ($sourceKey === null) {
+            return $crumbs;
+        }
+
+        $options = $this->sourceCrumbOptions($sourceKey);
+        // The options mirror the sources sidebar, headings and all, so the
+        // selectable ones are a level down inside any group.
+        $choices = collect($options)->flatMap(
+            fn (array $option): array => $option['type'] === 'group' ? $option['items'] : [$option],
+        );
+        $current = $choices->first(fn (array $option): bool => $option['selected']);
+
+        if ($current === null) {
+            return $crumbs;
+        }
+
+        // A crumb is an action item like the options are, so the full set
+        // doubles as the current one's switcher menu. One source is no choice
+        // at all, so it gets a plain crumb.
+        $crumbs[] = new ActionItem()
+            ->label($current['label'])
+            ->href($current['href'])
+            ->items($choices->count() > 1 ? $options : []);
+
+        return $crumbs;
     }
 
     /** @return list<array<string, mixed>> */
@@ -504,6 +587,109 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
+    /**
+     * The index screen's own URL — the breadcrumb trail's first crumb, and what
+     * per-source URLs hang off.
+     *
+     * `null` (the default) opts the screen out of breadcrumbs entirely; see
+     * {@see crumbs()} for which screens do and why.
+     */
+    protected function indexUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * The URL that selects a source on this index.
+     *
+     * Defaults to the `?source=` query the sidebar's source links use. Screens
+     * whose sources have tidier URLs of their own — a section handle, a user
+     * group slug — override this so a crumb lands on the same URL the rest of
+     * the CP links that source by.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    protected function sourceUrl(array $source): ?string
+    {
+        $indexUrl = $this->indexUrl();
+
+        if ($indexUrl === null) {
+            return null;
+        }
+
+        // The “all elements” source is what the bare index shows, so it's
+        // addressed by the index's own URL rather than a query naming it.
+        return $source['key'] === '*'
+            ? $indexUrl
+            : Url::urlWithParams($indexUrl, ['source' => (string) $source['key']]);
+    }
+
+    /**
+     * The index's sources as action items, with the current one flagged — the
+     * source crumb, and the switcher menu hanging off it.
+     *
+     * Headings come through as groups over the sources they head, so the menu
+     * reads the same as the sources sidebar beside it rather than flattening
+     * into an ungrouped list.
+     *
+     * @return list<
+     *     array{type: 'link', label: string, href: string, selected: bool}
+     *     |array{type: 'group', heading: string, items: list<array{type: 'link', label: string, href: string, selected: bool}>}
+     * >
+     */
+    private function sourceCrumbOptions(string $sourceKey): array
+    {
+        $options = [];
+        // A heading collects the sources after it, so the switcher groups them
+        // the way the sources sidebar does.
+        $groupIndex = null;
+
+        foreach ($this->sources() as $source) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
+                $options[] = [
+                    'type' => 'group',
+                    'heading' => $source['heading'] ?? '',
+                    'items' => [],
+                ];
+                $groupIndex = array_key_last($options);
+
+                continue;
+            }
+
+            $key = $source['key'] ?? null;
+
+            if ($key === null) {
+                continue;
+            }
+
+            $url = $this->sourceUrl($source);
+
+            if ($url === null) {
+                continue;
+            }
+
+            $option = [
+                'type' => 'link',
+                'label' => $source['label'] ?? $key,
+                'href' => $url,
+                'selected' => $key === $sourceKey,
+            ];
+
+            if ($groupIndex !== null) {
+                $options[$groupIndex]['items'][] = $option;
+            } else {
+                $options[] = $option;
+            }
+        }
+
+        // A heading whose sources the user can't reach is left standing on its
+        // own, so drop it rather than show a heading over nothing.
+        return array_values(array_filter(
+            $options,
+            fn (array $option): bool => $option['type'] !== 'group' || count($option['items']) > 0,
+        ));
+    }
+
     /** @return array{0: ?string, 1: ?array<string, mixed>} */
     protected function sourceState(): array
     {
@@ -597,6 +783,7 @@ abstract class ContentIndexViewModel extends ViewModel
             elementType: $this->elementType,
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
+            baseCriteria: $this->baseCriteria(),
             criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
             // Collapsed subtrees are excluded by the query itself, so a
             // collapsed branch never reaches the client (and never counts
@@ -614,6 +801,22 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $this->query = $query;
+    }
+
+    /**
+     * Includes saved unpublished drafts alongside canonical elements, matching
+     * the baseline criteria used by the Craft 5 element index.
+     *
+     * @return array<string, mixed>
+     */
+    private function baseCriteria(): array
+    {
+        return [
+            'drafts' => $this->canHaveDrafts() ? null : false,
+            'draftOf' => false,
+            'savedDraftsOnly' => true,
+            ...($this->sourceState()[1]['criteria'] ?? []),
+        ];
     }
 
     /**
@@ -733,7 +936,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * when its column selection changes.
      *
      * @param  list<ElementInterface>  $elements
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     private function tableRows(array $elements): array
     {
@@ -862,7 +1065,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * Vue owns the selection process, so cards render non-selectable.
      *
      * @param  list<ElementInterface>  $elements
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     private function cardData(array $elements): array
     {
@@ -901,7 +1104,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * the `ElementThumbs` component); folders navigate via their own row data.
      *
      * @param  ElementInterface[]  $elements
-     * @return list<array<string, mixed>>
+     * @return list<ActionItem|array<string, mixed>>
      */
     private function thumbData(array $elements): array
     {

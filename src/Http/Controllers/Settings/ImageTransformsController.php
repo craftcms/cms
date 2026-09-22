@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -46,9 +47,9 @@ class ImageTransformsController extends BaseAssetSettingsController
     {
         return Inertia::render('settings/assets/transforms/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets/transforms')],
-                ['label' => t('Image Transforms')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets/transforms')),
+                new ActionItem()->label(t('Image Transforms')),
             ],
             'subnav' => $this->subnav(),
             'title' => t('Image Transforms'),

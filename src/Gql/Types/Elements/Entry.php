@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Gql\Types\Elements;
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
@@ -40,5 +41,13 @@ class Entry extends Element
             'revisionCreator' => $source->getIsRevision() ? $source->getRevisionCreator() : null,
             default => parent::resolve($source, $arguments, $context, $resolveInfo),
         };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return EntryResolver::class;
     }
 }

@@ -31,13 +31,15 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(t('Craft'), settingsFields: [
-            Field::make(t('Output Filesystem'), Combobox::make('filesystem')
+            Field::make(t('Output Disk'), Combobox::make('disk')
                 ->value(null)
                 ->options([
                     ['label' => t('Same as source'), 'value' => ''],
-                    ...SelectOptions::getFsOptions(),
+                    ...SelectOptions::getDiskOptions(),
                     ...SelectOptions::getEnvSuggestions(),
                 ])),
+            Field::make(t('Transforms have public URLs'), Lightswitch::make('hasUrls'))
+                ->instructions(t('Whether Craft should generate public URLs for transforms stored on a custom output disk.')),
             Field::make(t('Output Subpath'), Combobox::make('subpath')
                 ->value('')
                 ->options(SelectOptions::getEnvSuggestions(true))),

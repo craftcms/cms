@@ -21,7 +21,7 @@ beforeEach(function(): void {
         'root' => storage_path('framework/testing/fallback-transform-test'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:fallback-transform-test']);
+    $this->volume = Volume::factory()->create(['fs' => 'fallback-transform-test']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id]);
 });
 
