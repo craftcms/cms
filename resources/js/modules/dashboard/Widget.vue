@@ -139,6 +139,9 @@
     >
       <div v-if="settings" class="settings-face">
         <craft-card>
+          <h2 slot="label" class="text-sm">
+            {{ t('{type} Settings', {type: widget.name}) }}
+          </h2>
           <WidgetSettings
             :widget="widget"
             @saved="saved"
