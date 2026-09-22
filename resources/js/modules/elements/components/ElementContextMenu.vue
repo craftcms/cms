@@ -1,7 +1,11 @@
 <script setup lang="ts">
-  import {computed, h} from 'vue';
+  import {computed} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/types';
+  import type {
+    ActionItem,
+    ActionItemGroup,
+    ActionItemLink,
+  } from '@/common/types';
   import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
@@ -10,39 +14,39 @@
   }>();
 
   /**
-   * The action menu's item contract has no nested-group shape, so group
-   * headings ride in as `display` items — the documented escape hatch for
-   * arbitrary content — while drafts and revisions stay ordinary links.
+   * The server sends a flat list, with each heading followed by the links it
+   * heads, so those runs become groups and render their headings like any
+   * other menu's.
    */
-  const actions = computed<Array<ActionItem>>(() =>
-    props.items.map((item): ActionItem => {
+  const actions = computed<Array<ActionItem>>(() => {
+    const result: Array<ActionItem> = [];
+    let group: ActionItemGroup | null = null;
+
+    for (const item of props.items) {
       if (item.type === 'hr') {
-        return {type: 'hr'};
-      }
-
-      if (item.type === 'heading') {
-        return {
-          type: 'display',
-          is: () =>
-            h(
-              'h2',
-              {
-                class:
-                  'px-2 pt-2 pb-1 text-xs font-bold text-neutral-text-quiet',
-              },
-              item.label
-            ),
+        group = null;
+        result.push({type: 'hr'});
+      } else if (item.type === 'heading') {
+        group = {type: 'group', heading: item.label, items: []};
+        result.push(group);
+      } else {
+        const link: ActionItemLink = {
+          type: 'link',
+          href: item.href!,
+          label: item.label!,
+          variant: item.selected ? 'accent' : undefined,
         };
-      }
 
-      return {
-        type: 'link',
-        href: item.href!,
-        label: item.label!,
-        variant: item.selected ? 'accent' : undefined,
-      };
-    })
-  );
+        if (group) {
+          group.items.push(link);
+        } else {
+          result.push(link);
+        }
+      }
+    }
+
+    return result;
+  });
 </script>
 
 <template>

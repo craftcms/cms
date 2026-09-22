@@ -99,12 +99,17 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route" :source-href="sourceHref">
+  <ElementIndexPage
+    :route="route"
+    :source-href="sourceHref"
+    customizable-sources
+  >
     <template #navbar>
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>
-    <template #actions>
+    <template #toolbar-actions>
       <AssetUploadButton
+        variant="primary"
         v-bind="uploadSource"
         :destination="uploadDestination"
         :drop-zone="dropZone"

@@ -35,8 +35,8 @@
 </script>
 
 <template>
-  <div class="p-4">
-    <h2 class="mb-3">{{ t('Clear Caches') }}</h2>
+  <div>
+    <h2 class="text-lg mb-3">{{ t('Clear Caches') }}</h2>
 
     <Form
       method="post"
@@ -81,10 +81,10 @@
     </Form>
   </div>
 
-  <hr />
+  <hr class="my-lg" />
 
-  <div class="p-4">
-    <h2 class="mb-3">{{ t('Invalidate Data Caches') }}</h2>
+  <div class="py-4">
+    <h2 class="text-lg mb-3">{{ t('Invalidate Data Caches') }}</h2>
 
     <Form
       method="post"

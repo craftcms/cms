@@ -90,7 +90,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       :href="create().url"
       icon="plus"

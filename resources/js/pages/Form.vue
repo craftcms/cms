@@ -17,6 +17,7 @@
   } from '@/modules/forms/types';
   import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     form: FormPayload;
@@ -70,6 +71,7 @@
   useAppLayout({
     form: inertiaForm,
     defaultFormActions: props.defaultFormActions,
+    contentMaxWidth: true,
     onSave: save,
   });
 
@@ -109,7 +111,7 @@
 
 <template>
   <form @submit.prevent="save()">
-    <craft-pane appearance="raised">
+    <CpContainer>
       <craft-field-group class="py-4">
         <FormRenderer
           ref="renderer"
@@ -128,6 +130,6 @@
           </template>
         </FormRenderer>
       </craft-field-group>
-    </craft-pane>
+    </CpContainer>
   </form>
 </template>

@@ -1168,6 +1168,16 @@ describe('FormRenderer', () => {
     ).not.toBeNull();
   });
 
+  it('gives every field an id matching its path', async () => {
+    const fields = [...container.querySelectorAll<HTMLElement>('craft-field')];
+
+    expect(fields.length).toBeGreaterThan(0);
+    expect(fields.map((field) => field.id)).toContain(
+      'form-settings-placeholder'
+    );
+    expect(fields.every((field) => field.id.startsWith('form-'))).toBe(true);
+  });
+
   it('renders FieldLayout tabs and semantic content', async () => {
     app.unmount();
     await mount({
@@ -2483,16 +2493,20 @@ describe('FormRenderer', () => {
 
     // Removal goes through the chip's own action menu now, rather than the
     // legacy controller.
-    const chipFor = (id: number) =>
+    const menuItem = (id: number, label: string) =>
       required(
-        container.querySelector<HTMLElement & {actions: any[]}>(
-          `craft-chip[data-id="${id}"] [slot="suffix"] craft-action-menu`
-        ),
-        `Expected an action menu on chip ${id}.`
+        [
+          ...required(
+            container.querySelector<HTMLElement>(
+              `craft-chip[data-id="${id}"] [slot="suffix"] craft-action-menu`
+            ),
+            `Expected an action menu on chip ${id}.`
+          ).querySelectorAll<HTMLElement>('craft-action-item'),
+        ].find((item) => item.textContent?.trim() === label),
+        `Expected a ${label} item on chip ${id}.`
       );
-    chipFor(2)
-      .actions.find((action) => action.label === 'Remove')
-      .onClick();
+
+    menuItem(2, 'Remove').click();
     await nextTick();
 
     expect(renderer.currentValues()).toEqual({settings: {related: [1, 3]}});

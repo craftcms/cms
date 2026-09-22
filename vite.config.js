@@ -162,7 +162,7 @@ export default defineConfig(({mode}) => {
 
     server = url.hostname.includes('.ddev.site')
       ? {
-          host,
+          host: true,
           cors: url.toString(),
           hmr: {host},
           https: {

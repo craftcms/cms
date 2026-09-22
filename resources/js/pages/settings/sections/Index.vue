@@ -16,6 +16,7 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   export interface SectionModel {
     id: number;
@@ -129,7 +130,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       as="craft-button"
       variant="accent"
@@ -143,7 +144,7 @@
 
   <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
 
-  <craft-pane padding="0" appearance="raised">
+  <CpContainer>
     <AdminTable
       :title="title"
       :table="sectionTable"
@@ -153,9 +154,9 @@
       :total="pagination.total"
       :enable-adjust-page-size="true"
     >
-      <template #search-form>
+      <template #table-header>
         <SearchForm :action="index()" v-model="searchTerm" />
       </template>
     </AdminTable>
-  </craft-pane>
+  </CpContainer>
 </template>

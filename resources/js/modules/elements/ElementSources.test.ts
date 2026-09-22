@@ -2,6 +2,9 @@ import {computed, createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {Source} from '@/modules/elements/types/sources';
 
+/** `craft-nav-item`'s active state is bound as a DOM property, not an attribute. */
+type Selectable = Element & {active?: boolean};
+
 const router = vi.hoisted(() => ({
   get: vi.fn(),
   prefetch: vi.fn(),
@@ -69,6 +72,22 @@ function sourceLink(host: HTMLElement, label: string): HTMLElement {
   return item as HTMLElement;
 }
 
+function finishVisit(options: unknown, state: 'completed' | 'cancelled') {
+  const {onFinish} = options as {
+    onFinish: (visit: {
+      completed: boolean;
+      cancelled: boolean;
+      interrupted: boolean;
+    }) => void;
+  };
+
+  onFinish({
+    completed: state === 'completed',
+    cancelled: state === 'cancelled',
+    interrupted: false,
+  });
+}
+
 beforeEach(() => {
   document.body.innerHTML = '';
   router.get.mockClear();
@@ -102,6 +121,44 @@ describe('ElementSources', () => {
     expect(sourceLink(host, 'Pages').getAttribute('href')).toBe(
       '/admin/entries?source=section%3Apages&site=default&viewMode=cards'
     );
+    unmount();
+  });
+
+  it('keeps the clicked source active while completed navigation updates the page', async () => {
+    const {host, unmount} = await mount({
+      activeSource: 'section:news',
+      sourceHref: '/admin/entries',
+    });
+
+    sourceLink(host, 'Pages').dispatchEvent(
+      new MouseEvent('click', {bubbles: true, cancelable: true})
+    );
+    await nextTick();
+
+    finishVisit(router.get.mock.calls[0]![2], 'completed');
+    await nextTick();
+
+    expect((sourceLink(host, 'Pages') as Selectable).active).toBe(true);
+    expect((sourceLink(host, 'News') as Selectable).active).toBe(false);
+    unmount();
+  });
+
+  it('restores the current source when navigation is cancelled', async () => {
+    const {host, unmount} = await mount({
+      activeSource: 'section:news',
+      sourceHref: '/admin/entries',
+    });
+
+    sourceLink(host, 'Pages').dispatchEvent(
+      new MouseEvent('click', {bubbles: true, cancelable: true})
+    );
+    await nextTick();
+
+    finishVisit(router.get.mock.calls[0]![2], 'cancelled');
+    await nextTick();
+
+    expect((sourceLink(host, 'News') as Selectable).active).toBe(true);
+    expect((sourceLink(host, 'Pages') as Selectable).active).toBe(false);
     unmount();
   });
 

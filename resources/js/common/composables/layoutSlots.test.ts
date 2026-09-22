@@ -36,13 +36,14 @@ const Shell = defineComponent({
   props: {
     scope: {type: String, required: true},
     slot: {type: String, default: 'details'},
+    outletKey: {type: Number, default: 0},
   },
   setup(props, {slots}) {
     provideLayoutSlotRegistry(props.scope);
 
     return () =>
       h('div', {class: `shell shell--${props.scope}`}, [
-        h(LayoutSlotOutlet, {name: props.slot}, () =>
+        h(LayoutSlotOutlet, {name: props.slot, key: props.outletKey}, () =>
           h('span', {class: 'fallback'}, 'fallback')
         ),
         slots.default?.(),
@@ -251,6 +252,59 @@ describe('LayoutSlot and LayoutSlotOutlet', () => {
 
     expect(root.querySelector('.filled')).toBeNull();
     expect(root.querySelector('.fallback')).not.toBeNull();
+  });
+});
+
+describe('LayoutSlot and a replaced outlet', () => {
+  it('moves its content into the new target', async () => {
+    const Page = defineComponent({
+      props: {outletKey: {type: Number, default: 0}},
+      setup: (props) => () =>
+        h(Shell, {scope: 'page', outletKey: props.outletKey}, () =>
+          h(LayoutSlot, {name: 'details'}, () =>
+            h('span', {class: 'filled'}, 'from the page')
+          )
+        ),
+    });
+
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const app = createApp(Page);
+    const instance: any = app.mount(root);
+    mounted.push({unmount: () => app.unmount(), root});
+    await nextTick();
+
+    instance.$.props.outletKey = 1;
+    await nextTick();
+    await nextTick();
+
+    const outlet = root.querySelector('[data-layout-slot="details"]')!;
+
+    expect(outlet.querySelector('.filled')?.textContent).toBe('from the page');
+    expect(root.querySelectorAll('.filled')).toHaveLength(1);
+  });
+
+  it('mounts its content once on a first render', async () => {
+    let mounts = 0;
+    const Content = defineComponent({
+      setup() {
+        mounts++;
+
+        return () => h('span', {class: 'filled'});
+      },
+    });
+    const Page = defineComponent({
+      setup: () => () =>
+        h(Shell, {scope: 'page'}, () =>
+          h(LayoutSlot, {name: 'details'}, () => h(Content))
+        ),
+    });
+
+    mount(Page);
+    await nextTick();
+    await nextTick();
+
+    expect(mounts).toBe(1);
   });
 });
 

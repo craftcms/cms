@@ -4,6 +4,7 @@ import {
   reactive,
   type Component,
   type InjectionKey,
+  type Ref,
 } from 'vue';
 import {usePage} from '@inertiajs/vue3';
 import type {FormSaveOptions} from '@/common/types';
@@ -120,6 +121,35 @@ export const ScreenPagePropsKey: InjectionKey<() => ScreenPageProps> =
  */
 export const ScreenContentReadyKey: InjectionKey<() => void> =
   Symbol('screenContentReady');
+
+/**
+ * How wide the shell's content area is, in px — the content and details
+ * columns together. Only a full page provides it; a slideout panel is narrow
+ * enough that nothing should fold away on its account.
+ */
+export const ScreenContentWidthKey: InjectionKey<Readonly<Ref<number>>> =
+  Symbol('screenContentWidth');
+
+/** `null` outside a shell that measures. See {@link ScreenContentWidthKey}. */
+export function useScreenContentWidth(): Readonly<Ref<number>> | null {
+  return inject(ScreenContentWidthKey, null);
+}
+
+/**
+ * Whether the shell has lifted the details column out of its layout to overlay
+ * the content, which is the cue for the column to fold down to its tab rail.
+ *
+ * Each shell publishes its own threshold from its container query — a slideout
+ * and a full page have nothing like the same geometry — so the width stays in
+ * the stylesheet that owns the layout.
+ */
+export const ScreenDetailsOverlayKey: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('screenDetailsOverlay');
+
+/** `null` outside a shell that overlays. See {@link ScreenDetailsOverlayKey}. */
+export function useScreenDetailsOverlay(): Readonly<Ref<boolean>> | null {
+  return inject(ScreenDetailsOverlayKey, null);
+}
 
 /** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */
 export function useScreenContentReady(): () => void {

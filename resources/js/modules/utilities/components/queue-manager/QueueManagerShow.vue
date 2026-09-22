@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {type JobInfo} from '@/modules/queue/types';
   import VarDump from '@/common/components/VarDump.vue';
-  import Badge from '@/common/components/Badge.vue';
   import {computed} from 'vue';
 
   const props = defineProps<{
@@ -80,7 +79,7 @@
 </script>
 
 <template>
-  <div class="p-4">
+  <div>
     <h2 class="mb-3">{{ job.description }}</h2>
 
     <table class="table-fixed border-collapse w-full">
@@ -103,9 +102,9 @@
               }"
             >
               <template v-if="name == 'status'">
-                <Badge :variant="getStatusVariant(job.status.value)">
+                <craft-badge :fill="getStatusVariant(job.status.value)">
                   {{ job.status.label }}
-                </Badge>
+                </craft-badge>
               </template>
               <template v-else-if="name == 'progress'">
                 {{ job.progress }}%
