@@ -62,6 +62,7 @@
     defaultFormActions: () => ['saveAndContinueEditing'],
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
+    fillViewport: false,
   });
 
   const slots = defineSlots<ScreenSlots>();
@@ -199,7 +200,9 @@
     :has-sidebar="hasSidebar"
     :additional-skip-links="additionalSkipLinks"
   />
-  <div class="bg-header">
+  <div
+    :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+  >
     <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
     <div class="cp">
       <div class="cp__sidebar">
@@ -419,6 +422,28 @@ Main App shell
   main,
   .cp-main {
     height: 100%;
+  }
+
+  .page-screen {
+    background-color: var(--c-surface-header);
+  }
+
+  /* The top bar keeps its height and the shell takes the rest. */
+  .page-screen--fill-viewport {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--cp-debug-bar-height, 0px));
+
+    .cp {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .cp__main {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   /**

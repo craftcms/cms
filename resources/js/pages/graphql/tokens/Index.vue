@@ -10,6 +10,7 @@
   import {create, destroy, edit} from '@actions/Gql/TokensController';
   import Empty from '@/common/components/Empty.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   export interface TokenData {
     id: number;
@@ -99,7 +100,7 @@
       >{{ t('New token') }}</CpLink
     >
   </LayoutSlot>
-  <craft-pane padding="0" appearance="raised">
+  <CpContainer>
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No GraphQL tokens exist yet.')">
@@ -109,5 +110,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </CpContainer>
 </template>
