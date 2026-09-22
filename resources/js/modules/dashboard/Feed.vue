@@ -78,7 +78,7 @@
       <ol
         v-else-if="feed"
         :dir="feed.direction === 'rtl' ? 'rtl' : 'ltr'"
-        class="m-0 space-y-3"
+        class="grid gap-md"
       >
         <li v-for="item in items" :key="item.permalink">
           <a :href="item.permalink" target="_blank" rel="noopener">{{
@@ -95,3 +95,9 @@
     </div>
   </craft-card>
 </template>
+
+<style scoped>
+  a {
+    text-decoration: none;
+  }
+</style>

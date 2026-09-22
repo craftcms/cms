@@ -101,11 +101,7 @@
           @ready="emit('resize')"
         >
           <template #header>
-            <div
-              v-if="widget.title || widget.subtitle"
-              slot="label"
-              class="widget-heading"
-            >
+            <div v-if="widget.title || widget.subtitle" slot="label">
               <h2
                 v-if="widget.title"
                 :id="`widget-heading-${widget.id}`"
@@ -119,9 +115,10 @@
               v-if="widget.settingsForm"
               ref="settingsButton"
               slot="actions"
-              class="widget-settings-button"
               type="button"
               icon="gear"
+              size="small"
+              variant="plain"
               :aria-label="t('Widget settings')"
               :aria-describedby="
                 widget.title ? `widget-heading-${widget.id}` : undefined
@@ -142,6 +139,17 @@
           <h2 slot="label" class="text-sm">
             {{ t('{type} Settings', {type: widget.name}) }}
           </h2>
+          <craft-button
+            v-if="widget.settingsForm"
+            ref="settingsButton"
+            slot="actions"
+            type="button"
+            icon="x"
+            size="small"
+            variant="plain"
+            :aria-label="t('Cancel')"
+            @click="settings = false"
+          ></craft-button>
           <WidgetSettings
             :widget="widget"
             @saved="saved"
@@ -158,7 +166,6 @@
     position: relative;
     perspective: 1000px;
     height: auto !important;
-    --c-card-header-min-height: var(--c-size-control-md);
   }
 
   .dashboard-widget > .front,
