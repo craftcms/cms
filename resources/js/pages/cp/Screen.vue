@@ -80,11 +80,11 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="tabs" name="tabs">
+  <LayoutSlot v-if="tabs" name="content-tabs">
     <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="fragmentReady" />
   </LayoutSlot>
 
-  <LayoutSlot v-if="contentNotice" name="content-notice">
+  <LayoutSlot v-if="contentNotice" name="content-notices">
     <HtmlFragmentRenderer
       :fragment="fragment(contentNotice)"
       @ready="fragmentReady"
@@ -98,14 +98,14 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="toolbar" name="toolbar">
+  <LayoutSlot v-if="toolbar" name="content-toolbar-meta">
     <HtmlFragmentRenderer
       :fragment="fragment(toolbar)"
       @ready="fragmentReady"
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="details" name="details">
+  <LayoutSlot v-if="details" name="content-details">
     <HtmlFragmentRenderer
       :fragment="fragment(details)"
       @ready="fragmentReady"

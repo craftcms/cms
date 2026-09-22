@@ -244,7 +244,7 @@ class AssetsHelper
     {
         $sourceTree = Folders::getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
-        $sourcePrefixLength = strlen($previousParent->path);
+        $sourcePrefixLength = strlen((string) $previousParent->path);
         $folderIdChanges = [];
 
         foreach ($sourceTree as $sourceFolder) {

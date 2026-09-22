@@ -33,6 +33,7 @@ export interface CraftData {
   } | null;
   readOnly: boolean;
   maintenanceMode: boolean;
+  devMode: boolean;
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
@@ -46,6 +47,14 @@ export interface CraftData {
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
+  /**
+   * Badge counts by nav item id, kept apart from `nav` because they change
+   * without the tree's shape changing — `nav` is sent once and held, these
+   * come with every response.
+   */
+  navBadges: Record<string, number>;
+  /** The CP language's writing direction. */
+  orientation: 'ltr' | 'rtl';
   actionUrl: string;
   cpUrl: string;
   baseApiUrl: string;

@@ -38,6 +38,7 @@ class UserFieldsController extends BaseUserSettingsController
             ->title(t('User Settings'))
             ->crumbs($this->crumbs(t('User Profile Fields')))
             ->inertiaPage('settings/users/Fields', [
+                'subnav' => $this->subnav(),
                 'fieldLayoutDesigner' => [
                     'html' => $this->fieldLayoutDesigner->fieldHtml($fieldLayout, [
                         'disabled' => $this->readOnly,

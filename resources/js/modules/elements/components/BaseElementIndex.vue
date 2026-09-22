@@ -8,6 +8,7 @@
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import VarDump from '@/common/components/VarDump.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -220,13 +221,11 @@
 <style scoped lang="scss">
   .element-index {
     overflow-y: clip;
+    overflow-x: auto;
   }
 
-  .element-index__header,
-  .element-index__navbar,
-  .element-index__footer {
-    background-color: var(--c-color-neutral-fill-quiet);
-    padding: var(--c-spacing-md);
+  .element-index__header {
+    margin-block-end: var(--c-spacing-md);
   }
 
   .element-index__body {
@@ -240,6 +239,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: calc(50rem / 16);
+    min-height: var(--cp-footer-height);
+    background-color: var(--c-surface-default);
   }
 </style>

@@ -36,6 +36,22 @@ describe('craft-popover', () => {
     expect(content!.textContent).toContain('Popover content');
   });
 
+  it('stacks at the popover layer token', async () => {
+    document.documentElement.style.setProperty('--c-layer-popover', '4321');
+
+    try {
+      const {popover} = await createFixture();
+      expect(popover._overlayCtrl.config.zIndex).toBe(4321);
+    } finally {
+      document.documentElement.style.removeProperty('--c-layer-popover');
+    }
+  });
+
+  it("falls back to Lion's layer without the token", async () => {
+    const {popover} = await createFixture();
+    expect(popover._overlayCtrl.config.zIndex).toBe(9999);
+  });
+
   it('resolves the invoker from the for attribute', async () => {
     const {popover, button} = await createFixture();
     expect(popover._overlayInvokerNode).toBe(button);
@@ -71,6 +87,29 @@ describe('craft-popover', () => {
 
     expect(popover._overlayInvokerNode).toBe(button);
     expect(popover._overlayReferenceNode).toBe(reference);
+  });
+
+  it('marks the invoker as the thing that expands the overlay', async () => {
+    const {popover, button} = await createFixture();
+
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+
+    await popover.show();
+
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('leaves the invoker alone when the consumer owns the aria', async () => {
+    const {popover, button} = await createFixture((popover) => {
+      popover.setAttribute('for', 'popover-trigger');
+      popover.setAttribute('without-invoker-aria', '');
+    });
+
+    // The invoker may be a positioning anchor rather than the control, and a
+    // generic element can't carry `aria-expanded` at all.
+    await popover.show();
+
+    expect(button.hasAttribute('aria-expanded')).toBe(false);
   });
 
   it('tracks opened state through show() and hide()', async () => {

@@ -12,6 +12,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -549,6 +550,23 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
+    /**
+     * `users/{slug}` — the segment {@see UserIndexViewModel::defaultSourceKey()}
+     * maps back to a source key. Every user source publishes one, groups
+     * included.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        $slug = $source['data']['slug'] ?? null;
+
+        if (! is_string($slug) || $slug === '') {
+            return null;
+        }
+
+        return 'users/'.$slug;
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -871,7 +889,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'users';
     }
 
-    /** @return array<int, array<string, string>> */
+    /** @return list<ActionItem> */
     #[Override]
     protected function crumbs(): array
     {
@@ -880,10 +898,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         return [
-            [
-                'label' => t('Users'),
-                'href' => Url::cpUrl('users'),
-            ],
+            new ActionItem()->label(t('Users'))->href(Url::cpUrl('users')),
         ];
     }
 

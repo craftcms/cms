@@ -95,6 +95,15 @@ describe('input', function () {
             ->and($html)->toContain('class="text fullwidth form-control extra"');
     });
 
+    it('reflects aria-invalid on the host and the native input', function () {
+        $html = Input::make()
+            ->id('i')
+            ->inputAttributes(['aria-invalid' => 'true'])
+            ->toHtml();
+
+        expect(substr_count($html, 'aria-invalid="true"'))->toBe(2);
+    });
+
     it('renders a configured text expander for the native input', function () {
         $html = Input::make()
             ->id('path')

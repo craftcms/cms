@@ -133,7 +133,6 @@
     margin: 0;
   }
 
-  .activity-timeline__rail,
   .activity-timeline__composer {
     padding: var(--c-spacing-md);
   }

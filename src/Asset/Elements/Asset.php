@@ -36,6 +36,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
@@ -507,6 +508,25 @@ class Asset extends Element
     }
 
     /** @return list<SourceInfo> */
+    /**
+     * `assets/{volume handle}`, matching the folder URIs
+     * {@see VolumeFolder::getSourcePathInfo()} hands the index.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        // Only a volume's root folder carries a handle — a nested folder sets
+        // this to `false`, and is reached through the index rather than by a
+        // URL of its own.
+        $handle = $source['data']['volume-handle'] ?? null;
+
+        if (! is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        return 'assets/'.$handle;
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -1173,17 +1193,14 @@ class Asset extends Element
         return $tags;
     }
 
-    /** @return list<array{label?: string, href?: string, actions?: list<array{type: string, label: string, href: string, selected: bool}>}|null> */
+    /** @return list<ActionItem> */
     #[Override]
     protected function crumbs(): array
     {
         $volume = $this->getVolume();
 
         $crumbs = [
-            [
-                'label' => t('Assets'),
-                'href' => Url::cpUrl('assets'),
-            ],
+            new ActionItem()->label(t('Assets'))->href(Url::cpUrl('assets')),
         ];
 
         // Is the volume’s source enabled?
@@ -1205,25 +1222,16 @@ class Asset extends Element
             $current = $volumeOptions->first(fn (array $o) => $o['selected'])
                 ?? $volumeOptions->first();
 
-            if ($volumeOptions->count() > 1) {
-                // A crumb is shaped like a link action item, so the current
-                // option doubles as the crumb and the whole set as its menu.
-                $crumbs[] = [
-                    'label' => $current['label'],
-                    'href' => $current['href'],
-                    'actions' => $volumeOptions->all(),
-                ];
-            } else {
-                $crumbs[] = [
-                    'label' => $current['label'],
-                    'href' => $current['href'],
-                ];
-            }
+            // A crumb is an action item like the options are, so the current
+            // one doubles as the crumb and the whole set as its menu. One
+            // option is no choice at all, so it gets a plain crumb.
+            $crumbs[] = new ActionItem()
+                ->label($current['label'])
+                ->href($current['href'])
+                ->items($volumeOptions->count() > 1 ? $volumeOptions->all() : []);
         } else {
             // Just show its name w/o a link
-            $crumbs[] = [
-                'label' => $volume->getUiLabel(),
-            ];
+            $crumbs[] = new ActionItem()->label($volume->getUiLabel());
         }
 
         $uri = "assets/$volume->handle";
@@ -1368,8 +1376,7 @@ class Asset extends Element
                 'icon' => 'gear',
                 'behavior' => [
                     'type' => 'slideout',
-                    'action' => 'volumes/edit-volume',
-                    'params' => ['volumeId' => $this->volumeId],
+                    'url' => Url::cpUrl("settings/assets/volumes/$this->volumeId"),
                 ],
             ];
 

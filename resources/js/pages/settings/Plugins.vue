@@ -9,6 +9,7 @@
   import {useApiClient} from '@/common/composables/useFetch';
   import {computed, ref, watch} from 'vue';
   import PluginsController from '@actions/App/PluginsController';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -59,5 +60,7 @@
 </script>
 
 <template>
-  <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
+  <CpContainer>
+    <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
+  </CpContainer>
 </template>
