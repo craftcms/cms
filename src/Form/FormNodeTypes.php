@@ -21,7 +21,6 @@ use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\Tab;
 use CraftCms\Cms\Form\Nodes\Table;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
-use CraftCms\Cms\Form\Nodes\UsageCounter;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -50,6 +49,5 @@ class FormNodeTypes extends TypeRegistry
         Tab::class,
         Table::class,
         TemplateContent::class,
-        UsageCounter::class,
     ];
 }
