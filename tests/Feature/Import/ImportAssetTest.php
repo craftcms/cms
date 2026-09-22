@@ -32,14 +32,14 @@ beforeEach(function () {
     $this->volume = Volume::factory()->create([
         'name' => 'Imports',
         'handle' => 'imports',
-        'fs' => 'disk:import-test-disk',
+        'fs' => 'import-test-disk',
         'fieldLayoutId' => FieldLayout::factory()->create(['type' => Asset::class])->id,
     ]);
 
     $this->otherVolume = Volume::factory()->create([
         'name' => 'Other',
         'handle' => 'other',
-        'fs' => 'disk:import-test-disk',
+        'fs' => 'import-test-disk',
         'fieldLayoutId' => FieldLayout::factory()->create(['type' => Asset::class])->id,
     ]);
 

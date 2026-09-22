@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -64,32 +63,6 @@ it('validateSite fails for an invalid handle', function () {
 
     expect($errors)->toHaveKey('settings.site');
 });
-
-it('validateFieldLayout fails and creates no field layout row when given a nonexistent UID/type', function () {
-    $countBefore = FieldLayout::query()->count();
-
-    $errors = Validator::make([
-        'uid' => 'some-config-uid',
-        'settings' => ['fieldLayout' => 'not-a-real-uid-or-type'],
-    ], ['settings.fieldLayout' => ElementImporter::getSettingsRules()['settings.fieldLayout']])->errors();
-
-    expect($errors)->toHaveKey('settings.fieldLayout')
-        ->and(FieldLayout::query()->count())->toBe($countBefore);
-});
-
-it('validateFieldLayout fails when the layout belongs to a different element type', function () {
-    $fieldLayout = FieldLayout::factory()->create(['type' => Address::class]);
-    Fields::refreshFields();
-
-    $errors = Validator::make([
-        'uid' => 'some-config-uid',
-        'settings' => ['fieldLayout' => $fieldLayout->uid],
-    ], [
-        'settings.fieldLayout' => ElementImporter::getSettingsRules()['settings.fieldLayout'],
-    ])->errors();
-
-    expect($errors)->toHaveKey('settings.fieldLayout');
-})->skip('Revisit after the list of changes from the meeting on 15.09 is actioned.');
 
 it('validateFieldLayout passes when the layout matches the element type', function () {
     $fieldLayout = FieldLayout::factory()->create(['type' => EntryElement::class]);

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryTransformer;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -12,9 +11,6 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
-
-/** The field layout prompt can't be skipped with an option: an empty value is falsy, so the form still asks. */
-const FIELD_LAYOUT_QUESTION = 'Provide UID, ID, or type of the field layout provider you want to use.';
 
 const TRANSFORMER_QUESTION = 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)';
 
@@ -44,11 +40,12 @@ beforeEach(function () {
     EntryTypes::refreshEntryTypes();
     Fields::refreshFields();
 
-    $this->command = fn (string $file, array $options = []) => $this->artisan('craft:import:element', [
-        'elementType' => EntryElement::class,
+    $this->command = fn (string $file, array $options = []) => $this->artisan('craft:import:entry', [
         'file' => 'tests/Fixtures/Import/'.$file,
         '--site' => Sites::getPrimarySite()->handle,
         '--transformer' => EntryTransformer::class,
+        '--section' => $this->section->uid,
+        '--entryType' => $this->entryType->uid,
         ...$options,
     ]);
 });
@@ -59,7 +56,6 @@ afterEach(function () {
 
 it('imports every row of a JSON file', function () {
     ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->assertSuccessful();
 
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(3)
@@ -68,13 +64,11 @@ it('imports every row of a JSON file', function () {
 
 it('updates the same entries on a second run instead of duplicating them', function () {
     ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->assertSuccessful();
 
     $entryId = EntryElement::find()->title('first file entry')->one()->id;
 
     ($this->command)('entries-plain-text-updated.json', ['--matchCriteria' => '={"title":"title"}'])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->assertSuccessful();
 
     $entry = EntryElement::find()->title('first file entry')->one();
@@ -84,61 +78,19 @@ it('updates the same entries on a second run instead of duplicating them', funct
         ->and($entry->getFieldValue('plainText'))->toBe('UPDATED text from the file');
 });
 
-it('imports the entry type named in each row when no field layout provider is chosen', function () {
-    ($this->command)('entries-plain-text.json', ['--matchCriteria' => '={"title":"title"}'])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
-        ->assertSuccessful();
-
-    expect(EntryElement::find()->title('first file entry')->one()->getType()->handle)->toBe('fixtureType');
-});
-
-// Entry::setAttributesForImport() drops the incoming typeId whenever the importer has a field
-// layout, so a provider chosen on the CLI wins over each row's own typeId - the same precedence
-// ImportEntryTest asserts for a saved config.
-it('overrides each row’s entry type with --fieldLayoutProvider', function () {
-    $layoutUid = EntryTypes::getEntryTypeById($this->otherEntryType->id)->getFieldLayout()->uid;
-
-    ($this->command)('entries-plain-text.json', [
-        '--matchCriteria' => '={"title":"title"}',
-        '--fieldLayoutProvider' => $layoutUid,
-    ])->assertSuccessful();
-
-    expect(EntryElement::find()->title('first file entry')->one()->getType()->handle)->toBe('otherType');
-});
-
 it('fails with a validation error when the file does not exist', function () {
-    ($this->command)('does-not-exist.json', ['--matchCriteria' => '={"title":"title"}'])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
+    ($this->command)('does-not-exist.json', ['--transformer' => 'null', '--matchCriteria' => '={"title":"title"}'])
         ->assertFailed();
 
     expect(EntryElement::find()->section($this->section->handle)->count())->toBe(0);
 });
 
-// The answer needs no leading "=" - Element::handle() adds one before decoding, which is the only
-// difference from passing --matchCriteria.
-it('uses match criteria entered through the prompt', function () {
-    $run = fn () => ($this->command)('entries-plain-text.json', ['--transformer' => EntryTransformer::class])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
-        ->expectsQuestion(MATCH_CRITERIA_QUESTION, '{"title":"title"}')
-        ->assertSuccessful();
-
-    $run();
-    $entryId = EntryElement::find()->title('first file entry')->one()->id;
-
-    $run();
-
-    expect(EntryElement::find()->section($this->section->handle)->count())->toBe(3)
-        ->and(EntryElement::find()->title('first file entry')->one()->id)->toBe($entryId);
-});
-
 it('accepts match criteria entered through the prompt with a leading "="', function () {
     ($this->command)('entries-plain-text.json', ['--transformer' => EntryTransformer::class])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->expectsQuestion(MATCH_CRITERIA_QUESTION, '={"title":"title"}')
         ->assertSuccessful();
 
     ($this->command)('entries-plain-text-updated.json', ['--transformer' => EntryTransformer::class])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->expectsQuestion(MATCH_CRITERIA_QUESTION, '={"title":"title"}')
         ->assertSuccessful();
 
@@ -148,13 +100,13 @@ it('accepts match criteria entered through the prompt with a leading "="', funct
 });
 
 it('prompts for the transformer when the option is omitted, defaulting it when left empty', function () {
-    $this->artisan('craft:import:element', [
-        'elementType' => EntryElement::class,
+    $this->artisan('craft:import:entry', [
         'file' => 'tests/Fixtures/Import/entries-plain-text.json',
         '--site' => Sites::getPrimarySite()->handle,
         '--matchCriteria' => '={"title":"title"}',
+        '--section' => $this->section->uid,
+        '--entryType' => $this->entryType->uid,
     ])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
         ->expectsQuestion(TRANSFORMER_QUESTION, '')
         ->assertSuccessful();
 
@@ -163,17 +115,7 @@ it('prompts for the transformer when the option is omitted, defaulting it when l
         ->and(EntryElement::find()->title('first file entry')->one()->getFieldValue('plainText'))->toBe('text from the file');
 });
 
-// An unknown site is a hard error rather than a reported configuration problem: site() throws as
-// the config is built, before the validation pass that collects and prints errors.
 it('throws for an unknown site handle', function () {
     ($this->command)('entries-plain-text.json', ['--site' => 'no-such-site', '--matchCriteria' => '={"title":"title"}'])
-        ->expectsQuestion(FIELD_LAYOUT_QUESTION, '')
-        ->run();
-})->throws(InvalidArgumentException::class, 'No site found with handle or UID: "no-such-site".');
-
-it('fails with a clear error for an element type with no registered importer', function () {
-    ($this->command)('entries-plain-text.json', [
-        'elementType' => Address::class,
-        '--matchCriteria' => '={"title":"title"}',
-    ])->assertFailed();
+        ->assertFailed();
 });

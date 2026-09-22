@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
-use CraftCms\Cms\Import\Commands\Element;
-use CraftCms\Cms\Import\Commands\Model;
+use CraftCms\Cms\Asset\Commands\ImportAsset;
+use CraftCms\Cms\Entry\Commands\ImportEntry;
+use CraftCms\Cms\SystemMessage\Commands\ImportSystemMessage;
+use CraftCms\Cms\User\Commands\ImportUser;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -18,14 +20,17 @@ class ImportServiceProvider extends ServiceProvider
     }
 
     /**
-     * Registers the Element artisan command.
+     * Registers the import-related artisan command.
      */
     public function boot(): void
     {
         $this->commands([
-            Element::class,
-            Model::class,
+            ImportAsset::class,
+            ImportEntry::class,
+            ImportUser::class,
+            ImportSystemMessage::class,
         ]);
+
     }
 
     /**

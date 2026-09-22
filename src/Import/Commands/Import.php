@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\Imports;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
@@ -15,51 +14,41 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Validation\ValidationException;
-use Override;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-use function CraftCms\Cms\t;
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-class Element extends Command implements PromptsForMissingInput
+/**
+ * If you create a new element import command that extends this class,
+ * you should register it from your Plugin's boot() method via
+ * $this->commands() method and pass an array containing FQCN of the new command(s).
+ */
+abstract class Import extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
-    #[Override]
-    protected $signature = 'craft:import:element
-        {elementType : The fully qualified class name of the element type you want to import into.}
-        {file : `@root`-relative path to the file containing data you want to import.}
-        {--site= : The handle of the site you want to import into.}
-        {--fieldLayout= : The UID of the field layout you want to use.}
-        {--transformer= : The fully qualified class name of the transformer you want to use to manipulate the data on import.}
-        {--matchCriteria= : An array of key-value pairs that will be used to match existing elements when importing.}
-    ';
+    protected function configure(): void
+    {
+        $this->addArgument('file', InputArgument::REQUIRED, '`@root`-relative path to the file containing the data you want to import.')
+            ->addOption('site', null, InputOption::VALUE_OPTIONAL, 'The handle of the site you want to import into.')
+            ->addOption('transformer', null, InputOption::VALUE_OPTIONAL, 'The fully qualified class name of the transformer you want to use to manipulate the data on import.')
+            ->addOption('matchCriteria', null, InputOption::VALUE_OPTIONAL, 'An array of key-value pairs that will be used to match existing elements when importing.');
+    }
 
-    #[Override]
-    protected $description = 'Imports data into specified Craft CMS element type';
-
-    #[Override]
-    protected $aliases = ['import/element'];
+    /**
+     * The importer class that will be used to import the data.
+     */
+    abstract public static function importerClass(): string;
 
     /**
      * Builds an interactive prompt form for missing CLI options, normalizes match criteria, constructs an ElementImporter config from options/prompt answers, and dispatches the import.
      */
     public function handle(): int
     {
-        $elementType = $this->argument('elementType');
-        $importerClass = Import::getElementImporterTypeFor($elementType);
-
-        if ($importerClass === null) {
-            $this->fail("No importer is registered for element type \"$elementType\".");
-        }
-
-        //        // TODO (iwona): change this to per-element options?
-        //        $fieldLayoutProviderOptions = ImportHelper::flattenLabelValueArray(
-        //            $importerClass::availableFieldLayoutProviders()
-        //        );
-        //        $fieldLayoutProviderOptions = array_merge(['' => t('None - specified in the data file')], $fieldLayoutProviderOptions);
-        $responses = form()
+        $options = form()
             ->addIf(! $this->option('site') && Sites::isMultiSite(), fn ($form) => select(
                 label: 'Which site you want to import into?',
                 options: Sites::getAllSites()
@@ -67,7 +56,6 @@ class Element extends Command implements PromptsForMissingInput
                     ->all(),
                 default: Sites::getPrimarySite()->handle,
             ), 'site')
-            // todo (iwona): maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
             ->addIf(! $this->option('transformer'), fn () => text(
                 label: 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)',
                 validate: [
@@ -79,8 +67,12 @@ class Element extends Command implements PromptsForMissingInput
                 validate: [
                     'string',
                 ]
-            ), 'matchCriteria')
-            ->submit();
+            ), 'matchCriteria');
+
+        foreach ($this->getAdditionalOptions() as $handle => $params) {
+            $options->addIf(! $this->option($handle) && ($params['condition'] ?? true), $params['prompt'], $handle);
+        }
+        $responses = $options->submit();
 
         $matchCriteria = null;
         if ($this->option('matchCriteria')) {
@@ -100,7 +92,7 @@ class Element extends Command implements PromptsForMissingInput
 
         // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $config = [
-            'type' => $importerClass,
+            'type' => static::importerClass(),
             'file' => $this->argument('file'),
             'transformer' => $this->option('transformer') ?: $responses['transformer'] ?: null,
             'settings' => $settings,
@@ -119,10 +111,8 @@ class Element extends Command implements PromptsForMissingInput
         $this->components->info('Importing data into:');
 
         $list = [
-            "Element Type: `{$importConfig::targetClass()}`",
+            "Import Type: `{$importConfig::targetClass()}`",
             "File: `$importConfig->file`",
-            "Site: `{$importConfig->site->name}`",
-            'Field Layout: '.($importConfig->fieldLayout ? "`$importConfig->fieldLayout`" : 'NULL'),
             'Transformer: '.($importConfig->transformer ? "`{$importConfig->transformerAsString()}`" : 'NULL'),
             'Match Criteria: '.($importConfig->matchCriteria ? json_encode($importConfig->matchCriteria) : 'NULL'),
         ];
@@ -132,12 +122,12 @@ class Element extends Command implements PromptsForMissingInput
             // $importConfig->validateSettings();
             $filePath = $importConfig::resolvedFilePath($importConfig->file);
             $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importConfig);
-            $allData = Import::getFormattedData($filePath);
+            $allData = ImportFacade::getFormattedData($filePath);
             $count = count($allData);
 
             foreach ($allData as $i => $item) {
                 $this->components->info('Importing item ('.($i + 1)."/{$count}) ...");
-                Import::importItem($importConfig, $item, $matchCriteria);
+                ImportFacade::importItem($importConfig, $item, $matchCriteria);
             }
         } catch (ValidationException $e) {
             foreach ($e->errors() as $attribute => $messages) {
@@ -149,6 +139,33 @@ class Element extends Command implements PromptsForMissingInput
         $this->components->info('Done');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     *
+     * @return array<string, string>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
+            'file' => fn () => text(
+                label: 'The `@root`-relative path to the file containing the data you want to import',
+                required: true,
+                validate: [
+                    'string',
+                ]
+            ),
+        ];
+    }
+
+    /**
+     * Returns an array of additional options that concrete classes should prompt for if missing.
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
     }
 
     /**
@@ -165,36 +182,5 @@ class Element extends Command implements PromptsForMissingInput
         } catch (\InvalidArgumentException) {
             return null;
         }
-    }
-
-    /**
-     * Prompt for missing input arguments using the returned questions.
-     *
-     * @return array<string, string>
-     */
-    protected function promptForMissingArgumentsUsing(): array
-    {
-        return [
-            'elementType' => fn () => select(
-                label: 'Provide class name of the element type you want to import into, e.g. CraftCms\Cms\Entry\Elements\Entry',
-                options: ImportHelper::flattenLabelValueArray(
-                    collect(Import::getAllImporterTypes())
-                        ->filter(fn ($type) => is_subclass_of($type, ElementImporter::class))
-                        ->map(fn ($type) => [
-                            'label' => $type::displayName(),
-                            'value' => $type::targetClass(),
-                        ])
-                        ->all()
-                ),
-            ),
-            // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
-            'file' => fn () => text(
-                label: 'The `@root`-relative path to the file containing the data you want to import',
-                required: true,
-                validate: [
-                    'string',
-                ]
-            ),
-        ];
     }
 }

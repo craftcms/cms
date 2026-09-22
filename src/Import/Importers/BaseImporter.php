@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
+use http\Exception\InvalidArgumentException;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\ValidationException;
@@ -72,7 +73,7 @@ abstract class BaseImporter
     {
         if (! empty($config)) {
             $this->uid = $config['uid'] ?? null;
-            $this->file($config['file'] ?? null);
+            $this->file($config['file']);
             $this->transformer($config['transformer'] ?? null);
             $this->batchSize($config['batchSize'] ?? null);
 
@@ -138,10 +139,14 @@ abstract class BaseImporter
     /**
      * Sets the path to the file that contains the data to be imported.
      *
-     * @param  string|null  $file  The file name or path to set.
+     * @param  string  $file  The file name or path to set.
      */
-    public function file(?string $file): self
+    public function file(string $file): self
     {
+        if (! static::isFileValid($file)) {
+            throw new InvalidArgumentException('Provided file either doesn’t exist or is not allowed for import.');
+        }
+
         $this->file = $file;
 
         return $this;
