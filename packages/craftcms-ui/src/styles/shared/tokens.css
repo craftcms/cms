@@ -19,12 +19,18 @@
   --c-focus-outline-style: solid;
 
   /* Surface tokens (replaces --c-bg-*) */
-  --c-surface-default: var(--color-base-100);
+  --c-surface-default: var(--color-base-50);
   --c-surface-raised: var(--color-base-50);
-  --c-surface-sunken: var(--color-slate-200);
+  --c-surface-sunken: var(--color-base-100);
   --c-surface-form: var(--color-base-100);
   --c-surface-overlay: var(--color-base-50);
   --c-surface-shade: rgba(0 0 0 / 25%);
+
+  /*
+  Needs to remain statically dark between dark and light mode
+  but our static values currently stick to a light mode vibe
+   */
+  --c-surface-header: var(--color-static-slate-900);
 
   /* Text tokens (replaces --c-fg-*) */
   --c-text-white: var(--color-white);
@@ -218,6 +224,24 @@
   --c-pane-radius: var(--c-radius-md);
   --c-pane-shadow:
     0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
+
+  /* Layers (z-index), lowest to highest.
+     Only for things that stack against other parts of the page; a component
+     lifting one of its own parts over another can keep a small local value.
+     Slideouts, HUDs and legacy modals share the overlay layer and are ordered
+     by their place in <body>. Native modal <dialog>s sit in the browser's top
+     layer and need none of these. */
+  --c-layer-raised: 1;
+  --c-layer-sticky: 10;
+  --c-layer-sidebar: 10;
+  --c-layer-shade: 99;
+  --c-layer-overlay: 100;
+  --c-layer-notification: 101;
+  --c-layer-drag: 1000;
+  --c-layer-popover: 9999;
+  --c-layer-dialog-shade: calc(var(--c-layer-dialog) - 1);
+  --c-layer-dialog: 10002;
+  --c-layer-debug: 2147483000;
 
   /* Callouts */
   --c-callout-radius: var(--c-pane-radius);

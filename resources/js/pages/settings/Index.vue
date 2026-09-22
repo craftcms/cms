@@ -3,6 +3,8 @@
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';
   import CpLink from '@/common/components/CpLink.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
 
   interface SettingItem {
     icon?: string;
@@ -16,10 +18,12 @@
     readOnly: boolean;
     settings: Record<string, Record<string, SettingItem>>;
   }>();
+
+  useAppLayout({contentMaxWidth: true});
 </script>
 
 <template>
-  <div class="py-3">
+  <CpContainer class="py-lg">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -64,7 +68,7 @@
         </nav>
       </div>
     </div>
-  </div>
+  </CpContainer>
 </template>
 
 <style scoped lang="scss">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -69,8 +70,8 @@ class EntryTypesController
 
         return Inertia::render('settings/entry-types/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Entry Types')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Entry Types')),
             ],
             'title' => t('Entry Types'),
             'searchTerm' => $request->search(),

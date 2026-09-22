@@ -1,6 +1,11 @@
 <script setup lang="ts">
   import useCraftData from '@/common/composables/useCraftData';
-  import CpLink from '@/common/components/CpLink.vue';
+  import ActionList from '@/common/components/ActionList.vue';
+  import {navItemActions} from '@/common/composables/navActions';
+  import {
+    withNavBadges,
+    withNavSelection,
+  } from '@/common/composables/navSelection';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
 
@@ -12,53 +17,42 @@
       hasWaitingJobs: boolean;
     };
   }>();
-  const {nav} = useCraftData();
 
-  // Renders the nav as a rail: labels drop to tooltips, and subnavs move into
-  // a flyout on hover or focus, since there's no room to indent them.
-  const {iconOnly = false} = defineProps<{iconOnly?: boolean}>();
+  const {nav: sharedNav, navBadges} = useCraftData();
+
+  // The tree arrives once and then stays put, so neither the trail nor the
+  // badge counts are in it — both are decided per page, here.
+  // Server shape in, descriptors out: the trail and the badges are decided
+  // against the nav's own fields, then the whole tree becomes the same
+  // descriptors a menu would draw.
+  const nav = computed(() =>
+    navItemActions(
+      withNavBadges(
+        withNavSelection(sharedNav.value, page.url),
+        navBadges.value
+      )
+    )
+  );
+
+  // `ActionList` draws the levels. Under `trail` the branch you're in expands
+  // in place and everything else opens in a flyout on hover; `inline` makes
+  // every branch expandable instead, for a floating sidebar, where a flyout
+  // would open off the edge of a screen the drawer already covers.
+  const {iconOnly = false, mode = 'trail'} = defineProps<{
+    iconOnly?: boolean;
+    mode?: 'trail' | 'flyout' | 'inline';
+  }>();
   const queue = computed(() => page.props.queue);
 </script>
 
 <template>
   <craft-nav-list>
-    <CpLink
-      v-for="item in nav"
-      :key="item.url"
+    <ActionList
+      :actions="nav"
       as="craft-nav-item"
-      :icon="item.icon || undefined"
-      :icon-only="iconOnly || undefined"
-      :href="item.url"
-      :active.prop="item.selected"
-      :indicator.prop="!!item.badgeCount"
-      :external.prop="item.external"
-      :inertia="!item.external"
-    >
-      {{ item.label }}
-
-      <template v-if="item.subnav">
-        <craft-nav-list slot="subnav">
-          <CpLink
-            v-for="subnavItem in item.subnav"
-            :key="subnavItem.url"
-            as="craft-nav-item"
-            :active.prop="subnavItem.selected"
-            :href="subnavItem.url"
-            :indicator.prop="!!subnavItem.badgeCount"
-            :external.prop="subnavItem.external"
-            :inertia="!subnavItem.external"
-          >
-            <craft-icon
-              :name="subnavItem.icon"
-              v-if="subnavItem.icon"
-              slot="icon"
-            ></craft-icon>
-            <span v-else class="nav-indicator" slot="icon"></span>
-            {{ subnavItem.label }}
-          </CpLink>
-        </craft-nav-list>
-      </template>
-    </CpLink>
+      :icon-only="iconOnly"
+      :mode="mode"
+    />
     <cp-queue-indicator
       :displayed-job.prop="queue.displayedJob"
       :has-reserved-jobs.prop="queue.hasReservedJobs"
@@ -66,18 +60,3 @@
     ></cp-queue-indicator>
   </craft-nav-list>
 </template>
-
-<style scoped lang="scss">
-  .nav-indicator {
-    --nav-item-indicator-size: calc(4rem / 16);
-    display: inline-flex;
-    width: var(--nav-item-indicator-size);
-    border-radius: var(--c-radius-full);
-    aspect-ratio: 1;
-    background-color: currentcolor;
-  }
-
-  .nav-indicator[active] {
-    --nav-item-indicator-size: calc(6rem / 16);
-  }
-</style>

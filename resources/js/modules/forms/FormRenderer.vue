@@ -516,6 +516,7 @@
 </script>
 
 <template>
+  <!-- Form Renderer -->
   <span ref="root" hidden></span>
   <p v-if="renderError" role="alert">{{ renderError }}</p>
   <template v-else>

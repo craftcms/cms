@@ -24,6 +24,16 @@
   --color-surface-overlay: var(--c-surface-overlay);
   --color-surface-form: var(--c-surface-form);
 
+  /* ——— Surface backgrounds ———
+     The background-color namespace only feeds bg-*, so these give bg-default,
+     bg-raised, … without a text-default. */
+  --background-color-default: var(--c-surface-default);
+  --background-color-raised: var(--c-surface-raised);
+  --background-color-sunken: var(--c-surface-sunken);
+  --background-color-overlay: var(--c-surface-overlay);
+  --background-color-form: var(--c-surface-form);
+  --background-color-header: var(--c-surface-header);
+
   /* ——— Text ——— */
   --color-text-default: var(--c-text-default);
   --color-text-quiet: var(--c-text-quiet);
@@ -110,6 +120,68 @@
   --color-border-default: var(--c-color-neutral-border-normal);
   --color-border-strong: var(--c-color-neutral-border-loud);
   --color-border-form: var(--c-form-control-border-color);
+
+  /* ——— Border colors that follow the surrounding data-color ———
+     The border-color namespace only feeds border-* and divide-*, so these
+     give border-quiet, border-b-quiet, … without a bg-quiet or text-quiet. */
+  --border-color-quiet: var(
+    --c-color-border-quiet,
+    var(--c-color-neutral-border-quiet)
+  );
+  --border-color-normal: var(
+    --c-color-border-normal,
+    var(--c-color-neutral-border-normal)
+  );
+  --border-color-loud: var(
+    --c-color-border-loud,
+    var(--c-color-neutral-border-loud)
+  );
+
+  /* ——— Spacing ———
+     The named --c-spacing-* steps, for p-sm, mx-md, gap-lg, space-y-xs, …
+     Per-utility namespaces rather than --spacing-*: w-*, max-w-* and min-w-*
+     read --spacing-* before --container-*, so --spacing-sm would turn
+     max-w-sm into 4px. */
+  --padding-xs: var(--c-spacing-xs);
+  --padding-sm: var(--c-spacing-sm);
+  --padding-md: var(--c-spacing-md);
+  --padding-lg: var(--c-spacing-lg);
+  --padding-xl: var(--c-spacing-xl);
+  --padding-2xl: var(--c-spacing-2xl);
+
+  --margin-xs: var(--c-spacing-xs);
+  --margin-sm: var(--c-spacing-sm);
+  --margin-md: var(--c-spacing-md);
+  --margin-lg: var(--c-spacing-lg);
+  --margin-xl: var(--c-spacing-xl);
+  --margin-2xl: var(--c-spacing-2xl);
+
+  --gap-xs: var(--c-spacing-xs);
+  --gap-sm: var(--c-spacing-sm);
+  --gap-md: var(--c-spacing-md);
+  --gap-lg: var(--c-spacing-lg);
+  --gap-xl: var(--c-spacing-xl);
+  --gap-2xl: var(--c-spacing-2xl);
+
+  --space-xs: var(--c-spacing-xs);
+  --space-sm: var(--c-spacing-sm);
+  --space-md: var(--c-spacing-md);
+  --space-lg: var(--c-spacing-lg);
+  --space-xl: var(--c-spacing-xl);
+  --space-2xl: var(--c-spacing-2xl);
+
+  /* ——— Layers ——— */
+  --z-index-raised: var(--c-layer-raised);
+  --z-index-sticky: var(--c-layer-sticky);
+  --z-index-sidebar: var(--c-layer-sidebar);
+  --z-index-shade: var(--c-layer-shade);
+  --z-index-overlay: var(--c-layer-overlay);
+  --z-index-notification: var(--c-layer-notification);
+  --z-index-drag: var(--c-layer-drag);
+  --z-index-popover: var(--c-layer-popover);
+  --z-index-dialog-shade: var(--c-layer-dialog-shade);
+  --z-index-dialog: var(--c-layer-dialog);
+  --z-index-debug: var(--c-layer-debug);
 
   /* ——— Fill utilities ——— */
   --color-fill-quiet: var(

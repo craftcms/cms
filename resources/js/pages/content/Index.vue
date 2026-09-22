@@ -36,8 +36,12 @@
 </script>
 
 <template>
-  <ElementIndexPage :route="route" :source-href="sourceHref">
-    <template #actions="{elementIndex}">
+  <ElementIndexPage
+    :route="route"
+    :source-href="sourceHref"
+    customizable-sources
+  >
+    <template #toolbar-actions="{elementIndex}">
       <NewEntryButton
         :sources="elementIndex.sources"
         :source="elementIndex.source ?? undefined"

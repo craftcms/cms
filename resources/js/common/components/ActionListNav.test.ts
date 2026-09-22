@@ -1,0 +1,324 @@
+import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
+import {createApp, effectScope, nextTick} from 'vue';
+
+import ActionList from './ActionList.vue';
+import {navItemActions} from '@/common/composables/navActions';
+import {useNavItemAction} from '@/common/composables/useNavItemActions';
+import {navFixture, node, selectFixtureItem} from './nav.fixture';
+
+let container: HTMLElement;
+let app: ReturnType<typeof createApp> | null = null;
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.append(container);
+});
+
+// Mounted into the document rather than a detached node, so the custom
+// elements upgrade — which means it has to be taken back out again.
+afterEach(() => {
+  app?.unmount();
+  app = null;
+  container.remove();
+});
+
+function mount(props: Record<string, unknown> = {}) {
+  const {items = navFixture, ...rest} = props as {
+    items?: typeof navFixture;
+  };
+
+  app = createApp(ActionList, {
+    actions: navItemActions(items),
+    as: 'craft-nav-item',
+    ...rest,
+  });
+  app.mount(container);
+
+  return nextTick();
+}
+
+/** The nav item whose own label is `label`, ignoring its descendants' text. */
+function item(label: string): Element | undefined {
+  return Array.from(container.querySelectorAll('craft-nav-item')).find(
+    (el) =>
+      Array.from(el.childNodes)
+        .filter((node) => node.nodeType === Node.TEXT_NODE)
+        .map((node) => node.textContent?.trim())
+        .join('') === label
+  );
+}
+
+const display = (label: string) => item(label)?.getAttribute('subnav-display');
+
+it('renders every level of the tree, not just the two the nav had', async () => {
+  await mount();
+
+  // Content > Entries > Channels (a group) > Blog.
+  expect(item('Content')).toBeTruthy();
+  expect(item('Entries')).toBeTruthy();
+  expect(item('Channels')).toBeTruthy();
+  expect(item('Blog')).toBeTruthy();
+});
+
+it('expands the trail to the selection and flyouts everything else', async () => {
+  // The fixture selects `Blog`, so the trail is Content > Entries > Channels.
+  await mount();
+
+  expect(display('Content')).toBe('inline');
+  expect(display('Entries')).toBe('inline');
+  expect(item('Content')?.getAttribute('initial-state')).toBe('open');
+  expect(item('Entries')?.getAttribute('initial-state')).toBe('open');
+
+  // Off the trail, at the root and one level down.
+  expect(display('Administration')).toBe('flyout');
+  expect(display('Settings')).toBe('flyout');
+  expect(display('Assets')).toBe('flyout');
+});
+
+it('moves the expansion when the selection moves', async () => {
+  await mount({items: selectFixtureItem('Utilities')});
+
+  // `Utilities` sits under `Administration`, so that branch opens up...
+  expect(display('Administration')).toBe('inline');
+  // ...and the one that was expanded closes back into a flyout.
+  expect(display('Content')).toBe('flyout');
+  expect(display('Entries')).toBe('flyout');
+});
+
+it('never flyouts a group, wherever the group itself landed', async () => {
+  // Off the trail entirely, so `Channels` is inside a flyout here — and a
+  // flyout within a flyout is not a thing. It renders inline inside it.
+  await mount({items: selectFixtureItem('Utilities')});
+
+  const channels = item('Channels');
+
+  expect(channels?.hasAttribute('group')).toBe(true);
+  expect(channels?.getAttribute('subnav-display')).toBe('inline');
+});
+
+it('forces one mode or the other when asked', async () => {
+  await mount({mode: 'flyout'});
+  // On the trail, but `flyout` overrides that.
+  expect(display('Entries')).toBe('flyout');
+
+  app?.unmount();
+  container.replaceChildren();
+
+  await mount({mode: 'inline'});
+  // Off the trail, but `inline` overrides that.
+  expect(display('Settings')).toBe('inline');
+});
+
+it('leaves an icon-less item without a prefix at all', async () => {
+  await mount({
+    items: [
+      node('Branch', {
+        href: '/branch',
+        icon: 'gear',
+        subnav: [
+          node('Iconned child', {href: '/branch/1', icon: 'wrench'}),
+          node('Bare child', {href: '/branch/2'}),
+          node('Heading', {group: true, subnav: [node('Leaf', {href: '/x'})]}),
+        ],
+      }),
+    ],
+  });
+
+  // `:scope >` because a branch's subnav is nested inside it — a descendant's
+  // prefix would otherwise answer for its parent.
+  const prefix = (label: string) =>
+    item(label)?.querySelector(':scope > [slot="icon"]');
+
+  // A bullet used to stand in for the missing icon so labels lined up under
+  // the icon-bearing rows. They line up on the row's own inset instead now,
+  // which leaves nothing to stand in for.
+  expect(prefix('Bare child')).toBeNull();
+  expect(prefix('Heading')).toBeNull();
+  expect(prefix('Leaf')).toBeNull();
+  expect(item('Iconned child')?.getAttribute('icon')).toBe('wrench');
+});
+
+it("uses a plugin's own icon, which it ships rather than names", async () => {
+  const iconSvg = '<svg viewBox="0 0 16 16"><path d="M0 0h16v16H0z"/></svg>';
+
+  await mount({
+    items: [
+      node('Branch', {
+        href: '/branch',
+        icon: 'gear',
+        subnav: [node('Test Plugin', {href: '/branch/plugin', iconSvg})],
+      }),
+    ],
+  });
+
+  const plugin = item('Test Plugin')!;
+
+  // Through `craft-icon`, so it's sized and coloured like every named icon
+  // beside it rather than at whatever size the plugin drew it.
+  const icon = plugin.querySelector(':scope > craft-icon[slot="icon"]');
+  expect(icon?.querySelector('svg')).not.toBeNull();
+});
+
+it('flyouts every branch in a rail, the one you’re in included', async () => {
+  await mount({
+    iconOnly: true,
+    items: [
+      node('Entries', {
+        href: '/admin/content/entries',
+        icon: 'newspaper',
+        selected: true,
+        subnav: [node('Singles', {href: '/admin/content/entries/singles'})],
+      }),
+      node('Assets', {
+        href: '/admin/assets',
+        icon: 'image',
+        subnav: [node('Uploads', {href: '/admin/assets/uploads'})],
+      }),
+    ],
+  });
+
+  expect(display('Entries')).toBe('flyout');
+  expect(display('Assets')).toBe('flyout');
+
+  expect(item('Singles')?.hasAttribute('icon-only')).toBe(false);
+  expect(item('Uploads')?.hasAttribute('icon-only')).toBe(false);
+});
+
+it('makes every branch expandable when floating, but not expanded', async () => {
+  await mount({mode: 'inline'});
+
+  // A floating sidebar overlays the page, so there's nowhere for a flyout to
+  // go — every branch indents in place instead.
+  expect(display('Content')).toBe('inline');
+  expect(display('Administration')).toBe('inline');
+  expect(display('Settings')).toBe('inline');
+
+  // Expandable, not expanded: only the branch you're in starts open, or the
+  // drawer would open as the whole tree at once.
+  expect(item('Content')?.getAttribute('initial-state')).toBe('open');
+  expect(item('Entries')?.getAttribute('initial-state')).toBe('open');
+  expect(item('Administration')?.getAttribute('initial-state')).toBe('closed');
+  expect(item('Settings')?.getAttribute('initial-state')).toBe('closed');
+});
+
+it('collapses a heading in a rail to a separator', async () => {
+  await mount({
+    iconOnly: true,
+    items: [
+      node('Channels', {
+        group: true,
+        subnav: [node('Posts', {href: '/admin/content/entries/posts'})],
+      }),
+    ],
+  });
+
+  // A rail has room for neither the heading's label nor its row, so it becomes
+  // the rule between the runs it separates.
+  const channels = item('Channels');
+  expect(channels?.hasAttribute('icon-only')).toBe(true);
+  expect(
+    channels?.shadowRoot?.querySelector('hr.rail-separator')
+  ).not.toBeNull();
+  expect(item('Posts')?.hasAttribute('icon-only')).toBe(true);
+});
+
+it('renders a destination-less branch as a static item', async () => {
+  await mount();
+
+  // `Administration` groups Users/GraphQL/Utilities but isn't a page.
+  const administration = item('Administration');
+
+  expect(administration).toBeTruthy();
+  expect(administration?.getAttribute('href')).toBeNull();
+  expect(item('Users')?.getAttribute('href')).toBe('/admin/users');
+});
+
+describe('lent actions', () => {
+  const tree = () => [
+    node('Entries', {
+      href: '/admin/content/entries',
+      icon: 'newspaper',
+      selected: true,
+      subnav: [
+        node('All Entries', {href: '/admin/content/entries'}),
+        node('Blog', {href: '/admin/content/entries/blog'}),
+      ],
+    }),
+    node('Assets', {
+      href: '/admin/assets',
+      icon: 'image',
+      subnav: [node('Uploads', {href: '/admin/assets/uploads'})],
+    }),
+  ];
+
+  const lent = (label: string) =>
+    item(label)?.querySelector(':scope > [slot="actions"]');
+
+  let scope: ReturnType<typeof effectScope>;
+
+  beforeEach(() => {
+    scope = effectScope();
+    scope.run(() =>
+      useNavItemAction(() => '/admin/content/entries/blog', {
+        label: 'Customize sources',
+        icon: 'gear',
+        onClick: () => {},
+      })
+    );
+  });
+
+  // The registry is global; an action left lent would turn up in other tests.
+  afterEach(() => scope.stop());
+
+  it('draws an action a page lends beside the branch it belongs to', async () => {
+    await mount({items: tree()});
+
+    expect(lent('Entries')?.getAttribute('aria-label')).toBe(
+      'Customize sources'
+    );
+    // Shares the branch's href, but it's a leaf — the gear belongs by the
+    // chevron, and a leaf hasn't got one.
+    expect(lent('All Entries')).toBeNull();
+    // A branch the page isn't inside.
+    expect(lent('Assets')).toBeNull();
+  });
+
+  it('takes it away again when the page goes', async () => {
+    await mount({items: tree()});
+    expect(lent('Entries')).not.toBeNull();
+
+    scope.stop();
+    await nextTick();
+
+    expect(lent('Entries')).toBeNull();
+  });
+});
+
+it('tells the page you are on apart from the parents on the way to it', async () => {
+  await mount({
+    items: [
+      node('Entries', {
+        href: '/admin/content/entries',
+        icon: 'newspaper',
+        selected: true,
+        subnav: [
+          node('All Entries', {href: '/admin/content/entries'}),
+          node('Blog', {href: '/admin/content/entries/blog', selected: true}),
+        ],
+      }),
+    ],
+  });
+
+  type Selectable = Element & {active?: boolean; current?: boolean};
+  const entries = item('Entries') as Selectable | undefined;
+  const blog = item('Blog') as Selectable | undefined;
+  const all = item('All Entries') as Selectable | undefined;
+
+  // Selection marks the whole trail, so both are active — but only the end of
+  // the trail is the page, which is what lets the two be styled apart.
+  expect(entries?.active).toBe(true);
+  expect(entries?.current).toBe(false);
+  expect(blog?.active).toBe(true);
+  expect(blog?.current).toBe(true);
+  expect(all?.current).toBe(false);
+});

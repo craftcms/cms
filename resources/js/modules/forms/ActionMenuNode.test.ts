@@ -64,16 +64,24 @@ describe('ActionMenuNode', () => {
     expect(el.getAttribute('data-form-node')).toBe(
       'field-actions:fields.body:menu'
     );
-    // `actions` is `@property({attribute: false})` — a JS property, not an
-    // attribute, so assert on the property.
-    expect((el as never as {actions: unknown[]}).actions).toEqual([
-      {
-        type: 'button',
-        label: 'Field settings',
-        icon: 'gear',
-        action: {type: 'event', name: 'craft:edit-field', detail: {fieldId: 1}},
-      },
-    ]);
+    // The menu is rendered by Vue into the element's `content` slot rather
+    // than built by the element from a descriptor array, so assert on what a
+    // reader would actually get.
+    // `icon`/`action` are non-reflecting Lit properties, so they're set as
+    // properties rather than attributes once the element is defined.
+    const item = el.querySelector('craft-action-item')! as HTMLElement & {
+      icon?: string;
+      action?: unknown;
+    };
+
+    expect(el.querySelectorAll('craft-action-item')).toHaveLength(1);
+    expect(item.textContent?.trim()).toBe('Field settings');
+    expect(item.icon).toBe('gear');
+    expect(item.action).toEqual({
+      type: 'event',
+      name: 'craft:edit-field',
+      detail: {fieldId: 1},
+    });
     expect(el.getAttribute('scope')).toBeNull();
     expect(el.getAttribute('refreshable')).toBeNull();
   });
@@ -88,7 +96,7 @@ describe('ActionMenuNode', () => {
     const el = mount(ActionMenuNode, node).querySelector('craft-action-menu')!;
     await nextTick();
 
-    expect((el as never as {actions: unknown[]}).actions).toEqual([]);
+    expect(el.querySelectorAll('craft-action-item')).toHaveLength(0);
   });
 });
 

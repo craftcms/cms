@@ -104,8 +104,8 @@ export default class CraftActionMenu extends CraftPopover {
    */
   @property({attribute: false}) actions?: ActionMenuActions;
 
-  /** Accessible label for the generated default invoker. */
-  @property() label: string = t('Actions');
+  /** Accessible label for the generated default invoker, and for the menu. */
+  @property() override label: string = t('Actions');
 
   /** Icon name for the generated default invoker. */
   @property() icon: string = 'ellipsis';
@@ -157,23 +157,57 @@ export default class CraftActionMenu extends CraftPopover {
    */
   private _swallowNextEscUp = false;
 
+  /**
+   * Closes the menu when one of its items is clicked.
+   *
+   * Bound to each item rather than delegated to the container: an item's click
+   * doesn't reach the container, so a delegated listener never fires.
+   *
+   * One shared handler, so re-registering is a no-op — which is what lets
+   * {@link _addEventListeners} be re-run whenever the content changes without
+   * stacking duplicates that would fire `change` more than once.
+   */
+  private readonly _onItemClick = (event: Event): void => {
+    const item = event.currentTarget as CraftActionItem;
+
+    this.opened = false;
+
+    // In data-driven mode the 'change' event is dispatched from _renderItem
+    // (which has access to the descriptor). For slot-based mode this is the
+    // only click handler, so dispatch it here.
+    if (this.actions === undefined) {
+      this._dispatchChange(item);
+    }
+  };
+
+  /**
+   * Watches the slotted content for items arriving or leaving.
+   *
+   * `slotchange` only fires when the slot's *assigned* nodes change, and a
+   * framework rendering the list reactively adds items inside the node that's
+   * already assigned — so nothing would tell us to bind them.
+   */
+  private _contentObserver?: MutationObserver;
+
   private _addEventListeners() {
     const content = this.contentNodes[0];
     if (!content) return;
 
     content
       .querySelectorAll<CraftActionItem>('craft-action-item')
-      .forEach((item) => {
-        item.addEventListener('click', () => {
-          this.opened = false;
-          // In data-driven mode the 'change' event is dispatched from
-          // _renderItem (which has access to the descriptor). For slot-based
-          // mode this is the only click handler, so dispatch it here.
-          if (this.actions === undefined) {
-            this._dispatchChange(item);
-          }
-        });
-      });
+      .forEach((item) => item.addEventListener('click', this._onItemClick));
+
+    this._observeContent(content);
+  }
+
+  private _observeContent(content: HTMLElement): void {
+    this._contentObserver?.disconnect();
+    this._contentObserver = new MutationObserver(() => {
+      content
+        .querySelectorAll<CraftActionItem>('craft-action-item')
+        .forEach((item) => item.addEventListener('click', this._onItemClick));
+    });
+    this._contentObserver.observe(content, {childList: true, subtree: true});
   }
 
   private _dispatchChange(
@@ -246,6 +280,8 @@ export default class CraftActionMenu extends CraftPopover {
   }
 
   override _teardownOverlayCtrl() {
+    this._contentObserver?.disconnect();
+    this._contentObserver = undefined;
     this._overlayCtrl?.removeEventListener('show', this._onOverlayShow);
     super._teardownOverlayCtrl();
   }
@@ -486,11 +522,11 @@ export default class CraftActionMenu extends CraftPopover {
         // Presentational: it labels the items visually but must never take
         // focus or be matched by the item selector.
         heading.setAttribute('role', 'presentation');
+        // Styled like a nav heading.
         Object.assign(heading.style, {
           padding: 'var(--c-spacing-xs) var(--c-spacing-md)',
-          color: 'var(--c-text-subtle)',
-          fontSize: 'var(--c-text-xs)',
-          fontWeight: '600',
+          fontSize: 'var(--c-text-sm)',
+          fontWeight: 'bold',
         });
         fragment.appendChild(heading);
       }
@@ -985,6 +1021,12 @@ export default class CraftActionMenu extends CraftPopover {
    */
   private _onContentSlotChange = (): void => {
     this._syncSearchInput();
+
+    // In slot-based mode the consumer owns the items and may add or remove
+    // them at any point — a framework rendering the list reactively does.
+    // Binding only at overlay setup would cover whichever items existed then,
+    // and later arrivals would stay open on click.
+    this._addEventListeners();
   };
 
   /**
