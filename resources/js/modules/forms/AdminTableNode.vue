@@ -140,6 +140,8 @@
       createUrl: string | null;
       createMenuItems: Array<{label: string; url: string}> | null;
       reorderUrl: string | null;
+      reorderSuccessMessage: string | null;
+      reorderFailMessage: string | null;
       deleteUrl: string | null;
       deleteConfirmMessage: string | null;
       bulkDeletable: boolean;
@@ -359,7 +361,8 @@
   );
 
   function onReorder(startIndex: number, finishIndex: number): void {
-    const reordered = [...rows.value];
+    const previous = rows.value;
+    const reordered = [...previous];
     const [moved] = reordered.splice(startIndex, 1);
 
     if (!moved) {
@@ -375,7 +378,21 @@
       .post(props.node.props.reorderUrl!, {
         ids: JSON.stringify(reordered.map((row) => row.id)),
       })
-      .then(() => refreshForm());
+      .then(() => {
+        Craft.cp?.displayNotice?.(
+          props.node.props.reorderSuccessMessage ?? t('Order updated.')
+        );
+        refreshForm();
+      })
+      .catch(() => {
+        // The optimistic reorder above never actually took server-side — put the rows
+        // back the way they were rather than leaving the UI showing an order that
+        // silently failed to save.
+        rows.value = previous;
+        Craft.cp?.displayError?.(
+          props.node.props.reorderFailMessage ?? t('Couldn’t reorder.')
+        );
+      });
   }
 
   async function deleteRow(row: TableRow): Promise<void> {

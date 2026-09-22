@@ -43,6 +43,10 @@ class Table implements Node
 
     private ?string $reorderUrl = null;
 
+    private ?string $reorderSuccessMessage = null;
+
+    private ?string $reorderFailMessage = null;
+
     private ?string $deleteUrl = null;
 
     private ?string $deleteConfirmMessage = null;
@@ -161,10 +165,16 @@ class Table implements Node
         return $this;
     }
 
-    /** Enables drag-to-reorder; the new order posts to `$url` as `{ids: list<int|string>}`. */
-    public function reorderable(string $url): static
+    /**
+     * Enables drag-to-reorder; the new order posts to `$url` as `{ids: list<int|string>}`.
+     * `$successMessage`/`$failMessage` are shown as a toast after the request settles — omit
+     * either (or both) to fall back to a generic message client-side.
+     */
+    public function reorderable(string $url, ?string $successMessage = null, ?string $failMessage = null): static
     {
         $this->reorderUrl = $url;
+        $this->reorderSuccessMessage = $successMessage;
+        $this->reorderFailMessage = $failMessage;
 
         return $this;
     }
@@ -344,6 +354,8 @@ class Table implements Node
             'createUrl' => $this->createUrl,
             'createMenuItems' => $this->createMenuItems,
             'reorderUrl' => $this->reorderUrl,
+            'reorderSuccessMessage' => $this->reorderSuccessMessage,
+            'reorderFailMessage' => $this->reorderFailMessage,
             'deleteUrl' => $this->deleteUrl,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
             'bulkDeletable' => $this->bulkDeletable,
