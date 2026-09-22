@@ -35,11 +35,6 @@
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
 
-  // CONFLICT-REVIEW: this branch's `toggleAndRestoreFocus` (focus the nav body
-  // on collapse, the relocated toggle on expand) was dropped in favour of 6.x's
-  // version, because 6.x removed the header/footer toggle buttons it targeted.
-  // The collapse control no longer moves, so keeping focus on it resolves the
-  // dropped-focus bug. Please confirm this is acceptable for ACC-261.
   // The item re-renders as a different element when the nav collapses, which
   // would otherwise drop focus to the page.
   async function toggleCollapsed() {

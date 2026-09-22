@@ -88,10 +88,6 @@ async function mountSidebar(
   return container;
 }
 
-// CONFLICT-REVIEW: 6.x replaced the header/footer toggle buttons with a single
-// collapse item in the footer, which keeps focus on itself when it re-renders
-// (see `toggleCollapsed`). These two tests were rewritten for that markup
-// during the merge and could not be run locally.
 it('keeps focus on the collapse item when the docked sidebar expands', async () => {
   const container = await mountSidebar('docked', 'hidden');
   const collapseItem = () =>
