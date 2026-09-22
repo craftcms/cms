@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
@@ -19,7 +21,9 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Workflow\Activity\WorkflowActivityEvent;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\DB;
@@ -362,7 +366,7 @@ it('deletes query-backed nested elements that primarily belong to the owner', fu
         ->not->toBeNull();
 });
 
-it('invalidates a review when a primary nested element is deleted', function () {
+it('re-evaluates a review when a primary nested element is deleted', function () {
     ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = nestedElementsControllerCreateMatrixOwnerFixture();
     $workflow = Workflow::query()->create([
         'name' => 'Editorial workflow',
@@ -388,5 +392,12 @@ it('invalidates a review when a primary nested element is deleted', function () 
         'elementId' => $nestedEntry->id,
     ])->assertOk();
 
-    expect($run->fresh()->status)->toBe(WorkflowStatus::Invalidated);
+    $stageApprovals = ActivityEvent::query()
+        ->subject(ActivitySubject::fromElement($owner))
+        ->eventTypes(WorkflowActivityEvent::class)
+        ->get()
+        ->filter(fn (ActivityEvent $event): bool => $event->data['type'] === WorkflowTransition::StageApproved->value);
+
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Approved)
+        ->and($stageApprovals)->toHaveCount(2);
 });
