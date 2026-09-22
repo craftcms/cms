@@ -38,6 +38,27 @@ test.describe('Sections - Page', () => {
       await expect(fields[i]).toBeEditable();
     }
   });
+
+  test('Restores the full-width index after saving a section', async ({
+    page,
+    baseURL,
+  }) => {
+    const content = page.locator('.cp-content-view');
+
+    await expect(content).not.toHaveClass(/cp-content-view--constrained/);
+
+    await page
+      .locator('.cp-content-view a[href*="/settings/sections/"]')
+      .first()
+      .click();
+    await expect(content).toHaveClass(/cp-content-view--constrained/);
+
+    await page.getByRole('button', {name: 'Save', exact: true}).click({
+      force: true,
+    });
+    await expect(page).toHaveURL(new URL('./settings/sections', baseURL).href);
+    await expect(content).not.toHaveClass(/cp-content-view--constrained/);
+  });
 });
 
 test.describe('Sections - New', () => {

@@ -298,7 +298,7 @@
                         </slot>
 
                         <slot name="content-header">
-                          <div id="cp-content-header" class="pt-xl pb-md">
+                          <div id="cp-content-header" class="pt-lg pb-md">
                             <CpContainer>
                               <div class="flex items-center justify-between">
                                 <LayoutSlotOutlet name="title">
@@ -404,8 +404,8 @@ Main App shell
   .cp {
     display: grid;
     background-color: var(--c-surface-sunken);
-    border-start-start-radius: calc(var(--c-spacing-md) + var(--c-radius-md));
-    border-start-end-radius: calc(var(--c-spacing-md) + var(--c-radius-md));
+    border-start-start-radius: var(--c-radius-xl);
+    border-start-end-radius: var(--c-radius-xl);
     overflow: clip;
 
     @media (width >= var(--breakpoint-lg)) {
