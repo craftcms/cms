@@ -43,15 +43,8 @@
 
 <template>
   <form @submit.prevent="emit('submit')" class="w-full">
-    <div class="flex flex-wrap gap-2 items-start">
-      <div
-        v-if="$slots['search-prefix']"
-        class="flex min-w-0 max-w-full items-center overflow-x-auto py-1"
-      >
-        <slot name="search-prefix"></slot>
-      </div>
-
-      <div v-if="statusOptions?.length">
+    <div class="element-toolbar">
+      <div v-if="statusOptions?.length" class="element-toolbar__status">
         <CraftSelectRich
           v-model="status"
           :options="statusOptions"
@@ -71,7 +64,7 @@
         </CraftSelectRich>
       </div>
 
-      <div ref="filterAnchor" class="relative flex-1 min-w-48">
+      <div ref="filterAnchor" class="element-toolbar__filter">
         <CraftInput
           name="search"
           :label="t('Search term')"
@@ -116,36 +109,79 @@
         <slot name="search-options"></slot>
       </div>
 
-      <craft-button-group
-        name="viewState[mode]"
-        .value="mode"
-        @change="(event: CustomEvent) => (mode = event.detail.value)"
-      >
-        <template v-for="viewMode in viewModes" :key="viewMode.mode">
-          <craft-button
-            type="button"
-            :variant="Appearance.Fill"
-            :icon="viewMode.icon"
-            :aria-label="viewMode.title"
-            :value="viewMode.mode"
-          ></craft-button>
-        </template>
-      </craft-button-group>
+      <div class="element-toolbar__state">
+        <div class="flex gap-sm justify-end">
+          <craft-button-group
+            name="viewState[mode]"
+            .value="mode"
+            @change="(event: CustomEvent) => (mode = event.detail.value)"
+          >
+            <template v-for="viewMode in viewModes" :key="viewMode.mode">
+              <craft-button
+                type="button"
+                :variant="Appearance.Fill"
+                :icon="viewMode.icon"
+                :aria-label="viewMode.title"
+                :value="viewMode.mode"
+              ></craft-button>
+            </template>
+          </craft-button-group>
 
-      <IndexViewSettings
-        :options="columnOptions"
-        :sort-options="sortOptions"
-        v-model:sort-field="sortField"
-        v-model:sort-direction="sortDirection"
-        v-model:table-columns="tableColumns"
-        @reorder="(options) => emit('reorder', options)"
-      />
+          <IndexViewSettings
+            :options="columnOptions"
+            :sort-options="sortOptions"
+            v-model:sort-field="sortField"
+            v-model:sort-direction="sortDirection"
+            v-model:table-columns="tableColumns"
+            @reorder="(options) => emit('reorder', options)"
+          />
+        </div>
+      </div>
 
-      <div>
-        <craft-button type="submit" :loading="processing">{{
-          t('Update')
-        }}</craft-button>
+      <!-- The index's own actions: the entries index puts its New Entry button
+        here. Search still submits on Enter — the field is the form's only text
+        input, so the browser submits it implicitly. -->
+      <div class="element-toolbar__actions">
+        <slot name="actions"></slot>
       </div>
     </div>
   </form>
 </template>
+
+<style scoped lang="postcss">
+  .element-toolbar {
+    display: grid;
+    gap: var(--c-spacing-md) 0;
+    justify-content: space-between;
+    grid-template-columns: repeat(3, auto);
+    grid-template-areas: 'status state state' 'filter filter filter' 'actions actions actions';
+
+    @media screen and (min-width: 480px) {
+      gap: var(--c-spacing-md);
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'status filter state' 'actions actions actions';
+    }
+
+    @media (width >= var(--breakpoint-sm)) {
+      gap: var(--c-spacing-md);
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-areas: 'status filter state actions';
+    }
+  }
+
+  .element-toolbar__status {
+    grid-area: status;
+  }
+
+  .element-toolbar__state {
+    grid-area: state;
+  }
+
+  .element-toolbar__actions {
+    grid-area: actions;
+  }
+
+  .element-toolbar__filter {
+    grid-area: filter;
+  }
+</style>

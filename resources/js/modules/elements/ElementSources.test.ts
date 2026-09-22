@@ -2,6 +2,9 @@ import {computed, createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {Source} from '@/modules/elements/types/sources';
 
+/** `craft-nav-item`'s active state is bound as a DOM property, not an attribute. */
+type Selectable = Element & {active?: boolean};
+
 const router = vi.hoisted(() => ({
   get: vi.fn(),
   prefetch: vi.fn(),
@@ -135,8 +138,8 @@ describe('ElementSources', () => {
     finishVisit(router.get.mock.calls[0]![2], 'completed');
     await nextTick();
 
-    expect(sourceLink(host, 'Pages').getAttribute('active')).toBe('true');
-    expect(sourceLink(host, 'News').getAttribute('active')).toBe('false');
+    expect((sourceLink(host, 'Pages') as Selectable).active).toBe(true);
+    expect((sourceLink(host, 'News') as Selectable).active).toBe(false);
     unmount();
   });
 
@@ -154,8 +157,8 @@ describe('ElementSources', () => {
     finishVisit(router.get.mock.calls[0]![2], 'cancelled');
     await nextTick();
 
-    expect(sourceLink(host, 'News').getAttribute('active')).toBe('true');
-    expect(sourceLink(host, 'Pages').getAttribute('active')).toBe('false');
+    expect((sourceLink(host, 'News') as Selectable).active).toBe(true);
+    expect((sourceLink(host, 'Pages') as Selectable).active).toBe(false);
     unmount();
   });
 

@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -67,7 +68,31 @@ it('renders with a default source', function () {
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets", ['defaultSource' => $volume->handle])->assertOk();
+    get("/{$cpTrigger}/assets?defaultSource={$volume->handle}")->assertOk();
+});
+
+it('sends the bare index to the first source it lists', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?search=cat")
+        ->assertRedirectContains("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertRedirectContains('search=cat');
+});
+
+it('leaves an index that names its source where it is', function () {
+    Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?source=temp")->assertOk();
 });
 
 it('preloads existing thumbnail indexes for the displayed assets', function (int $sourceWidth, int $sourceHeight, array $transforms) {
@@ -418,3 +443,42 @@ class CustomThumbnailIndexAsset extends AssetElement
         return 'https://example.test/subclass-thumbnail.jpg';
     }
 }
+
+it('gives the index a header trail like every other index has', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'testvolume',
+        'name' => 'Test Volume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    // The folder chain in the pane is the trail *within* a volume. These are
+    // the trail *to* it, which the header had none of.
+    get("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->count() === 2
+                && $crumbs->first()['label'] === 'Assets'
+                && str_ends_with((string) $crumbs->first()['href'], '/assets')
+                && $crumbs->last()['label'] === 'Test Volume'
+                // Linked by the URL the nav and the rest of the CP use, not a
+                // `?source=` query naming the same thing.
+                && str_ends_with((string) $crumbs->last()['href'], "/assets/{$volume->handle}")
+            )
+            ->etc()
+        );
+});
+
+it('leaves the bare index a single crumb', function () {
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->isNotEmpty()
+                && $crumbs->first()['label'] === 'Assets'
+            )
+            ->etc()
+        );
+});

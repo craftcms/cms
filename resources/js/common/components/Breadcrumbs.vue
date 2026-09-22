@@ -1,26 +1,19 @@
 <script lang="ts">
-  import type {ActionItems} from '@/common/types';
-
-  export interface BreadcrumbItem {
-    href?: string | null;
-    label?: string | null;
-    /** Server-rendered crumb content, e.g. an element chip. */
-    html?: string | null;
-    icon?: string;
-    /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
-    attrs?: Record<string, string>;
-    /** Optional per-crumb action menu (e.g. the current folder's actions). */
-    actions?: ActionItems;
-  }
+  // Defined in `@/common/types` so plain modules can build crumbs too — a
+  // `.ts` file can't import a type out of an SFC. Re-exported here because
+  // this is where callers have always reached for it.
+  export type {BreadcrumbItem} from '@/common/types';
 </script>
 
 <script setup lang="ts">
+  import {computed} from 'vue';
+  import type {BreadcrumbItem} from '@/common/types';
   import CpLink from '@/common/components/CpLink.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {t} from '@craftcms/ui';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       items: Array<BreadcrumbItem>;
       separator?: string;
@@ -29,12 +22,21 @@
       separator: '/',
     }
   );
+
+  /**
+   * Crumbs arrive from anywhere — core controllers, elements, plugins — and
+   * the older shape spelled the link `url`. Resolving it here keeps a producer
+   * written against that working.
+   */
+  const crumbs = computed(() =>
+    props.items.map((item) => ({...item, href: item.href ?? item.url ?? null}))
+  );
 </script>
 
 <template>
   <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
     <craft-breadcrumb-item
-      v-for="(item, idx) in items"
+      v-for="(item, idx) in crumbs"
       :key="idx"
       v-bind="item.attrs"
     >
@@ -51,10 +53,10 @@
         {{ item.label }}
       </template>
       <ActionMenu
-        v-if="item.actions?.length"
+        v-if="item.items?.length"
         slot="suffix"
         icon="chevron-down"
-        :actions="item.actions"
+        :actions="item.items"
         :label="t('Actions')"
       />
     </craft-breadcrumb-item>

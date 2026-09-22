@@ -14,6 +14,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type ExistingImageTransform = Omit<
     CraftCms.Cms.Image.Data.ImageTransform,
@@ -102,7 +103,7 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot name="content-actions">
     <CpLink
       appearance="button"
       :href="create().url"
@@ -112,7 +113,7 @@
     >
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="@container">
+  <CpContainer class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">
@@ -126,5 +127,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </CpContainer>
 </template>

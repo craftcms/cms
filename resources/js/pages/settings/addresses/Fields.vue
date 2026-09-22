@@ -5,6 +5,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store} from '@actions/Settings/AddressSettingsController';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   defineProps<{
     title: string;
@@ -45,10 +46,10 @@
     :default-form-actions="[]"
     @save="save"
   >
-    <craft-pane appearance="raised">
+    <CpContainer>
       <div ref="fldHost">
         <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
       </div>
-    </craft-pane>
+    </CpContainer>
   </AppLayout>
 </template>

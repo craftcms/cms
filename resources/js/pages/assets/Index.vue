@@ -122,6 +122,7 @@
     :filter-params="{
       includeSubfolders: page.props.includeSubfolders ? 1 : undefined,
     }"
+    customizable-sources
   >
     <template #search-options>
       <craft-checkbox
@@ -136,8 +137,9 @@
     <template #navbar>
       <Breadcrumbs :items="breadcrumbs" />
     </template>
-    <template #actions>
+    <template #toolbar-actions>
       <AssetUploadButton
+        variant="primary"
         v-bind="uploadSource"
         :destination="uploadDestination"
         :drop-zone="dropZone"

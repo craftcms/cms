@@ -31,34 +31,32 @@
 </script>
 
 <template>
-  <div class="p-4">
-    <form
-      :action="dbBackupController().url"
-      ref="formRef"
-      @submit.prevent="handleSubmit"
-      id="db-backup"
-      method="post"
-    >
-      <input
-        v-if="csrfTokenName && csrfTokenValue"
-        type="hidden"
-        :name="csrfTokenName"
-        :value="csrfTokenValue"
-      />
-      <CraftCheckbox
-        :label="t('Download backup')"
-        name="downloadBackup"
-        v-model="form.downloadBackup"
-        value="on"
-      />
+  <form
+    :action="dbBackupController().url"
+    ref="formRef"
+    @submit.prevent="handleSubmit"
+    id="db-backup"
+    method="post"
+  >
+    <input
+      v-if="csrfTokenName && csrfTokenValue"
+      type="hidden"
+      :name="csrfTokenName"
+      :value="csrfTokenValue"
+    />
+    <CraftCheckbox
+      :label="t('Download backup')"
+      name="downloadBackup"
+      v-model="form.downloadBackup"
+      value="on"
+    />
 
-      <div class="mt-4">
-        <craft-button type="submit" variant="accent" :loading="form.processing">
-          {{ t('Backup') }}
-        </craft-button>
-      </div>
-    </form>
-  </div>
+    <div class="mt-4">
+      <craft-button type="submit" variant="accent" :loading="form.processing">
+        {{ t('Backup') }}
+      </craft-button>
+    </div>
+  </form>
 </template>
 
 <style scoped lang="scss"></style>

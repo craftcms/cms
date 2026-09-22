@@ -5,6 +5,7 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store} from '@actions/Settings/Users/UserFieldsController';
   import AppLayout from '@/common/layouts/AppLayout.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   defineProps<{
     fieldLayoutDesigner: {html: string};
@@ -39,10 +40,10 @@
 
 <template>
   <AppLayout :form="form" :default-form-actions="[]" @save="save">
-    <craft-pane appearance="raised">
+    <CpContainer>
       <div ref="fldHost">
         <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
       </div>
-    </craft-pane>
+    </CpContainer>
   </AppLayout>
 </template>

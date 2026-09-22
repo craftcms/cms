@@ -1,8 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
-  import ElementSources from '@/modules/elements/ElementSources.vue';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
@@ -16,6 +14,8 @@
   import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
+  import {useNavItemAction} from '@/common/composables/useNavItemActions';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -28,6 +28,12 @@
     itemBehavior?: ElementIndexItemBehavior;
     /** Additional type-specific params included with filter submissions. */
     filterParams?: IndexQueryParams;
+    /**
+     * Offers Customize Sources from the nav item this index lives under. Opt-in
+     * rather than automatic, since not every index that uses this page should
+     * offer it.
+     */
+    customizableSources?: boolean;
   }>();
 
   const page = useElementIndexPage({
@@ -57,40 +63,25 @@
   } = page;
 
   const customizeSourcesActive = ref(false);
+
+  // The sources are edited from the nav now rather than from a sidebar on the
+  // page, so the page lends the nav the gear that opens the editor.
+  if (props.customizableSources) {
+    useNavItemAction(() => props.route.url(), {
+      label: t('Customize sources'),
+      icon: 'gear',
+      onClick: () => (customizeSourcesActive.value = true),
+    });
+  }
 </script>
 
 <template>
-  <LayoutSlot name="actions">
+  <LayoutSlot v-if="$slots.actions" name="content-actions">
     <!-- Type-specific page actions (e.g. a New Entry or Upload button). -->
     <slot name="actions" :element-index="elementIndex" />
   </LayoutSlot>
 
-  <LayoutSlot name="sidebar">
-    <nav :aria-label="t('Secondary')">
-      <ElementSources
-        :sources="elementIndex.sources"
-        :route="route"
-        :source-href="sourceHref"
-        :active-source="elementIndex.source?.key"
-        :view-mode="viewState.mode !== 'table' ? viewState.mode : null"
-      />
-    </nav>
-
-    <slot name="sidebar-after" :element-index="elementIndex" />
-
-    <div class="mt-4">
-      <ActionMenu
-        :actions="[
-          {
-            label: t('Customize sources'),
-            onClick: () => (customizeSourcesActive = true),
-          },
-        ]"
-      />
-    </div>
-  </LayoutSlot>
-
-  <craft-pane padding="none">
+  <CpContainer>
     <BaseElementIndex
       :table="elementTable"
       :selectable="true"
@@ -122,18 +113,23 @@
           @submit="filters.submit"
           @reorder="reorder"
         >
-          <template v-if="$slots.navbar" #search-prefix>
-            <slot name="navbar"></slot>
+          <template #actions>
+            <!-- Type-specific actions that belong with the list itself, such
+              as the entries index's New Entry button. -->
+            <slot name="toolbar-actions" :element-index="elementIndex" />
           </template>
           <template #search-options>
             <slot name="search-options"></slot>
           </template>
         </ElementIndexToolbar>
       </template>
+      <template #navbar>
+        <slot name="navbar"></slot>
+      </template>
       <template #body="{selection}">
         <!-- Delegated so every view mode gets double-click-to-edit without
-          any of them knowing about it, matching Craft 5's element container
-          listener. -->
+            any of them knowing about it, matching Craft 5's element container
+            listener. -->
         <div @dblclick="quickEdit.onDblClick">
           <ElementCards
             v-if="mode === 'cards'"
@@ -158,11 +154,12 @@
             :loading="loading"
             :spacing="TableSpacing.Spacious"
             :item-behavior="itemBehavior"
+            :with-bottom-border="false"
           />
         </div>
       </template>
     </BaseElementIndex>
-  </craft-pane>
+  </CpContainer>
 
   <CustomizeSourcesModal
     :is-active="customizeSourcesActive"

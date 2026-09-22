@@ -1,28 +1,11 @@
 <script setup lang="ts">
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
-  import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
-  import SecondaryNav from '@/common/components/SecondaryNav.vue';
-  import {useIsSlideout} from '@/common/composables/screen';
-  import {usePage} from '@inertiajs/vue3';
-
-  // Full pages render `ElementEditScreen`, which fills the shell's `main` slot
-  // and so owns the whole main region. A slideout panel brings its own header,
-  // form and footer, so this stays on the layout-slot editor there.
-  //
-  // Inline `<AppLayout>` (inside `ElementEditScreen`), so no ambient layout.
-  defineOptions({layout: []});
 
   // The shared edit payload comes from the ElementEditor pipeline; only the
   // User-specific keys (UserEditViewModel) remain props.
   const props = defineProps<{
     userId: number | null;
     redirectUrl: string | null;
-  }>();
-
-  const isSlideout = useIsSlideout();
-  const editor = isSlideout ? ElementEditor : ElementEditScreen;
-  const page = usePage<{
-    subnav: Array<CraftCms.Cms.Cp.Data.NavItem>;
   }>();
 
   // What `users/save-user` resolves the account from. Everything else — the
@@ -34,9 +17,7 @@
 </script>
 
 <template>
-  <component :is="editor" :save-data="saveData">
-    <template v-if="!isSlideout" #sidebar>
-      <SecondaryNav :items="page.props.subnav" />
-    </template>
-  </component>
+  <!-- The account nav comes from the `subnav` page prop, which the page shell
+    renders as its secondary nav. -->
+  <ElementEditor :save-data="saveData" />
 </template>
