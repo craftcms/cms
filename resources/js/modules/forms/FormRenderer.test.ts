@@ -780,6 +780,37 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('renders a table whose field value is null', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {label: {type: 'singleline'}}},
+            path: ['details'],
+            mode: 'editable',
+            deltaGroup: ['details'],
+          },
+        },
+      ],
+      values: {details: null},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    expect(container.textContent).not.toContain('Failed to render');
+    expect(container.querySelectorAll('tbody > tr')).toHaveLength(0);
+    expect(renderer.currentValues()).toEqual({details: null});
+  });
+
   it('renders table cell errors beside scalar values', async () => {
     const table: FormPayload = {
       scope: [],

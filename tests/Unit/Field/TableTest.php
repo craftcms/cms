@@ -8,6 +8,15 @@ use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use Symfony\Component\DomCrawler\Crawler;
 
+it('configures single-line defaults for new columns', function () {
+    $field = new Table(['name' => 'Details', 'handle' => 'details']);
+
+    $payload = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+    $columns = $payload->nodes[0]->control;
+
+    expect($columns->props['defaultValues'])->toBe(['type' => 'singleline']);
+});
+
 it('keeps column handles scalar while rendering validation errors by cell', function () {
     $field = new Table([
         'name' => 'Details',
