@@ -221,7 +221,14 @@
 <style scoped lang="scss">
   .element-index {
     overflow-y: clip;
-    overflow-x: auto;
+
+    // A grid item's automatic minimum size would let a wide table stretch this
+    // past its `minmax(0, 1fr)` track, leaving nothing for the body below to
+    // scroll. Shrinking here hands the horizontal scrolling to
+    // `.element-index__body` — which matters because scrolling *here* would
+    // make this a scroll container, and the sticky footer would then stick to
+    // this box (which never scrolls vertically) instead of the page.
+    min-width: 0;
   }
 
   .element-index__header {
