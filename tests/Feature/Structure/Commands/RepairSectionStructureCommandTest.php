@@ -68,13 +68,13 @@ it('previews the same repaired hierarchy that it persists', function (array $lev
         }
     }
 
-    $original = $this->structure->structureElements()->get()->toArray();
+    $original = $this->structure->structureElements()->orderBy('id')->get()->toArray();
     $arguments = ['handle' => $this->section->handle, '--no-interaction' => true];
 
     expect(Artisan::call('craft:utils:repair:section-structure', [...$arguments, '--dry-run' => true]))->toBe(0);
     $preview = collect(preg_split('/\R/', Artisan::output()))->filter(fn (string $line) => str_contains($line, 'Repair entry'))->values()->all();
 
-    expect($this->structure->structureElements()->get()->toArray())->toBe($original);
+    expect($this->structure->structureElements()->orderBy('id')->get()->toArray())->toBe($original);
     expect($preview)->toBe($expectedOutput);
 
     expect(Artisan::call('craft:utils:repair:section-structure', $arguments))->toBe(0);
@@ -127,7 +127,7 @@ it('previews the same repaired hierarchy that it persists', function (array $lev
 ]);
 
 it('rolls back the repair when an insertion fails', function (bool $throws) {
-    $original = $this->structure->structureElements()->get()->toArray();
+    $original = $this->structure->structureElements()->orderBy('id')->get()->toArray();
     $transactionLevel = DB::transactionLevel();
     $failedElementId = $this->entries[1]->id;
 
@@ -150,7 +150,7 @@ it('rolls back the repair when an insertion fails', function (bool $throws) {
         ? 'Insertion failed.'
         : "Could not place element $failedElementId in structure {$this->structure->id}.");
 
-    expect($this->structure->structureElements()->get()->toArray())->toBe($original);
+    expect($this->structure->structureElements()->orderBy('id')->get()->toArray())->toBe($original);
     expect(DB::transactionLevel())->toBe($transactionLevel);
     expect(Artisan::output())->not->toContain('✔ Repair entry 2');
 })->with(['exception' => true, 'veto' => false]);

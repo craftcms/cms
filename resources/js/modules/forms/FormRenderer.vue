@@ -234,7 +234,11 @@
     }
 
     renderError.value = undefined;
-    const focusedPath = document.activeElement?.closest<HTMLElement>(
+    const focusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : undefined;
+    const focusedPath = focusedElement?.closest<HTMLElement>(
       '[data-form-control-path]'
     )?.dataset.formControlPath;
 
@@ -278,11 +282,13 @@
         const control = [
           ...document.querySelectorAll<HTMLElement>('[data-form-control-path]'),
         ].find((element) => element.dataset.formControlPath === focusedPath);
-        const focusTarget = control?.hasAttribute('data-form-control-override')
-          ? control.querySelector<HTMLElement>(
-              'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
-            )
-          : control;
+        const focusTarget = focusedElement?.isConnected
+          ? focusedElement
+          : control?.hasAttribute('data-form-control-override')
+            ? control.querySelector<HTMLElement>(
+                'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
+              )
+            : control;
 
         focusTarget?.focus();
       });

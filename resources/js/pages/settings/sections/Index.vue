@@ -42,17 +42,9 @@
   useAppLayout(() => ({title: props.title}));
   const columnHelper = createCraftColumnHelper<SectionModel>();
   const columns = ref([
-    columnHelper.accessor('name', {
+    columnHelper.link('name', {
       header: t('Name'),
-      cell: ({row, getValue}) =>
-        h(
-          'a',
-          {
-            class: 'font-bold',
-            href: edit({section: row.original.id}).url,
-          },
-          getValue()
-        ),
+      props: ({row}) => ({href: edit({section: row.original.id}).url}),
     }),
     columnHelper.accessor('handle', {
       header: t('Handle'),
