@@ -191,6 +191,13 @@
 - Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
 - Fixed a bug where saving project config repeatedly could persist the same changes more than once. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where project config path processing state could leak between application instances. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where folders in the Assets index couldn’t be selected, created, renamed, moved, or deleted. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where assets and folders couldn’t be moved by dragging them onto a folder in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where clicking a folder in the Assets index didn’t navigate into it or keep the breadcrumbs in sync. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the Assets index search couldn’t be expanded to include subfolders. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where <kbd>Shift</kbd>+<kbd>Space</kbd> didn’t preview the selected file in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where clicking an asset in the Assets index didn’t open its editor. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the Assets index’s folder dialogs could render behind other overlays, lose their centering, or not focus their name field. ([#19682](https://github.com/craftcms/cms/pull/19682))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 

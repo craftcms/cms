@@ -15,6 +15,18 @@ export interface MoveAssetsResult {
   cancelled: number;
 }
 
+export type FolderConflictResolution = 'replace' | 'merge' | 'cancel';
+
+interface MoveFolderResponse {
+  conflict?: string;
+  transferList?: Array<Record<string, unknown>>;
+  newFolderUrl?: string;
+}
+
+export interface MoveFoldersResult extends MoveAssetsResult {
+  movedFolderUrls: string[];
+}
+
 interface MoveAssetParams {
   assetId: number;
   folderId: number;
@@ -23,7 +35,7 @@ interface MoveAssetParams {
 }
 
 interface MoveAssetResponse {
-  conflict?: boolean;
+  conflict?: string;
   filename?: string;
   suggestedFilename?: string;
 }
@@ -91,4 +103,63 @@ export async function moveAssets(
   }
 
   return {moved, cancelled};
+}
+
+export async function moveFolders(
+  folderIds: number[],
+  targetFolderId: number,
+  resolveConflict: (message: string) => Promise<FolderConflictResolution>
+): Promise<MoveFoldersResult> {
+  let moved = 0;
+  let cancelled = 0;
+  const movedFolderUrls: string[] = [];
+
+  for (const folderId of folderIds) {
+    const params: Record<string, unknown> = {
+      folderId,
+      parentId: targetFolderId,
+    };
+    let {data} = await actionClient.post<MoveFolderResponse>(
+      getActionUrl('assets/move-folder'),
+      params
+    );
+
+    if (data.conflict) {
+      const choice = await resolveConflict(data.conflict);
+
+      if (choice === 'cancel') {
+        cancelled++;
+        continue;
+      }
+
+      params[choice === 'replace' ? 'force' : 'merge'] = true;
+      ({data} = await actionClient.post<MoveFolderResponse>(
+        getActionUrl('assets/move-folder'),
+        params
+      ));
+    }
+
+    if (!Array.isArray(data.transferList) || !data.newFolderUrl) {
+      throw new Error('The folder move response is incomplete.');
+    }
+
+    for (const transfer of data.transferList) {
+      const response = await actionClient.post<MoveAssetResponse>(
+        getActionUrl('assets/move-asset'),
+        transfer
+      );
+
+      if (response.data && 'conflict' in response.data) {
+        throw new Error(
+          response.data.conflict || 'An asset could not be moved.'
+        );
+      }
+    }
+
+    await actionClient.post(getActionUrl('assets/delete-folder'), {folderId});
+    movedFolderUrls.push(data.newFolderUrl);
+    moved++;
+  }
+
+  return {moved, cancelled, movedFolderUrls};
 }

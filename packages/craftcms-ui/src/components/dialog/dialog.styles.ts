@@ -39,7 +39,7 @@ export default css`
     max-width: none;
     max-height: none;
     overflow: visible;
-    margin: 0;
+    margin: auto;
   }
 
   dialog::backdrop {

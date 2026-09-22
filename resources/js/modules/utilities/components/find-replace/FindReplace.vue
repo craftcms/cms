@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { t } from "@craftcms/ui";
-import findAndReplaceController from "@actions/Utilities/FindAndReplaceController";
-import { useForm } from "@inertiajs/vue3";
-import CraftInput from "@craftcms/ui/vue/CraftInput.vue";
-import InlineFlash from "@/common/components/InlineFlash.vue";
+  import {t} from '@craftcms/ui';
+  import findAndReplaceController from '@actions/Utilities/FindAndReplaceController';
+  import {useForm} from '@inertiajs/vue3';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import InlineFlash from '@/common/components/InlineFlash.vue';
 
-const form = useForm({
-  find: "",
-  replace: "",
-});
-
-function submit() {
-  form.clearErrors();
-  form.submit(findAndReplaceController(), {
-    onSuccess: () => {
-      form.reset();
-    },
+  const form = useForm({
+    find: '',
+    replace: '',
   });
-}
+
+  function submit() {
+    form.clearErrors();
+    form.submit(findAndReplaceController(), {
+      onSuccess: () => {
+        form.reset();
+      },
+    });
+  }
 </script>
 
 <template>
@@ -39,7 +39,7 @@ function submit() {
     <div class="mt-4">
       <div class="flex gap-2 items-center">
         <craft-button type="submit" :loading="form.processing" variant="accent">
-          {{ t("Find and Replace") }}
+          {{ t('Find and Replace') }}
         </craft-button>
         <InlineFlash :is-active="form.recentlySuccessful" />
       </div>
