@@ -96,7 +96,7 @@ describe('DataTable', () => {
     expect(selected(root)).toHaveLength(rows(root).length);
   });
 
-  it('leads structure rows with the handle, then the toggle, then the checkbox', () => {
+  it('leads structure rows with the toggle, then the handle, then the checkbox', () => {
     const {root} = mount({structure: true, reorderable: true});
 
     const leading = (cells: Element[]) =>
@@ -114,13 +114,13 @@ describe('DataTable', () => {
         );
 
     expect(leading([...root.querySelectorAll('thead tr > th')])).toEqual([
-      'handle',
       'toggle',
+      'handle',
       'select',
     ]);
     expect(leading([...rows(root)[0]!.children])).toEqual([
-      'handle',
       'toggle',
+      'handle',
       'select',
     ]);
   });
