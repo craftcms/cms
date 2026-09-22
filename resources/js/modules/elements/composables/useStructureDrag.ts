@@ -145,6 +145,15 @@ export function useStructureDrag(options: UseStructureDragOptions) {
         },
         onDrop: () => {
           state.draggingId = null;
+
+          // Native HTML drag swallows the trailing pointerup on the source, so
+          // the handle stays stuck in :active/:hover once the drop lands.
+          // Briefly disabling pointer events forces the browser to drop those
+          // states (same treatment as `useDragAndDrop`).
+          dragEl.style.pointerEvents = 'none';
+          requestAnimationFrame(() => {
+            dragEl.style.pointerEvents = '';
+          });
         },
       }),
       dropTargetForElements({
