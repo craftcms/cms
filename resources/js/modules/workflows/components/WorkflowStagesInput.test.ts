@@ -75,15 +75,9 @@ describe('WorkflowStagesInput', () => {
     return updates;
   }
 
-  function button(label: string): HTMLElement {
-    return container!.querySelector(`[aria-label="${label}"]`)!;
-  }
-
-  async function selectType(label: string, menuIndex: number): Promise<void> {
+  async function selectType(label: string): Promise<void> {
     const menu =
-      container!.querySelectorAll<CraftActionMenu>('craft-action-menu')[
-        menuIndex
-      ]!;
+      container!.querySelectorAll<CraftActionMenu>('craft-action-menu')[1]!;
     await vi.waitFor(() =>
       expect(menu.querySelector('craft-action-item')).not.toBeNull()
     );
@@ -116,8 +110,13 @@ describe('WorkflowStagesInput', () => {
     const updates = mount([stage('editorial', 'Editorial')]);
     await nextTick();
 
-    expect((button('Remove stage') as HTMLButtonElement).disabled).toBe(true);
-    await selectType('User review', 1);
+    const removeAction = [
+      ...container!.querySelectorAll('craft-action-item'),
+    ].find((item) => item.textContent === 'Remove stage') as
+      | (HTMLElement & {disabled: boolean})
+      | undefined;
+    expect(removeAction?.disabled).toBe(true);
+    await selectType('Add User review');
 
     expect(updates.at(-1)).toEqual([
       stage('editorial', 'Editorial'),
@@ -130,52 +129,10 @@ describe('WorkflowStagesInput', () => {
       },
     ]);
 
-    button('Remove stage').click();
+    const firstRemoveAction = [
+      ...container!.querySelectorAll('craft-action-item'),
+    ].find((item) => item.textContent === 'Remove stage') as HTMLElement;
+    firstRemoveAction.click();
     expect(updates.at(-1)?.map(({uid}) => uid)).toEqual(['new-stage']);
-  });
-
-  it('confirms and resets settings when changing stage type', async () => {
-    const confirm = vi.fn(() => true);
-    Object.defineProperty(window, 'confirm', {
-      value: confirm,
-      configurable: true,
-    });
-    const updates = mount([stage('editorial', 'Editorial')]);
-    await nextTick();
-
-    await selectType('Automated review', 0);
-
-    expect(confirm).toHaveBeenCalled();
-    expect(updates.at(-1)?.[0]).toEqual({
-      uid: 'editorial',
-      name: 'Editorial',
-      type: 'plugin\\AutomatedStage',
-      settings: {rule: 'passing'},
-      settingsForm: null,
-    });
-  });
-
-  it('labels the stage type picker', async () => {
-    const settingsForm = {
-      scope: [],
-      refreshable: false,
-      nodes: [],
-      values: {},
-      errors: [],
-      globalErrors: [],
-    };
-
-    mount([{...stage('editorial', 'Editorial'), settingsForm}]);
-    await nextTick();
-
-    const typeField = container!.querySelector<
-      HTMLElement & {label: string; updateComplete: Promise<boolean>}
-    >('craft-field');
-    expect(typeField).not.toBeNull();
-    await typeField!.updateComplete;
-    expect(typeField!.label).toBe('Type');
-    expect(typeField!.getAttribute('role')).toBe('group');
-    expect(typeField!.getAttribute('aria-labelledby')).not.toBeNull();
-    expect(typeField!.textContent).toContain('User review');
   });
 });

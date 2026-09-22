@@ -2,11 +2,11 @@
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import CraftInput from '@craftcms/ui/components/input/input';
-  import TypePicker, {
-    type TypePickerOption,
-  } from '@/common/components/TypePicker.vue';
-  import {useReorderableItems} from '@/common/composables/useReorderableItems';
-  import TypeConfigurator from '@/modules/forms/TypeConfigurator.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import SelectableCardList from '@/common/components/SelectableCardList.vue';
+  import {useSelectable} from '@/common/composables/useSelectable';
+  import type {ActionItems} from '@/common/types';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {
     FormChange,
     FormPayload,
@@ -28,10 +28,11 @@
   const emit = defineEmits<{
     'update:modelValue': [value: WorkflowStage[]];
   }>();
-  const typePickerOptions = computed<TypePickerOption[]>(() =>
-    props.stageTypes.map((type) => ({
-      value: type.type,
-      label: type.label,
+  const addStageActions = computed<ActionItems>(() =>
+    props.stageTypes.map((stageType) => ({
+      label: t('Add {type}', {type: stageType.label}),
+      icon: 'plus',
+      onClick: () => addStage(stageType.type),
     }))
   );
 
@@ -50,27 +51,6 @@
     values: FormValues
   ): void {
     updateStage(index, {settings: values});
-  }
-
-  function changeType(index: number, type: string): void {
-    const current = props.modelValue[index];
-    const replacement = props.stageTypes.find(
-      (candidate) => candidate.type === type
-    );
-    if (!current || !replacement || current.type === type) return;
-
-    if (
-      Object.keys(current.settings).length > 0 &&
-      !window.confirm(t('Changing the stage type will reset its settings.'))
-    ) {
-      return;
-    }
-
-    updateStage(index, {
-      type: replacement.type,
-      settings: {...replacement.settings},
-      settingsForm: replacement.settingsForm,
-    });
   }
 
   function addStage(type: string): void {
@@ -109,12 +89,11 @@
     emit('update:modelValue', stages);
   }
 
-  const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
-    useReorderableItems({
-      getItemIds: () => props.modelValue.map((stage) => stage.uid),
-      enabled: () => props.editable && props.modelValue.length > 1,
-      onReorder: moveStage,
-    });
+  const selection = useSelectable<string>({
+    ids: () => props.modelValue.map((stage) => stage.uid),
+    enabled: false,
+    readOnly: true,
+  });
 
   function stageTypeLabel(stage: WorkflowStage): string {
     return (
@@ -130,118 +109,120 @@
 
     updateStage(index, {name: String(event.target.modelValue ?? '')});
   }
+
+  function stageActions(index: number): ActionItems {
+    return [
+      {
+        label: t('Remove stage'),
+        icon: 'trash',
+        variant: 'danger',
+        disabled: props.modelValue.length === 1,
+        onClick: () => removeStage(index),
+      },
+    ];
+  }
+
+  function stageForm(stage: WorkflowStage): FormPayload | null {
+    return stage.settingsForm
+      ? {
+          ...(stage.settingsForm as FormPayload),
+          values: stage.settings,
+        }
+      : null;
+  }
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
-    <craft-pane
-      v-for="(stage, index) in modelValue"
-      :key="stage.uid"
-      :ref="(el: Parameters<typeof setItemRef>[0]) => setItemRef(el, stage.uid)"
-      padding="lg"
-      appearance="outline"
-      class="workflow-stage"
-      :class="{
-        'opacity-50': getDragState(stage.uid).type === 'is-dragging',
-        'bg-gray-100': getDropState(stage.uid).type === 'is-over',
-      }"
-      role="group"
-      :aria-label="t('Stage {num}: {name}', {num: index + 1, name: stage.name})"
+  <div>
+    <SelectableCardList
+      :ids="modelValue.map((stage) => stage.uid)"
+      :selection="selection"
+      :sortable="editable && modelValue.length > 1"
+      :read-only="!editable"
+      single-column
+      tag="div"
+      item-tag="div"
+      list-class="grid gap-1"
+      :card-attrs="
+        (_uid, index) => ({
+          collapsed: !modelValue[index]?.settingsForm,
+        })
+      "
+      :item-attrs="
+        (uid, index) => ({
+          role: 'listitem',
+          'aria-label': t('Stage {num}: {name}', {
+            num: index + 1,
+            name: modelValue[index]?.name ?? uid,
+          }),
+        })
+      "
+      role="list"
+      @reorder="moveStage"
     >
-      <div
-        slot="title"
-        class="workflow-stage__title flex items-center gap-2 font-normal"
-      >
-        <span class="whitespace-nowrap">
-          {{ t('Stage {num}', {num: index + 1}) }}
+      <template #label="{index}">
+        <div class="workflow-stage__title font-normal">
+          <craft-input
+            :label="t('Stage {num} name', {num: index + 1})"
+            label-sr-only
+            small
+            required
+            :disabled="!editable"
+            .modelValue="modelValue[index]?.name ?? ''"
+            @model-value-changed="changeName(index, $event)"
+          >
+            <input slot="input" />
+          </craft-input>
+        </div>
+      </template>
+
+      <template #actions="{index}">
+        <span>
+          {{ stageTypeLabel(modelValue[index]!) }}
         </span>
-        <craft-input
-          :label="t('Stage {num} name', {num: index + 1})"
-          label-sr-only
-          small
-          required
-          :disabled="!editable"
-          .modelValue="stage.name"
-          @model-value-changed="changeName(index, $event)"
-        >
-          <input slot="input" />
-        </craft-input>
-      </div>
+        <ActionMenu
+          v-if="editable"
+          :actions="stageActions(index)"
+          :label="t('Stage {num} actions', {num: index + 1})"
+        />
+      </template>
 
-      <div
-        v-if="editable"
-        slot="header-actions"
-        class="flex items-center gap-1"
+      <template #default="{index}">
+        <div v-if="stageForm(modelValue[index]!)">
+          <FormRenderer
+            :key="modelValue[index]!.type"
+            :payload="stageForm(modelValue[index]!)!"
+            :disabled="!editable"
+            @change="(change, values) => changeSettings(index, change, values)"
+          />
+        </div>
+      </template>
+    </SelectableCardList>
+
+    <div v-if="editable" class="mt-3">
+      <ActionMenu
+        :actions="addStageActions"
+        :searchable="stageTypes.length > 5"
+        :label="t('Add stage')"
       >
-        <craft-reorder-button
-          :ref="
-            (el: Parameters<typeof setHandleRef>[0]) =>
-              setHandleRef(el, stage.uid)
-          "
-          :position="getRowPosition(index)"
-          :disabled="modelValue.length === 1"
-          :label="t('Reorder stage {num}', {num: index + 1})"
-          @reorder="
-            (event: CustomEvent<{direction: 'up' | 'down'}>) =>
-              moveStage(
-                index,
-                index + (event.detail.direction === 'up' ? -1 : 1)
-              )
-          "
-        />
-        <craft-button
-          type="button"
-          size="small"
-          variant="danger-plain"
-          icon="xmark"
-          :disabled="modelValue.length === 1"
-          :aria-label="t('Remove stage')"
-          @click="removeStage(index)"
-        />
-      </div>
-
-      <TypeConfigurator
-        :key="stage.type"
-        class="workflow-stage__configurator"
-        :types="typePickerOptions"
-        :selected-type-label="stageTypeLabel(stage)"
-        :type-label="t('Type')"
-        :form="
-          stage.settingsForm
-            ? {
-                ...(stage.settingsForm as FormPayload),
-                values: stage.settings,
-              }
-            : null
-        "
-        :disabled="!editable"
-        @select="changeType(index, $event)"
-        @change="(change, values) => changeSettings(index, change, values)"
-      />
-    </craft-pane>
-
-    <TypePicker
-      v-if="editable"
-      :types="typePickerOptions"
-      :label="t('Add stage')"
-      :disabled="!stageTypes.length"
-      adding
-      @select="addStage"
-    />
+        <template #invoker="{attributes}">
+          <craft-button
+            v-bind="attributes"
+            type="button"
+            variant="dashed"
+            icon="plus"
+            :disabled="!stageTypes.length"
+          >
+            {{ t('Add stage') }}
+          </craft-button>
+        </template>
+      </ActionMenu>
+    </div>
   </div>
 </template>
 
 <style scoped>
-  .workflow-stage {
-    container-type: inline-size;
-  }
-
   .workflow-stage__title :deep(craft-input) {
     min-inline-size: 8rem;
-  }
-
-  .workflow-stage__configurator
-    :deep(.type-configurator__fields > craft-field) {
-    flex: 0 0 auto;
   }
 </style>

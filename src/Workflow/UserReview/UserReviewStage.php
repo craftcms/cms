@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Controls\UserGroupSelect;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
@@ -51,14 +52,24 @@ class UserReviewStage extends WorkflowStage
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            Field::make(t('Reviewer groups'), UserGroupSelect::make('userGroups'))
-                ->required(),
-            Field::make(t('Approvals required'), Number::make('approvalsRequired')->min(1))
-                ->required(),
-            Field::make(t('Approval mode'), Choice::make('approvalMode')->options([
-                ['label' => t('Total'), 'value' => UserReviewApprovalMode::Total->value],
-                ['label' => t('Per group'), 'value' => UserReviewApprovalMode::PerGroup->value],
-            ]))->required(),
+            Group::make('user-review-settings', [
+                Field::make(t('Reviewer groups'), UserGroupSelect::make('userGroups'))
+                    ->required(),
+                Group::make('user-review-approval-requirement', [
+                    Field::make(t('Minimum'), Number::make('approvalsRequired')->min(1)->size(3))
+                        ->labelSrOnly()
+                        ->required(),
+                    Field::make(t('Mode'), Choice::make('approvalMode')->options([
+                        ['label' => t('Total'), 'value' => UserReviewApprovalMode::Total->value],
+                        ['label' => t('Per group'), 'value' => UserReviewApprovalMode::PerGroup->value],
+                    ]))
+                        ->labelSrOnly()
+                        ->required(),
+                ])
+                    ->label(t('Approvals required'))
+                    ->instructions(t('The minimum number of approvals required in total or per reviewer group.'))
+                    ->asField(),
+            ]),
         ]);
     }
 

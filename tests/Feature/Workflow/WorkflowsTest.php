@@ -141,7 +141,7 @@ it('renders registered stage types and inline settings forms', function () {
             'userGroups' => [],
         ])
         ->and($userReview['settingsForm'])->not->toBeNull()
-        ->and($userReview['settingsForm']->nodes[0]->control->component)->toBe('craft:user-group-select')
+        ->and($userReview['settingsForm']->nodes[0]->children[0]->control->component)->toBe('craft:user-group-select')
         ->and($automaticApproval)->toMatchArray([
             'label' => 'Automatic approval',
             'settings' => [],
