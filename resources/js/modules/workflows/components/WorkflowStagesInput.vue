@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import CraftInput from '@craftcms/ui/components/input/input';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import {useSelectable} from '@/common/composables/useSelectable';
@@ -24,6 +24,7 @@
     modelValue: WorkflowStage[];
     stageTypes: StageType[];
     editable: boolean;
+    errors?: FormPayload['errors'];
   }>();
   const emit = defineEmits<{
     'update:modelValue': [value: WorkflowStage[]];
@@ -102,12 +103,14 @@
     );
   }
 
-  function changeName(index: number, event: Event): void {
-    if (!(event.target instanceof CraftInput)) {
-      throw new TypeError('Expected a craft input event target.');
-    }
+  function changeName(index: number, value: string | number | undefined): void {
+    updateStage(index, {name: String(value ?? '')});
+  }
 
-    updateStage(index, {name: String(event.target.modelValue ?? '')});
+  function stageNameError(index: number): string | undefined {
+    return props.errors
+      ?.find((error) => error.path.join('.') === `stages.${index}.name`)
+      ?.messages.join(' ');
   }
 
   function stageActions(index: number): ActionItems {
@@ -143,11 +146,6 @@
       tag="div"
       item-tag="div"
       list-class="grid gap-1"
-      :card-attrs="
-        (_uid, index) => ({
-          collapsed: !modelValue[index]?.settingsForm,
-        })
-      "
       :item-attrs="
         (uid, index) => ({
           role: 'listitem',
@@ -161,25 +159,10 @@
       @reorder="moveStage"
     >
       <template #label="{index}">
-        <div class="workflow-stage__title font-normal">
-          <craft-input
-            :label="t('Stage {num} name', {num: index + 1})"
-            label-sr-only
-            small
-            required
-            :disabled="!editable"
-            .modelValue="modelValue[index]?.name ?? ''"
-            @model-value-changed="changeName(index, $event)"
-          >
-            <input slot="input" />
-          </craft-input>
-        </div>
+        {{ stageTypeLabel(modelValue[index]!) }}
       </template>
 
       <template #actions="{index}">
-        <span>
-          {{ stageTypeLabel(modelValue[index]!) }}
-        </span>
         <ActionMenu
           v-if="editable"
           :actions="stageActions(index)"
@@ -188,8 +171,20 @@
       </template>
 
       <template #default="{index}">
-        <div v-if="stageForm(modelValue[index]!)">
+        <div class="grid gap-4">
+          <CraftInput
+            :label="t('Name')"
+            required
+            :disabled="!editable"
+            :model-value="modelValue[index]?.name ?? ''"
+            :error="stageNameError(index)"
+            @update:model-value="changeName(index, $event)"
+          >
+            <input slot="input" />
+          </CraftInput>
+
           <FormRenderer
+            v-if="stageForm(modelValue[index]!)"
             :key="modelValue[index]!.type"
             :payload="stageForm(modelValue[index]!)!"
             :disabled="!editable"
@@ -220,9 +215,3 @@
     </div>
   </div>
 </template>
-
-<style scoped>
-  .workflow-stage__title :deep(craft-input) {
-    min-inline-size: 8rem;
-  }
-</style>

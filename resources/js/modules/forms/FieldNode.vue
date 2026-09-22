@@ -168,6 +168,7 @@
       control: control.value,
       value: value.value,
       values: props.values,
+      errors: props.errors,
       label: props.node.props.label ?? undefined,
       editable: editable.value,
       invalid: controlErrors.value.length > 0,

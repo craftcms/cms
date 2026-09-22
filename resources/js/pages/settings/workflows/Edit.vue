@@ -47,11 +47,12 @@
 
 <template>
   <FormPage :form="formPayload" :submit="submit">
-    <template #stages="{value, setValue, editable}">
+    <template #stages="{value, setValue, editable, errors}">
       <WorkflowStagesInput
         :model-value="stages(value)"
         :stage-types="stageTypes"
         :editable="editable"
+        :errors="errors"
         @update:model-value="setValue($event, 'discrete')"
       />
     </template>

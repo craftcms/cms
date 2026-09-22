@@ -52,7 +52,10 @@ describe('WorkflowStagesInput', () => {
     vi.unstubAllGlobals();
   });
 
-  function mount(stages: WorkflowStage[]) {
+  function mount(
+    stages: WorkflowStage[],
+    errors: CraftCms.Cms.Form.FormPayload['errors'] = []
+  ) {
     const updates: WorkflowStage[][] = [];
     const modelValue = shallowRef(stages);
     container = document.createElement('div');
@@ -63,6 +66,7 @@ describe('WorkflowStagesInput', () => {
           modelValue: modelValue.value,
           stageTypes,
           editable: true,
+          errors,
           'onUpdate:modelValue': (value: WorkflowStage[]) => {
             modelValue.value = value;
             updates.push(value);
@@ -134,5 +138,23 @@ describe('WorkflowStagesInput', () => {
     ].find((item) => item.textContent === 'Remove stage') as HTMLElement;
     firstRemoveAction.click();
     expect(updates.at(-1)?.map(({uid}) => uid)).toEqual(['new-stage']);
+  });
+
+  it('shows a stage name validation error on its field', async () => {
+    mount(
+      [stage('editorial', '')],
+      [
+        {
+          path: ['stages', '0', 'name'],
+          messages: ['The name field is required.'],
+        },
+      ]
+    );
+    await nextTick();
+
+    const nameInput = container!.querySelector('craft-input');
+
+    expect(nameInput?.getAttribute('has-feedback-for')).toBe('error');
+    expect(nameInput?.textContent).toContain('The name field is required.');
   });
 });
