@@ -253,7 +253,7 @@ abstract class ContentIndexViewModel extends ViewModel
             return $this->resolvedSite;
         }
 
-        $requested = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
+        $requested = $this->requestedSite() ?? Sites::getCurrentSite();
         $selectable = $this->selectableSites();
 
         if ($selectable->contains(fn (Site $site): bool => $site->id === $requested->id)) {
@@ -263,6 +263,28 @@ abstract class ContentIndexViewModel extends ViewModel
         // The requested site has nothing on this index — a section that only
         // runs on the other sites, say — so fall back rather than list nothing.
         return $this->resolvedSite = $selectable->first() ?? $requested;
+    }
+
+    /**
+     * The site the request asked for.
+     *
+     * `RequestedSite` reads the `?site=` query param, which covers an index
+     * page. The selector modal posts its index params in the body instead, so
+     * an explicit `site` input is honored first and reaches both.
+     */
+    private function requestedSite(): ?Site
+    {
+        $handle = $this->request->input('site');
+
+        if (is_string($handle) && $handle !== '') {
+            $site = Sites::getSiteByHandle($handle, true);
+
+            if ($site !== null) {
+                return $site;
+            }
+        }
+
+        return app(RequestedSite::class)->get();
     }
 
     public function siteId(): int
