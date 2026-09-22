@@ -4,9 +4,11 @@ import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {
   type AssetMoveConflict,
   type ConflictResolution,
+  type FolderConflictResolution,
   moveAssets,
-} from './assetMover';
-import {useElementIndexTable} from './useElementIndexTable';
+  moveFolders,
+} from '@/modules/assets/assetMover';
+import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 import type {RowSelectionState} from '@tanstack/vue-table';
 
 /** A pending filename-conflict prompt awaiting the user's choice. */
@@ -15,14 +17,19 @@ export interface AssetMoveConflictPrompt {
   resolve: (choice: ConflictResolution) => void;
 }
 
+export interface FolderMoveConflictPrompt {
+  message: string;
+  resolve: (choice: FolderConflictResolution) => void;
+}
+
 /**
  * Drag-and-drop moving of assets into folders, ported from Craft 5's
  * `AssetIndex.itemDrag` onto the modern `@craftcms/garnish` `DragDrop`.
  *
- * Selected asset rows are draggable; folders (sidebar sources and folder rows in
- * the listing, marked `[data-folder-drop-target][data-can-move-to]`) are drop
- * targets. Dropping issues `assets/move-asset` for each selected asset, with a
- * keep-both / replace / cancel prompt on filename conflicts.
+ * Selected asset and folder rows are draggable; folders (sidebar sources,
+ * breadcrumbs, and folder rows in the listing, marked
+ * `[data-folder-drop-target][data-can-move-to]`) are drop targets. Folders move
+ * first, followed by assets, with the appropriate conflict prompt for each.
  *
  * The conflict prompt is surfaced as reactive state (`conflictPrompt`) so the
  * page can render a dialog; `resolveConflictChoice` settles it.
@@ -38,14 +45,25 @@ export function useAssetMoveDrag() {
   let preDragSelection: RowSelectionState = {};
 
   const conflictPrompt = ref<AssetMoveConflictPrompt | null>(null);
+  const folderConflictPrompt = ref<FolderMoveConflictPrompt | null>(null);
 
-  // Ids of the currently selected asset rows (numeric; folder rows excluded).
-  function selectedAssetIds(): number[] {
+  function selectedMoveIds(): {assetIds: number[]; folderIds: number[]} {
     const selection = table.value?.getState().rowSelection ?? {};
-    return Object.entries(selection)
-      .filter(([id, selected]) => selected && !id.startsWith('folder:'))
-      .map(([id]) => Number(id))
-      .filter((id) => Number.isFinite(id));
+    const assetIds: number[] = [];
+    const folderIds: number[] = [];
+
+    for (const [id, selected] of Object.entries(selection)) {
+      if (!selected) continue;
+
+      const folderId = /^folder:(\d+)$/.exec(id)?.[1];
+      if (folderId) {
+        folderIds.push(Number(folderId));
+      } else if (Number.isFinite(Number(id))) {
+        assetIds.push(Number(id));
+      }
+    }
+
+    return {assetIds, folderIds};
   }
 
   function resolveConflict(
@@ -61,43 +79,80 @@ export function useAssetMoveDrag() {
     conflictPrompt.value = null;
   }
 
-  function assetRows(): HTMLElement[] {
+  function resolveFolderConflict(
+    message: string
+  ): Promise<FolderConflictResolution> {
+    return new Promise((resolve) => {
+      folderConflictPrompt.value = {message, resolve};
+    });
+  }
+
+  function resolveFolderConflictChoice(choice: FolderConflictResolution) {
+    folderConflictPrompt.value?.resolve(choice);
+    folderConflictPrompt.value = null;
+  }
+
+  function movableRows(): HTMLElement[] {
     return Array.from(
       document.querySelectorAll<HTMLElement>(
-        '.element-index__body [data-movable-asset]'
+        '.element-index__body [data-movable-item]'
       )
     );
   }
 
   function selectedElements(): HTMLElement[] {
-    return selectedAssetIds()
-      .map((id) =>
+    const selection = table.value?.getState().rowSelection ?? {};
+
+    return Object.entries(selection)
+      .filter(([, selected]) => selected)
+      .map(([id]) =>
         document.querySelector<HTMLElement>(
-          `.element-index__body [data-movable-asset][data-id="${id}"]`
+          `.element-index__body [data-movable-item][data-row-id="${id}"]`
         )
       )
       .filter((el): el is HTMLElement => el !== null);
   }
 
   function dropTargets(): HTMLElement[] {
+    const {folderIds} = selectedMoveIds();
+    const currentFolderId = Number(
+      document.querySelector<HTMLElement>('[data-current-folder-id]')?.dataset
+        .currentFolderId
+    );
+    const disabledFolderIds = Number.isFinite(currentFolderId)
+      ? [...folderIds, currentFolderId]
+      : folderIds;
+
     return Array.from(
       document.querySelectorAll<HTMLElement>(
         '[data-folder-drop-target][data-can-move-to]'
       )
+    ).filter(
+      (target) => !disabledFolderIds.includes(Number(target.dataset.folderId))
     );
   }
 
-  async function performMove(targetFolderId: number, assetIds: number[]) {
-    if (!assetIds.length) {
+  async function performMove(
+    targetFolderId: number,
+    assetIds: number[],
+    folderIds: number[]
+  ) {
+    if (!assetIds.length && !folderIds.length) {
       return;
     }
 
     try {
-      const {moved} = await moveAssets(
+      const folders = await moveFolders(
+        folderIds,
+        targetFolderId,
+        resolveFolderConflict
+      );
+      const assets = await moveAssets(
         assetIds,
         targetFolderId,
         resolveConflict
       );
+      const moved = folders.moved + assets.moved;
       if (moved > 0) {
         Craft.cp?.displayNotification?.(
           'notice',
@@ -116,7 +171,7 @@ export function useAssetMoveDrag() {
       return;
     }
     dragDrop.removeAllItems();
-    const rows = assetRows();
+    const rows = movableRows();
     if (rows.length) {
       dragDrop.addItems(rows);
     }
@@ -191,14 +246,16 @@ export function useAssetMoveDrag() {
       minMouseDist: 10,
       moveHelperToCursor: true,
       helperOpacity: 0.85,
+      ignoreHandleSelector:
+        'a[href], input, textarea, button, select, .btn, [role="button"], [role="link"]',
       // Force the grabbed row into the selection, then drag everything selected.
       // Snapshot the pre-grab selection first so onDragStop can undo a force
       // select of a row that wasn't already part of a selected group.
       filter: () => {
         preDragSelection = {...table.value?.getState().rowSelection};
         const grabbed = dragDrop?.$targetItem;
-        if (grabbed?.dataset.id) {
-          const rowId = grabbed.dataset.id;
+        if (grabbed?.dataset.rowId) {
+          const rowId = grabbed.dataset.rowId;
           table.value?.setRowSelection((prev) => ({...prev, [rowId]: true}));
         }
         return selectedElements();
@@ -220,7 +277,9 @@ export function useAssetMoveDrag() {
         // Capture what to move while the grab's force-selection is still applied,
         // then restore the pre-drag selection so the dragged row returns to its
         // original checked state (a pre-selected group stays selected).
-        const assetIds = validTarget ? selectedAssetIds() : [];
+        const {assetIds, folderIds} = validTarget
+          ? selectedMoveIds()
+          : {assetIds: [], folderIds: []};
         table.value?.setRowSelection(preDragSelection);
 
         if (!validTarget) {
@@ -229,7 +288,7 @@ export function useAssetMoveDrag() {
         }
 
         dragDrop?.fadeOutHelpers();
-        void performMove(folderId, assetIds);
+        void performMove(folderId, assetIds, folderIds);
       },
     });
 
@@ -247,5 +306,10 @@ export function useAssetMoveDrag() {
     dragDrop = null;
   });
 
-  return {conflictPrompt, resolveConflictChoice};
+  return {
+    conflictPrompt,
+    resolveConflictChoice,
+    folderConflictPrompt,
+    resolveFolderConflictChoice,
+  };
 }

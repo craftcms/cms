@@ -162,6 +162,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowAdd()
                     ->allowDelete()
                     ->allowReorder()
+                    ->defaultValues(['type' => 'singleline'])
                     ->errors($this->columnErrors)
                     ->value($columnRows)
                     ->reactive()),

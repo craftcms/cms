@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { t } from "@craftcms/ui/utilities/translate";
-import dbBackupController from "@actions/Utilities/DbBackupController";
-import { useForm } from "@inertiajs/vue3";
-import CraftCheckbox from "@craftcms/ui/vue/CraftCheckbox.vue";
-import { useTemplateRef } from "vue";
-import useCraftData from "@/common/composables/useCraftData";
+  import {t} from '@craftcms/ui/utilities/translate';
+  import dbBackupController from '@actions/Utilities/DbBackupController';
+  import {useForm} from '@inertiajs/vue3';
+  import CraftCheckbox from '@craftcms/ui/vue/CraftCheckbox.vue';
+  import {useTemplateRef} from 'vue';
+  import useCraftData from '@/common/composables/useCraftData';
 
-const form = useForm({
-  downloadBackup: true,
-});
-
-const { csrfTokenName, csrfTokenValue } = useCraftData();
-const formRef = useTemplateRef("formRef");
-
-function handleSubmit() {
-  form.clearErrors();
-
-  // If downloading, submit form natively to handle file response
-  if (form.downloadBackup) {
-    formRef.value?.submit();
-    return;
-  }
-
-  form.post(dbBackupController().url, {
-    onSuccess: () => {
-      form.reset();
-    },
+  const form = useForm({
+    downloadBackup: true,
   });
-}
+
+  const {csrfTokenName, csrfTokenValue} = useCraftData();
+  const formRef = useTemplateRef('formRef');
+
+  function handleSubmit() {
+    form.clearErrors();
+
+    // If downloading, submit form natively to handle file response
+    if (form.downloadBackup) {
+      formRef.value?.submit();
+      return;
+    }
+
+    form.post(dbBackupController().url, {
+      onSuccess: () => {
+        form.reset();
+      },
+    });
+  }
 </script>
 
 <template>
@@ -53,7 +53,7 @@ function handleSubmit() {
 
     <div class="mt-4">
       <craft-button type="submit" variant="accent" :loading="form.processing">
-        {{ t("Backup") }}
+        {{ t('Backup') }}
       </craft-button>
     </div>
   </form>

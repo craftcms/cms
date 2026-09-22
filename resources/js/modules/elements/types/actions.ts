@@ -22,6 +22,8 @@ export interface BulkActionItem {
   disabled?: boolean;
   /** `false` if only performable on a single selected element (mirrors the legacy `bulk: false` trigger setting). Omitted when bulk-capable. */
   bulk?: boolean;
+  /** Limits the action to real elements or synthetic asset-folder rows. */
+  appliesTo?: 'elements' | 'folders';
   /** The primitive action descriptor. Absent for disabled/placeholder items. */
   action?:
     | {

@@ -42,7 +42,7 @@
 </script>
 
 <template>
-  <form @submit="emit('submit')" class="w-full">
+  <form @submit.prevent="emit('submit')" class="w-full">
     <div class="element-toolbar">
       <div v-if="statusOptions?.length" class="element-toolbar__status">
         <CraftSelectRich
@@ -105,6 +105,8 @@
           @apply="emit('submit')"
           v-model="conditions"
         />
+
+        <slot name="search-options"></slot>
       </div>
 
       <div class="element-toolbar__state">

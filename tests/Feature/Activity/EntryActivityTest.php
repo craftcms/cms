@@ -292,23 +292,33 @@ it('does not record no-op, draft, resave, or rolled-back work', function () {
 });
 
 it('records draft work against the canonical entry', function () {
-    $entry = EntryModel::factory()->createElement(['title' => 'Original title']);
+    $result = EntryModel::factory()
+        ->withField('bodyField', PlainText::class, value: 'Original body')
+        ->createElementWithFields(['title' => 'Original title']);
+    $entry = $result->element;
+    $field = $result->fields->get('bodyField');
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
     $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, name: 'Campaign draft');
 
     $draft->title = 'Draft title';
+    $draft->setFieldValue($field->handle, 'Draft body');
     expect(Elements::saveElement($draft, updateSearchIndex: false))->toBeTrue();
 
     app(Drafts::class)->applyDraft($draft);
 
     $events = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->get();
+    $saved = $events->firstWhere('eventType', DraftSaved::class);
 
     expect($events->pluck('eventType')->all())->toBe([
         DraftApplied::class,
         DraftSaved::class,
         DraftCreated::class,
-    ])->and($events->pluck('siteId')->unique()->all())->toBe([$entry->siteId]);
+    ])->and($events->pluck('siteId')->unique()->all())->toBe([$entry->siteId])
+        ->and($saved->changes)->toEqualCanonicalizing([
+            new ActivityChange('Title', 'Original title', 'Draft title'),
+            new ActivityChange($field->name, 'Original body', 'Draft body'),
+        ]);
 });
 
 it('records applying a provisional draft as an entry update', function () {
