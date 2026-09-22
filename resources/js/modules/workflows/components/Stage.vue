@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/disclosure/disclosure';
+  import {computed} from 'vue';
   import TimelineItem from './TimelineItem.vue';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
@@ -12,16 +13,24 @@
     number: number;
     collapsible: boolean;
   }>();
+
+  const hasContent = computed(
+    () =>
+      Boolean(props.stage.message) ||
+      props.stage.events.length > 0 ||
+      Boolean(props.stage.summaryComponent)
+  );
+  const isCollapsible = computed(() => props.collapsible && hasContent.value);
 </script>
 
 <template>
   <component
-    :is="collapsible ? 'craft-disclosure' : 'section'"
+    :is="isCollapsible ? 'craft-disclosure' : 'section'"
     class="workflow-review-stage"
-    :opened.prop="collapsible ? stage.current : undefined"
+    :opened.prop="isCollapsible ? stage.current : undefined"
   >
     <craft-button
-      v-if="collapsible"
+      v-if="isCollapsible"
       slot="invoker"
       type="button"
       variant="plain"
@@ -55,7 +64,8 @@
     </div>
 
     <div
-      :slot="collapsible ? 'content' : undefined"
+      v-if="hasContent"
+      :slot="isCollapsible ? 'content' : undefined"
       class="workflow-review-stage__content"
     >
       <p v-if="stage.message" class="workflow-review-stage__message">

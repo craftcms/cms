@@ -739,4 +739,38 @@ describe('WorkflowReviewPanel', () => {
       'Waiting for the external policy service.'
     );
   });
+
+  it('renders stages without details as static status rows', async () => {
+    mount(
+      review({
+        runs: [
+          workflowRun({
+            stages: [
+              workflowRun().stages[0]!,
+              {
+                name: 'External review',
+                current: false,
+                approved: true,
+                icon: 'check',
+                iconColor: 'success',
+                message: null,
+                summaryComponent: null,
+                summaryProps: {},
+                events: [],
+              },
+            ],
+          }),
+        ],
+      })
+    );
+    await nextTick();
+
+    const externalReview = [
+      ...container!.querySelectorAll('.workflow-review-stage'),
+    ].find((stage) => stage.textContent?.includes('External review'))!;
+
+    expect(externalReview.tagName).toBe('SECTION');
+    expect(externalReview.querySelector('craft-button')).toBeNull();
+    expect(externalReview.querySelector('[name="chevron-down"]')).toBeNull();
+  });
 });
