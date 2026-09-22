@@ -60,10 +60,10 @@
   const props = withDefaults(defineProps<ScreenProps>(), {
     form: null,
     defaultFormActions: () => ['saveAndContinueEditing'],
-  formAdditionalButtons: () => [],
-  contentMaxWidth: false,
-  fillViewport: false,
-});
+    formAdditionalButtons: () => [],
+    contentMaxWidth: false,
+    fillViewport: false,
+  });
 
   const slots = defineSlots<ScreenSlots>();
 
@@ -200,7 +200,9 @@
     :has-sidebar="hasSidebar"
     :additional-skip-links="additionalSkipLinks"
   />
-  <div :class="{ 'page-screen': true, 'page-screen--fill-viewport': fillViewport }">
+  <div
+    :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+  >
     <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu" />
     <div class="cp">
       <div class="cp__sidebar">
@@ -423,28 +425,28 @@ Main App shell
   }
 
   .page-screen {
-  background-color: var(--c-surface-header);
-}
+    background-color: var(--c-surface-header);
+  }
 
-/* The top bar keeps its height and the shell takes the rest. */
-.page-screen--fill-viewport {
-  display: flex;
-  flex-direction: column;
-  height: calc(100dvh - var(--cp-debug-bar-height, 0px));
-
-  .cp {
+  /* The top bar keeps its height and the shell takes the rest. */
+  .page-screen--fill-viewport {
     display: flex;
-    flex: 1;
-    min-height: 0;
+    flex-direction: column;
+    height: calc(100dvh - var(--cp-debug-bar-height, 0px));
+
+    .cp {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .cp__main {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
-  .cp__main {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-/**
+  /**
 Page
  */
   .cp-page {
