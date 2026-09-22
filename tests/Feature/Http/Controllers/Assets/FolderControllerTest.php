@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -107,7 +108,8 @@ it('can rename a folder', function () {
         'newName' => 'Renamed Folder',
     ])
         ->assertOk()
-        ->assertJsonPath('newName', 'Renamed-Folder');
+        ->assertJsonPath('newName', 'Renamed-Folder')
+        ->assertJsonPath('folderUrl', fn (string $url): bool => str_ends_with($url, '/Renamed-Folder'));
 });
 
 it('validates move folder input', function () {
@@ -125,6 +127,73 @@ it('returns bad request when moving a missing folder', function (bool $missingSo
     'missing source' => true,
     'missing destination' => false,
 ]);
+
+it('rejects moving a folder to an invalid relative location without deleting it', function (string $destination, array $resolution) {
+    $source = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->folder->id,
+        'path' => 'source/',
+        'name' => 'source',
+    ]);
+    $child = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $source->id,
+        'path' => 'source/child/',
+        'name' => 'child',
+    ]);
+    $destinationId = match ($destination) {
+        'current parent' => $this->folder->id,
+        'itself' => $source->id,
+        'descendant' => $child->id,
+    };
+
+    postJson(action([FolderController::class, 'move']), [
+        'folderId' => $source->id,
+        'parentId' => $destinationId,
+        ...$resolution,
+    ])->assertBadRequest();
+
+    expect(VolumeFolderModel::query()->find($source->id))->not->toBeNull()
+        ->and(VolumeFolderModel::query()->find($child->id))->not->toBeNull();
+})->with([
+    'current parent with replacement' => ['current parent', ['force' => true]],
+    'current parent with merge' => ['current parent', ['merge' => true]],
+    'itself' => ['itself', []],
+    'descendant' => ['descendant', []],
+]);
+
+it('rejects replacing an ancestor folder without deleting its contents', function () {
+    $ancestor = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->folder->id,
+        'path' => 'photos/',
+        'name' => 'photos',
+    ]);
+    $parent = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $ancestor->id,
+        'path' => 'photos/archive/',
+        'name' => 'archive',
+    ]);
+    $source = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $parent->id,
+        'path' => 'photos/archive/photos/',
+        'name' => 'photos',
+    ]);
+    $sourcePath = 'photos/archive/photos/source.txt';
+    Storage::disk('test-disk')->put($sourcePath, 'source contents');
+
+    postJson(action([FolderController::class, 'move']), [
+        'folderId' => $source->id,
+        'parentId' => $this->folder->id,
+        'force' => true,
+    ])->assertBadRequest();
+
+    expect(VolumeFolderModel::query()->find($ancestor->id))->not->toBeNull()
+        ->and(VolumeFolderModel::query()->find($source->id))->not->toBeNull()
+        ->and(Storage::disk('test-disk')->get($sourcePath))->toBe('source contents');
+});
 
 it('can move a folder whose parent has a null path', function () {
     $sourceName = fake()->uuid();
@@ -149,7 +218,9 @@ it('can move a folder whose parent has a null path', function () {
     postJson(action([FolderController::class, 'move']), [
         'folderId' => $source->id,
         'parentId' => $destination->id,
-    ])->assertOk();
+    ])
+        ->assertOk()
+        ->assertJsonPath('newFolderUrl', fn (string $url): bool => str_ends_with($url, "/$destinationName/$sourceName"));
 
     expect(VolumeFolderModel::query()
         ->where('parentId', $destination->id)
