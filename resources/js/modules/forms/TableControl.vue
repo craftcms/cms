@@ -13,7 +13,6 @@
 
   type TableControlProps = {
     columns: EditableTableColumns;
-    defaultValues?: EditableTableRow;
     allowAdd?: boolean;
     allowDelete?: boolean;
     allowReorder?: boolean;
@@ -124,7 +123,6 @@
     }
 
     instance = new EditableTable(id, name, props.control.props.columns, {
-      defaultValues: props.control.props.defaultValues,
       allowAdd: props.control.props.allowAdd,
       allowDelete: props.control.props.allowDelete,
       allowReorder: props.control.props.allowReorder,
