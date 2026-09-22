@@ -116,7 +116,7 @@ describe('WorkflowStagesInput', () => {
       | (HTMLElement & {disabled: boolean})
       | undefined;
     expect(removeAction?.disabled).toBe(true);
-    await selectType('Add User review');
+    await selectType('User review');
 
     expect(updates.at(-1)).toEqual([
       stage('editorial', 'Editorial'),
