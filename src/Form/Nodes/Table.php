@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Traits\Conditionable;
+use function CraftCms\Cms\t;
 
 /**
  * A listing of rows (e.g. product types, gateways) rendered as a Form Node, backed by the
@@ -31,6 +32,12 @@ class Table implements Node
 
     /** @var list<array<string, mixed>> */
     private array $rows = [];
+
+    private ?string $dataUrl = null;
+
+    private int $perPage = 100;
+
+    private ?string $moveToPageUrl = null;
 
     private ?string $emptyMessage = null;
 
@@ -55,6 +62,9 @@ class Table implements Node
 
     /** @var list<array<string, mixed>> */
     private array $bulkActions = [];
+
+    /** @var list<array<string, mixed>> */
+    private array $statusActions = [];
 
     private bool $searchable = false;
 
@@ -110,9 +120,25 @@ class Table implements Node
      */
     public function rows(array $rows): static
     {
-        $this->rows = array_map(self::resolveRowStatus(...), $rows);
+        $this->rows = self::prepareRows($rows);
+        $this->dataUrl = null;
 
         return $this;
+    }
+
+    /**
+     * Resolves `_status` the same way for a row whether it's handed to {@see rows()} directly
+     * (upfront mode) or built by a controller's own paginated `tableData()`-style action
+     * ({@see dataUrl()} mode, where that action's response bypasses `rows()` entirely) — call
+     * this on a page's worth of rows before returning them as JSON, so both modes resolve
+     * `_status` identically.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    public static function prepareRows(array $rows): array
+    {
+        return array_map(self::resolveRowStatus(...), $rows);
     }
 
     /** @param array<string, mixed> $row */
@@ -131,6 +157,41 @@ class Table implements Node
         ];
 
         return $row;
+    }
+
+    /**
+     * Alternative to {@see rows()} for a list too large to hand over upfront: the client fetches
+     * each page (and, when {@see searchable()} is also on, searches) from `$url` instead, posting
+     * `{page, per_page, search}` and expecting back `{data: <rows, same shape rows() documents>,
+     * pagination: {total, per_page, current_page, last_page, next_page_url, prev_page_url, from,
+     * to}}` — build that response the same way `CraftCms\Cms\Http\ViewModels\
+     * ContentIndexViewModel::pagination()` does (a plain `Illuminate\Pagination\
+     * LengthAwarePaginator` over an already-sliced array; no Eloquent query required), and run
+     * each page's rows through {@see prepareRows()} before responding.
+     *
+     * Mutually exclusive with {@see rows()} — calling one clears whichever the other set.
+     */
+    public function dataUrl(string $url, int $perPage = 100): static
+    {
+        $this->dataUrl = $url;
+        $this->perPage = $perPage;
+        $this->rows = [];
+
+        return $this;
+    }
+
+    /**
+     * Only meaningful alongside {@see dataUrl()}: the endpoint a "Move to page…" control posts
+     * `{id, page}` to, for moving a row to a different page than the one it's currently on (the
+     * within-page drag-and-drop {@see reorderable()} already offers can't reach a page that
+     * isn't loaded). The endpoint owns computing the row's new absolute position from `page` and
+     * applying it — this Node has no opinion on how.
+     */
+    public function moveToPageUrl(string $url): static
+    {
+        $this->moveToPageUrl = $url;
+
+        return $this;
     }
 
     public function emptyMessage(?string $emptyMessage): static
@@ -201,29 +262,35 @@ class Table implements Node
     }
 
     /**
-     * Adds bulk action buttons to the selection footer (shown once at least one row is
-     * selected, alongside "Clear selection" and — if the table is {@see deletable()} with
-     * `bulk: true` — a trailing "Delete" button). Every action posts `{ids: <selected row
-     * ids>, ...params}` to its own `url`; there's no client-side notion of what the action
-     * does beyond that; the endpoint owns applying it and returning a normal flash response.
+     * Adds items to the selection footer's single "Actions" menu (shown once at least one
+     * row is selected, alongside "Clear selection") — matching the real Entries index's own
+     * selection-footer convention: one "Actions" menu holding every uncommon per-selection
+     * action (a "move to page…" control when {@see moveToPageUrl()} is set, a trailing
+     * destructive "Delete" when the table is {@see deletable()} with `bulk: true`, and every
+     * entry here), never a separate button per action or a disclosure control on each row.
+     * Every action posts `{ids: <selected row ids>, ...params}` to its own `url`; there's no
+     * client-side notion of what the action does beyond that; the endpoint owns applying it
+     * and returning a normal flash response.
      *
      * Each entry in `$actions` is either:
      * - a single action: `['label' => string, 'url' => string, 'params'? => array<string,
      *   mixed>, 'allowMultiple'? => bool]` — `params` is merged into the posted body
-     *   alongside `ids`; `allowMultiple` (default `true`) disables the button whenever more
+     *   alongside `ids`; `allowMultiple` (default `true`) disables the item whenever more
      *   than one row is selected, for an action that only makes sense against one row at a
      *   time (a UI nicety only — the endpoint still gets whatever `ids` a request carries,
      *   and is responsible for enforcing that itself if it matters).
-     * - a dropdown menu of single actions in the same shape: `['label'? => string, 'icon'? =>
-     *   string, 'items' => list<array{label: string, url: string, params?: array<string,
-     *   mixed>, allowMultiple?: bool}>]`. Omit `label` (pairing it with an `icon`) for an
-     *   icon-only invoker — the button shows just that icon, no visible text — matching
-     *   legacy's own unlabeled gear-icon menu for a single, infrequently-needed item (e.g.
-     *   shipping categories' "Set Default Category").
+     * - a labeled group of single actions in the same shape: `['label'? => string, 'items' =>
+     *   list<array{label: string, url: string, params?: array<string, mixed>, allowMultiple?:
+     *   bool}>]`, shown as a heading followed by its items within the same "Actions" menu.
+     *   Omitting `label` folds the items in unheaded, blended into the flat list — legacy's
+     *   own unlabeled gear-icon menu for a single, infrequently-needed item (e.g. shipping
+     *   categories' "Set Default Category") reads this way now that there's one shared
+     *   invoker rather than its own separate icon-only button; an `icon` alone no longer
+     *   produces a distinct invoker and is ignored.
      *
      * Reaches for a row-selection checkbox column the same way `deletable(..., bulk: true)`
-     * does — either one turns selection on; a table with both just contributes its own
-     * button(s) to the same footer.
+     * does — either one turns selection on; a table with both just contributes to the same
+     * footer's "Actions" menu.
      *
      * @param  list<array<string, mixed>>  $actions
      */
@@ -235,11 +302,37 @@ class Table implements Node
     }
 
     /**
-     * Shows a text search box above the table, filtering rows entirely client-side — every row
-     * is already loaded (there's no pagination to search across, unlike the legacy
-     * `Craft.VueAdminTable` screen this usually replaces, which searched server-side against a
-     * paginated result set). See {@see rows()} for how a row controls what it matches against.
-     * Most tables don't need this — reach for it only where legacy actually had `search: true`.
+     * Adds a dedicated "Set status" button to the selection footer, kept separate from
+     * {@see bulkActions()}'s own "Actions" menu — matching the real Craft element index's own
+     * `BulkActionsBar.vue`, which always pulls its Set Status button out of the generic
+     * actions menu (it identifies it there by a well-known PHP action class key) specifically
+     * *because* it's the most-reached-for action, not because it's a different kind of thing.
+     * "Set status" is the button's own fixed label, not configurable here — `$items` is just
+     * its menu content, the same shape as a {@see bulkActions()} single action: `list<array{
+     * label: string, url: string, params?: array<string, mixed>, allowMultiple?: bool}>`
+     * (typically `Enabled`/`Disabled`, each posting a different `status` param to one `url`).
+     *
+     * Reaches for a row-selection checkbox column the same way `deletable(..., bulk: true)`/
+     * `bulkActions()` do — any of the three turns selection on.
+     *
+     * @param  list<array<string, mixed>>  $items
+     */
+    public function statusActions(array $items): static
+    {
+        $this->statusActions = $items;
+
+        return $this;
+    }
+
+    /**
+     * Shows a text search box above the table. With {@see rows()} (the default), it filters
+     * entirely client-side — every row is already loaded. With {@see dataUrl()}, the query is
+     * instead sent as a `search` param to that endpoint (resetting to page 1), matching the
+     * legacy `Craft.VueAdminTable` screens this usually replaces, which searched server-side
+     * against a paginated result set — see {@see dataUrl()} for the exact request/response
+     * contract. See {@see rows()} for how a row controls what it matches against in the
+     * client-side case. Most tables don't need this — reach for it only where legacy actually
+     * had `search: true`.
      */
     public function searchable(?string $placeholder = null): static
     {
@@ -270,7 +363,16 @@ class Table implements Node
             default => '',
         };
 
-        if (empty($rows)) {
+        if ($node->props['dataUrl'] !== null) {
+            // Same "no sensible non-JS equivalent" reasoning already applied to reorder/delete/
+            // bulk-actions/search: fetching and paginating rows client-side has no plain-HTML
+            // fallback, so this renders neither an empty table nor (potentially misleadingly)
+            // the table's own `emptyMessage`, which describes a genuinely empty table, not one
+            // this fallback simply can't populate.
+            $table = Html::tag('p', Html::encode(t('This table requires JavaScript.')), [
+                'class' => ['zilch'],
+            ]);
+        } elseif (empty($rows)) {
             $table = Html::tag('p', Html::encode($node->props['emptyMessage'] ?? ''), [
                 'class' => ['zilch'],
             ]);
@@ -349,6 +451,9 @@ class Table implements Node
         return [
             'columns' => $this->columns,
             'rows' => $this->rows,
+            'dataUrl' => $this->dataUrl,
+            'perPage' => $this->perPage,
+            'moveToPageUrl' => $this->moveToPageUrl,
             'emptyMessage' => $this->emptyMessage,
             'createLabel' => $this->createLabel,
             'createUrl' => $this->createUrl,
@@ -360,6 +465,7 @@ class Table implements Node
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
             'bulkDeletable' => $this->bulkDeletable,
             'bulkActions' => $this->bulkActions,
+            'statusActions' => $this->statusActions,
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
         ];
