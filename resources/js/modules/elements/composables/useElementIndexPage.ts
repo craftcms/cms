@@ -293,7 +293,14 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
       return;
     }
 
-    const base = {structureId: structure.id, elementId: id, siteId: row.siteId};
+    // `row.id` rather than `id`: the drag layer keys its DOM maps by string,
+    // and the server's `integer` validation accepts a numeric string without
+    // casting it, so forwarding that key hands a string to an int parameter.
+    const base = {
+      structureId: structure.id,
+      elementId: row.id,
+      siteId: row.siteId,
+    };
 
     try {
       let exceeds = exceedsMaxLevels(id, placement);
