@@ -2560,6 +2560,31 @@ describe('FormRenderer', () => {
     expect(document.activeElement).toBe(input);
   });
 
+  it('preserves the focused descendant of an overridden control during reconciliation', async () => {
+    const overridden = clonePayload();
+    app.unmount();
+    await mount(overridden, {
+      slots: {
+        'settings.placeholder': () =>
+          h('div', [
+            h('button', {type: 'button'}, 'Actions'),
+            h('input', {'data-override-input': ''}),
+          ]),
+      },
+    });
+
+    const input = required(
+      container.querySelector<HTMLInputElement>('[data-override-input]'),
+      'Expected the override input.'
+    );
+    input.focus();
+    currentPayload.value = structuredClone(overridden);
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(input);
+  });
+
   it('passes switch configuration to craft-switch', async () => {
     const configured = clonePayload();
 

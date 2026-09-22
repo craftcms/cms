@@ -15,10 +15,6 @@ type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
 
 export interface ElementIndexRow extends IndexQueryParams {
   id: string | number;
-  isFolder?: boolean;
-  folderUrl?: string;
-  folderId?: string | number;
-  canMoveTo?: boolean;
   /** The row's depth in the tree (1-based). Structure mode only. */
   level?: number;
   /** Whether the row has descendants the index would list (its toggle). */

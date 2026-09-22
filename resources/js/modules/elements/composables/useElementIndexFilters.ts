@@ -1,6 +1,9 @@
 import type {Ref} from 'vue';
 import {useForm} from '@inertiajs/vue3';
-import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+import type {
+  ElementIndexRoute,
+  IndexQueryParams,
+} from '@/modules/elements/composables/useElementIndexVisits';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
 import type {ConditionConfig} from '@/modules/conditions/types';
@@ -20,7 +23,8 @@ export function useElementIndexFilters(
   props: ElementIndexFiltersContext,
   viewState: Ref<ViewState>,
   route: ElementIndexRoute,
-  conditions?: Ref<ConditionConfig | null>
+  conditions?: Ref<ConditionConfig | null>,
+  additionalParams?: () => IndexQueryParams
 ) {
   const form = useForm({
     search: props.search ?? '',
@@ -39,6 +43,7 @@ export function useElementIndexFilters(
         sort: viewState.value.sources?.[sourceKey]?.sort,
         viewMode: viewState.value.mode,
         condition: conditions?.value ?? undefined,
+        ...additionalParams?.(),
       }))
       .submit(
         {url: route.url(), method: 'get'},

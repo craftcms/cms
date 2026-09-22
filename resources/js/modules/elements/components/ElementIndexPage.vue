@@ -12,6 +12,8 @@
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import {ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/components/customize-sources/CustomizeSourcesModal.vue';
+  import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+  import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
   import {useNavItemAction} from '@/common/composables/useNavItemActions';
   import CpContainer from '@/common/components/CpContainer.vue';
 
@@ -22,6 +24,10 @@
     sourceHref?: string;
     /** Overrides the pinned first column (defaults to the element's title). */
     pinnedColumn?: {key: string; label: string};
+    /** Type-specific item attributes and interaction handlers. */
+    itemBehavior?: ElementIndexItemBehavior;
+    /** Additional type-specific params included with filter submissions. */
+    filterParams?: IndexQueryParams;
     /**
      * Offers Customize Sources from the nav item this index lives under. Opt-in
      * rather than automatic, since not every index that uses this page should
@@ -33,6 +39,7 @@
   const page = useElementIndexPage({
     route: props.route,
     pinnedColumn: props.pinnedColumn,
+    filterParams: () => props.filterParams ?? {},
   });
 
   // Double-click an element to edit it in a slideout.
@@ -116,6 +123,9 @@
               as the entries index's New Entry button. -->
             <slot name="toolbar-actions" :element-index="elementIndex" />
           </template>
+          <template #search-options>
+            <slot name="search-options"></slot>
+          </template>
         </ElementIndexToolbar>
       </template>
       <template #navbar>
@@ -132,6 +142,7 @@
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
+            :item-behavior="itemBehavior"
           />
           <ElementThumbs
             v-else-if="mode === 'thumbs'"
@@ -139,6 +150,7 @@
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
+            :item-behavior="itemBehavior"
           />
           <DataTable
             v-else
@@ -146,6 +158,7 @@
             :selectable="true"
             :loading="loading"
             :spacing="TableSpacing.Spacious"
+            :item-behavior="itemBehavior"
             :with-bottom-border="false"
             :structure="mode === 'structure'"
             :is-row-collapsed="structureView.isCollapsed"

@@ -6,14 +6,13 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
-  import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
+  import {
+    isInteractiveItemEvent,
+    type ElementIndexItemBehavior,
+  } from '@/modules/elements/types/item-behavior';
 
   interface CardElement {
     id: string | number;
-    isFolder?: boolean;
-    folderUrl?: string;
-    folderId?: string | number;
-    canMoveTo?: boolean;
     cardAttributes?: Record<
       string,
       string | number | boolean | null | undefined
@@ -35,6 +34,7 @@
       sortable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
+      itemBehavior?: ElementIndexItemBehavior<CardElement>;
     }>(),
     {
       data: () => [],
@@ -65,14 +65,13 @@
 
     return {
       element: true,
-      'element--folder': !!element && isFolderRow(element),
     };
   }
 
   function itemAttrs(id: string | number): Record<string, unknown> | undefined {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    return element ? rowMoveAttrs(element) : undefined;
+    return element ? props.itemBehavior?.attrs?.(element) : undefined;
   }
 
   function cardAttrs(id: string | number): Record<string, unknown> | undefined {
@@ -88,47 +87,33 @@
     };
   }
 
-  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
-
-  // Folder cards (asset index) navigate into the folder on click, except when
-  // the click lands on an interactive control (the select checkbox, a link, …).
-  // Other cards fall through to the normal click-to-select behavior.
   function onCardClick(id: string | number, event: MouseEvent) {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    if (!element || !isFolderRow(element)) {
-      props.selection.handleClick(id, event);
+    if (element && props.itemBehavior?.onClick?.(element, event)) {
       return;
     }
 
-    if (
-      event.target instanceof HTMLElement &&
-      event.target.closest('a[href], button, input, craft-checkbox')
-    ) {
-      return;
-    }
-    navigateToFolder(element.folderUrl);
+    props.selection.handleClick(id, event);
   }
 
-  /**
-   * Only the folder case: a folder card opens the folder rather than selecting
-   * it. Everything else — select, arrow-key navigation, shift-extend — is the
-   * list's, and taking the key here is what tells it to stand down.
-   */
   function onCardKeydown(
     id: number | string,
-    index: number,
+    _index: number,
     event: KeyboardEvent
   ) {
-    if (!props.selectable || (event.key !== ' ' && event.key !== 'Enter')) {
+    if (!props.selectable) {
+      return;
+    }
+
+    if (isInteractiveItemEvent(event)) {
       return;
     }
 
     const element = props.data.find((el) => el.id === id);
 
-    if (element && isFolderRow(element)) {
+    if (element && props.itemBehavior?.onKeydown?.(element, event)) {
       event.preventDefault();
-      navigateToFolder(element.folderUrl);
     }
   }
 
@@ -229,7 +214,7 @@
     position: relative;
   }
 
-  .card-grid > li.element--folder {
+  .card-grid > li[data-is-folder] {
     cursor: pointer;
   }
 

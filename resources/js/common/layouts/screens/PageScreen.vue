@@ -298,7 +298,7 @@
                         </slot>
 
                         <slot name="content-header">
-                          <div id="cp-content-header" class="pt-xl pb-md">
+                          <div id="cp-content-header" class="pt-lg pb-md">
                             <CpContainer>
                               <div class="flex items-center justify-between">
                                 <LayoutSlotOutlet name="title">

@@ -29,7 +29,10 @@
   import Empty from '@/common/components/Empty.vue';
   import {usePage} from '@inertiajs/vue3';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
-  import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
+  import {
+    isInteractiveItemEvent,
+    type ElementIndexItemBehavior,
+  } from '@/modules/elements/types/item-behavior';
 
   const props = withDefaults(
     defineProps<{
@@ -54,6 +57,7 @@
        * structure rows reorder as a tree and emit `moveStructureRow`.
        */
       canMoveRow?: (id: string | number, move: StructureMove) => boolean;
+      itemBehavior?: ElementIndexItemBehavior<any>;
       withBottomBorder?: boolean;
     }>(),
 
@@ -99,26 +103,12 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
-  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
-
-  // Folder rows (asset index) navigate into the folder on click, except when
-  // the click lands on an interactive control (checkbox, a real link, …).
-  // Other rows fall through to the normal click-to-select behavior.
   function onRowClick(row: any, event: MouseEvent) {
-    if (!isFolderRow(row.original)) {
-      selectRowFromEvent(row, event);
+    if (props.itemBehavior?.onClick?.(row.original, event)) {
       return;
     }
 
-    if (
-      event.target instanceof HTMLElement &&
-      event.target.closest(
-        'a[href], button, input, craft-checkbox, craft-reorder-button'
-      )
-    ) {
-      return;
-    }
-    navigateToFolder(row.original.folderUrl);
+    selectRowFromEvent(row, event);
   }
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
@@ -349,18 +339,19 @@
     event: KeyboardEvent
   ) {
     if (!props.selectable) return;
+    if (isInteractiveItemEvent(event)) return;
     const rows = props.table.getRowModel().rows;
     if (!(event.currentTarget instanceof HTMLElement)) return;
     const target = event.currentTarget;
     index = Number(index);
+    if (props.itemBehavior?.onKeydown?.(row.original, event)) {
+      event.preventDefault();
+      return;
+    }
     switch (event.key) {
       case ' ':
       case 'Enter':
         event.preventDefault();
-        if (isFolderRow(row.original)) {
-          navigateToFolder(row.original.folderUrl);
-          break;
-        }
         toggleRow(row);
         break;
       case 'ArrowDown': {
@@ -504,7 +495,7 @@
             }
           "
           :tabindex="selectable ? 0 : undefined"
-          v-bind="rowMoveAttrs(row.original)"
+          v-bind="itemBehavior?.attrs?.(row.original)"
           :style="
             structure
               ? {'--structure-level': row.original.level ?? 1}
@@ -513,7 +504,6 @@
           :class="{
             row: true,
             'cp-table-row': true,
-            'cp-table-row--folder': isFolderRow(row.original),
             sel: row.getIsSelected(),
             'row--dragging':
               !readOnly &&
@@ -759,7 +749,7 @@
     background-color: var(--c-color-accent-fill-quiet);
   }
 
-  .cp-table-row--folder {
+  .cp-table-row[data-is-folder] {
     cursor: pointer;
   }
 

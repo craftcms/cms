@@ -125,6 +125,58 @@ describe('DataTable', () => {
     ]);
   });
 
+  it('honors handled row interactions without changing selection', async () => {
+    const onClick = vi.fn(() => true);
+    const onKeydown = vi.fn(() => true);
+    const {root} = mount({
+      itemBehavior: {
+        attrs: (item: {id: number}) => ({'data-item-id': item.id}),
+        onClick,
+        onKeydown,
+      },
+    });
+    const row = rows(root)[0]!;
+
+    row.click();
+    row.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: ' ',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+    await nextTick();
+
+    expect(row.dataset.itemId).toBe('1');
+    expect(onClick).toHaveBeenCalledWith(
+      expect.objectContaining({id: 1}),
+      expect.any(MouseEvent)
+    );
+    expect(onKeydown).toHaveBeenCalledWith(
+      expect.objectContaining({id: 1}),
+      expect.any(KeyboardEvent)
+    );
+    expect(selected(root)).toEqual([]);
+  });
+
+  it('leaves keyboard events from a row checkbox to the checkbox', async () => {
+    const onKeydown = vi.fn(() => true);
+    const {root} = mount({itemBehavior: {onKeydown}});
+    const checkbox = rows(root)[0]!.querySelector('craft-checkbox')!;
+
+    checkbox.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: ' ',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+    await nextTick();
+
+    expect(onKeydown).not.toHaveBeenCalled();
+    expect(selected(root)).toEqual([]);
+  });
+
   it('moves focus to the spinner while re-sorting reloads, then back to the same sort button', async () => {
     const table = createSampleTable();
     const loading = ref(false);
