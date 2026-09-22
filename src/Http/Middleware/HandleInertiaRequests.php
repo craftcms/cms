@@ -11,6 +11,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Queue\JobProgress;
@@ -111,7 +112,11 @@ class HandleInertiaRequests extends Middleware
             return parent::share($request);
         }
 
-        $currentSite = Sites::getCurrentSite();
+        // The site the CP is working with, not the request's: `getCurrentSite()`
+        // is documented to always be the primary site on a CP request, so
+        // sharing it would have every screen read the primary site's content
+        // no matter which one `?site=` names.
+        $currentSite = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);

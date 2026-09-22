@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementIndexState;
@@ -14,13 +15,16 @@ use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
+use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 use function Termwind\render;
@@ -73,6 +77,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
     /** @var list<array<string, mixed>>|null */
     protected ?array $resolvedSources = null;
+
+    /** @var list<array<string, mixed>>|null */
+    private ?array $unfilteredSources = null;
+
+    private ?Site $resolvedSite = null;
+
+    /** @var Collection<int, Site>|null */
+    private ?Collection $selectableSites = null;
 
     public function __construct(
         /** @var class-string<ElementInterface> */
@@ -229,6 +241,98 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * The site the index is listing, which everything else here is scoped to:
+     * the `?site=` handle the rest of the CP addresses sites by, held to the
+     * sites this index can actually show ({@see selectableSites()}).
+     *
+     * Not a payload key — the client gets {@see siteId()} and {@see Sites()}.
+     */
+    protected function site(): Site
+    {
+        if ($this->resolvedSite !== null) {
+            return $this->resolvedSite;
+        }
+
+        $requested = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
+        $selectable = $this->selectableSites();
+
+        if ($selectable->contains(fn (Site $site): bool => $site->id === $requested->id)) {
+            return $this->resolvedSite = $requested;
+        }
+
+        // The requested site has nothing on this index — a section that only
+        // runs on the other sites, say — so fall back rather than list nothing.
+        return $this->resolvedSite = $selectable->first() ?? $requested;
+    }
+
+    public function siteId(): int
+    {
+        return $this->site()->id;
+    }
+
+    /**
+     * The sites the site menu offers, as the client needs them.
+     *
+     * Empty unless the menu is being shown at all, so a single-site install
+     * (or an element type that isn't localized) ships nothing.
+     *
+     * @return list<array{id: int, handle: string, name: string, group: ?string}>
+     */
+    public function sites(): array
+    {
+        if (! $this->showSiteMenu()) {
+            return [];
+        }
+
+        return $this->selectableSites()
+            ->map(fn (Site $site): array => [
+                'id' => $site->id,
+                'handle' => $site->handle,
+                'name' => t($site->name, category: 'site'),
+                // Only a heading for the menu, so an unresolvable group leaves
+                // the site ungrouped rather than failing the whole payload.
+                'group' => ($group = SiteGroups::getGroupById($site->groupId)) !== null
+                    ? t($group->name, category: 'site')
+                    : null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * The editable sites this index has something to show on.
+     *
+     * When every source is site-specific the list narrows to the sites those
+     * sources between them cover, so the menu never offers a site the index
+     * would come up empty on. Mirrors {@see ElementIndexHtml}.
+     *
+     * @return Collection<int, Site>
+     */
+    protected function selectableSites(): Collection
+    {
+        if ($this->selectableSites !== null) {
+            return $this->selectableSites;
+        }
+
+        $sites = Sites::getEditableSites();
+        $sources = collect($this->allSources())
+            ->reject(fn (array $source): bool => $source['type'] === ElementSources::TYPE_HEADING);
+
+        if ($sources->isNotEmpty() && $sources->every(fn (array $source): bool => isset($source['sites']))) {
+            $represented = $sources->flatMap(fn (array $source): array => (array) $source['sites'])->all();
+            $narrowed = $sites->filter(fn (Site $site): bool => in_array($site->id, $represented));
+
+            // Every source being scoped away from all the editable sites would
+            // leave no menu at all; keep the full list rather than none.
+            if ($narrowed->isNotEmpty()) {
+                $sites = $narrowed;
+            }
+        }
+
+        return $this->selectableSites = $sites->values();
+    }
+
+    /**
      * The element index page title: the selected source's name — “All entries”,
      * “Posts”, a volume, a user group — since that's what the screen is
      * actually showing.
@@ -291,11 +395,14 @@ abstract class ContentIndexViewModel extends ViewModel
             return [];
         }
 
-        $crumbs = [
+        $crumbs = array_values(array_filter([
+            // Leads the trail, the way the legacy index's `site-crumb` does:
+            // which site you're editing frames everything below it.
+            $this->siteCrumb($indexUrl),
             // The index's own name, not title() — that now names the selected
             // source, which is the crumb below this one.
             new ActionItem()->label($this->indexTitle())->href($indexUrl),
-        ];
+        ]));
 
         [$sourceKey] = $this->sourceState();
 
@@ -326,13 +433,81 @@ abstract class ContentIndexViewModel extends ViewModel
         return $crumbs;
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * The site crumb: the active site, carrying the others as its menu.
+     *
+     * Each option is a plain link to this index under a different `?site=`, so
+     * switching sites is an ordinary navigation — the server then re-resolves
+     * the sources, the selected source, and the query against the new site.
+     *
+     * `null` when there's no site menu to show, or only one site to show in it.
+     */
+    private function siteCrumb(string $indexUrl): ?ActionItem
+    {
+        $sites = $this->selectableSites();
+
+        if (! $this->showSiteMenu() || $sites->count() < 2) {
+            return null;
+        }
+
+        $siteId = $this->siteId();
+
+        return new ActionItem()
+            ->id('site-crumb')
+            ->icon('world')
+            ->ariaLabel(t('Site'))
+            ->label(t($this->site()->name, category: 'site'))
+            ->href($this->siteIndexUrl($indexUrl, $this->site()))
+            ->items($sites
+                ->map(fn (Site $site): array => [
+                    'type' => 'link',
+                    'label' => t($site->name, category: 'site'),
+                    'href' => $this->siteIndexUrl($indexUrl, $site),
+                    'selected' => $site->id === $siteId,
+                ])
+                ->values()
+                ->all());
+    }
+
+    /** This index, as the given site sees it. */
+    private function siteIndexUrl(string $indexUrl, Site $site): string
+    {
+        return Url::urlWithParams($indexUrl, ['site' => $site->handle]);
+    }
+
+    /**
+     * The index's sources, as the active site sees them: anything scoped to
+     * other sites is gone, and headings left over nothing with it.
+     *
+     * Everything downstream reads this rather than {@see allSources()}, so a
+     * source hidden for the site can't be the crumb switcher's current option
+     * and can't be resolved by {@see sourceState()} either — which is how the
+     * selected source clears itself when the site changes out from under it.
+     *
+     * @return list<array<string, mixed>>
+     */
     public function sources(): array
+    {
+        return $this->resolvedSources ??= ElementSources::filterSourcesBySite(
+            collect($this->allSources()),
+            $this->siteId(),
+        )->all();
+    }
+
+    /**
+     * Every source on the index, before the active site narrows them down.
+     *
+     * Resolving the site needs these ({@see selectableSites()}), so this is
+     * the one place that can't ask which site is active.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function allSources(): array
     {
         // The context is deliberately left at ElementSources' `index` default,
         // which is what this method has always resolved under. (sourceState()
         // passes static::RENDER_CONTEXT explicitly — the same value today.)
-        return $this->resolvedSources ??= $this->indexState()->sources(
+        return $this->unfilteredSources ??= $this->indexState()->sources(
             $this->elementType,
             withDisabled: true,
             page: $this->page,
@@ -705,7 +880,14 @@ abstract class ContentIndexViewModel extends ViewModel
             $resolved = app(ElementIndexes::class)
                 ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
 
-            if ($resolved[0] !== null) {
+            // resolveSource() looks the key up directly, so it'll happily find
+            // a source the active site doesn't have — the case Craft 5 handles
+            // by clearing the selection in updateSourceVisibility(). Fall
+            // through to a visible source rather than list a hidden one.
+            if (
+                $resolved[0] !== null &&
+                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $this->siteId()))
+            ) {
                 return $this->resolvedSource = $resolved;
             }
         }
@@ -793,6 +975,11 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->request->collapsedElementIds()
                 : [],
         )['query'];
+
+        // Ahead of the source's own criteria, which shouldn't get to override
+        // the site the user picked (the legacy index drops `criteria.siteId`
+        // for the same reason).
+        $query->siteId($this->siteId());
 
         $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
 

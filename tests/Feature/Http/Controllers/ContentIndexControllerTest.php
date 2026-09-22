@@ -17,6 +17,7 @@ use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
@@ -796,5 +797,99 @@ it('titles the screen after the selected source', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('title', 'Blog')
             ->where('crumbs.0.label', 'Entries')
+        );
+});
+
+it('scopes the index to the primary site by default', function () {
+    $primary = Sites::getCurrentSite();
+    $other = Site::factory()->create();
+
+    // Sections are created on the primary site; only the second one is also
+    // turned on for the other site.
+    $primaryOnly = Section::factory()->create(['type' => SectionType::Channel]);
+    $bothSites = Section::factory()->withSites($other)->create(['type' => SectionType::Channel]);
+
+    EntryModel::factory()->forSection($primaryOnly)->create();
+    EntryModel::factory()->forSection($bothSites)->count(3)->create();
+
+    get("/{$this->cpTrigger}/content/entries?viewMode=cards")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('siteId', $primary->id)
+            ->where('pagination.total', 4)
+            ->where('sources', fn ($sources) => collect($sources)->pluck('key')
+                ->contains("section:{$primaryOnly->uid}"))
+        );
+});
+
+it('scopes the index to the site named in the query', function () {
+    $other = Site::factory()->create();
+
+    $primaryOnly = Section::factory()->create(['type' => SectionType::Channel]);
+    $bothSites = Section::factory()->withSites($other)->create(['type' => SectionType::Channel]);
+
+    EntryModel::factory()->forSection($primaryOnly)->createElement();
+    EntryModel::factory()->forSection($bothSites)->createElement();
+
+    // The other site never had the first section, so its source is gone from
+    // the list — and the query is scoped to that site too, so the entries,
+    // which these factories only ever create on the primary site, are gone
+    // with it. Unscoped, this index would still be showing both of them.
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'site' => $other->handle,
+        'viewMode' => 'cards',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('siteId', $other->id)
+            ->where('pagination.total', 0)
+            ->where('sources', fn ($sources) => collect($sources)->pluck('key')
+                ->contains("section:{$bothSites->uid}"))
+            ->where('sources', fn ($sources) => collect($sources)->pluck('key')
+                ->doesntContain("section:{$primaryOnly->uid}"))
+        );
+});
+
+it('falls back off a source that the requested site hides', function () {
+    $other = Site::factory()->create();
+    $primaryOnly = Section::factory()->create(['type' => SectionType::Channel]);
+    Section::factory()->withSites($other)->create(['type' => SectionType::Channel]);
+
+    // The source is asked for by name, but it doesn't exist on that site, so
+    // the index resolves a visible one rather than listing nothing.
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$primaryOnly->uid}",
+        'site' => $other->handle,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.key', fn (string $key) => $key !== "section:{$primaryOnly->uid}")
+        );
+});
+
+it('leads the crumbs with a site switcher on a multi-site install', function () {
+    $primary = Sites::getCurrentSite();
+    $other = Site::factory()->create();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs.0.id', 'site-crumb')
+            ->where('crumbs.0.label', $primary->name)
+            ->where('crumbs.0.items', fn ($items) => collect($items)->pluck('label')->all() === [
+                $primary->name,
+                $other->name,
+            ])
+            // The index's own crumb still follows it.
+            ->where('crumbs.1.label', 'Entries')
+        );
+});
+
+it('leaves the crumbs alone on a single-site install', function () {
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs.0.label', 'Entries')
+            ->where('sites', [])
         );
 });
