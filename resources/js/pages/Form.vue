@@ -48,6 +48,8 @@
      * the element editor's sidebar shows via its own `metadataHtml` payload prop.
      */
     metadataHtml?: string;
+    /** Caps and centers the content column (default on) — see `UseAppLayoutOptions.contentMaxWidth`. Pass `false` for a full-width screen (an index, say). */
+    contentMaxWidth?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -123,6 +125,16 @@
       })) ?? []
   );
 
+  /** A `Form` whose sole node is an unbordered `Table` also skips this component's own outer pane — redundant chrome around a Table that already manages its own layout. */
+  const isBareTable = computed(() => {
+    const [node, ...rest] = props.form.nodes;
+    return (
+      rest.length === 0 &&
+      node?.component === 'craft:admin-table' &&
+      node.props.bordered === false
+    );
+  });
+
   // `PageScreen` shows the Save button purely on `form` being truthy (`v-if="form"`) —
   // it doesn't look at `onSave`/`submit`. Passing `inertiaForm` unconditionally would
   // show a Save button with nothing to save on a node-only screen (a listing, say).
@@ -130,7 +142,7 @@
     form: props.submit ? inertiaForm : null,
     defaultFormActions: props.defaultFormActions,
     formActions: translatedFormActions.value,
-    contentMaxWidth: true,
+    contentMaxWidth: props.contentMaxWidth ?? true,
     onSave: save,
   });
 
@@ -177,8 +189,14 @@
   -->
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
     <CpContainer>
-      <craft-pane appearance="raised">
-        <craft-field-group class="py-4">
+      <component
+        :is="isBareTable ? 'div' : 'craft-pane'"
+        v-bind="isBareTable ? {} : {appearance: 'raised'}"
+      >
+        <component
+          :is="isBareTable ? 'div' : 'craft-field-group'"
+          v-bind="isBareTable ? {} : {class: 'py-4'}"
+        >
           <FormRenderer
             ref="renderer"
             :payload="form"
@@ -195,8 +213,8 @@
               <slot :name="slotName" v-bind="slotProps" />
             </template>
           </FormRenderer>
-        </craft-field-group>
-      </craft-pane>
+        </component>
+      </component>
     </CpContainer>
   </component>
   <LayoutSlot v-if="metadataHtml" name="details">

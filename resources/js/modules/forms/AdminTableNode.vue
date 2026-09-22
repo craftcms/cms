@@ -163,6 +163,7 @@
       statusActions: BulkActionSingle[];
       searchable: boolean;
       searchPlaceholder: string | null;
+      bordered: boolean;
     }>;
   }>();
 
@@ -783,6 +784,7 @@
       <CpLink
         variant="accent"
         appearance="button"
+        icon="plus"
         :href="node.props.createUrl"
         :inertia="false"
         >{{ node.props.createLabel }}</CpLink
@@ -804,7 +806,10 @@
       </ActionMenu>
     </LayoutSlot>
 
-    <craft-pane padding="0" appearance="raised">
+    <component
+      :is="node.props.bordered ? 'craft-pane' : 'div'"
+      v-bind="node.props.bordered ? {padding: '0', appearance: 'raised'} : {}"
+    >
       <div v-if="node.props.searchable" slot="header-actions">
         <CraftInput
           name="search"
@@ -914,7 +919,7 @@
           </ActionMenu>
         </div>
       </div>
-    </craft-pane>
+    </component>
   </div>
 </template>
 

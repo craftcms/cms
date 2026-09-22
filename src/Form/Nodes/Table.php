@@ -70,6 +70,8 @@ class Table implements Node
 
     private ?string $searchPlaceholder = null;
 
+    private bool $bordered = false;
+
     public function __construct(private readonly string $uid) {}
 
     public static function make(string $uid): self
@@ -342,6 +344,14 @@ class Table implements Node
         return $this;
     }
 
+    /** Toggles the table's own bordered/raised card chrome (off by default, matching an index's bare look; opt in when embedding a Table alongside other content). See `Form.vue` for the matching outer-pane behavior. */
+    public function bordered(bool $bordered = true): static
+    {
+        $this->bordered = $bordered;
+
+        return $this;
+    }
+
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
         $columns = $node->props['columns'];
@@ -468,6 +478,7 @@ class Table implements Node
             'statusActions' => $this->statusActions,
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
+            'bordered' => $this->bordered,
         ];
     }
 
