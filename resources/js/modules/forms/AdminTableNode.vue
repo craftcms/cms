@@ -270,10 +270,14 @@
     isEndpointMode.value ? (pagination.value?.from ?? 0) : 1
   );
   const footerTo = computed(() =>
-    isEndpointMode.value ? (pagination.value?.to ?? 0) : displayedRows.value.length
+    isEndpointMode.value
+      ? (pagination.value?.to ?? 0)
+      : displayedRows.value.length
   );
   const footerTotal = computed(() =>
-    isEndpointMode.value ? (pagination.value?.total ?? 0) : displayedRows.value.length
+    isEndpointMode.value
+      ? (pagination.value?.total ?? 0)
+      : displayedRows.value.length
   );
 
   const columnHelper = createCraftColumnHelper<TableRow>();
@@ -392,7 +396,9 @@
           const actions = [];
 
           if (row.original._deletable !== false) {
-            actions.push(h(DeleteButton, {onClick: () => deleteRow(row.original)}));
+            actions.push(
+              h(DeleteButton, {onClick: () => deleteRow(row.original)})
+            );
           }
 
           return actions;
@@ -559,7 +565,8 @@
     pageRows.value = reordered;
 
     const toPosition =
-      (pagination.value.current_page - 1) * props.node.props.perPage + finishIndex;
+      (pagination.value.current_page - 1) * props.node.props.perPage +
+      finishIndex;
 
     actionClient
       .post(props.node.props.reorderUrl!, {id: moved.id, toPosition})
@@ -772,7 +779,7 @@
 
 <template>
   <div :data-form-node="node.uid">
-    <LayoutSlot v-if="node.props.createUrl" name="actions">
+    <LayoutSlot v-if="node.props.createUrl" name="content-actions">
       <CpLink
         variant="accent"
         appearance="button"
@@ -781,7 +788,7 @@
         >{{ node.props.createLabel }}</CpLink
       >
     </LayoutSlot>
-    <LayoutSlot v-else-if="createMenuActions.length" name="actions">
+    <LayoutSlot v-else-if="createMenuActions.length" name="content-actions">
       <ActionMenu :actions="createMenuActions">
         <template #invoker="{attributes}">
           <craft-button
@@ -893,7 +900,11 @@
               </craft-button>
             </template>
           </ActionMenu>
-          <ActionMenu v-if="footerActionItems.length" :actions="footerActionItems" :label="t('Actions')">
+          <ActionMenu
+            v-if="footerActionItems.length"
+            :actions="footerActionItems"
+            :label="t('Actions')"
+          >
             <template #invoker="{attributes}">
               <craft-button type="button" size="small" v-bind="attributes">
                 {{ t('Actions') }}
