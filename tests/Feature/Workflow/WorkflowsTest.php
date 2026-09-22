@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
@@ -42,6 +44,7 @@ use CraftCms\Cms\Workflow\Workflows;
 use CraftCms\Cms\Workflow\WorkflowStageTypes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
@@ -49,6 +52,7 @@ use Workbench\App\Workflow\AutomaticApprovalStage;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\delete;
 use function Pest\Laravel\get;
+use function Pest\Laravel\patch;
 use function Pest\Laravel\postJson;
 
 class TestAutomatedWorkflowStage extends BaseWorkflowStage
@@ -666,6 +670,66 @@ it('shows workflow settings routes with separate store and update targets', func
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('submit.method', 'patch')
             ->where('submit.url', action([WorkflowsController::class, 'update'], $workflow))
+            ->etc());
+});
+
+it('returns to the workflow index unless saving and continuing', function () {
+    $workflow = workflowFor($this->entry, [automatedStage('Review', 'pending')]);
+    $editUrl = action([WorkflowsController::class, 'edit'], $workflow);
+    $payload = [
+        'name' => 'Updated workflow',
+        'stages' => $workflow->stages->map->getConfig()->all(),
+    ];
+
+    patch(action([WorkflowsController::class, 'update'], $workflow), [
+        ...$payload,
+        'redirect' => Crypt::encrypt('settings/workflows'),
+    ])->assertRedirect(Url::cpUrl('settings/workflows'));
+
+    $workflow->refresh();
+    patch(action([WorkflowsController::class, 'update'], $workflow), $payload)
+        ->assertRedirect($editUrl);
+});
+
+it('filters sorts and paginates the workflow settings index', function () {
+    Workflow::query()->create([
+        'name' => 'Alpha review',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [
+            [
+                ...automatedStage('Review', 'pending'),
+                'uid' => Str::uuid7()->toString(),
+            ],
+        ],
+    ]);
+    Workflow::query()->create([
+        'name' => 'Beta review',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [],
+    ]);
+    Workflow::query()->create([
+        'name' => 'Ignored release',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [],
+    ]);
+
+    get(action([WorkflowsController::class, 'index'], [
+        'search' => 'review',
+        'sort' => [['field' => 'name', 'direction' => 'desc']],
+        'per_page' => 1,
+        Cms::config()->getPageTriggerParam() => 2,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('searchTerm', 'review')
+            ->where('sort.0.field', 'name')
+            ->where('sort.0.direction', 'desc')
+            ->where('pagination.total', 2)
+            ->where('pagination.per_page', 1)
+            ->where('pagination.current_page', 2)
+            ->has('data', 1)
+            ->where('data.0.name', 'Alpha review')
+            ->where('data.0.stages', 1)
             ->etc());
 });
 

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\Requests\WorkflowRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Workflows;
@@ -29,8 +32,26 @@ class WorkflowsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): CpScreenResponse
+    public function index(TableRequest $request): CpScreenResponse
     {
+        $searchTerm = trim($request->search() ?? '');
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $paginator = Workflow::query()
+            ->when($searchTerm !== '', fn ($query) => $query->where('name', 'like', "%{$searchTerm}%"))
+            ->orderBy('name', $request->sortDir() === SORT_DESC ? 'desc' : 'asc')
+            ->paginate($request->limit(), ['*'], $pageParam, $request->page())
+            ->appends($request->except($pageParam));
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
+
         return new CpScreenResponse()
             ->title(t('Workflows'))
             ->crumbs([
@@ -38,14 +59,15 @@ class WorkflowsController
                 ['label' => t('Workflows')],
             ])
             ->inertiaPage('settings/workflows/Index', [
-                'workflows' => Workflow::query()
-                    ->orderBy('name')
-                    ->get()
+                'searchTerm' => $request->search(),
+                'sort' => $request->sort(),
+                'data' => fn () => $paginator->getCollection()
                     ->map(fn (Workflow $workflow): array => [
                         'id' => $workflow->id,
                         'name' => $workflow->name,
                         'stages' => $workflow->stages->count(),
                     ]),
+                'pagination' => fn () => $pagination,
                 'readOnly' => $this->readOnly,
             ]);
     }
@@ -90,7 +112,8 @@ class WorkflowsController
 
         return $this->asSuccess(
             t('Workflow saved.'),
-            redirect: action([self::class, 'edit'], $workflow->id),
+            redirect: $this->getPostedRedirectUrl($workflow)
+                ?? action([self::class, 'edit'], $workflow->id),
         );
     }
 
@@ -105,6 +128,7 @@ class WorkflowsController
             ->inertiaPage('settings/workflows/Edit', app(WorkflowEditViewModel::class, [
                 'workflow' => $workflow,
                 'readOnly' => $this->readOnly,
-            ]));
+            ]))
+            ->redirectUrl('settings/workflows');
     }
 }
