@@ -174,7 +174,7 @@ class Import extends Component implements CpEditable, Validatable
                 'max:255',
                 new HandleRule(reservedWords: ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
                 // ensure DB-stored imports have unique handles
-                Rule::unique(Table::IMPORTS, 'handle')->withoutTrashed('dateDeleted'),
+                Rule::unique(Table::IMPORTS, 'handle')->ignore($this->uid, 'uid')->withoutTrashed('dateDeleted'),
             ],
             'description' => [
                 'string',
