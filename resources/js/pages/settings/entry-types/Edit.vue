@@ -42,8 +42,10 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="metadataHtml" name="details">
-    <DynamicHtmlRenderer :html="metadataHtml" />
+  <LayoutSlot v-if="metadataHtml" name="content-details">
+    <div class="p-lg">
+      <DynamicHtmlRenderer :html="metadataHtml" />
+    </div>
   </LayoutSlot>
 
   <FormPage

@@ -136,7 +136,6 @@
     :form="form"
     :submit="submit"
     :refresh-url="refreshUrl ?? undefined"
-    full-width
     :default-form-actions="[]"
   >
     <template

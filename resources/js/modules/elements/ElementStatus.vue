@@ -68,7 +68,7 @@
 <template>
   <div
     :class="{
-      'inline-flex border': true,
+      'inline-flex border items-center': true,
       'gap-2 border-transparent': mode === 'inline',
       [`bg-${variant}-fill-quiet border-${variant}-border-quiet`]:
         mode === 'badge',

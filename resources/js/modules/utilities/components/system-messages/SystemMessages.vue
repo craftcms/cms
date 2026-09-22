@@ -4,6 +4,7 @@
   import SystemMessageEditModal from './SystemMessageEditModal.vue';
   import type {SelectOption} from '@/common/types';
   import type {SystemMessageData} from '@/modules/utilities/types/utilities';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     messages: Array<SystemMessageData>;
@@ -45,7 +46,7 @@
 </script>
 
 <template>
-  <div id="messages" class="p-4">
+  <div id="messages">
     <div v-for="message in localMessages" :key="message.key" class="mb-6">
       <h2 class="text-lg mb-2">{{ message.heading }}</h2>
       <craft-pane appearance="outline">

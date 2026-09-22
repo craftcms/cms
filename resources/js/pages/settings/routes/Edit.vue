@@ -11,6 +11,7 @@
   import {computed, shallowRef} from 'vue';
   import type {BaseOption, SelectItem} from '@/common/types';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     title: string;
@@ -101,7 +102,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised">
+  <CpContainer>
     <div class="route-form">
       <Select
         :label="t('Site')"
@@ -165,10 +166,10 @@
         :options="templateOptions"
       />
     </div>
-  </craft-pane>
+  </CpContainer>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="css">
   .route-form {
     display: grid;
     gap: 22px;
@@ -259,7 +260,7 @@
     padding: 2px 7px;
   }
 
-  @media (max-width: 720px) {
+  @media (width < var(--breakpoint-md)) {
     .route-site-select {
       flex-basis: auto;
     }

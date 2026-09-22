@@ -1,36 +1,27 @@
-@use 'sass:color';
 @use 'variables';
 @use '@craftcms/sass/mixins';
 
-.modal,
-.hud {
+// HUD styles live in resources/js/common/slideouts/panel-stack.css.
+
+.modal {
   z-index: 100;
   box-sizing: border-box;
-}
-
-.modal,
-.hud {
   @include mixins.modal;
 }
 
 .header,
-.hud-header,
-.footer,
-.hud-footer {
+.footer {
   position: relative;
   z-index: 1;
   box-sizing: border-box;
 }
 
 .header,
-.hud-header,
-.footer,
-.hud-footer {
+.footer {
   background-color: var(--gray-100);
 }
 
-.header,
-.hud-header {
+.header {
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 24px;
   box-shadow: inset 0 -1px 0 var(--border-hairline);
@@ -44,8 +35,7 @@
   }
 }
 
-.footer,
-.hud-footer {
+.footer {
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   padding-block: 5px;
   padding-inline: var(--pane-padding, var(--xl));
@@ -58,8 +48,7 @@
   }
 }
 
-.modal .body,
-.hud .main {
+.modal .body {
   padding: var(--modal-padding);
   overflow: hidden;
   box-sizing: border-box;
@@ -78,22 +67,18 @@
   }
 }
 
-.modal-shade,
-.hud-shade {
+.modal-shade {
   z-index: 100;
   position: fixed;
   inset-block-start: 0;
   inset-inline-start: 0;
   width: 100%;
   height: 100%;
+  background: var(--shade-bg);
 
   &:not(.visible) {
     display: none;
   }
-}
-
-.modal-shade {
-  background: var(--shade-bg);
 
   &.blurred {
     backdrop-filter: blur(10px);
@@ -177,115 +162,5 @@
         display: none;
       }
     }
-  }
-}
-
-.hud {
-  position: absolute;
-  display: none;
-  inset-block-start: 0;
-
-  &.tooltip-hud {
-    display: block;
-  }
-
-  &.has-footer .tip-bottom {
-    background-image: url('../images/hudtip_bottom_gray.png');
-  }
-
-  .tip {
-    position: absolute;
-    z-index: 101;
-    background: no-repeat 0 0;
-  }
-
-  .tip-left {
-    inset-inline-start: -15px;
-    width: 15px;
-    height: 30px;
-    background-image: url('../images/hudtip_left.png');
-  }
-
-  .tip-top {
-    inset-block-start: -15px;
-    width: 30px;
-    height: 15px;
-    background-image: url('../images/hudtip_top.png');
-  }
-
-  .tip-right {
-    inset-inline-end: -15px;
-    width: 15px;
-    height: 30px;
-    background-image: url('../images/hudtip_right.png');
-  }
-
-  .tip-bottom {
-    inset-block-end: -15px;
-    width: 30px;
-    height: 15px;
-    background-image: url('../images/hudtip_bottom.png');
-  }
-}
-
-.hud .hud-header,
-.hud .hud-footer {
-  padding-block: var(--s);
-  padding-inline: var(--xl);
-}
-
-.hud .body {
-  overflow: hidden;
-
-  ::-webkit-scrollbar {
-    appearance: none;
-  }
-
-  ::-webkit-scrollbar:vertical {
-    width: 11px;
-  }
-
-  ::-webkit-scrollbar:horizontal {
-    height: 11px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    border-radius: 8px;
-    border: 2px solid transparent;
-    background-color: color.adjust(mixins.$black, $alpha: -0.5);
-  }
-
-  ::-webkit-scrollbar-track {
-    background-color: var(--gray-050);
-  }
-}
-
-/* ----------------------------------------
-/*  Retina graphics
-/* ---------------------------------------- */
-
-@media only screen and (resolution >= 1.5dppx) {
-  .hud .tip-left {
-    background-image: url('../images/hudtip_left_2x.png');
-    background-size: 15px 30px;
-  }
-
-  .hud .tip-top {
-    background-image: url('../images/hudtip_top_2x.png');
-    background-size: 30px 15px;
-  }
-
-  .hud .tip-right {
-    background-image: url('../images/hudtip_right_2x.png');
-    background-size: 15px 30px;
-  }
-
-  .hud .tip-bottom {
-    background-image: url('../images/hudtip_bottom_2x.png');
-    background-size: 30px 15px;
-  }
-
-  .hud.has-footer .tip-bottom {
-    background-image: url('../images/hudtip_bottom_gray_2x.png');
   }
 }

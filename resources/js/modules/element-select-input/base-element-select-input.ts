@@ -1365,7 +1365,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       $helper.css({
         position: 'absolute',
-        zIndex: 10000,
+        zIndex: 'var(--c-layer-drag)',
         top: oldOffset.top,
         left: oldOffset.left,
       });

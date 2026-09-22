@@ -3,7 +3,7 @@
   import type {Table} from '@tanstack/vue-table';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
-  import {type TableSpacingValue} from '@/common/types';
+  import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
 
   const props = withDefaults(
@@ -36,6 +36,7 @@
       actions: () => [],
       source: null,
       context: 'index',
+      spacing: TableSpacing.Spacious,
     }
   );
 

@@ -63,6 +63,17 @@ describe('attributes', function () {
         expect(Button::make()->icon('plus')->accessibleName('Add row')->toHtml())
             ->toContain('accessible-name="Add row"');
     });
+
+    it('renders flush valueless for every side, or with the sides it names', function () {
+        expect(Button::make()->toHtml())->not->toContain('flush');
+
+        expect(Button::make()->flush()->toHtml())->toContain(' flush');
+
+        expect(Button::make()->flush('inline-end block-start')->toHtml())
+            ->toContain('flush="inline-end block-start"');
+
+        expect(Button::make()->flush(false)->toHtml())->not->toContain('flush');
+    });
 });
 
 describe('slots', function () {

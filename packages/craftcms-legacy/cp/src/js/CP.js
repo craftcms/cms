@@ -810,6 +810,12 @@ Craft.CP = Garnish.Base.extend(
           modalObj = $modal.data('modal');
         } else if ($modal.hasClass('slideout-container')) {
           modalObj = $modal.find('.slideout').data('slideout');
+        } else if ($modal.hasClass('slideout-panel')) {
+          // A Vue slideout (`SlideoutPanel.vue`) has no jQuery object behind
+          // it, just its own live region.
+          modalObj = {
+            $liveRegion: $modal.children('[data-slideout-live-region]'),
+          };
         }
 
         if (!modalObj) {
