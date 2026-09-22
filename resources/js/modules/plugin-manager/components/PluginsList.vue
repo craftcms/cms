@@ -102,7 +102,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="0">
+  <div>
     <div v-if="errors.length" class="action-errors">
       <craft-callout
         v-for="(error, index) in errors"
@@ -128,7 +128,7 @@
         ></Empty>
       </template>
     </AdminTable>
-  </craft-pane>
+  </div>
 </template>
 
 <style scoped lang="scss">

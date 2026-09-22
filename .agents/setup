@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+export CI=true COMPOSER_NO_INTERACTION=1 COMPOSER_ROOT_VERSION=6.x-dev
+TIMEFORMAT='Finished in %3R seconds'
+
+step() {
+    printf '\n==> %s\n' "$1"
+    shift
+    time "$@"
+}
+
+scratch=$(mktemp -d)
+trap 'rm -rf -- "$scratch"' EXIT
+
+# Debian's default PHP is too old. Use the upstream Sury Debian packages.
+if [[ ! -f /usr/share/keyrings/debsuryorg-archive-keyring.gpg ]]; then
+    curl -fsSL https://packages.sury.org/debsuryorg-archive-keyring.deb -o "$scratch/sury.deb"
+    sudo dpkg -i "$scratch/sury.deb"
+fi
+if [[ ! -f /etc/apt/sources.list.d/php.list ]]; then
+    . /etc/os-release
+    echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ $VERSION_CODENAME main" |
+        sudo tee /etc/apt/sources.list.d/php.list >/dev/null
+fi
+
+# Use Oracle MySQL, not Debian's MariaDB substitute, for MySQL-specific bugs.
+if [[ ! -f /usr/share/keyrings/craft-mysql.asc ]]; then
+    curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2025 -o "$scratch/mysql.asc"
+    sudo install -m 644 "$scratch/mysql.asc" /usr/share/keyrings/craft-mysql.asc
+fi
+if [[ ! -f /etc/apt/sources.list.d/craft-mysql.list ]]; then
+    echo 'deb [signed-by=/usr/share/keyrings/craft-mysql.asc] https://repo.mysql.com/apt/debian/ bookworm mysql-8.4-lts' |
+        sudo tee /etc/apt/sources.list.d/craft-mysql.list >/dev/null
+fi
+
+packages=(php8.5-cli php8.5-bcmath php8.5-curl php8.5-gd php8.5-intl
+    php8.5-mbstring php8.5-mysql php8.5-pgsql php8.5-sqlite3 php8.5-xml
+    php8.5-zip php8.5-soap php8.5-imagick libvips42 unzip
+    mysql-community-server-core mysql-community-client-core postgresql-15)
+missing=()
+for package in "${packages[@]}"; do
+    if [[ $(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true) != 'install ok installed' ]]; then
+        missing+=("$package")
+    fi
+done
+if ((${#missing[@]})); then
+    step 'Refresh apt indexes' sudo apt-get update -qq
+    step 'Install PHP, database engines, and image libraries' sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+fi
+sudo update-alternatives --set php /usr/bin/php8.5
+
+# Prevent Debian's unused system cluster from claiming port 5432 after restore.
+if [[ -f /etc/postgresql/15/main/start.conf ]] && ! grep -qx manual /etc/postgresql/15/main/start.conf; then
+    echo manual | sudo tee /etc/postgresql/15/main/start.conf >/dev/null
+    sudo systemctl daemon-reload
+fi
+
+# Initialize private, disposable databases, but leave starting them to Amp's
+# service supervisor. Never reinitialize data restored from an existing orb.
+mkdir -p .amp/databases
+if [[ ! -d .amp/databases/mysql/mysql ]]; then
+    step 'Initialize MySQL' /usr/sbin/mysqld --no-defaults --initialize-insecure --datadir="$PWD/.amp/databases/mysql"
+fi
+if [[ ! -f .amp/databases/pgsql/PG_VERSION ]]; then
+    step 'Initialize PostgreSQL' /usr/lib/postgresql/15/bin/initdb -D .amp/databases/pgsql --username=root --auth=trust --encoding=UTF8 --locale=C.UTF-8
+fi
+
+# Install to the standard PATH so later non-interactive shells see the same tools.
+node_major=$(tr -d '[:space:]' < .node-version)
+if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$node_major" ]]; then
+    case $(uname -m) in
+        x86_64) node_arch=x64 ;;
+        aarch64) node_arch=arm64 ;;
+        *) echo 'Unsupported Node architecture' >&2; exit 1 ;;
+    esac
+    curl -fsSL "https://nodejs.org/dist/latest-v${node_major}.x/SHASUMS256.txt" -o "$scratch/SHASUMS256.txt"
+    archive=$(awk -v arch="linux-$node_arch.tar.xz" '$2 ~ arch "$" {print $2}' "$scratch/SHASUMS256.txt")
+    curl -fsSL "https://nodejs.org/dist/latest-v${node_major}.x/$archive" -o "$scratch/$archive"
+    (cd "$scratch"; grep " $archive$" SHASUMS256.txt | sha256sum --check)
+    sudo tar -xJf "$scratch/$archive" -C /usr/local --strip-components=1
+fi
+pnpm_version=$(node -p 'require("./package.json").packageManager.split("@")[1]')
+if [[ $(pnpm --version 2>/dev/null || true) != "$pnpm_version" ]]; then
+    step 'Install pinned pnpm' sudo npm install --global "pnpm@$pnpm_version"
+fi
+if ! command -v composer >/dev/null; then
+    curl -fsSL https://getcomposer.org/installer -o "$scratch/composer-setup.php"
+    expected=$(curl -fsSL https://composer.github.io/installer.sig)
+    actual=$(php -r 'echo hash_file("sha384", $argv[1]);' "$scratch/composer-setup.php")
+    [[ "$actual" == "$expected" ]] || { echo 'Composer installer checksum mismatch' >&2; exit 1; }
+    php "$scratch/composer-setup.php" --2 --install-dir="$scratch" --filename=composer
+    sudo install -m 755 "$scratch/composer" /usr/local/bin/composer
+fi
+
+step 'Install core PHP dependencies' composer install --prefer-dist --no-interaction --no-progress
+step 'Install adapter PHP dependencies' composer --working-dir=yii2-adapter install --prefer-dist --no-interaction --no-progress
+
+# Keep registry credentials out of the repository. Supply
+# CRAFT_FONTAWESOME_TOKEN as an Amp project secret for cold installs.
+if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} ]]; then
+    pnpm config set '//npm.fontawesome.com/:_authToken' "$CRAFT_FONTAWESOME_TOKEN"
+fi
+step 'Install frontend dependencies' pnpm install --prefer-offline --frozen-lockfile --trust-lockfile
+# pnpm remembers skipped optional dependencies from an unauthenticated install.
+if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} && ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]]; then
+    step 'Retry private kit installation' pnpm --config.optimisticRepeatInstall=false install --prefer-offline --frozen-lockfile --trust-lockfile
+fi
+
+# SQLite needs no daemon and these files survive snapshot activation/resume.
+[[ -f tests/.env ]] || cp tests/.env.example.sqlite tests/.env
+[[ -f database/craft_tests.sqlite ]] || touch database/craft_tests.sqlite
+[[ -f workbench/.env ]] || cp workbench/.env.example workbench/.env
+
+if [[ ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]]; then
+    echo 'Missing Font Awesome kit. Add CRAFT_FONTAWESOME_TOKEN to Amp project secrets, then rerun setup.' >&2
+    exit 1
+fi
+step 'Copy icons' composer copy-icons
+# Build hooks format tracked source; setup should only generate build artifacts.
+# Keep the same order as build:all, invoking packages directly to disable hooks.
+for package in @craftcms/garnish @craftcms/ui @craftcms/legacy; do
+    step "Build $package" pnpm --config.enablePrePostScripts=false --filter "$package" run build
+done
+step 'Build control panel' pnpm --config.enablePrePostScripts=false run build
+step 'Generate Custom Elements Manifest' pnpm --filter @craftcms/ui run build:manifest
+step 'Install test browser' pnpm exec playwright install --with-deps --only-shell chromium
+
+printf '\nOrb toolchain, dependencies, and assets are ready.\n'

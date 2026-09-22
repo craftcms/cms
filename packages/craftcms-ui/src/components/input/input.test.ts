@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {Required} from '@lion/ui/form-core.js';
 
 import './input.js';
 import type CraftInput from './input.js';
@@ -115,5 +116,44 @@ describe('craft-input', () => {
     expect(native(element).getAttribute('min')).toBe('1');
     expect(native(element).getAttribute('max')).toBe('10');
     expect(native(element).getAttribute('step')).toBe('2');
+  });
+});
+
+describe('craft-input aria-invalid', () => {
+  it('synchronizes aria-invalid with the native input', async () => {
+    const element = await createInput();
+    const input = native(element);
+
+    element.setAttribute('aria-invalid', 'true');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.setAttribute('aria-invalid', 'false');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+  });
+
+  it('preserves validation-managed aria-invalid without an override', async () => {
+    const element = await createInput();
+    const input = native(element);
+    element.modelValue = '';
+    element.validators = [new Required()];
+    element.submitted = true;
+    await element.updateComplete;
+    await element.updateComplete;
+
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.setAttribute('aria-invalid', 'false');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+
+    element.removeAttribute('aria-invalid');
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.placeholder = 'Unrelated update';
+    await element.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
   });
 });

@@ -19,6 +19,7 @@ use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
@@ -468,6 +469,12 @@ class ElementQueryConditionBuilder extends Component
                     count: true,
                 );
             }
+        }
+
+        // Ensure each eager-loading plan is limited to fetching elements enabled by the current schema
+        $allowedSiteIds = array_map(fn (Site $site) => $site->id, GqlHelper::getAllowedSites());
+        foreach ($plans as $plan) {
+            $plan->siteIds = is_array($plan->siteIds) ? array_intersect($plan->siteIds, $allowedSiteIds) : $allowedSiteIds;
         }
 
         return $plans;

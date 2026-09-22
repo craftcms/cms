@@ -8,7 +8,6 @@
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "vp fmt --check ./",
     "fix-prettier": "vp fmt ./",
-    "prepare": "husky",
     "lint:styles": "stylelint \"./**/*.scss\""
   },
   "engines": {
@@ -24,8 +23,6 @@
     "vite-plus": "catalog:",
     "webpack": "catalog:",
     "webpack-dev-server": "catalog:",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
     "pkg-dir": "^5.0.0",
     "stylelint": "catalog:legacy",
     "stylelint-config-standard": "catalog:legacy",
@@ -50,7 +47,7 @@
     "blueimp-file-upload": "^10.32.0",
     "codemirror": "^5.65.21",
     "d3": "catalog:",
-    "fabric": "^1.7.22",
+    "fabric": "^7.4.0",
     "iframe-resizer": "^4.4.5",
     "inputmask": "catalog:",
     "jquery": "catalog:",

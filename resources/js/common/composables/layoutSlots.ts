@@ -21,6 +21,15 @@ export interface LayoutSlotRegistry {
   register(name: string): void;
   unregister(name: string): void;
   has(name: string): boolean;
+  /**
+   * Called by an outlet whenever its target element is (re)created. A target
+   * replaced under content already teleported into it — a hot reload, or a
+   * shell region coming back after a page replaced it — strands that content,
+   * so `LayoutSlot` watches {@link targetRevision} and re-teleports.
+   */
+  targetMounted(name: string): void;
+  /** How many times the named outlet's target has been created. */
+  targetRevision(name: string): number;
 }
 
 export const LayoutSlotRegistryKey: InjectionKey<LayoutSlotRegistry> =
@@ -30,6 +39,7 @@ let nextScope = 0;
 
 export function createLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
   const counts = reactive(new Map<string, number>());
+  const targets = reactive(new Map<string, number>());
 
   return {
     scope: scope ?? `screen-${++nextScope}`,
@@ -50,6 +60,14 @@ export function createLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
 
     has(name) {
       return (counts.get(name) ?? 0) > 0;
+    },
+
+    targetMounted(name) {
+      targets.set(name, (targets.get(name) ?? 0) + 1);
+    },
+
+    targetRevision(name) {
+      return targets.get(name) ?? 0;
     },
   };
 }

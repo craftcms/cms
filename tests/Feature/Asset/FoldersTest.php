@@ -25,7 +25,7 @@ it('is a singleton', function () {
 });
 
 it('can get a folder by id', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Test Folder',
@@ -44,7 +44,7 @@ it('returns null for non-existent folder id', function () {
 });
 
 it('caches folder by id lookups', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Cached Folder',
@@ -66,7 +66,7 @@ it('caches folder by id lookups', function () {
 });
 
 it('can get a folder by uid', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'UID Folder',
@@ -83,7 +83,7 @@ it('returns null for non-existent folder uid', function () {
 });
 
 it('can find folders by criteria', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Folder A',
@@ -102,7 +102,7 @@ it('can find folders by criteria', function () {
 });
 
 it('can find folders with string order criteria', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Bravo',
@@ -123,7 +123,7 @@ it('can find folders with string order criteria', function () {
 });
 
 it('can find folders with descending order', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Alpha',
@@ -144,7 +144,7 @@ it('can find folders with descending order', function () {
 });
 
 it('can find folders with array order criteria', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Bravo',
@@ -165,7 +165,7 @@ it('can find folders with array order criteria', function () {
 });
 
 it('can find a single folder', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Single',
@@ -182,7 +182,7 @@ it('returns null when findFolder matches nothing', function () {
 });
 
 it('can find folder by path containing a comma', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'my,folder',
@@ -199,7 +199,7 @@ it('can find folder by path containing a comma', function () {
 });
 
 it('can get root folder by volume id', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
     $this->folders = app(Folders::class);
@@ -213,7 +213,7 @@ it('can get root folder by volume id', function () {
 });
 
 it('creates root folder if it does not exist', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
 
     expect(VolumeFolderModel::where('volumeId', $volume->id)->count())->toBe(0);
 
@@ -231,7 +231,7 @@ it('returns null for root folder of non-existent volume', function () {
 });
 
 it('can get total folders', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->count(3)->create(['volumeId' => $volume->id]);
 
     expect($this->folders->getTotalFolders(['volumeId' => $volume->id]))->toBe(3);
@@ -240,14 +240,14 @@ it('can get total folders', function () {
 it('can check if folders exist', function () {
     expect($this->folders->foldersExist(['name' => 'nonexistent']))->toBeFalse();
 
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     VolumeFolderModel::factory()->create(['volumeId' => $volume->id, 'name' => 'exists']);
 
     expect($this->folders->foldersExist(['volumeId' => $volume->id]))->toBeTrue();
 });
 
 it('can get all descendant folders', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -282,7 +282,7 @@ it('can get all descendant folders', function () {
 });
 
 it('can get descendant folders as tree', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -326,7 +326,7 @@ it('can get descendant folders as tree', function () {
 });
 
 it('can exclude parent from descendant folders', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -363,7 +363,7 @@ it('can exclude parent from descendant folders', function () {
 });
 
 it('can store a new folder record', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
 
     $folder = new VolumeFolder;
     $folder->volumeId = $volume->id;
@@ -382,7 +382,7 @@ it('can store a new folder record', function () {
 });
 
 it('refreshes lookups after updating and deleting an existing folder record', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Original',
@@ -416,7 +416,7 @@ it('refreshes lookups after updating and deleting an existing folder record', fu
 });
 
 it('can ensure folder by full path and volume', function () {
-    $volumeModel = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volumeModel = Volume::factory()->create(['fs' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
     app()->forgetInstance(Volumes::class);
@@ -436,7 +436,7 @@ it('can ensure folder by full path and volume', function () {
 });
 
 it('reuses existing folders in ensureFolderByFullPathAndVolume', function () {
-    $volumeModel = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volumeModel = Volume::factory()->create(['fs' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
     app()->forgetInstance(Volumes::class);
@@ -451,7 +451,7 @@ it('reuses existing folders in ensureFolderByFullPathAndVolume', function () {
 });
 
 it('can apply :empty: criteria for null columns', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -473,7 +473,7 @@ it('can apply :empty: criteria for null columns', function () {
 });
 
 it('resets caches', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Cached',

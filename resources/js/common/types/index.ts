@@ -58,6 +58,25 @@ export interface ChipIndicator {
   icon?: string;
 }
 
+export interface BreadcrumbItem {
+  href?: string | null;
+  /** What the navigation and the legacy templates used to call `href`. */
+  url?: string | null;
+  label?: string | null;
+  /** Server-rendered crumb content, e.g. an element chip. */
+  html?: string | null;
+  icon?: string;
+  /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
+  attrs?: Record<string, string>;
+  /**
+   * A menu on the crumb, listing what else sits at this level — the sources
+   * beside this one, the sibling nav entries, and so on.
+   *
+   * Named for `Cp\Data\ActionItem::$items`, which is what fills it.
+   */
+  items?: ActionItems;
+}
+
 export interface ActionItemHr {
   type: 'hr';
 }
@@ -79,21 +98,76 @@ export interface ActionItemDisplay {
 export interface ActionItemButton {
   type?: 'button';
   label: string;
+  /** A dot beside the label, for a nav entry with a badge count. */
+  indicator?: boolean;
+  /**
+   * Extra attributes for the rendered element — drag-and-drop drop-target
+   * hooks, say. Undefined values are dropped rather than rendered empty.
+   */
+  attrs?: Record<string, string | undefined>;
+  onMousedown?: (event: Event) => void;
+  /**
+   * Marks this as the one currently in effect, for a list that's a choice
+   * rather than a set of commands — a source switcher, say. When any item in a
+   * list says so, the whole list renders with a checkmark gutter, so the
+   * labels stay aligned whichever one is current.
+   */
+  selected?: boolean;
   variant?: VariantKey | string;
   icon?: string;
+  /**
+   * A rendered SVG to use in place of a named icon, for the things that bring
+   * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
+   */
+  iconSvg?: string;
   disabled?: boolean;
+  disabledReason?: string | null;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   action?: BaseAction;
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /**
+   * Items that hang off this one — the nav's own children.
+   *
+   * A menu draws a flat list and ignores this; a nav draws it beside or below
+   * the item. It lives on the descriptor either way so the two are describing
+   * the same thing rather than each having a shape the other can't read.
+   */
+  subnav?: ActionItems;
 }
 
 export interface ActionItemLink {
   type: 'link';
   href: string;
   label: string;
+  icon?: string;
+  /**
+   * A rendered SVG to use in place of a named icon, for the things that bring
+   * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
+   */
+  iconSvg?: string;
+  /** A dot beside the label, for a nav entry with a badge count. */
+  indicator?: boolean;
+  /**
+   * Extra attributes for the rendered element — drag-and-drop drop-target
+   * hooks, say. Undefined values are dropped rather than rendered empty.
+   */
+  attrs?: Record<string, string | undefined>;
+  onMousedown?: (event: Event) => void;
+  /**
+   * Leaves the page rather than making an Inertia visit. For links out of the
+   * CP, and for the handful of places still handing off to the legacy stack.
+   */
+  external?: boolean;
+  /**
+   * Marks this as the one currently in effect, for a list that's a choice
+   * rather than a set of commands — a source switcher, say. When any item in a
+   * list says so, the whole list renders with a checkmark gutter, so the
+   * labels stay aligned whichever one is current.
+   */
+  selected?: boolean;
   variant?: VariantKey | string;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
@@ -101,11 +175,36 @@ export interface ActionItemLink {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /**
+   * Items that hang off this one — the nav's own children.
+   *
+   * A menu draws a flat list and ignores this; a nav draws it beside or below
+   * the item. It lives on the descriptor either way so the two are describing
+   * the same thing rather than each having a shape the other can't read.
+   */
+  subnav?: ActionItems;
+}
+
+/**
+ * A heading over a run of items — the shape a source list's headings and the
+ * navigation's groups both take.
+ *
+ * One level deep, as a heading: its members may have children of their own,
+ * but a heading never sits inside another heading. The heading labels its
+ * items visually but is never itself a choice, and the items stay siblings of
+ * any ungrouped ones so a menu's roving focus and search filter keep treating
+ * them alike.
+ */
+export interface ActionItemGroup {
+  type: 'group';
+  heading?: string;
+  items: Array<ActionItemButton | ActionItemLink>;
 }
 
 export type ActionItem =
   | ActionItemDisplay
   | ActionItemHr
+  | ActionItemGroup
   | ActionItemButton
   | ActionItemLink;
 
@@ -138,6 +237,8 @@ export interface EntryType {
   slugTranslationMethod: TranslationMethod;
   slugTranslationKeyFormat: null;
   showStatusField: boolean;
+  showPostDateField: boolean;
+  showExpiryDateField: boolean;
   uid: string;
   validateHandleUniqueness: boolean;
   group: null;

@@ -22,7 +22,7 @@ const stub = vi.hoisted(() => ({
   emit: null as ((event: string, payload?: unknown) => void) | null,
 }));
 
-/** The upload button reaches for jQuery and `Craft.createUploader`. */
+/** Keep this suite focused on the selector’s upload-button contract. */
 const upload = vi.hoisted(() => ({
   lastProps: null as Record<string, any> | null,
   emit: null as ((event: string, payload?: unknown) => void) | null,
@@ -34,7 +34,7 @@ vi.mock('@/pages/assets/AssetUploadButton.vue', async () => {
   return {
     default: define({
       name: 'AssetUploadButtonStub',
-      props: ['canUpload', 'folderId', 'fsType', 'reloadOnComplete'],
+      props: ['canUpload', 'folderId', 'allowedKinds', 'reloadOnComplete'],
       emits: ['uploaded'],
       setup(props, {emit}) {
         upload.emit = emit as (event: string, payload?: unknown) => void;
@@ -343,12 +343,11 @@ describe('the upload button', () => {
   const uploadable = {
     'can-upload': true,
     'folder-id': 7,
-    'fs-type': 'craft\\fs\\Local',
   };
 
   /** Mount with the index showing, which is when a source exists at all. */
-  async function open() {
-    const instance = controller();
+  async function open(options = {}) {
+    const instance = controller(options);
     const mounted = await mountModal(instance);
 
     await instance.open();
@@ -399,7 +398,7 @@ describe('the upload button', () => {
   });
 
   it('targets the folder on screen', async () => {
-    const {host, unmount} = await open();
+    const {host, unmount} = await open({criteria: {kind: 'image'}});
 
     await showSource(uploadable);
 
@@ -407,7 +406,7 @@ describe('the upload button', () => {
     expect(upload.lastProps).toMatchObject({
       canUpload: true,
       folderId: 7,
-      fsType: 'craft\\fs\\Local',
+      allowedKinds: ['image'],
       // There is no page behind a modal to reload.
       reloadOnComplete: false,
     });
@@ -448,7 +447,7 @@ describe('the upload button', () => {
     await showSource(uploadable);
     upload.emit!('uploaded', {id: 3, label: 'photo.jpg'});
 
-    expect(stub.refresh).toHaveBeenCalledOnce();
+    expect(stub.refresh).toHaveBeenCalledWith(3);
     unmount();
   });
 });

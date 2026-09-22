@@ -1,0 +1,155 @@
+/**
+ * Notifications from the legacy notifier — `Craft.cp.displayNotification()`
+ * and the "Entry copied." card `Craft.cp.copyElements()` shows.
+ *
+ * `CP.js` still builds them, but its stylesheet is no longer loaded, so the
+ * look Craft 5 gave them lives here. `#notifications` comes from the Twig
+ * layout, or from `bootstrap/cp.ts` on Inertia pages; both put the user's
+ * `notificationPosition` preference on `<body>` as `notifications--*`.
+ */
+#notifications {
+  position: fixed;
+  z-index: var(--c-layer-notification);
+  inset-block-end: var(--c-spacing-md);
+  inset-inline-start: var(--c-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--c-spacing) * 3);
+  width: calc(100% - 2 * var(--c-spacing-md));
+
+  @media (width >= calc(600rem / 16)) {
+    width: calc(350rem / 16);
+  }
+
+  /* top */
+  body.notifications--start-start &,
+  body.notifications--start-end & {
+    inset-block: var(--c-spacing-md) auto;
+    flex-direction: column-reverse;
+  }
+
+  /* right */
+  body.notifications--start-end &,
+  body.notifications--end-end & {
+    inset-inline: auto var(--c-spacing-md);
+  }
+}
+
+#notifications .notification {
+  position: relative;
+  border-radius: var(--c-radius-lg);
+  background-color: var(--c-surface-overlay);
+  box-shadow:
+    0 0 0 1px var(--c-color-neutral-border-quiet),
+    var(--c-shadow-overlay);
+  color: var(--c-text-default);
+
+  .notification-inner {
+    display: flex;
+    padding-block: calc(var(--c-spacing) * 2.5);
+    padding-inline: calc(var(--c-spacing) * 3.5);
+  }
+
+  .notification-body {
+    display: grid;
+    grid-template-columns: calc(20rem / 16) 1fr;
+    gap: var(--c-spacing-md);
+    width: 100%;
+  }
+
+  .notification-icon {
+    --icon-size: calc(16rem / 16);
+    --c-icon-size: calc(16rem / 16);
+    margin-block-start: calc(var(--c-spacing) * 0.5);
+    color: var(--c-color-info-on-quiet);
+
+    svg {
+      fill: currentcolor;
+    }
+  }
+
+  &[data-type='success'] .notification-icon {
+    color: var(--c-color-success-on-quiet);
+  }
+
+  &[data-type='error'] .notification-icon {
+    color: var(--c-color-danger-on-quiet);
+  }
+
+  .notification-main {
+    margin: calc(var(--c-spacing) * -2.5);
+    padding: calc(var(--c-spacing) * 2.5);
+    overflow: hidden;
+  }
+
+  .notification-message {
+    font-weight: var(--font-weight-bold);
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .notification-details {
+    margin-block-start: var(--c-spacing-xs);
+  }
+
+  .notification-close-btn {
+    position: relative;
+    inset-block-start: calc(var(--c-spacing) * -0.5);
+    margin-inline-start: calc(var(--c-spacing) * 2.5);
+  }
+}
+
+/* The copied-element card: a gradient frame and the copied elements' chips,
+   stacked with each one behind the last. */
+#notifications .copied-elements-notification {
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    var(--c-color-fuchsia-fill-loud),
+    var(--c-color-violet-fill-loud),
+    var(--c-color-indigo-fill-loud)
+  );
+
+  .notification-icon {
+    color: var(--c-color-fuchsia-fill-loud);
+  }
+
+  .notification-inner {
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-surface-overlay);
+  }
+
+  /* Icon-only, as in Craft 5; "Cancel" stays its accessible name. */
+  .notification-close-btn .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .copied-elements {
+    position: relative;
+    margin-block-end: calc(var(--c-spacing) * -2.5);
+    padding-block-end: calc(var(--c-spacing) * 2.5);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* `CP.js` offsets each chip after the first and sets its `--overlay-opacity`. */
+  .copied-element-chip:not(:first-child) {
+    position: absolute;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      display: block;
+      background-color: color-mix(
+        var(--c-surface-overlay) calc(var(--overlay-opacity, 0) * 100%),
+        transparent
+      );
+    }
+  }
+}

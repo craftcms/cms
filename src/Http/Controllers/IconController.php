@@ -21,8 +21,14 @@ readonly class IconController
             'icon' => ['required', 'string'],
         ]);
 
+        $icon = $request->string('icon')->toString();
+
+        if (! preg_match('/^[\w\-]+$/', $icon)) {
+            abort(400, "Invalid icon: $icon");
+        }
+
         return new JsonResponse([
-            'iconSvg' => Icons::svg($request->string('icon')->toString()),
+            'iconSvg' => Icons::svg($icon),
         ]);
     }
 

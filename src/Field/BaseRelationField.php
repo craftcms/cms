@@ -670,18 +670,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         $viewModes = [];
         foreach ($this->supportedViewModes() as $value => $label) {
-            // The list illustration is narrower than the rest, as in Craft 5.
-            $width = $value === self::VIEW_MODE_LIST ? 48 : 80;
             $viewModes[] = [
                 'label' => $label,
                 'value' => $value,
-                'thumbnail' => [
-                    // Illustrations live in Vite's publicDir; see Cp::publicAssetUrl().
-                    'src' => Cp::publicAssetUrl("images/view-modes/$value.svg"),
-                    'width' => $width,
-                    'height' => 60,
-                    'aspectRatio' => "$width / 60",
-                ],
+                'thumbnail' => Cp::viewModeThumbnail($value),
             ];
         }
 
@@ -972,17 +964,18 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ->eagerly();
         }
 
-        $errorCount = 0;
+        $invalidTargetIds = [];
 
         foreach ($value->all() as $i => $target) {
             if (! self::_validateRelatedElement($element, $target)) {
                 /** @var Element $target */
                 $element->addModelErrors($target, "$this->handle[$i]");
-                $errorCount++;
+                $invalidTargetIds[] = $target->id;
             }
         }
 
-        if ($errorCount) {
+        if (! empty($invalidTargetIds)) {
+            $element->addInvalidNestedElementIds($invalidTargetIds);
             $selectedCount = $value->count();
             $fail(t('The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
                 'relatedType' => $selectedCount === 1

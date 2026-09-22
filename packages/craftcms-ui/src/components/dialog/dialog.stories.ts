@@ -100,8 +100,25 @@ export const NonModal: Story = {
   },
 };
 
+/**
+ * Fills the viewport, so the body row can hand a definite height down to
+ * whatever it slots — a canvas, say, that measures its container to decide how
+ * big to draw.
+ */
 export const Fullscreen: Story = {
-  args: {fullscreen: true},
+  args: {fullscreen: true, open: true},
+  async play({canvasElement}) {
+    const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
+    await dialog.updateComplete;
+
+    const surface = dialog.shadowRoot!.querySelector('.surface')!;
+    const {width, height} = surface.getBoundingClientRect();
+
+    // The height matters: `max-block-size` alone would leave it as short as
+    // its content.
+    await expect(Math.round(width)).toBe(window.innerWidth);
+    await expect(Math.round(height)).toBe(window.innerHeight);
+  },
 };
 
 /** Long content scrolls inside the body rather than growing the surface. */
@@ -121,4 +138,35 @@ export const Scrolling: Story = {
 
 export const ClosesOnOutsideClick: Story = {
   args: {closeOnOutsideClick: true},
+};
+
+/**
+ * A dialog can carry its own theme. `[data-theme]` re-resolves the semantic
+ * tokens against the palette it names, so everything slotted in follows —
+ * including each component's shadow root, since custom properties inherit past
+ * the boundary.
+ */
+export const Themed: Story = {
+  args: {label: 'Dark dialog', open: true},
+  render: (args) =>
+    template({...args, 'data-theme': 'dark'}, html`${body}${footerClose}`),
+  async play({canvasElement}) {
+    const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
+    await dialog.updateComplete;
+
+    const inside = getComputedStyle(dialog);
+    const outside = getComputedStyle(canvasElement);
+
+    // The semantic tokens re-resolve too: `var()` is substituted where it's
+    // declared.
+    await expect(inside.getPropertyValue('--color-base-50').trim()).not.toBe(
+      outside.getPropertyValue('--color-base-50').trim()
+    );
+    await expect(inside.getPropertyValue('--c-surface-raised').trim()).not.toBe(
+      outside.getPropertyValue('--c-surface-raised').trim()
+    );
+    await expect(
+      inside.getPropertyValue('--c-color-neutral-fill-quiet').trim()
+    ).not.toBe(outside.getPropertyValue('--c-color-neutral-fill-quiet').trim());
+  },
 };

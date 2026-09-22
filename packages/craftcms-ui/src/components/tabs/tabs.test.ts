@@ -772,6 +772,80 @@ describe('collapsible', () => {
     expect(element.selectedIndex).toBe(-1);
   });
 
+  it('closes from close(), handing focus to the tab it was on', async () => {
+    const {element, tabs} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+    let fired = 0;
+    element.addEventListener('selected-changed', () => {
+      fired++;
+    });
+
+    tabs[1]!.click();
+    await element.updateComplete;
+    fired = 0;
+
+    element.close();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(-1);
+    expect(fired).toBe(1);
+    expect(document.activeElement).toBe(tabs[1]);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '-1',
+      '0',
+      '-1',
+    ]);
+  });
+
+  it('reopens from open() on the tab it was closed on', async () => {
+    const {element, tabs, sections} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+
+    tabs[2]!.click();
+    await element.updateComplete;
+    element.close();
+    await element.updateComplete;
+
+    element.open();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(2);
+    expect(sections[2]!.classList.contains('hidden')).toBe(false);
+    expect(document.activeElement).toBe(tabs[2]);
+  });
+
+  it('opens a strip that started closed on its first tab', async () => {
+    const element = await createTabs({attrs: {'selected-index': '-1'}});
+
+    element.open();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(0);
+    expect(shadow(element, '[part="panels"]')!.hidden).toBe(false);
+  });
+
+  it('leaves an open strip on its tab when open() is called', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    tabs[1]!.click();
+    await element.updateComplete;
+    element.open();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(1);
+  });
+
+  it('ignores close() on a strip that isn’t collapsible', async () => {
+    const {element} = await createExternalTabs();
+
+    element.close();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(0);
+  });
+
   it('opens at the end you arrow out of', async () => {
     const {element, tabs} = await createExternalTabs({
       attrs: {collapsible: '', 'selected-index': '-1'},

@@ -51,8 +51,6 @@ use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\Field\Users;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
-use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\Directives\Markdown as GqlMarkdown;
@@ -143,9 +141,6 @@ it('contains its built-in types in order', function (string $registry, array $ex
         FindAndReplace::class,
         Migrations::class,
     ]],
-    'filesystems' => [FilesystemTypes::class, [
-        Local::class,
-    ]],
     'link types' => [LinkTypes::class, [
         LinkAsset::class,
         LinkEmail::class,
@@ -207,7 +202,6 @@ it('rejects types that do not satisfy the registry contract', function (string $
     'elements' => ElementTypes::class,
     'widgets' => WidgetTypes::class,
     'utilities' => UtilityTypes::class,
-    'filesystems' => FilesystemTypes::class,
     'link types' => LinkTypes::class,
     'gql directives' => GqlDirectives::class,
 ]);

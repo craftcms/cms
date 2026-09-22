@@ -9,7 +9,8 @@ import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
-import {type BaseAction, normalizeAction, runAction} from '@src/actions';
+import {Actionable} from '@src/mixins/Actionable';
+import {AsyncStates} from '@src/types';
 
 export const ButtonVariant = {
   Primary: 'primary',
@@ -42,8 +43,12 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  * @csspart suffix - The button's suffix slot.
  * @csspart spinner - Spinner that shows when the button is in a loading state.
  * @csspart link - The anchor element rendered when the button has an href.
+ *
+ * @event craft-toggle - Fired when a `toggle` button is activated. `detail.active`
+ *   is the state being asked for. Cancelable — `active` is owned by whoever set
+ *   it, and the button never changes it itself.
  */
-export default class CraftButton extends LionButtonSubmit {
+export default class CraftButton extends Actionable(LionButtonSubmit) {
   static override get styles() {
     return [...super.styles, visuallyHiddenStyles, a11yErrorStyles, styles];
   }
@@ -78,12 +83,31 @@ export default class CraftButton extends LionButtonSubmit {
     }
     super.connectedCallback();
     this.syncLinkHostState();
-    this.addEventListener('click', this.#handleActionClick);
+    this.addEventListener('click', this.#handleToggleClick);
+
+    this.#syncContent();
+    this.#contentObserver = new MutationObserver(() => this.#syncContent());
+    this.#contentObserver.observe(this, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['slot'],
+    });
+
+    // Moved while it was still waiting to be shown: disconnecting dropped the
+    // observer, so pick the wait back up rather than never judging it.
+    if (this.hasUpdated && !this._accessibleName.trim()) {
+      this.#checkAccessibleName();
+    }
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener('click', this.#handleActionClick);
+    this.removeEventListener('click', this.#handleToggleClick);
+    this.#contentObserver?.disconnect();
+    this.#contentObserver = null;
+    this.#stopAwaitingRender();
 
     if (this.announcementTimer) {
       clearTimeout(this.announcementTimer);
@@ -91,30 +115,53 @@ export default class CraftButton extends LionButtonSubmit {
     }
   }
 
-  #handleActionClick = async (event: Event) => {
-    const action = normalizeAction(this.action);
-
-    if (!action || this.disabled) {
+  /**
+   * Reports that a toggle was activated, for the owner of `active` to act on.
+   *
+   * Cancelable, so a consumer can refuse the change; `active` is left alone
+   * either way.
+   */
+  #handleToggleClick = (event: Event) => {
+    if (!this.toggle || this.disabled || this.loading) {
       return;
     }
 
-    event.preventDefault();
-
-    // Only show the spinner for http requests, matching craft-action-item.
-    if (action.type === 'http') {
-      this.loading = true;
-    }
-
-    try {
-      await runAction(action, {trigger: this, sourceEvent: event});
-    } finally {
-      this.loading = false;
-    }
+    this.dispatchEvent(
+      new CustomEvent('craft-toggle', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {active: !this.active, sourceEvent: event},
+      })
+    );
   };
+
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
+    }
+
+    // The spinner is this button's rendering of the mixin's state. `loading`
+    // stays public and settable on its own, for a caller showing one without
+    // a declarative action behind it — so this follows transitions only.
+    // On the first update `actionState` is "changed" from nothing to idle,
+    // and mirroring that would switch off a spinner the caller had asked for.
+    if (
+      changedProperties.has('actionState') &&
+      changedProperties.get('actionState') !== undefined
+    ) {
+      this.loading = this.actionState === AsyncStates.Loading;
+    }
+
+    // Only while `toggle` is set: a plain button may carry an `aria-pressed`
+    // its owner manages (`craft-button-group` sets one on every child), and
+    // overwriting that would be worse than leaving it alone.
+    if (
+      this.toggle &&
+      (changedProperties.has('active') || changedProperties.has('toggle'))
+    ) {
+      this.setAttribute('aria-pressed', String(this.active));
     }
 
     if (changedProperties.has('loading')) {
@@ -157,6 +204,40 @@ export default class CraftButton extends LionButtonSubmit {
     }
   }
 
+  /**
+   * Reads which slots the light DOM fills, so the icon only gets space beside
+   * a label. CSS can't tell: an empty prefix or suffix is still a flex item,
+   * and markup whitespace alone still fills the label slot.
+   */
+  #syncContent(): void {
+    const filled = (slot: string | null) =>
+      Array.from(this.childNodes).some((node) => {
+        if (node instanceof Element) {
+          return (node.getAttribute('slot') || null) === slot;
+        }
+
+        return (
+          slot === null &&
+          node.nodeType === Node.TEXT_NODE &&
+          !!node.textContent?.trim()
+        );
+      });
+
+    const content = {
+      label: filled(null),
+      prefix: filled('prefix'),
+      suffix: filled('suffix'),
+    };
+
+    if (
+      content.label !== this._content.label ||
+      content.prefix !== this._content.prefix ||
+      content.suffix !== this._content.suffix
+    ) {
+      this._content = content;
+    }
+  }
+
   override async firstUpdated(changedProperties: Map<string, any>) {
     super.firstUpdated(changedProperties);
 
@@ -167,6 +248,14 @@ export default class CraftButton extends LionButtonSubmit {
       Array.from(childComponents).map((child: any) => child.updateComplete)
     );
 
+    this.#checkAccessibleName();
+  }
+
+  /**
+   * Flags a button with no accessible name. A hidden button has no computable
+   * name, so the check waits until it's visible.
+   */
+  #checkAccessibleName(): void {
     // In link mode the host is role="presentation" (name not computable on
     // it); the real accessible element is the inner anchor.
     const nameTarget = this.isLink
@@ -175,7 +264,47 @@ export default class CraftButton extends LionButtonSubmit {
       : this;
     this._accessibleName = computeAccessibleName(nameTarget);
 
-    this._hasAccessibilityError = this._accessibleName.trim() === '';
+    const unnamed = this._accessibleName.trim() === '';
+
+    if (unnamed && !this.#isVisible()) {
+      this.#awaitRender();
+      return;
+    }
+
+    this._hasAccessibilityError = unnamed;
+  }
+
+  /**
+   * Whether the button can be seen. `visibility: hidden` counts as well as
+   * `display: none` -- it's inherited, so it hides the name as surely -- which
+   * client rects alone would miss.
+   */
+  #isVisible(): boolean {
+    return typeof this.checkVisibility === 'function'
+      ? this.checkVisibility({visibilityProperty: true})
+      : this.getClientRects().length > 0;
+  }
+
+  #awaitRender(): void {
+    if (this.#renderObserver || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    // Observes size, so a reveal by `visibility` alone isn't rechecked.
+    this.#renderObserver = new ResizeObserver(() => {
+      if (!this.#isVisible()) {
+        return;
+      }
+
+      this.#stopAwaitingRender();
+      this.#checkAccessibleName();
+    });
+    this.#renderObserver.observe(this);
+  }
+
+  #stopAwaitingRender(): void {
+    this.#renderObserver?.disconnect();
+    this.#renderObserver = null;
   }
 
   /**
@@ -200,23 +329,30 @@ export default class CraftButton extends LionButtonSubmit {
   /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
   @property({reflect: true, type: Boolean}) override active: boolean = false;
 
+  /**
+   * Makes the button a toggle: `aria-pressed` follows `active`. The button
+   * doesn't change `active` itself; it fires `craft-toggle` for whoever owns it.
+   * For an on/off setting, use `craft-switch`.
+   */
+  @property({type: Boolean, reflect: true}) toggle: boolean = false;
+
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
+
+  /**
+   * Pulls the button out by the space around its content, so its label or
+   * icon lines up with the text beside it. Meant for buttons with no
+   * background, like `plain`. Present with no value, it applies on every
+   * side. Otherwise a space-separated list of `inline`, `block`,
+   * `inline-start`, `inline-end`, `block-start` and `block-end`.
+   */
+  @property({reflect: true}) flush?: string;
 
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';
 
   /** Icon to be rendered within the content. */
   @property() icon: string | null = null;
-
-  /**
-   * Declarative action to run when the button is clicked, as a JSON `action`
-   * attribute — the same primitives `craft-action-item` supports
-   * (`http`/`event`/`clipboard`/`download`, run via `runAction()`). A raw
-   * JSON string is accepted too (Vue's in-DOM compiler sets attribute
-   * values as string properties on upgraded elements).
-   */
-  @property({type: Object}) action: BaseAction | string | null = null;
 
   /** When set, the button renders as a link to this URL. */
   @property({reflect: true}) href: string | null = null;
@@ -252,6 +388,15 @@ export default class CraftButton extends LionButtonSubmit {
   @state()
   private _hasAccessibilityError: boolean = false;
 
+  /** Which parts of the content have something in them; see #syncContent. */
+  @state()
+  private _content = {label: false, prefix: false, suffix: false};
+
+  #contentObserver: MutationObserver | null = null;
+
+  /** Waits for a hidden button to be shown before judging its name. */
+  #renderObserver: ResizeObserver | null = null;
+
   private linkHostStateApplied = false;
 
   /** The caller's `type` before link mode forced it to "button". */
@@ -273,10 +418,17 @@ export default class CraftButton extends LionButtonSubmit {
   }
 
   override render() {
+    const hasPrefix =
+      this._content.prefix || (!!this.icon && this.iconPosition === 'prefix');
+    const hasSuffix =
+      this._content.suffix || (!!this.icon && this.iconPosition === 'suffix');
+
     const content = html`
       <div
         class="${classMap({
           'button-content': true,
+          'button-content--spaced-prefix': hasPrefix && this._content.label,
+          'button-content--spaced-suffix': hasSuffix && this._content.label,
           'button-content--start': this.align === 'start',
           'button-content--end': this.align === 'end',
           'a11y-error': this._hasAccessibilityError,

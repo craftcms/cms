@@ -2,9 +2,9 @@
   import {inject, shallowReactive} from 'vue';
   import {t} from '@craftcms/ui';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
+  import TypePicker from '@/common/components/TypePicker.vue';
   import {ConditionEditor, type GroupDraft} from './types';
   import ConditionRule from './ConditionRule.vue';
-  import ConditionRulePicker from './ConditionRulePicker.vue';
   import {useConditionRuleRequest} from './useConditionRuleRequest';
 
   const props = defineProps<{group: GroupDraft; root?: boolean}>();
@@ -121,7 +121,7 @@
         </template>
 
         <div v-if="editor.editable()" class="flex flex-wrap items-center gap-2">
-          <ConditionRulePicker
+          <TypePicker
             :types="editor.payload().ruleTypes"
             :label="editor.payload().addRuleLabel"
             :disabled="isLoading || !editor.payload().ruleTypes.length"

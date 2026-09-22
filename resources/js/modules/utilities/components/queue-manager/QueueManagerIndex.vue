@@ -14,6 +14,7 @@
   import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';
   import Empty from '@/common/components/Empty.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -57,14 +58,14 @@
     }),
     columnHelper.accessor('status', {
       header: () => t('Status'),
-      size: 50,
+      size: 80,
       cell: (info) =>
         h(
-          Badge,
+          'craft-badge',
           {
-            variant: getStatusVariant(info.getValue().value),
+            fill: getStatusVariant(info.getValue().value),
           },
-          () => info.getValue().label
+          info.getValue().label
         ),
     }),
     columnHelper.display({
@@ -103,10 +104,9 @@
 
 <template>
   <template v-if="jobs.length > 0">
-    <craft-pane padding="0">
+    <div>
       <AdminTable :table="jobsTable" :reorderable="false" layout="fixed" />
       <div
-        slot="footer"
         class="flex p-2 bg-slate-100"
         v-text="
           t('{totalJobs, plural, =0{No jobs} =1{# job} other{# jobs}}', {
@@ -114,7 +114,7 @@
           })
         "
       ></div>
-    </craft-pane>
+    </div>
   </template>
   <template v-else>
     <Empty icon="play" :label="t('There are no jobs in the queue')" />

@@ -216,7 +216,7 @@ describe('ElementChips', () => {
       const button = root.querySelectorAll('craft-reorder-button')[1]!;
 
       button.dispatchEvent(
-        new CustomEvent('reorder', {detail: {direction: 'up'}})
+        new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
       );
 
       expect(emitted.reorder![0]).toEqual([1, 0]);
@@ -227,7 +227,7 @@ describe('ElementChips', () => {
       const first = root.querySelectorAll('craft-reorder-button')[0]!;
 
       first.dispatchEvent(
-        new CustomEvent('reorder', {detail: {direction: 'up'}})
+        new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
       );
 
       expect(emitted.reorder).toHaveLength(0);

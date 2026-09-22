@@ -4,6 +4,37 @@
 
   defineOptions({inheritAttrs: false});
 
+  type MouseHandler = (event: MouseEvent) => void;
+
+  /**
+   * Inertia's `<Link>` only skips SPA navigation for a modified click (a held
+   * modifier key or a non-primary button) when its root element is a real
+   * `<a>` tag. Since custom elements render as something else, its own check
+   * never kicks in, so we replicate it here for any mouse handlers it hands
+   * us before they reach the custom element.
+   */
+  function isModifiedClick(event: MouseEvent): boolean {
+    return (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.button !== 0
+    );
+  }
+
+  function guardMouseHandler(handler: unknown): MouseHandler | undefined {
+    if (typeof handler !== 'function') {
+      return undefined;
+    }
+
+    return (event: MouseEvent) => {
+      if (!isModifiedClick(event)) {
+        (handler as MouseHandler)(event);
+      }
+    };
+  }
+
   const CustomElementLink = defineComponent({
     inheritAttrs: false,
     props: {
@@ -13,22 +44,42 @@
       },
     },
     setup(props, {attrs, slots}) {
-      return () => h(props.tag, attrs, slots.default?.());
+      return () =>
+        h(
+          props.tag,
+          {
+            ...attrs,
+            onClick: guardMouseHandler(attrs.onClick),
+            onMousedown: guardMouseHandler(attrs.onMousedown),
+            onMouseup: guardMouseHandler(attrs.onMouseup),
+          },
+          slots.default?.()
+        );
     },
   });
 
+  /**
+   * Only what this adds. Everything Inertia's `Link` understands — `method`,
+   * `data`, `headers`, `replace`, `preserveScroll`, `only`, the `on*`
+   * callbacks, `prefetch` — falls through `$attrs` untouched.
+   *
+   * Declaring them here instead would break them two ways: Vue casts an
+   * absent Boolean prop to `false` rather than `undefined`, so forwarding
+   * them wholesale overrides Inertia's own defaults; and anything not
+   * forwarded is swallowed as a prop and silently never arrives, which is how
+   * an `onClick` handler ended up doing nothing at all.
+   */
   const props = withDefaults(
-    defineProps<
-      InertiaLinkProps & {
-        as?: string | Component;
-        variant?: 'neutral' | 'accent' | 'danger';
-        size?: 'zero' | 'small' | 'medium' | 'large';
-        appearance?: 'button' | 'inline';
-        icon?: string;
-        block?: boolean;
-        inertia?: boolean;
-      }
-    >(),
+    defineProps<{
+      href: InertiaLinkProps['href'];
+      as?: string | Component;
+      variant?: 'neutral' | 'accent' | 'danger';
+      size?: 'zero' | 'small' | 'medium' | 'large';
+      appearance?: 'button' | 'inline';
+      icon?: string;
+      block?: boolean;
+      inertia?: boolean;
+    }>(),
     {
       variant: 'neutral',
       appearance: 'inline',
@@ -82,14 +133,13 @@
 <template>
   <template v-if="inertia">
     <Link
-      v-bind="{...$attrs, ...customElementAttributes}"
+      v-bind="{prefetch: 'click', ...$attrs, ...customElementAttributes}"
       :as="linkComponent"
       :tag="customElement"
       :href="href"
       :class="customElement ? undefined : classes"
       :variant="variant"
       :size="size"
-      prefetch="click"
     >
       <slot v-if="customElement"></slot>
       <div v-else class="flex gap-1 items-center">

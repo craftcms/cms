@@ -13,8 +13,8 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
-use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -69,16 +69,17 @@ class VolumeEditViewModel extends ViewModel
             Field::make(t('Handle'), $handle)->required(),
             Separator::make('filesystem-separator'),
             Field::make(
-                t('Asset Filesystem'),
-                FilesystemSelect::make('fsHandle')
-                    ->disabledTargets($disabledFilesystemTargets)
-                    ->emptyOption(t('Select a filesystem'))
-                    ->includeEnvVars()
-                    ->create(),
+                t('Asset Disk'),
+                Combobox::make('fsHandle')
+                    ->options($this->diskOptions($disabledFilesystemTargets))
+                    ->showAllOnEmpty()
+                    ->showSelectedHint(),
             )
-                ->instructions(t('Choose which filesystem assets should be stored in.'))
+                ->instructions(t('Choose which Laravel filesystem disk assets should be stored in.'))
                 ->tip(t('This can be set to an environment variable matching one of the option values.'))
                 ->required(),
+            Field::make(t('Assets in this volume have public URLs'), Lightswitch::make('hasUrls'))
+                ->instructions(t('Whether Craft should generate public URLs for assets in this volume.')),
             Field::make(
                 t('Subpath'),
                 Text::make('subpath')->textExpanderTriggers($envTextExpanderTriggers),
@@ -180,6 +181,7 @@ class VolumeEditViewModel extends ViewModel
             'name' => $this->volume->name ?? '',
             'handle' => $this->volume->handle ?? '',
             'fsHandle' => $this->volume->getFsHandle(false) ?? '',
+            'hasUrls' => $this->volume->hasUrls,
             'subpath' => $this->volume->getSubpath(ensureTrailing: false, parse: false),
             'assetTransformer' => $this->volume->getAssetTransformerHandle(false) ?? '',
             'titleTranslationMethod' => $this->volume->titleTranslationMethod->value,
@@ -208,5 +210,23 @@ class VolumeEditViewModel extends ViewModel
             ->concat(SelectOptions::getEnvSuggestions())
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  list<string>  $disabledTargets
+     * @return list<array<string, mixed>>
+     */
+    private function diskOptions(array $disabledTargets): array
+    {
+        $options = collect(SelectOptions::getDiskOptions())
+            ->map(fn (array $option): array => [
+                ...$option,
+                'disabled' => in_array($option['value'], $disabledTargets, true),
+                'data' => ['hint' => $option['value']],
+            ])
+            ->prepend(['label' => t('Select a disk'), 'value' => '', 'disabled' => false, 'data' => ['hint' => '']])
+            ->all();
+
+        return [...$options, ...SelectOptions::getEnvOptions(collect($options)->pluck('value')->all())];
     }
 }

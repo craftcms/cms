@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Entry\Elements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -385,10 +386,33 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
+    /**
+     * `content/{page}/{handle}`, the shape {@see Section::getCpIndexUri()}
+     * produces and the rest of the CP links sections by. Singles share one
+     * source, and so one `singles` URL.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        $handle = ($source['key'] ?? null) === 'singles'
+            ? 'singles'
+            : ($source['data']['handle'] ?? null);
+
+        if (! is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        return sprintf(
+            'content/%s/%s',
+            is_string($page) && $page !== '' ? Str::slug($page) : 'entries',
+            $handle,
+        );
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $sections = Sections::getEditableSections();
             $editable = true;
         } else {
@@ -1197,7 +1221,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /** @return array<int, array<string, bool|string|array<string, string|array<int, array<string, bool|string>>>>|null> */
+    /** @return list<ActionItem> */
     #[Override]
     protected function crumbs(): array
     {
@@ -1209,10 +1233,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         $page = $section->getPage();
         $crumbs = [
-            [
-                'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'href' => Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries')),
-            ],
+            new ActionItem()
+                ->label($page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'))
+                ->href(Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'))),
         ];
 
         // Is the section’s source enabled?
@@ -1260,25 +1283,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $current = $sectionOptions->first(fn (array $o) => $o['selected'])
                 ?? $sectionOptions->first();
 
-            if ($sectionOptions->count() > 1) {
-                // A crumb is shaped like a link action item, so the current
-                // option doubles as the crumb and the whole set as its menu.
-                $crumbs[] = [
-                    'label' => $current['label'],
-                    'href' => $current['href'],
-                    'actions' => $sectionOptions->all(),
-                ];
-            } else {
-                $crumbs[] = [
-                    'label' => $current['label'],
-                    'href' => $current['href'],
-                ];
-            }
+            // A crumb is an action item like the options are, so the current
+            // one doubles as the crumb and the whole set as its menu. One
+            // option is no choice at all, so it gets a plain crumb.
+            $crumbs[] = new ActionItem()
+                ->label($current['label'])
+                ->href($current['href'])
+                ->items($sectionOptions->count() > 1 ? $sectionOptions->all() : []);
         } elseif ($section->type !== SectionType::Single) {
             // Just show its name w/o a link
-            $crumbs[] = [
-                'label' => $section->getUiLabel(),
-            ];
+            $crumbs[] = new ActionItem()->label($section->getUiLabel());
         }
 
         if ($section->type === SectionType::Structure) {
@@ -1905,8 +1919,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'icon' => 'gear',
                 'behavior' => [
                     'type' => 'slideout',
-                    'action' => 'sections/edit-section',
-                    'params' => ['sectionId' => $this->sectionId],
+                    'url' => Url::cpUrl("settings/sections/$this->sectionId"),
                 ],
             ];
         }
@@ -2186,31 +2199,35 @@ JS, [
                     );
             }
 
-            $nodes[] = Field::make(t('Post Date'))
-                ->control(
-                    DateTime::make('postDate')
-                        ->showTime()
-                        // Stored times aren't constrained to a picker step, and
-                        // the screen submits natively — a coarser increment
-                        // would make any off-step value fail validation and
-                        // silently block saving.
-                        ->minuteIncrement(1)
-                        ->value(self::dateTimeControlValue($this->postDate))
-                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                );
+            if ($this->getType()->showPostDateField) {
+                $nodes[] = Field::make(t('Post Date'))
+                    ->control(
+                        DateTime::make('postDate')
+                            ->showTime()
+                            // Stored times aren't constrained to a picker step, and
+                            // the screen submits natively — a coarser increment
+                            // would make any off-step value fail validation and
+                            // silently block saving.
+                            ->minuteIncrement(1)
+                            ->value(self::dateTimeControlValue($this->postDate))
+                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                    );
+            }
 
-            $nodes[] = Field::make(t('Expiry Date'))
-                ->control(
-                    DateTime::make('expiryDate')
-                        ->showTime()
-                        // Stored times aren't constrained to a picker step, and
-                        // the screen submits natively — a coarser increment
-                        // would make any off-step value fail validation and
-                        // silently block saving.
-                        ->minuteIncrement(1)
-                        ->value(self::dateTimeControlValue($this->expiryDate))
-                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                );
+            if ($this->getType()->showExpiryDateField) {
+                $nodes[] = Field::make(t('Expiry Date'))
+                    ->control(
+                        DateTime::make('expiryDate')
+                            ->showTime()
+                            // Stored times aren't constrained to a picker step, and
+                            // the screen submits natively — a coarser increment
+                            // would make any off-step value fail validation and
+                            // silently block saving.
+                            ->minuteIncrement(1)
+                            ->value(self::dateTimeControlValue($this->expiryDate))
+                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                    );
+            }
         }
 
         return $nodes;
@@ -2245,6 +2262,7 @@ JS, [
         $parent = self::find()
             ->site('*')
             ->preferSites([$this->siteId])
+            ->unique()
             ->drafts(null)
             ->draftOf(false)
             ->status(null)
@@ -2304,6 +2322,7 @@ JS, [
                 $parentQuery = self::find()
                     ->site('*')
                     ->preferSites([$this->siteId])
+                    ->unique()
                     ->drafts(null)
                     ->draftOf(false)
                     ->status(null);
@@ -2374,26 +2393,30 @@ JS, [
             });
 
             // Post Date
-            $fields['postDate'] = FormFields::dateTimeFieldHtml([
-                'status' => $this->getAttributeStatus('postDate'),
-                'label' => t('Post Date'),
-                'id' => 'postDate',
-                'name' => 'postDate',
-                'value' => $this->postDate,
-                'errors' => $this->errors()->get('postDate'),
-                'disabled' => $static,
-            ]);
+            if ($this->getType()->showPostDateField) {
+                $fields['postDate'] = FormFields::dateTimeFieldHtml([
+                    'status' => $this->getAttributeStatus('postDate'),
+                    'label' => t('Post Date'),
+                    'id' => 'postDate',
+                    'name' => 'postDate',
+                    'value' => $this->postDate,
+                    'errors' => $this->errors()->get('postDate'),
+                    'disabled' => $static,
+                ]);
+            }
 
             // Expiry Date
-            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
-                'status' => $this->getAttributeStatus('expiryDate'),
-                'label' => t('Expiry Date'),
-                'id' => 'expiryDate',
-                'name' => 'expiryDate',
-                'value' => $this->expiryDate,
-                'errors' => $this->errors()->get('expiryDate'),
-                'disabled' => $static,
-            ]);
+            if ($this->getType()->showExpiryDateField) {
+                $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
+                    'status' => $this->getAttributeStatus('expiryDate'),
+                    'label' => t('Expiry Date'),
+                    'id' => 'expiryDate',
+                    'name' => 'expiryDate',
+                    'value' => $this->expiryDate,
+                    'errors' => $this->errors()->get('expiryDate'),
+                    'disabled' => $static,
+                ]);
+            }
         }
 
         $fields[] = parent::metaFieldsHtml($static);

@@ -151,7 +151,12 @@ class Cp extends Component
 
         Event::listen(function(CpNavItemsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, 'registerCpNavItems')) {
-                $items = array_map(fn(NavItem $navItem) => $navItem->toArray(), $event->navItems);
+                $items = array_map(function(NavItem $navItem) {
+                    $item = $navItem->toArray();
+                    $item['url'] ??= $item['href'] ?? null;
+
+                    return $item;
+                }, $event->navItems);
 
                 $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $items]);
 

@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Data\EagerLoadInfo;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -254,7 +255,7 @@ readonly class ElementEagerLoader
 
                         $criteria = array_merge(
                             $siteCriteria,
-                            $plan->criteria,
+                            ElementHelper::cleanseQueryCriteria($plan->criteria),
                             $otherCriteria,
                         );
 
@@ -266,6 +267,10 @@ readonly class ElementEagerLoader
 
                         if (! $query->siteId) {
                             $query->siteId = $siteId;
+                        }
+
+                        if (isset($plan->siteIds)) {
+                            $query->siteId = array_intersect((array) $query->siteId, $plan->siteIds);
                         }
 
                         if (! $query->id) {

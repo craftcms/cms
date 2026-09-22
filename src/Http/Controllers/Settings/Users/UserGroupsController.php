@@ -180,7 +180,13 @@ class UserGroupsController extends BaseUserSettingsController
             ? t('Permissions saved.')
             : t('Group saved.');
 
-        return $this->asSuccess($message);
+        return $this->asSuccess($message, ['group' => [
+            'id' => $group->id,
+            'uid' => $group->uid,
+            'name' => $group->name,
+            'handle' => $group->handle,
+            'description' => $group->description,
+        ]]);
     }
 
     public function destroy(Request $request, int $groupId): Response

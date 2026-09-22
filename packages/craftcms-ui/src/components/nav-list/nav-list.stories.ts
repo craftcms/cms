@@ -24,7 +24,7 @@ const meta = {
   args: {
     ...args,
     'default-slot': `
-      <craft-nav-item icon="gauge" active>Dashboard</craft-nav-item>
+      <craft-nav-item icon="gauge" active current>Dashboard</craft-nav-item>
       <craft-nav-item icon="pencil">Entries</craft-nav-item>
       <craft-nav-item icon="image">Assets</craft-nav-item>
       <craft-nav-item icon="users">Users</craft-nav-item>
@@ -65,12 +65,12 @@ export const Nested: Story = {
   render() {
     return html`
       <craft-nav-list style="max-width: 300px">
-        <craft-nav-item icon="gauge" active>Dashboard</craft-nav-item>
+        <craft-nav-item icon="gauge" active current>Dashboard</craft-nav-item>
         <craft-nav-item icon="code">
           GraphQL
           <craft-nav-list slot="subnav">
             <craft-nav-item>Schemas</craft-nav-item>
-            <craft-nav-item active>Tokens</craft-nav-item>
+            <craft-nav-item active current>Tokens</craft-nav-item>
             <craft-nav-item external>GraphiQL</craft-nav-item>
           </craft-nav-list>
         </craft-nav-item>
@@ -98,7 +98,7 @@ export const ContentSources: Story = {
   render() {
     return html`
       <craft-nav-list style="max-width: 300px">
-        <craft-nav-item href="#all" active>All entries</craft-nav-item>
+        <craft-nav-item href="#all" active current>All entries</craft-nav-item>
         <craft-nav-item initial-state="open">
           <span class="text-xs font-bold">Channels</span>
           <craft-nav-list slot="subnav">
@@ -145,7 +145,7 @@ export const SecondaryNav: Story = {
   render() {
     return html`
       <craft-nav-list style="max-width: 300px">
-        <craft-nav-item href="#profile" active block flush
+        <craft-nav-item href="#profile" active current block flush
           >Profile</craft-nav-item
         >
         <craft-nav-item href="#permissions" block flush
@@ -184,7 +184,9 @@ export const IconOnly: Story = {
   render() {
     return html`
       <craft-nav-list>
-        <craft-nav-item icon="gauge" icon-only active>Dashboard</craft-nav-item>
+        <craft-nav-item icon="gauge" icon-only active current
+          >Dashboard</craft-nav-item
+        >
         <craft-nav-item icon="pencil" icon-only>Entries</craft-nav-item>
         <craft-nav-item icon="image" icon-only>Assets</craft-nav-item>
         <craft-nav-item icon="users" icon-only>Users</craft-nav-item>

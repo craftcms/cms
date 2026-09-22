@@ -601,6 +601,7 @@ return [
     'Descending' => 'Falder',
     'Description' => 'Beskrivelse',
     'Deselect All' => 'Fravælg alle',
+    'Deselect all {type}' => 'Deselect all {type}',
     'Desktop' => 'Pc',
     'Determines which site the user will receive emails from, when sent via the control panel.' => 'Bestemmer, hvilket site brugeren skal modtage e-mails fra, når de sendes via kontrolpanelet.',
     'Developer Response' => 'Svar fra udvikler',
@@ -1071,7 +1072,6 @@ return [
     'Max Value' => 'Højeste værdi',
     'Max {type}' => 'Maks. {type}',
     'Maximum' => 'Maksimum',
-    'Media' => 'Medier',
     'Medium' => 'Mellem',
     'Meet the Craft community' => 'Mød Craft-fællesskabet',
     'Merge the folder (any conflicting files will be replaced)' => 'Flet mappen (filer med konflikter erstattes)',
@@ -1424,6 +1424,7 @@ return [
     'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.' => 'Gendannelseskoder kan bruges som en backup til bekræftelse, når du ikke kan bruge din primære metode.',
     'Recovery codes generated.' => 'Gendannelseskoder oprettet.',
     'Red' => 'Rød',
+    'Redo' => 'Redo',
     'Refresh' => 'Opdater',
     'Regenerate' => 'Regenerer',
     'Regenerating project config YAML files from the loaded project config…' => 'Regenererer YAML-projektkonfigurationsfiler fra den indlæste projektkonfiguration…',
@@ -1568,6 +1569,7 @@ return [
     'Select All' => 'Vælg alle',
     'Select Schema' => 'Vælg skema',
     'Select a filesystem' => 'Vælg et filsystem',
+    'Select all {type}' => 'Select all {type}',
     'Select all' => 'Vælg alle',
     'Select context' => 'Vælg kontekst',
     'Select element' => 'Vælg element',
@@ -1614,6 +1616,8 @@ return [
     'Show nav' => 'Vis nav',
     'Show nested sources' => 'Vis indlejrede kilder',
     'Show sidebar' => 'Vis sidebjælke',
+    'Show the Expiry Date field' => 'Show the Expiry Date field',
+    'Show the Post Date field' => 'Show the Post Date field',
     'Show the Slug field' => 'Vis i Slug-felt',
     'Show the Status field' => 'Vis statusfeltet',
     'Show the search input' => 'Vis søgeinputtet',
@@ -1684,8 +1688,8 @@ return [
     'Sort by' => 'Sorter efter',
     'Sort descending' => 'Sorter faldende',
     'Sort direction' => 'Sorteringsrækkefølge',
-    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sorteringskode',
+    'Sorting' => 'Sorting',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Source indstillinger gemt',
     'Source settings' => 'Kildeindstillinger',
@@ -2232,11 +2236,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => 'Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{systemName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2274,7 +2278,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'files' => 'filer',
     'five' => 'fem',
     'folders' => 'mapper',
-    'forgot_password_body' => "Hej {{user.friendlyName|e}}.\n\nFor at nulstille din {{siteName}} adgangskode skal du klikke på følgende link:\n\n<{{link}}>\n\nHvis du ikke forventede denne email, så bare ignorer den.",
+    'forgot_password_body' => "Hej {{user.friendlyName|e}}.\n\nFor at nulstille din {{systemName}} adgangskode skal du klikke på følgende link:\n\n<{{link}}>\n\nHvis du ikke forventede denne email, så bare ignorer den.",
     'forgot_password_heading' => 'Når nogen glemmer deres adgangskode:',
     'forgot_password_subject' => 'Nulstil din adgangskode',
     'four' => 'fire',
@@ -2333,11 +2337,11 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'user' => 'bruger',
     'users' => 'brugere',
     'validation.required' => 'validation.required',
-    'verify_new_email_body' => "Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+    'verify_new_email_body' => 'Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',
@@ -2494,4 +2498,5 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     '“{handle}” is a reserved word.' => '“{handle}” er et allerede brugt ord.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” er ikke et gyldigt kodetag.',
     '“{name}” deleted.' => '“{name}” slettet.',
+    'Deprecated' => 'Deprecated',
 ];

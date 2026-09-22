@@ -46,6 +46,8 @@ import {
  * @csspart thumbnail - The fixed column the `thumbnail` slot renders into.
  * @csspart footer - The default footer region.
  *
+ * @attr collapsed - Collapses the card to its header.
+ *
  * @cssproperty --c-card-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-card-shadow - Box shadow. Defaults to `--c-shadow-sm`.
@@ -79,6 +81,14 @@ export default class CraftCard extends Paddable(LitElement, {
    */
   @property({type: Boolean, reflect: true})
   active = false;
+
+  /**
+   * Whether the card is collapsed to just its header. The body and footer are
+   * hidden rather than unrendered, so slotted content — hidden inputs among it —
+   * stays in the document and keeps posting.
+   */
+  @property({type: Boolean, reflect: true})
+  collapsed = false;
 
   /** Whether the thumbnail region renders at all, even with slotted content. */
   @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean = true;

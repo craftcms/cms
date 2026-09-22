@@ -34,6 +34,8 @@ class EntryType extends BaseModel
             'hasTitleField' => 'bool',
             'showSlugField' => 'bool',
             'showStatusField' => 'bool',
+            'showPostDateField' => 'bool',
+            'showExpiryDateField' => 'bool',
             'allowLineBreaksInTitles' => 'bool',
         ];
     }

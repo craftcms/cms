@@ -81,7 +81,7 @@ beforeEach(function () {
         'handle' => 'news',
         'enableVersioning' => true,
     ]);
-    $this->volume = Volume::factory()->create(['fs' => 'disk:edit-element-controller-test']);
+    $this->volume = Volume::factory()->create(['fs' => 'edit-element-controller-test']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 

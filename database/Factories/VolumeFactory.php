@@ -19,7 +19,8 @@ class VolumeFactory extends Factory
         return [
             'name' => fake()->word(),
             'handle' => fake()->slug(),
-            'fs' => 'disk:local',
+            'fs' => 'local',
+            'hasUrls' => false,
         ];
     }
 }

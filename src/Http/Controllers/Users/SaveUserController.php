@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Query;
@@ -124,6 +125,11 @@ readonly class SaveUserController
                     if ($user) {
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
+
+                        // clear out any existing permissions they had, if they had any
+                        if (Edition::isAtLeast(Edition::Pro)) {
+                            UserPermissions::saveUserPermissions($user->id, []);
+                        }
                     }
                 }
             }
@@ -306,9 +312,10 @@ readonly class SaveUserController
             );
         }
 
-        // If this is a new user and email verification isn't required,
+        // If this is a new user and email verification isn't required, and we're not
+        // sending them an activation email (e.g. to set their deferred password),
         // go ahead and activate them now.
-        if ($isNewUser && ! $requireEmailVerification && ! $deactivateByDefault) {
+        if ($isNewUser && ! $requireEmailVerification && ! $deactivateByDefault && ! $sendActivationEmail) {
             $this->users->activateUser($user);
         }
 

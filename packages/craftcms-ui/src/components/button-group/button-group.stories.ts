@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+import {expect} from 'storybook/test';
 
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
@@ -164,4 +165,27 @@ export const WithActions: Story = {
       </craft-action-menu>
     </craft-button-group>
   `,
+};
+
+/**
+ * A group keeps a selection given in markup, adopting `value` from the child
+ * marked `active`.
+ */
+export const SelectionFromMarkup: Story = {
+  name: 'Selection from markup',
+  render: () => html`
+    <craft-button-group name="orientation">
+      <craft-button value="landscape" active>Landscape</craft-button>
+      <craft-button value="portrait">Portrait</craft-button>
+    </craft-button-group>
+  `,
+  async play({canvasElement}) {
+    const group = canvasElement.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    const landscape = canvasElement.querySelector('craft-button')!;
+
+    await expect(group.value).toBe('landscape');
+    await expect(landscape.getAttribute('aria-pressed')).toBe('true');
+  },
 };

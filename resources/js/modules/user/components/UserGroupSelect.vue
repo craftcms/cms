@@ -1,18 +1,21 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
-  import {router} from '@inertiajs/vue3';
   import {ButtonVariant, t} from '@craftcms/ui';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
+  import type {SlideoutSaveResult} from '@/common/slideouts';
   import Text from '@/common/components/Text.vue';
   import Tooltip from '@/common/components/Tooltip.vue';
   import {create} from '@actions/Settings/Users/UserGroupsController';
 
-  type UserGroupOption =
-    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel['groups'][number];
+  type UserGroupOption = Pick<
+    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel['groups'][number],
+    'id' | 'name' | 'handle' | 'description'
+  > & {uid?: string};
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
+    (e: 'created', group: UserGroupOption): void;
   }>();
 
   const props = withDefaults(
@@ -20,10 +23,12 @@
       modelValue: Array<number>;
       groups: Array<UserGroupOption>;
       canCreate?: boolean;
+      editable?: boolean;
       error?: string;
     }>(),
     {
       canCreate: false,
+      editable: true,
     }
   );
 
@@ -72,6 +77,16 @@
       props.modelValue.filter((selectedGroupId) => selectedGroupId !== groupId)
     );
   }
+
+  function groupCreated({data}: SlideoutSaveResult) {
+    const group = data?.group as UserGroupOption | undefined;
+
+    if (!group) {
+      throw new Error('The created user group was not returned.');
+    }
+
+    emit('created', group);
+  }
 </script>
 
 <template>
@@ -86,12 +101,13 @@
         </div>
 
         <craft-button
+          v-if="editable"
           slot="suffix"
           icon="x"
           type="button"
           size="small"
           @click="removeGroup(group.id)"
-          aria-label="t('Remove {name}', {name: groupLabel(group)})"
+          :aria-label="t('Remove {name}', {name: groupLabel(group)})"
           variant="danger-plain"
         >
         </craft-button>
@@ -99,7 +115,7 @@
     </div>
 
     <div class="flex gap-2 items-center">
-      <craft-action-menu v-if="groups.length">
+      <craft-action-menu v-if="editable && groups.length">
         <craft-button
           type="button"
           slot="invoker"
@@ -141,9 +157,9 @@
       </craft-action-menu>
 
       <SlideoutButton
-        v-if="canCreate"
+        v-if="editable && canCreate"
         :url="create().url"
-        @success="router.reload({only: ['groups']})"
+        @success="groupCreated"
       >
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('Create') }}

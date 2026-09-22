@@ -101,6 +101,16 @@ export default defineConfig({
         },
       },
       {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
+          name: 'stories',
+          root: './src/stories',
+          environment: 'happy-dom',
+        },
+      },
+      {
         resolve: {tsconfigPaths: true},
         test: {
           name: 'components-browser',

@@ -13,16 +13,13 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
-use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Override;
 use RuntimeException;
 
@@ -30,7 +27,6 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
- * @property FsInterface $fs
  * @property string $fsHandle
  * @property string|null $assetTransformer
  * @property string $subpath
@@ -40,7 +36,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 {
     use HasFieldLayout;
 
-    public const string STORAGE_DISK_PREFIX = 'disk:';
+    public const array INTERNAL_DISK_NAMES = ['craft-tmp', 'craft-asset-temp', 'rebrand'];
 
     public ?int $id = null;
 
@@ -78,9 +74,9 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     public ?string $assetTransformer = null;
 
-    private string $_subpath = '';
+    public bool $hasUrls = false;
 
-    private ?FsInterface $_fs = null;
+    private string $_subpath = '';
 
     private ?string $_fsHandle = null;
 
@@ -130,7 +126,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return [
             'handle' => t('Handle'),
             'name' => t('Name'),
-            'fsHandle' => t('Asset Filesystem'),
+            'fsHandle' => t('Disk'),
             'assetTransformer' => t('Asset Transformer'),
             'subpath' => t('Subpath'),
         ];
@@ -153,23 +149,6 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             return null;
         }
 
-        if (str_starts_with($value, self::STORAGE_DISK_PREFIX)) {
-            $diskName = substr($value, strlen(self::STORAGE_DISK_PREFIX));
-            if (
-                $diskName === '' ||
-                ! $this->diskExists($diskName) ||
-                ($this->isInternalDiskName($diskName) && ! $this->_temporary)
-            ) {
-                return null;
-            }
-
-            return $diskName;
-        }
-
-        if (Filesystems::getFilesystemByHandle($value)) {
-            return Filesystems::toDiskName($value);
-        }
-
         if ($this->diskExists($value)) {
             if ($this->isInternalDiskName($value) && ! $this->_temporary) {
                 return null;
@@ -181,41 +160,16 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return null;
     }
 
-    private function normalizeStorageHandle(?string $value): ?string
-    {
-        if ($value === null || $value === '' || str_starts_with($value, self::STORAGE_DISK_PREFIX)) {
-            return $value;
-        }
-
-        if ($this->isDynamicStorageHandle($value)) {
-            return $value;
-        }
-
-        if (Filesystems::getFilesystemByHandle($value)) {
-            return $value;
-        }
-
-        if ($this->diskExists($value)) {
-            return self::STORAGE_DISK_PREFIX.$value;
-        }
-
-        return $value;
-    }
-
     private function diskExists(string $diskName): bool
     {
-        return app(FilesystemsService::class)->diskExists($diskName);
+        $disks = config('filesystems.disks', []);
+
+        return is_array($disks) && array_key_exists($diskName, $disks);
     }
 
     private function isInternalDiskName(string $diskName): bool
     {
-        return in_array($diskName, FilesystemsService::INTERNAL_DISK_NAMES, true) ||
-            str_starts_with($diskName, FilesystemsService::DISK_PREFIX);
-    }
-
-    private function isDynamicStorageHandle(string $value): bool
-    {
-        return str_contains($value, '$') || str_starts_with($value, '@');
+        return in_array($diskName, self::INTERNAL_DISK_NAMES, true);
     }
 
     public function getId(): ?int
@@ -271,32 +225,6 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return Asset::class;
     }
 
-    public function getFs(): FsInterface
-    {
-        if (! isset($this->_fs)) {
-            if (! $this->getFsHandle()) {
-                throw new RuntimeException('Volume is missing its filesystem handle.');
-            }
-
-            $fs = Filesystems::resolve($this->_fsHandle);
-            if (! $fs) {
-                Log::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
-
-                return new MissingFs(['handle' => $this->_fsHandle]);
-            }
-
-            $this->_fs = $fs;
-        }
-
-        return $this->_fs;
-    }
-
-    public function setFs(FsInterface $fs): void
-    {
-        $this->_fs = $fs;
-        $this->_fsHandle = $fs->handle ?? null;
-    }
-
     public function getFsHandle(bool $parse = true): ?string
     {
         return $this->parseStorageHandle($this->_fsHandle, $parse);
@@ -304,8 +232,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     public function setFsHandle(?string $handle): void
     {
-        $this->_fsHandle = $this->normalizeStorageHandle($handle);
-        $this->_fs = null;
+        $this->_fsHandle = $handle;
     }
 
     public function getResolvedFsTarget(bool $parse = true): ?string
@@ -327,6 +254,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'name' => $this->name,
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
+            'hasUrls' => $this->hasUrls,
             'subpath' => $this->_subpath,
             'assetTransformer' => $this->assetTransformer ?: null,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
@@ -367,21 +295,29 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     public function sourceDisk(): FilesystemAdapter
     {
-        return Filesystems::disk(
-            $this->diskNameForOperations(),
-            $this->_subpath,
-        );
+        $diskName = $this->diskNameForOperations();
+        $subpath = $this->getSubpath(ensureTrailing: false);
+
+        if ($subpath === '') {
+            return Storage::disk($diskName);
+        }
+
+        $disk = Storage::build([
+            'driver' => 'scoped',
+            'disk' => $diskName,
+            'prefix' => $subpath,
+        ]);
+
+        if (! $disk instanceof FilesystemAdapter) {
+            throw new FilesystemException("Unable to create a scoped Laravel filesystem disk for volume [$this->name].");
+        }
+
+        return $disk;
     }
 
     public function sourceHasUrls(): bool
     {
-        return $this->getFs()->getRootUrl() !== null;
-    }
-
-    /** @return class-string<FsInterface> */
-    public function sourceFilesystemType(): string
-    {
-        return $this->getFs()::class;
+        return $this->hasUrls;
     }
 
     public function isTemporary(): bool
@@ -390,14 +326,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             return true;
         }
 
-        $tempUploadTarget = Env::parse(Cms::config()->tempAssetUploadFs);
-        if (! is_string($tempUploadTarget)) {
-            return false;
-        }
-
-        $tempUploadDisk = Filesystems::resolveDiskName($tempUploadTarget);
-
-        return $tempUploadDisk !== null && $this->resolveStorageTargetKey($this->_fsHandle) === $tempUploadDisk;
+        return $this->resolveStorageTargetKey($this->_fsHandle) === Cms::config()->getTempAssetUploadDisk();
     }
 
     public function markAsTemporary(): void
@@ -418,7 +347,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
     {
         $target = $this->resolveStorageTargetKey($handle ?? $this->_fsHandle);
         if ($target === null) {
-            throw new RuntimeException('Volume is missing or has an invalid filesystem handle.');
+            throw new FilesystemException('Volume is missing or has an invalid disk.');
         }
 
         return $target;

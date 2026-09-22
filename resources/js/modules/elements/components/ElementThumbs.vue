@@ -10,14 +10,13 @@
   } from '@/common/composables/useReorderableItems';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
-  import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
+  import {
+    isInteractiveItemEvent,
+    type ElementIndexItemBehavior,
+  } from '@/modules/elements/types/item-behavior';
 
   interface ThumbElement {
     id: string | number;
-    isFolder?: boolean;
-    folderUrl?: string;
-    folderId?: string | number;
-    canMoveTo?: boolean;
     // The server sends the element's edit URL, which is null when it has none.
     url?: string | null;
     thumbHtml?: string;
@@ -39,6 +38,7 @@
       sortable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
+      itemBehavior?: ElementIndexItemBehavior<ThumbElement>;
     }>(),
     {
       data: () => [],
@@ -92,19 +92,8 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
-  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
-
-  // Folder tiles (asset index) navigate into the folder on click, except when
-  // the click lands on an interactive control (the select checkbox, a link, …).
   function onTileClick(element: ThumbElement, event: MouseEvent) {
-    if (!isFolderRow(element)) return;
-    if (
-      event.target instanceof HTMLElement &&
-      event.target.closest('a[href], button, input, craft-checkbox')
-    ) {
-      return;
-    }
-    navigateToFolder(element.folderUrl);
+    props.itemBehavior?.onClick?.(element, event);
   }
 
   function focusTileByIndex(index: number, el: HTMLElement) {
@@ -119,18 +108,19 @@
     event: KeyboardEvent
   ) {
     if (!props.selectable) return;
+    if (isInteractiveItemEvent(event)) return;
     if (!(event.currentTarget instanceof HTMLElement)) return;
     const target = event.currentTarget;
     const last = props.data.length - 1;
+    const element = props.data.find((el) => el.id === id);
+    if (element && props.itemBehavior?.onKeydown?.(element, event)) {
+      event.preventDefault();
+      return;
+    }
     switch (event.key) {
       case ' ':
       case 'Enter': {
         event.preventDefault();
-        const element = props.data.find((el) => el.id === id);
-        if (element && isFolderRow(element)) {
-          navigateToFolder(element.folderUrl);
-          break;
-        }
         if (element?.url) {
           window.location.assign(element.url);
           break;
@@ -190,14 +180,13 @@
         v-for="(element, thumbIdx) in data"
         :key="element.id"
         :ref="(el) => setItemRef(el as HTMLElement, element.id)"
-        v-bind="rowMoveAttrs(element)"
+        v-bind="itemBehavior?.attrs?.(element)"
         :tabindex="selectable ? 0 : undefined"
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
         data-color="white"
         :class="{
           element: true,
-          'element--folder': isFolderRow(element),
           'element--selected': selection.isSelected(element.id),
           'element--dragging': getDragState(element.id).type === 'is-dragging',
           'element--hidden':
@@ -235,7 +224,7 @@
               <craft-reorder-button
                 :position="getRowPosition(thumbIdx)"
                 orientation="horizontal"
-                @reorder="
+                @craft-reorder="
                   (event: CustomEvent<{direction: 'up' | 'down'}>) =>
                     move(thumbIdx, event.detail.direction === 'up' ? -1 : 1)
                 "
@@ -304,7 +293,7 @@
     }
   }
 
-  .thumbsview > li.element--folder {
+  .thumbsview > li[data-is-folder] {
     cursor: pointer;
   }
 

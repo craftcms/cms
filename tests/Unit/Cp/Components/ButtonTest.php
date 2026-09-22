@@ -41,6 +41,13 @@ describe('attributes', function () {
             ->and($html)->toContain(' disabled');
     });
 
+    it('renders the toggle flag only when set', function () {
+        expect(Button::make()->toggle()->active()->toHtml())
+            ->toContain(' toggle')
+            ->toContain('active="true"')
+            ->and(Button::make()->toHtml())->not->toContain('toggle');
+    });
+
     it('renders as a link with href, dropping the type', function () {
         $html = Button::make()
             ->type('submit')
@@ -55,6 +62,17 @@ describe('attributes', function () {
     it('renders the accessible name for icon-only buttons', function () {
         expect(Button::make()->icon('plus')->accessibleName('Add row')->toHtml())
             ->toContain('aria-label="Add row"');
+    });
+
+    it('renders flush valueless for every side, or with the sides it names', function () {
+        expect(Button::make()->toHtml())->not->toContain('flush');
+
+        expect(Button::make()->flush()->toHtml())->toContain(' flush');
+
+        expect(Button::make()->flush('inline-end block-start')->toHtml())
+            ->toContain('flush="inline-end block-start"');
+
+        expect(Button::make()->flush(false)->toHtml())->not->toContain('flush');
     });
 });
 

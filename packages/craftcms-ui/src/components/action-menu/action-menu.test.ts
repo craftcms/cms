@@ -56,6 +56,41 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+describe('slot-based content added after setup', () => {
+  const markup = `
+    <craft-action-menu>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content">
+        <craft-action-item>Plain Text</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `;
+
+  it('closes on a click and reports an item the consumer added later', async () => {
+    const element = await createFromMarkup(markup);
+    const content = element.querySelector<HTMLElement>('[slot="content"]')!;
+
+    // A consumer rendering the list reactively swaps items in long after the
+    // overlay was set up, so item handlers can't be bound once and for all.
+    const added = document.createElement('craft-action-item');
+    added.textContent = 'Dropdown';
+    content.append(added);
+
+    let changed: CraftActionItem | null = null;
+    element.addEventListener('craft-select', (event) => {
+      changed = (event as CustomEvent).detail.item;
+    });
+
+    element.opened = true;
+    await element.updateComplete;
+
+    added.click();
+
+    expect(element.opened).toBe(false);
+    expect(changed).toBe(added);
+  });
+});
+
 describe('searchable (slot-based)', () => {
   it('inserts a search input at the top of the content when searchable', async () => {
     const element = await createFromMarkup(slotBasedMarkup());
@@ -528,5 +563,49 @@ describe('groups', () => {
     // The heading is presentational, so filtering never hides or matches it.
     expect(element.querySelector('.action-menu__heading')).not.toBeNull();
     expect(visibleLabels(element)).toEqual([]);
+  });
+});
+
+describe('data-driven item props', () => {
+  it('renders the rest of the menu when an item carries an unsettable key', async () => {
+    // Server-built descriptors carry an `attributes` key, which is read-only on
+    // Element. Assigning it used to throw mid-render and leave the menu blank.
+    const menu = await createFromMarkup(
+      '<craft-action-menu><button slot="invoker" type="button">Open</button></craft-action-menu>'
+    );
+    menu.actions = [
+      {label: 'First', attributes: {'data-x': '1'}},
+      {type: 'hr'},
+      {label: 'Second'},
+    ] as unknown as ActionMenuItem[];
+    await menu.updateComplete;
+
+    const labels = [...menu.querySelectorAll('craft-action-item')].map((item) =>
+      item.textContent?.trim()
+    );
+
+    expect(labels).toEqual(['First', 'Second']);
+  });
+
+  it('carries target and rel onto a link item’s anchor', async () => {
+    const menu = await createFromMarkup(
+      '<craft-action-menu><button slot="invoker" type="button">Open</button></craft-action-menu>'
+    );
+    menu.actions = [
+      {
+        type: 'link',
+        label: 'Open in a new tab',
+        href: '/admin',
+        target: '_blank',
+      },
+    ] as unknown as ActionMenuItem[];
+    await menu.updateComplete;
+
+    const item = menu.querySelector('craft-action-item') as CraftActionItem;
+    await item.updateComplete;
+    const anchor = item.shadowRoot!.querySelector('a')!;
+
+    expect(anchor.getAttribute('target')).toBe('_blank');
+    expect(anchor.getAttribute('rel')).toBe('noopener');
   });
 });

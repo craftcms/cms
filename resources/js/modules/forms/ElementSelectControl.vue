@@ -79,6 +79,7 @@
     elementType: string;
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
+    context: string;
     sources: string[] | null;
     criteria: FormProperties;
     selectionCondition?: FormProperties;
@@ -92,12 +93,11 @@
     /** `AssetSelect` only; absent for every other element type. */
     canUpload?: boolean;
     uploadFolderId?: number | null;
-    fsType?: string | null;
     showFolders?: boolean;
   };
   const props = defineProps<{
     control: FormControlPayload<ElementSelectProps>;
-    value: Array<number | string> | number | string | null;
+    value: Array<number | string> | number | string | null | undefined;
     editable: boolean;
   }>();
   const emit = defineEmits<{
@@ -126,11 +126,19 @@
   const showUpload = computed(
     () => props.editable && props.control.props.canUpload === true
   );
+  const uploadKinds = computed(() => {
+    const kind = props.control.props.criteria.kind;
+
+    return kind === undefined ? undefined : ([kind].flat() as string[]);
+  });
 
   const ids = computed(() =>
     (Array.isArray(props.value)
       ? props.value
-      : props.value === null || props.value === ''
+      : // Loose on purpose: absent means the same as empty here — a relation
+        // nested in a block the server has just minted resolves its path to
+        // undefined for a beat.
+        props.value == null || props.value === ''
         ? []
         : [props.value]
     ).map(elementId)
@@ -314,6 +322,7 @@
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
       {
+        context: props.control.props.context,
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
@@ -635,7 +644,7 @@
           variant="dashed"
           :can-upload="control.props.canUpload"
           :folder-id="control.props.uploadFolderId ?? undefined"
-          :fs-type="control.props.fsType ?? undefined"
+          :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"
           :disabled="!showUpload"

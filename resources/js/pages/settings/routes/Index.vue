@@ -8,12 +8,14 @@
     edit,
     reorder,
   } from '@actions/Settings/RoutesController';
-  import {Link, router} from '@inertiajs/vue3';
-  import {ButtonVariant, t} from '@craftcms/ui';
+  import {router} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import CpLink from '@/common/components/CpLink.vue';
 
   const props = defineProps<{
     title: string;
@@ -84,98 +86,111 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
-    <Link :href="create()">
-      <craft-button
-        v-if="!readOnly"
-        type="button"
-        icon="plus"
-        :variant="ButtonVariant.Primary"
-      >
-        {{ t('New route') }}
-      </craft-button>
-    </Link>
+  <LayoutSlot name="content-actions">
+    <CpLink
+      v-if="!readOnly"
+      :href="create()"
+      appearance="button"
+      variant="accent"
+      icon="plus"
+    >
+      {{ t('New route') }}
+    </CpLink>
   </LayoutSlot>
 
   <div v-if="routes.length === 0" class="empty-routes">
-    <craft-pane appearance="raised">
-      <Empty :label="t('No routes exist yet.')" />
-    </craft-pane>
+    <CpContainer>
+      <Empty
+        :label="t('No routes exist yet.')"
+        class="border border-quiet rounded"
+      >
+        <CpLink
+          v-if="!readOnly"
+          :href="create()"
+          appearance="button"
+          variant="accent"
+          icon="plus"
+        >
+          {{ t('New route') }}
+        </CpLink>
+      </Empty>
+    </CpContainer>
   </div>
 
-  <div v-else class="routes-list">
-    <div
-      v-for="(route, index) in routes"
-      :key="route.uid"
-      :ref="(el) => setItemRef(el, route.uid)"
-      :class="{
-        route: true,
-        'route--readonly': readOnly,
-        'route--dragging':
-          !readOnly && getDragState(route.uid).type === 'is-dragging',
-      }"
-    >
-      <div v-if="isMultiSite" class="route__site">
-        <div class="route-site">
-          {{ route.siteName }}
+  <CpContainer v-else>
+    <div class="routes-list">
+      <div
+        v-for="(route, index) in routes"
+        :key="route.uid"
+        :ref="(el) => setItemRef(el, route.uid)"
+        :class="{
+          route: true,
+          'route--readonly': readOnly,
+          'route--dragging':
+            !readOnly && getDragState(route.uid).type === 'is-dragging',
+        }"
+      >
+        <div v-if="isMultiSite" class="route__site">
+          <div class="route-site">
+            {{ route.siteName }}
+          </div>
         </div>
-      </div>
 
-      <Link :href="edit({uid: route.uid})" class="route__parts">
-        <div>
-          <span
-            v-if="route.uriDisplayHtml"
-            v-html="route.uriDisplayHtml"
-          ></span>
-          <craft-icon v-else name="home" :label="t('Home')"></craft-icon>
+        <CpLink :href="edit({uid: route.uid})" class="route__parts" block>
+          <div>
+            <span
+              v-if="route.uriDisplayHtml"
+              v-html="route.uriDisplayHtml"
+            ></span>
+            <craft-icon v-else name="home" :label="t('Home')"></craft-icon>
+          </div>
+        </CpLink>
+
+        <div class="route__icon">
+          <craft-icon name="arrow-right" :label="t('Resolves to')"></craft-icon>
         </div>
-      </Link>
 
-      <div class="route__icon">
-        <craft-icon name="arrow-right" :label="t('Resolves to')"></craft-icon>
+        <div class="route__template">
+          <craft-icon name="template"></craft-icon>
+          <span>{{ route.template }}</span>
+        </div>
+
+        <div class="route__actions" v-if="!readOnly" @click.stop>
+          <CpLink
+            size="small"
+            appearance="button"
+            :href="edit({uid: route.uid})"
+          >
+            <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
+          </CpLink>
+          <craft-reorder-button
+            :ref="(el: any) => setHandleRef(el, route.uid)"
+            :position="getRowPosition(index)"
+            @reorder="
+              (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+                handleReorder(
+                  index,
+                  e.detail.direction === 'up' ? index - 1 : index + 1
+                )
+            "
+          ></craft-reorder-button>
+          <craft-button
+            @click="deleteRoute(route)"
+            variant="danger-plain"
+            size="small"
+            icon
+          >
+            <craft-icon name="trash" :label="t('Delete')"></craft-icon>
+          </craft-button>
+        </div>
+
+        <DropIndicator contained :edge="routeDropEdge(route.uid)" />
       </div>
-
-      <div class="route__template">
-        <craft-icon name="template"></craft-icon>
-        <span>{{ route.template }}</span>
-      </div>
-
-      <div class="route__actions" v-if="!readOnly" @click.stop>
-        <Link
-          as="craft-button"
-          size="small"
-          appearance="plain"
-          :href="edit({uid: route.uid})"
-        >
-          <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
-        </Link>
-        <craft-reorder-button
-          :ref="(el: any) => setHandleRef(el, route.uid)"
-          :position="getRowPosition(index)"
-          @reorder="
-            (e: CustomEvent<{direction: 'up' | 'down'}>) =>
-              handleReorder(
-                index,
-                e.detail.direction === 'up' ? index - 1 : index + 1
-              )
-          "
-        ></craft-reorder-button>
-        <craft-button
-          @click="deleteRoute(route)"
-          variant="danger-plain"
-          size="small"
-          icon
-        >
-          <craft-icon name="trash" :label="t('Delete')"></craft-icon>
-        </craft-button>
-      </div>
-
-      <DropIndicator contained :edge="routeDropEdge(route.uid)" />
     </div>
-  </div>
+  </CpContainer>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="css">
   .routes-list {
     display: grid;
     grid-template-areas: 'site parts icon template actions';
@@ -264,7 +279,7 @@
     grid-area: actions;
   }
 
-  @media (max-width: 720px) {
+  @media (width < var(--breakpoint-md)) {
     .route {
       grid-template-areas: 'site actions' 'parts parts' 'template template';
       grid-template-columns: repeat(2, 1fr);

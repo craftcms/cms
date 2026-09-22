@@ -13,6 +13,7 @@
     destroy,
     edit,
   } from '@actions/Settings/AssetTransformersController';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type AssetTransformerIndexData =
     CraftCms.Cms.Asset.Data.AssetTransformerIndexData;
@@ -106,13 +107,13 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="!readOnly" name="actions">
+  <LayoutSlot v-if="!readOnly" name="content-actions">
     <CpLink variant="accent" appearance="button" :href="create().url">{{
       t('New Asset Transformer')
     }}</CpLink>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
+  <CpContainer>
     <AdminTable :table="table" :reorderable="false" />
-  </craft-pane>
+  </CpContainer>
 </template>

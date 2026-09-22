@@ -39,6 +39,7 @@
     gap: var(--c-spacing-md);
     align-items: center;
     color: currentColor;
+    text-decoration: none;
   }
 
   /* Same icon track as the expanded state, so the logo doesn't change size

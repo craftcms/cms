@@ -20,7 +20,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/image-editor-test/test-disk'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 

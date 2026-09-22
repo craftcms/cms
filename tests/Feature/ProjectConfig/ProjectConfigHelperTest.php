@@ -565,8 +565,7 @@ test('path claims prevent recursive processing and reset every category', functi
 
     expect($processed)->toBe([...$paths, ...$paths]);
 })->with([
-    ['ensureAllFilesystemsProcessed', [ProjectConfig::PATH_FS]],
-    ['ensureAllFieldsProcessed', [ProjectConfig::PATH_FS, ProjectConfig::PATH_FIELDS.'.item']],
+    ['ensureAllFieldsProcessed', [ProjectConfig::PATH_FIELDS.'.item']],
     ['ensureAllSitesProcessed', [ProjectConfig::PATH_SITE_GROUPS.'.item', ProjectConfig::PATH_SITES.'.item']],
     ['ensureAllUserGroupsProcessed', [ProjectConfig::PATH_USER_GROUPS.'.item']],
     ['ensureAllEntryTypesProcessed', [ProjectConfig::PATH_ENTRY_TYPES.'.item']],

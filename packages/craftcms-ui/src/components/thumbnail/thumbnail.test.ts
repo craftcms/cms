@@ -209,3 +209,63 @@ describe('craft-thumbnail modes', () => {
     expect(svg.hasAttribute('preserveAspectRatio')).toBe(false);
   });
 });
+
+describe('craft-thumbnail animated', () => {
+  it('does not freeze by default', async () => {
+    const element = document.createElement('craft-thumbnail');
+    element.src = '/thumbnail.jpg';
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(element.animated).toBe(false);
+    expect(
+      element.shadowRoot!.querySelector('canvas[part="cover"]')
+    ).toBeNull();
+  });
+
+  it('freezes when the animated attribute is set, without altering the image', async () => {
+    document.body.innerHTML =
+      '<craft-thumbnail src="/thumbnail.jpg" alt="A thumbnail" animated></craft-thumbnail>';
+    const element = document.querySelector('craft-thumbnail')!;
+    await element.updateComplete;
+
+    const canvas = element.shadowRoot!.querySelector('canvas[part="cover"]');
+    expect(canvas).not.toBeNull();
+    expect(canvas!.getAttribute('aria-hidden')).toBe('true');
+    expect(canvas!.getAttribute('role')).toBe('presentation');
+
+    const image = element.shadowRoot!.querySelector('img')!;
+    expect(image.classList.contains('thumbnail__image')).toBe(true);
+    expect(image.getAttribute('alt')).toBe('A thumbnail');
+  });
+
+  it.each([
+    ['a .gif src', '/thumbnail.gif'],
+    ['a .webp src', '/thumbnail.webp'],
+    ['a query-stringed .gif src', '/thumbnail.gif?v=2'],
+  ])(
+    'freezes based on %s, without the animated attribute',
+    async (_label, src) => {
+      const element = document.createElement('craft-thumbnail');
+      element.src = src;
+      document.body.append(element);
+      await element.updateComplete;
+
+      expect(element.animated).toBe(false);
+      expect(
+        element.shadowRoot!.querySelector('canvas[part="cover"]')
+      ).not.toBeNull();
+    }
+  );
+
+  it('does not mistake a similarly-named extension for an animated one', async () => {
+    const element = document.createElement('craft-thumbnail');
+    element.src = '/thumbnail.gifted.jpg';
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(
+      element.shadowRoot!.querySelector('canvas[part="cover"]')
+    ).toBeNull();
+  });
+});

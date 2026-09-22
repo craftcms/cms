@@ -18,6 +18,7 @@
     canonical,
     FormFailure,
     FormControlOverrides,
+    FormChangedPaths,
     FormModifiedGroups,
     FormRefreshingFields,
     isRecord,
@@ -86,6 +87,13 @@
   ]);
   const knownControlPaths = new Map<string, string[]>();
   const touchedPaths = new Set<string>();
+  /**
+   * Dotted paths of every control changed since the form was last reset.
+   * Reactive, unlike `touchedPaths`, because a field holding nested forms badges
+   * from it. Kept through a save, the way Craft 5's badges stay put, and dropped
+   * only when the values are thrown away.
+   */
+  const changedPaths = ref(new Set<string>());
   const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
@@ -94,6 +102,7 @@
     FormModifiedGroups,
     computed(() => new Set(props.modified ?? []))
   );
+  provide(FormChangedPaths, changedPaths);
   provide(
     FormRefreshingFields,
     computed(() => refreshingFields)
@@ -129,6 +138,16 @@
 
   function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
+
+    // A control can report a change that leaves its value where it started —
+    // rewriting an input's value on reset makes it re-emit, for one. That isn't
+    // a change, and recording it would badge a field nobody touched.
+    if (
+      canonical(valueAt(values, change.path)) !==
+      canonical(valueAt(baseline, change.path))
+    ) {
+      changedPaths.value.add(change.path.join('.'));
+    }
     emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
@@ -215,7 +234,11 @@
     }
 
     renderError.value = undefined;
-    const focusedPath = document.activeElement?.closest<HTMLElement>(
+    const focusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : undefined;
+    const focusedPath = focusedElement?.closest<HTMLElement>(
       '[data-form-control-path]'
     )?.dataset.formControlPath;
 
@@ -259,11 +282,13 @@
         const control = [
           ...document.querySelectorAll<HTMLElement>('[data-form-control-path]'),
         ].find((element) => element.dataset.formControlPath === focusedPath);
-        const focusTarget = control?.hasAttribute('data-form-control-override')
-          ? control.querySelector<HTMLElement>(
-              'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
-            )
-          : control;
+        const focusTarget = focusedElement?.isConnected
+          ? focusedElement
+          : control?.hasAttribute('data-form-control-override')
+            ? control.querySelector<HTMLElement>(
+                'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
+              )
+            : control;
 
         focusTarget?.focus();
       });
@@ -298,6 +323,7 @@
       canonical(valueAt(source.values, source.scope))
     );
     touchedPaths.clear();
+    changedPaths.value.clear();
     knownControlPaths.clear();
 
     // Replaced in place rather than reassigned: the reactive object is handed
@@ -496,6 +522,7 @@
 </script>
 
 <template>
+  <!-- Form Renderer -->
   <span ref="root" hidden></span>
   <p v-if="renderError" role="alert">{{ renderError }}</p>
   <template v-else>

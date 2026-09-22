@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -71,6 +72,17 @@ trait NestedElement
      * @since 5.2.0
      */
     public bool $updateSearchIndexForOwner = false;
+
+    /**
+     * @var bool Whether the owner element’s `dateUpdated` timestamp should be updated (recursively, up
+     *           through any further ancestors) when this (canonical) element is saved.
+     *
+     * This is set to `false` when a nested element is being saved as part of its owner’s own save
+     * operation, since the owner’s `dateUpdated` will already be getting updated in that case.
+     *
+     * @since 5.12.0
+     */
+    public bool $touchOwnersOnSave = true;
 
     /**
      * @var ElementInterface|false|null The primary owner element, or false if [[primaryOwnerId]] is invalid
@@ -302,6 +314,7 @@ trait NestedElement
 
                 if (! empty($ownerIds)) {
                     $query = $ownerType::find()->id($ownerIds);
+                    $criteria = ElementHelper::cleanseQueryCriteria($criteria);
                     Typecast::configure($query, $criteria + $this->ownerCriteria());
                     $this->_owners = $query->all();
                 }

@@ -31,6 +31,9 @@ class Table extends Control
 
     private bool $keyed = false;
 
+    /** @var array<string, mixed> */
+    private array $defaultValues = [];
+
     /** @var array<string, array<string, true>> */
     private array $errors = [];
 
@@ -50,6 +53,7 @@ class Table extends Control
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
+            'defaultValues' => $control->props['defaultValues'] ?? [],
             'static' => $attributes['name'] === null,
             'errors' => $control->props['errors'] ?? [],
         ]);
@@ -110,12 +114,27 @@ class Table extends Control
         return $this;
     }
 
+    /** @param array<string, mixed> $defaultValues */
+    public function defaultValues(array $defaultValues): static
+    {
+        $this->defaultValues = $defaultValues;
+
+        return $this;
+    }
+
     /** @param array<string, array<string, true>> $errors */
     public function errors(array $errors): static
     {
         $this->errors = $errors;
 
         return $this;
+    }
+
+    /** @return list<mixed> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
     }
 
     #[\Override]
@@ -129,6 +148,7 @@ class Table extends Control
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            'defaultValues' => $this->defaultValues,
             'errors' => $this->errors ?: null,
         ]);
     }

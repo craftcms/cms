@@ -47,6 +47,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         'environmentVariables' => 'aliases',
         'isSystemOn' => 'isSystemLive',
         'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+        'tempAssetUploadFs' => 'tempAssetUploadDisk',
         'validationKey' => 'securityKey',
     ];
 

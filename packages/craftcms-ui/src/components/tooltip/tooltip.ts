@@ -1,7 +1,7 @@
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {LionTooltip} from '@lion/ui/tooltip.js';
-import {withTooltipConfig} from '@lion/ui/overlays.js';
+import {withHoverInteraction} from '../../utilities/overlay-hover.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
 
@@ -128,8 +128,7 @@ export default class CraftTooltip extends LionTooltip {
       // moving along a row of icons leaves the previous tooltip on screen
       // beside the new one. Show immediately, and keep just enough of a delay
       // out to not blink when the pointer clips an edge.
-      const {visibilityTriggerFunction} = withTooltipConfig({
-        invokerRelation: this.invokerRelation,
+      const {visibilityTriggerFunction} = withHoverInteraction({
         delayIn: 200,
         delayOut: 0,
       });

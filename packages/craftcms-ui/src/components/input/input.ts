@@ -57,6 +57,10 @@ export default class CraftInput extends LionInput {
   /** Native virtual keyboard hint. */
   @property({attribute: false}) override inputMode = '';
 
+  /** Whether the input has failed validation. */
+  @property({attribute: 'aria-invalid', reflect: true})
+  override ariaInvalid: string | null = null;
+
   /** Whether the native input allows browser autocorrection. */
   @property({attribute: false}) autoCorrect = true;
 
@@ -125,11 +129,10 @@ export default class CraftInput extends LionInput {
   }
 
   private syncAriaInvalid() {
-    const ariaInvalid = this.getAttribute('aria-invalid');
-
-    if (ariaInvalid !== null) {
-      this._inputNode?.setAttribute('aria-invalid', ariaInvalid);
-    }
+    this._inputNode?.setAttribute(
+      'aria-invalid',
+      this.ariaInvalid ?? String(this._hasFeedbackVisibleFor('error'))
+    );
   }
 
   private syncNativeAttributes() {

@@ -46,4 +46,9 @@ abstract class CommentEvent extends ActivityEventType
     {
         return t('Commented.');
     }
+
+    public static function component(): string
+    {
+        return 'craft:activity-timeline-comment';
+    }
 }

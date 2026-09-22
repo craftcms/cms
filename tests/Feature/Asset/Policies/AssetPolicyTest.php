@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\base\Fs;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -11,9 +10,6 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
-use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
@@ -35,7 +31,7 @@ beforeEach(function () {
         'uid' => ASSET_POLICY_VOLUME_UID,
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fs' => 'disk:asset-policy-test',
+        'fs' => 'asset-policy-test',
     ]);
 
     $this->volume = new Volume([
@@ -366,18 +362,12 @@ function createAssetTestAsset(
     ?int $uploaderId = null,
     bool $isFolder = false,
 ): Asset {
-    $mockVolume = new class extends Volume
-    {
-        public function getFs(): FsInterface
-        {
-            return new Local;
-        }
-    };
-
-    $mockVolume->id = $volume->id;
-    $mockVolume->uid = $volume->uid;
-    $mockVolume->name = $volume->name;
-    $mockVolume->handle = $volume->handle;
+    $mockVolume = new Volume([
+        'id' => $volume->id,
+        'uid' => $volume->uid,
+        'name' => $volume->name,
+        'handle' => $volume->handle,
+    ]);
 
     $asset = new class extends Asset
     {
@@ -403,26 +393,12 @@ function createAssetTestAssetWithTempFs(
     Volume $volume,
     ?int $uploaderId = null,
 ): Asset {
-    $tempFs = new Temp([
-        'handle' => 'tempFs',
-        'path' => sys_get_temp_dir().'/craft-policy-test-temp',
+    $mockVolume = new Volume([
+        'id' => $volume->id,
+        'uid' => $volume->uid,
+        'name' => $volume->name,
+        'handle' => $volume->handle,
     ]);
-
-    $mockVolume = new class extends Volume
-    {
-        public ?Temp $mockFs = null;
-
-        public function getFs(): Temp
-        {
-            return $this->mockFs;
-        }
-    };
-
-    $mockVolume->id = $volume->id;
-    $mockVolume->uid = $volume->uid;
-    $mockVolume->name = $volume->name;
-    $mockVolume->handle = $volume->handle;
-    $mockVolume->mockFs = $tempFs;
     $mockVolume->markAsTemporary();
 
     $asset = new class extends Asset

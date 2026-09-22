@@ -214,7 +214,7 @@
             <craft-reorder-button
               :position="getRowPosition(index)"
               :orientation="inline ? 'horizontal' : 'vertical'"
-              @reorder="
+              @craft-reorder="
                 (event: CustomEvent<{direction: 'up' | 'down'}>) =>
                   move(index, event.detail.direction === 'up' ? -1 : 1)
               "

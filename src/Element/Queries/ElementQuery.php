@@ -482,10 +482,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     public function first($columns = ['*']): ElementInterface|array|null
     {
         // Eagerly?
-        $eagerResult = $this->eagerLoad(criteria: ['limit' => 1]);
+        $eagerResult = $this->eagerLoad(
+            criteria: ['limit' => 1],
+            columns: $columns,
+        );
 
         if ($eagerResult !== null) {
-            return $eagerResult->first();
+            return $this->applyAfterQueryCallbacks($eagerResult)->first();
         }
 
         return $this->baseFirst($columns);
@@ -535,6 +538,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $result;
         }
 
+        if (($eagerResult = $this->eagerLoad(columns: $columns)) !== null) {
+            return $eagerResult->all();
+        }
+
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
@@ -552,7 +559,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $result = $this->query->get($columns)->all();
         }
 
-        return $this->eagerLoad()?->all() ?? $this->hydrate($result);
+        return $this->hydrate($result);
     }
 
     /**
@@ -671,10 +678,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return 0;
         }
 
-        $eagerLoadedCount = $this->eagerLoad(count: true);
+        $eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns);
 
         if ($eagerLoadedCount !== null) {
-            return $eagerLoadedCount;
+            return $this->applyAfterQueryCallbacks($eagerLoadedCount);
         }
 
         if ((int) $this->queryCacheDuration >= 0) {
@@ -751,13 +758,16 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         // Eagerly?
-        $eagerResult = $this->eagerLoad(criteria: [
-            'offset' => ($this->offset ?: 0) + $n,
-            'limit' => 1,
-        ]);
+        $eagerResult = $this->eagerLoad(
+            criteria: [
+                'offset' => ($this->offset ?: 0) + $n,
+                'limit' => 1,
+            ],
+            columns: $columns,
+        );
 
         if ($eagerResult !== null) {
-            return $eagerResult->first();
+            return $this->applyAfterQueryCallbacks($eagerResult)->first();
         }
 
         return (clone $this)

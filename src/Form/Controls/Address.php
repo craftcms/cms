@@ -68,6 +68,13 @@ class Address extends Control
         return $this;
     }
 
+    /** @return array<string, string|null> */
+    #[\Override]
+    public function emptyValue(): mixed
+    {
+        return [];
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {

@@ -120,20 +120,13 @@ class Settings
             'iconName' => 'light/files',
             'label' => t('Entry Types'),
         ];
-        $settings[$label]['fields'] = [
-            'iconName' => 'light/pen-to-square',
-            'label' => t('Fields'),
-        ];
-
-        $label = t('Media');
-
         $settings[$label]['assets'] = [
             'iconName' => 'light/image',
             'label' => t('Assets'),
         ];
-        $settings[$label]['filesystems'] = [
-            'iconName' => 'light/folder-open',
-            'label' => t('Filesystems'),
+        $settings[$label]['fields'] = [
+            'iconName' => 'light/pen-to-square',
+            'label' => t('Fields'),
         ];
 
         $label = t('Plugins');

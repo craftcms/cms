@@ -1,6 +1,16 @@
+import {readFileSync} from 'node:fs';
 import {createApp, nextTick} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import MarkdownControl from '../forms/MarkdownControl.vue';
+import './markdown-field';
+
+// The stylesheet's own text. happy-dom applies none of it, so an assertion
+// that went through the cascade would pass against anything — and the test
+// runner stubs CSS imports out to an empty string, so it's read from disk.
+const styles = readFileSync(
+  'resources/js/modules/markdown-field/markdown-field.css',
+  'utf8'
+);
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -84,5 +94,69 @@ it('applies properties from the Vue Markdown Control', async () => {
 
   expect(
     container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
+  ).toBe('120px');
+});
+
+it('scopes its styling to the element, which every render path has', () => {
+  // The legacy Twig input wraps the element in `.markdown-field`; the Vue
+  // control and the server-rendered control HTML don't, so anything keyed to
+  // that wrapper — the border around `.overtype-container` included — was dead
+  // in the CP.
+  expect(styles).not.toMatch(/\.markdown-field[\s{]/);
+
+  // OverType injects `.overtype-container * { border: 0 !important }` at
+  // runtime. A bare element scope ties with that on specificity and loses on
+  // source order, so the border has to outrank it.
+  expect(styles).toMatch(
+    /craft-markdown-field:defined \.overtype-container \{[^}]*border: var\(--markdown-field-border\)/
+  );
+});
+it('resizes after becoming visible', () => {
+  let notifyVisible: (() => void) | undefined;
+  let laidOut = false;
+
+  vi.stubGlobal('requestAnimationFrame', vi.fn());
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        notifyVisible = () => {
+          callback(
+            [
+              {
+                contentRect: {width: 320},
+              } as ResizeObserverEntry,
+            ],
+            this as ResizeObserver
+          );
+        };
+      }
+
+      observe() {}
+
+      unobserve() {}
+
+      disconnect() {}
+    }
+  );
+  vi.spyOn(
+    HTMLTextAreaElement.prototype,
+    'scrollHeight',
+    'get'
+  ).mockImplementation(() => (laidOut ? 120 : 0));
+
+  const markdownField = document.createElement('craft-markdown-field');
+  document.body.append(markdownField);
+
+  expect(
+    markdownField.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
+  ).toBe('0px');
+
+  laidOut = true;
+  notifyVisible?.();
+
+  expect(
+    markdownField.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
   ).toBe('120px');
 });

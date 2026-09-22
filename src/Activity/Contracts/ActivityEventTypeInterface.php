@@ -33,4 +33,10 @@ interface ActivityEventTypeInterface
     public static function icon(): ?string;
 
     public static function format(ActivityEvent $event): string|Htmlable|null;
+
+    /** Returns a registered CP component name. */
+    public static function component(): string;
+
+    /** @return array<string, mixed> Component data. */
+    public static function props(ActivityEvent $event): array;
 }

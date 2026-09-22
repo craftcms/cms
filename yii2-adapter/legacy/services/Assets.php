@@ -10,6 +10,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\AssetPreviewEvent;
@@ -26,10 +27,11 @@ use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\Filesystem\DiskFs;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Component;
@@ -256,7 +258,9 @@ class Assets extends Component
 
     public function getTempAssetUploadFs(): FsInterface
     {
-        return $this->assetsService()->getTempAssetUploadFs();
+        return new DiskFs([
+            'disk' => Cms::config()->getTempAssetUploadDisk(),
+        ]);
     }
 
     public function getTempAssetUploadDisk(): FilesystemAdapter
