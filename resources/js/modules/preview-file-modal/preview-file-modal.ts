@@ -47,7 +47,6 @@ export class PreviewFileModal extends Modal {
   override $triggerElement: any = null;
   $bumperButtonStart: any = null;
   $bumperButtonEnd: any = null;
-  override $liveRegion: any = null;
   elementSelect: any = null;
   type: any = null;
   loaded: boolean | null = null;
@@ -63,12 +62,15 @@ export class PreviewFileModal extends Modal {
     }
 
     // SAFETY: The legacy Modal base accepts an omitted container during deferred construction.
-    super(undefined as any, {autoShow: false, resizable: true});
+    super(undefined as any, {
+      ...DEFAULTS,
+      ...settings,
+      autoShow: false,
+      resizable: true,
+    });
 
-    this.settings = Object.assign({}, DEFAULTS, settings);
     this.elementSelect = elementSelectOrSettings ?? null;
     this.$triggerElement = getFocusedElement();
-    this.$liveRegion = $('<span class="visually-hidden" role="status"></span>');
 
     if (PreviewFileModal.openInstance) {
       PreviewFileModal.openInstance.quickHide();

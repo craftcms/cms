@@ -41,12 +41,30 @@
 
   const selectedCount = computed(() => props.selectedIds.length);
 
+  const selectionType = computed<'elements' | 'folders' | 'mixed'>(() => {
+    const folderCount = props.selectedIds.filter((id) =>
+      String(id).startsWith('folder:')
+    ).length;
+
+    if (folderCount === 0) {
+      return 'elements';
+    }
+
+    return folderCount === selectedCount.value ? 'folders' : 'mixed';
+  });
+
+  const availableActions = computed(() =>
+    (props.actions ?? []).filter(
+      (item) => !item.appliesTo || item.appliesTo === selectionType.value
+    )
+  );
+
   const setStatusAction = computed<BulkActionItem | undefined>(() =>
-    (props.actions ?? []).find((item) => item.key === SET_STATUS_KEY)
+    availableActions.value.find((item) => item.key === SET_STATUS_KEY)
   );
 
   const menuItems = computed<Array<BulkActionItem>>(() =>
-    (props.actions ?? []).filter((item) => item.key !== SET_STATUS_KEY)
+    availableActions.value.filter((item) => item.key !== SET_STATUS_KEY)
   );
 
   const hasMenu = computed(() => menuItems.value.length > 0);

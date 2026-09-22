@@ -95,6 +95,7 @@
     flex-direction: column;
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
+    background-color: var(--c-modal-fill);
     box-shadow: var(--c-modal-shadow);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);

@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -39,6 +40,12 @@ class AssetIndexViewModel extends ContentIndexViewModel
      */
     public const NEW_SUBFOLDER_EVENT = 'assets:new-subfolder';
 
+    public const RENAME_FOLDERS_EVENT = 'assets:rename-folders';
+
+    public const MOVE_FOLDERS_EVENT = 'assets:move-folders';
+
+    public const DELETE_FOLDERS_EVENT = 'assets:delete-folders';
+
     /** @var array{0: Volume|null, 1: string[]}|null */
     private ?array $resolvedDefaultSource = null;
 
@@ -63,6 +70,90 @@ class AssetIndexViewModel extends ContentIndexViewModel
     public function defaultSource(): ?string
     {
         return $this->defaultSource;
+    }
+
+    public function includeSubfolders(): bool
+    {
+        return $this->search() !== null
+            && $this->search() !== ''
+            && $this->request->boolean('includeSubfolders');
+    }
+
+    public function canSearchSubfolders(): bool
+    {
+        return ($this->subfolder() ?? $this->rootFolder())?->getHasChildren() ?? false;
+    }
+
+    /** @return list<array<string, mixed>>|null */
+    #[Override]
+    public function actions(): ?array
+    {
+        $actions = array_map(
+            fn (array $action): array => [...$action, 'appliesTo' => 'elements'],
+            parent::actions() ?? [],
+        );
+        $folder = $this->rootFolder();
+
+        if ($folder === null) {
+            return $actions ?: null;
+        }
+
+        if (Gate::check('renameFolder', $folder)) {
+            $actions[] = $this->folderBulkAction(
+                'rename-folder',
+                t('Rename folder'),
+                self::RENAME_FOLDERS_EVENT,
+                bulk: false,
+            );
+        }
+
+        if (Gate::check('moveFolderFrom', $folder) && $this->moveTargetSourceKeys() !== []) {
+            $currentFolder = $this->subfolder() ?? $folder;
+            $actions[] = $this->folderBulkAction(
+                'move-folder',
+                t('Move folder'),
+                self::MOVE_FOLDERS_EVENT,
+                detail: ['disabledFolderIds' => [$currentFolder->id]],
+            );
+        }
+
+        if (Gate::check('deleteFolder', $folder)) {
+            $actions[] = $this->folderBulkAction(
+                'delete-folder',
+                t('Delete folder'),
+                self::DELETE_FOLDERS_EVENT,
+                destructive: true,
+            );
+        }
+
+        return $actions ?: null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $detail
+     * @return array<string, mixed>
+     */
+    private function folderBulkAction(
+        string $key,
+        string $label,
+        string $event,
+        bool $bulk = true,
+        bool $destructive = false,
+        array $detail = [],
+    ): array {
+        return array_filter([
+            'key' => $key,
+            'label' => $label,
+            'appliesTo' => 'folders',
+            'bulk' => $bulk ? null : false,
+            'destructive' => $destructive ?: null,
+            'variant' => $destructive ? 'danger' : null,
+            'action' => [
+                'type' => 'event',
+                'name' => $event,
+                ...($detail !== [] ? ['detail' => $detail] : []),
+            ],
+        ], fn (mixed $value): bool => $value !== null);
     }
 
     #[Override]
@@ -116,7 +207,9 @@ class AssetIndexViewModel extends ContentIndexViewModel
             $isCurrent = $i === $lastIndex;
 
             $crumb = [
-                'label' => $info['label'],
+                'label' => $folder->parentId
+                    ? $info['label']
+                    : Html::encode(t($folder->getVolume()->name, category: 'site')),
                 'icon' => $info['icon'] ?? null,
                 'href' => $isCurrent ? null : Url::cpUrl($info['uri']),
             ];
@@ -131,24 +224,100 @@ class AssetIndexViewModel extends ContentIndexViewModel
                 ];
             }
 
-            // The current folder gets a "New subfolder" action when the user can
-            // create in it.
-            if ($isCurrent && ($info['canCreate'] ?? false)) {
-                $crumb['actions'] = [[
-                    'label' => t('New subfolder'),
-                    'icon' => 'folder-plus',
-                    'action' => [
-                        'type' => 'event',
-                        'name' => self::NEW_SUBFOLDER_EVENT,
-                        'detail' => ['folderId' => $folder->id],
-                    ],
-                ]];
+            if ($isCurrent) {
+                $crumb['attrs'] = [
+                    'data-current-folder-id' => (string) $folder->id,
+                ];
+                $crumb['actions'] = $this->currentFolderActions($folder, $info);
             }
 
             $crumbs[] = $crumb;
         }
 
         return $crumbs;
+    }
+
+    /**
+     * @param  array<string, mixed>  $info
+     * @return list<array<string, mixed>>
+     */
+    private function currentFolderActions(VolumeFolder $folder, array $info): array
+    {
+        $actions = [];
+
+        if ($info['canCreate'] ?? false) {
+            $actions[] = [
+                'label' => t('New subfolder'),
+                'icon' => 'folder-plus',
+                'action' => [
+                    'type' => 'event',
+                    'name' => self::NEW_SUBFOLDER_EVENT,
+                    'detail' => ['folderId' => $folder->id],
+                ],
+            ];
+        }
+
+        if ($info['canRename'] ?? false) {
+            $actions[] = [
+                'label' => t('Rename folder'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => self::RENAME_FOLDERS_EVENT,
+                    'detail' => [
+                        'folderIds' => [$folder->id],
+                        'label' => $folder->name,
+                        'navigate' => true,
+                    ],
+                ],
+            ];
+        }
+
+        $moveTargetSourceKeys = $this->moveTargetSourceKeys();
+
+        if (($info['canMove'] ?? false) && $moveTargetSourceKeys !== []) {
+            $parent = $folder->getParent();
+            $actions[] = [
+                'label' => t('Move folder'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => self::MOVE_FOLDERS_EVENT,
+                    'detail' => [
+                        'folderIds' => [$folder->id],
+                        'sources' => $moveTargetSourceKeys,
+                        'defaultSource' => $this->sourceState()[0],
+                        'defaultSourcePath' => $this->folderPath($parent),
+                        'disabledFolderIds' => array_values(array_filter([
+                            $folder->id,
+                            $parent?->id,
+                        ])),
+                        'redirectUrl' => $parent !== null
+                            ? Url::cpUrl($parent->getSourcePathInfo()['uri'])
+                            : null,
+                    ],
+                ],
+            ];
+        }
+
+        if ($info['canDelete'] ?? false) {
+            $parent = $folder->getParent();
+            $actions[] = [
+                'label' => t('Delete folder'),
+                'variant' => 'danger',
+                'action' => [
+                    'type' => 'event',
+                    'name' => self::DELETE_FOLDERS_EVENT,
+                    'detail' => [
+                        'folderIds' => [$folder->id],
+                        'label' => $folder->name,
+                        'redirectUrl' => $parent !== null
+                            ? Url::cpUrl($parent->getSourcePathInfo()['uri'])
+                            : null,
+                    ],
+                ],
+            ];
+        }
+
+        return $actions;
     }
 
     /**
@@ -204,8 +373,12 @@ class AssetIndexViewModel extends ContentIndexViewModel
     #[Override]
     protected function extraRowData(ElementInterface $element): array
     {
-        if (! $element instanceof Asset || ! $element->isFolder) {
+        if (! $element instanceof Asset) {
             return [];
+        }
+
+        if (! $element->isFolder) {
+            return ['previewable' => true];
         }
 
         $uri = array_last($element->sourcePath)['uri'] ?? null;
@@ -214,6 +387,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return [
             'isFolder' => true,
             'folderId' => $element->folderId,
+            'folderName' => $folder?->name,
             'folderUrl' => $uri !== null ? Url::cpUrl($uri) : null,
             'canMoveTo' => $folder !== null && Gate::check('moveIntoFolder', $folder),
         ];
@@ -238,7 +412,56 @@ class AssetIndexViewModel extends ContentIndexViewModel
             $source['criteria']['folderId'] = $subfolder->id;
         }
 
+        if ($source !== null && $this->includeSubfolders()) {
+            $source['criteria']['includeSubfolders'] = true;
+        }
+
         return [$sourceKey, $source];
+    }
+
+    /** @return list<string> */
+    private function moveTargetSourceKeys(): array
+    {
+        $keys = [];
+        $collect = function (array $sources) use (&$collect, &$keys): void {
+            foreach ($sources as $source) {
+                if (isset($source['children'])) {
+                    $collect($source['children']);
+
+                    continue;
+                }
+
+                $data = $source['data'] ?? [];
+                if (
+                    ! empty($source['key'])
+                    && ! empty($data['volume-handle'])
+                    && $data['volume-handle'] !== 'temp'
+                    && ! empty($data['can-move-to'])
+                ) {
+                    $keys[] = $source['key'];
+                }
+            }
+        };
+
+        $collect($this->sources());
+
+        return $keys;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function folderPath(?VolumeFolder $folder): array
+    {
+        $path = [];
+
+        while ($folder !== null) {
+            $info = $folder->getSourcePathInfo();
+            if ($info !== null) {
+                array_unshift($path, $info);
+            }
+            $folder = $folder->getParent();
+        }
+
+        return $path;
     }
 
     #[Override]
@@ -263,6 +486,10 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
         $segments = Arr::whereNotEmpty(explode('/', (string) $this->defaultSource));
 
+        if ($segments === [] && preg_match('/^volume:(.+)$/', (string) $this->request->input('source'), $matches)) {
+            return $this->resolvedDefaultSource = [Volumes::getVolumeByUid($matches[1]), []];
+        }
+
         $volume = $segments === []
             ? null
             : Volumes::getVolumeByHandle(array_shift($segments));
@@ -274,6 +501,12 @@ class AssetIndexViewModel extends ContentIndexViewModel
     private function rootFolder(): ?VolumeFolder
     {
         [$volume] = $this->resolveDefaultSource();
+
+        if ($volume === null) {
+            [, $source] = parent::sourceState();
+            $handle = $source['data']['volume-handle'] ?? null;
+            $volume = is_string($handle) ? Volumes::getVolumeByHandle($handle) : null;
+        }
 
         return $volume === null
             ? null

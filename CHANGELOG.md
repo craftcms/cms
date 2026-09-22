@@ -55,8 +55,11 @@
 - Removed `CraftCms\Cms\Element\Conditions\ElementCondition::$queryParams`. ([#19563](https://github.com/craftcms/cms/pull/19563))
 
 ### Fields
+- Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - `CraftCms\Cms\Field\Contracts\FieldInterface::modifyQuery()` now accepts an `Illuminate\Database\Query\Builder` object for its `$query` argument, and has a new `CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery` argument, and a `void` return type. ([#19562](https://github.com/craftcms/cms/pull/19562), [#19585](https://github.com/craftcms/cms/pull/19585))
 - Moved legacy relation-field settings HTML and entry-title input HTML into the Yii adapter. ([#19591](https://github.com/craftcms/cms/pull/19591))
+- Restored “Copy value from site” functionality. ([#19683](https://github.com/craftcms/cms/pull/19683))
+- Fixed multiple bugs with Table fields, including new columns moving or defaulting to Checkbox, settings rows not being draggable, and element edit forms failing when the field value was null. ([#19687](https://github.com/craftcms/cms/pull/19687))
 
 ### Entries & Sections
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
@@ -191,6 +194,13 @@
 - Fixed a bug where removing false, zero, or empty-string project config values could leave their database rows behind.
 - Fixed a bug where saving project config repeatedly could persist the same changes more than once. ([#19568](https://github.com/craftcms/cms/pull/19568))
 - Fixed a bug where project config path processing state could leak between application instances. ([#19568](https://github.com/craftcms/cms/pull/19568))
+- Fixed a bug where folders in the Assets index couldn’t be selected, created, renamed, moved, or deleted. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where assets and folders couldn’t be moved by dragging them onto a folder in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where clicking a folder in the Assets index didn’t navigate into it or keep the breadcrumbs in sync. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the Assets index search couldn’t be expanded to include subfolders. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where <kbd>Shift</kbd>+<kbd>Space</kbd> didn’t preview the selected file in the Assets index. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where clicking an asset in the Assets index didn’t open its editor. ([#19682](https://github.com/craftcms/cms/pull/19682))
+- Fixed a bug where the Assets index’s folder dialogs could render behind other overlays, lose their centering, or not focus their name field. ([#19682](https://github.com/craftcms/cms/pull/19682))
 
 ## 6.0.0-alpha.18 - 2026-09-01
 

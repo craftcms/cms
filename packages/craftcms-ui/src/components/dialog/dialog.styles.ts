@@ -39,7 +39,7 @@ export default css`
     max-width: none;
     max-height: none;
     overflow: visible;
-    margin: 0;
+    margin: auto;
   }
 
   dialog::backdrop {
@@ -74,7 +74,7 @@ export default css`
     block-size: var(--_dialog-block-size);
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
-    border-radius: var(--c-radius-md);
+    border-radius: var(--c-radius-xl);
     box-shadow: var(--c-shadow-lg);
     overflow: hidden;
   }
