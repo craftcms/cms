@@ -401,14 +401,17 @@ it('optionally searches the current folder’s descendants', function () {
         ->assertJsonFragment(['id' => $nestedAsset->id]);
 });
 
-it('offers descendant search for the implicitly selected default volume', function () {
+it('offers descendant search after redirecting to the implicitly selected default volume', function () {
     $volumeModel = Volume::factory()->create([
         'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     Folders::ensureFolderByFullPathAndVolume('child', Volumes::getVolumeById($volumeModel->id));
 
-    get(route('craft.cp.assets.index', ['search' => 'needle']), ['X-Inertia' => 'true'])
+    $response = get(route('craft.cp.assets.index', ['search' => 'needle']), ['X-Inertia' => 'true'])
+        ->assertRedirect();
+
+    get($response->headers->get('Location'), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('props.source.key', "volume:{$volumeModel->uid}")
         ->assertJsonPath('props.canSearchSubfolders', true);
