@@ -1073,7 +1073,7 @@ JS, [
     {
         return match ($this->viewMode) {
             self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
-            default => Html::tag('div', $this->nestedElementManagerHtml($element, $static), [
+            default => Html::tag('div', $this->nestedElementManagerHtml($value, $element, $static), [
                 'id' => $this->getInputId(),
             ]),
         };
@@ -1200,9 +1200,33 @@ JS;
         ]);
     }
 
-    private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
+    /**
+     * @param EntryQuery|ElementCollection|null $value
+     * @param ElementInterface|null $owner
+     * @param bool $static
+     * @return string
+     */
+    private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
     {
-        $entryTypes = $this->getEntryTypes();
+        if ($owner?->hasEagerLoadedElements($this->handle)) {
+            $value = $owner->getEagerLoadedElements($this->handle)->all();
+        }
+
+        if ($value instanceof ElementCollection) {
+            $value = $value->all();
+        } elseif ($value instanceof EntryQuery) {
+            $value = $value->getCachedResult() ?? (clone $value)
+                ->drafts(null)
+                ->canonicalsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
+        }
+
+        /** @var Entry[]|null $value */
+        $entryTypes = $owner?->id
+            ? $this->getEntryTypesForField($value ?? [], $owner)
+            : $this->getEntryTypes();
         $config = [
             'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
             'prevalidate' => false,
