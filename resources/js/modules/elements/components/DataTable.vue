@@ -553,7 +553,7 @@
           </td>
           <td
             v-if="reorderable && !readOnly && structure"
-            class="cp-table-cell--structure-reorder"
+            class="cp-table-cell cp-table-cell--structure-reorder"
             :class="{'border-b-0': hideBottomBorder(rowIdx)}"
           >
             <div>
@@ -705,8 +705,17 @@
     --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
   }
 
+  // Holds the toggle's footprint whether or not this row has one: the table
+  // isn't in grid mode, so column widths come from content, and a collapsed
+  // empty column would jump the moment a row first gained children.
   :deep(.cp-table-cell--structure) {
-    width: 1px;
+    inline-size: var(--c-size-control-sm);
+    min-inline-size: var(--c-size-control-sm);
+  }
+
+  :deep(.cp-table-cell--structure-reorder),
+  :deep(.cp-table-cell--structure) {
+    padding-inline: 0;
   }
 
   :deep(.cp-table-cell--structure),
