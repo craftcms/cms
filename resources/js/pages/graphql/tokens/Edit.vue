@@ -1,96 +1,96 @@
 <script setup lang="ts">
-  import {computed, nextTick, ref} from 'vue';
-  import {t} from '@craftcms/ui';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Select from '@/common/form/Select.vue';
-  import type {BaseOption} from '@/common/types';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
-  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {
-    accessToken as revealAccessToken,
-    generate,
-    store,
-    update,
-  } from '@actions/Gql/TokensController';
-  import {useForm, useHttp} from '@inertiajs/vue3';
-  import {elevatedSessionManager} from '@/modules/auth/elevated-session';
+import { computed, nextTick, ref } from "vue";
+import { t } from "@craftcms/ui";
+import LayoutSlot from "@/common/components/LayoutSlot.vue";
+import Select from "@/common/form/Select.vue";
+import type { BaseOption } from "@/common/types";
+import CraftInput from "@craftcms/ui/vue/CraftInput.vue";
+import CraftSwitch from "@craftcms/ui/vue/CraftSwitch.vue";
+import { useAppLayout } from "@/common/composables/useAppLayout";
+import { useSettingsSave } from "@/modules/settings/composables/useSettingsSave";
+import {
+  accessToken as revealAccessToken,
+  generate,
+  store,
+  update,
+} from "@actions/Gql/TokensController";
+import { useForm, useHttp } from "@inertiajs/vue3";
+import { elevatedSessionManager } from "@/modules/auth/elevated-session";
+import CpContainer from "@/common/components/CpContainer.vue";
 
-  type TokenData = Pick<
-    CraftCms.Cms.Gql.Data.GqlToken,
-    'id' | 'uid' | 'name' | 'schemaId' | 'enabled' | 'expiryDate'
-  >;
+type TokenData = Pick<
+  CraftCms.Cms.Gql.Data.GqlToken,
+  "id" | "uid" | "name" | "schemaId" | "enabled" | "expiryDate"
+>;
 
-  type CopyButtonElement = HTMLElement & {copyValue: () => Promise<void>};
+type CopyButtonElement = HTMLElement & { copyValue: () => Promise<void> };
 
-  type TokenResponse = {
-    accessToken: string;
-  };
+type TokenResponse = {
+  accessToken: string;
+};
 
-  const maskedToken = '••••••••••••••••••••••••••••••••';
+const maskedToken = "••••••••••••••••••••••••••••••••";
 
-  const props = defineProps<{
-    token: TokenData;
-    accessToken: string | null;
-    schemaOptions: Array<BaseOption>;
-    readOnly?: boolean;
-  }>();
+const props = defineProps<{
+  token: TokenData;
+  accessToken: string | null;
+  schemaOptions: Array<BaseOption>;
+  readOnly?: boolean;
+}>();
 
-  const copyButton = ref<CopyButtonElement | null>(null);
-  const visibleAccessToken = ref(props.accessToken);
-  const tokenRequest = useHttp<Record<string, never>, TokenResponse>({});
-  const loadingToken = computed(() => tokenRequest.processing);
+const copyButton = ref<CopyButtonElement | null>(null);
+const visibleAccessToken = ref(props.accessToken);
+const tokenRequest = useHttp<Record<string, never>, TokenResponse>({});
+const loadingToken = computed(() => tokenRequest.processing);
 
-  const form = useForm({
-    name: props.token.name ?? '',
-    schema: props.token.schemaId?.toString() ?? '',
-    enabled: props.token.enabled,
-    expiryDate: props.token.expiryDate ?? '',
-    accessToken: props.accessToken ?? '',
-  });
+const form = useForm({
+  name: props.token.name ?? "",
+  schema: props.token.schemaId?.toString() ?? "",
+  enabled: props.token.enabled,
+  expiryDate: props.token.expiryDate ?? "",
+  accessToken: props.accessToken ?? "",
+});
 
-  const authorizationHeader = computed(
-    () => `Authorization: Bearer ${visibleAccessToken.value ?? maskedToken}`
-  );
+const authorizationHeader = computed(
+  () => `Authorization: Bearer ${visibleAccessToken.value ?? maskedToken}`,
+);
 
-  const routeAction = () =>
-    props.token.id ? update({tokenId: props.token.id}) : store();
+const routeAction = () => (props.token.id ? update({ tokenId: props.token.id }) : store());
 
-  const {save} = useSettingsSave(form, routeAction, {
-    passwordConfirmation: {required: () => true},
-  });
+const { save } = useSettingsSave(form, routeAction, {
+  passwordConfirmation: { required: () => true },
+});
 
-  useAppLayout({form, onSave: save});
+useAppLayout({ form, onSave: save });
 
-  async function revealToken(tokenId: number) {
-    const data = await tokenRequest.post(revealAccessToken({tokenId}).url);
-    visibleAccessToken.value = data.accessToken;
+async function revealToken(tokenId: number) {
+  const data = await tokenRequest.post(revealAccessToken({ tokenId }).url);
+  visibleAccessToken.value = data.accessToken;
 
-    return data.accessToken;
+  return data.accessToken;
+}
+
+async function copyHeader() {
+  const tokenId = props.token.id;
+
+  if (!visibleAccessToken.value && tokenId) {
+    await elevatedSessionManager.run(async () => {
+      await revealToken(tokenId);
+      await nextTick();
+      await copyButton.value?.copyValue();
+    });
   }
+}
 
-  async function copyHeader() {
-    const tokenId = props.token.id;
-
-    if (!visibleAccessToken.value && tokenId) {
-      await elevatedSessionManager.run(async () => {
-        await revealToken(tokenId);
-        await nextTick();
-        await copyButton.value?.copyValue();
-      });
-    }
-  }
-
-  async function regenerateToken() {
-    const data = await tokenRequest.post(generate().url);
-    visibleAccessToken.value = data.accessToken;
-    form.accessToken = data.accessToken;
-  }
+async function regenerateToken() {
+  const data = await tokenRequest.post(generate().url);
+  visibleAccessToken.value = data.accessToken;
+  form.accessToken = data.accessToken;
+}
 </script>
 
 <template>
-  <craft-pane appearance="raised">
+  <CpContainer>
     <div class="grid gap-3">
       <CraftInput
         :label="t('Name')"
@@ -107,9 +107,7 @@
       <template v-if="schemaOptions.length">
         <Select
           :label="t('GraphQL Schema')"
-          :help-text="
-            t('Choose which GraphQL schema this token has access to.')
-          "
+          :help-text="t('Choose which GraphQL schema this token has access to.')"
           id="schema"
           name="schema"
           v-model="form.schema"
@@ -120,7 +118,7 @@
       </template>
 
       <craft-callout v-else data-color="warning">
-        {{ t('No schemas exist yet to assign to this token.') }}
+        {{ t("No schemas exist yet to assign to this token.") }}
       </craft-callout>
 
       <hr />
@@ -130,7 +128,7 @@
           :label="t('Authorization Header')"
           :help-text="
             t(
-              'The `Authorization` header that should be sent with GraphQL API requests to use this token.'
+              'The `Authorization` header that should be sent with GraphQL API requests to use this token.',
             )
           "
           id="auth-header"
@@ -149,7 +147,7 @@
             @click="copyHeader"
           >
             <craft-icon name="copy" slot="prefix"></craft-icon>
-            {{ t('Copy') }}
+            {{ t("Copy") }}
           </craft-button>
 
           <craft-copy-button
@@ -168,30 +166,32 @@
           :disabled="readOnly || loadingToken"
           @click="regenerateToken"
         >
-          {{ t('Regenerate') }}
+          {{ t("Regenerate") }}
         </craft-button>
       </div>
     </div>
-  </craft-pane>
+  </CpContainer>
 
   <LayoutSlot name="content-details">
-    <CraftSwitch
-      :label="t('Enabled')"
-      id="enabled"
-      name="enabled"
-      v-model="form.enabled"
-      :disabled="readOnly"
-      :error="form.errors.enabled"
-    />
+    <craft-field-group class="p-lg">
+      <CraftSwitch
+        :label="t('Enabled')"
+        id="enabled"
+        name="enabled"
+        v-model="form.enabled"
+        :disabled="readOnly"
+        :error="form.errors.enabled"
+      />
 
-    <CraftInput
-      :label="t('Expiry Date')"
-      id="expiryDate"
-      name="expiryDate"
-      type="datetime-local"
-      v-model="form.expiryDate"
-      :disabled="readOnly"
-      :error="form.errors.expiryDate"
-    />
+      <CraftInput
+        :label="t('Expiry Date')"
+        id="expiryDate"
+        name="expiryDate"
+        type="datetime-local"
+        v-model="form.expiryDate"
+        :disabled="readOnly"
+        :error="form.errors.expiryDate"
+      />
+    </craft-field-group>
   </LayoutSlot>
 </template>
