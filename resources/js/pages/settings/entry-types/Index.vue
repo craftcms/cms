@@ -5,7 +5,7 @@
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {Link, router} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
