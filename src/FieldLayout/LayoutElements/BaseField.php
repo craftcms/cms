@@ -7,6 +7,7 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
@@ -487,7 +488,73 @@ abstract class BaseField extends FieldLayoutElement
             mode: $context->mode,
         ));
 
-        return $event->items;
+        $copyAction = $this->crossSiteCopyAction($context);
+        if ($copyAction === null) {
+            return $event->items;
+        }
+
+        return [
+            $copyAction,
+            ...($event->items === [] ? [] : [['type' => 'hr']]),
+            ...$event->items,
+        ];
+    }
+
+    /** @return array<string, mixed>|null */
+    private function crossSiteCopyAction(FieldLayoutElementContext $context): ?array
+    {
+        $element = $context->element;
+
+        if (
+            ! $this->uid ||
+            ! $element?->id ||
+            $context->mode !== ControlMode::Editable ||
+            ! $this->isCrossSiteCopyable($element) ||
+            ! $this->translatable($element) ||
+            ! $element->getIsCrossSiteCopyable()
+        ) {
+            return null;
+        }
+
+        $namespace = InputNamespace::get();
+        if (! $namespace || $namespace === 'fields') {
+            $namespace = null;
+        } elseif (str_ends_with($namespace, '[fields]')) {
+            $namespace = substr($namespace, 0, -strlen('[fields]'));
+        }
+
+        $siteIds = array_values(array_filter(
+            array_keys(ElementHelper::siteStatusesForElement($element, true)),
+            fn (int $siteId): bool => $siteId !== $element->siteId,
+        ));
+        $label = $this->showLabel() ? $this->label() : null;
+
+        return [
+            'icon' => 'clone',
+            'label' => t('Copy value from site…'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-value-from-site',
+                'detail' => [
+                    'elementType' => $element::class,
+                    'elementId' => $element->id,
+                    'draftId' => $element->draftId,
+                    'siteId' => $element->siteId,
+                    'layoutElementUid' => $this->uid,
+                    'label' => $label,
+                    'siteIds' => $siteIds,
+                ],
+            ],
+            'attributes' => [
+                'data' => [
+                    'cross-site-copy' => true,
+                    'element-id' => $element->id,
+                    'layout-element' => $this->uid,
+                    'label' => $label,
+                    'namespace' => $namespace,
+                ],
+            ],
+        ];
     }
 
     /** @return list<array<string, mixed>> */

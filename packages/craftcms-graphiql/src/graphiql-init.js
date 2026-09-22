@@ -30,6 +30,10 @@ const CraftGraphiQL = ({endpoint, selectedSchema}) => {
 
   return React.createElement(GraphiQL, {
     fetcher: graphQLFetcher,
+    // The CP's own styling for GraphiQL is light-only, and GraphiQL otherwise
+    // follows the system preference. Forcing it also drops the theme picker
+    // from its settings dialog.
+    forcedTheme: 'light',
   });
 };
 
