@@ -7,12 +7,14 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -68,6 +70,28 @@ abstract class BaseImporter
     {
         if (! empty($config)) {
             $this->uid = $config['uid'] ?? null;
+            $this->file($config['file'] ?? null);
+            $this->transformer($config['transformer'] ?? null);
+
+            $settings = $config['settings'] ?? [];
+            if (is_string($settings)) {
+                $settings = JsonSupport::decode($settings);
+            }
+
+            foreach ($settings as $setting => $value) {
+                if (method_exists($this, $setting)) {
+                    $reflection = new \ReflectionMethod($this, $setting);
+                    if ($reflection->isPublic()) {
+                        $this->{$setting}($value);
+                    }
+                }
+            }
+
+            // an element type whose layout isn't chosen through a setting resolves it here, so a
+            // step that has never been saved still knows what it's importing into
+            if ($this instanceof ElementImporter && $this->fieldLayout === null) {
+                $this->resolveDefaultFieldLayout();
+            }
         }
     }
 
@@ -215,22 +239,25 @@ abstract class BaseImporter
     {
         return [
             'settings.map' => ['array'],
-            'settings.matchCriteria' => ['array'],
-            'settings.clearableItems' => ['array'],
+            'settings.matchCriteria' => ['nullable', 'array'],
+            'settings.clearableItems' => ['nullable', 'array'],
         ];
     }
 
     /**
      * Builds the step data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
      */
-    protected function toValidationData(): array
+    public function toArrayData(): array
     {
         return [
             'uid' => $this->uid,
+            'type' => static::class,
             'file' => $this->file,
             'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
             'settings' => [
                 'map' => $this->map,
+                'matchCriteria' => $this->matchCriteria,
+                'clearableItems' => $this->clearableItems,
             ],
         ];
     }
@@ -242,7 +269,7 @@ abstract class BaseImporter
      */
     public function validate(): void
     {
-        ValidatorFacade::make($this->toValidationData(), static::getRules())->validate();
+        ValidatorFacade::make($this->toArrayData(), static::getRules())->validate();
     }
 
     /**
@@ -252,7 +279,7 @@ abstract class BaseImporter
      */
     public function validateSettings(): void
     {
-        ValidatorFacade::make($this->toValidationData(), static::getSettingsRules())->validate();
+        ValidatorFacade::make($this->toArrayData(), static::getSettingsRules())->validate();
     }
 
     /**

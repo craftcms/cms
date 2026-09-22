@@ -93,12 +93,9 @@ class ImportController
         ];
     }
 
-    /**
-     * @param  array<string, mixed>  $step
-     */
-    private function stepTypeLabel(array $step): string
+    private function stepTypeLabel(BaseImporter $step): string
     {
-        $type = $step['type'] ?? null;
+        $type = $step::class ?? null;
 
         return is_string($type) && class_exists($type) ? $type::displayName() : t('Unknown importer');
     }
@@ -148,7 +145,7 @@ class ImportController
         $import->name($this->request->input('name', $import->name));
         $import->handle($this->request->input('handle', $import->handle));
         $import->description($this->request->input('description', $import->description));
-        $import->steps($this->normalizeSteps($this->request->input('steps', $import->steps ?? [])));
+        $import->steps($this->request->input('steps', $import->steps ?? []));
 
         if (! $this->importsService->saveImport($import)) {
             return $this->asModelFailure($import, t('Couldn’t save import.'), 'import');
@@ -159,37 +156,6 @@ class ImportController
             t('Import saved.'),
             'import',
         );
-    }
-
-    /**
-     * Normalizes posted steps into the stored shape, decoding any mapping trees that arrived
-     * as JSON strings (as file-based configs and plugins may still send them).
-     *
-     * @param  array<array-key, array<string, mixed>>  $steps  The posted steps.
-     * @return array<int, array<string, mixed>>
-     */
-    private function normalizeSteps(array $steps): array
-    {
-        return array_values(array_map(function (array $step): array {
-            $settings = $step['settings'] ?? [];
-
-            foreach (['map', 'matchCriteria', 'clearableItems', 'keepMissingNestedElements'] as $key) {
-                if (isset($settings[$key])) {
-                    $settings[$key] = ImportHelper::decodeRecursive($settings[$key]);
-                }
-            }
-
-            $batchSize = $step['batchSize'] ?? null;
-
-            return [
-                'uid' => $step['uid'] ?? null,
-                'type' => $step['type'] ?? null,
-                'file' => $step['file'] ?? null,
-                'transformer' => $step['transformer'] ?? null,
-                'batchSize' => $batchSize === '' || $batchSize === null ? null : (int) $batchSize,
-                'settings' => $settings,
-            ];
-        }, $steps));
     }
 
     /**
@@ -379,7 +345,7 @@ class ImportController
 
         $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
 
-        return $this->importsService::createImporter($step);
+        return Imports::createImporter($step);
     }
 
     /**

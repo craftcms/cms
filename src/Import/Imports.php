@@ -5,21 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Data\Import as ImportData;
 use CraftCms\Cms\Import\Events\ImportSaved;
 use CraftCms\Cms\Import\Events\ImportSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Models\Import as ImportModel;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use ReflectionMethod;
 use Throwable;
 
 #[Singleton]
@@ -38,33 +35,13 @@ class Imports
      *
      * @param  array  $step  The step array, shaped `{uid, type, file, transformer, settings}`.
      */
-    public static function createImporter(array $step): BaseImporter
+    public static function createImporter(array $step): ?BaseImporter
     {
-        $importer = new $step['type']($step);
-        $importer->file($step['file'] ?? null);
-        $importer->transformer($step['transformer'] ?? null);
-
-        $settings = $step['settings'] ?? [];
-        if (is_string($settings)) {
-            $settings = JsonSupport::decode($settings);
+        try {
+            return new $step['type']($step);
+        } catch (Throwable) {
+            return null;
         }
-
-        foreach ($settings as $setting => $value) {
-            if (method_exists($importer, $setting)) {
-                $reflection = new ReflectionMethod($importer, $setting);
-                if ($reflection->isPublic()) {
-                    $importer->{$setting}($value);
-                }
-            }
-        }
-
-        // an element type whose layout isn't chosen through a setting resolves it here, so a
-        // step that has never been saved still knows what it's importing into
-        if ($importer instanceof ElementImporter && $importer->fieldLayout === null) {
-            $importer->resolveDefaultFieldLayout();
-        }
-
-        return $importer;
     }
 
     /**
@@ -214,7 +191,7 @@ class Imports
             $importRecord->name = $import->name;
             $importRecord->handle = $import->handle;
             $importRecord->description = $import->description;
-            $importRecord->steps = $import->steps;
+            $importRecord->steps = $import->serializeSteps();
 
             $importRecord->save();
 

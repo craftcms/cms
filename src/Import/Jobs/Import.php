@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
-use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
@@ -71,8 +70,12 @@ class Import extends Job
             return;
         }
 
-        $stepLabel = ImportService::stepLabel($import, $step);
+        $stepLabel = ImportFacade::stepLabel($import, $step);
         $importer = Imports::createImporter($step);
+
+        if ($importer === null) {
+            return;
+        }
 
         try {
             $importer->validateSettings();

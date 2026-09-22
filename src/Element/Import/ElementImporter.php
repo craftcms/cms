@@ -161,7 +161,7 @@ abstract class ElementImporter extends BaseImporter
     }
 
     /**
-     * Resolves and sets the field layout UID/type from a FieldLayout instance, id, or uid/type string.
+     * Resolves and sets the fieldLayout property from a FieldLayout instance, id, or uid/type string into UID/type string.
      *
      * @param  string|int|FieldLayout|null  $value  The field layout instance, ID, uid, type, or null.
      */
@@ -239,9 +239,9 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    protected function toValidationData(): array
+    public function toArrayData(): array
     {
-        $data = parent::toValidationData();
+        $data = parent::toArrayData();
         $data['settings']['site'] = $this->site?->handle;
         $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
 
@@ -293,7 +293,7 @@ abstract class ElementImporter extends BaseImporter
         }
 
         // has to exist (never create a layout as a side effect of validation)
-        $fieldLayout = static::normalizeFieldLayout($value);
+        $fieldLayout = static::normalizeFieldLayout($value, true);
         if ($fieldLayout === null) {
             $fail($attribute, t('No field layout found for “{fieldLayout}”.', [
                 'fieldLayout' => $value,
@@ -363,7 +363,7 @@ abstract class ElementImporter extends BaseImporter
             return $propertyCols;
         }
 
-        $fieldLayout = self::normalizeFieldLayout($this->fieldLayout);
+        $fieldLayout = self::normalizeFieldLayout($this->fieldLayout, create: true);
 
         $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
 

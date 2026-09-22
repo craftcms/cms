@@ -108,6 +108,10 @@ class Element extends Command implements PromptsForMissingInput
 
         $importConfig = Imports::createImporter($config);
 
+        if ($importConfig === null) {
+            return self::FAILURE;
+        }
+
         if ($matchCriteria) {
             $importConfig->matchCriteria($matchCriteria);
         }

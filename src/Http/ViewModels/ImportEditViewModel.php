@@ -68,14 +68,7 @@ class ImportEditViewModel extends ViewModel
      */
     public function steps(): array
     {
-        return array_map(fn (array $step): array => [
-            'uid' => $step['uid'] ?? null,
-            'type' => $step['type'] ?? null,
-            'file' => $step['file'] ?? null,
-            'transformer' => $step['transformer'] ?? null,
-            'batchSize' => $step['batchSize'] ?? null,
-            'settings' => $step['settings'] ?? [],
-        ], $this->import->steps ?? []);
+        return $this->import->serializeSteps() ?? [];
     }
 
     /**

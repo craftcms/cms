@@ -143,9 +143,9 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
-    protected function toValidationData(): array
+    public function toArrayData(): array
     {
-        $data = parent::toValidationData();
+        $data = parent::toArrayData();
         $data['settings']['volume'] = $this->volume ?? null;
 
         return $data;

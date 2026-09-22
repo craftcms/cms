@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -63,8 +62,14 @@ class Import extends Component implements CpEditable, Validatable
             $config = (array) $config;
         }
 
+        $steps = [];
         if (isset($config['steps']) && is_string($config['steps'])) {
-            $config['steps'] = Json::decode($config['steps']);
+            $items = Json::decode($config['steps']);
+            foreach ($items as $item) {
+                $step = ImportsFacade::createImporter($item);
+                $steps[] = $step;
+            }
+            $config['steps'] = array_filter($steps);
         }
 
         parent::__construct($config);
@@ -119,15 +124,45 @@ class Import extends Component implements CpEditable, Validatable
             return $this;
         }
 
-        $this->steps = array_values(array_map(function (array $step): array {
-            if (empty($step['uid'])) {
-                $step['uid'] = Str::uuid7()->toString();
-            }
-
-            return $step;
-        }, $steps));
+        $this->steps = self::normalizeSteps($steps);
 
         return $this;
+    }
+
+    /**
+     * Normalize an array of steps (which could be an array or arrays) into an array of BaseImporter objects.
+     */
+    private static function normalizeSteps(array $steps): ?array
+    {
+        if (empty($steps)) {
+            return null;
+        }
+
+        $items = [];
+        foreach ($steps as $step) {
+            if (is_array($step)) {
+                $step = ImportsFacade::createImporter($step);
+            }
+            if (empty($step->uid)) {
+                $step->uid = Str::uuid7()->toString();
+            }
+
+            $items[] = $step;
+        }
+
+        return $items;
+    }
+
+    /**
+     * Serializes the import's steps into an array of arrays.'
+     */
+    public function serializeSteps(): ?array
+    {
+        if ($this->steps === null) {
+            return null;
+        }
+
+        return array_map(fn (array|BaseImporter $importer) => is_array($importer) ? $importer : $importer->toArrayData(), $this->steps);
     }
 
     /**
@@ -196,7 +231,7 @@ class Import extends Component implements CpEditable, Validatable
         }
 
         foreach ($this->steps ?? [] as $i => $step) {
-            $key = $step['uid'] ?? $i;
+            $key = $step->uid ?? $i;
 
             foreach (self::stepErrors($step) as $attribute => $messages) {
                 $validator->errors()->add("steps.$key.$attribute", ...$messages);
@@ -212,9 +247,15 @@ class Import extends Component implements CpEditable, Validatable
      * @param  array<string, mixed>  $step  The step to validate.
      * @return array<string, array<int, string>> Validation messages keyed by attribute.
      */
-    public static function stepErrors(array $step): array
+    public static function stepErrors(array|BaseImporter $step): array
     {
-        $type = $step['type'] ?? null;
+        if (is_array($step)) {
+            $type = $step['type'] ?? null;
+            $stepArray = $step;
+        } else {
+            $type = $step::class ?? null;
+            $stepArray = $step->toArrayData();
+        }
 
         $typeValidator = ValidatorFacade::make(['type' => $type], [
             'type' => ['required', 'string', Rule::in(ImportFacade::getAllImporterTypes())],
@@ -224,7 +265,7 @@ class Import extends Component implements CpEditable, Validatable
             return ['type' => $typeValidator->errors()->get('type')];
         }
 
-        $stepValidator = ValidatorFacade::make($step, array_merge([
+        $stepValidator = ValidatorFacade::make($stepArray, array_merge([
             'batchSize' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ], $type::getRules()));
 
@@ -239,13 +280,7 @@ class Import extends Component implements CpEditable, Validatable
     public function getImporters(): Collection
     {
         return collect($this->steps ?? [])
-            ->map(function (array $step): ?BaseImporter {
-                try {
-                    return ImportsFacade::createImporter($step);
-                } catch (Throwable) {
-                    return null;
-                }
-            })
+            ->map(fn (array $step) => ImportsFacade::createImporter($step))
             ->filter()
             ->values();
     }
