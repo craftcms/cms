@@ -2,7 +2,14 @@
   import {Deferred, Head, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import backgroundUrl from '@public/images/install/installer-bg.png';
-  import {computed, reactive, watchEffect} from 'vue';
+  import {
+    computed,
+    nextTick,
+    reactive,
+    useTemplateRef,
+    watch,
+    watchEffect,
+  } from 'vue';
   import AccountFields from '@/modules/install/components/AccountFields.vue';
   import SiteFields from '@/modules/install/components/SiteFields.vue';
   import {useInstall} from '@/modules/install/composables/useInstall';
@@ -57,6 +64,14 @@
   function beginInstall() {
     goTo('license');
   }
+
+  const licenseHeading = useTemplateRef<HTMLElement>('licenseHeading');
+  watch(currentId, async (id) => {
+    if (id === 'license') {
+      await nextTick();
+      licenseHeading.value?.focus();
+    }
+  });
 
   const errors = reactive<Record<InstallFormStep, Record<string, string>>>({
     account: {},
@@ -120,7 +135,9 @@
   <Head :title="t('Install Craft CMS')" />
 
   <main class="install">
-    <h1 class="sr-only">{{ t('Install Craft CMS') }}</h1>
+    <h1 v-if="isCurrent('start')" class="sr-only">
+      {{ t('Install Craft CMS') }}
+    </h1>
 
     <template v-if="isCurrent('start')">
       <craft-button
@@ -138,6 +155,10 @@
       <!-- License screen -->
       <template v-if="isCurrent('license')">
         <craft-pane class="max-w-[80ch] mx-auto">
+          <h1 ref="licenseHeading" tabindex="-1" class="mb-4">
+            {{ t('License') }}
+          </h1>
+
           <Deferred data="licenseHtml">
             <template #fallback>
               <div class="flex justify-center">
