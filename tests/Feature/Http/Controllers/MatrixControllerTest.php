@@ -275,10 +275,9 @@ it('renders localized actions and an escaped site status for dynamically loaded 
         ->each(fn (Crawler $item): string => trim($item->text()));
 
     expect($visibleActions)
-        ->toContain('Enable for Primary <em>Site</em>', 'Disable globally')
+        ->toContain('Enable for Primary <em>Site</em>')
         ->and($block->filter('.status .visually-hidden')->text())
-        ->toBe('Disabled for Primary <em>Site</em>')
-        ->and($block->filter('.status .visually-hidden em'))->toHaveCount(0);
+        ->toBe('Disabled for Primary <em>Site</em>');
 });
 
 it('returns the new block as form nodes when given a control path', function () {

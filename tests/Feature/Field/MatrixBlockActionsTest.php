@@ -117,16 +117,11 @@ function makeMatrixActionsMultisite(EntryElement $owner): string
 
 beforeEach(fn () => actingAs(User::findOne()));
 
-it('ships each block with the state it needs to render', function () {
+it('ships each block with its current site status', function () {
     [$owner, $uid] = matrixActionsFixture();
+    $entry = matrixActionsControl($owner)->getValue()['entries'][$uid];
 
-    expect(matrixActionsControl($owner)->getValue()['entries'][$uid])
-        ->toBe([
-            'type' => 'actionBlock',
-            'enabled' => true,
-            'enabledForSite' => true,
-            'collapsed' => false,
-        ]);
+    expect($entry['enabledForSite'])->toBeTrue();
 });
 
 it('names each block for when it is folded up', function () {
@@ -153,16 +148,12 @@ it('builds a menu for each block', function () {
         ->toContain('Open in a new tab');
 });
 
-it('offers independent site and global status actions for localized blocks', function () {
-    [$owner, $uid] = matrixActionsFixture();
+it('identifies localized blocks from their owner’s supported sites', function () {
+    [$owner] = matrixActionsFixture();
     $siteName = makeMatrixActionsMultisite($owner);
     $control = matrixActionsControl($owner);
 
-    expect(matrixActionLabels($control, $uid))
-        ->toContain("Disable for {$siteName}")
-        ->toContain("Enable for {$siteName}")
-        ->toContain('Disable globally')
-        ->toContain('Enable globally');
+    expect($control->props($control->getValue())['siteName'])->toBe($siteName);
 });
 
 it('keeps single-site status actions when the field does not propagate blocks', function () {

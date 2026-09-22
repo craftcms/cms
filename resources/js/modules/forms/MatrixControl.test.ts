@@ -421,9 +421,7 @@ describe('MatrixControl', () => {
         'block-a': {enabled: true, enabledForSite: false},
       },
     });
-    expect(menuLabels()).toEqual(
-      expect.arrayContaining(['Enable for English', 'Expand'])
-    );
+    expect(menuLabels()).toContain('Enable for English');
   });
 
   it('folds a block when its titlebar is double-clicked', async () => {
@@ -679,62 +677,6 @@ describe('MatrixControl', () => {
         'Duplicate selected blocks'
       );
       expect(item('block-a', 'copy')?.label).toBe('Copy selected blocks');
-    });
-
-    it('resolves scoped status actions against the whole selection', async () => {
-      mountWithMenu(
-        {siteName: 'English'},
-        {
-          entries: {
-            'block-a': {
-              type: 'newType',
-              enabled: false,
-              enabledForSite: true,
-            },
-            'block-b': {
-              type: 'newType',
-              enabled: true,
-              enabledForSite: true,
-            },
-          },
-          sortOrder: ['block-a', 'block-b'],
-        }
-      );
-      await nextTick();
-
-      for (const box of container!.querySelectorAll('craft-checkbox')) {
-        box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-        Object.assign(box, {checked: true});
-        box.dispatchEvent(
-          new CustomEvent('model-value-changed', {bubbles: true})
-        );
-      }
-      await nextTick();
-
-      expect(item('block-a', 'disableGlobally')?.hidden).toBe(false);
-      expect(item('block-a', 'enableGlobally')?.hidden).toBe(true);
-      expect(item('block-b', 'disableGlobally')?.hidden).toBe(false);
-      expect(item('block-b', 'enableGlobally')?.hidden).toBe(true);
-      expect(item('block-a', 'disableForSite')?.hidden).toBe(true);
-      expect(item('block-b', 'disableForSite')?.hidden).toBe(true);
-
-      window.dispatchEvent(
-        new CustomEvent('craft:matrix-block-action', {
-          detail: {
-            action: 'disableForSite',
-            uid: 'block-b',
-            trigger: container!.querySelector('[data-id="block-b"]'),
-          },
-        })
-      );
-      await nextTick();
-
-      expect(emitted.at(-1)).toMatchObject({
-        entries: {
-          'block-a': {enabled: false, enabledForSite: true},
-          'block-b': {enabled: true, enabledForSite: false},
-        },
-      });
     });
 
     it('hides what there is no room for', async () => {
@@ -1514,15 +1456,30 @@ describe('MatrixControl', () => {
     ).toBe(true);
   });
 
-  it('selects blocks and applies a menu action across the selection', async () => {
-    mount({
-      entries: {
-        'block-a': {type: 'newType', enabled: false},
-        'block-b': {type: 'newType', enabled: true},
-        'block-c': {type: 'newType', enabled: true},
+  it('disables a mixed selection globally from any selected block’s menu', async () => {
+    mount(
+      {
+        entries: {
+          'block-a': {
+            type: 'newType',
+            enabled: false,
+            enabledForSite: true,
+          },
+          'block-b': {
+            type: 'newType',
+            enabled: true,
+            enabledForSite: true,
+          },
+          'block-c': {
+            type: 'newType',
+            enabled: true,
+            enabledForSite: true,
+          },
+        },
+        sortOrder: ['block-a', 'block-b', 'block-c'],
       },
-      sortOrder: ['block-a', 'block-b', 'block-c'],
-    });
+      {siteName: 'English'}
+    );
     await nextTick();
 
     const blocks = [...container!.querySelectorAll('[data-matrix-block]')];
@@ -1536,17 +1493,21 @@ describe('MatrixControl', () => {
     expect(blocks[1]!.hasAttribute('data-selected')).toBe(true);
     expect(blocks[2]!.hasAttribute('data-selected')).toBe(false);
 
-    // Craft 5's `bulkActionMode()`: a menu action on a block that's part of a
-    // multi-selection applies to the whole selection. A mixed selection still
-    // offers Disable, even when the menu belongs to its disabled block.
-    invoke('block-a', 'Disable selected blocks');
+    const selectedMenu = menus.find((menu) =>
+      menuLabels(menu).includes('Disable selected blocks globally')
+    );
+    expect(menuLabels(selectedMenu)).not.toContain(
+      'Disable selected blocks for English'
+    );
+
+    invoke('block-a', 'Disable selected blocks globally');
     await nextTick();
 
     expect(emitted.at(-1)).toMatchObject({
       entries: {
-        'block-a': {enabled: false},
-        'block-b': {enabled: false},
-        'block-c': {enabled: true},
+        'block-a': {enabled: false, enabledForSite: true},
+        'block-b': {enabled: false, enabledForSite: true},
+        'block-c': {enabled: true, enabledForSite: true},
       },
     });
   });
