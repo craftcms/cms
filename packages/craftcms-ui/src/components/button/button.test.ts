@@ -262,3 +262,135 @@ describe('craft-button actions', () => {
     expect(fired).toBe(false);
   });
 });
+
+describe('craft-button toggle', () => {
+  it('derives aria-pressed from active', async () => {
+    const button = document.createElement('craft-button');
+    button.toggle = true;
+    document.body.append(button);
+    await button.updateComplete;
+
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+
+    button.active = true;
+    await button.updateComplete;
+
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('leaves aria-pressed alone on a button that is not a toggle', async () => {
+    // craft-button-group sets aria-pressed on its children; overwriting it
+    // would be worse than leaving it be.
+    const button = document.createElement('craft-button');
+    button.setAttribute('aria-pressed', 'true');
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.active = false;
+    await button.updateComplete;
+
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('reports the state being asked for without changing active itself', async () => {
+    const button = document.createElement('craft-button');
+    button.toggle = true;
+    document.body.append(button);
+    await button.updateComplete;
+
+    let asked: boolean | undefined;
+    button.addEventListener('craft-toggle', (event) => {
+      asked = (event as CustomEvent<{active: boolean}>).detail.active;
+    });
+
+    button.click();
+    await button.updateComplete;
+
+    expect(asked).toBe(true);
+    // The owner of `active` decides; the button does not move on its own.
+    expect(button.active).toBe(false);
+  });
+
+  it('stays quiet when disabled', async () => {
+    const button = document.createElement('craft-button');
+    button.toggle = true;
+    button.setAttribute('disabled', '');
+    document.body.append(button);
+    await button.updateComplete;
+
+    let fired = false;
+    button.addEventListener('craft-toggle', () => {
+      fired = true;
+    });
+    button.click();
+
+    expect(fired).toBe(false);
+  });
+});
+
+describe('craft-button icon spacing', () => {
+  function content(element: CraftButton): DOMTokenList {
+    return element.shadowRoot!.querySelector('.button-content')!.classList;
+  }
+
+  it('spaces a prefix icon from the label', async () => {
+    const element = await createButton({icon: 'pen'});
+
+    expect(content(element)).toContain('button-content--spaced-prefix');
+    expect(content(element)).not.toContain('button-content--spaced-suffix');
+  });
+
+  it('spaces a suffix icon from the label', async () => {
+    const element = await createButton({
+      icon: 'chevron-down',
+      'icon-position': 'suffix',
+    });
+
+    expect(content(element)).toContain('button-content--spaced-suffix');
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+
+  it('spaces slotted icons on either side', async () => {
+    const element = await createButton();
+    const prefix = document.createElement('craft-icon');
+    prefix.slot = 'prefix';
+    const suffix = document.createElement('craft-icon');
+    suffix.slot = 'suffix';
+    element.append(prefix, suffix);
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(content(element)).toContain('button-content--spaced-prefix');
+    expect(content(element)).toContain('button-content--spaced-suffix');
+  });
+
+  it('adds no space to an icon-only button', async () => {
+    const element = await createButton({icon: 'x', 'aria-label': 'Close'}, '');
+
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+
+  it('ignores whitespace-only content', async () => {
+    const element = await createButton(
+      {icon: 'x', 'aria-label': 'Close'},
+      '\n  '
+    );
+
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+
+  it('follows the label as it comes and goes', async () => {
+    const element = await createButton({icon: 'pen'}, '');
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+
+    element.textContent = 'Edit';
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(content(element)).toContain('button-content--spaced-prefix');
+
+    element.firstChild!.textContent = '';
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(content(element)).not.toContain('button-content--spaced-prefix');
+  });
+});

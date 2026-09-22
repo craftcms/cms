@@ -29,6 +29,7 @@ class Volume extends BaseModel
     protected function casts(): array
     {
         return [
+            'hasUrls' => 'bool',
             'sortOrder' => 'int',
         ];
     }

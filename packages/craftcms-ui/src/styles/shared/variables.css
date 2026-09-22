@@ -138,6 +138,11 @@
   --c-color-fill-normal: var(--c-color-neutral-fill-normal);
   --c-color-fill-loud: var(--c-color-neutral-fill-loud);
   --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+
+  /* How see-through every quiet border is (--c-color-*-border-quiet): each
+     mixes its color with this much transparent. Resolved where the color
+     tokens are declared, so override it on :root, not on a subtree. */
+  --c-color-border-quiet-transparency: 60%;
   --c-color-border-normal: var(--c-color-neutral-border-normal);
   --c-color-border-loud: var(--c-color-neutral-border-loud);
   --c-color-on-quiet: var(--c-color-neutral-on-quiet);

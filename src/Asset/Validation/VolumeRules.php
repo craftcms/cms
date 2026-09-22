@@ -10,7 +10,6 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -61,11 +60,8 @@ class VolumeRules extends Ruleset
             ])],
         ];
 
-        $tempAssetUploadTarget = $this->subject->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
-
-        if ($tempAssetUploadTarget !== null) {
-            $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
-        }
+        $tempAssetUploadTarget = Cms::config()->getTempAssetUploadDisk();
+        $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
 
         return $rules;
     }
@@ -74,7 +70,7 @@ class VolumeRules extends Ruleset
     public function messages(): array
     {
         return [
-            'subpath.required' => t('A subpath is required for this filesystem.'),
+            'subpath.required' => t('A subpath is required for this disk.'),
         ];
     }
 
@@ -151,7 +147,7 @@ class VolumeRules extends Ruleset
         }
 
         if ($this->subject->resolveStorageTargetKey($handle) === null) {
-            $this->pushValidationError($attribute, t('This filesystem reference is invalid.'), $fail);
+            $this->pushValidationError($attribute, t('This disk reference is invalid.'), $fail);
         }
     }
 
@@ -167,7 +163,7 @@ class VolumeRules extends Ruleset
         if ($target !== null && $target === $tempUploadTarget) {
             $this->pushValidationError(
                 $attribute,
-                t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+                t('This disk has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
                 $fail,
             );
         }
@@ -194,23 +190,19 @@ class VolumeRules extends Ruleset
 
     private function isInternalDiskReference(string $value): bool
     {
-        $diskName = $value;
-        if (str_starts_with($value, Volume::STORAGE_DISK_PREFIX)) {
-            $diskName = substr($value, strlen(Volume::STORAGE_DISK_PREFIX));
-        }
-
-        return $diskName !== '' && $this->diskExists($diskName) && $this->isInternalDiskName($diskName);
+        return $value !== '' && $this->diskExists($value) && $this->isInternalDiskName($value);
     }
 
     private function diskExists(string $diskName): bool
     {
-        return app(FilesystemsService::class)->diskExists($diskName);
+        $disks = config('filesystems.disks', []);
+
+        return is_array($disks) && array_key_exists($diskName, $disks);
     }
 
     private function isInternalDiskName(string $diskName): bool
     {
-        return in_array($diskName, FilesystemsService::INTERNAL_DISK_NAMES, true) ||
-            str_starts_with($diskName, FilesystemsService::DISK_PREFIX);
+        return in_array($diskName, Volume::INTERNAL_DISK_NAMES, true);
     }
 
     private function isUnresolvedEnvValue(string $value): bool

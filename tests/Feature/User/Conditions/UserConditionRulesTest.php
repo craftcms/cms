@@ -19,6 +19,7 @@ use CraftCms\Cms\User\Conditions\UsernameConditionRule;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 describe('AdminConditionRule', function () {
@@ -40,7 +41,7 @@ describe('AdminConditionRule', function () {
         $rule->value = $ruleValue;
 
         $query = User::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -84,7 +85,7 @@ it('modifyQuery filters users by text-based rules', function (string $ruleClass,
     $rule->value = $ruleValue;
 
     $query = User::find();
-    $rule->modifyQuery($query, $query);
+    $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
     $results = $query->all();
 
@@ -107,7 +108,7 @@ it('modifyQuery with contains operator finds partial matches', function () {
     $rule->value = 'craft.test';
 
     $query = User::find();
-    $rule->modifyQuery($query, $query);
+    $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
     $results = $query->all();
 
@@ -172,7 +173,7 @@ describe('GroupConditionRule', function () {
         $rule->values = [$group->uid];
 
         $query = User::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -212,7 +213,7 @@ describe('CredentialedConditionRule', function () {
         $rule->value = true;
 
         $query = User::find()->status(null);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $resultIds = collect($query->all())->pluck('id')->toArray();
 
@@ -230,7 +231,7 @@ describe('CredentialedConditionRule', function () {
         $rule->value = false;
 
         $query = User::find()->status(null);
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $resultIds = collect($query->all())->pluck('id')->toArray();
 
@@ -265,7 +266,7 @@ describe('LastLoginDateConditionRule', function () {
         $rule->rangeType = 'notempty';
 
         $query = User::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $results = $query->all();
 
@@ -321,7 +322,7 @@ describe('AffiliatedSiteConditionRule', function () {
         $rule->values = [$primarySite->uid];
 
         $query = User::find();
-        $rule->modifyQuery($query, $query);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         $resultIds = collect($query->all())->pluck('id')->toArray();
 

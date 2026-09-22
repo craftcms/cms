@@ -42,6 +42,13 @@ export interface ElementFormAction {
   shift?: boolean;
 }
 
+/** Somewhere on the front end the element can be viewed. */
+export interface ElementPreviewTarget {
+  label: string;
+  url: string;
+  icon?: string;
+}
+
 /**
  * An entry in the drafts-and-revisions switcher. Groups arrive flattened, with
  * `heading` rows standing in for the nesting the action menu has no shape for.
@@ -84,7 +91,7 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   submitButtonLabel: string;
   actionMenu: Array<ElementActionMenuItem>;
-  previewTargets: Array<{label: string; url: string}>;
+  previewTargets: Array<ElementPreviewTarget>;
   elementDisplayName: string;
   activityUrl: string | null;
   activityTimelineUrl: string | null;

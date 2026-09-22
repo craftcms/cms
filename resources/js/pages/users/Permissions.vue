@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import {useForm, usePage} from '@inertiajs/vue3';
+  import {router, useForm, usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
@@ -87,6 +87,7 @@
         :can-create="props.can.createGroups"
         :error="form.errors.groups"
         v-model="form.groups"
+        @created="router.reload({only: ['groups']})"
       />
     </craft-field-group>
 
@@ -115,10 +116,7 @@
       >
         <template v-if="props.teamPermissionsNotice.allowAdminChanges">
           {{ t('Team permissions can be managed from') }}
-          <CpLink
-            :href="props.teamPermissionsNotice.settingsUrl"
-            :inertia="false"
-          >
+          <CpLink :href="props.teamPermissionsNotice.settingsUrl">
             {{ t('User Permissions') }}
           </CpLink>
         </template>

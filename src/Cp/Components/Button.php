@@ -45,9 +45,13 @@ class Button extends ViewComponent
 
     protected bool $active = false;
 
+    protected bool $toggle = false;
+
     protected ?string $accessibleName = null;
 
     protected ?string $align = null;
+
+    protected bool|string|null $flush = null;
 
     protected ?string $href = null;
 
@@ -153,6 +157,17 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /**
+     * Makes the button a toggle: `aria-pressed` follows `active`, and activating
+     * it fires a cancelable `craft-toggle` for whoever owns `active` to act on.
+     */
+    public function toggle(bool $toggle = true): static
+    {
+        $this->toggle = $toggle;
+
+        return $this;
+    }
+
     /** Accessible name override, for icon-only buttons. */
     public function accessibleName(?string $accessibleName): static
     {
@@ -165,6 +180,20 @@ class Button extends ViewComponent
     public function align(?string $align): static
     {
         $this->align = $align;
+
+        return $this;
+    }
+
+    /**
+     * Pulls the button out by the space around its content, so its label or
+     * icon lines up with the text beside it. Meant for buttons with no
+     * background, like `plain`. `true` applies on every side; otherwise pass
+     * a space-separated list of `inline`, `block`, `inline-start`,
+     * `inline-end`, `block-start` and `block-end`.
+     */
+    public function flush(bool|string $flush = true): static
+    {
+        $this->flush = $flush;
 
         return $this;
     }
@@ -243,10 +272,12 @@ class Button extends ViewComponent
             'icon-position' => $this->iconPosition,
             'loading' => $this->loading,
             'active' => $this->active ? 'true' : null,
+            'toggle' => $this->toggle,
             'value' => $this->value,
             'disabled' => $this->isDisabled(),
             'accessible-name' => $this->accessibleName,
             'align' => $this->align,
+            'flush' => $this->flush,
             'href' => $this->href,
             'target' => $this->target,
             'command' => $this->command,

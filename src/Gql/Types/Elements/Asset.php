@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
@@ -49,5 +50,13 @@ class Asset extends Element
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return AssetResolver::class;
     }
 }

@@ -21,36 +21,30 @@
 </script>
 
 <template>
-  <div class="p-4">
-    <form @submit.prevent="submit" method="post">
-      <div class="grid gap-3">
-        <CraftInput
-          :label="t('Find Text')"
-          v-model="form.find"
-          name="find"
-          :error="form.errors.find"
-        />
-        <CraftInput
-          :label="t('Replace Text')"
-          v-model="form.replace"
-          name="replace"
-          :error="form.errors.replace"
-        />
+  <form @submit.prevent="submit" method="post">
+    <div class="grid gap-3">
+      <CraftInput
+        :label="t('Find Text')"
+        v-model="form.find"
+        name="find"
+        :error="form.errors.find"
+      />
+      <CraftInput
+        :label="t('Replace Text')"
+        v-model="form.replace"
+        name="replace"
+        :error="form.errors.replace"
+      />
+    </div>
+    <div class="mt-4">
+      <div class="flex gap-2 items-center">
+        <craft-button type="submit" :loading="form.processing" variant="accent">
+          {{ t('Find and Replace') }}
+        </craft-button>
+        <InlineFlash :is-active="form.recentlySuccessful" />
       </div>
-      <div class="mt-4">
-        <div class="flex gap-2 items-center">
-          <craft-button
-            type="submit"
-            :loading="form.processing"
-            variant="accent"
-          >
-            {{ t('Find and Replace') }}
-          </craft-button>
-          <InlineFlash :is-active="form.recentlySuccessful" />
-        </div>
-      </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </template>
 
 <style scoped lang="scss"></style>

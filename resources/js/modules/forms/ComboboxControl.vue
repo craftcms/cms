@@ -6,6 +6,7 @@
 
   type ComboboxControlProps = {
     options: ComboboxItem[];
+    multiple?: boolean;
     placeholder?: string;
     limit?: number;
     clearable?: boolean;
@@ -24,7 +25,11 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind: FormChangeKind): void;
+    (
+      event: 'update:value',
+      value: string | string[],
+      kind: FormChangeKind
+    ): void;
   }>();
 
   function onModelValueChanged(event: CustomEvent): void {
@@ -36,7 +41,7 @@
       .modelValue;
     emit(
       'update:value',
-      String(value ?? ''),
+      Array.isArray(value) ? value.map(String) : String(value ?? ''),
       event.detail?.changeSource === 'input' ? 'typing' : 'discrete'
     );
   }
@@ -45,7 +50,7 @@
 <template>
   <CraftCombobox
     :name="editable ? inputName(control.path) : ''"
-    :model-value="String(value ?? '')"
+    :label="label"
     :options="control.props.options"
     :placeholder="control.props.placeholder"
     :limit="control.props.limit"
@@ -58,6 +63,14 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :validators="serverErrorValidators(invalid)"
+    :multiple-choice="control.props.multiple ?? false"
+    :model-value="
+      control.props.multiple
+        ? Array.isArray(value)
+          ? value.map(String)
+          : []
+        : String(value ?? '')
+    "
     @model-value-changed="onModelValueChanged"
   />
 </template>

@@ -17,12 +17,13 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
+
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -137,7 +138,7 @@ class SsoController extends Controller
 
         return $this->redirect(
             $returnUrl
-                ? renderObjectTemplate($returnUrl, Auth::user())
+                ? renderObjectTemplate($returnUrl, craftAuth()->user())
                 : $this->request->getPathInfo()
         );
     }

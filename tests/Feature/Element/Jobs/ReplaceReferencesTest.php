@@ -23,7 +23,7 @@ beforeEach(function () {
 function replaceReferencesMarkdownFixture(string $value)
 {
     return EntryModel::factory()
-        ->withField('body', MarkdownField::class, value: $value)
+        ->withField('body', MarkdownField::class, value: new MarkdownField()->normalizeValueFromRequest($value, null))
         ->createElementWithFields();
 }
 
@@ -163,7 +163,7 @@ it('does nothing when the field instance no longer exists', function () {
 
 it('continues when saving a changed element fails', function () {
     $oldTarget = EntryModel::factory()->createElement();
-    $newTarget = EntryModel::factory()->createElement();
+    $newTargetId = 100;
     $result = replaceReferencesMarkdownFixture("{entry:$oldTarget->id:url}");
     $source = $result->element;
 
@@ -185,7 +185,7 @@ it('continues when saving a changed element fails', function () {
             ],
         ],
         oldTargetIds: [$oldTarget->id],
-        newTargetId: $newTarget->id,
+        newTargetId: $newTargetId,
     );
 
     try {
@@ -194,7 +194,7 @@ it('continues when saving a changed element fails', function () {
         Elements::swap($realElements);
     }
 
-    expect($source->getFieldValue('body')->getRaw())->toBe("{entry:$newTarget->id:url}");
+    expect($source->getFieldValue('body')->getRaw())->toBe("{entry:$newTargetId:url}");
 });
 
 class TestReplaceReferences extends ReplaceReferences

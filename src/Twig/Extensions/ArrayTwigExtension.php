@@ -15,6 +15,8 @@ use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
+use Twig\Extension\SandboxExtension;
+use Twig\Sandbox\SecurityError;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
@@ -26,7 +28,7 @@ class ArrayTwigExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('column', $this->columnFilter(...), ['needs_is_sandboxed' => true]),
+            new TwigFilter('column', $this->columnFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('contains', $this->containsFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
@@ -131,11 +133,34 @@ class ArrayTwigExtension extends AbstractExtension
     /**
      * @param  iterable<array-key, mixed>  $array
      * @return array<array-key, mixed>
+     *
+     * @throws SecurityError if an element is an object and `$value` (or `$key`) isn’t an allowed property in a sandboxed environment
      */
-    public function columnFilter(bool $isSandboxed, iterable $array, mixed $value, mixed $key = null): array
+    public function columnFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, mixed $value, mixed $key = null): array
     {
         $this->preventDottedNameInSandbox($isSandboxed, $value, 'column');
         $this->preventDottedNameInSandbox($isSandboxed, $key, 'column');
+
+        if ($array instanceof Traversable) {
+            $array = iterator_to_array($array);
+        }
+
+        if ($isSandboxed && is_string($value)) {
+            /** @var SandboxExtension $sandbox */
+            $sandbox = $env->getExtension(SandboxExtension::class);
+
+            // Check each element's property the same way the template would if it had accessed it directly
+            // (e.g. `element.name`), rather than letting Arr::pluck() read it unchecked.
+            foreach ($array as $element) {
+                if (is_object($element)) {
+                    $sandbox->checkPropertyAllowed($element, $value);
+
+                    if (is_string($key)) {
+                        $sandbox->checkPropertyAllowed($element, $key);
+                    }
+                }
+            }
+        }
 
         return Arr::pluck($array, $value, $key);
     }

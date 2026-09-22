@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Concerns;
 
-use Illuminate\Support\Facades\Auth;
+use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Session;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
 
 trait ConfirmsPasswords
 {
     protected function confirmPassword(): void
     {
-        Session::passwordConfirmed();
+        Session::put(Cms::config()->getPasswordConfirmationKey(), now()->unix());
     }
 
     protected function requireConfirmedPassword(?string $message = null): void
@@ -38,9 +39,9 @@ trait ConfirmsPasswords
 
     protected function confirmedPasswordTimeout(): int|false
     {
-        if (Auth::check()) {
+        if (craftAuth()->check()) {
             $maximumSecondsSinceConfirmation = $this->passwordConfirmationDuration();
-            $confirmedAt = Session::get('auth.password_confirmed_at');
+            $confirmedAt = Session::get(Cms::config()->getPasswordConfirmationKey());
 
             if ($confirmedAt !== null) {
                 $diff = now()->unix() - $confirmedAt;

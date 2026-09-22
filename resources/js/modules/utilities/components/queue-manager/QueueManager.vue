@@ -4,6 +4,7 @@
   import {inject, onMounted, ref} from 'vue';
   import type {JobInfo, JobUpdateDetail} from '@/modules/queue/types';
   import {Queue} from '@/common/types/keys';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = withDefaults(
     defineProps<{

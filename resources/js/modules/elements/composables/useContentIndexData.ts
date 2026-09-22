@@ -1,7 +1,7 @@
 import {usePage} from '@inertiajs/vue3';
 import {computed, reactive, toValue, type MaybeRefOrGetter} from 'vue';
 import type {PaginationData, SortItem} from '@/common/types';
-import type {ConditionConfig} from '@/modules/elements/composables/useConditionBuilder';
+import type {ConditionConfig} from '@/modules/conditions/types';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
 import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
@@ -15,10 +15,6 @@ type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
 
 export interface ElementIndexRow extends IndexQueryParams {
   id: string | number;
-  isFolder?: boolean;
-  folderUrl?: string;
-  folderId?: string | number;
-  canMoveTo?: boolean;
 }
 
 /**

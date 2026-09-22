@@ -10,11 +10,14 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -59,18 +62,42 @@ it('sets the CP-relative path for legacy URL generation', function () {
 
 it('renders with a default source', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets", ['defaultSource' => $volume->handle])->assertOk();
+    get("/{$cpTrigger}/assets?defaultSource={$volume->handle}")->assertOk();
+});
+
+it('sends the bare index to the first source it lists', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?search=cat")
+        ->assertRedirectContains("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertRedirectContains('search=cat');
+});
+
+it('leaves an index that names its source where it is', function () {
+    Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'firstvolume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets?source=temp")->assertOk();
 });
 
 it('preloads existing thumbnail indexes for the displayed assets', function (int $sourceWidth, int $sourceHeight, array $transforms) {
     Queue::fake();
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = Folders::getRootFolderByVolumeId($volume->id);
     $imageTransformer = new ImageTransformer;
 
@@ -89,7 +116,7 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
             $imageTransformer->getTransformIndex($asset, new ImageTransform([
                 'width' => $width,
                 'height' => $height,
-                'mode' => 'crop',
+                'mode' => 'fit',
             ]));
         }
     }
@@ -120,13 +147,13 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
 })->with([
-    'landscape' => [800, 400, [[30, 15], [60, 30]]],
-    'portrait' => [400, 600, [[20, 30], [40, 60]]],
+    'landscape' => [800, 400, [[30, 30], [60, 60]]],
+    'portrait' => [400, 600, [[30, 30], [60, 60]]],
     'square' => [600, 600, [[30, 30], [60, 60]]],
 ]);
 
 it('preserves custom thumbnail URLs without resolving the configured transformer', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -146,11 +173,11 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         ->assertOk()
         ->assertJsonPath('props.data.0.title', fn (string $html): bool => str_contains($html, 'https://example.test/custom-thumb.jpg'));
 
-    expect($requests)->toBe([[$asset->id, 30, 15], [$asset->id, 60, 30]]);
+    expect($requests)->toBe([[$asset->id, 30, 30], [$asset->id, 60, 60]]);
 });
 
 it('preserves thumbnail overrides on asset subclasses', function () {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -173,7 +200,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
 });
 
 it('reports thumbnail jobs created while rendering the requested page data', function (bool $inertia, bool $queueOnly) {
-    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -229,7 +256,7 @@ it('reports thumbnail jobs created while rendering the requested page data', fun
 
 it('includes a volume’s subfolders in the index results', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -252,7 +279,7 @@ it('includes a volume’s subfolders in the index results', function () {
 
 it('scopes the results to the subfolder named in the path', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -275,7 +302,7 @@ it('scopes the results to the subfolder named in the path', function () {
 
 it('passes the route path segment through as defaultSource', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -292,10 +319,169 @@ it('passes the route path segment through as defaultSource', function () {
         );
 });
 
+it('shows the volume breadcrumb when selecting a source from the sidebar', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+        'name' => 'Test volume',
+    ]);
+
+    get(route('craft.cp.assets.index', ['source' => "volume:{$volume->uid}"]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.key', "volume:{$volume->uid}")
+            ->has('breadcrumbs', 1)
+            ->where('breadcrumbs.0.label', 'Test volume')
+        );
+});
+
+it('provides current-folder actions and moves relative to its parent', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $volume = Volumes::getVolumeById($volumeModel->id);
+    $root = Folders::getRootFolderByVolumeId($volumeModel->id);
+    $parent = Folders::ensureFolderByFullPathAndVolume('parent', $volume);
+    $folder = Folders::ensureFolderByFullPathAndVolume('parent/managed', $volume);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume/parent/managed']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->where('breadcrumbs.2.actions', function ($actions) use ($folder, $parent, $root, $volumeModel): bool {
+            $actions = $actions->keyBy('label');
+            $rename = $actions->get('Rename folder')['action']['detail'];
+            $move = $actions->get('Move folder')['action']['detail'];
+
+            return $actions->keys()->all() === [
+                'New subfolder',
+                'Rename folder',
+                'Move folder',
+                'Delete folder',
+            ]
+                && $rename['folderIds'] === [$folder->id]
+                && $move['folderIds'] === [$folder->id]
+                && $move['sources'] === ["volume:{$volumeModel->uid}"]
+                && $move['defaultSource'] === "volume:{$volumeModel->uid}"
+                && array_column($move['defaultSourcePath'], 'folderId') === [$root->id, $parent->id]
+                && $move['disabledFolderIds'] === [$folder->id, $parent->id]
+                && str_contains($move['redirectUrl'], '/assets/testvolume/parent');
+        }));
+});
+
+it('optionally searches the current folder’s descendants', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $volume = Volumes::getVolumeById($volumeModel->id);
+    $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $volume);
+    $nestedAsset = Asset::factory()->createElement([
+        'volumeId' => $volumeModel->id,
+        'folderId' => $child->id,
+        'filename' => 'nested-needle.txt',
+        'kind' => 'text',
+    ]);
+    Search::indexElementAttributes($nestedAsset);
+
+    $url = route('craft.cp.assets.index', [
+        'defaultSource' => 'testvolume/parent',
+        'search' => 'nested-needle',
+    ]);
+
+    get($url, ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonPath('props.canSearchSubfolders', true)
+        ->assertJsonPath('props.includeSubfolders', false)
+        ->assertJsonMissing(['id' => $nestedAsset->id]);
+
+    get("{$url}&includeSubfolders=1", ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonPath('props.canSearchSubfolders', true)
+        ->assertJsonPath('props.includeSubfolders', true)
+        ->assertJsonFragment(['id' => $nestedAsset->id]);
+});
+
+it('offers descendant search after redirecting to the implicitly selected default volume', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('child', Volumes::getVolumeById($volumeModel->id));
+
+    $response = get(route('craft.cp.assets.index', ['search' => 'needle']), ['X-Inertia' => 'true'])
+        ->assertRedirect();
+
+    get($response->headers->get('Location'), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonPath('props.source.key', "volume:{$volumeModel->uid}")
+        ->assertJsonPath('props.canSearchSubfolders', true);
+});
+
+it('provides folder actions separately from element actions', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('managed', Volumes::getVolumeById($volumeModel->id));
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', function ($actions): bool {
+                $folderActions = $actions->where('appliesTo', 'folders');
+
+                return $folderActions->pluck('label')->all() === [
+                    'Rename folder',
+                    'Move folder',
+                    'Delete folder',
+                ] && $actions->where('appliesTo', 'elements')->isNotEmpty();
+            })
+        );
+});
+
 class CustomThumbnailIndexAsset extends AssetElement
 {
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return 'https://example.test/subclass-thumbnail.jpg';
     }
 }
+
+it('gives the index a header trail like every other index has', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'testvolume',
+        'name' => 'Test Volume',
+    ]);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    // The folder chain in the pane is the trail *within* a volume. These are
+    // the trail *to* it, which the header had none of.
+    get("/{$cpTrigger}/assets/{$volume->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->count() === 2
+                && $crumbs->first()['label'] === 'Assets'
+                && str_ends_with((string) $crumbs->first()['href'], '/assets')
+                && $crumbs->last()['label'] === 'Test Volume'
+                // Linked by the URL the nav and the rest of the CP use, not a
+                // `?source=` query naming the same thing.
+                && str_ends_with((string) $crumbs->last()['href'], "/assets/{$volume->handle}")
+            )
+            ->etc()
+        );
+});
+
+it('leaves the bare index a single crumb', function () {
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs', fn (Collection $crumbs): bool => $crumbs->isNotEmpty()
+                && $crumbs->first()['label'] === 'Assets'
+            )
+            ->etc()
+        );
+});

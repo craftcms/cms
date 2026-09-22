@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -217,6 +218,7 @@ trait HasControlPanelUI
         if (
             ! $this->getIsRevision() &&
             ! request()->headers->has('X-Craft-Container-Id') &&
+            app()->resolved(ElementRequest::class) &&
             app(ElementRequest::class)->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());
@@ -728,7 +730,22 @@ JS,
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        return app(ElementAttributeRenderer::class)->renderInlineInput($this, $attribute);
+        $renderer = app(ElementAttributeRenderer::class);
+        $form = $this->inlineAttributeInputForm($attribute);
+
+        return $form === null
+            ? $renderer->renderInlineInput($this, $attribute)
+            : $renderer->renderInlineForm($form, $this->errors()->getMessages());
+    }
+
+    /**
+     * Defines a native attribute's inline controls. Custom fields are resolved by
+     * ElementAttributeRenderer. HTML overrides and the resolving event still run
+     * through getInlineAttributeInputHtml() before this default implementation.
+     */
+    protected function inlineAttributeInputForm(string $attribute): ?Form
+    {
+        return null;
     }
 
     public function getSidebarHtml(bool $static): string|Stringable
@@ -1130,14 +1147,12 @@ JS,
         if ($owner = $this->getOwner()) {
             return [
                 ...$owner->getCrumbs(),
-                [
-                    'html' => app(ElementHtml::class)->elementChipHtml($owner, [
-                        'appearance' => 'plain',
-                        'showDraftName' => false,
-                        'class' => 'chromeless',
-                        'hyperlink' => true,
-                    ]),
-                ],
+                new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($owner, [
+                    'appearance' => 'plain',
+                    'showDraftName' => false,
+                    'class' => 'chromeless',
+                    'hyperlink' => true,
+                ])),
             ];
         }
 
@@ -1149,7 +1164,7 @@ JS,
      *
      * @see getCrumbs()
      */
-    /** @return array<array-key,mixed> */
+    /** @return list<ActionItem|array<string, mixed>> */
     protected function crumbs(): array
     {
         return [];

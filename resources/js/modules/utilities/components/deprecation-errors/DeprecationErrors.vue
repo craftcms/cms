@@ -7,6 +7,7 @@
   import StackTraceButton from '@/modules/utilities/components/deprecation-errors/StackTraceButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import Empty from '@/common/components/Empty.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   export interface LogData {
     id: number;
@@ -23,9 +24,8 @@
   const columns = ref([
     columnHelper.accessor('message', {
       header: t('Message'),
-      cell: (info) => h('span', {innerHTML: info.getValue()}),
+      cell: (info) => h('div', {innerHTML: info.getValue()}),
       meta: {
-        trackSize: '3fr',
         wrap: true,
       },
     }),
@@ -33,7 +33,6 @@
       header: t('Origin'),
       cell: (info) => h('code', {innerHTML: info.getValue()}),
       meta: {
-        trackSize: '2fr',
         wrap: true,
       },
     }),
@@ -41,9 +40,6 @@
     columnHelper.display({
       id: 'stackTrace',
       header: t('Stack Trace'),
-      meta: {
-        trackSize: '120px',
-      },
       cell: ({row}) => h(StackTraceButton, {logId: row.original.id}),
     }),
     columnHelper.actions(({row}) => [

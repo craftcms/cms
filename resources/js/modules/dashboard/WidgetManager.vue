@@ -83,6 +83,8 @@
           <craft-button
             type="button"
             icon="trash"
+            size="small"
+            variant="danger-plain"
             :aria-label="t('Delete')"
             :aria-describedby="`widget-label-${widget.id}`"
             :disabled="busy"

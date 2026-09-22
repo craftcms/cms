@@ -2,7 +2,7 @@ import {actionClient, type ElementInfo} from '@craftcms/ui';
 import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
 import type {RowSelectionState} from '@tanstack/table-core';
 import {computed, ref, shallowRef, watch} from 'vue';
-import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
+import type {ConditionConfig} from '@/modules/conditions/types';
 import {
   useContentIndexData,
   type ContentIndexData,
@@ -96,9 +96,9 @@ export function useModalElementIndex(options: Options) {
 
   const elementIndex = useContentIndexData(undefined, payload);
   const viewState = useElementIndexViewState(elementIndex);
-  const {conditions} = useConditionBuilder({
-    initialState: elementIndex.currentCondition ?? null,
-  });
+  const conditions = shallowRef<ConditionConfig | null>(
+    elementIndex.currentCondition ?? null
+  );
   // Not `useElementIndexFilters`: it submits through an Inertia form, which
   // would navigate the page behind the modal. Same params, sent the modal's way.
   const search = ref(elementIndex.search ?? '');

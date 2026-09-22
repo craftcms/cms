@@ -112,6 +112,27 @@ test('detects slug tags in uri formats', function (bool $expected, string $uriFo
     [false, 'entry/data'],
 ]);
 
+test('cleanses query criteria', function () {
+    $criteria = [
+        'where' => ['id' => 1],
+        'orderBy' => 'id',
+        'title' => 'Foo',
+        'search' => 'foo',
+    ];
+
+    expect(ElementHelper::cleanseQueryCriteria($criteria))->toBe([
+        'title' => 'Foo',
+        'search' => 'foo',
+    ]);
+});
+
+test('strips a non-string search criterion', function (mixed $search) {
+    expect(ElementHelper::cleanseQueryCriteria(['search' => $search]))->not()->toHaveKey('search');
+})->with([
+    'array' => [['query' => 'foo']],
+    'object' => [(object) ['query' => 'foo']],
+]);
+
 test('sets next and previous elements', function () {
     $elements = [
         $one = new TestElementHelperElement(['id' => 1]),

@@ -95,6 +95,7 @@
     flex-direction: column;
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
+    background-color: var(--c-modal-fill);
     box-shadow: var(--c-modal-shadow);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
@@ -119,7 +120,7 @@
   }
 
   .cp-modal {
-    z-index: 10002;
+    z-index: var(--c-layer-dialog);
     display: grid;
     justify-content: center;
     /* Content-sized in both axes, matching what justify-content does for the
@@ -149,11 +150,7 @@
   }
 
   .cp-overlay {
-    /**
-    Action menu items are z-index 10000, so we want to be above that
-    @TODO make this less fragile/weird
-     */
-    z-index: 10001;
+    z-index: var(--c-layer-dialog-shade);
     background-color: rgba(0, 0, 0, 0.5);
   }
 

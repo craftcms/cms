@@ -5,7 +5,7 @@
   import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {Link, router} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
@@ -15,6 +15,8 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import CpLink from '@/common/components/CpLink.vue';
 
   type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
 
@@ -131,13 +133,18 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
-    <Link as="craft-button" :href="create().url" variant="primary" icon="plus">
+  <LayoutSlot name="content-actions">
+    <CpLink
+      :href="create().url"
+      variant="accent"
+      appearance="button"
+      icon="plus"
+    >
       {{ t('New entry type') }}
-    </Link>
+    </CpLink>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
+  <CpContainer>
     <AdminTable
       :table="table"
       :reorderable="false"
@@ -149,9 +156,9 @@
       <template #empty-row>
         <Empty icon="light/files" :label="t('No entry types exist yet.')" />
       </template>
-      <template #search-form>
+      <template #table-header>
         <SearchForm :action="index()" v-model="searchTerm" />
       </template>
     </AdminTable>
-  </craft-pane>
+  </CpContainer>
 </template>

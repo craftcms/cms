@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes as VolumesService;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Data\MarkdownData;
@@ -384,7 +388,7 @@ it('validates html sanitizer settings', function () {
 it('validates and applies asset selector volume settings', function () {
     $volume = Volume::factory()->create([
         'name' => 'Images',
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
     ]);
     app()->forgetInstance(VolumesService::class);
 
@@ -393,7 +397,6 @@ it('validates and applies asset selector volume settings', function () {
         'handle' => 'body',
         'availableVolumes' => [$volume->uid],
         'showUnpermittedVolumes' => true,
-        'showUnpermittedFiles' => true,
     ]);
 
     $assetSourceKeys = fn (): array => $this->assetSourceKeys();
@@ -414,6 +417,41 @@ it('validates and applies asset selector volume settings', function () {
 
     expect($invalidField->validate())->toBeFalse()
         ->and($invalidField->errors()->has('availableVolumes'))->toBeTrue();
+});
+
+it('gives new Markdown fields a default “Viewable” asset selection condition', function () {
+    $field = new MarkdownField(['name' => 'Body', 'handle' => 'body']);
+    $condition = $field->getAssetSelectionCondition();
+
+    expect($condition)->toBeInstanceOf(ElementCondition::class)
+        ->and($condition->elementType)->toBe(AssetElement::class);
+
+    $rules = $condition->getConditionRules()->getRules();
+
+    expect($rules)->toHaveCount(1)
+        ->and($rules[0])->toBeInstanceOf(ViewableConditionRule::class)
+        ->and($rules[0]->value)->toBeTrue();
+});
+
+it('respects an explicit asset selection condition', function () {
+    $field = new MarkdownField([
+        'id' => 1,
+        'name' => 'Body',
+        'handle' => 'body',
+        'assetSelectionCondition' => [
+            'class' => AssetCondition::class,
+            'elementType' => AssetElement::class,
+            'conditionRules' => [
+                ['class' => ViewableConditionRule::class, 'value' => false],
+            ],
+        ],
+    ]);
+
+    $rules = $field->getAssetSelectionCondition()?->getConditionRules()->getRules();
+
+    expect($rules)->toHaveCount(1)
+        ->and($rules[0])->toBeInstanceOf(ViewableConditionRule::class)
+        ->and($rules[0]->value)->toBeFalse();
 });
 
 it('warns and resolves no asset sources when no volumes exist', function () {

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,6 +10,7 @@
 namespace craft\helpers;
 
 use CraftCms\Cms\Support\Arr;
+
 use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
 use Normalizer;
@@ -24,6 +27,7 @@ use const ENT_COMPAT;
  * @author Nicolas Grekas <p@tchwork.com>
  * @author Hamid Sarfraz <http://pageconfig.com/>
  * @author Lars Moelleken <http://www.moelleken.org/>
+ *
  * @since 3.0.0
  * @deprecated in 6.0.0. [[\CraftCms\Cms\Support\Str]] should be used instead.
  */
@@ -39,10 +43,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Gets the substring after the first occurrence of a separator.
      *
-     * @param string $str The string to search.
-     * @param string $separator The separator string.
-     * @param bool $caseSensitive Whether to enforce case-sensitivity.
+     * @param  string  $str  The string to search.
+     * @param  string  $separator  The separator string.
+     * @param  bool  $caseSensitive  Whether to enforce case-sensitivity.
      * @return string The resulting string.
+     *
      * @since 3.3.0
      */
     public static function afterFirst(string $str, string $separator, bool $caseSensitive = true): string
@@ -63,10 +68,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Gets the substring after the last occurrence of a separator.
      *
-     * @param string $str The string to search.
-     * @param string $separator The separator string.
-     * @param bool $caseSensitive Whether to enforce case-sensitivity.
+     * @param  string  $str  The string to search.
+     * @param  string  $separator  The separator string.
+     * @param  bool  $caseSensitive  Whether to enforce case-sensitivity.
      * @return string The resulting string.
+     *
      * @since 3.3.0
      */
     public static function afterLast(string $str, string $separator, bool $caseSensitive = true): string
@@ -87,9 +93,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string with $append appended.
      *
-     * @param string $str The initial un-appended string.
-     * @param string $append The string to append.
+     * @param  string  $str  The initial un-appended string.
+     * @param  string  $append  The string to append.
      * @return string The newly appended string.
+     *
      * @since 3.3.0
      */
     public static function append(string $str, string $append): string
@@ -100,10 +107,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string with a random string appended to it.
      *
-     * @param string $str The initial un-appended string.
-     * @param int $length The length of the random string.
-     * @param string $possibleChars The possible random characters to append.
+     * @param  string  $str  The initial un-appended string.
+     * @param  int  $length  The length of the random string.
+     * @param  string  $possibleChars  The possible random characters to append.
      * @return string The newly appended string.
+     *
      * @since 3.3.0
      */
     public static function appendRandomString(string $str, int $length, string $possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string
@@ -114,10 +122,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string with a unique identifier appended to it.
      *
-     * @param string $str The initial un-appended string.
-     * @param string $entropyExtra Extra entropy via a string or int value.
-     * @param bool $md5 Whether to return the unique identifier as a md5 hash.
+     * @param  string  $str  The initial un-appended string.
+     * @param  string  $entropyExtra  Extra entropy via a string or int value.
+     * @param  bool  $md5  Whether to return the unique identifier as a md5 hash.
      * @return string The newly appended string.
+     *
      * @since 3.3.0
      */
     public static function appendUniqueIdentifier(string $str, string $entropyExtra = '', bool $md5 = true): string
@@ -147,8 +156,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns ASCII character mappings, merging in any custom defined mappings
      * from the <config5:customAsciiCharMappings> config setting.
      *
-     * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
-     * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
+     * @param  bool  $flat  Whether the mappings should be returned as a flat array (é => e)
+     * @param  string|null  $language  Whether to include language-specific mappings (only applied if $flat is true)
      * @return array The fully merged ASCII character mappings.
      */
     public static function asciiCharMap(bool $flat = false, ?string $language = null): array
@@ -159,9 +168,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the character at $index, with indexes starting at 0.
      *
-     * @param string $str The initial string to search.
-     * @param int $index The position of the character.
+     * @param  string  $str  The initial string to search.
+     * @param  int  $index  The position of the character.
      * @return string The resulting character.
+     *
      * @since 3.3.0
      */
     public static function at(string $str, int $index): string
@@ -172,10 +182,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Gets the substring before the first occurrence of a separator.
      *
-     * @param string $str The string to search.
-     * @param string $separator The separator string.
-     * @param bool $caseSensitive
+     * @param  string  $str  The string to search.
+     * @param  string  $separator  The separator string.
      * @return string The resulting string.
+     *
      * @since 3.3.0
      */
     public static function beforeFirst(string $str, string $separator, bool $caseSensitive = true): string
@@ -196,10 +206,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Gets the substring before the last occurrence of a separator.
      *
-     * @param string $str The string to search.
-     * @param string $separator The separator string.
-     * @param bool $caseSensitive
+     * @param  string  $str  The string to search.
+     * @param  string  $separator  The separator string.
      * @return string The resulting string.
+     *
      * @since 3.3.0
      */
     public static function beforeLast(string $str, string $separator, bool $caseSensitive = true): string
@@ -221,10 +231,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the substring between $start and $end, if found, or an empty string.
      * An optional offset may be supplied from which to begin the search for the start string.
      *
-     * @param string $str The string to search.
-     * @param string $start Delimiter marking the start of the substring.
-     * @param string $end Delimiter marking the end of the substring.
-     * @param int|null $offset Index from which to begin the search. Defaults to 0.
+     * @param  string  $str  The string to search.
+     * @param  string  $start  Delimiter marking the start of the substring.
+     * @param  string  $end  Delimiter marking the end of the substring.
+     * @param  int|null  $offset  Index from which to begin the search. Defaults to 0.
      * @return string The resulting string.
      */
     public static function between(string $str, string $start, string $end, ?int $offset = null): string
@@ -249,7 +259,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns a camelCase version of the given string. Trims surrounding spaces, capitalizes letters following digits,
      * spaces, dashes and underscores, and removes spaces, dashes, as well as underscores.
      *
-     * @param string $str The string to convert to camelCase.
+     * @param  string  $str  The string to convert to camelCase.
      * @return string The string in camelCase.
      */
     public static function camelCase(string $str): string
@@ -260,8 +270,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the string with the first letter of each word capitalized.
      *
-     * @param string $str The string to parse.
+     * @param  string  $str  The string to parse.
      * @return string The string with personal names capitalized.
+     *
      * @since 3.3.0
      * @deprecated in 5.9.0. Use [[toPascalCase()]] instead.
      */
@@ -273,7 +284,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns an array consisting of the characters in the string.
      *
-     * @param string $str
      * @return string[] An array of string chars
      */
     public static function charsAsArray(string $str): array
@@ -285,7 +295,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Trims the string and replaces consecutive whitespace characters with a single space. This includes tabs and
      * newline characters, as well as multibyte whitespace such as the thin space and ideographic space.
      *
-     * @param string $str The string to remove the whitespace from.
+     * @param  string  $str  The string to remove the whitespace from.
      * @return string The trimmed string with condensed whitespace.
      */
     public static function collapseWhitespace(string $str): string
@@ -297,9 +307,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string contains $needle, false otherwise. By default, the comparison is case-sensitive, but
      * can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $haystack The string being checked.
-     * @param string $needle The substring to look for.
-     * @param bool $caseSensitive Whether to force case-sensitivity.
+     * @param  string  $haystack  The string being checked.
+     * @param  string  $needle  The substring to look for.
+     * @param  bool  $caseSensitive  Whether to force case-sensitivity.
      * @return bool Whether $haystack contains $needle.
      */
     public static function contains(string $haystack, string $needle, bool $caseSensitive = true): bool
@@ -316,7 +326,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Detects whether the given string has any 4-byte UTF-8 characters.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return bool Whether the string contains any 4-byte UTF-8 characters or not.
      */
     public static function containsMb4(string $str): bool
@@ -325,12 +335,22 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Returns true if the string contains any newlines.
+     *
+     * @since 5.11.2
+     */
+    public static function containsNewlines(string $str): bool
+    {
+        return Str::containsNewlines($str);
+    }
+
+    /**
      * Returns true if the string contains all $needles, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $haystack The string being checked.
-     * @param string[] $needles The substrings to look for.
-     * @param bool $caseSensitive Whether to force case-sensitivity.
+     * @param  string  $haystack  The string being checked.
+     * @param  string[]  $needles  The substrings to look for.
+     * @param  bool  $caseSensitive  Whether to force case-sensitivity.
      * @return bool Whether $haystack contains all $needles.
      */
     public static function containsAll(string $haystack, array $needles, bool $caseSensitive = true): bool
@@ -352,9 +372,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string contains any $needles, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $haystack The string being checked.
-     * @param string[] $needles The substrings to look for.
-     * @param bool $caseSensitive Whether to force case-sensitivity.
+     * @param  string  $haystack  The string being checked.
+     * @param  string[]  $needles  The substrings to look for.
+     * @param  bool  $caseSensitive  Whether to force case-sensitivity.
      * @return bool Whether $haystack contains any $needles.
      */
     public static function containsAny(string $haystack, array $needles, bool $caseSensitive = true): bool
@@ -370,9 +390,6 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
-     *
-     * @param string $str
-     * @return string
      */
     public static function convertToUtf8(string $str): string
     {
@@ -382,8 +399,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts line breaks to Unix line breaks (LF) within the given string.
      *
-     * @param string $str
-     * @return string
      * @since 5.9.0
      */
     public static function convertLineBreaks(string $str): string
@@ -394,8 +409,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the length of the string, implementing the countable interface.
      *
-     * @param string $str The string to count.
+     * @param  string  $str  The string to count.
      * @return int The length of the string.
+     *
      * @since 3.3.0
      */
     public static function count(string $str): int
@@ -407,9 +423,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the number of occurrences of $substring in the given string. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $str The string to search through.
-     * @param string $substring The substring to search for.
-     * @param bool $caseSensitive Whether to enforce case-sensitivity
+     * @param  string  $str  The string to search through.
+     * @param  string  $substring  The substring to search for.
+     * @param  bool  $caseSensitive  Whether to enforce case-sensitivity
      * @return int The number of $substring occurrences.
      */
     public static function countSubstrings(string $str, string $substring, bool $caseSensitive = true): int
@@ -428,8 +444,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * inserted before uppercase characters (with the exception of the first
      * character of the string), and in place of spaces as well as underscores.
      *
-     * @param string $str The string to dasherize.
+     * @param  string  $str  The string to dasherize.
      * @return string The dasherized string.
+     *
      * @since 3.3.0
      */
     public static function dasherize(string $str): string
@@ -440,8 +457,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Base64-decodes and decrypts a string generated by [[encenc()]].
      *
-     * @param string $str The string.
-     * @return string
+     * @param  string  $str  The string.
+     *
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      */
@@ -455,23 +472,25 @@ class StringHelper extends \yii\helpers\StringHelper
      * uppercase characters (with the exception of the first character of the string), and in place of spaces,
      * dashes, and underscores. Alpha delimiters are not converted to lowercase.
      *
-     * @param string $str The string to delimit.
-     * @param string $delimiter Sequence used to separate parts of the string
+     * @param  string  $str  The string to delimit.
+     * @param  string  $delimiter  Sequence used to separate parts of the string
      * @return string The delimited string.
      */
     public static function delimit(string $str, string $delimiter): string
     {
         $str = (string) mb_ereg_replace('\\B(\\p{Lu})', '-\1', trim($str));
+
         return mb_ereg_replace('[\\-_\\s]+', $delimiter, mb_strtolower($str));
     }
 
     /**
      * Encrypts and base64-encodes a string.
      *
-     * @param string $str the string
-     * @return string
+     * @param  string  $str  the string
+     *
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
+     *
      * @see decdec()
      */
     public static function encenc(string $str): string
@@ -482,8 +501,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * HTML-encodes any 4-byte UTF-8 characters.
      *
-     * @param string $str The string
+     * @param  string  $str  The string
      * @return string The string with converted 4-byte UTF-8 characters
+     *
      * @see http://stackoverflow.com/a/16496730/1688568
      */
     public static function encodeMb4(string $str): string
@@ -494,7 +514,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Gets the encoding of the given string.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return string The encoding of the string.
      */
     public static function encoding(string $str): string
@@ -507,10 +527,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * By default, the comparison is case-sensitive, but can be made insensitive
      * by setting $caseSensitive to false.
      *
-     * @param string $str The string to check the end of.
-     * @param string[] $substrings Substrings to look for.
-     * @param bool $caseSensitive Whether to force case-sensitivity.
+     * @param  string  $str  The string to check the end of.
+     * @param  string[]  $substrings  Substrings to look for.
+     * @param  bool  $caseSensitive  Whether to force case-sensitivity.
      * @return bool Whether $str ends with $substring.
+     *
      * @since 3.3.0
      */
     public static function endsWithAny(string $str, array $substrings, bool $caseSensitive = true): bool
@@ -531,8 +552,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that the string begins with $substring. If it doesn't, it's prepended.
      *
-     * @param string $str The string to modify.
-     * @param string $substring The substring to add if not present.
+     * @param  string  $str  The string to modify.
+     * @param  string  $substring  The substring to add if not present.
      * @return string The string prefixed by the $substring.
      */
     public static function ensureLeft(string $str, string $substring): string
@@ -547,8 +568,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that the string ends with $substring. If it doesn't, it's appended.
      *
-     * @param string $str The string to modify.
-     * @param string $substring The substring to add if not present.
+     * @param  string  $str  The string to modify.
+     * @param  string  $substring  The substring to add if not present.
      * @return string The string suffixed by the $substring.
      */
     public static function ensureRight(string $str, string $substring): string
@@ -563,8 +584,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Create a escape html version of the string via "$this->utf8::htmlspecialchars()".
      *
-     * @param string $str The string to modify.
+     * @param  string  $str  The string to modify.
      * @return string The string to escape.
+     *
      * @since 3.3.0
      */
     public static function escape(string $str): string
@@ -575,11 +597,12 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Create an extract from a sentence, so if the search-string was found, it try to centered in the output.
      *
-     * @param string $str The source string.
-     * @param string $search The string to search for.
-     * @param int|null $length By default, the length of the text divided by two.
-     * @param string $replacerForSkippedText The string to use for skipped text.
+     * @param  string  $str  The source string.
+     * @param  string  $search  The string to search for.
+     * @param  int|null  $length  By default, the length of the text divided by two.
+     * @param  string  $replacerForSkippedText  The string to use for skipped text.
      * @return string The string to escape.
+     *
      * @since 3.3.0
      */
     public static function extractText(string $str, string $search = '', ?int $length = null, string $replacerForSkippedText = '…'): string
@@ -643,9 +666,9 @@ class StringHelper extends \yii\helpers\StringHelper
             }
 
             $posEnd = min(
-                    mb_strpos($str, ' ', $offset),
-                    mb_strpos($str, '.', $offset),
-                ) - $posStart;
+                mb_strpos($str, ' ', $offset),
+                mb_strpos($str, '.', $offset),
+            ) - $posStart;
 
             if (!$posEnd || $posEnd <= 0) {
                 $strSub = mb_substr($str, $posStart, mb_strlen($str));
@@ -685,8 +708,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the first $n characters of the string.
      *
-     * @param string $str The string from which to get the substring.
-     * @param int $number The Number of chars to retrieve from the start.
+     * @param  string  $str  The string from which to get the substring.
+     * @param  int  $number  The Number of chars to retrieve from the start.
      * @return string The first $number characters.
      */
     public static function first(string $str, int $number): string
@@ -701,7 +724,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns whether the given string has any lowercase characters in it.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool If the string has a lowercase character or not.
      */
     public static function hasLowerCase(string $str): bool
@@ -712,7 +735,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns whether the given string has any uppercase characters in it.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool If the string has an uppercase character or not.
      */
     public static function hasUpperCase(string $str): bool
@@ -723,9 +746,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Convert all HTML entities to their applicable characters.
      *
-     * @param string $str The string to process.
-     * @param int $flags A bitmask of these flags: https://www.php.net/manual/en/function.html-entity-decode.php
+     * @param  string  $str  The string to process.
+     * @param  int  $flags  A bitmask of these flags: https://www.php.net/manual/en/function.html-entity-decode.php
      * @return string The decoded string.
+     *
      * @since 3.3.0
      */
     public static function htmlDecode(string $str, int $flags = ENT_COMPAT): string
@@ -752,9 +776,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Convert all applicable characters to HTML entities.
      *
-     * @param string $str The string to process.
-     * @param int $flags A bitmask of these flags: https://www.php.net/manual/en/function.html-entity-encode.php
+     * @param  string  $str  The string to process.
+     * @param  int  $flags  A bitmask of these flags: https://www.php.net/manual/en/function.html-entity-encode.php
      * @return string The encoded string.
+     *
      * @since 3.3.0
      */
     public static function htmlEncode(string $str, int $flags = ENT_COMPAT): string
@@ -766,13 +791,15 @@ class StringHelper extends \yii\helpers\StringHelper
      * Capitalizes the first word of the string, replaces underscores with
      * spaces, and strips '_id'.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return string The humanized string.
+     *
      * @since 3.3.0
      */
     public static function humanize(string $str): string
     {
         $str = str_replace(['_id', '_'], ['', ' '], $str);
+
         return static::upperCaseFirst(trim($str));
     }
 
@@ -780,10 +807,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the index of the first occurrence of $needle in the string, and false if not found.
      * Accepts an optional offset from which to begin the search.
      *
-     * @param string $str The string to check the index of.
-     * @param string $needle The substring to look for.
-     * @param int $offset The offset from which to search.
-     * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
+     * @param  string  $str  The string to check the index of.
+     * @param  string  $needle  The substring to look for.
+     * @param  int  $offset  The offset from which to search.
+     * @param  bool  $caseSensitive  Whether to perform a case-sensitive search or not.
      * @return int|false The occurrence's index if found, otherwise false.
      */
     public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true): int|false
@@ -805,10 +832,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * the search. Offsets may be negative to count from the last character
      * in the string.
      *
-     * @param string $str The string to check the last index of.
-     * @param string $needle The substring to look for.
-     * @param int $offset The offset from which to search.
-     * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
+     * @param  string  $str  The string to check the last index of.
+     * @param  string  $needle  The substring to look for.
+     * @param  int  $offset  The offset from which to search.
+     * @param  bool  $caseSensitive  Whether to perform a case-sensitive search or not.
      * @return int|false The occurrence's last index if found, otherwise false.
      */
     public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true): int|false
@@ -827,9 +854,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Inserts $substring into the string at the $index provided.
      *
-     * @param string $str The string to insert into.
-     * @param string $substring The string to be inserted.
-     * @param int $index The 0-based index at which to insert the substring.
+     * @param  string  $str  The string to insert into.
+     * @param  string  $substring  The string to be inserted.
+     * @param  int  $index  The 0-based index at which to insert the substring.
      * @return string The resulting string after the insertion
      */
     public static function insert(string $str, string $substring, int $index): string
@@ -850,9 +877,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * WARNING: Asterisks ("*") are translated into (".*") zero-or-more regular
      * expression wildcards.
      *
-     * @param string $str The string to process.
-     * @param string $pattern The string or pattern to match against.
+     * @param  string  $str  The string to process.
+     * @param  string  $pattern  The string or pattern to match against.
      * @return bool Whether we match the provided pattern.
+     *
      * @since 3.3.0
      */
     public static function is(string $str, string $pattern): bool
@@ -863,7 +891,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string contains only alphabetic chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only alphabetic chars.
      */
     public static function isAlpha(string $str): bool
@@ -874,7 +902,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string contains only alphabetic and numeric chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only alphanumeric chars.
      */
     public static function isAlphanumeric(string $str): bool
@@ -885,9 +913,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string is base64 encoded, false otherwise.
      *
-     * @param string $str The string to check.
-     * @param bool $emptyStringIsValid Whether an empty string is considered valid.
+     * @param  string  $str  The string to check.
+     * @param  bool  $emptyStringIsValid  Whether an empty string is considered valid.
      * @return bool Whether $str is base64 encoded.
+     *
      * @since 3.3.0
      */
     public static function isBase64(string $str, bool $emptyStringIsValid = true): bool
@@ -897,14 +926,16 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         $base64String = base64_decode($str, true);
+
         return $base64String !== false && base64_encode($base64String) === $str;
     }
 
     /**
      * Returns true if the string contains only whitespace chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only whitespace characters.
+     *
      * @since 3.3.0
      */
     public static function isBlank(string $str): bool
@@ -915,8 +946,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string contains only hexadecimal chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only hexadecimal chars.
+     *
      * @since 3.3.0
      */
     public static function isHexadecimal(string $str): bool
@@ -927,8 +959,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string contains HTML-Tags, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains HTML tags.
+     *
      * @since 3.3.0
      */
     public static function isHtml(string $str): bool
@@ -941,6 +974,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $matches = [];
         $str = static::emojiToShortcodes($str);
         preg_match("/<\\/?\\w+(?:(?:\\s+\\w+(?:\\s*=\\s*(?:\".*?\"|'.*?'|[^'\">\\s]+))?)*\\s*|\\s*)\\/?>/u", $str, $matches);
+
         return $matches !== [];
     }
 
@@ -949,9 +983,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * in PHP 5.x, this method is consistent with PHP 7 and other JSON parsers,
      * in that an empty string is not considered valid JSON.
      *
-     * @param string $str The string to check.
-     * @param bool $onlyArrayOrObjectResultsAreValid
+     * @param  string  $str  The string to check.
      * @return bool Whether $str is JSON.
+     *
      * @since 3.3.0
      */
     public static function isJson(string $str, bool $onlyArrayOrObjectResultsAreValid = false): bool
@@ -976,7 +1010,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string contains only lower case chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str is only lower case characters.
      */
     public static function isLowerCase(string $str): bool
@@ -987,8 +1021,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string is serialized, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str is serialized.
+     *
      * @since 3.3.0
      */
     public static function isSerialized(string $str): bool
@@ -1004,7 +1039,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string contains only upper case chars, false
      * otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only lower case characters.
      */
     public static function isUpperCase(string $str): bool
@@ -1015,8 +1050,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Checks if the given string is UTF-8 encoded.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether the string was UTF encoded or not.
+     *
      * @since 3.3.0
      */
     public static function isUtf8(string $str): bool
@@ -1027,8 +1063,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns true if the string contains only whitespace chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only whitespace characters.
+     *
      * @since 3.3.0
      * @deprecated in 5.9.0. [[`isBlank()`]] should be used instead.
      */
@@ -1043,7 +1080,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx where x
      * is any hexadecimal digit and y is one of 8, 9, A, or B.
      *
-     * @param string $uuid The string to check.
+     * @param  string  $uuid  The string to check.
      * @return bool Whether the string matches a v4 UUID pattern.
      */
     public static function isUUID(string $uuid): bool
@@ -1054,8 +1091,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the last $number characters of the string.
      *
-     * @param string $str The string from which to get the substring.
-     * @param int $number The Number of chars to retrieve from the end.
+     * @param  string  $str  The string from which to get the substring.
+     * @param  int  $number  The Number of chars to retrieve from the end.
      * @return string The last $number characters.
      */
     public static function last(string $str, int $number): string
@@ -1070,11 +1107,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the last $number characters of the string.
      *
-     * @param string $str The string from which to get the substring.
-     * @param string $needle The substring to look for.
-     * @param bool $beforeNeedle
-     * @param bool $caseSensetive Whether to perform a case sensitive search.
+     * @param  string  $str  The string from which to get the substring.
+     * @param  string  $needle  The substring to look for.
+     * @param  bool  $caseSensetive  Whether to perform a case sensitive search.
      * @return string The last $number characters.
+     *
      * @since 3.3.0
      */
     public static function lastSubstringOf(string $str, string $needle, bool $beforeNeedle = false, bool $caseSensetive = false): string
@@ -1096,7 +1133,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the length of the string. An alias for PHP's mb_strlen() function.
      *
-     * @param string $str The string to get the length of.
+     * @param  string  $str  The string to get the length of.
      * @return int The number of characters in $str.
      */
     public static function length(string $str): int
@@ -1107,9 +1144,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Line wrap the string after $limit, but also after the next word.
      *
-     * @param string $str The string to process.
-     * @param int $limit The number of characters to insert the line wrap.
+     * @param  string  $str  The string to process.
+     * @param  int  $limit  The number of characters to insert the line wrap.
      * @return string The line wrapped string.
+     *
      * @since 3.3.0
      */
     public static function lineWrapAfterWord(string $str, int $limit): string
@@ -1121,7 +1159,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Splits on newlines and carriage returns, returning an array of strings
      * corresponding to the lines in the string.
      *
-     * @param string $str The string to split.
+     * @param  string  $str  The string to split.
      * @return string[] An array of strings.
      */
     public static function lines(string $str): array
@@ -1136,8 +1174,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the first line of a string.
      *
-     * @param string $str
-     * @return string
      * @since 5.5.0
      */
     public static function firstLine(string $str): string
@@ -1148,7 +1184,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts the first character of the supplied string to lower case.
      *
-     * @param string $str The string to modify.
+     * @param  string  $str  The string to modify.
      * @return string The string with the first character converted to lowercase.
      */
     public static function lowercaseFirst(string $str): string
@@ -1163,11 +1199,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * 'left', 'right', 'both') is 'right'. Throws an InvalidArgumentException
      * if $padType isn't one of those 3 values.
      *
-     * @param string $str The string to process.
-     * @param int $length The desired length after padding.
-     * @param string $padStr The string used to pad. Defaults to space.
-     * @param string $padType 'left', 'right', 'both'. Defaults to 'right'.
+     * @param  string  $str  The string to process.
+     * @param  int  $length  The desired length after padding.
+     * @param  string  $padStr  The string used to pad. Defaults to space.
+     * @param  string  $padType  'left', 'right', 'both'. Defaults to 'right'.
      * @return string The padded string.
+     *
      * @since 3.3.0
      */
     public static function pad(string $str, int $length, string $padStr = ' ', string $padType = 'right'): string
@@ -1183,10 +1220,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns a new string of a given length such that both sides of the
      * string are padded. Alias for pad() with a $padType of 'both'.
      *
-     * @param string $str The string to process.
-     * @param int $length The desired length after padding.
-     * @param string $padStr The string used to pad. Defaults to space.
+     * @param  string  $str  The string to process.
+     * @param  int  $length  The desired length after padding.
+     * @param  string  $padStr  The string used to pad. Defaults to space.
      * @return string The padded string.
+     *
      * @since 3.3.0
      */
     public static function padBoth(string $str, int $length, string $padStr = ' '): string
@@ -1198,10 +1236,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns a new string of a given length such that the beginning of the
      * string is padded. Alias for pad() with a $padType of 'left'.
      *
-     * @param string $str The string to process.
-     * @param int $length The desired length after padding.
-     * @param string $padStr The string used to pad. Defaults to space.
+     * @param  string  $str  The string to process.
+     * @param  int  $length  The desired length after padding.
+     * @param  string  $padStr  The string used to pad. Defaults to space.
      * @return string The padded string.
+     *
      * @since 3.3.0
      */
     public static function padLeft(string $str, int $length, string $padStr = ' '): string
@@ -1213,10 +1252,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns a new string of a given length such that the end of the
      * string is padded. Alias for pad() with a $padType of 'right'.
      *
-     * @param string $str The string to process.
-     * @param int $length The desired length after padding.
-     * @param string $padStr The string used to pad. Defaults to space.
+     * @param  string  $str  The string to process.
+     * @param  int  $length  The desired length after padding.
+     * @param  string  $padStr  The string used to pad. Defaults to space.
      * @return string The padded string.
+     *
      * @since 3.3.0
      */
     public static function padRight(string $str, int $length, string $padStr = ' '): string
@@ -1227,8 +1267,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string starting with $string.
      *
-     * @param string $str The string to process.
-     * @param string $string The string to prepend.
+     * @param  string  $str  The string to process.
+     * @param  string  $string  The string to prepend.
      * @return string The full prepended string.
      */
     public static function prepend(string $str, string $string): string
@@ -1242,8 +1282,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * cryptographically secure string. If you need a cryptographically secure string, use
      * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
-     * @param int $length The length of the random string. Defaults to 36.
-     * @param bool $extendedChars Whether to include symbols in the random string.
+     * @param  int  $length  The length of the random string. Defaults to 36.
+     * @param  bool  $extendedChars  Whether to include symbols in the random string.
      * @return string The randomly generated string.
      */
     public static function randomString(int $length = 36, bool $extendedChars = false): string
@@ -1256,8 +1296,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * cryptographically secure string. If you need a cryptographically secure string, use
      * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
-     * @param string $validChars A string containing the valid characters
-     * @param int $length The length of the random string
+     * @param  string  $validChars  A string containing the valid characters
+     * @param  int  $length  The length of the random string
      * @return string The randomly generated string.
      */
     public static function randomStringWithChars(string $validChars, int $length): string
@@ -1290,11 +1330,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces all occurrences of $pattern in $str by $replacement. An alias for mb_ereg_replace().
      *
-     * @param string $str The haystack to search through.
-     * @param string $pattern The regular expression pattern.
-     * @param string $replacement The string to replace with.
-     * @param string $options Matching conditions to be used. Defaults to 'msr'. See
-     * [here](https://php.net/manual/en/function.mb-ereg-replace.php) for all options.
+     * @param  string  $str  The haystack to search through.
+     * @param  string  $pattern  The regular expression pattern.
+     * @param  string  $replacement  The string to replace with.
+     * @param  string  $options  Matching conditions to be used. Defaults to 'msr'. See
+     *                           [here](https://php.net/manual/en/function.mb-ereg-replace.php) for all options.
      * @return string The resulting string after the replacements.
      */
     public static function regexReplace(string $str, string $pattern, string $replacement, string $options = 'msr'): string
@@ -1309,9 +1349,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Remove html via "strip_tags()" from the string.
      *
-     * @param string $str The string to process.
-     * @param string|null $allowableTags Tags that should not be stripped.
+     * @param  string  $str  The string to process.
+     * @param  string|null  $allowableTags  Tags that should not be stripped.
      * @return string The string with Html removed.
+     *
      * @since 3.3.0
      */
     public static function removeHtml(string $str, ?string $allowableTags = null): string
@@ -1322,9 +1363,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Remove all breaks [<br> | \r\n | \r | \n | ...] from the string.
      *
-     * @param string $str The string to process.
-     * @param string $replacement The optional string to replace with.
+     * @param  string  $str  The string to process.
+     * @param  string  $replacement  The optional string to replace with.
      * @return string The string with Html breaks removed.
+     *
      * @since 3.3.0
      */
     public static function removeHtmlBreak(string $str, string $replacement = ''): string
@@ -1335,8 +1377,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string with the prefix $substring removed, if present.
      *
-     * @param string $str The string from which to remove the prefix.
-     * @param string $substring The prefix to remove.
+     * @param  string  $str  The string from which to remove the prefix.
+     * @param  string  $substring  The prefix to remove.
      * @return string The string without the prefix $substring.
      */
     public static function removeLeft(string $str, string $substring): string
@@ -1351,8 +1393,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string with the suffix $substring removed, if present.
      *
-     * @param string $str The string from which to remove the suffix.
-     * @param string $substring The suffix to remove.
+     * @param  string  $str  The string from which to remove the suffix.
+     * @param  string  $substring  The suffix to remove.
      * @return string The string without the suffix $substring.
      */
     public static function removeRight(string $str, string $substring): string
@@ -1367,9 +1409,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a repeated string given a multiplier.
      *
-     * @param string $str The string to process.
-     * @param int $multiplier The number of times to repeat the string.
+     * @param  string  $str  The string to process.
+     * @param  int  $multiplier  The number of times to repeat the string.
      * @return string The string without the suffix $substring.
+     *
      * @since 3.3.0
      */
     public static function repeat(string $str, int $multiplier): string
@@ -1380,9 +1423,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces all occurrences of $search in $str by $replacement.
      *
-     * @param string $str The haystack to search through.
-     * @param string $search The needle to search for.
-     * @param string $replacement The string to replace with.
+     * @param  string  $str  The haystack to search through.
+     * @param  string  $search  The needle to search for.
+     * @param  string  $replacement  The string to replace with.
      * @return string The resulting string after the replacements.
      */
     public static function replace(string $str, string $search, string $replacement): string
@@ -1393,11 +1436,12 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces all occurrences of $search in $str by $replacement.
      *
-     * @param string $str The haystack to search through.
-     * @param string[] $search The needle(s) to search for.
-     * @param string|string[] $replacement The string(s) to replace with.
-     * @param bool $caseSensitive Whether to perform a case-sensitive search.
+     * @param  string  $str  The haystack to search through.
+     * @param  string[]  $search  The needle(s) to search for.
+     * @param  string|string[]  $replacement  The string(s) to replace with.
+     * @param  bool  $caseSensitive  Whether to perform a case-sensitive search.
      * @return string The resulting string after the replacements.
+     *
      * @since 3.3.0
      */
     public static function replaceAll(string $str, array $search, string|array $replacement, bool $caseSensitive = true): string
@@ -1421,10 +1465,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces all occurrences of $search from the beginning of string with $replacement.
      *
-     * @param string $str The haystack to search through.
-     * @param string $search The needle to search for.
-     * @param string $replacement The string to replace with.
+     * @param  string  $str  The haystack to search through.
+     * @param  string  $search  The needle to search for.
+     * @param  string  $replacement  The string to replace with.
      * @return string The resulting string after the replacements.
+     *
      * @since 3.3.0
      */
     public static function replaceBeginning(string $str, string $search, string $replacement): string
@@ -1439,10 +1484,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces all occurrences of $search from the beginning of string with $replacement.
      *
-     * @param string $str The haystack to search through.
-     * @param string $search The needle to search for.
-     * @param string $replacement The string to replace with.
+     * @param  string  $str  The haystack to search through.
+     * @param  string  $search  The needle to search for.
+     * @param  string  $replacement  The string to replace with.
      * @return string The resulting string after the replacements.
+     *
      * @since 3.3.0
      */
     public static function replaceEnding(string $str, string $search, string $replacement): string
@@ -1457,10 +1503,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces first occurrences of $search from the beginning of string with $replacement.
      *
-     * @param string $str The haystack to search through.
-     * @param string $search The needle to search for.
-     * @param string $replacement The string to replace with.
+     * @param  string  $str  The haystack to search through.
+     * @param  string  $search  The needle to search for.
+     * @param  string  $replacement  The string to replace with.
      * @return string The resulting string after the replacements.
+     *
      * @since 3.3.0
      */
     public static function replaceFirst(string $str, string $search, string $replacement): string
@@ -1471,10 +1518,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Replaces last occurrences of $search from the ending of string with $replacement.
      *
-     * @param string $str The haystack to search through.
-     * @param string $search The needle to search for.
-     * @param string $replacement The string to replace with.
+     * @param  string  $str  The haystack to search through.
+     * @param  string  $search  The needle to search for.
+     * @param  string  $replacement  The string to replace with.
      * @return string The resulting string after the replacements.
+     *
      * @since 3.3.0
      */
     public static function replaceLast(string $str, string $search, string $replacement): string
@@ -1499,9 +1547,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * });
      * ```
      *
-     * @param string $str The string
-     * @param callable|string $replace The replacement string, or callback function.
+     * @param  string  $str  The string
+     * @param  callable|string  $replace  The replacement string, or callback function.
      * @return string The string with converted 4-byte UTF-8 characters
+     *
      * @since 3.1.13
      */
     public static function replaceMb4(string $str, callable|string $replace): string
@@ -1512,7 +1561,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a reversed string. A multibyte version of strrev().
      *
-     * @param string $str The string to reverse.
+     * @param  string  $str  The string to reverse.
      * @return string The reversed string.
      */
     public static function reverse(string $str): string
@@ -1525,11 +1574,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * and truncating occurs, the string is further truncated so that the substring may be appended without exceeding
      * the desired length.
      *
-     * @param string $str The string to truncate.
-     * @param int $length The desired length of the truncated string.
-     * @param string $substring The substring to append if it can fit.
-     * @param bool $ignoreDoNotSplitWordsForOneWord
+     * @param  string  $str  The string to truncate.
+     * @param  int  $length  The desired length of the truncated string.
+     * @param  string  $substring  The substring to append if it can fit.
      * @return string The resulting string after truncating.
+     *
      * @since 3.3.0
      */
     public static function safeTruncate(string $str, int $length, string $substring = '', bool $ignoreDoNotSplitWordsForOneWord = true): string
@@ -1573,10 +1622,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Shorten the string after $length, but also after the next word.
      *
-     * @param string $str The string to process
-     * @param int $length The length to start the shortening.
-     * @param string $strAddOn The character to use after the length.
+     * @param  string  $str  The string to process
+     * @param  int  $length  The length to start the shortening.
+     * @param  string  $strAddOn  The character to use after the length.
      * @return string The shortened string.
+     *
      * @since 3.3.0
      */
     public static function shortenAfterWord(string $str, int $length, string $strAddOn = '…'): string
@@ -1590,7 +1640,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         if (mb_substr($str, $length - 1, 1) === ' ') {
-            return (mb_substr($str, 0, $length - 1)) . $strAddOn;
+            return mb_substr($str, 0, $length - 1) . $strAddOn;
         }
 
         $str = mb_substr($str, 0, $length);
@@ -1602,7 +1652,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $new_str = implode(' ', $array);
 
         if ($new_str === '') {
-            return (mb_substr($str, 0, $length - 1)) . $strAddOn;
+            return mb_substr($str, 0, $length - 1) . $strAddOn;
         }
 
         return $new_str . $strAddOn;
@@ -1611,8 +1661,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Shorten the string after $length, but also after the next word.
      *
-     * @param string $str The string to process
+     * @param  string  $str  The string to process
      * @return string The shortened string.
+     *
      * @since 3.3.0
      */
     public static function shuffle(string $str): string
@@ -1635,10 +1686,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * the remaining string. If $end is negative, it is computed from the end
      * of the string.
      *
-     * @param string $str The string to process
-     * @param int $start Index from which to begin the extraction.
-     * @param int|null $end Index at which to end the extraction.
+     * @param  string  $str  The string to process
+     * @param  int  $start  Index from which to begin the extraction.
+     * @param  int|null  $end  Index at which to end the extraction.
      * @return string The extracted substring.
+     *
      * @since 3.3.0
      */
     public static function slice(string $str, int $start, ?int $end = null): string
@@ -1664,24 +1716,27 @@ class StringHelper extends \yii\helpers\StringHelper
      * is also converted to lowercase. The language of the source string can
      * also be supplied for language-specific transliteration.
      *
-     * @param string $str The string to process
-     * @param string $replacement The string used to replace whitespace.
-     * @param string|null $language The language of the source string.
+     * @param  string  $str  The string to process
+     * @param  string  $replacement  The string used to replace whitespace.
+     * @param  string|null  $language  The language of the source string.
      * @return string The string converted to a URL slug.
+     *
      * @since 3.3.0
      */
     public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
         $language ??= app()->getLocale();
+
         return Str::slug($str, $replacement, $language);
     }
 
     /**
      * Splits a string into chunks on a given delimiter.
      *
-     * @param string $str The string
-     * @param string $delimiter The delimiter to split the string on (defaults to a comma)
+     * @param  string  $str  The string
+     * @param  string  $delimiter  The delimiter to split the string on (defaults to a comma)
      * @return string[] The segments of the string.
+     *
      * @since 3.3.0
      */
     public static function split(string $str, string $delimiter = ','): array
@@ -1692,7 +1747,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Splits a string into an array of the words in the string.
      *
-     * @param string $str The string
+     * @param  string  $str  The string
      * @return string[] The words in the string
      */
     public static function splitOnWords(string $str): array
@@ -1705,10 +1760,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * By default the comparison is case-sensitive, but can be made insensitive by
      * setting $caseSensitive to false.
      *
-     * @param string $str The string to check the start of.
-     * @param string[] $substrings The substrings to look for.
-     * @param bool $caseSensitive Whether to enforce case-sensitivity.
+     * @param  string  $str  The string to check the start of.
+     * @param  string[]  $substrings  The substrings to look for.
+     * @param  bool  $caseSensitive  Whether to enforce case-sensitivity.
      * @return bool Whether $str starts with $substring.
+     *
      * @since 3.3.0
      */
     public static function startsWithAny(string $str, array $substrings, bool $caseSensitive = true): bool
@@ -1725,8 +1781,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Remove CSS media-queries.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return string The string, sans any CSS media queries.
+     *
      * @since 3.3.0
      */
     public static function stripCssMediaQueries(string $str): string
@@ -1737,8 +1794,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Remove any empty HTML tags.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return string The string, sans any empty HTML tags.
+     *
      * @since 3.3.0
      */
     public static function stripEmptyHtmlTags(string $str): string
@@ -1749,8 +1807,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Strips HTML tags out of a given string.
      *
-     * @param string $str The string.
+     * @param  string  $str  The string.
      * @return string The string, sans-HTML
+     *
      * @since 3.3.0
      */
     public static function stripHtml(string $str): string
@@ -1762,8 +1821,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Strip all whitespace characters. This includes tabs and newline characters,
      * as well as multibyte whitespace such as the thin space and ideographic space.
      *
-     * @param string $str The string.
+     * @param  string  $str  The string.
      * @return string The string, sans-whitespace.
+     *
      * @since 3.3.0
      */
     public static function stripWhitespace(string $str): string
@@ -1779,9 +1839,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the substring beginning at $start with the specified|null $length. It differs from the mb_substr() function in
      * that providing a|null $length of null will return the rest of the string, rather than an empty string.
      *
-     * @param string $str The string to get the length of.
-     * @param int $start Position of the first character to use.
-     * @param int|null $length Maximum number of characters used.
+     * @param  string  $str  The string to get the length of.
+     * @param  int  $start  Position of the first character to use.
+     * @param  int|null  $length  Maximum number of characters used.
      * @return string The substring of $str.
      */
     public static function substr(string $str, int $start, ?int $length = null): string
@@ -1797,11 +1857,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Gets the substring after (or before via "$beforeNeedle") the first occurrence of the "$needle".
      * If no match is found, returns an empty string.
      *
-     * @param string $str The string to process.
-     * @param string $needle The string to look for.
-     * @param bool $beforeNeedle
-     * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
+     * @param  string  $str  The string to process.
+     * @param  string  $needle  The string to look for.
+     * @param  bool  $caseSensitive  Whether to perform a case-sensitive search or not.
      * @return string The substring of $str.
+     *
      * @since 3.3.0
      */
     public static function substringOf(string $str, string $needle, bool $beforeNeedle = false, bool $caseSensitive = false): string
@@ -1811,15 +1871,17 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         $part = $caseSensitive ? mb_strstr($str, $needle, $beforeNeedle) : mb_stristr($str, $needle, $beforeNeedle);
+
         return $part === false ? '' : $part;
     }
 
     /**
      * Surrounds $str with the given substring.
      *
-     * @param string $str The string to process.
-     * @param string $substring The substring to add to both sides.
+     * @param  string  $str  The string to process.
+     * @param  string  $substring  The substring to add to both sides.
      * @return string The string with the substring both prepended and appended.
+     *
      * @since 3.3.0
      */
     public static function surround(string $str, string $substring): string
@@ -1830,7 +1892,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a case swapped version of the string.
      *
-     * @param string $str The string to swap case.
+     * @param  string  $str  The string to swap case.
      * @return string The string with each character's case swapped.
      */
     public static function swapCase(string $str): string
@@ -1847,8 +1909,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Windows-1252 (commonly used in Word documents) replaced by their ASCII
      * equivalents.
      *
-     * @param string $str The string to tidy.
+     * @param  string  $str  The string to tidy.
      * @return string The tidy string.
+     *
      * @since 3.3.0
      */
     public static function tidy(string $str): string
@@ -1860,8 +1923,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns a trimmed string with the first letter of each word capitalized. Ignores the case of other letters,
      * preserving any acronyms. Also accepts an array, $ignore, allowing you to list words not to be capitalized.
      *
-     * @param string $str The string to titleize.
-     * @param string[]|null $ignore An array of words not to capitalize.
+     * @param  string  $str  The string to titleize.
+     * @param  string[]|null  $ignore  An array of words not to capitalize.
      * @return string The titleized string.
      */
     public static function titleize(string $str, ?array $ignore = null): string
@@ -1998,9 +2061,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Adapted from John Gruber's script.
      *
      * @see https://gist.github.com/gruber/9f9e8650d68b13ce4d78
-     * @param string $str The string to titleize.
-     * @param string[] $ignore An array of words not to capitalize.
+     *
+     * @param  string  $str  The string to titleize.
+     * @param  string[]  $ignore  An array of words not to capitalize.
      * @return string The titleized string.
+     *
      * @since 3.3.0
      */
     public static function titleizeForHumans(string $str, array $ignore = []): string
@@ -2131,8 +2196,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns an ASCII version of the string. A set of non-ASCII characters are replaced with their closest ASCII
      * counterparts, and the rest are removed.
      *
-     * @param string $str The string to convert.
-     * @param string|null $language The language to pull ASCII character mappings for.
+     * @param  string  $str  The string to convert.
+     * @param  string|null  $language  The language to pull ASCII character mappings for.
      * @return string The string that contains only ASCII characters.
      */
     public static function toAscii(string $str, ?string $language = null): string
@@ -2140,6 +2205,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // Normalize NFD chars to NFC
         $str = Normalizer::normalize($str, Normalizer::FORM_C);
         $language ??= app()->getLocale();
+
         return ASCII::to_ascii($str, $language);
     }
 
@@ -2152,8 +2218,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * false. For all other strings, the return value is a result of a
      * boolean cast.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return bool A boolean value for the string.
+     *
      * @since 3.3.0
      */
     public static function toBoolean(string $str): bool
@@ -2164,7 +2231,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * camelCases a string.
      *
-     * @param string $str The string to camelize.
+     * @param  string  $str  The string to camelize.
      * @return string The string camelized.
      */
     public static function toCamelCase(string $str): string
@@ -2175,10 +2242,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * kebab-cases a string.
      *
-     * @param string $str The string the process.
-     * @param string $glue The string used to glue the words together (default is a hyphen)
-     * @param bool $lower Whether the string should be lowercased (default is true)
-     * @param bool $removePunctuation Whether punctuation marks should be removed (default is true)
+     * @param  string  $str  The string the process.
+     * @param  string  $glue  The string used to glue the words together (default is a hyphen)
+     * @param  bool  $lower  Whether the string should be lowercased (default is true)
+     * @param  bool  $removePunctuation  Whether punctuation marks should be removed (default is true)
      * @return string The kebab-cased string.
      */
     public static function toKebabCase(string $str, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
@@ -2192,8 +2259,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts all characters in the string to lowercase. An alias for PHP's mb_strtolower().
      *
-     * @param string $str The string to convert to lowercase.
-     * @param string|null $language The string’s langauge
+     * @param  string  $str  The string to convert to lowercase.
+     * @param  string|null  $language  The string’s langauge
      * @return string The lowercase string.
      */
     public static function toLowerCase(string $str, ?string $language = null): string
@@ -2204,12 +2271,12 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * PascalCases a string.
      *
-     * @param string $str The string to process.
-     * @return string
+     * @param  string  $str  The string to process.
      */
     public static function toPascalCase(string $str): string
     {
         $words = self::toWords($str, true, true);
+
         return implode('', array_map([
             static::class,
             'upperCaseFirst',
@@ -2219,7 +2286,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * snake_cases a string.
      *
-     * @param string $str The string to snakeize.
+     * @param  string  $str  The string to snakeize.
      * @return string The snakeized string.
      */
     public static function toSnakeCase(string $str): string
@@ -2231,14 +2298,16 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts each tab in the string to some number of spaces, as defined by
      * $tabLength. By default, each tab is converted to 4 consecutive spaces.
      *
-     * @param string $str The string to process.
-     * @param int $tabLength The number of spaces to replace each tab with. Defaults to four.
+     * @param  string  $str  The string to process.
+     * @param  int  $tabLength  The number of spaces to replace each tab with. Defaults to four.
      * @return string The string with tabs converted to spaces.
+     *
      * @since 3.3.0
      */
     public static function toSpaces(string $str, int $tabLength = 4): string
     {
         $tab = str_repeat(' ', $tabLength);
+
         return str_replace("\t", $tab, $str);
     }
 
@@ -2246,8 +2315,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts an object to its string representation. If the object is an array, will glue the array elements together
      * with the $glue param. Otherwise will cast the object to a string.
      *
-     * @param mixed $object The object to convert to a string.
-     * @param string $glue The glue to use if the object is an array.
+     * @param  mixed  $object  The object to convert to a string.
+     * @param  string  $glue  The glue to use if the object is an array.
      * @return string The string representation of the object.
      */
     public static function toString(mixed $object, string $glue = ','): string
@@ -2260,22 +2329,24 @@ class StringHelper extends \yii\helpers\StringHelper
      * defined by $tabLength, to a tab. By default, each 4 consecutive spaces
      * are converted to a tab.
      *
-     * @param string $str The string to process.
-     * @param int $tabLength The number of spaces to replace with a tab. Defaults to four.
+     * @param  string  $str  The string to process.
+     * @param  int  $tabLength  The number of spaces to replace with a tab. Defaults to four.
      * @return string The string with spaces converted to tabs.
+     *
      * @since 3.3.0
      */
     public static function toTabs(string $str, int $tabLength = 4): string
     {
         $tab = str_repeat(' ', $tabLength);
+
         return str_replace($tab, "\t", $str);
     }
 
     /**
      * Converts the first character of each word in the string to uppercase.
      *
-     * @param string $str The string to convert case.
-     * @param string|null $language The string’s langauge
+     * @param  string  $str  The string to convert case.
+     * @param  string|null  $language  The string’s langauge
      * @return string The title-cased string.
      */
     public static function toTitleCase(string $str, ?string $language = null): string
@@ -2288,9 +2359,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * replaced with their closest ASCII counterparts, and the rest are removed
      * unless instructed otherwise.
      *
-     * @param string $str The string to transliterate.
-     * @param bool $strict Use "transliterator_transliterate()" from the PHP intl extension.
+     * @param  string  $str  The string to transliterate.
+     * @param  bool  $strict  Use "transliterator_transliterate()" from the PHP intl extension.
      * @return string The transliterated string.
+     *
      * @since 3.3.0
      */
     public static function toTransliterate(string $str, bool $strict = false): string
@@ -2301,8 +2373,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts all characters in the string to uppercase. An alias for PHP's mb_strtoupper().
      *
-     * @param string $str The string to convert to uppercase.
-     * @param string|null $language The string’s langauge
+     * @param  string  $str  The string to convert to uppercase.
+     * @param  string|null  $language  The string’s langauge
      * @return string The uppercase string.
      */
     public static function toUpperCase(string $str, ?string $language = null): string
@@ -2313,10 +2385,11 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns an array of words extracted from a string
      *
-     * @param string $str The string
-     * @param bool $lower Whether the returned words should be lowercased
-     * @param bool $removePunctuation Whether punctuation should be removed from the returned words
+     * @param  string  $str  The string
+     * @param  bool  $lower  Whether the returned words should be lowercased
+     * @param  bool  $removePunctuation  Whether punctuation should be removed from the returned words
      * @return string[] The prepped words in the string
+     *
      * @since 3.1.0
      */
     public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
@@ -2327,8 +2400,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a handle-safe version of a string.
      *
-     * @param string $str
-     * @return string
      * @since 4.4.0
      */
     public static function toHandle(string $str): string
@@ -2341,8 +2412,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * string. Supports the removal of unicode whitespace. Accepts an optional
      * string of characters to strip instead of the defaults.
      *
-     * @param string $str The string to trim.
-     * @param string|null $chars String of characters to strip. Defaults to null.
+     * @param  string  $str  The string to trim.
+     * @param  string|null  $chars  String of characters to strip. Defaults to null.
      * @return string The trimmed $str.
      */
     public static function trim(string $str, ?string $chars = null): string
@@ -2366,9 +2437,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * Supports the removal of unicode whitespace. Accepts an optional
      * string of characters to strip instead of the defaults.
      *
-     * @param string $str The string to trim.
-     * @param string|null $chars String of characters to strip. Defaults to null.
+     * @param  string  $str  The string to trim.
+     * @param  string|null  $chars  String of characters to strip. Defaults to null.
      * @return string The trimmed $str.
+     *
      * @since 3.3.0
      */
     public static function trimLeft(string $str, ?string $chars = null): string
@@ -2392,9 +2464,10 @@ class StringHelper extends \yii\helpers\StringHelper
      * Supports the removal of unicode whitespace. Accepts an optional
      * string of characters to strip instead of the defaults.
      *
-     * @param string $str The string to trim.
-     * @param string|null $chars String of characters to strip. Defaults to null.
+     * @param  string  $str  The string to trim.
+     * @param  string|null  $chars  String of characters to strip. Defaults to null.
      * @return string The trimmed $str.
+     *
      * @since 3.3.0
      */
     public static function trimRight(string $str, ?string $chars = null): string
@@ -2418,8 +2491,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * surrounding spaces, capitalizes letters following digits, spaces, dashes
      * and underscores, and removes spaces, dashes, underscores.
      *
-     * @param string $str The string to upper camelize.
+     * @param  string  $str  The string to upper camelize.
      * @return string The upper camelized $str.
+     *
      * @since 3.3.0
      * @deprecated in 5.9.0. [[toPascalCase()]] should be used instead.
      */
@@ -2431,8 +2505,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts the first character of the supplied string to uppercase.
      *
-     * @param string $str The string to modify.
+     * @param  string  $str  The string to modify.
      * @return string The string with the first character being uppercase.
+     *
      * @since 3.3.0
      */
     public static function upperCaseFirst(string $str): string
@@ -2444,6 +2519,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Generates a valid v4 UUID string. See [http://stackoverflow.com/a/2040279/684]
      *
      * @return string The UUID.
+     *
      * @throws \Exception
      */
     public static function UUID(): string
@@ -2451,28 +2527,26 @@ class StringHelper extends \yii\helpers\StringHelper
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
 
             // 32 bits for "time_low"
-            random_int(0, 0xffff), random_int(0, 0xffff),
+            random_int(0, 0xFFFF), random_int(0, 0xFFFF),
 
             // 16 bits for "time_mid"
-            random_int(0, 0xffff),
+            random_int(0, 0xFFFF),
 
             // 16 bits for "time_hi_and_version", four most significant bits holds version number 4
-            random_int(0, 0x0fff) | 0x4000,
+            random_int(0, 0x0FFF) | 0x4000,
 
             // 16 bits, 8 bits for "clk_seq_hi_res", 8 bits for "clk_seq_low", two most significant bits holds zero and
             // one for variant DCE1.1
-            random_int(0, 0x3fff) | 0x8000,
+            random_int(0, 0x3FFF) | 0x8000,
 
             // 48 bits for "node"
-            random_int(0, 0xffff), random_int(0, 0xffff), random_int(0, 0xffff)
+            random_int(0, 0xFFFF), random_int(0, 0xFFFF), random_int(0, 0xFFFF)
         );
     }
 
     /**
      * Converts an email from IDNA ASCII to Unicode, if the server supports IDNA ASCII strings.
      *
-     * @param string $email
-     * @return string
      * @since 3.5.16
      */
     public static function idnToUtf8Email(string $email): string
@@ -2483,8 +2557,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts emoji to shortcodes.
      *
-     * @param string $str
-     * @return string
      * @since 4.4.3
      */
     public static function emojiToShortcodes(string $str): string
@@ -2495,8 +2567,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Converts shortcodes to emoji.
      *
-     * @param string $str
-     * @return string
      * @since 4.4.3
      */
     public static function shortcodesToEmoji(string $str): string
@@ -2507,8 +2577,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Escapes shortcodes.
      *
-     * @param string $str
-     * @return string
      * @since 4.5.0
      */
     public static function escapeShortcodes(string $str): string
@@ -2519,8 +2587,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Unscapes shortcodes.
      *
-     * @param string $str
-     * @return string
      * @since 4.5.0
      */
     public static function unescapeShortcodes(string $str): string
@@ -2531,8 +2597,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Indents each line in the given string.
      *
-     * @param string $str
-     * @return string
      * @since 5.2.0
      */
     public static function indent(string $str, string $indent = '    '): string
@@ -2543,7 +2607,6 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a regex pattern for invisible characters.
      *
-     * @return string
      * @since 5.6.1
      */
     public static function invisibleCharsRegex(): string

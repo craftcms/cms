@@ -11,6 +11,8 @@ use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
@@ -33,10 +35,6 @@ class GeneralConfig extends BaseConfig
     public const string PASCAL_CASE = 'pascal';
 
     public const string SNAKE_CASE = 'snake';
-
-    #[Override]
-    /** @var array<string, string> */
-    protected static array $renamedSettings = [];
 
     /**
      * @var array<string, bool|int|string> The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
@@ -86,6 +84,48 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public string $actionTrigger = 'actions';
+
+    /**
+     * @var string|null The Laravel authentication guard Craft should use.
+     *
+     * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
+     * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authGuard('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_GUARD=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthGuard()
+     */
+    public ?string $authGuard = null;
+
+    /**
+     * @var string|null The Laravel password broker Craft should use.
+     *
+     * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
+     * and token table in `config/auth.php`, and set this to the broker name.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->authPasswordBroker('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTH_PASSWORD_BROKER=craft
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see getAuthPasswordBroker()
+     */
+    public ?string $authPasswordBroker = null;
 
     /**
      * @var mixed The maximum age of activity events before garbage collection deletes them.
@@ -367,6 +407,22 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public bool $allowUppercaseInSlug = false;
+
+    /**
+     * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->autoEagerLoadElements(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_AUTO_EAGER_LOAD_ELEMENTS=false
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $autoEagerLoadElements = true;
 
     /**
      * @var bool Whether users should automatically be logged in after activating their account.
@@ -1815,6 +1871,28 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
+     * The registered upload transport to use, or null to select one from the upload session disk.
+     *
+     * @group Assets
+     */
+    public ?string $uploader = null;
+
+    /**
+     * Maximum bytes per PHP upload request. Proxy request limits may require a smaller value.
+     * S3 multipart uploads use parts of at least 5 MiB.
+     *
+     * @group Assets
+     */
+    public int $uploadChunkSize = 8 * 1024 * 1024;
+
+    /**
+     * Seconds of inactivity before an upload session and its temporary files can be removed.
+     *
+     * @group Assets
+     */
+    public int $uploadSessionDuration = 24 * 60 * 60;
+
+    /**
      * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
      * ::: code
@@ -2759,25 +2837,29 @@ class GeneralConfig extends BaseConfig
     public ?string $systemTemplateCss = null;
 
     /**
-     * @var string|null The filesystem target that should be used for storing temporary asset uploads.
-     *
-     *                  This can be set to a Craft filesystem handle, a Laravel disk in the format `disk:<name>`,
-     *                  or a plain legacy value (resolved as Craft FS first, then Laravel disk).
+     * @var string|null The Laravel filesystem disk that should be used for storing temporary asset uploads.
      *
      *                  A local temp folder will be used by default.
      *
      * ::: code
      * ```php Static Config
-     * ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     * ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
      * ```
      * ```shell Environment Override
-     * CRAFT_TEMP_ASSET_UPLOAD_FS=tempAssetUploads
+     * CRAFT_TEMP_ASSET_UPLOAD_DISK=tempAssetUploads
      * ```
      * :::
      *
      * @group Assets
      */
-    public ?string $tempAssetUploadFs = null;
+    public ?string $tempAssetUploadDisk = null;
+
+    /**
+     * @var string|null The Laravel filesystem disk that should stage upload sessions.
+     *
+     * @group Assets
+     */
+    public ?string $uploadSessionDisk = null;
 
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
@@ -3385,6 +3467,24 @@ class GeneralConfig extends BaseConfig
     public function allowUppercaseInSlug(bool $value = true): self
     {
         $this->allowUppercaseInSlug = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
+     *
+     * ```php
+     * ->autoEagerLoadElements(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $autoEagerLoadElements
+     */
+    public function autoEagerLoadElements(bool $value = true): self
+    {
+        $this->autoEagerLoadElements = $value;
 
         return $this;
     }
@@ -4974,6 +5074,27 @@ class GeneralConfig extends BaseConfig
         return $this;
     }
 
+    public function uploader(?string $value): self
+    {
+        $this->uploader = $value;
+
+        return $this;
+    }
+
+    public function uploadChunkSize(int $value): self
+    {
+        $this->uploadChunkSize = $value;
+
+        return $this;
+    }
+
+    public function uploadSessionDuration(int $value): self
+    {
+        $this->uploadSessionDuration = $value;
+
+        return $this;
+    }
+
     /**
      * Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
@@ -5891,24 +6012,33 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The filesystem target that should be used for storing temporary asset uploads.
-     *
-     * This can be set to a Craft filesystem handle, a Laravel disk in the format `disk:<name>`,
-     * or a plain legacy value (resolved as Craft FS first, then Laravel disk).
+     * The Laravel filesystem disk that should be used for storing temporary asset uploads.
      *
      * A local temp folder will be used by default.
      *
      *  ```php
-     *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     *  ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
      *  ```
      *
      * @group Assets
      *
-     * @see $tempAssetUploadFs
+     * @see $tempAssetUploadDisk
      */
-    public function tempAssetUploadFs(?string $value): self
+    public function tempAssetUploadDisk(?string $value): self
     {
-        $this->tempAssetUploadFs = $value;
+        $this->tempAssetUploadDisk = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Laravel filesystem disk that should stage upload sessions.
+     *
+     * @group Assets
+     */
+    public function uploadSessionDisk(?string $value): self
+    {
+        $this->uploadSessionDisk = $value;
 
         return $this;
     }
@@ -6183,6 +6313,62 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the temporary asset upload disk name.
+     */
+    public function getTempAssetUploadDisk(): string
+    {
+        return $this->storageDiskName($this->tempAssetUploadDisk, 'craft-asset-temp');
+    }
+
+    /**
+     * Returns the upload session disk name.
+     */
+    public function getUploadSessionDisk(): string
+    {
+        return $this->storageDiskName($this->uploadSessionDisk, 'craft-tmp');
+    }
+
+    private function storageDiskName(?string $value, string $default): string
+    {
+        $disk = Env::parse($value);
+        if (! is_string($disk) || $disk === '') {
+            return $default;
+        }
+
+        return $disk;
+    }
+
+    /**
+     * Returns the Laravel authentication guard Craft should use.
+     *
+     * @see authGuard
+     */
+    public function getAuthGuard(): string
+    {
+        return $this->authGuard ?? Auth::getDefaultDriver();
+    }
+
+    /**
+     * Returns the Laravel password broker Craft should use.
+     *
+     * @see authPasswordBroker
+     */
+    public function getAuthPasswordBroker(): string
+    {
+        return $this->authPasswordBroker ?? Password::getDefaultDriver();
+    }
+
+    /**
+     * Returns the session key used to store the password confirmation timestamp.
+     */
+    public function getPasswordConfirmationKey(): string
+    {
+        return $this->authGuard === null
+            ? 'auth.password_confirmed_at'
+            : sprintf('auth.%s.password_confirmed_at', $this->authGuard);
     }
 
     /**

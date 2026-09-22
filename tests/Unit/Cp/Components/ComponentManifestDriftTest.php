@@ -186,6 +186,13 @@ function cpDriftWcOnlyAllowlist(): array
         // selectedIndex, so a surrounding layout can style on it. Readable
         // state, not a knob — Tabs::collapsible() is what a caller sets.
         'craft-tabs' => ['collapsed'],
+
+        // Inherited from <craft-popover>: it stops the overlay writing
+        // `aria-expanded` onto its invoker, for a consumer whose invoker is a
+        // positioning anchor rather than the control. Only something composing
+        // the element in the client can know that, so there's nothing for a
+        // server-rendered menu to set.
+        'craft-action-menu' => ['without-invoker-aria'],
     ];
 }
 
@@ -209,8 +216,9 @@ function cpDriftExpectedPhpOnly(): array
         // are PHP conveniences (pressed state, Invoker Commands API).
         'craft-button' => ['type', 'active', 'disabled', 'command'],
 
-        // craft-field: `label` is a WC slot; `readonly`/`disabled` are native.
-        'craft-field' => ['label', 'readonly', 'disabled'],
+        // craft-field: `label` is a WC slot; `readonly`/`disabled` are native;
+        // `label-sr-only` is Lion-inherited (not in the manifest).
+        'craft-field' => ['label', 'label-sr-only', 'readonly', 'disabled'],
 
         // craft-switch: native input state / a slot, not declared manifest attributes.
         'craft-switch' => ['checked', 'disabled', 'label'],

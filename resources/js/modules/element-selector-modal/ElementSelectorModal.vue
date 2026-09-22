@@ -35,6 +35,11 @@
   }
 
   const transformable = computed(() => asTransformCapable(props.controller));
+  const uploadKinds = computed(() => {
+    const kind = props.controller.options.criteria?.kind;
+
+    return kind === undefined ? undefined : ([kind].flat() as string[]);
+  });
 
   /**
    * No emits: the controller is the event bus.
@@ -87,11 +92,7 @@
     }
 
     const folderId = data['folder-id'];
-    const fsType = data['fs-type'];
-
-    return typeof folderId === 'number' && typeof fsType === 'string'
-      ? {folderId, fsType}
-      : null;
+    return typeof folderId === 'number' ? {folderId} : null;
   });
 
   onMounted(() => {
@@ -138,9 +139,9 @@
       <AssetUploadButton
         :can-upload="true"
         :folder-id="uploadTarget.folderId"
-        :fs-type="uploadTarget.fsType"
+        :allowed-kinds="uploadKinds"
         :reload-on-complete="false"
-        @uploaded="() => index?.refresh()"
+        @uploaded="({id}) => index?.refresh(id)"
       />
     </div>
 

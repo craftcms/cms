@@ -11,6 +11,16 @@ export default css`
     --_active-border-color: var(--c-color-border-loud);
     --_button-radius: var(--c-button-radius, var(--c-form-control-radius));
     --_focus-outline-color: transparent;
+    --_padding-inline: var(
+      --c-button-spacing-inline,
+      var(--c-form-control-spacing-inline)
+    );
+    --_height: var(--c-button-height, var(--c-size-control-md));
+    --_border-width: var(--c-button-border-width, 1px);
+    /* How far the content sits from the button's edge, which is what flush
+       takes back. */
+    --_flush-inline: calc(var(--_padding-inline) + var(--_border-width));
+    --_flush-block: max(0px, calc((var(--_height) - 1lh) / 2));
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -37,16 +47,13 @@ export default css`
       --c-button-radius-end-end,
       var(--_button-radius)
     );
-    padding-inline: var(
-      --c-button-spacing-inline,
-      var(--c-form-control-spacing-inline)
-    );
+    padding-inline: var(--_padding-inline);
     padding-block: 0;
     width: auto;
-    min-height: var(--c-button-height, var(--c-size-control-md));
+    min-height: var(--_height);
     min-width: var(--c-button-width, var(--c-size-control-md));
     white-space: nowrap;
-    border-width: var(--c-button-border-width, 1px);
+    border-width: var(--_border-width);
     border-style: var(--c-button-border-style, solid);
 
     /* Colorable styles */
@@ -156,22 +163,49 @@ export default css`
   Sizes
    */
   :host([size~='zero']) {
+    --_padding-inline: 0px;
+    --_height: 0px;
     min-width: 0;
-    min-height: 0;
-    padding-inline: 0;
   }
 
   :host([size~='small']) {
-    padding-inline: var(--c-spacing-sm);
+    --_padding-inline: var(--c-spacing-sm);
+    --_height: var(--c-size-control-sm);
     min-width: var(--c-size-control-sm);
-    min-height: var(--c-size-control-sm);
     font-size: 0.9em;
   }
 
   :host([size~='large']) {
-    padding-inline: var(--c-spacing-lg);
-    min-height: var(--c-size-control-lg);
+    --_padding-inline: var(--c-spacing-lg);
+    --_height: var(--c-size-control-lg);
     min-width: var(--c-size-control-lg);
+  }
+
+  /*
+  Flush
+   */
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-start']) {
+    margin-inline-start: calc(var(--_flush-inline) * -1);
+  }
+
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-end']) {
+    margin-inline-end: calc(var(--_flush-inline) * -1);
+  }
+
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-start']) {
+    margin-block-start: calc(var(--_flush-block) * -1);
+  }
+
+  :host([variant~='plain'][flush='']),
+  :host([variant~='plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-end']) {
+    margin-block-end: calc(var(--_flush-block) * -1);
   }
 
   :host([loading]),
@@ -196,8 +230,11 @@ export default css`
   Icon
    */
   :host([icon]:empty) {
+    /* A square around a 1em × 0.8em icon (see craft-icon). */
+    --_padding-inline: 0px;
+    --_flush-inline: max(0px, calc((var(--_height) - 1em) / 2));
+    --_flush-block: max(0px, calc((var(--_height) - 0.8em) / 2));
     aspect-ratio: 1;
-    padding-inline: 0;
     padding-block: 0;
     display: inline-flex;
     flex-direction: column;
@@ -237,8 +274,11 @@ export default css`
   }
 
   :host([variant~='primary']:active),
+  :host([variant~='primary'][aria-pressed='true']),
   :host([variant~='danger']:active),
-  :host([variant~='solid']:active) {
+  :host([variant~='danger'][aria-pressed='true']),
+  :host([variant~='solid']:active),
+  :host([variant~='solid'][aria-pressed='true']) {
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 10)
@@ -402,6 +442,14 @@ export default css`
     align-items: center;
   }
 
+  .button-content--spaced-prefix .prefix {
+    margin-inline-end: var(--c-spacing-sm);
+  }
+
+  .button-content--spaced-suffix .suffix {
+    margin-inline-start: var(--c-spacing-sm);
+  }
+
   .button-content--start {
     justify-content: start;
   }
@@ -440,6 +488,7 @@ export default css`
        the (non-positioned) anchor and swallows every pointer click before it
        can activate the link. Recreate the overlay on the anchor instead, so
        the full target navigates. */
+
     &::before {
       display: none;
     }
@@ -466,6 +515,7 @@ export default css`
 
     /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
+
     &::before {
       content: '';
       position: absolute;

@@ -1,57 +1,165 @@
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {nextTick} from 'vue';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {nextTick, reactive} from 'vue';
 
-const extraElements: HTMLElement[] = [];
+const page = vi.hoisted(() => ({current: null as any}));
 
-beforeEach(() => {
+vi.mock('@inertiajs/vue3', () => ({usePage: () => page.current}));
+
+/**
+ * The composable is global state, so each test imports it fresh — otherwise the
+ * first test's sidebar leaks into the rest.
+ *
+ * `useLocalStorage` prefixes its key with `Craft.systemUid`, which is why the
+ * state is built on first call rather than at module scope. The stub has to be
+ * in place before the import for the same reason.
+ */
+async function freshSidebar(orientation: 'ltr' | 'rtl' = 'ltr') {
   vi.resetModules();
-});
+  localStorage.clear();
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-  extraElements.splice(0).forEach((el) => el.remove());
-});
+  (globalThis as {Craft?: {systemUid: string}}).Craft = {systemUid: 'test'};
+  page.current = reactive({props: {craft: {orientation}}});
 
-function appendElement<T extends HTMLElement>(el: T): T {
-  document.body.append(el);
-  extraElements.push(el);
-  return el;
+  const {useGlobalSidebar} = await import('./useGlobalSidebar');
+
+  return useGlobalSidebar;
 }
 
-it('returns focus to the registered toggle when the sidebar hides while focus was inside it', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'test'});
-  const {useGlobalSidebar} = await import('./useGlobalSidebar');
-  const {sidebar, toggleButton} = useGlobalSidebar();
+describe('useGlobalSidebar', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
-  const externalToggle = appendElement(document.createElement('button'));
-  toggleButton.value = externalToggle;
+  it('hands every caller the same sidebar', async () => {
+    const useGlobalSidebar = await freshSidebar();
 
-  const sidebarEl = appendElement(document.createElement('div'));
-  sidebarEl.className = 'cp-sidebar';
-  const innerControl = document.createElement('button');
-  sidebarEl.append(innerControl);
+    const one = useGlobalSidebar();
+    const two = useGlobalSidebar();
 
-  sidebar.visibility = 'visible';
-  await nextTick();
-  innerControl.focus();
+    // Same object, not a copy — the shell sizes its column from this while the
+    // sidebar itself renders the toggle.
+    expect(one.sidebar).toBe(two.sidebar);
+    expect(one.toggleButton).toBe(two.toggleButton);
+  });
 
-  sidebar.visibility = 'hidden';
-  await vi.waitFor(() => expect(document.activeElement).toBe(externalToggle));
-});
+  it('shows one caller a toggle made by another', async () => {
+    const useGlobalSidebar = await freshSidebar();
 
-it('leaves focus alone when the sidebar hides while focus was already elsewhere', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'test'});
-  const {useGlobalSidebar} = await import('./useGlobalSidebar');
-  const {sidebar, toggleButton} = useGlobalSidebar();
+    const shell = useGlobalSidebar();
+    const sidebar = useGlobalSidebar();
+    const before = shell.sidebar.visibility;
 
-  const externalToggle = appendElement(document.createElement('button'));
-  toggleButton.value = externalToggle;
+    sidebar.toggle();
 
-  const unrelatedField = appendElement(document.createElement('input'));
-  unrelatedField.focus();
+    expect(shell.sidebar.visibility).not.toBe(before);
+    expect(shell.icon.value).toBe(
+      shell.sidebar.visibility === 'visible'
+        ? 'arrow-left-to-line'
+        : 'arrow-right-from-line'
+    );
+  });
 
-  sidebar.visibility = 'visible';
-  await nextTick();
-  sidebar.visibility = 'hidden';
-  await vi.waitFor(() => expect(document.activeElement).toBe(unrelatedField));
+  it('points its arrows the other way in a right-to-left language', async () => {
+    const useGlobalSidebar = await freshSidebar('rtl');
+    const {sidebar, icon} = useGlobalSidebar();
+
+    sidebar.visibility = 'visible';
+    expect(icon.value).toBe('arrow-right-to-line');
+
+    sidebar.visibility = 'hidden';
+    expect(icon.value).toBe('arrow-left-from-line');
+  });
+
+  it('only remembers the collapse preference while docked', async () => {
+    const useGlobalSidebar = await freshSidebar();
+    const {sidebar} = useGlobalSidebar();
+    const key = 'Craft-test.sidebar.collapsed';
+
+    // `useStorage` seeds the key with its default on creation, so what matters
+    // is that a floating sidebar never *moves* it: floating is hidden because
+    // the window is narrow, not because anyone asked, and storing that would
+    // expand the rail on the next wide-screen visit.
+    const seeded = localStorage.getItem(key);
+
+    sidebar.mode = 'floating';
+    sidebar.visibility = 'visible';
+    await Promise.resolve();
+    sidebar.visibility = 'hidden';
+    await Promise.resolve();
+    expect(localStorage.getItem(key)).toBe(seeded);
+
+    sidebar.mode = 'docked';
+    sidebar.visibility = 'visible';
+    await Promise.resolve();
+    expect(localStorage.getItem(key)).toBe('false');
+
+    sidebar.visibility = 'hidden';
+    await Promise.resolve();
+    expect(localStorage.getItem(key)).toBe('true');
+  });
+
+  it('returns focus to the registered toggle when it closes', async () => {
+    const useGlobalSidebar = await freshSidebar();
+    const {sidebar, toggleButton} = useGlobalSidebar();
+
+    const toggle = document.createElement('button');
+    const panel = document.createElement('div');
+    const inside = document.createElement('button');
+
+    panel.className = 'cp-sidebar';
+    panel.append(inside);
+    document.body.append(toggle, panel);
+    toggleButton.value = toggle;
+
+    sidebar.mode = 'floating';
+    sidebar.visibility = 'visible';
+    inside.focus();
+
+    sidebar.visibility = 'hidden';
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(toggle);
+
+    document.body.replaceChildren();
+  });
+
+  it('leaves focus alone when it was never inside the sidebar', async () => {
+    const useGlobalSidebar = await freshSidebar();
+    const {sidebar, toggleButton} = useGlobalSidebar();
+
+    const toggle = document.createElement('button');
+    const elsewhere = document.createElement('input');
+
+    document.body.append(toggle, elsewhere);
+    toggleButton.value = toggle;
+
+    sidebar.mode = 'floating';
+    sidebar.visibility = 'visible';
+    elsewhere.focus();
+
+    sidebar.visibility = 'hidden';
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(elsewhere);
+
+    document.body.replaceChildren();
+  });
+
+  it('reports collapsed only for a docked sidebar', async () => {
+    const useGlobalSidebar = await freshSidebar();
+    const {sidebar, collapsed, width} = useGlobalSidebar();
+
+    // Docked and hidden is a rail of icons, not gone.
+    sidebar.mode = 'docked';
+    sidebar.visibility = 'hidden';
+    expect(collapsed.value).toBe(true);
+    expect(width.value).toBe('var(--cp-sidebar-collapsed-width)');
+
+    // Floating and hidden has actually left the layout.
+    sidebar.mode = 'floating';
+    expect(collapsed.value).toBe(false);
+    expect(width.value).toBe('auto');
+  });
 });

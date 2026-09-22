@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Throwable;
 
 /**
  * @internal
@@ -40,15 +44,26 @@ trait QueriesEagerly
     public ?string $eagerLoadAlias = null;
 
     /**
-     * @var bool Whether the query should be used to eager-load results for the [[$eagerSourceElement|source element]]
-     *           and any other elements in its collection.
+     * @var bool|null Whether the query should be used to eager-load results for the [[$eagerSourceElement|source element]]
+     *                and any other elements in its collection. If `null`, the <config5:autoEagerLoadElements> config setting will be used.
      *
      * @used-by eagerly()
      */
-    public bool $eagerly = false;
+    public ?bool $eagerly = null;
 
     /** @var string[] */
-    private array $eagerLoadCriteriaExclusions = [];
+    private array $eagerLoadCriteriaExclusions = [
+        'eagerLoadAlias',
+        'eagerLoadHandle',
+        'eagerLoadSourceElement',
+        'queryCacheDependency',
+        'queryCacheDuration',
+        'ruleset',
+    ];
+
+    private ?string $eagerLoadQueryState = null;
+
+    private int $eagerLoadBeforeQueryCallbackCount = 0;
 
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
@@ -101,8 +116,8 @@ trait QueriesEagerly
     }
 
     /**
-     * Causes the query to be used to eager-load results for the query’s source element
-     * and any other elements in its collection.
+     * Controls whether the query should eager-load results for the query’s source element
+     * and any other elements in its collection. Pass `false` to disable automatic eager loading.
      *
      * @param  string|bool  $value  The property value. If a string, the value will be used as the eager-loading alias.
      */
@@ -127,6 +142,8 @@ trait QueriesEagerly
 
         $this->eagerLoadHandle = $providerHandle ? "$providerHandle:$handle" : $handle;
         $this->eagerLoadSourceElement = $sourceElement;
+        $this->eagerLoadQueryState = $this->queryState($this->getQuery());
+        $this->eagerLoadBeforeQueryCallbackCount = count($this->beforeQueryCallbacks);
 
         return $this;
     }
@@ -187,19 +204,50 @@ trait QueriesEagerly
 
     /**
      * @param  array<string, mixed>  $criteria
+     * @param  array<int, string>|string  $columns
      * @return Collection<int, ElementInterface>|int|null
      */
-    protected function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
+    protected function eagerLoad(bool $count = false, array $criteria = [], array|string $columns = ['*']): Collection|int|null
     {
+        $automatically = $this->eagerly === null;
+
         if (
-            ! $this->eagerly ||
+            $this->eagerly === false ||
+            ($automatically && ! Cms::config()->autoEagerLoadElements) ||
+            ($automatically && (request()->isCpRequest() || TemplateMode::is(TemplateMode::Cp))) ||
+            ($automatically && ($this->asArray || ! in_array($columns, ['*', ['*']], true) || $this->getResultOverride() !== null)) ||
             ! isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle) ||
             count($this->eagerLoadSourceElement->elementQueryResult) < 2
         ) {
             return null;
         }
 
-        $alias = $this->eagerLoadAlias ?? "eagerly:$this->eagerLoadHandle";
+        if (
+            $automatically &&
+            (
+                $this->eagerLoadQueryState !== $this->queryState($this->queryBeforePrepare ?? $this->getQuery()) ||
+                $this->eagerLoadBeforeQueryCallbackCount !== count($this->beforeQueryCallbacksBeforePrepare ?? $this->beforeQueryCallbacks)
+            )
+        ) {
+            return null;
+        }
+
+        $criteria += array_diff_key(
+            $this->getCriteria(),
+            array_flip($this->eagerLoadCriteriaExclusions),
+        ) + ['with' => $this->with];
+
+        if ($this->eagerLoadAlias !== null) {
+            $alias = $this->eagerLoadAlias;
+        } elseif ($automatically) {
+            try {
+                $alias = sprintf('eagerly:%s:%s', $this->eagerLoadHandle, hash('sha256', serialize($criteria)));
+            } catch (Throwable) {
+                return null;
+            }
+        } else {
+            $alias = "eagerly:$this->eagerLoadHandle";
+        }
 
         // see if it was already eager-loaded
         $eagerLoaded = match ($count) {
@@ -208,11 +256,6 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
-            $criteria += array_diff_key(
-                $this->getCriteria(),
-                array_flip($this->eagerLoadCriteriaExclusions),
-            ) + ['with' => $this->with];
-
             Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -234,5 +277,10 @@ trait QueriesEagerly
         }
 
         return $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
+    }
+
+    private function queryState(Builder $query): string
+    {
+        return hash('sha256', $query->toSql().serialize($query->getBindings()));
     }
 }

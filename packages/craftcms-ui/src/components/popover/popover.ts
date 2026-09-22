@@ -1,10 +1,33 @@
-import {html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
+// Named explicitly so the emitted .d.ts can reference Lion's mixin
+// constructor by package specifier instead of a pnpm store path (TS2883).
+import type {} from '@open-wc/dedupe-mixin';
 import type {VirtualElement} from '@popperjs/core';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
+import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
+
+/** Lion's own default, for pages that don't load the CP tokens. */
+const DEFAULT_POPOVER_LAYER = 9999;
+
+/**
+ * The popover layer from `--c-layer-popover`. Lion writes the overlay's
+ * z-index as an inline number, so the token has to be read rather than
+ * referenced.
+ */
+function popoverLayer(): number {
+  const value = parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue(
+      '--c-layer-popover'
+    ),
+    10
+  );
+
+  return Number.isNaN(value) ? DEFAULT_POPOVER_LAYER : value;
+}
 
 /**
  * A non-modal popover component built on Lion's overlay system.
@@ -29,7 +52,16 @@ import styles from './popover.styles.js';
  * ```
  */
 export default class CraftPopover extends OverlayMixin(LitElement) {
-  static override styles = [styles];
+  // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
+  // from the page: without it the pane's 1px border sits outside its width and
+  // it overshoots whatever it was sized to.
+  static override styles = [hostStyles, styles];
+
+  /**
+   * Names the popup for assistive tech. Lion gives the content `role="dialog"`,
+   * and a dialog without a name is a WCAG 4.1.2 failure.
+   */
+  @property() label?: string;
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -56,23 +88,95 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   @property({type: Number}) distance = 4;
 
   /** Whether the overlay should match the invoker's width. */
-  @property({attribute: 'match-invoker-width', type: Boolean})
+  @property({attribute: 'match-invoker-width', type: Boolean, reflect: true})
   matchInvokerWidth = false;
 
   /** Accepted for API compatibility; craft-popover never renders an arrow. */
   @property({type: Boolean, attribute: 'without-arrow'}) withoutArrow = false;
 
+  /**
+   * Stops the overlay writing `aria-expanded` and `aria-controls` onto its
+   * invoker. Set it when the invoker is a positioning anchor rather than the
+   * control itself: a generic element can't carry those attributes, and only
+   * the consumer knows which of its own elements can.
+   */
+  @property({type: Boolean, attribute: 'without-invoker-aria', reflect: true})
+  withoutInvokerAria = false;
+
   #contentWrapper: HTMLElement | null = null;
+
+  /** Lion's controller while it's wired up to the top layer. */
+  #layeredCtrl: EventTarget | null = null;
 
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
   }
 
+  override _setupOverlayCtrl() {
+    super._setupOverlayCtrl();
+
+    this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
+    this.#layeredCtrl.addEventListener('before-show', this.#raise);
+    this.#layeredCtrl.addEventListener('hide', this.#lower);
+  }
+
+  override _teardownOverlayCtrl() {
+    this.#lower();
+    this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
+    this.#layeredCtrl?.removeEventListener('hide', this.#lower);
+    this.#layeredCtrl = null;
+
+    super._teardownOverlayCtrl();
+  }
+
+  /** The `<dialog>` Lion wraps the content in. */
+  get #dialog(): HTMLElement | null {
+    return (
+      this.shadowRoot?.querySelector<HTMLElement>(
+        'dialog[data-overlay-outer-wrapper]'
+      ) ?? null
+    );
+  }
+
+  /**
+   * Lifts the open popover into the browser's top layer, above every stacking
+   * context. Lion's non-modal dialog otherwise stays inside its ancestors':
+   * a z-index can't raise it past a sticky footer beside, say, a
+   * `container-type` field group, which is a stacking context of its own.
+   *
+   * Before Lion positions it, since the top layer also changes what a fixed
+   * overlay is placed against. Popovers opened later stack above earlier
+   * ones, so nested menus still land on top.
+   */
+  #raise = () => {
+    const dialog = this.#dialog;
+
+    if (!dialog || typeof dialog.showPopover !== 'function') {
+      return;
+    }
+
+    dialog.setAttribute('popover', 'manual');
+
+    if (!dialog.matches(':popover-open')) {
+      dialog.showPopover();
+    }
+  };
+
+  #lower = () => {
+    const dialog = this.#dialog;
+
+    if (dialog?.matches?.(':popover-open')) {
+      dialog.hidePopover();
+    }
+  };
+
   // @ts-expect-error – Lion expects this to return an OverlayConfig
   _defineOverlayConfig() {
     return {
       ...withDropdownConfig(),
+      zIndex: popoverLayer(),
+      handlesAccessibility: !this.withoutInvokerAria,
       inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
       popperConfig: {
         // Position relative to the viewport so the overlay escapes any
@@ -136,7 +240,11 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
       <div id="overlay-content-node-wrapper">
-        <div class="popover-pane" part="popup">
+        <div
+          class="popover-pane"
+          part="popup"
+          aria-label="${this.label ?? nothing}"
+        >
           <slot name="content">
             <slot name="content-body"></slot>
             <slot name="content-footer"></slot>
@@ -184,11 +292,28 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    if ((changed.has('for') || changed.has('anchor')) && this._overlayCtrl) {
+    if (!this._overlayCtrl) {
+      return;
+    }
+
+    if (changed.has('for') || changed.has('anchor')) {
       this._overlayCtrl.updateConfig({
         invokerNode: this._overlayInvokerNode,
         referenceNode: this._overlayReferenceNode,
       });
+    }
+
+    // `_defineOverlayConfig()` is read once, when the controller is built, so
+    // without this a `placement`, `distance` or `match-invoker-width` set or
+    // changed after that point is simply never applied — the overlay keeps
+    // whatever it was given first.
+    if (
+      changed.has('placement') ||
+      changed.has('distance') ||
+      changed.has('matchInvokerWidth') ||
+      changed.has('withoutInvokerAria')
+    ) {
+      this._overlayCtrl.updateConfig(this._defineOverlayConfig());
     }
   }
 

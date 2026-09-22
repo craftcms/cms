@@ -1436,7 +1436,7 @@ Craft.ui = {
 
       // check if the parents are collapsed - if yes, expand
       let $collapsedParents = $fieldErrorsContainer.parents(
-        '.collapsed, .is-collapsed'
+        '.collapsed, .is-collapsed, [data-collapsed]'
       );
       if ($collapsedParents.length > 0) {
         // expand in the reverse order - from outside in!
@@ -1445,7 +1445,9 @@ Craft.ui = {
           if ($item.data('block') != undefined) {
             $item.data('block').expand();
           } else {
-            $item.find('.titlebar').trigger('doubletap');
+            $item
+              .find('.titlebar, [data-matrix-block-titlebar]')
+              .trigger('doubletap');
           }
         }
       }

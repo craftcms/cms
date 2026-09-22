@@ -6,7 +6,6 @@ use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Url;
@@ -40,7 +39,7 @@ function createTestVolume(array $overrides = []): VolumeData
     $volume = new VolumeData(array_merge([
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fsHandle' => 'disk:test-disk',
+        'fsHandle' => 'test-disk',
     ], $overrides));
 
     $volumes->saveVolume($volume);
@@ -85,7 +84,7 @@ it('requires admin changes', function () {
     postJson(action([VolumesController::class, 'store']), [
         'name' => 'Test',
         'handle' => 'test',
-        'fsHandle' => 'disk:test-disk',
+        'fsHandle' => 'test-disk',
     ])->assertForbidden();
     deleteJson(action([VolumesController::class, 'destroy'], ['volumeId' => $volume->id]))->assertForbidden();
 });
@@ -116,8 +115,9 @@ describe('create / edit', function () {
 
                     return $nodes->contains(
                         fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
-                            && ($node['control']['props']['createUrl'] ?? null) === action([FilesystemsController::class, 'create']),
+                            && collect($node['control']['props']['options'] ?? [])->contains('value', 'test-disk'),
                     )
+                        && $paths->contains(['hasUrls'])
                         && $nodes->contains(
                             fn (array $node): bool => ($node['control']['path'] ?? null) === ['subpath']
                                 && ! empty($node['control']['props']['textExpanderTriggers']),
@@ -145,7 +145,7 @@ describe('create / edit', function () {
             fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
                 && collect($node['control']['props']['options'] ?? [])
                     ->flatMap(fn (array $item): array => $item['options'] ?? [$item])
-                    ->contains(fn (array $option): bool => $option['value'] === 'disk:test-disk' && $option['disabled'] === $disabled),
+                    ->contains(fn (array $option): bool => $option['value'] === 'test-disk' && $option['disabled'] === $disabled),
         );
 
         get(action([VolumesController::class, 'create']))
@@ -173,7 +173,8 @@ describe('create / edit', function () {
                 'volumeId' => null,
                 'name' => 'New Volume',
                 'handle' => 'newVolume',
-                'fsHandle' => 'disk:test-disk',
+                'fsHandle' => 'test-disk',
+                'hasUrls' => true,
                 'subpath' => '',
                 'assetTransformer' => 'craft',
                 'titleTranslationMethod' => 'site',
@@ -186,7 +187,8 @@ describe('create / edit', function () {
         ])
             ->assertOk()
             ->assertJsonPath('form.values.handle', 'newVolume')
-            ->assertJsonPath('form.values.fsHandle', 'disk:test-disk')
+            ->assertJsonPath('form.values.fsHandle', 'test-disk')
+            ->assertJsonPath('form.values.hasUrls', true)
             ->assertJsonPath('form.values.assetTransformer', 'craft');
     });
 
@@ -198,18 +200,25 @@ describe('create / edit', function () {
 
 describe('store', function () {
     test('store creates volume with valid data', function () {
-        postJson(action([VolumesController::class, 'store']), [
-            'name' => 'New Volume',
-            'handle' => 'newVolume',
-            'fsHandle' => 'disk:test-disk',
-            'assetTransformer' => 'craft',
-        ])->assertOk();
+        $response = postJson(
+            action([VolumesController::class, 'store']),
+            [
+                'name' => 'New Volume',
+                'handle' => 'newVolume',
+                'fsHandle' => 'test-disk',
+                'hasUrls' => true,
+                'assetTransformer' => 'craft',
+            ],
+            ['Accept' => 'text/html', 'X-Inertia' => 'true'],
+        );
 
         app()->forgetInstance(Volumes::class);
         $volume = app(Volumes::class)->getVolumeByHandle('newVolume');
         expect($volume)->not()->toBeNull();
         expect($volume->name)->toBe('New Volume')
+            ->and($volume->hasUrls)->toBeTrue()
             ->and($volume->getAssetTransformerHandle(false))->toBe('craft');
+        $response->assertRedirect(Url::cpUrl("settings/assets/volumes/{$volume->id}"));
     });
 
     test('store updates existing volume', function () {
@@ -219,7 +228,7 @@ describe('store', function () {
             'volumeId' => $volume->id,
             'name' => 'Updated Volume',
             'handle' => 'testVolume',
-            'fsHandle' => 'disk:test-disk',
+            'fsHandle' => 'test-disk',
         ])->assertOk();
 
         app()->forgetInstance(Volumes::class);
@@ -239,7 +248,7 @@ describe('store', function () {
         postJson(action([VolumesController::class, 'store']), [
             'name' => 'Invalid Transform Volume',
             'handle' => 'invalidTransformVolume',
-            'fsHandle' => 'disk:test-disk',
+            'fsHandle' => 'test-disk',
             'assetTransformer' => [],
         ])->assertUnprocessable()
             ->assertJsonValidationErrors('assetTransformer');
@@ -253,7 +262,7 @@ describe('store', function () {
         postJson(action([VolumesController::class, 'store']), [
             'name' => 'New Volume',
             'handle' => 'newVolume',
-            'fsHandle' => 'disk:test-disk',
+            'fsHandle' => 'test-disk',
         ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('handle');

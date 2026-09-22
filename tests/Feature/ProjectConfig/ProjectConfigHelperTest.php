@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -544,7 +545,8 @@ test('traverse data array supports escaped periods in paths', function () {
 });
 
 test('path claims prevent recursive processing and reset every category', function (string $method, array $paths) {
-    $projectConfig = $this->partialMock(ProjectConfig::class);
+    $projectConfig = Mockery::mock(ProjectConfig::class, [Cms::config()])->makePartial();
+    $this->instance(ProjectConfig::class, $projectConfig);
     new ReflectionProperty(ProjectConfig::class, 'isApplyingExternalChanges')->setValue($projectConfig, true);
     $projectConfig->shouldReceive('get')->andReturn(['item' => []]);
     $processed = [];
@@ -563,8 +565,7 @@ test('path claims prevent recursive processing and reset every category', functi
 
     expect($processed)->toBe([...$paths, ...$paths]);
 })->with([
-    ['ensureAllFilesystemsProcessed', [ProjectConfig::PATH_FS]],
-    ['ensureAllFieldsProcessed', [ProjectConfig::PATH_FS, ProjectConfig::PATH_FIELDS.'.item']],
+    ['ensureAllFieldsProcessed', [ProjectConfig::PATH_FIELDS.'.item']],
     ['ensureAllSitesProcessed', [ProjectConfig::PATH_SITE_GROUPS.'.item', ProjectConfig::PATH_SITES.'.item']],
     ['ensureAllUserGroupsProcessed', [ProjectConfig::PATH_USER_GROUPS.'.item']],
     ['ensureAllEntryTypesProcessed', [ProjectConfig::PATH_ENTRY_TYPES.'.item']],
@@ -573,7 +574,8 @@ test('path claims prevent recursive processing and reset every category', functi
 ]);
 
 test('forced site processing bypasses only the active application guard', function () {
-    $projectConfig = $this->partialMock(ProjectConfig::class);
+    $projectConfig = Mockery::mock(ProjectConfig::class, [Cms::config()])->makePartial();
+    $this->instance(ProjectConfig::class, $projectConfig);
     $projectConfig->shouldReceive('get')->andReturn(['item' => []]);
     $projectConfig->shouldReceive('processConfigChanges')->with(ProjectConfig::PATH_SITE_GROUPS.'.item', true)->once()->ordered();
     $projectConfig->shouldReceive('processConfigChanges')->with(ProjectConfig::PATH_SITES.'.item', true)->once()->ordered();

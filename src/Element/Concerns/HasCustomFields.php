@@ -61,7 +61,7 @@ trait HasCustomFields
     /** @var array<string, true> */
     private array $_dirtyFields = [];
 
-    /** @var int[] */
+    /** @var array<int, true> */
     private array $_invalidNestedElementIds = [];
 
     /** @return array<string,mixed> */
@@ -447,12 +447,14 @@ trait HasCustomFields
 
     public function getInvalidNestedElementIds(): array
     {
-        return $this->_invalidNestedElementIds;
+        return array_keys($this->_invalidNestedElementIds);
     }
 
     public function addInvalidNestedElementIds(array $ids): void
     {
-        array_push($this->_invalidNestedElementIds, ...$ids);
+        foreach ($ids as $id) {
+            $this->_invalidNestedElementIds[$id] = true;
+        }
     }
 
     public function getFieldLayout(): ?FieldLayout

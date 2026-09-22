@@ -9,6 +9,7 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\test\DbFixtureTrait;
+use craft\test\ElementFixtureTrait;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -39,6 +40,7 @@ abstract class BaseElementFixture extends DbFixture
 {
     use FileFixtureTrait;
     use DbFixtureTrait;
+    use ElementFixtureTrait;
 
     /**
      * @var array
@@ -175,17 +177,6 @@ abstract class BaseElementFixture extends DbFixture
         foreach ($attributes as $name => $value) {
             $element->$name = $value;
         }
-    }
-
-    /**
-     * Saves an element.
-     *
-     * @param ElementInterface $element The element to be saved
-     * @return bool Whether the save was successful
-     */
-    protected function saveElement(ElementInterface $element): bool
-    {
-        return Elements::saveElement($element, true, true, false);
     }
 
     /**

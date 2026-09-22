@@ -83,4 +83,14 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
     {
         return null;
     }
+
+    public static function component(): string
+    {
+        return 'craft:activity-timeline-event';
+    }
+
+    public static function props(ActivityEvent $event): array
+    {
+        return [];
+    }
 }

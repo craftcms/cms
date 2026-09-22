@@ -22,7 +22,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Illuminate\Support\Facades\Event;
-use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -107,7 +106,8 @@ class ProjectConfig extends Component
     public const PATH_FIELDS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FIELDS;
     /** @deprecated in 6.0.0 */
     public const PATH_GLOBAL_SETS = 'globalSets';
-    public const PATH_FS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_FS = 'fs';
     public const PATH_GRAPHQL = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL;
     public const PATH_GRAPHQL_PUBLIC_TOKEN = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN;
     public const PATH_GRAPHQL_SCHEMAS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL_SCHEMAS;
@@ -522,11 +522,7 @@ class ProjectConfig extends Component
      */
     public function getPendingChangeSummary(): array
     {
-        /**
-         * Call the private method to get the pending changes.
-         */
-        $reflectionMethod = new ReflectionClass(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getMethod('_getPendingChanges');
-        $pendingChanges = $reflectionMethod->invoke(app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class));
+        $pendingChanges = app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getPendingChanges();
 
         $summary = [];
 

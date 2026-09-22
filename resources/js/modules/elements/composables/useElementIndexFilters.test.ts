@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {reactive, shallowRef} from 'vue';
 import {useElementIndexFilters} from './useElementIndexFilters';
-import type {ConditionConfig} from './useConditionBuilder';
+import type {ConditionConfig} from '@/modules/conditions/types';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {IndexQueryParams} from './useElementIndexVisits';
 import type {SourceItem} from '@/modules/elements/types/sources';
@@ -93,13 +93,16 @@ describe('useElementIndexFilters', () => {
   it('submits the filter condition intact alongside the other filters', () => {
     const condition: ConditionConfig = {
       class: 'craft\\elements\\conditions\\entries\\EntryCondition',
-      conditionRules: [
-        {
-          class: 'craft\\elements\\conditions\\TitleConditionRule',
-          uid: 'uid-1',
-          value: 'foo',
-        },
-      ],
+      conditionRules: {
+        operator: 'or',
+        rules: [
+          {class: 'TitleConditionRule', value: 'Alpha'},
+          {
+            operator: 'and',
+            rules: [{class: 'TitleConditionRule', value: 'Beta'}],
+          },
+        ],
+      },
     };
 
     const {submit} = useElementIndexFilters(
@@ -113,6 +116,25 @@ describe('useElementIndexFilters', () => {
 
     const data = transformState.callback({search: '', status: ''});
     expect(data.condition).toEqual(condition);
+  });
+
+  it('submits type-specific filters alongside a refined search', () => {
+    const {submit} = useElementIndexFilters(
+      {search: 'file', status: null},
+      shallowRef<ViewState>(makeViewState()),
+      stubRoute,
+      undefined,
+      () => ({includeSubfolders: 1})
+    );
+
+    submit();
+
+    expect(
+      transformState.callback({search: 'file 2', status: ''})
+    ).toMatchObject({
+      search: 'file 2',
+      includeSubfolders: 1,
+    });
   });
 
   it('requests index-style query array serialization, which PHP can parse', () => {

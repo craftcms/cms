@@ -148,7 +148,7 @@ export default css`
     padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
     inset-block-start: 0;
-    z-index: 10;
+    z-index: var(--c-layer-sticky, 10);
     background-color: var(--_pane-background);
     border-block-end: 1px solid var(--_pane-divider-color);
   }
@@ -167,8 +167,7 @@ export default css`
   }
 
   .cp-pane__body {
-    padding-inline: var(--_pane-spacing);
-    padding-block: var(--_pane-spacing) calc(var(--_pane-spacing) * 1.5);
+    padding: var(--_pane-spacing);
   }
 
   .cp-pane__footer {
@@ -180,7 +179,7 @@ export default css`
     padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
     inset-block-end: 0;
-    z-index: 10;
+    z-index: var(--c-layer-sticky, 10);
   }
 
   .cp-pane__spacer {

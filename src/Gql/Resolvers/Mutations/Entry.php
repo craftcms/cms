@@ -20,9 +20,10 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use Error;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use Throwable;
+
+use function CraftCms\Cms\craftAuth;
 
 class Entry extends ElementMutationResolver
 {
@@ -59,6 +60,32 @@ class Entry extends ElementMutationResolver
             unset($arguments['enabled']);
         }
 
+        // If saving an entry and the postDate is provided, check if we should allow changing it.
+        if (array_key_exists('postDate', $arguments)) {
+            try {
+                $showPostDateField = $entry->getType()->showPostDateField;
+            } catch (Throwable) {
+                $showPostDateField = true;
+            }
+
+            if (! $showPostDateField) {
+                unset($arguments['postDate']);
+            }
+        }
+
+        // If saving an entry and the expiryDate is provided, check if we should allow changing it.
+        if (array_key_exists('expiryDate', $arguments)) {
+            try {
+                $showExpiryDateField = $entry->getType()->showExpiryDateField;
+            } catch (Throwable) {
+                $showExpiryDateField = true;
+            }
+
+            if (! $showExpiryDateField) {
+                unset($arguments['expiryDate']);
+            }
+        }
+
         // If saving an entry the slug is provided, check if we should allow changing it.
         if (array_key_exists('slug', $arguments)) {
             try {
@@ -85,7 +112,7 @@ class Entry extends ElementMutationResolver
             $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             Drafts::saveElementAsDraft(
                 $entry,
-                creatorId: Auth::id(),
+                creatorId: craftAuth()->id(),
                 name: $arguments['draftName'] ?? null,
                 notes: $arguments['draftNotes'] ?? null,
             );

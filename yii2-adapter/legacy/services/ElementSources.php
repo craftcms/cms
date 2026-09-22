@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -24,6 +26,7 @@ use yii\base\Component;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->getElementSources()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementSources} instead.
  */
@@ -40,18 +43,25 @@ class ElementSources extends Component
     public const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
 
     public const TYPE_HEADING = \CraftCms\Cms\Element\ElementSources::TYPE_HEADING;
+
     public const TYPE_NATIVE = \CraftCms\Cms\Element\ElementSources::TYPE_NATIVE;
+
     public const TYPE_CUSTOM = \CraftCms\Cms\Element\ElementSources::TYPE_CUSTOM;
 
     public const CONTEXT_FIELD = \CraftCms\Cms\Element\ElementSources::CONTEXT_FIELD;
+
     public const CONTEXT_INDEX = \CraftCms\Cms\Element\ElementSources::CONTEXT_INDEX;
+
     public const CONTEXT_MODAL = \CraftCms\Cms\Element\ElementSources::CONTEXT_MODAL;
+
+    public const CONTEXT_RESTRICTED_MODAL = \CraftCms\Cms\Element\ElementSources::CONTEXT_RESTRICTED_MODAL;
+
     public const CONTEXT_SETTINGS = \CraftCms\Cms\Element\ElementSources::CONTEXT_SETTINGS;
 
     /**
      * Filters out any unnecessary headings from a given source list.
      *
-     * @param array[]|Collection<array> $sources
+     * @param  array[]|Collection<array>  $sources
      * @return array[]
      */
     public static function filterExtraHeadings(array|Collection $sources): array
@@ -62,10 +72,10 @@ class ElementSources extends Component
     /**
      * Returns the element index sources in the custom groupings/order.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $context The context
-     * @param bool $withDisabled Whether disabled sources should be included
-     * @param string|null $page The page to fetch sources for
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $context  The context
+     * @param  bool  $withDisabled  Whether disabled sources should be included
+     * @param  string|null  $page  The page to fetch sources for
      * @return array[]
      */
     public function getSources(
@@ -80,12 +90,12 @@ class ElementSources extends Component
     /**
      * Returns whether the given source exists.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $sourceKey The source key
-     * @param string $context The context
-     * @param bool $withDisabled Whether disabled sources should be included
-     * @param string|null $page The page to fetch sources for
-     * @return bool
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $sourceKey  The source key
+     * @param  string  $context  The context
+     * @param  bool  $withDisabled  Whether disabled sources should be included
+     * @param  string|null  $page  The page to fetch sources for
+     *
      * @since 5.7.11
      */
     public function sourceExists(
@@ -101,10 +111,11 @@ class ElementSources extends Component
     /**
      * Returns the unique pages found for the given element type’s sources.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $context The context
-     * @param bool $withDisabled Whether disabled sources should be included
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $context  The context
+     * @param  bool  $withDisabled  Whether disabled sources should be included
      * @return string[]
+     *
      * @since 5.9.0
      */
     public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
@@ -115,10 +126,10 @@ class ElementSources extends Component
     /**
      * Returns the first page found for the given element type’s sources.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $context The context
-     * @param bool $withDisabled Whether disabled sources should be included
-     * @return string|null
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $context  The context
+     * @param  bool  $withDisabled  Whether disabled sources should be included
+     *
      * @since 5.9.0
      */
     public function getFirstPage(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): ?string
@@ -129,10 +140,10 @@ class ElementSources extends Component
     /**
      * Returns whether the given page exists for an element type.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $context The context
-     * @param bool $withDisabled Whether disabled sources should be included
-     * @return bool
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $context  The context
+     * @param  bool  $withDisabled  Whether disabled sources should be included
+     *
      * @since 5.9.0
      */
     public function pageExists(string $elementType, string $page, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): bool
@@ -143,8 +154,6 @@ class ElementSources extends Component
     /**
      * Returns a normalized ID for a given page name.
      *
-     * @param string $page
-     * @return string
      * @since 5.9.0
      */
     public function pageNameId(string $page): string
@@ -155,7 +164,7 @@ class ElementSources extends Component
     /**
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
+     * @param  class-string<ElementInterface>  $elementType  The element type class
      * @return array[]
      */
     public function getAvailableTableAttributes(string $elementType): array
@@ -166,10 +175,10 @@ class ElementSources extends Component
     /**
      * Returns the attributes that should be shown for a given element type source.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $sourceKey The element type source key
-     * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
-     * @param FieldLayout[]|null $fieldLayouts The field layouts that should be factored in
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $sourceKey  The element type source key
+     * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
+     * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
      * @return array[]
      */
     public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null, ?array $fieldLayouts = null): array
@@ -180,10 +189,8 @@ class ElementSources extends Component
     /**
      * Returns all the field layouts available for the given element source.
      *
-     * @param class-string<ElementInterface> $elementType
-     * @param string $sourceKey
-     *
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
+     * @param  class-string<ElementInterface>  $elementType
+     * @return FieldLayout[]
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
@@ -193,8 +200,8 @@ class ElementSources extends Component
     /**
      * Returns additional sort options that should be available for a given element source.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $sourceKey The element source key
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $sourceKey  The element source key
      * @return array[]
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
@@ -206,8 +213,9 @@ class ElementSources extends Component
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param FieldLayout[]|Collection<FieldLayout> $fieldLayouts
+     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
      * @return array[]
+     *
      * @since 5.0.0
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): array
@@ -218,8 +226,8 @@ class ElementSources extends Component
     /**
      * Returns any table attributes that should be available for a given source, in addition to the [[getAvailableTableAttributes()|common attributes]].
      *
-     * @param class-string<ElementInterface> $elementType The element type class
-     * @param string $sourceKey The element source key
+     * @param  class-string<ElementInterface>  $elementType  The element type class
+     * @param  string  $sourceKey  The element source key
      * @return array[]
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
@@ -231,8 +239,9 @@ class ElementSources extends Component
      * Returns any table attributes that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param FieldLayout[] $fieldLayouts
+     * @param  FieldLayout[]  $fieldLayouts
      * @return array[]
+     *
      * @since 5.0.0
      */
     public function getTableAttributesForFieldLayouts(array $fieldLayouts): array
@@ -243,8 +252,8 @@ class ElementSources extends Component
     /**
      * Returns the page settings for a given element type.
      *
-     * @param class-string<ElementInterface> $elementType
-     * @return array
+     * @param  class-string<ElementInterface>  $elementType
+     *
      * @since 5.9.0
      */
     public function getPageSettings(string $elementType): array

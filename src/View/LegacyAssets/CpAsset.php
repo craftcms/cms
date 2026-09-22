@@ -8,9 +8,9 @@ use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
-use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\craftAuth;
 
 /**
  * @deprecated
@@ -32,8 +32,6 @@ class CpAsset implements LegacyAssetInterface
         DatepickerI18nAsset::class,
         SelectizeAsset::class,
         VelocityAsset::class,
-        FileUploadAsset::class,
-        XregexpAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
@@ -43,7 +41,6 @@ class CpAsset implements LegacyAssetInterface
     public function register(HtmlStack $htmlStack): void
     {
         // CP
-        $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
         $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
 
         $htmlStack->icons([
@@ -103,7 +100,7 @@ class CpAsset implements LegacyAssetInterface
             $except[] = 'cpTrigger';
         }
 
-        if (! Auth::check()) {
+        if (! craftAuth()->check()) {
             $except[] = 'runQueueAutomatically';
         }
 

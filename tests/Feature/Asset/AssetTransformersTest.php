@@ -84,7 +84,7 @@ it('selects explicit, volume, and default transformers in that order', function 
         'root' => storage_path('framework/testing/transformer-source'),
     ]);
     $volume = Volume::factory()->create([
-        'fs' => 'disk:transformer-source',
+        'fs' => 'transformer-source',
         'assetTransformer' => 'volume',
     ]);
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
@@ -162,7 +162,7 @@ it('protects transformers referenced by volumes', function () {
     $volume = new VolumeData([
         'name' => 'Referenced Volume',
         'handle' => 'referencedVolume',
-        'fsHandle' => 'disk:transformer-reference',
+        'fsHandle' => 'transformer-reference',
         'assetTransformer' => 'referenced',
     ]);
     app(Volumes::class)->saveVolume($volume);
@@ -186,7 +186,7 @@ it('rewrites volume references when a transformer handle changes', function () {
     $volume = new VolumeData([
         'name' => 'Referenced Volume',
         'handle' => 'referencedVolume',
-        'fsHandle' => 'disk:transformer-reference',
+        'fsHandle' => 'transformer-reference',
         'assetTransformer' => 'referenced',
     ]);
     app(Volumes::class)->saveVolume($volume);
@@ -365,7 +365,7 @@ it('preloads requests grouped by driver', function (bool $perAsset) {
             'root' => storage_path("framework/testing/{$handle}-transformer-source"),
         ]);
         $volume = Volume::factory()->create([
-            'fs' => "disk:{$handle}-transformer-source",
+            'fs' => "{$handle}-transformer-source",
             'assetTransformer' => $handle,
         ]);
 

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\FieldHtml;
@@ -75,8 +76,8 @@ class FieldsController
 
         return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Fields')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Fields')),
             ],
             'title' => t('Fields'),
             'sort' => $request->sort(),
@@ -162,9 +163,6 @@ class FieldsController
         if (! $this->readOnly) {
             $response->addAltAction(t('Delete'), [
                 'variant' => 'danger',
-                'confirm' => t('Are you sure you want to delete “{name}”?', [
-                    'name' => $field->name,
-                ]),
                 'action' => [
                     'type' => 'http',
                     'method' => 'DELETE',
@@ -172,6 +170,9 @@ class FieldsController
                     'body' => [
                         'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                     ],
+                    'confirm' => t('Are you sure you want to delete “{name}”?', [
+                        'name' => $field->name,
+                    ]),
                 ],
             ]);
         }
@@ -396,7 +397,7 @@ class FieldsController
                         return ['settings.fieldLimit' => $messages];
                     }
 
-                    return in_array($attribute, $settingAttributes, true)
+                    return in_array(explode('.', $attribute)[0], $settingAttributes, true)
                         ? ["settings.{$attribute}" => $messages]
                         : [$attribute => $messages];
                 })->all();
@@ -540,6 +541,10 @@ class FieldsController
         /** @var FieldLayoutTab $tab */
         $tab = $this->fieldLayoutComponent($request);
 
+        if ($errors = $tab->validateConditions()) {
+            throw ValidationException::withMessages($errors);
+        }
+
         return new JsonResponse([
             'config' => $tab->toArray(),
             'labelHtml' => $tab->labelHtml(),
@@ -550,6 +555,10 @@ class FieldsController
     {
         /** @var FieldLayoutElement $element */
         $element = $this->fieldLayoutComponent($request, $settings);
+
+        if ($errors = $element->validateConditions()) {
+            throw ValidationException::withMessages($errors);
+        }
 
         if (! empty($settings)) {
             $validateAttributes = array_intersect(

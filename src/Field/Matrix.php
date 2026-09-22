@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\ActionMenu as ActionMenuComponent;
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -73,11 +77,11 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -86,6 +90,8 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -142,7 +148,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public static function modifyQuery(Builder $query, array $instances, mixed $value): void
+    public static function modifyQuery(Builder $query, array $instances, mixed $value, ElementQueryInterface $elementQuery): void
     {
         /** @var self $field */
         $field = reset($instances);
@@ -440,6 +446,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'value' => $viewMode['mode'],
         ], array_filter(Entry::indexViewModes(), fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false))));
 
+        $isIndex = $this->viewMode === self::VIEW_MODE_INDEX;
+
         return $form->add(
             Group::make('matrix-site-settings', [
                 FormField::make(t('Site Settings'))
@@ -458,22 +466,36 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
-                    ->options([
+                    // Illustrated the way a relation field's view mode is, so the
+                    // two settings screens read the same.
+                    ->options(array_map(fn (array $mode): array => [
+                        ...$mode,
+                        'thumbnail' => Cp::viewModeThumbnail($mode['value']),
+                    ], [
                         ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
                         ['label' => t('Card grid'), 'value' => self::VIEW_MODE_CARDS_GRID],
                         ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
                         ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                    ])
-                    ->value($this->viewMode)),
+                    ]))
+                    ->value($this->viewMode)
+                    ->reactive()),
+            // Only the index view has a table to include, or pages to size — and
+            // there are only columns to choose once that table is switched on.
             FormField::make(t('Include Table View'))
                 ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
-                ->control(Lightswitch::make('includeTableView')->value($this->includeTableView)),
-            FormField::make(t('Default Table Columns'))
-                ->instructions(t('Choose which table columns should be visible by default.'))
-                ->control(Choice::make('defaultTableColumns')
-                    ->multiple()
-                    ->options(self::defaultTableColumnOptions($this->_entryTypes))
-                    ->value($this->defaultTableColumns)),
+                ->control(Lightswitch::make('includeTableView')
+                    ->value($this->includeTableView)
+                    ->reactive())
+                ->visible($isIndex),
+            Group::make('matrix-table-columns', [
+                FormField::make(t('Default Table Columns'))
+                    ->instructions(t('Choose which table columns should be visible by default.'))
+                    ->control(Choice::make('defaultTableColumns')
+                        ->multiple()
+                        ->options(self::defaultTableColumnOptions($this->_entryTypes))
+                        ->value($this->defaultTableColumns))
+                    ->visible($isIndex && $this->includeTableView),
+            ])->dependsOn('settings.includeTableView'),
             FormField::make(t('Default View Mode'))
                 ->control(Choice::make('defaultIndexViewMode')->options($indexViewModes)->value($this->defaultIndexViewMode)),
             FormField::make(t('{type} Per Page', ['type' => t('Entries')]))
@@ -481,7 +503,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->control(Choice::make('pageSize')->options(array_map(fn (int $size): array => [
                     'label' => (string) $size,
                     'value' => $size,
-                ], [10, 20, 50, 100]))->value($this->pageSize ?? 50)),
+                ], [10, 20, 50, 100]))->value($this->pageSize ?? 50))
+                ->visible($isIndex),
             FormField::make(t('“New” Button Label'))
                 ->instructions(t('The text label for the entry creation button.'))
                 ->control(Text::make('createButtonLabel')->placeholder($this->defaultCreateButtonLabel())->value($this->createButtonLabel)),
@@ -530,14 +553,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function formControl(FieldContext $context): Control
     {
         $entryTypes = collect($this->getEntryTypes())
-            ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->name])
+            ->mapWithKeys(fn (EntryType $type): array => [$type->handle => [
+                'label' => t($type->name, category: 'site'),
+                'icon' => $type->icon !== null ? Icons::resolveIconData($type->icon) : null,
+                'color' => $type->color?->value,
+                'group' => $type->group,
+            ]])
             ->all() ?: ['entry' => Entry::displayName()];
+        // Disabled blocks still have to reach the editor, or disabling one makes it
+        // disappear from the Form. Matches how `blockInputHtml()` resolves the value.
         $entries = array_values(match (true) {
             $context->value instanceof ElementCollection => $context->value->all(),
-            $context->value instanceof EntryQuery => $context->value->all(),
+            $context->value instanceof EntryQuery => $context->value->getResultOverride()
+                ?? (clone $context->value)
+                    ->drafts(null)
+                    ->canonicalsOnly()
+                    ->status(null)
+                    ->limit(null)
+                    ->all(),
             default => [],
         });
-        $values = $forms = $sortOrder = [];
+        $values = $forms = $sortOrder = $blocks = [];
         $identities = ElementHelper::nestedElementIdentities($entries);
 
         foreach ($entries as $index => $entry) {
@@ -546,7 +582,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
 
             $uid = $identities[$index];
-            $values[$uid] = ['type' => $entry->getType()->handle];
+            $values[$uid] = [
+                'type' => $entry->getType()->handle,
+                'enabled' => $entry->enabled,
+                'collapsed' => $entry->collapsed,
+            ];
+            $blocks[$uid] = $this->blockPresentation($entry, $uid);
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),
                 $entry,
@@ -557,10 +598,214 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         return MatrixControl::make($context->path)
             ->entryTypes($entryTypes)
+            ->elementType(Entry::class)
+            ->blocks($blocks)
+            ->create($this->createConfig($context->element))
             ->forms($forms)
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * Everything about a block that isn't its value: what it's called, what it
+     * looks like, what can be done to it, and who it is.
+     *
+     * Kept out of the value so it never posts back. `matrix/create-entry` hands
+     * the same shape back for a block it has just minted, so a new block looks
+     * like its neighbours right away rather than waiting for the next save.
+     *
+     * @return array<string, mixed>
+     */
+    public function blockPresentation(Entry $entry, string $uid): array
+    {
+        $entryType = $entry->getType();
+
+        return [
+            // What the block is called once it's folded up and its fields
+            // aren't there to identify it. Empty for a block type with no
+            // title or UI label format — there'd be nothing to say.
+            'label' => $entry->getUiLabel(),
+            'icon' => $entryType->icon !== null ? Icons::resolveIconData($entryType->icon) : null,
+            // Drives `data-color`, which the CP's generated colorable rules
+            // turn into the whole `--c-color-*` alias set — so the card and
+            // everything in it takes the entry type's color for free.
+            'color' => $entryType->color?->value,
+            'actions' => $this->blockActions($entry, $uid),
+            'data' => $this->blockData($entry, $entryType),
+            // Folded up, a block hides the fields its errors are attached
+            // to, so the header says there are some. Craft 5 put an alert
+            // icon on the block type for the same reason.
+            'error' => $entry->errors()->isNotEmpty(),
+        ];
+    }
+
+    /**
+     * The block's identity, as `data-*` attributes on the block (`[data-matrix-block]`).
+     *
+     * Craft 5's `block.twig` wrote the same set. The CP's element clipboard reads
+     * it back off the DOM — copy, paste and duplicate all need an element to
+     * point at, and a block is keyed by its UID everywhere else.
+     *
+     * @return array<string, int|string>
+     */
+    private function blockData(Entry $entry, EntryType $entryType): array
+    {
+        return array_filter([
+            // Not `id`: `data-id` is the block's UID, which is what both
+            // renderers, the sort order and the posted value are all keyed by.
+            'element-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+            'draft-id' => $entry->isProvisionalDraft ? null : $entry->draftId,
+            'revision-id' => $entry->revisionId,
+            'owner-id' => $entry->getOwnerId(),
+            'site-id' => $entry->siteId,
+            'field-id' => $entry->fieldId,
+            'type-id' => $entryType->id,
+            'type-name' => t($entryType->name, category: 'site'),
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * What the browser posts to `matrix/create-entry` to have the server mint a
+     * block. Null until the owner has an ID to hang one off — a nested block
+     * inside an unsaved block, say, which has nothing to own it yet.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function createConfig(?ElementInterface $element): ?array
+    {
+        if ($element?->id === null || $this->id === null) {
+            return null;
+        }
+
+        return [
+            'fieldId' => $this->id,
+            'ownerId' => $element->id,
+            'ownerElementType' => $element::class,
+            'siteId' => $element->siteId,
+            'entryTypeIds' => collect($this->getEntryTypes())
+                ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->id])
+                ->all(),
+        ];
+    }
+
+    /**
+     * The items for one block's "⋮" menu.
+     *
+     * Built here rather than in either renderer so both stacks get the same menu,
+     * and so the permission checks stay on the server. Behavior travels with each
+     * item as a declarative `action` descriptor — the instance-local ones as a
+     * `craft:matrix-block-action` event the owning Control listens for, scoped by
+     * the invoking element (see `resources/js/modules/forms/MatrixControl.vue`).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function blockActions(Entry $entry, string $uid): array
+    {
+        $blockAction = fn (string $action, array $detail = []): array => [
+            'type' => 'event',
+            'name' => 'craft:matrix-block-action',
+            'detail' => ['action' => $action, 'uid' => $uid] + $detail,
+        ];
+        $currentUser = currentUserElement();
+        $items = [
+            [
+                'icon' => 'down-left-and-up-right-to-center',
+                'label' => t('Collapse'),
+                'action' => $blockAction('collapse'),
+                'hidden' => $entry->collapsed,
+            ],
+            [
+                'icon' => 'up-right-and-down-left-from-center',
+                'label' => t('Expand'),
+                'action' => $blockAction('expand'),
+                'hidden' => ! $entry->collapsed,
+            ],
+            [
+                'icon' => 'circle-dashed',
+                'label' => t('Disable'),
+                'action' => $blockAction('disable'),
+                'hidden' => ! $entry->enabled,
+            ],
+            [
+                'icon' => 'circle',
+                'label' => t('Enable'),
+                'action' => $blockAction('enable'),
+                'hidden' => $entry->enabled,
+            ],
+        ];
+
+        if ($entry->id !== null) {
+            $items[] = ['hr' => true];
+            $items[] = [
+                'type' => 'link',
+                'icon' => 'external',
+                'label' => t('Open in a new tab'),
+                'url' => $entry->getCpEditUrl(),
+                'target' => '_blank',
+            ];
+        }
+
+        if ($currentUser?->isAdmin() && Cms::config()->allowAdminChanges) {
+            $items[] = [
+                'icon' => 'gear',
+                'label' => t('Entry type settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-entry-type',
+                    'detail' => ['entryTypeId' => $entry->getType()->id],
+                ],
+            ];
+        }
+
+        $items[] = ['hr' => true];
+        $items[] = [
+            'icon' => 'trash',
+            'label' => t('Delete'),
+            'destructive' => true,
+            'action' => $blockAction('delete'),
+        ];
+
+        if ($entry->id !== null) {
+            $items[] = ['hr' => true];
+
+            if (Gate::allows('duplicateAsDraft', $entry)) {
+                $items[] = [
+                    'icon' => 'clone',
+                    'label' => t('Duplicate'),
+                    'action' => $blockAction('duplicate'),
+                ];
+            }
+
+            $items[] = [
+                'icon' => 'clone-dashed',
+                'color' => Color::Fuchsia,
+                'label' => t('Copy'),
+                'action' => $blockAction('copy'),
+            ];
+        }
+
+        // Shown only once there's something on the clipboard that fits, which
+        // only the browser knows — see `MatrixControl.vue`.
+        $items[] = [
+            'icon' => 'duplicate',
+            'color' => Color::Fuchsia,
+            'label' => t('Paste {type} above', ['type' => Entry::lowerDisplayName()]),
+            'action' => $blockAction('paste'),
+            'hidden' => true,
+        ];
+        $items[] = ['hr' => true];
+
+        foreach ($this->getEntryTypes() as $entryType) {
+            $items[] = [
+                'icon' => $entryType->icon ?? 'plus',
+                'color' => $entryType->color,
+                'label' => t('Add {type} above', ['type' => t($entryType->name, category: 'site')]),
+                'action' => $blockAction('add', ['entryType' => $entryType->handle]),
+            ];
+        }
+
+        return ActionMenuComponent::make()->menuItems($items)->getItems();
     }
 
     /**
@@ -876,15 +1121,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
-        if ($this->maxEntries !== 1) {
-            $items = match ($this->viewMode) {
-                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
-                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
-                default => [],
-            };
-        } else {
-            $items = [];
-        }
+        // The Form's Matrix control renders blocks whatever the view mode (see
+        // `formControl()`), and this menu only reaches that control, so it
+        // always offers the block items.
+        $items = $this->maxEntries !== 1 ? $this->blockViewActionMenuItems() : [];
 
         $parentItems = parent::fieldLayoutActionMenuItems($context);
 
@@ -903,19 +1143,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     private function blockViewActionMenuItems(): array
     {
         $items = [];
+        $type = Entry::pluralLowerDisplayName();
 
-        // Expand/Collapse all. These operate on the field's input, so they're
-        // excluded from chip menus, where the input may not be present (e.g.
-        // the field layout designer's field-settings slideout).
+        // Grouped by what they do — selecting, folding, enabling, copying — with a
+        // separator between groups. Everything operates on the field's input, so
+        // it's all excluded from chip menus, where the input may not be present
+        // (e.g. the field layout designer's field-settings slideout).
         // Behavior travels with each item as a declarative action, handled by
         // the field action listeners in `resources/js/modules/fields`. The
         // listeners resolve the blocks from the invoking item's own field, so
         // no ID coordination between PHP and the Vue renderer is needed.
+        // The input decides which items apply right now, what each says, and
+        // hides the separators around a group with nothing left showing
+        // (see `resources/js/modules/matrix/selection-menu.ts`).
+
+        // Select
+        $items[] = $this->selectionAction('select', 'check', t('Select all {type}', [
+            'type' => $type,
+        ]), hidden: false);
+        $items[] = $this->selectionAction('deselect', 'xmark', t('Deselect all {type}', [
+            'type' => $type,
+        ]));
+        $items[] = ['type' => 'hr'];
+
+        // Expand/Collapse
         $items[] = [
             'id' => sprintf('expand-all-%s', mt_rand()),
             'icon' => 'expand',
             'label' => mb_ucfirst(t('Expand all blocks', [
-                'type' => Entry::pluralLowerDisplayName(),
+                'type' => $type,
             ])),
             'showInChips' => false,
             'action' => [
@@ -928,7 +1184,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'id' => sprintf('collapse-all-%s', mt_rand()),
             'icon' => 'collapse',
             'label' => mb_ucfirst(t('Collapse all blocks', [
-                'type' => Entry::pluralLowerDisplayName(),
+                'type' => $type,
             ])),
             'showInChips' => false,
             'action' => [
@@ -937,22 +1193,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'detail' => ['collapse' => true],
             ],
         ];
+        $items[] = $this->selectionAction('collapse', 'collapse', t('Collapse selected blocks'));
+        $items[] = ['type' => 'hr'];
 
-        $items[] = $this->copyAction(t('blocks'), '.matrixblock');
-
-        return $items;
-    }
-
-    /** @return list<array<string,mixed>> */
-    private function cardViewActionMenuItems(): array
-    {
-        $items = [];
+        // Enable/Disable
+        $items[] = $this->selectionAction('disable', 'circle-dashed', t('Disable selected {type}', [
+            'type' => $type,
+        ]));
+        $items[] = ['type' => 'hr'];
 
         // Copy
-        $items[] = $this->copyAction(
-            Entry::pluralLowerDisplayName(),
-            '.nested-element-cards .elements > li > .element',
-        );
+        $items[] = $this->copyAction($type, '[data-matrix-block]');
 
         return $items;
     }
@@ -977,6 +1228,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     'selector' => $entrySelector,
                     'elementType' => Entry::class,
                     'fieldId' => $this->id,
+                    // What the input calls them when it relabels this for a selection
+                    'type' => $type,
+                ],
+            ],
+        ];
+    }
+
+    /** @return array{id:string,icon:string,label:string,showInChips:false,hidden:bool,action:array<string,mixed>} */
+    private function selectionAction(string $action, string $icon, string $label, bool $hidden = true): array
+    {
+        return [
+            'id' => sprintf('selection-%s-%s', $action, mt_rand()),
+            'icon' => $icon,
+            'label' => mb_ucfirst($label),
+            // Operates on the field's input, like the items above
+            'showInChips' => false,
+            'hidden' => $hidden,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:matrix-selection-action',
+                'detail' => [
+                    'action' => $action,
+                    'type' => Entry::pluralLowerDisplayName(),
                 ],
             ],
         ];
@@ -1602,21 +1876,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         /** @var EntryType[] $entryTypes */
         $entryTypes = Arr::keyBy($this->_entryTypes, 'handle');
 
-        // Were the entries posted by UUID or ID?
-        $uids = (
-            (isset($value['entries']) && str_starts_with((string) array_key_first($value['entries']), 'uid:')) ||
-            (isset($value['sortOrder']) && Str::isUuid(reset($value['sortOrder'])))
-        );
-
-        if ($uids) {
-            // strip out the `uid:` key prefixes
-            if (isset($value['entries'])) {
-                $value['entries'] = array_combine(
-                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($value['entries'])),
-                    array_values($value['entries']),
-                );
-            }
-        }
+        // Were the entries posted by UUID or ID, and with which `uid:` prefixes?
+        ['delta' => $delta, 'uids' => $uids, 'entries' => $postedEntries, 'sortOrder' => $postedSortOrder] =
+            ElementHelper::nestedElementDelta($value);
 
         // Get the old entries
         if ($element->id) {
@@ -1668,16 +1930,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseEntryFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
-        // Was the value posted in the new (delta) format?
-        if (isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder'])) {
-            $newEntryData = $value['entries'] ?? $value['blocks'] ?? [];
-            $newSortOrder = $value['sortOrder'] ?? array_keys($oldEntriesById);
-            if ($baseEntryFieldNamespace) {
-                $baseEntryFieldNamespace .= '.entries';
-            }
-        } else {
-            $newEntryData = $value;
-            $newSortOrder = array_keys($value);
+        $newEntryData = $postedEntries;
+        $newSortOrder = $postedSortOrder ?? array_keys($delta ? $oldEntriesById : $postedEntries);
+
+        if ($delta && $baseEntryFieldNamespace) {
+            $baseEntryFieldNamespace .= '.entries';
         }
 
         foreach ($newSortOrder as $entryId) {
@@ -1714,6 +1971,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
+                    // A block that's already a draft is already the derivative
+                    // copy this would make — a new one, minted against the owner
+                    // before the owner itself became a draft, among them.
+                    ! $entry->getIsDraft() &&
                     ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
@@ -1723,7 +1984,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     )
                 ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $entry = app(Drafts::class)->createDraft($entry, Auth::id(), null, null, [
+                    $entry = app(Drafts::class)->createDraft($entry, craftAuth()->id(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,
@@ -1753,8 +2014,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 if ($uids) {
                     $entry->uid = $entryId;
                 }
+            }
 
-                // Preserve the collapsed state, which the browser can't remember on its own for new entries
+            // `collapsed` has no column — it only lives for the request. Echoing the
+            // posted value back keeps a collapsed block collapsed across an autosave
+            // instead of springing open on the Form the response returns.
+            if (array_key_exists('collapsed', $entryData)) {
                 $entry->collapsed = ! empty($entryData['collapsed']);
             }
 

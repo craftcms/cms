@@ -222,8 +222,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       const $moveSvg = $('#move-icon-wrapper svg').prop('outerHTML');
 
       // Store move icon for later use
-      fabric.loadSVGFromString($moveSvg, (objects, options) => {
-        var obj = fabric.util.groupSVGElements(objects, options);
+      fabric.loadSVGFromString($moveSvg).then(({objects, options}) => {
+        var obj = fabric.util.groupSVGElements(
+          objects.filter((object) => object !== null),
+          options
+        );
         obj.set({
           left: 0,
           top: 0,
@@ -311,7 +314,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       // Load image and set up the initial properties
-      fabric.Image.fromURL(imageUrl, (imageObject) => {
+      fabric.FabricImage.fromURL(imageUrl).then((imageObject) => {
         this.image = imageObject;
         this.image.set({
           originX: 'center',
@@ -321,8 +324,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         });
         this.canvas.add(this.image);
 
-        this.originalHeight = this.image.getHeight();
-        this.originalWidth = this.image.getWidth();
+        this.originalHeight = this.image.height;
+        this.originalWidth = this.image.width;
         this.zoomRatio = 1;
 
         this.lastLoadedDimensions = this.getScaledImageDimensions();
@@ -416,9 +419,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         cacheBust: this.cacheBust,
       });
 
-      this.image.setSrc(imageUrl, (imageObject) => {
-        this.originalHeight = imageObject.getHeight();
-        this.originalWidth = imageObject.getWidth();
+      this.image.setSrc(imageUrl).then(() => {
+        this.originalHeight = this.image.height;
+        this.originalWidth = this.image.width;
         this.lastLoadedDimensions = {
           width: this.originalHeight,
           height: this.originalWidth,
@@ -543,8 +546,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      */
     _createViewport: function () {
       this.viewport = new fabric.Rect({
-        width: this.image.width,
-        height: this.image.height,
+        width: this.image.getScaledWidth(),
+        height: this.image.getScaledHeight(),
         fill: 'rgba(127,0,0,1)',
         originX: 'center',
         originY: 'center',
@@ -722,7 +725,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         var offsetX = this.focalPoint.left - this.editorWidth / 2;
         var offsetY = this.focalPoint.top - this.editorHeight / 2;
 
-        var currentWidth = this.image.width;
+        var currentWidth = this.image.getScaledWidth();
         var newWidth = this.getScaledImageDimensions().width * this.zoomRatio;
         var ratio = newWidth / currentWidth / this.scaleFactor;
 
@@ -797,10 +800,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
 
       this._zoomImage._.imageDimensions = this.getScaledImageDimensions();
-      this.image.set({
-        width: this._zoomImage._.imageDimensions.width * this.zoomRatio,
-        height: this._zoomImage._.imageDimensions.height * this.zoomRatio,
-      });
+      const scale = this._getImageScale(
+        this._zoomImage._.imageDimensions.width * this.zoomRatio
+      );
+      this.image.set({scaleX: scale, scaleY: scale});
+    },
+
+    /**
+     * Get the scale that draws the image at a given displayed width.
+     *
+     * fabric's image `width` and `height` are the image's natural size, so the
+     * displayed size has to be set with `scaleX` and `scaleY` instead.
+     *
+     * @param {number} displayedWidth
+     * @returns {number}
+     */
+    _getImageScale: function (displayedWidth) {
+      return this.originalWidth > 0 ? displayedWidth / this.originalWidth : 1;
     },
 
     /**
@@ -1295,8 +1311,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         var imageProperties = {
           angle: newAngle,
-          width: scaledImageDimensions.width * imageZoomRatio,
-          height: scaledImageDimensions.height * imageZoomRatio,
         };
 
         var scaleFactor = 1;
@@ -1312,10 +1326,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.scaleFactor = scaleFactor;
         }
 
-        if (scaleFactor < 1) {
-          imageProperties.width *= scaleFactor;
-          imageProperties.height *= scaleFactor;
-        }
+        var turnedScale = this._getImageScale(
+          scaledImageDimensions.width *
+            imageZoomRatio *
+            (scaleFactor < 1 ? scaleFactor : 1)
+        );
+        imageProperties.scaleX = turnedScale;
+        imageProperties.scaleY = turnedScale;
 
         var state = this.cropperState;
 
@@ -1355,7 +1372,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.canvas.remove(this.focalPoint);
         }
 
-        this.viewport.animate(viewportProperties, {
+        this._animate(this.viewport, viewportProperties, {
           duration: this.settings.animationDuration,
           onComplete: () => {
             // If we're zooming the image in or out, better do the same to viewport
@@ -1367,7 +1384,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         });
 
         // Animate the rotation and dimension change
-        this.image.animate(imageProperties, {
+        this._animate(this.image, imageProperties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
@@ -1463,11 +1480,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.image.flipX = false;
         this.image.flipY = false;
 
-        this.image.animate(properties, {
+        this._animate(this.image, properties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
             this.image._set = originalSet;
+
+            // Settle the mirror back into the flip flags, from the record of it
+            // rather than the sign the animation happened to leave.
+            this.image.flipX = this.flipData.x === 1;
+            this.image.flipY = this.flipData.y === 1;
+            this.image.scaleX = Math.abs(this.image.scaleX);
+            this.image.scaleY = Math.abs(this.image.scaleY);
+
             this.animationInProgress = false;
             if (this.focalPoint) {
               // Well this is handy
@@ -2006,9 +2031,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         height: this.editorHeight,
       };
 
+      var fitScale = this._getImageScale(
+        imageDimensions.width * this.zoomRatio
+      );
       var imageProperties = {
-        width: imageDimensions.width * this.zoomRatio,
-        height: imageDimensions.height * this.zoomRatio,
+        scaleX: fitScale,
+        scaleY: fitScale,
         left: this.editorWidth / 2,
         top: this.editorHeight / 2,
       };
@@ -2062,9 +2090,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       var inverseZoomFactor = targetZoom / this.zoomRatio;
       this.zoomRatio = targetZoom;
 
+      var coverScale = this._getImageScale(
+        imageDimensions.width * this.zoomRatio
+      );
       var imageProperties = {
-        width: imageDimensions.width * this.zoomRatio,
-        height: imageDimensions.height * this.zoomRatio,
+        scaleX: coverScale,
+        scaleY: coverScale,
         left: this.editorWidth / 2,
         top: this.editorHeight / 2,
       };
@@ -2139,7 +2170,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.renderImage();
         }
 
-        this.image.animate(imageProperties, {
+        this._animate(this.image, imageProperties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
@@ -2150,7 +2181,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           },
         });
 
-        this.viewport.animate(viewportProperties, {
+        this._animate(this.viewport, viewportProperties, {
           duration: this.settings.animationDuration,
         });
       }
@@ -2295,7 +2326,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._redrawCropperElements._.lineOptions = {
         strokeWidth: 4,
         stroke: this.settings.colors.white,
-        fill: false,
+        fill: null,
       };
 
       this._redrawCropperElements._.gridOptions = {
@@ -2728,14 +2759,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _getRelativePositionMessage: function (item) {
       if (!item.left || !item.top) return;
 
+      const imageWidth = this.image.getScaledWidth();
+      const imageHeight = this.image.getScaledHeight();
       const xPercent = (
-        ((item.left - this.image.left + this.image.width / 2) /
-          this.image.width) *
+        ((item.left - this.image.left + imageWidth / 2) / imageWidth) *
         100
       ).toFixed(1);
       const yPercent = (
-        ((item.top - this.image.top + this.image.height / 2) /
-          this.image.height) *
+        ((item.top - this.image.top + imageHeight / 2) / imageHeight) *
         100
       ).toFixed(1);
 
@@ -3624,7 +3655,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       };
 
       // Make sure to redraw cropper handles and gridlines when resizing
-      this.clipper.animate(this.enforceCroppingConstraint._.properties, {
+      this._animate(this.clipper, this.enforceCroppingConstraint._.properties, {
         onChange: () => {
           this._redrawCropperElements();
           this.croppingCanvas.renderAll();
@@ -4188,6 +4219,48 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           y: verticalOffset + bottomVerticalSegment,
         },
       };
+    },
+
+    /**
+     * Animate several properties of a fabric object at once.
+     *
+     * fabric fires `onChange` and `onComplete` once per animated property, so
+     * this calls `onChange` once per frame and `onComplete` once, after every
+     * property has landed.
+     *
+     * @param {fabric.FabricObject} object
+     * @param {Object} properties
+     * @param {Object} [options]
+     */
+    _animate: function (object, properties, options = {}) {
+      const {duration, onChange, onComplete} = options;
+      const entries = Object.entries(properties);
+
+      if (entries.length === 0) {
+        onComplete?.();
+        return;
+      }
+
+      let remaining = entries.length;
+
+      entries.forEach(([key, value], index) => {
+        const last = index === entries.length - 1;
+
+        object.animate(
+          {[key]: value},
+          {
+            duration,
+            ...(last && onChange ? {onChange} : {}),
+            onComplete: () => {
+              remaining -= 1;
+
+              if (remaining === 0) {
+                onComplete?.();
+              }
+            },
+          }
+        );
+      });
     },
 
     /**

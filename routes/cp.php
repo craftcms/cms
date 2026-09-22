@@ -38,7 +38,6 @@ use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
@@ -70,6 +69,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
+use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -327,7 +327,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId')->name('edit');
             Route::post('generate', [TokensController::class, 'generate'])->name('generate');
 
-            Route::middleware('password.confirm')->group(function () {
+            Route::middleware(RequireConfirmedPassword::class)->group(function () {
                 Route::post('/', [TokensController::class, 'store'])->name('store');
                 Route::patch('{tokenId}', [TokensController::class, 'update'])->whereNumber('tokenId')->name('update');
                 Route::post('{tokenId}/access-token', [TokensController::class, 'accessToken'])->whereNumber('tokenId')->name('accessToken');
@@ -341,7 +341,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::get('{schemaId}', [SchemasController::class, 'edit'])->where('schemaId', 'public|\d+')->name('edit');
                 Route::delete('{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId')->name('destroy');
 
-                Route::middleware('password.confirm')->group(function () {
+                Route::middleware(RequireConfirmedPassword::class)->group(function () {
                     Route::post('/', [SchemasController::class, 'store'])->name('store');
                     Route::patch('{schemaId}', [SchemasController::class, 'update'])->where('schemaId', 'public|\d+')->name('update');
                 });
@@ -501,22 +501,4 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
     });
 
-    Route::prefix('settings/filesystems')->group(function () {
-        Route::middleware([
-            RequireAdmin::class,
-        ])->group(function () {
-            Route::get('/', [FilesystemsController::class, 'index']);
-            Route::get('new', [FilesystemsController::class, 'create']);
-            Route::get('{handle}', [FilesystemsController::class, 'edit']);
-            Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
-        });
-
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('/', [FilesystemsController::class, 'store']);
-            Route::post('form', [FilesystemsController::class, 'renderForm']);
-            Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
-        });
-    });
 });

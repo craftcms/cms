@@ -24,7 +24,14 @@ class AssetSelect extends ElementSelect
 
     private ?int $uploadFolderId = null;
 
-    private ?string $fsType = null;
+    private bool $showFolders = true;
+
+    public function showFolders(bool $showFolders = true): static
+    {
+        $this->showFolders = $showFolders;
+
+        return $this;
+    }
 
     public function canUpload(bool $canUpload = true): static
     {
@@ -40,13 +47,6 @@ class AssetSelect extends ElementSelect
         return $this;
     }
 
-    public function fsType(?string $fsType): static
-    {
-        $this->fsType = $fsType;
-
-        return $this;
-    }
-
     /** @return array<string, mixed> */
     #[\Override]
     public function props(mixed $value = null): array
@@ -55,7 +55,7 @@ class AssetSelect extends ElementSelect
             ...parent::props($value),
             'canUpload' => $this->canUpload,
             'uploadFolderId' => $this->uploadFolderId,
-            'fsType' => $this->fsType,
+            'showFolders' => $this->showFolders,
         ];
     }
 }

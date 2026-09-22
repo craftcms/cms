@@ -53,7 +53,7 @@ export class GeneratedFieldsTableRow extends Row {
         return;
       }
 
-      const value = `generatedField:${this.uid}`;
+      const value = this.getCheckboxValue();
 
       if (name !== '') {
         if (cvd.findCheckboxByValue(value)) {
@@ -75,10 +75,14 @@ export class GeneratedFieldsTableRow extends Row {
     });
   }
 
+  getCheckboxValue(): string {
+    return `generatedField:${this.uid}`;
+  }
+
   override destroy(): void {
     // SAFETY: GeneratedFieldsTable creates every GeneratedFieldsTableRow instance.
     const cvd = (this.table as GeneratedFieldsTable).cvd;
-    cvd?.removeCheckbox(`generatedField:${this.uid}`);
+    cvd?.removeCheckbox(this.getCheckboxValue());
     super.destroy();
   }
 }

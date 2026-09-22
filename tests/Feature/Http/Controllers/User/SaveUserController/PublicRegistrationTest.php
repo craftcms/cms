@@ -6,10 +6,10 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -129,6 +129,28 @@ it('reactivates existing inactive user with same email', function () {
     $user = User::find()->email($inactiveUser->email)->one();
     expect($user)->not->toBeNull();
     expect($user->active)->toBeTrue();
+});
+
+it('clears admin status and permissions from a reactivated inactive user', function () {
+    Edition::set(Edition::Pro);
+
+    $inactiveUser = UserFactory::new()->admin()->createElement([
+        'email' => 'inactive-admin@example.com',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    app(UserPermissions::class)->saveUserPermissions($inactiveUser->id, ['accessCp']);
+
+    post(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'newPassword123!',
+    ])->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $user = User::find()->email($inactiveUser->email)->one();
+    expect($user->admin)->toBeFalse();
+    expect(app(UserPermissions::class)->getPermissionsByUserId($user->id))->toBeEmpty();
 });
 
 it('tracks affiliated site on registration', function () {
@@ -309,18 +331,15 @@ it('can upload a photo', function () {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 
-    ProjectConfig::set('fs.test', [
-        'hasUrls' => true,
-        'name' => 'Test',
-        'settings' => [
-            'path' => public_path('test'),
-        ],
-        'type' => Local::class,
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
         'url' => '/test',
     ]);
 
     $volume = Volume::factory()->create([
         'fs' => 'test',
+        'hasUrls' => true,
     ]);
 
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
@@ -365,15 +384,13 @@ it('can upload a photo with different image formats', function () {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 
-    ProjectConfig::set('fs.test', [
-        'hasUrls' => true,
-        'name' => 'Test',
-        'settings' => ['path' => public_path('test')],
-        'type' => Local::class,
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
         'url' => '/test',
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test']);
+    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
 
     $this->withoutExceptionHandling();
@@ -394,15 +411,13 @@ it('can upload a photo with base64 encoded data', function () {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 
-    ProjectConfig::set('fs.test', [
-        'hasUrls' => true,
-        'name' => 'Test',
-        'settings' => ['path' => public_path('test')],
-        'type' => Local::class,
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
         'url' => '/test',
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test']);
+    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
 
     $realImage = base64_encode(UploadedFile::fake()->image('avatar.jpg')->getContent());
@@ -474,15 +489,13 @@ it('handles base64 photo without filename extension', function () {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 
-    ProjectConfig::set('fs.test', [
-        'hasUrls' => true,
-        'name' => 'Test',
-        'settings' => ['path' => public_path('test')],
-        'type' => Local::class,
+    config()->set('filesystems.disks.test', [
+        'driver' => 'local',
+        'root' => public_path('test'),
         'url' => '/test',
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test']);
+    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
 
     $realImage = base64_encode(UploadedFile::fake()->image('avatar.jpg')->getContent());

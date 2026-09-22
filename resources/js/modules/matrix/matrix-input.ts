@@ -5,7 +5,7 @@
  *
  * The outer controller for a Matrix field in `blocks` view mode: owns the
  * add-entry buttons (max-entries gating, XHR block rendering), block drag-sort
- * and multi-select, copy/paste, and one {@link MatrixEntry} per `.matrixblock`.
+ * and multi-select, copy/paste, and one {@link MatrixEntry} per `[data-matrix-block]`.
  *
  * jQuery is gone from the class itself; the module still cooperates with
  * legacy-runtime widgets through `./interop` (see that file for the seams and
@@ -13,6 +13,7 @@
  * Animations API, honoring reduced-motion.
  */
 
+import {syncSelectionMenu} from './selection-menu';
 import {
   Base,
   DragSort,
@@ -24,7 +25,14 @@ import {
 } from '@craftcms/garnish';
 import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
+import {flashNewBlock} from './new-block';
 import {containerMatrixInputs} from './support';
+import {
+  collapsedBlockIds,
+  forgetCollapsedBlock,
+  rememberCollapsedBlock,
+  setCollapsedBlockIds,
+} from './collapsed-blocks';
 import type {FormValues} from '@/modules/forms/types';
 import {
   type CopiedElementInfo,
@@ -85,41 +93,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
   entryFactory: ((type: string) => HTMLElement) | null = null;
 
-  static get collapsedEntryStorageKey(): string {
-    return `Craft-${craft().systemUid}.MatrixInput.collapsedEntries`;
-  }
+  // The legacy statics PHP-emitted flash JS still calls. The storage itself
+  // lives in ./collapsed-blocks, shared with the Form control.
+  static getCollapsedEntryIds = collapsedBlockIds;
 
-  static getCollapsedEntryIds(): string[] {
-    const value = localStorage.getItem(MatrixInput.collapsedEntryStorageKey);
-    return value ? craft().filterArray(value.split(',')) : [];
-  }
+  static setCollapsedEntryIds = setCollapsedBlockIds;
 
-  static setCollapsedEntryIds(ids: Array<string | number>): void {
-    localStorage[MatrixInput.collapsedEntryStorageKey] = ids.join(',');
-  }
+  static rememberCollapsedEntryId = rememberCollapsedBlock;
 
-  static rememberCollapsedEntryId(id: string | number): void {
-    if (!('Storage' in globalThis)) {
-      return;
-    }
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
-    if (!collapsedEntries.includes(`${id}`)) {
-      collapsedEntries.push(`${id}`);
-      MatrixInput.setCollapsedEntryIds(collapsedEntries);
-    }
-  }
-
-  static forgetCollapsedEntryId(id: string | number): void {
-    if (!('Storage' in globalThis)) {
-      return;
-    }
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
-    const index = collapsedEntries.indexOf(`${id}`);
-    if (index !== -1) {
-      collapsedEntries.splice(index, 1);
-      MatrixInput.setCollapsedEntryIds(collapsedEntries);
-    }
-  }
+  static forgetCollapsedEntryId = forgetCollapsedBlock;
 
   id: string;
   entryTypes: MatrixEntryType[];
@@ -168,13 +150,14 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     this.form = this.container.closest('form');
-    // `.blocks` is the Twig markup's class; the Vue control styles its own
-    // container, so it marks the hook explicitly.
+    // Every renderer marks its blocks container, rather than leaving it to a
+    // class the legacy stylesheet also styles.
     this.entriesContainer = this.container.querySelector(
-      ':scope > [data-matrix-blocks], :scope > .blocks'
+      ':scope > [data-matrix-blocks]'
     );
-    this.addEntryBtnContainer =
-      this.container.querySelector(':scope > .buttons');
+    this.addEntryBtnContainer = this.container.querySelector(
+      ':scope > [data-matrix-buttons]'
+    );
     this.addEntryBtn =
       this.addEntryBtnContainer?.querySelector('.btn:not(.menubtn)') ?? null;
     this.addEntryMenuBtns = Array.from(
@@ -196,17 +179,21 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       : MatrixInput.getCollapsedEntryIds();
 
     // only initialise drag-sort if the device has mouse events
-    if (this.settings!.formControl || craft().hasMousePointerEvents()) {
+    // In form-control mode the Vue control owns drag-sort through
+    // `useReorderableItems`, over blocks it renders and re-renders. A second
+    // engine mutating the same nodes just fights it.
+    if (!this.settings!.formControl && craft().hasMousePointerEvents()) {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
-        handle: ':scope > .actions > .move-btn',
+        handle:
+          ':scope > [data-matrix-block-actions] > [data-matrix-block-move]',
         ignoreHandleSelector: null,
         axis: 'y',
         filter: () => {
           // Only return all the selected items if the target item is selected
           if (
-            this.entrySort?.$targetItem?.classList.contains('sel') &&
+            this.entrySort?.$targetItem?.hasAttribute('data-selected') &&
             this.entrySelect
           ) {
             return Array.from(this.entrySelect.getSelectedItems());
@@ -226,8 +213,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     } else {
       // hide the diamond icon (for drag-sort) if the device is touch-capable
-      for (const btn of document.querySelectorAll<HTMLElement>(
-        '.actions > .move-btn'
+      // Only this field's: the page can hold other Matrix fields' buttons too.
+      for (const btn of this.container.querySelectorAll<HTMLElement>(
+        '[data-matrix-block-actions] > [data-matrix-block-move]'
       )) {
         btn.style.display = 'none';
       }
@@ -244,18 +232,28 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         {
           multi: true,
           vertical: true,
-          handle: '> .actions > .checkbox, > .titlebar',
+          handle:
+            '> [data-matrix-block-actions] > [data-matrix-block-checkbox], > [data-matrix-block-titlebar]',
           filter: (target: HTMLElement) => !target.closest('.tab-label'),
           checkboxMode: true,
+          // The field's menu offers what can be done to the selection.
+          onSelectionChange: () => {
+            this.syncSelectedAttributes();
+            this.syncFieldMenu();
+          },
         }
       );
     }
 
-    for (const container of entries) {
-      const entry = new MatrixEntry(this, container);
-      if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
-        entry.collapse();
+    if (!this.settings!.formControl) {
+      for (const container of entries) {
+        const entry = new MatrixEntry(this, container);
+        if (entry.id && collapsedEntries.includes(`${entry.id}`)) {
+          entry.collapse();
+        }
       }
+
+      this.syncFieldMenu();
     }
 
     if (this.addEntryBtn && !this.settings!.formControl) {
@@ -368,13 +366,41 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
   }
 
-  /** The field's current top-level `.matrixblock` elements. */
+  /**
+   * Puts a new entry in place and gives it a brief highlight, so it's obvious
+   * which block just appeared. The Vue control does the same through its own
+   * state, since it owns its blocks' classes.
+   */
+  private placeEntry(entry: HTMLElement, before?: HTMLElement | null): void {
+    if (before?.isConnected) {
+      before.before(entry);
+    } else {
+      this.entriesContainer?.append(entry);
+    }
+
+    flashNewBlock(entry);
+  }
+
+  /** The field's current top-level blocks. */
   entryElements(): HTMLElement[] {
     return Array.from(
       this.entriesContainer?.querySelectorAll<HTMLElement>(
-        ':scope > .matrixblock'
+        ':scope > [data-matrix-block]'
       ) ?? []
     );
+  }
+
+  /**
+   * Mirrors Garnish's selection onto the blocks as `data-selected`, which is what
+   * the rest of the Matrix code reads; Garnish itself only sets its `sel` class.
+   */
+  private syncSelectedAttributes(): void {
+    for (const entry of this.entryElements()) {
+      entry.toggleAttribute(
+        'data-selected',
+        this.entrySelect?.isSelected(entry) ?? false
+      );
+    }
   }
 
   get maxEntries(): number | null {
@@ -475,11 +501,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       const newEntries = parseBlockHtml(data.blockHtml);
 
       for (const entry of newEntries) {
-        if (before) {
-          before.before(entry);
-        } else {
-          this.entriesContainer?.append(entry);
-        }
+        this.placeEntry(entry, before);
       }
 
       await craft().appendHeadHtml(data.headHtml);
@@ -578,11 +600,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     if (this.entryFactory) {
       const entry = this.entryFactory(type);
 
-      if (insertBefore?.isConnected) {
-        insertBefore.before(entry);
-      } else {
-        this.entriesContainer?.append(entry);
-      }
+      this.placeEntry(entry, insertBefore);
 
       new MatrixEntry(this, entry);
       this.entrySort?.addItems(entry);
@@ -638,7 +656,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         // mouse events
         if (!craft().hasMousePointerEvents()) {
           for (const btn of entry.querySelectorAll<HTMLElement>(
-            '.actions > .move-btn'
+            '[data-matrix-block-actions] > [data-matrix-block-move]'
           )) {
             btn.style.display = 'none';
           }
@@ -647,11 +665,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         // Pause the element editor
         await this.elementEditor?.pause();
 
-        if (insertBefore?.isConnected) {
-          insertBefore.before(entry);
-        } else {
-          this.entriesContainer?.append(entry);
-        }
+        this.placeEntry(entry, insertBefore);
 
         this.trigger('entryAdded', {$entry: entry});
 
@@ -756,6 +770,15 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   ): void {
     for (const item of Array.from(this.entrySelect?.getSelectedItems() ?? [])) {
       MatrixEntry.forContainer(item)?.[fn]();
+    }
+  }
+
+  /** Keeps the field's "⋮" menu in step with the selection. */
+  syncFieldMenu(): void {
+    const field = this.container?.closest('craft-field');
+
+    if (field) {
+      syncSelectionMenu(field);
     }
   }
 

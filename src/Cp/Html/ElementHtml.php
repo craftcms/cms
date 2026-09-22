@@ -26,6 +26,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -134,7 +135,7 @@ readonly class ElementHtml
             $html .= Html::beginTag('div', ['slot' => 'thumbnail']);
             if ($component instanceof Thumbable) {
                 $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
-                $html .= $component->getThumbHtml($thumbSize) ?? '';
+                $html .= $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?? '';
             } else {
                 /** @var Chippable&Iconic $component */
                 $icon = $component->getIcon();
@@ -565,7 +566,7 @@ readonly class ElementHtml
      */
     public function elementCardThumbHtml(ElementInterface $element): string
     {
-        return $element->getThumbHtml(120) ?? '';
+        return $element->getThumbHtml(120, ImageTransformMode::Crop) ?? '';
     }
 
     /**
@@ -772,7 +773,7 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $thumb = $element->getThumbHtml(120);
+        $thumb = $element->getThumbHtml(120, ImageTransformMode::Crop);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {

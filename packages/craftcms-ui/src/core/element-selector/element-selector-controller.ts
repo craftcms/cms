@@ -295,10 +295,11 @@ export class ElementSelectorController<
     const {options} = this;
 
     const params: Record<string, unknown> = {
-      context: 'modal',
+      context: options.context ?? 'modal',
       elementType: this.elementType,
       sources: options.sources,
       condition: options.condition,
+      criteria: {...options.criteria},
     };
 
     // `null` and `'auto'` both mean "server decides", so the key is omitted.
@@ -310,6 +311,14 @@ export class ElementSelectorController<
       params.siteIds = options.siteIds;
     }
 
+    if (options.criteria) {
+      params.criteria = {...options.criteria};
+    }
+
+    if (typeof options.indexSettings.showFolders === 'boolean') {
+      params.showFolders = options.indexSettings.showFolders;
+    }
+
     return params;
   }
 
@@ -318,7 +327,7 @@ export class ElementSelectorController<
     const {options} = this;
 
     return {
-      context: 'modal',
+      context: options.context ?? 'modal',
       storageKey: options.storageKey,
       condition: options.condition,
       referenceElementId: options.referenceElementId,

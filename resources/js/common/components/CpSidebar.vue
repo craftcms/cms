@@ -3,26 +3,19 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
-  import CpLink from '@/common/components/CpLink.vue';
-  import DevModeIndicator from '@/common/components/DevModeIndicator.vue';
   import {computed, nextTick, useTemplateRef, watch} from 'vue';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import {type CraftData} from '@/common/composables/useCraftData';
-  import {index as generalSettings} from '@/routes/craft/cp/settings/general';
   import {usePage} from '@inertiajs/vue3';
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+
+  const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
   // Mode and visibility come from the shared store rather than from props: this
   // component renders the toggle that changes them, so taking them as props too
   // would give the same state two sources of truth.
-  const {sidebar, collapsed, toggle, icon} = useGlobalSidebar();
-  const page = usePage<{craft: CraftData}>();
-  const sidebarBody = useTemplateRef<HTMLElement>('sidebarBody');
-
+  const {sidebar, collapsed} = useGlobalSidebar();
   const shouldManageFocus = computed(() => sidebar.mode === 'floating');
-  const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
-  const generalSettingsUrl = computed(() =>
-    generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
-  );
 
   watch(
     () => sidebar.visibility,
@@ -38,25 +31,26 @@
     }
   );
 
-  async function toggleAndRestoreFocus() {
-    const wasDocked = sidebar.mode === 'docked';
-    const wasCollapsed = collapsed.value;
-    toggle();
+  const {toggle: toggleSidebar, icon} = useGlobalSidebar();
 
-    if (!wasDocked) {
-      return;
-    }
+  const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
 
+  // CONFLICT-REVIEW: this branch's `toggleAndRestoreFocus` (focus the nav body
+  // on collapse, the relocated toggle on expand) was dropped in favour of 6.x's
+  // version, because 6.x removed the header/footer toggle buttons it targeted.
+  // The collapse control no longer moves, so keeping focus on it resolves the
+  // dropped-focus bug. Please confirm this is acceptable for ACC-261.
+  // The item re-renders as a different element when the nav collapses, which
+  // would otherwise drop focus to the page.
+  async function toggleCollapsed() {
+    toggleSidebar();
     await nextTick();
-
-    if (wasCollapsed) {
-      document.getElementById('sidebar-toggle')?.focus();
-      return;
-    }
-
-    // Focusing the relocated toggle here would skip past the whole nav for
-    // keyboard and screen reader users, so focus the nav list instead.
-    sidebarBody.value?.focus();
+    await (
+      collapseItem.value as
+        | (HTMLElement & {updateComplete?: Promise<unknown>})
+        | null
+    )?.updateComplete;
+    collapseItem.value?.focus();
   }
 </script>
 
@@ -69,88 +63,76 @@
     :inert="sidebar.mode === 'floating' && sidebar.visibility === 'hidden'"
     :aria-label="t('Primary')"
   >
-    <div class="cp-sidebar__header">
-      <div class="sidebar-header">
-        <SystemInfo :icon-only="collapsed" />
-        <craft-button
-          v-if="!collapsed"
-          id="sidebar-toggle"
-          type="button"
-          size="small"
-          :icon="icon"
-          :variant="ButtonVariant.Outline"
-          @click="toggleAndRestoreFocus"
-          :aria-label="t('Toggle menu')"
-        >
-        </craft-button>
-      </div>
+    <div class="cp-sidebar__header" v-if="!isLarge">
+      <SystemInfo />
+      <craft-button
+        id="sidebar-toggle"
+        type="button"
+        size="small"
+        icon="x"
+        :variant="ButtonVariant.Plain"
+        @click="toggleSidebar"
+        :aria-label="t('Toggle menu')"
+      >
+      </craft-button>
     </div>
-    <div class="cp-sidebar__body" tabindex="-1" ref="sidebarBody">
-      <MainNav :icon-only="collapsed" />
+    <div class="cp-sidebar__body">
+      <!-- Floating, the sidebar overlays the page and there's nowhere for a
+        flyout to go, so every branch expands in place instead. -->
+      <MainNav
+        :icon-only="collapsed"
+        :mode="sidebar.mode === 'floating' ? 'inline' : 'trail'"
+      />
     </div>
-    <div class="cp-sidebar__footer">
-      <div class="grid place-items-center py-2" v-if="collapsed">
-        <craft-tooltip for="sidebar-toggle" placement="right-start">{{
-          t('Toggle sidebar')
-        }}</craft-tooltip>
-        <craft-button
-          id="sidebar-toggle"
-          type="button"
-          size="small"
+    <div v-if="sidebar.mode === 'docked'" class="cp-sidebar__footer">
+      <craft-nav-list>
+        <craft-nav-item
+          ref="collapseItem"
+          :button="true"
           :icon="icon"
-          :variant="ButtonVariant.Outline"
-          @click="toggleAndRestoreFocus"
-          :aria-label="t('Toggle menu')"
+          :icon-only="collapsed || undefined"
+          @click="toggleCollapsed"
         >
-        </craft-button>
-      </div>
-      <EditionInfo v-if="!collapsed" />
-      <DevModeIndicator v-if="!collapsed" />
-      <DevModeIndicator v-if="!collapsed && maintenanceMode">
-        <CpLink :href="generalSettingsUrl">
-          {{ t('Maintenance mode enabled') }}
-        </CpLink>
-      </DevModeIndicator>
+          {{ collapsed ? t('Expand') : t('Collapse') }}
+        </craft-nav-item>
+      </craft-nav-list>
     </div>
   </nav>
 </template>
 
 <style scoped lang="scss">
   .cp-sidebar {
-    /* Above page content and its sticky headers — the element editor's is 1000
-     — but below modals (10001+). The sidebar is chrome: a floating drawer
-     overlays the page, and a collapsed rail's label tooltips overflow across
-     it. Both get sliced by a sticky header otherwise. */
-    z-index: 10;
+    z-index: var(--cp-sidebar-z-index);
     height: 100dvh;
-    width: var(--global-sidebar-width);
+    width: var(--cp-sidebar-width);
     display: flex;
     flex-direction: column;
     inset-block-start: 0;
     flex: 0 0 auto;
-    background-color: white;
+    border-inline-end: 1px solid var(--c-color-border-quiet);
     overflow: clip;
-    margin-inline-end: var(--c-spacing-md);
-    box-shadow: var(--c-shadow-md);
   }
 
   .cp-sidebar[data-mode='docked'] {
+    height: calc(100dvh - var(--cp-debug-bar-height, 0px));
     transform: none;
     position: sticky;
     inset-block-start: 0;
   }
 
   .cp-sidebar[data-mode='floating'] {
+    z-index: var(--c-layer-overlay);
     position: fixed;
     inset-block-start: 0;
     inset-block-end: 0;
     inset-inline-start: 0;
     inset-inline-end: auto;
     border-radius: 0 var(--c-radius-md) var(--c-radius-md) 0;
-    box-shadow: var(--c-shadow-lg);
     transform: translateX(0);
-    max-width: 90%;
+    width: clamp(calc(240rem / 16), 60dvw, calc(320rem / 16));
     transition: transform 200ms cubic-bezier(0, 0.55, 0.45, 1);
+    background-color: var(--c-surface-overlay);
+    box-shadow: var(--c-shadow-overlay);
   }
 
   /* Only a floating sidebar leaves; a docked one narrows to the icon rail. */
@@ -159,21 +141,13 @@
   }
 
   .cp-sidebar--collapsed {
-    width: var(--global-sidebar-collapsed-width);
-
-    .cp-sidebar__body,
-    .sidebar-header {
-      padding-inline: var(--c-spacing-sm);
-    }
-
-    /* Stacked, because the name and the toggle can't sit side by side in a rail. */
-    .sidebar-header {
-      flex-direction: column;
-      gap: var(--c-spacing-sm);
-    }
+    width: var(--cp-sidebar-collapsed-width);
   }
 
   .cp-sidebar__header {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--c-spacing-md);
     flex: 0 0 auto;
   }
 
@@ -182,25 +156,22 @@
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   .cp-sidebar__footer {
     flex: 0 0 auto;
-    position: sticky;
-    inset-block-end: 0;
-    background-color: inherit;
-  }
-
-  .sidebar-header {
+    display: grid;
+    align-items: center;
+    margin-block-start: auto;
     padding-block: var(--c-spacing-md);
     padding-inline: var(--c-spacing-md);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .cp-sidebar__body {
-    overflow-y: auto;
-    scrollbar-gutter: stable;
+    min-height: var(--cp-footer-height);
+    position: sticky;
+    z-index: 1;
+    inset-block-end: var(--cp-debug-bar-height, 0px);
+    background-color: var(--c-surface-sunken);
+    border-block-start: 1px solid var(--c-color-border-quiet);
   }
 </style>

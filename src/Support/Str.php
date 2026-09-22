@@ -118,6 +118,12 @@ class Str extends \Illuminate\Support\Str
         return false;
     }
 
+    /** Returns whether the given string contains any newlines. */
+    public static function containsNewlines(string $str): bool
+    {
+        return (bool) preg_match('/[\r\n]/', $str);
+    }
+
     /**
      * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
      */

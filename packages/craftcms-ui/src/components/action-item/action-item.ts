@@ -2,8 +2,10 @@ import {html, LitElement, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
 import {type AsyncState, AsyncStates} from '@src/types';
+import hostStyles from '@src/styles/host.styles';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 import '../shortcut/shortcut.js';
 import {
@@ -19,7 +21,7 @@ import {Variant, type VariantValue} from '@src/constants/variants';
  * @summary Either a link or button typically used in a menu.
  */
 export default class CraftActionItem extends LitElement {
-  static override styles = [variantsStyles, styles];
+  static override styles = [hostStyles, variantsStyles, styles];
 
   /**
    * Delegate focus into the shadow root, so `host.focus()` (used by
@@ -39,6 +41,10 @@ export default class CraftActionItem extends LitElement {
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
   @property() href: string | null = null;
+  /** Anchor target, for `href` items that should open elsewhere. */
+  @property() target: string | null = null;
+  /** Anchor `rel`. Defaults to `noopener` when targeting a new context. */
+  @property() rel: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
   @property({reflect: true}) variant: VariantValue = Variant.Neutral;
   @property({type: Boolean}) checked: boolean = false;
@@ -228,6 +234,12 @@ export default class CraftActionItem extends LitElement {
               'action-item--checkbox': this.type === 'checkbox',
             })}"
             href="${this.href}"
+            target="${ifDefined(this.target ?? undefined)}"
+            rel="${ifDefined(
+              this.rel ??
+                (this.target === '_blank' ? 'noopener' : null) ??
+                undefined
+            )}"
           >
             ${this.renderBody()}
           </a>

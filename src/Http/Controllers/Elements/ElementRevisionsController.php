@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Revisions;
@@ -45,10 +46,7 @@ class ElementRevisionsController
             ]))
             ->crumbs([
                 ...$this->crumbs($element, current: false),
-                [
-                    'label' => t('Revisions'),
-                    'current' => true,
-                ],
+                new ActionItem()->label(t('Revisions')),
             ])
             ->contentTemplate('_elements/revisions', [
                 'element' => $element,

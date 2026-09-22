@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -69,8 +70,8 @@ class EntryTypesController
 
         return Inertia::render('settings/entry-types/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Entry Types')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Entry Types')),
             ],
             'title' => t('Entry Types'),
             'searchTerm' => $request->search(),
@@ -137,6 +138,9 @@ class EntryTypesController
                         'body' => [
                             'redirect' => Crypt::encrypt(action([EntryTypesController::class, 'index'])),
                         ],
+                        'confirm' => t('Are you sure you want to delete “{name}”?', [
+                            'name' => $entryTypeData->name,
+                        ]),
                     ],
                 ]);
             }
@@ -164,6 +168,8 @@ class EntryTypesController
             'values.slugTranslationMethod' => ['nullable', Rule::enum(TranslationMethod::class)],
             'values.slugTranslationKeyFormat' => ['nullable', 'string'],
             'values.showStatusField' => ['required', 'boolean'],
+            'values.showPostDateField' => ['required', 'boolean'],
+            'values.showExpiryDateField' => ['required', 'boolean'],
             'values.fieldLayout' => ['present', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -212,6 +218,8 @@ class EntryTypesController
         $entryType->slugTranslationMethod = $request->enum('slugTranslationMethod', TranslationMethod::class, $entryType->slugTranslationMethod);
         $entryType->slugTranslationKeyFormat = $request->input('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
+        $entryType->showPostDateField = $request->boolean('showPostDateField', $entryType->showPostDateField);
+        $entryType->showExpiryDateField = $request->boolean('showExpiryDateField', $entryType->showExpiryDateField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
         if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {

@@ -16,6 +16,10 @@ export default css`
     display: flex;
     flex-direction: column;
     gap: var(--c-tabs-gap, var(--c-spacing-lg));
+    /* Fills a host that was given a height; against an auto height the
+       percentage resolves to auto, leaving it content-sized. */
+    block-size: 100%;
+    min-block-size: 0;
   }
 
   /*
@@ -85,6 +89,11 @@ export default css`
 
   .tabs__panels {
     min-width: 0;
+    background-color: var(--c-surface-default);
+    /* The zero minimum undoes the automatic one, which would otherwise hold
+       the flex item open at its content's height. */
+    min-block-size: 0;
+    overflow-y: auto;
   }
 
   /*

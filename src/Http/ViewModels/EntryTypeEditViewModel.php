@@ -130,6 +130,8 @@ class EntryTypeEditViewModel extends ViewModel
 
         $form->add(
             Field::make(t('Show the Status field'), Lightswitch::make('showStatusField')),
+            Field::make(t('Show the Post Date field'), Lightswitch::make('showPostDateField')),
+            Field::make(t('Show the Expiry Date field'), Lightswitch::make('showExpiryDateField')),
             Separator::make('field-layout-separator'),
             Field::make(null, FieldLayoutDesigner::make('fieldLayout')
                 ->elementType(Entry::class)
@@ -209,6 +211,8 @@ class EntryTypeEditViewModel extends ViewModel
             'slugTranslationMethod' => $this->entryType->slugTranslationMethod->value,
             'slugTranslationKeyFormat' => $this->entryType->slugTranslationKeyFormat ?? '',
             'showStatusField' => (bool) $this->entryType->showStatusField,
+            'showPostDateField' => (bool) $this->entryType->showPostDateField,
+            'showExpiryDateField' => (bool) $this->entryType->showExpiryDateField,
             'fieldLayout' => [
                 'id' => $fieldLayout->id,
                 'uid' => $fieldLayout->uid,

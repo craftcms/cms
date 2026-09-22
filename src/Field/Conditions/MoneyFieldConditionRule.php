@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Money;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Money as MoneyControl;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Money as MoneyHelper;
-use Money\Currency;
 use Money\Money as MoneyLibrary;
 use Override;
 use RuntimeException;
@@ -23,6 +23,18 @@ use function CraftCms\Cms\t;
 class MoneyFieldConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface, ElementQueryConditionRuleInterface, FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
+
+    public function __construct(array|object $config = [])
+    {
+        $config = (array) $config;
+        $moneyValues = array_filter(Arr::only($config, ['value', 'maxValue']), is_array(...));
+
+        parent::__construct(Arr::except($config, array_keys($moneyValues)));
+
+        if ($moneyValues !== []) {
+            $this->setAttributes($moneyValues);
+        }
+    }
 
     /** @return list<string> */
     #[Override]
@@ -71,8 +83,9 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements Element
         }
     }
 
+    /** @return list<Node> */
     #[Override]
-    protected function inputHtml(): string
+    protected function inputNodes(): array
     {
         $field = $this->field();
 
@@ -80,61 +93,26 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements Element
             throw new RuntimeException;
         }
 
-        // don't show the value input if the condition checks for empty/notempty
-        if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
-            return '';
+        if (in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY], true)) {
+            return [];
         }
+
+        $control = fn (string $path, string $value): MoneyControl => MoneyControl::make($path)
+            ->currency($field->currency)
+            ->showCurrency($field->showCurrency)
+            ->value(is_numeric($value)
+                ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $value, 'currency' => $field->currency]))
+                : $value);
 
         if ($this->operator === self::OPERATOR_BETWEEN) {
-            $maxValue = is_numeric($this->maxValue) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->maxValue, 'currency' => $field->currency])) : $this->maxValue;
-
-            return Html::tag('div',
-                Html::hiddenLabel(t('Min Value'), 'min').
-                // Min value (value) input
-                FormFields::moneyInputHtml($this->inputOptions()).
-                Html::tag('span', t('and')).
-                Html::hiddenLabel(t('Max Value'), 'max').
-                // Max value input
-                FormFields::moneyInputHtml(array_merge(
-                    $this->inputOptions(),
-                    ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
-                )).
-                Html::tag('craft-info-icon', t('The values are matched inclusively.')),
-                ['class' => 'flex flex-center']
-            );
+            return [
+                Field::make(t('Min Value'), $control('value', $this->value)),
+                Field::make(t('Max Value'), $control('maxValue', $this->maxValue))
+                    ->tip(t('The values are matched inclusively.')),
+            ];
         }
 
-        return FormFields::moneyInputHtml($this->inputOptions());
-    }
-
-    /** @return array{type: 'text', id: 'value', name: 'value', value: string|false, autocomplete: false, currency: string, currencyLabel: string, showCurrency: bool, decimals: int, defaultValue: string|false|null, describedBy: string|null, field: Money, showClear: false} */
-    #[Override]
-    protected function inputOptions(): array
-    {
-        /** @var Money $field */
-        $field = $this->field();
-        $defaultValue = null;
-        if ($field->defaultValue !== null) {
-            $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($field->defaultValue, new Currency($field->currency)));
-        }
-
-        $value = is_numeric($this->value) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->value, 'currency' => $field->currency])) : $this->value;
-
-        return [
-            'type' => 'text',
-            'id' => 'value',
-            'name' => 'value',
-            'value' => $value,
-            'autocomplete' => false,
-            'currency' => $field->currency,
-            'currencyLabel' => $field->currencyLabel(),
-            'showCurrency' => $field->showCurrency,
-            'decimals' => $field->subunits(),
-            'defaultValue' => $defaultValue,
-            'describedBy' => $field->describedBy,
-            'field' => $field,
-            'showClear' => false,
-        ];
+        return [Field::make($this->getLabel(), $control('value', $this->value))];
     }
 
     protected function elementQueryParam(): ?string

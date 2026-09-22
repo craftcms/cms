@@ -15,12 +15,20 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use DateTimeInterface;
@@ -82,6 +90,12 @@ readonly class ElementAttributeRenderer
     {
         $field = null;
 
+        if (str_starts_with($attribute, 'contentBlock:')) {
+            [$block, $nestedAttribute] = $this->resolveContentBlockAttribute($element, $attribute);
+
+            return $block ? $this->renderInlineInput($block, $nestedAttribute) : '';
+        }
+
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
             $field = $element->getFieldLayout()?->getFieldByUid($fieldUid);
@@ -113,7 +127,18 @@ readonly class ElementAttributeRenderer
                         }
                     }
 
-                    return $field->getInlineInputHtml($value, $element);
+                    $context = $this->inlineFormContext([
+                        $field->handle => $element->errors()->get("field:$field->handle"),
+                    ]);
+                    $control = InputNamespace::with(null, fn () => $field->formControl(new FieldContext(
+                        path: $field->handle,
+                        value: $value,
+                        element: $element,
+                        form: $context,
+                        inline: true,
+                    )));
+
+                    return $this->renderInlineForm(Form::make([FormField::make(control: $control)]), context: $context);
                 }
             }
 
@@ -121,6 +146,31 @@ readonly class ElementAttributeRenderer
         }
 
         return $this->render($element, $attribute);
+    }
+
+    /**
+     * The table's HTML transport carries Form data, not generated inputs. The
+     * active Twig namespace is resolved now because Vue mounts after that scope
+     * has ended. Plugin HTML continues through the existing HTML hook chain.
+     *
+     * @param  array<string, list<string>>  $errors
+     */
+    public function renderInlineForm(Form $form, array $errors = [], ?FormContext $context = null): string
+    {
+        $payload = app(FormResolver::class)->resolve($form, $context ?? $this->inlineFormContext($errors));
+
+        return Html::tag('craft-inline-attribute-form', '', [
+            'data-payload' => Json::encode($payload),
+        ]);
+    }
+
+    /** @param array<string, list<string>> $errors */
+    private function inlineFormContext(array $errors): FormContext
+    {
+        return new FormContext(
+            namespace: preg_split('/[\[\]]+/', InputNamespace::get() ?? '', flags: PREG_SPLIT_NO_EMPTY),
+            errors: $errors,
+        );
     }
 
     public function attributeHtml(mixed $value): string
@@ -352,6 +402,19 @@ readonly class ElementAttributeRenderer
 
     private function renderContentBlockAttribute(ElementInterface $element, string $attribute): string|Stringable
     {
+        [$block, $nestedAttribute] = $this->resolveContentBlockAttribute($element, $attribute);
+
+        return $block?->getAttributeHtml($nestedAttribute) ?? '';
+    }
+
+    /**
+     * Resolves a `contentBlock:` table attribute key to the referenced Content Block and its own
+     * (relative) attribute key.
+     *
+     * @return array{0: ContentBlockElement|null, 1: string}
+     */
+    private function resolveContentBlockAttribute(ElementInterface $element, string $attribute): array
+    {
         $parts = explode('.', $attribute);
         $uid = Str::after(array_shift($parts), 'contentBlock:');
 
@@ -369,12 +432,12 @@ readonly class ElementAttributeRenderer
         }
 
         if (! $field instanceof ContentBlockField) {
-            return '';
+            return [null, ''];
         }
 
         $block = $element->getFieldValue($field->handle);
 
-        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+        return [$block, implode('.', $parts)];
     }
 
     /**

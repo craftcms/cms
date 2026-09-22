@@ -12,6 +12,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -32,6 +33,7 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -78,7 +80,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
@@ -88,6 +89,7 @@ use LogicException;
 use Override;
 use Stringable;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -421,7 +423,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /** @return MorphMany<DatabaseNotification, Model&AuthenticatableContract> */
     public function notifications(): MorphMany
     {
-        $user = Auth::getProvider()->retrieveById($this->getAuthIdentifier());
+        $user = craftAuth()->getProvider()->retrieveById($this->getAuthIdentifier());
 
         if (! $user instanceof Model || ! method_exists($user, 'notifications')) {
             throw new LogicException('The configured auth model must be an Eloquent model using Laravel\'s Notifiable trait to receive database notifications.');
@@ -536,6 +538,23 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
+    /**
+     * `users/{slug}` — the segment {@see UserIndexViewModel::defaultSourceKey()}
+     * maps back to a source key. Every user source publishes one, groups
+     * included.
+     */
+    #[Override]
+    public static function sourceCpUri(array $source, ?string $page = null): ?string
+    {
+        $slug = $source['data']['slug'] ?? null;
+
+        if (! is_string($slug) || $slug === '') {
+            return null;
+        }
+
+        return 'users/'.$slug;
+    }
+
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -858,7 +877,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'users';
     }
 
-    /** @return array<int, array<string, string>> */
+    /** @return list<ActionItem> */
     #[Override]
     protected function crumbs(): array
     {
@@ -867,10 +886,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         return [
-            [
-                'label' => t('Users'),
-                'href' => Url::cpUrl('users'),
-            ],
+            new ActionItem()->label(t('Users'))->href(Url::cpUrl('users')),
         ];
     }
 
@@ -1250,10 +1266,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         };
     }
 
-    protected function thumbUrl(int $size): ?string
+    protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($photo = $this->getPhoto()) {
-            return AssetsService::getThumbUrl($photo, $size, iconFallback: false);
+            return AssetsService::getThumbUrl($photo, $size, iconFallback: false, mode: ImageTransformMode::Crop);
         }
 
         return null;
@@ -2298,7 +2314,13 @@ JS, [
         }
 
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
-            Auth::logoutOtherDevices($newPassword);
+            $guard = craftAuth();
+
+            if (! method_exists($guard, 'logoutOtherDevices')) {
+                throw new LogicException('Craft auth guard does not support logging out other devices.');
+            }
+
+            $guard->logoutOtherDevices($newPassword);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {

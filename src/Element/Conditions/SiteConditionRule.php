@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Query\Builder;
 
 use function CraftCms\Cms\t;
 
@@ -44,11 +44,7 @@ class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementC
             ->all();
     }
 
-    /**
-     * @param  ElementQueryInterface  $query
-     * @param  ElementQuery<ElementInterface>  $elementQuery  The element query
-     */
-    public function modifyQuery(Builder $query, ElementQuery $elementQuery): void
+    public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applySiteId($query, $this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }

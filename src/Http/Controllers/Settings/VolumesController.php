@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
@@ -60,9 +61,9 @@ class VolumesController extends BaseAssetSettingsController
 
         return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets')],
-                ['label' => t('Volumes')],
+                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets')),
+                new ActionItem()->label(t('Volumes')),
             ],
             'sort' => $sort,
             'subnav' => $this->subnav(),
@@ -95,6 +96,7 @@ class VolumesController extends BaseAssetSettingsController
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
             'values.fsHandle' => ['nullable', 'string'],
+            'values.hasUrls' => ['required', 'boolean'],
             'values.subpath' => ['nullable', 'string'],
             'values.assetTransformer' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -139,6 +141,7 @@ class VolumesController extends BaseAssetSettingsController
         $volume->name = $request->input('name');
         $volume->handle = $request->input('handle');
         $volume->fsHandle = $request->input('fsHandle');
+        $volume->hasUrls = $request->boolean('hasUrls');
         $volume->subpath = $subpath;
         $volume->assetTransformer = ($data['assetTransformer'] ?? null) ?: null;
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);

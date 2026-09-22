@@ -83,7 +83,6 @@ export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
   editorSettings: Record<string, never>;
   canUpload?: boolean;
   describedBy?: string;
-  fsType?: string;
   sectionId?: number;
   tagGroupId?: number | null;
   targetSiteId?: number;
@@ -363,7 +362,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   getAddElementsBtn(): any {
-    return this.$container.find('[command="--add-element"]');
+    return this.$container.find('[command="--add-element"], .btn.add');
   }
 
   getSpinner(): any {
@@ -1366,7 +1365,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       $helper.css({
         position: 'absolute',
-        zIndex: 10000,
+        zIndex: 'var(--c-layer-drag)',
         top: oldOffset.top,
         left: oldOffset.left,
       });

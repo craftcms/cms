@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -15,9 +16,11 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Structure\Models\Structure;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +35,28 @@ beforeEach(function () {
     $this->cpTrigger = Cms::config()->cpTrigger;
 });
 
+it('selects fit for index tiles and crop for inline cards', function (string $viewMode, string $key, string $mode, int $size) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $mode)
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get("/{$this->cpTrigger}/content/entries?viewMode={$viewMode}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where("data.0.{$key}", function (string $html) use ($mode, $size) {
+                expect($html)->toContainTag('craft-thumbnail', ['mode' => $mode, 'sizes' => "calc({$size}rem/16)"]);
+
+                return true;
+            })
+        );
+})->with([
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
+    'inline cards' => ['cards', 'cardContentHtml', 'crop', 120],
+]);
+
 it('returns an Inertia response with elements and pagination', function () {
     EntryModel::factory()->count(3)->create();
 
@@ -43,6 +68,24 @@ it('returns an Inertia response with elements and pagination', function () {
             ->has('pagination')
             ->has('sort')
             ->has('sources')
+        );
+});
+
+it('includes saved unpublished drafts in entry indexes', function () {
+    $entry = EntryModel::factory()->createElement();
+    $draft = app(EntryElement::class);
+    $draft->siteId = $entry->siteId;
+    $draft->sectionId = $entry->sectionId;
+    $draft->typeId = $entry->typeId;
+    $draft->title = 'Awaiting Review';
+    $draft->slug = 'awaiting-review';
+    $draft->setAuthorIds([auth()->id()]);
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data', fn ($entries) => collect($entries)->contains('id', $draft->id))
         );
 });
 
@@ -219,7 +262,19 @@ it('orders a structure source by its structure rather than a literal column', fu
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.structureId', $structure->id)
             ->where('sort.0.field', 'structure')
+            ->where('structure.id', $structure->id)
+            ->where('viewModes', fn ($modes) => collect($modes)->contains(
+                fn (array $mode): bool => $mode['mode'] === 'structure' && $mode['structuresOnly'] === true,
+            ))
+            ->where('sortOptions', fn ($options) => collect($options)->contains(
+                fn (array $option): bool => $option === [
+                    'label' => 'Structure',
+                    'value' => 'structure',
+                    'defaultDir' => 'asc',
+                ],
+            ))
             ->where('pagination.total', 3)
             ->where('data.0.id', $c->id)
             ->where('data.1.id', $a->id)
@@ -436,5 +491,128 @@ it('renders title cells as element chips carrying the CP element metadata', func
                     && str_contains($title, 'data-cp-url=')
                     && str_contains($title, 'data-editable');
             })
+        );
+});
+
+it('crumbs the “all entries” source by name on the bare index', function () {
+    // The bare index opens on the “all entries” source, which gets a crumb of
+    // its own — and, being what the index itself shows, is addressed by the
+    // index's own URL rather than a `?source=*` query.
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Entries')
+            ->where('crumbs.0.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/content/entries"))
+            ->where('crumbs.1.label', 'All entries')
+            ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/content/entries"))
+        );
+});
+
+it('adds a section crumb that links the section’s own index URL', function () {
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    get("/{$this->cpTrigger}/content/entries/{$section->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.0.label', 'Entries')
+            ->where('crumbs.1.label', 'Blog')
+            // The same URL Section::getCpIndexUri() hands the rest of the CP,
+            // not a `?source=` query — a crumb shouldn't link a section by a
+            // different URL than the sidebar and the edit screen do.
+            ->where('crumbs.1.href', fn ($href) => str_ends_with((string) $href, "/{$this->cpTrigger}/content/entries/blog"))
+        );
+});
+
+it('resolves the section crumb from a ?source= query too', function () {
+    // How the sidebar navigates: same screen, source in the query rather than
+    // the path.
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 2)
+            ->where('crumbs.1.label', 'Blog')
+        );
+});
+
+it('hangs a source switcher off the section crumb', function () {
+    Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+    Section::factory()->create(['name' => 'News', 'handle' => 'news']);
+
+    get("/{$this->cpTrigger}/content/entries/blog")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('crumbs.1.items', function ($actions) {
+                $actions = collect($actions);
+
+                $choices = $actions->flatMap(
+                    fn (array $action): array => $action['type'] === 'group' ? $action['items'] : [$action],
+                );
+
+                // Link action items, with exactly the current one flagged —
+                // the shape Breadcrumbs.vue feeds to its ActionMenu.
+                return $choices->pluck('label')->contains('Blog')
+                    && $choices->pluck('label')->contains('News')
+                    // The bare index is reachable from the menu too.
+                    && $choices->pluck('label')->contains('All entries')
+                    && $choices->every(fn ($action) => $action['type'] === 'link' && ! empty($action['href']))
+                    && $choices->where('selected', true)->pluck('label')->all() === ['Blog'];
+            })
+        );
+});
+
+it('gives the source crumb the same list the sources sidebar shows', function () {
+    Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+    Section::factory()->create(['name' => 'News', 'handle' => 'news']);
+
+    get("/{$this->cpTrigger}/content/entries/blog")
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) {
+            /** @var array<int, array<string, mixed>> $sources */
+            $sources = $page->toArray()['props']['sources'];
+            /** @var array<int, array<string, mixed>> $actions */
+            $actions = $page->toArray()['props']['crumbs'][1]['items'];
+
+            // The switcher and the sidebar are the same list in two places, so
+            // the headings and their order have to survive into the menu —
+            // they used to be dropped, leaving an ungrouped run of sources
+            // next to a grouped sidebar.
+            $outline = fn (array $list): array => collect($list)
+                ->flatMap(fn (array $entry): array => match ($entry['type']) {
+                    'heading', 'group' => ['# '.($entry['heading'] ?? '')],
+                    default => [$entry['label']],
+                })
+                ->all();
+
+            $menuOutline = collect($actions)
+                ->flatMap(fn (array $action): array => $action['type'] === 'group'
+                    ? ['# '.$action['heading'], ...collect($action['items'])->pluck('label')->all()]
+                    : [$action['label']])
+                ->all();
+
+            expect($menuOutline)->toBe($outline($sources));
+        });
+});
+
+it('titles the screen after the selected source', function () {
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    // The bare index is showing “all entries”, and says so.
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('title', 'All entries'));
+
+    // A section index is named for the section, not the screen — the screen is
+    // already named by the crumb above it.
+    get("/{$this->cpTrigger}/content/entries/{$section->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('title', 'Blog')
+            ->where('crumbs.0.label', 'Entries')
         );
 });

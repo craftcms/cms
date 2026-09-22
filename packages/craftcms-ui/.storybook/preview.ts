@@ -61,6 +61,17 @@ const preview: Preview = {
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
       test: 'error',
+      config: {
+        rules: [
+          {
+            // Lion wraps an overlay in `<dialog role="none">`, with the real
+            // role on the content inside it, and documents this rule as one to
+            // leave out. Everything else still answers to it.
+            id: 'aria-allowed-role',
+            selector: '*:not(dialog[data-overlay-outer-wrapper])',
+          },
+        ],
+      },
     },
   },
   decorators: [

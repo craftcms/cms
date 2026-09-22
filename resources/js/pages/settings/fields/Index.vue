@@ -18,6 +18,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   type FieldRow = {
     id: number;
@@ -64,11 +65,7 @@
         trackSize: '1.5fr',
       },
       cell: ({row, getValue}) =>
-        h(
-          CpLink,
-          {href: row.original.url, inertia: false, class: 'font-bold'},
-          getValue
-        ),
+        h(CpLink, {href: row.original.url, class: 'font-bold'}, getValue),
     }),
     columnHelper.accessor('searchable', {
       header: t('Searchable'),
@@ -206,19 +203,13 @@
 </script>
 
 <template>
-  <LayoutSlot name="actions">
-    <CpLink
-      :inertia="false"
-      appearance="button"
-      variant="accent"
-      :href="create()"
-      icon="plus"
-    >
+  <LayoutSlot name="content-actions">
+    <CpLink appearance="button" variant="accent" :href="create()" icon="plus">
       {{ t('New field') }}
     </CpLink>
   </LayoutSlot>
 
-  <craft-pane padding="0" appearance="raised">
+  <CpContainer>
     <AdminTable
       :table="table"
       :reorderable="false"
@@ -230,9 +221,9 @@
       <template #empty-row>
         <Empty icon="light/pen-to-square" :label="t('No fields exist yet.')" />
       </template>
-      <template #search-form>
+      <template #table-header>
         <SearchForm v-model="searchTerm" />
       </template>
     </AdminTable>
-  </craft-pane>
+  </CpContainer>
 </template>

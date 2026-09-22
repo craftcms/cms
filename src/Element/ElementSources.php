@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\currentUserElement;
@@ -46,6 +47,8 @@ class ElementSources
     public const string CONTEXT_INDEX = 'index';
 
     public const string CONTEXT_MODAL = 'modal';
+
+    public const string CONTEXT_RESTRICTED_MODAL = 'restricted-modal';
 
     public const string CONTEXT_SETTINGS = 'settings';
 
@@ -451,6 +454,27 @@ class ElementSources
      */
     public function saveSources(string $elementType, array $sources): void
     {
+        $errors = [];
+
+        foreach ($sources as $index => $source) {
+            if (($source['type'] ?? null) !== self::TYPE_CUSTOM || empty($source['condition'])) {
+                continue;
+            }
+
+            $condition = $source['condition'] instanceof ConditionInterface
+                ? $source['condition']
+                : Conditions::createCondition($source['condition']);
+            $key = $source['key'] ?? $index;
+
+            foreach (Conditions::validate($condition) as $path => $messages) {
+                $errors["sources.$key.condition.$path"] = $messages;
+            }
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
         // config cleanup
         $sources = new Collection($sources)
             ->map(fn (array $s) => array_filter([

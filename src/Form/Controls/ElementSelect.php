@@ -5,15 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 
@@ -36,11 +42,18 @@ class ElementSelect extends Control
     /** @var array<string, mixed> */
     private array $criteria = [];
 
+    private string $context = ElementSources::CONTEXT_FIELD;
+
     private ?string $selectionLabel = null;
 
     private ?int $limit = null;
 
+    private bool $single = false;
+
     private bool $showSiteMenu = false;
+
+    /** @var array<string, mixed>|null */
+    private ?array $selectionCondition = null;
 
     /**
      * The view modes a relation field can be set to, mirroring
@@ -66,15 +79,20 @@ class ElementSelect extends Control
     {
         $editable = $attributes['name'] !== null;
 
-        return FormFields::elementSelectHtml([
+        return Html::tag('div', FormFields::elementSelectHtml([
             'id' => $attributes['id'],
             'name' => $attributes['name'],
             'elements' => self::elements($control->props['elementType'], $value),
             'elementType' => $control->props['elementType'],
             'sources' => $control->props['sources'],
             'criteria' => $control->props['criteria'],
+            'context' => $control->props['context'],
+            'condition' => isset($control->props['selectionCondition'])
+                ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
+                : null,
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
+            'single' => $control->props['single'] ?? false,
             'showSiteMenu' => $control->props['showSiteMenu'],
             'allowAdd' => $editable,
             'allowRemove' => $editable,
@@ -82,7 +100,7 @@ class ElementSelect extends Control
             'disabled' => ! $editable,
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
-        ]);
+        ]));
     }
 
     public function component(): string
@@ -122,6 +140,18 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * Sets the element source context, which determines which sources are shown
+     * (e.g. {@see ElementSources::CONTEXT_RESTRICTED_MODAL} limits sources to
+     * ones the current user can edit).
+     */
+    public function context(string $context): static
+    {
+        $this->context = $context;
+
+        return $this;
+    }
+
     public function selectionLabel(string $selectionLabel): static
     {
         $this->selectionLabel = $selectionLabel;
@@ -140,9 +170,27 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /** Selects and submits one scalar element ID instead of an ID list. */
+    public function single(bool $single = true): static
+    {
+        $this->single = $single;
+        if ($this->value === [] || $this->value === null) {
+            $this->value = $single ? null : [];
+        }
+
+        return $this;
+    }
+
     public function showSiteMenu(bool $showSiteMenu = true): static
     {
         $this->showSiteMenu = $showSiteMenu;
+
+        return $this;
+    }
+
+    public function selectionCondition(?ElementConditionInterface $condition): static
+    {
+        $this->selectionCondition = $condition?->getConfig();
 
         return $this;
     }
@@ -189,10 +237,13 @@ class ElementSelect extends Control
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
+            'context' => $this->context,
             'selectionLabel' => $this->selectionLabel ?? t('Choose'),
-            'limit' => $this->limit,
+            'limit' => $this->single ? 1 : $this->limit,
+            'single' => $this->single,
             'showSiteMenu' => $this->showSiteMenu,
             'viewMode' => $this->viewMode,
+            ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
         ];
     }
 
@@ -212,11 +263,11 @@ class ElementSelect extends Control
         }
 
         if ($viewMode === self::VIEW_MODE_THUMBS) {
-            return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE)];
+            return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit)];
         }
 
         if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
-            return ['thumbHtml' => $element->getThumbHtml(30)];
+            return ['thumbHtml' => $element->getThumbHtml(30, ImageTransformMode::Fit)];
         }
 
         return [];
@@ -328,11 +379,22 @@ class ElementSelect extends Control
      */
     private static function elements(string $elementType, mixed $value): array
     {
+        if (is_int($value) || is_string($value) && $value !== '') {
+            $value = [$value];
+        }
+
         if (! is_array($value) || $value === []) {
             return [];
         }
 
-        return $elementType::find()->id(array_values($value))->fixedOrder()->all();
+        return $elementType::find()
+            ->site('*')
+            ->preferSites(array_filter([app(RequestedSite::class)->get()?->id]))
+            ->unique()
+            ->status(null)
+            ->id(array_values($value))
+            ->fixedOrder()
+            ->all();
     }
 
     /** @param class-string<ElementInterface> $elementType */

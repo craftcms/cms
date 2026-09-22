@@ -69,7 +69,7 @@
   }
 
   function updatePhotoVolume(
-    value: string | number | boolean | undefined,
+    value: unknown,
     setValue: FormControlOverrideProps['setValue']
   ): void {
     if (value === createVolumeOptionValue) {
@@ -136,7 +136,6 @@
     :form="form"
     :submit="submit"
     :refresh-url="refreshUrl ?? undefined"
-    full-width
     :default-form-actions="[]"
   >
     <template

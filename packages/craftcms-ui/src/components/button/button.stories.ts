@@ -126,6 +126,41 @@ export const Icons: Story = {
   `,
 };
 
+/**
+ * `flush` pulls a button out by the space around its content, so a `plain`
+ * button's label or icon lines up with the text beside it. The dashed box is
+ * the edge the content aligns to.
+ */
+export const Flush: Story = {
+  render: () => html`
+    <div
+      class="grid gap-4"
+      style="inline-size: 20rem; outline: 1px dashed var(--c-color-border-normal);"
+    >
+      <div class="flex justify-between items-center">
+        <strong>Revisions</strong>
+        <craft-button
+          variant="plain"
+          size="small"
+          icon="x"
+          flush="inline-end"
+          aria-label="Close"
+        ></craft-button>
+      </div>
+      <p style="margin: 0">Text above a flush button.</p>
+      <div>
+        <craft-button variant="plain" flush="inline-start"
+          >Show more</craft-button
+        >
+      </div>
+      <div class="flex">
+        <craft-button variant="plain" icon="pen" flush aria-label="Edit">
+        </craft-button>
+      </div>
+    </div>
+  `,
+};
+
 export const Loading: Story = {
   args: {
     loading: true,

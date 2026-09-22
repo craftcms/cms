@@ -7,6 +7,9 @@
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {test} from '@routes/cp/settings/email';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
     form: FormPayload;
@@ -29,31 +32,33 @@
   <div class="grid gap-3">
     <FormPage :form="form" :submit="submit" />
 
-    <craft-pane appearance="raised">
-      <h2 class="mb-3">{{ t('Send a test email') }}</h2>
+    <CpContainer>
+      <craft-pane appearance="raised">
+        <h2 class="mb-3">{{ t('Send a test email') }}</h2>
 
-      <div class="grid gap-3">
-        <CraftInput
-          :label="t('To')"
-          v-model="testForm.to"
-          name="to"
-          :error="testForm.errors.to"
-        />
-
-        <div class="flex gap-2 items-center">
-          <craft-button
-            type="button"
-            :variant="ButtonVariant.Solid"
-            :loading="testForm.processing"
-            @click="sendTest"
-          >
-            {{ t('Test') }}
-          </craft-button>
-          <InlineFlash
-            :is-active="testForm.recentlySuccessful || testForm.hasErrors"
+        <div class="grid gap-3">
+          <CraftInput
+            :label="t('To')"
+            v-model="testForm.to"
+            name="to"
+            :error="testForm.errors.to"
           />
+
+          <div class="flex gap-2 items-center">
+            <craft-button
+              type="button"
+              :variant="ButtonVariant.Solid"
+              :loading="testForm.processing"
+              @click="sendTest"
+            >
+              {{ t('Test') }}
+            </craft-button>
+            <InlineFlash
+              :is-active="testForm.recentlySuccessful || testForm.hasErrors"
+            />
+          </div>
         </div>
-      </div>
-    </craft-pane>
+      </craft-pane>
+    </CpContainer>
   </div>
 </template>

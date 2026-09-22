@@ -235,7 +235,7 @@ it('selects the volume before the legacy transformer candidate', function(): voi
         'root' => storage_path('framework/testing/legacy-precedence-source'),
     ]);
     $volume = Volume::factory()->create([
-        'fs' => 'disk:legacy-precedence-source',
+        'fs' => 'legacy-precedence-source',
         'assetTransformer' => 'compatibility-test',
     ]);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
@@ -511,7 +511,7 @@ it('provides deprecated Volume transform filesystem methods through the adapter'
         'transformSubpath' => 'transforms',
     ]);
 
-    expect($volume->getTransformFsHandle(false))->toBe('disk:legacy-volume-target')
+    expect($volume->getTransformFsHandle(false))->toBe('legacy-volume-target')
         ->and($volume->getTransformSubpath())->toBe('transforms/')
         ->and($volume->transformHasUrls())->toBeTrue()
         ->and($volume->transformDisk()->put('image.jpg', 'image'))->toBeTrue()

@@ -2,7 +2,6 @@
 
 {% set structure = structure is defined ? structure : null -%}
 {% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
-{% set padding = I18N.getLocale().getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% set hasStatusCol = attributes|contains(0, 'status') %}
 {% set showHeaderColumn = showHeaderColumn ?? false %}
 {% set context = context ?? 'index' %}
@@ -54,7 +53,7 @@
                     {% tag 'div' with {
                         class: 'flex',
                         style: {
-                            ("padding-#{padding}"): structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
+                            'padding-inline-start': structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
                         }|filter,
                     } %}
                         {%- if (sortable or structureEditable) and not inlineEditing %}
@@ -101,7 +100,7 @@
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
                     {% if showInputs %}
                         {% set namespace = "#{nestedInputNamespace}[element-#{element.id}]" %}
-                        {% if attribute[0] starts with 'field:' or attribute[0] starts with 'fieldInstance:' %}
+                        {% if attribute[0] starts with 'field:' or attribute[0] starts with 'fieldInstance:' or attribute[0] starts with 'contentBlock:' %}
                             {% set namespace = "#{namespace}[fields]" %}
                         {% endif %}
                         {% namespace namespace %}

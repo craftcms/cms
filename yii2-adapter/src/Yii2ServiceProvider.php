@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\MigrationRepository;
@@ -48,7 +49,6 @@ use CraftCms\Yii2Adapter\Console\DropCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
-use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\OffCommand;
 use CraftCms\Yii2Adapter\Console\OnCommand;
@@ -57,6 +57,7 @@ use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Form\LegacyConditions;
 use CraftCms\Yii2Adapter\Form\Nodes\LegacyHtmlField;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
@@ -151,6 +152,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->app->singleton(Conditions::class, LegacyConditions::class);
         $this->callAfterResolving(FormNodeTypes::class, fn(FormNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(FormControlTypes::class, fn(FormControlTypes $types) => $types->register(LegacyHtmlControl::class));
         /**
@@ -299,7 +301,6 @@ class Yii2ServiceProvider extends ServiceProvider
             DropCategoriesSupportCommand::class,
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
-            MigrateMigrationTableCommand::class,
             MigrateSessionsTableCommand::class,
             OffCommand::class,
             OnCommand::class,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -13,16 +12,20 @@ use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Jobs\ReplaceReferences;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\FieldReferences;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Html;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -140,25 +143,31 @@ readonly class DeleteElementsController
         /** @var class-string<ElementInterface> $sourceElementType */
         $sourceElementType = $this->request->input('sourceElementType');
         $targetElementIds = $this->elements->ids();
+        $supportsEditable = method_exists($this->elementType::find(), 'editable');
 
         return new CpModalResponse()
             ->action('delete-elements/replace-relations')
-            ->contentHtml(fn () => FormFields::elementSelectFieldHtml([
-                'label' => t('Choose a new {type}', [
+            ->form(Form::make([
+                Field::make(t('Choose a new {type}', [
                     'type' => $this->elementType::lowerDisplayName(),
-                ]),
-                'name' => 'newTargetId',
+                ]), ElementSelect::make('newTargetId')
+                    ->elementType($this->elementType)
+                    ->context(ElementSources::CONTEXT_RESTRICTED_MODAL)
+                    ->criteria(array_filter([
+                        'id' => ['not', ...$targetElementIds->all()],
+                        'editable' => $supportsEditable ? true : null,
+                    ]))
+                    ->single()),
+                HiddenField::make('elementType'),
+                ...$targetElementIds->keys()->map(fn (int $index) => HiddenField::make(['elementIds', (string) $index]))->all(),
+                HiddenField::make('hardDelete'),
+                HiddenField::make('sourceElementType'),
+            ]), [
                 'elementType' => $this->elementType,
-                'criteria' => [
-                    'id' => $targetElementIds->map(fn (int $id) => "not $id")->all(),
-                ],
-                'single' => true,
-            ]).
-                Html::hiddenInput('elementType', $this->elementType).
-                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
-                Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0').
-                Html::hiddenInput('sourceElementType', $sourceElementType)
-            )
+                'elementIds' => $targetElementIds->all(),
+                'hardDelete' => $this->hardDelete ? '1' : '0',
+                'sourceElementType' => $sourceElementType,
+            ])
             ->submitButtonLabel(t('Replace'));
     }
 
@@ -206,24 +215,29 @@ readonly class DeleteElementsController
     public function replaceReferencesModal(): CpModalResponse
     {
         $targetElementIds = $this->elements->ids();
+        $supportsEditable = method_exists($this->elementType::find(), 'editable');
 
         return new CpModalResponse()
             ->action('delete-elements/replace-references')
-            ->contentHtml(fn () => FormFields::elementSelectFieldHtml([
-                'label' => t('Choose a new {type}', [
+            ->form(Form::make([
+                Field::make(t('Choose a new {type}', [
                     'type' => $this->elementType::lowerDisplayName(),
-                ]),
-                'name' => 'newTargetId',
+                ]), ElementSelect::make('newTargetId')
+                    ->elementType($this->elementType)
+                    ->context(ElementSources::CONTEXT_RESTRICTED_MODAL)
+                    ->criteria(array_filter([
+                        'id' => ['not', ...$targetElementIds->all()],
+                        'editable' => $supportsEditable ? true : null,
+                    ]))
+                    ->single()),
+                HiddenField::make('elementType'),
+                ...$targetElementIds->keys()->map(fn (int $index) => HiddenField::make(['elementIds', (string) $index]))->all(),
+                HiddenField::make('hardDelete'),
+            ]), [
                 'elementType' => $this->elementType,
-                'criteria' => [
-                    'id' => $targetElementIds->map(fn (int $id) => "not $id")->all(),
-                ],
-                'single' => true,
-            ]).
-                Html::hiddenInput('elementType', $this->elementType).
-                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
-                Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0')
-            )
+                'elementIds' => $targetElementIds->all(),
+                'hardDelete' => $this->hardDelete ? '1' : '0',
+            ])
             ->submitButtonLabel(t('Replace'));
     }
 
@@ -305,6 +319,7 @@ readonly class DeleteElementsController
             ->unique()
             ->status(null)
             ->drafts(null)
+            ->provisionalDrafts(null)
             ->savedDraftsOnly(false);
 
         $withDescendants = ! $this->hardDelete && $this->request->boolean('withDescendants');
@@ -336,6 +351,10 @@ readonly class DeleteElementsController
         foreach ($query->all() as $element) {
             if (! $element instanceof ElementInterface) {
                 continue;
+            }
+
+            if ($element->isProvisionalDraft) {
+                $element = $element->getCanonical(true);
             }
 
             if (isset($elementIds[$element->id])) {

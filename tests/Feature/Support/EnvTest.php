@@ -79,6 +79,19 @@ it('can remove a variable from a file', function () {
     );
 });
 
+test('writeVariable throws on a newline-containing value', function (string $value) {
+    $filesystem = new Filesystem;
+    $path = __DIR__.'/tmp/env-test-file';
+    $filesystem->put($path, 'APP_NAME=Laravel');
+
+    Env::writeVariable('APP_NAME', $value, $path, overwrite: true);
+})->throws(InvalidArgumentException::class)->with([
+    'newline' => ["bar\nEVIL=1"],
+    'carriage return' => ["bar\rEVIL=1"],
+    'crlf' => ["bar\r\nEVIL=1"],
+    'trailing newline' => ["bar\n"],
+]);
+
 test('parse', function () {
     $variables = [
         'TEST_1' => 'testing1',

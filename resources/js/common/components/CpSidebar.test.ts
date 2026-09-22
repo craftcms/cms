@@ -1,5 +1,5 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {computed, createApp, nextTick, reactive, type App} from 'vue';
+import {computed, createApp, nextTick, reactive, ref, type App} from 'vue';
 
 const state = vi.hoisted(() => ({
   page: null as any,
@@ -28,6 +28,12 @@ vi.mock('@/common/composables/useGlobalSidebar', () => ({
   }),
 }));
 
+// Below `lg` the sidebar renders its header, with the close toggle the floating
+// focus test expects to land on.
+vi.mock('@/common/composables/useCpBreakpoints', () => ({
+  cpBreakpoints: {greaterOrEqual: () => ref(false)},
+}));
+
 let app: App | null = null;
 const extraElements: HTMLElement[] = [];
 
@@ -53,6 +59,7 @@ async function mountSidebar(
       state.sidebar.visibility === 'visible' ? 'hidden' : 'visible';
   });
   state.page = reactive({
+    url: '/admin',
     props: {
       craft: {
         maintenanceMode: false,
@@ -61,6 +68,7 @@ async function mountSidebar(
         app: {version: '6.0.0', edition: {name: 'Pro'}},
         general: {cpTrigger: 'admin'},
         nav: [],
+        navBadges: {},
       },
       queue: {
         displayedJob: null,
@@ -80,30 +88,30 @@ async function mountSidebar(
   return container;
 }
 
-it('returns focus to the relocated toggle when the docked sidebar expands', async () => {
+// CONFLICT-REVIEW: 6.x replaced the header/footer toggle buttons with a single
+// collapse item in the footer, which keeps focus on itself when it re-renders
+// (see `toggleCollapsed`). These two tests were rewritten for that markup
+// during the merge and could not be run locally.
+it('keeps focus on the collapse item when the docked sidebar expands', async () => {
   const container = await mountSidebar('docked', 'hidden');
+  const collapseItem = () =>
+    container.querySelector<HTMLElement>('.cp-sidebar__footer craft-nav-item')!;
 
-  container.querySelector<HTMLElement>('#sidebar-toggle')!.click();
+  collapseItem().click();
 
   expect(state.sidebar.visibility).toBe('visible');
-  await vi.waitFor(() =>
-    expect(document.activeElement).toBe(
-      container.querySelector('#sidebar-toggle')
-    )
-  );
+  await vi.waitFor(() => expect(document.activeElement).toBe(collapseItem()));
 });
 
-it('moves focus to the nav body instead of the toggle when the docked sidebar collapses', async () => {
+it('keeps focus on the collapse item when the docked sidebar collapses', async () => {
   const container = await mountSidebar('docked', 'visible');
+  const collapseItem = () =>
+    container.querySelector<HTMLElement>('.cp-sidebar__footer craft-nav-item')!;
 
-  container.querySelector<HTMLElement>('#sidebar-toggle')!.click();
+  collapseItem().click();
 
   expect(state.sidebar.visibility).toBe('hidden');
-  await vi.waitFor(() =>
-    expect(document.activeElement).toBe(
-      container.querySelector('.cp-sidebar__body')
-    )
-  );
+  await vi.waitFor(() => expect(document.activeElement).toBe(collapseItem()));
 });
 
 it('moves focus into the sidebar when it becomes visible while focus was on an external control', async () => {

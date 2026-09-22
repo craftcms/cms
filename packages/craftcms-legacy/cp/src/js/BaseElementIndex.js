@@ -4851,6 +4851,7 @@ const FilterHud = Garnish.HUD.extend({
   serialized: null,
   $clearBtn: null,
   cleared: false,
+  applied: false,
 
   get isActive() {
     return this.showing || this.conditionConfig || this.serialized;
@@ -4904,8 +4905,14 @@ const FilterHud = Garnish.HUD.extend({
     this.$tip.remove();
     this.$tip = null;
 
-    this.$body.on('submit', (ev) => {
+    this.$body.on('submit', async (ev) => {
       ev.preventDefault();
+
+      if (!(await this.$main.find('craft-condition-builder')[0].validate())) {
+        return;
+      }
+
+      this.applied = true;
       this.hide();
     });
 
@@ -4952,12 +4959,15 @@ const FilterHud = Garnish.HUD.extend({
           this.clear();
         });
 
-        this.$hud.find('.condition-container').on('htmx:beforeRequest', () => {
-          this.setBusy();
+        this.$hud.on('condition-builder-valid', (event) => {
+          const valid = event.originalEvent.detail.valid;
+          this.conditionValid = valid;
+
+          this.$main.find('button[type="submit"]').prop('disabled', !valid);
+          valid ? this.setReady() : this.setBusy();
         });
 
-        this.$hud.find('.condition-container').on('htmx:load', () => {
-          this.setReady();
+        this.$hud.on('condition-builder-change', () => {
           this.updateSizeAndPosition(true);
         });
         this.setFocus();
@@ -4989,10 +4999,7 @@ const FilterHud = Garnish.HUD.extend({
   setBusy: function () {
     this.$hud.attr('aria-busy', 'true');
 
-    $('<div/>', {
-      class: 'visually-hidden',
-      text: Craft.t('app', 'Loading'),
-    }).insertAfter(this.$main.find('.htmx-indicator'));
+    Craft.cp.announce(Craft.t('app', 'Loading'));
   },
 
   setReady: function () {
@@ -5072,9 +5079,14 @@ const FilterHud = Garnish.HUD.extend({
     this.base();
 
     // If something changed, update the elements
-    if (this.serialized !== (this.serialized = this.serialize())) {
+    if (
+      (this.applied || this.cleared) &&
+      this.serialized !== (this.serialized = this.serialize())
+    ) {
       this.elementIndex.updateElements();
     }
+
+    this.applied = false;
 
     if (this.cleared) {
       this.destroy();
@@ -5092,6 +5104,10 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   serialize: function () {
+    if (!this.cleared && this.conditionValid === false) {
+      return this.serialized;
+    }
+
     return !this.cleared && this.hasRules() ? this.$body.serialize() : null;
   },
 
