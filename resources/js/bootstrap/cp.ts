@@ -70,6 +70,16 @@ const Cp = {
     return cpComponentRegistry;
   },
 
+  // The real, mounted-app `router` singleton from `@inertiajs/vue3` — exposed
+  // for the same reason as `$components`/`$axios`: a plugin's own,
+  // independently-bundled script gets its own disconnected copy of the
+  // `@inertiajs/vue3` module (and hence a `router` object with no page/app
+  // actually wired to it) if it imports the package directly, so it needs a
+  // way to reach the one that's actually driving this page instead.
+  get $router() {
+    return router;
+  },
+
   booted(callback: (instance: typeof window.Cp) => void) {
     bootedCallbacks.push(callback);
   },

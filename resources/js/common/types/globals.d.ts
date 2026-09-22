@@ -2,6 +2,7 @@ import type {ConfigService} from '@craftcms/ui';
 import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
+import type {Router} from '@inertiajs/core';
 import type {AxiosRequestConfig, AxiosResponse} from 'axios';
 
 type LegacySettingValue =
@@ -88,6 +89,7 @@ interface CpServices {
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
   $inertia: InertiaPageRegistry;
+  $router: Router;
 }
 
 interface CpNotificationSettings {
