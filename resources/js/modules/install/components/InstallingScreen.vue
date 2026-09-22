@@ -31,14 +31,14 @@
 
   const heading = useTemplateRef<HTMLElement>('heading');
 
-  onMounted(async () => {
-    await nextTick();
-    heading.value?.focus();
-    await install(props.data);
+  onMounted(() => {
+    install(props.data);
   });
-  watch([isSuccess, isError], async () => {
-    await nextTick();
-    heading.value?.focus();
+  watch([isLoading, isSuccess, isError], async ([loading, success, error]) => {
+    if (loading || success || error) {
+      await nextTick();
+      heading.value?.focus();
+    }
   });
 </script>
 
