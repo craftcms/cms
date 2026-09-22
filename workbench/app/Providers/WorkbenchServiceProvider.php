@@ -9,8 +9,10 @@ use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Forms\FormKitchenSink;
@@ -20,6 +22,13 @@ use function Orchestra\Testbench\package_path;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $composer = Json::decode(file_get_contents(package_path('composer.json')));
+
+        AliasLoader::getInstance($composer['extra']['laravel']['aliases'] ?? []);
+    }
+
     public function boot(): void
     {
         if (! $this->app->runningUnitTests()) {
