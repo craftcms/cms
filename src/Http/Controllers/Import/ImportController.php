@@ -139,7 +139,7 @@ class ImportController
         if ($importUid) {
             abort_if(is_null($import = $this->importsService->getImportByUid($importUid, true)), 400, "Invalid import UID: $importUid");
         } else {
-            $import = new ImportData;
+            $import = new ImportData(['editable' => true]);
         }
 
         $import->name($this->request->input('name', $import->name));

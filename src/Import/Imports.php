@@ -125,7 +125,7 @@ class Imports
         }
 
         /** @var ImportData|null */
-        return $this->getAllImports()->where('handle', $handle)->first();
+        return $this->getNonEditableImports()->where('handle', $handle)->first();
     }
 
     /**

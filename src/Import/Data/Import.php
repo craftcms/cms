@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
-use Closure;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\Imports as ImportsFacade;
@@ -50,18 +50,8 @@ class Import extends Component implements CpEditable, Validatable
      */
     public bool $editable = false;
 
-    /**
-     * Normalizes an object/array config and JSON-decodes `steps` if it's a string, then
-     * delegates to the parent constructor.
-     *
-     * @param  object|array  $config  The import config.
-     */
-    public function __construct(object|array $config = [])
+    public function __construct(array $config = [])
     {
-        if (is_object($config)) {
-            $config = (array) $config;
-        }
-
         $steps = [];
         if (isset($config['steps']) && is_string($config['steps'])) {
             $items = Json::decode($config['steps']);
@@ -182,18 +172,9 @@ class Import extends Component implements CpEditable, Validatable
                 'required',
                 'string',
                 'max:255',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                // editable only: handles are unique among saved imports, and checking against
-                // the file-based ones would re-enter the lookup that is validating them
-                function ($attribute, $value, Closure $fail, Validator $validator) {
-                    $found = ImportsFacade::getImportByHandle($value, true);
-                    if ($found !== null && $found->uid !== $validator->getValue('uid')) {
-                        $fail(t('{attribute} "{value}" has already been taken.', [
-                            'attribute' => $attribute,
-                            'value' => $value,
-                        ]));
-                    }
-                },
+                new HandleRule(reservedWords: ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
+                // ensure DB-stored imports have unique handles
+                Rule::unique(Table::IMPORTS, 'handle')->withoutTrashed('dateDeleted'),
             ],
             'description' => [
                 'string',
@@ -221,7 +202,7 @@ class Import extends Component implements CpEditable, Validatable
 
     /**
      * Validates each step against its own importer type's rules, folding any errors back into
-     * the import's error bag under `steps.<step uid>.<attribute>`.
+     * the import's error bag under `steps.<key>.<attribute>`.
      */
     #[Override]
     public function afterValidate(?Validator $validator = null): void

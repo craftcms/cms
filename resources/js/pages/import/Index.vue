@@ -16,6 +16,7 @@
     duplicate,
     run,
   } from '@actions/Import/ImportController';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   interface ImportRow {
     uid: string | null;
@@ -55,21 +56,21 @@
     };
   }
 
-  const editableColumnHelper = createCraftColumnHelper<ImportRow>();
+  const columnHelper = createCraftColumnHelper<ImportRow>();
   const editableColumns = ref([
-    editableColumnHelper.link('name', {
+    columnHelper.link('name', {
       header: t('Name'),
       props: ({row}) => ({
         href: row.original.editUrl ?? '',
         inertia: false,
       }),
     }),
-    editableColumnHelper.handle('handle'),
-    editableColumnHelper.accessor('stepCount', {
+    columnHelper.handle('handle'),
+    columnHelper.accessor('stepCount', {
       header: t('Steps'),
       cell: ({row}) => stepsCell(row.original),
     }),
-    editableColumnHelper.actions(({row}) => {
+    columnHelper.actions(({row}) => {
       const actions: ActionItems = [
         {
           type: 'link',
@@ -127,21 +128,18 @@
     getCoreRowModel: getCoreRowModel<ImportRow>(),
   });
 
-  const nonEditableColumnHelper = createCraftColumnHelper<ImportRow>();
   const nonEditableColumns = ref([
-    nonEditableColumnHelper.accessor('name', {
+    columnHelper.accessor('name', {
       header: t('Name'),
       cell: ({row, getValue}) =>
-        h('div', [
-          h('div', {class: 'font-bold'}, getValue()),
-          h('code', row.original.handle),
-        ]),
+        h('div', [h('div', {class: 'font-bold'}, getValue())]),
     }),
-    nonEditableColumnHelper.accessor('stepCount', {
+    columnHelper.handle('handle'),
+    columnHelper.accessor('stepCount', {
       header: t('Steps'),
       cell: ({row}) => stepsCell(row.original),
     }),
-    nonEditableColumnHelper.actions(({row}) => {
+    columnHelper.actions(({row}) => {
       if (!props.canTrigger) {
         return [];
       }
@@ -167,7 +165,7 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="canSave" name="actions">
+  <LayoutSlot v-if="canSave" name="content-actions">
     <CpLink
       variant="accent"
       appearance="button"
@@ -178,25 +176,32 @@
     </CpLink>
   </LayoutSlot>
 
-  <div class="grid gap-6">
-    <craft-pane padding="0" appearance="raised">
-      <AdminTable :table="editableTable" :reorderable="false">
-        <template #empty-row>
-          <Empty :label="t('No imports yet.')" icon="light/upload" />
-        </template>
-      </AdminTable>
-    </craft-pane>
+  <CpContainer class="@container">
+    <div class="grid gap-6">
+      <craft-pane>
+        <div>
+          <h3>{{ t('Editable Imports') }}</h3>
+          <p>
+            {{ t('Those imports can be edited in the Control Panel') }}
+          </p>
+        </div>
 
-    <craft-pane
-      v-if="nonEditableImports.length"
-      padding="0"
-      appearance="raised"
-    >
-      <AdminTable :table="nonEditableTable" :reorderable="false">
-        <template #empty-row>
-          <Empty :label="t('No file-based imports.')" icon="light/upload" />
-        </template>
-      </AdminTable>
-    </craft-pane>
-  </div>
+        <AdminTable :table="editableTable" :reorderable="false">
+          <template #empty-row>
+            <Empty :label="t('No imports yet.')" icon="light/upload" />
+          </template>
+        </AdminTable>
+      </craft-pane>
+
+      <craft-pane v-if="nonEditableImports.length">
+        <div>
+          <h3>{{ t('Non-Editable Imports') }}</h3>
+          <p>
+            {{ t('Those imports can be edited in the config file.') }}
+          </p>
+        </div>
+        <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>
+      </craft-pane>
+    </div>
+  </CpContainer>
 </template>
