@@ -65,10 +65,8 @@
 </script>
 
 <template>
-  <CpContainer class="content-footer">
-    <div
-      class="flex gap-2 items-center justify-between border-t border-t-quiet py-md"
-    >
+  <div class="content-footer">
+    <div class="flex gap-2 items-center justify-between">
       <FormActions
         v-if="form"
         :form="form"
@@ -93,11 +91,12 @@
         <slot name="content-footer"></slot>
       </LayoutSlotOutlet>
     </div>
-  </CpContainer>
+  </div>
 </template>
 
 <style scoped lang="css">
   .content-footer {
+    padding-inline: var(--cp-container-padding);
     min-height: var(--cp-footer-height);
   }
 </style>
