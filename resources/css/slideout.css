@@ -82,13 +82,15 @@ body.has-debug-toolbar .slideout-container {
 /*}*/
 
 .slideout:not(.so-mobile, .so-lp) {
-  border-start-start-radius: var(--radius-lg);
+  border-start-start-radius: var(--radius-xl);
   border-start-end-radius: 0;
   border-end-end-radius: 0;
-  border-end-start-radius: var(--radius-lg);
+  border-end-start-radius: var(--radius-xl);
   inset-block-start: 0;
   width: 55vw;
   min-height: 100vh;
+  max-height: 100vh;
+  overflow: auto;
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {

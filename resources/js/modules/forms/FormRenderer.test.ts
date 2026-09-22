@@ -783,6 +783,37 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('renders a table whose field value is null', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {label: {type: 'singleline'}}},
+            path: ['details'],
+            mode: 'editable',
+            deltaGroup: ['details'],
+          },
+        },
+      ],
+      values: {details: null},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    expect(container.textContent).not.toContain('Failed to render');
+    expect(container.querySelectorAll('tbody > tr')).toHaveLength(0);
+    expect(renderer.currentValues()).toEqual({details: null});
+  });
+
   it('renders table cell errors beside scalar values', async () => {
     const table: FormPayload = {
       scope: [],
@@ -2560,6 +2591,31 @@ describe('FormRenderer', () => {
         'input[name="settings[placeholder]"]'
       )
     ).toBe(input);
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('preserves the focused descendant of an overridden control during reconciliation', async () => {
+    const overridden = clonePayload();
+    app.unmount();
+    await mount(overridden, {
+      slots: {
+        'settings.placeholder': () =>
+          h('div', [
+            h('button', {type: 'button'}, 'Actions'),
+            h('input', {'data-override-input': ''}),
+          ]),
+      },
+    });
+
+    const input = required(
+      container.querySelector<HTMLInputElement>('[data-override-input]'),
+      'Expected the override input.'
+    );
+    input.focus();
+    currentPayload.value = structuredClone(overridden);
+    await nextTick();
+    await nextTick();
+
     expect(document.activeElement).toBe(input);
   });
 

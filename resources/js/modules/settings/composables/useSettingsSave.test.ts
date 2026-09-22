@@ -240,6 +240,28 @@ describe('useSettingsSave on a full page', () => {
     expect(axiosRequest).not.toHaveBeenCalled();
   });
 
+  it('only preserves page state when the save remains on the current screen', () => {
+    redirectUrl.value = '/admin/entry-types';
+    const redirectingForm = makeForm();
+    const continuingForm = makeForm();
+    const {save: saveAndRedirect} = run(() =>
+      useTestSettingsSave(redirectingForm)
+    );
+    const {save: saveAndContinue} = useTestSettingsSave(continuingForm);
+
+    saveAndRedirect();
+    saveAndContinue({redirect: false});
+
+    expect(redirectingForm.submit).toHaveBeenCalledWith(
+      action(),
+      expect.objectContaining({preserveState: false})
+    );
+    expect(continuingForm.submit).toHaveBeenCalledWith(
+      action(),
+      expect.objectContaining({replace: true})
+    );
+  });
+
   /** The submitted payload, as the composable's `transform` builds it. */
   function submittedData(
     form: ReturnType<typeof makeForm>

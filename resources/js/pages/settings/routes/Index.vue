@@ -8,8 +8,8 @@
     edit,
     reorder,
   } from '@actions/Settings/RoutesController';
-  import {Link, router} from '@inertiajs/vue3';
-  import {ButtonVariant, t} from '@craftcms/ui';
+  import {router} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
   import Empty from '@/common/components/Empty.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -87,16 +87,15 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <Link :href="create()">
-      <craft-button
-        v-if="!readOnly"
-        type="button"
-        icon="plus"
-        :variant="ButtonVariant.Primary"
-      >
-        {{ t('New route') }}
-      </craft-button>
-    </Link>
+    <CpLink
+      v-if="!readOnly"
+      :href="create()"
+      appearance="button"
+      variant="accent"
+      icon="plus"
+    >
+      {{ t('New route') }}
+    </CpLink>
   </LayoutSlot>
 
   <div v-if="routes.length === 0" class="empty-routes">
@@ -105,16 +104,15 @@
         :label="t('No routes exist yet.')"
         class="border border-quiet rounded"
       >
-        <Link :href="create()">
-          <craft-button
-            v-if="!readOnly"
-            type="button"
-            icon="plus"
-            :variant="ButtonVariant.Primary"
-          >
-            {{ t('New route') }}
-          </craft-button>
-        </Link>
+        <CpLink
+          v-if="!readOnly"
+          :href="create()"
+          appearance="button"
+          variant="accent"
+          icon="plus"
+        >
+          {{ t('New route') }}
+        </CpLink>
       </Empty>
     </CpContainer>
   </div>
@@ -138,7 +136,7 @@
           </div>
         </div>
 
-        <Link :href="edit({uid: route.uid})" class="route__parts">
+        <CpLink :href="edit({uid: route.uid})" class="route__parts" block>
           <div>
             <span
               v-if="route.uriDisplayHtml"
@@ -146,7 +144,7 @@
             ></span>
             <craft-icon v-else name="home" :label="t('Home')"></craft-icon>
           </div>
-        </Link>
+        </CpLink>
 
         <div class="route__icon">
           <craft-icon name="arrow-right" :label="t('Resolves to')"></craft-icon>

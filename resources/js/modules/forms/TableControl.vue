@@ -20,13 +20,14 @@
     minRows?: number;
     maxRows?: number;
     keyed?: boolean;
+    defaultValues?: EditableTableRow;
     errors?: Record<string, Record<string, true>>;
   };
   type TableRow = EditableTableRow;
   interface TableRows {
     [key: string]: TableRow;
   }
-  type TableValue = TableRow[] | TableRows;
+  type TableValue = TableRow[] | TableRows | null;
 
   const props = defineProps<{
     control: FormControlPayload<TableControlProps>;
@@ -129,6 +130,8 @@
       allowReorder: props.control.props.allowReorder,
       minRows: props.control.props.minRows ?? null,
       maxRows: props.control.props.maxRows ?? null,
+      defaultValues: props.control.props.defaultValues,
+      rowIdPrefix: rowIdPrefix(rows),
     });
     takeRecords();
 
@@ -220,13 +223,36 @@
   }
 
   function rowEntries(value: TableValue): Array<[string, TableRow]> {
+    if (value === null) {
+      return [];
+    }
+
     return Array.isArray(value)
       ? value.map((row, index) => [String(index), row])
       : Object.entries(value);
   }
 
   function rowValue(value: TableValue, rowId: string): TableRow | undefined {
+    if (value === null) {
+      return undefined;
+    }
+
     return Array.isArray(value) ? value[Number(rowId)] : value[rowId];
+  }
+
+  function rowIdPrefix(value: TableValue): string {
+    if (!props.control.props.keyed || value === null || Array.isArray(value)) {
+      return '';
+    }
+
+    for (const rowId of Object.keys(value)) {
+      const match = rowId.match(/^(.*\D)\d+$/);
+      if (match) {
+        return match[1]!;
+      }
+    }
+
+    return 'row';
   }
 
   function sameRows(left: TableValue, right: TableValue): boolean {
