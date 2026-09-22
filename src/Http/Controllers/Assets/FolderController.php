@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\Requests\MoveAssetFolderRequest;
 use CraftCms\Cms\Http\Requests\RenameAssetFolderRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,8 +72,12 @@ readonly class FolderController
         Gate::authorize('renameFolder', $folder);
 
         $newName = $this->folders->renameFolderById($request->folderId(), $request->newName());
+        $folder = $this->folders->getFolderById($request->folderId()) ?? abort(500);
 
-        return $this->asSuccess(data: ['newName' => $newName]);
+        return $this->asSuccess(data: [
+            'newName' => $newName,
+            'folderUrl' => $this->folderUrl($folder),
+        ]);
     }
 
     public function move(MoveAssetFolderRequest $request): Response
@@ -83,6 +88,19 @@ readonly class FolderController
 
         Gate::authorize('moveFolder', [$folderToMove, $destinationFolder]);
 
+        if ($folderToMove->parentId === $destinationFolder->id) {
+            return $this->asFailure(t('The folder is already in the selected location.'));
+        }
+
+        $ancestor = $destinationFolder;
+        while ($ancestor !== null) {
+            if ($ancestor->id === $folderToMove->id) {
+                return $this->asFailure(t('A folder can’t be moved into itself or one of its subfolders.'));
+            }
+
+            $ancestor = $ancestor->getParent();
+        }
+
         $targetVolume = $destinationFolder->getVolume();
 
         $existingFolder = $this->folders->findFolder([
@@ -92,6 +110,17 @@ readonly class FolderController
 
         if (! $existingFolder) {
             $existingFolder = $targetVolume->sourceDisk()->directoryExists(Str::ltrim(Str::finish($destinationFolder->path, '/').$folderToMove->name, '/'));
+        }
+
+        if ($existingFolder instanceof VolumeFolder) {
+            $ancestor = $folderToMove->getParent();
+            while ($ancestor !== null) {
+                if ($ancestor->id === $existingFolder->id) {
+                    return $this->asFailure(t('A folder can’t replace or merge with one of its parent folders.'));
+                }
+
+                $ancestor = $ancestor->getParent();
+            }
         }
 
         // If there's a conflict and `force`/`merge` flags weren't passed in, then stop
@@ -155,6 +184,14 @@ readonly class FolderController
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
             'newFolderId' => $newFolderId,
+            'newFolderUrl' => $this->folderUrl($newFolder),
         ]);
+    }
+
+    private function folderUrl(VolumeFolder $folder): string
+    {
+        $sourcePathInfo = $folder->getSourcePathInfo() ?? abort(500);
+
+        return Url::cpUrl($sourcePathInfo['uri']);
     }
 }

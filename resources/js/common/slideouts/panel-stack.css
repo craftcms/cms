@@ -1,6 +1,7 @@
 /**
  * Chrome owned by `panel-stack.ts` — the one shade shared by both slideout
- * implementations, plus a defensive copy of the body scroll lock.
+ * implementations, Garnish HUD styles, plus a defensive copy of the body
+ * scroll lock.
  */
 
 .cp-slideout-shade {
@@ -20,7 +21,7 @@
      module can rely on to keep the shade underneath — the z-index does it
      instead. Nothing else in the CP occupies 99 but tooltips, which belong
      under the shade anyway. */
-  z-index: 99;
+  z-index: var(--c-layer-shade);
 }
 
 .cp-slideout-shade.is-visible {
@@ -31,6 +32,189 @@
 @media screen and (prefers-reduced-motion: no-preference) {
   .cp-slideout-shade {
     transition: opacity linear 250ms;
+  }
+}
+
+/* ----------------------------------------
+   Garnish HUDs
+   ----------------------------------------
+   Anchored popovers such as the field layout designer's field library. They
+   live here rather than in the legacy stylesheet so they're styled on CP
+   surfaces that don't load it — HUDs open from inside slideouts too. Legacy
+   aliases (`--gray-100`, `--xl`, …) are spelled as the tokens they pointed
+   at, since those aliases only exist alongside the legacy bundle. */
+
+/* HUDs are appended to the end of `<body>` when shown, so matching the
+   panels' 100 puts one opened from inside a slideout above it. */
+.hud {
+  position: absolute;
+  display: none;
+  inset-block-start: 0;
+  z-index: var(--c-layer-overlay);
+  box-sizing: border-box;
+  border: var(--modal-border, none);
+  border-radius: var(--modal-border-radius, var(--c-radius-lg));
+  background-color: var(--modal-bg, var(--c-surface-overlay));
+  box-shadow: var(--modal-shadow, var(--c-shadow-overlay)) !important;
+}
+
+.hud.tooltip-hud {
+  display: block;
+}
+
+.hud-shade {
+  z-index: var(--c-layer-overlay);
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hud-shade:not(.visible) {
+  display: none;
+}
+
+.hud-header,
+.hud-footer {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  background-color: var(--color-gray-100);
+}
+
+.hud-header {
+  border-radius: var(--c-radius-lg) var(--c-radius-lg) 0 0;
+  padding: 24px;
+  box-shadow: inset 0 -1px 0 var(--c-color-neutral-border-quiet);
+}
+
+.hud-header h1 {
+  margin: 0;
+}
+
+.hud-header::after {
+  content: '';
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+.hud-footer {
+  border-radius: 0 0 var(--c-radius-lg) var(--c-radius-lg);
+  padding-block: 5px;
+  padding-inline: var(--pane-padding, var(--c-spacing-xl));
+  box-shadow: inset 0 1px 0 var(--c-color-neutral-border-quiet);
+}
+
+.hud-footer.flex > * {
+  margin-block-end: 0;
+}
+
+.hud-footer > .buttons {
+  margin: 0;
+}
+
+.hud .hud-header,
+.hud .hud-footer {
+  padding-block: var(--c-spacing-md);
+  padding-inline: var(--c-spacing-xl);
+}
+
+.hud .main {
+  padding: var(--modal-padding, var(--c-spacing-lg));
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.hud .body {
+  overflow: hidden;
+}
+
+.hud .body ::-webkit-scrollbar {
+  appearance: none;
+}
+
+.hud .body ::-webkit-scrollbar:vertical {
+  width: 11px;
+}
+
+.hud .body ::-webkit-scrollbar:horizontal {
+  height: 11px;
+}
+
+.hud .body ::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-color: rgb(0 0 0 / 50%);
+}
+
+.hud .body ::-webkit-scrollbar-track {
+  background-color: var(--color-gray-50);
+}
+
+.hud .tip {
+  position: absolute;
+  z-index: 101;
+  background: no-repeat 0 0;
+}
+
+.hud .tip-left {
+  inset-inline-start: -15px;
+  width: 15px;
+  height: 30px;
+  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_left.png');
+}
+
+.hud .tip-top {
+  inset-block-start: -15px;
+  width: 30px;
+  height: 15px;
+  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_top.png');
+}
+
+.hud .tip-right {
+  inset-inline-end: -15px;
+  width: 15px;
+  height: 30px;
+  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_right.png');
+}
+
+.hud .tip-bottom {
+  inset-block-end: -15px;
+  width: 30px;
+  height: 15px;
+  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom.png');
+}
+
+.hud.has-footer .tip-bottom {
+  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom_gray.png');
+}
+
+@media only screen and (resolution >= 1.5dppx) {
+  .hud .tip-left {
+    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_left_2x.png');
+    background-size: 15px 30px;
+  }
+
+  .hud .tip-top {
+    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_top_2x.png');
+    background-size: 30px 15px;
+  }
+
+  .hud .tip-right {
+    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_right_2x.png');
+    background-size: 15px 30px;
+  }
+
+  .hud .tip-bottom {
+    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom_2x.png');
+    background-size: 30px 15px;
+  }
+
+  .hud.has-footer .tip-bottom {
+    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom_gray_2x.png');
   }
 }
 

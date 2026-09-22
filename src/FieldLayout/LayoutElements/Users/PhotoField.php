@@ -83,6 +83,8 @@ class PhotoField extends BaseNativeField
             ->elementType(Asset::class)
             ->sources([$source])
             ->criteria(['volumeId' => $folder->volumeId, 'folderId' => $folder->id, 'kind' => 'image'])
+            ->canUpload()
+            ->uploadFolderId($folder->id)
             ->showFolders(false)
             ->limit(1)
             ->value($context->element->photoId ? [$context->element->photoId] : []);

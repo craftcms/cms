@@ -106,7 +106,8 @@ class ProjectConfig extends Component
     public const PATH_FIELDS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FIELDS;
     /** @deprecated in 6.0.0 */
     public const PATH_GLOBAL_SETS = 'globalSets';
-    public const PATH_FS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_FS;
+    /** @deprecated in 6.0.0 */
+    public const PATH_FS = 'fs';
     public const PATH_GRAPHQL = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL;
     public const PATH_GRAPHQL_PUBLIC_TOKEN = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN;
     public const PATH_GRAPHQL_SCHEMAS = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_GRAPHQL_SCHEMAS;

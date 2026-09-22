@@ -272,7 +272,9 @@ class MigrateCommand extends Command implements Isolatable
      */
     private function prepareDatabase(): void
     {
-        app(LaravelMigrations::class)->ensureMigrationTableTrackColumn();
+        $laravelMigrations = app(LaravelMigrations::class);
+        $laravelMigrations->ensureMigrationTableFormat();
+        $laravelMigrations->ensureMigrationTableTrackColumn();
 
         if ($this->getMigrator('craft')->repositoryExists()) {
             return;

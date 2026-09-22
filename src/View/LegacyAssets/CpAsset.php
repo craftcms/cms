@@ -32,7 +32,6 @@ class CpAsset implements LegacyAssetInterface
         DatepickerI18nAsset::class,
         SelectizeAsset::class,
         VelocityAsset::class,
-        FileUploadAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
@@ -42,7 +41,6 @@ class CpAsset implements LegacyAssetInterface
     public function register(HtmlStack $htmlStack): void
     {
         // CP
-        $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
         $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
 
         $htmlStack->icons([

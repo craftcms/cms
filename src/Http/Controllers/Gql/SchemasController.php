@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
@@ -39,8 +40,8 @@ readonly class SchemasController extends GqlController
 
         return Inertia::render('graphql/schemas/Index', [
             'crumbs' => fn () => [
-                ['label' => t('GraphQL'), 'href' => Url::cpUrl('graphql/schemas')],
-                ['label' => t('Schemas')],
+                new ActionItem()->label(t('GraphQL'))->href(Url::cpUrl('graphql/schemas')),
+                new ActionItem()->label(t('Schemas')),
             ],
             'title' => t('GraphQL Schemas'),
             'schemas' => $this->gql->getSchemas(),
@@ -145,8 +146,8 @@ readonly class SchemasController extends GqlController
             ->title($title)
             ->selectedSubnavItem('schemas')
             ->crumbs([
-                ['label' => t('GraphQL Schemas'), 'href' => Url::cpUrl('graphql/schemas')],
-                ['label' => $title],
+                new ActionItem()->label(t('GraphQL Schemas'))->href(Url::cpUrl('graphql/schemas')),
+                new ActionItem()->label($title),
             ])
             ->redirectUrl('graphql/schemas')
             ->inertiaPage('graphql/schemas/Edit', [

@@ -20,6 +20,7 @@
   } from '@/modules/forms/types';
   import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     form: FormPayload;
@@ -129,6 +130,7 @@
     form: props.submit ? inertiaForm : null,
     defaultFormActions: props.defaultFormActions,
     formActions: translatedFormActions.value,
+    contentMaxWidth: true,
     onSave: save,
   });
 
@@ -174,26 +176,28 @@
     an actual `<form>` tag existing in the DOM either way.
   -->
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
-    <craft-pane appearance="raised">
-      <craft-field-group class="py-4">
-        <FormRenderer
-          ref="renderer"
-          :payload="form"
-          :refresh="refreshUrl ? refresh : undefined"
-          :errors="errors"
-          @update:mutation="onMutation"
-          @change="onChange"
-        >
-          <template
-            v-for="(_, slotName) in $slots"
-            :key="slotName"
-            #[slotName]="slotProps"
+    <CpContainer>
+      <craft-pane appearance="raised">
+        <craft-field-group class="py-4">
+          <FormRenderer
+            ref="renderer"
+            :payload="form"
+            :refresh="refreshUrl ? refresh : undefined"
+            :errors="errors"
+            @update:mutation="onMutation"
+            @change="onChange"
           >
-            <slot :name="slotName" v-bind="slotProps" />
-          </template>
-        </FormRenderer>
-      </craft-field-group>
-    </craft-pane>
+            <template
+              v-for="(_, slotName) in $slots"
+              :key="slotName"
+              #[slotName]="slotProps"
+            >
+              <slot :name="slotName" v-bind="slotProps" />
+            </template>
+          </FormRenderer>
+        </craft-field-group>
+      </craft-pane>
+    </CpContainer>
   </component>
   <LayoutSlot v-if="metadataHtml" name="details">
     <DynamicHtmlRenderer :html="metadataHtml" />

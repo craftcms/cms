@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Types\Elements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
+use CraftCms\Cms\Gql\Resolvers\ElementResolver;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
@@ -41,7 +44,29 @@ class Element extends ObjectType
             $argumentManager = $context['argumentManager'] ?? new ArgumentManager;
             $arguments = $argumentManager->prepareArguments($arguments);
 
-            return $source->{'get'.ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
+            // With no criteria, getPrev()/getNext() fall back to the cached sibling from the
+            // (already-scoped) result set the element was populated from, so that's safe as-is.
+            // Criteria rebuilds an entirely new query from scratch, so route that through this
+            // type's own GQL resolver to keep it scoped to what the active schema can read.
+            // Types that haven't declared a resolver keep the old, unscoped behavior.
+            $resolverClass = empty($arguments) ? null : static::elementResolverClass();
+
+            if ($resolverClass === null) {
+                return $source->{'get'.ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
+            }
+
+            // Match the query-building keys getPrev()/getNext() have always silently ignored
+            // when given a plain criteria array (see Structurable::_getRelativeElement()), so this
+            // doesn't newly enable arguments (like `orderBy`) that were previously no-ops here.
+            $query = $resolverClass::prepareRootQuery(ElementHelper::cleanseQueryCriteria($arguments));
+
+            if (! $query instanceof ElementQuery) {
+                return null;
+            }
+
+            $query->siteId($source->siteId);
+
+            return $source->{'get'.ucfirst($fieldName)}($query);
         }
 
         if ($fieldName === 'siteHandle') {
@@ -53,5 +78,25 @@ class Element extends ObjectType
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);
+    }
+
+    /**
+     * Returns the [[ElementResolver]] class that should be used to build a schema-scoped
+     * element query for this type’s `prev` and `next` fields.
+     *
+     * Subclasses that add `prev`/`next` fields to their GraphQL interface (see
+     * [[\craft\gql\interfaces\elements\Entry]] for an example) should override this to
+     * return the [[ElementResolver]] class used to resolve their own top-level queries,
+     * so element navigation stays scoped to what the active schema is allowed to read.
+     *
+     * Subclasses that don’t override this (the default) fall back to the unscoped
+     * `getPrev()`/`getNext()` behavior, for backwards compatibility with element types
+     * that predate this method.
+     *
+     * @return class-string<ElementResolver>|null
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return null;
     }
 }

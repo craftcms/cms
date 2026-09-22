@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
 use CraftCms\Cms\Database\Commands\DropAllTablesCommand;
 use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\Database\Commands\MigrateMigrationTableCommand;
 use CraftCms\Cms\Database\Commands\RepairCommand;
 use CraftCms\Cms\Database\Commands\RestoreCommand;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
@@ -118,6 +119,7 @@ class DatabaseServiceProvider extends ServiceProvider
             DropAllTablesCommand::class,
             DropTablePrefixCommand::class,
             MigrateCommand::class,
+            MigrateMigrationTableCommand::class,
             RepairCommand::class,
             RestoreCommand::class,
         ]);

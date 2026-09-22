@@ -30,7 +30,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/transform-controller-test/test-disk'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
@@ -72,12 +72,12 @@ describe('generate', function () {
             'handle' => 'configured-private',
             'driver' => 'craft',
             'settings' => [
-                'filesystem' => 'disk:configured-private-target',
+                'disk' => 'configured-private-target',
                 'subpath' => 'transforms',
             ],
         ]), false);
         $volume = Volume::factory()->create([
-            'fs' => 'disk:configured-private-source',
+            'fs' => 'configured-private-source',
             'assetTransformer' => 'configured-private',
         ]);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);

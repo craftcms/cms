@@ -25,7 +25,6 @@ import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
-import FilesystemSelectControl from './FilesystemSelectControl.vue';
 import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
@@ -42,6 +41,7 @@ import LineBreakNode from './LineBreakNode.vue';
 import PermissionTreeControl from './PermissionTreeControl.vue';
 import SeparatorNode from './SeparatorNode.vue';
 import AdminTableNode from './AdminTableNode.vue';
+import UserGroupSelectControl from './UserGroupSelectControl.vue';
 import './content-block-input';
 
 export function registerFormComponents(
@@ -82,6 +82,7 @@ export function registerFormComponents(
   components.register('craft:color-select', ColorSelectControl);
   components.register('craft:money', MoneyControl);
   components.register('craft:permission-tree', PermissionTreeControl);
+  components.register('craft:user-group-select', UserGroupSelectControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
   components.register('craft:admin-table', AdminTableNode);
@@ -90,7 +91,6 @@ export function registerFormComponents(
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
   components.register('craft:field-select', FieldSelectControl);
-  components.register('craft:filesystem-select', FilesystemSelectControl);
   components.register(
     'craft:grouped-entry-type-manager',
     GroupedEntryTypeManagerControl

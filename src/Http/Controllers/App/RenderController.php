@@ -22,8 +22,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rule;
 
 readonly class RenderController
@@ -89,6 +91,10 @@ readonly class RenderController
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    if (isset($instance['returnUrl'])) {
+                        $instance['returnUrl'] = $this->validateReturnUrl($instance['returnUrl']);
+                    }
+
                     $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
@@ -117,6 +123,24 @@ readonly class RenderController
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
+    }
+
+    private function validateReturnUrl(mixed $returnUrl): string
+    {
+        if (! is_string($returnUrl)) {
+            abort(400, 'Invalid returnUrl param');
+        }
+
+        // Only require the URL to already be hashed if it contains Twig code
+        try {
+            return Crypt::decrypt($returnUrl);
+        } catch (DecryptException) {
+            if (str_contains($returnUrl, '{')) {
+                abort(400, 'Invalid returnUrl param');
+            }
+
+            return $returnUrl;
+        }
     }
 
     public function components(Request $request): JsonResponse

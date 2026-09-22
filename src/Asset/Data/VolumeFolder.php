@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
@@ -47,8 +46,6 @@ class VolumeFolder extends Component implements Stringable
             $this->setChildren($value);
         }
     }
-
-    private ?FsInterface $_fs = null;
 
     /**
      * @var self[]|null
@@ -106,16 +103,6 @@ class VolumeFolder extends Component implements Stringable
         }
 
         return $volume;
-    }
-
-    public function getFs(): FsInterface
-    {
-        return $this->_fs ?? $this->getVolume()->getFs();
-    }
-
-    public function setFs(FsInterface $fs): void
-    {
-        $this->_fs = $fs;
     }
 
     /**

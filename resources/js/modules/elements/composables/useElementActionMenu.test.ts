@@ -1,11 +1,15 @@
 import {router} from '@inertiajs/vue3';
 import {createApp, defineComponent, type ComputedRef} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {openSlideout} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {
+  createElementActionMenu,
   useElementActionMenu,
   type ElementActionMenuItem,
 } from './useElementActionMenu';
+
+vi.mock('@/common/slideouts', () => ({openSlideout: vi.fn()}));
 
 describe('useElementActionMenu', () => {
   let app: ReturnType<typeof createApp>;
@@ -60,6 +64,43 @@ describe('useElementActionMenu', () => {
     }
     item.onClick?.(new Event('click'));
   }
+
+  it('opens a slideout behavior in a Vue slideout', () => {
+    activate(
+      mount([
+        {
+          label: 'Section settings',
+          behavior: {type: 'slideout', url: '/admin/settings/sections/1'},
+        },
+      ])
+    );
+
+    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/sections/1');
+  });
+
+  it("opens the sidebar's entry type rather than the saved one", () => {
+    window.Craft!.getCpUrl = vi.fn((path: string) => `/admin/${path}`);
+    const toActionItems = createElementActionMenu({
+      currentEntryTypeId: () => 7,
+    });
+    const [item] = toActionItems([
+      {
+        label: 'Entry type settings',
+        behavior: {
+          type: 'slideout',
+          url: '/admin/settings/entry-types/3',
+          entryTypeFromField: true,
+        },
+      },
+    ]);
+
+    if (!item || !('onClick' in item)) {
+      throw new Error('Expected a button action.');
+    }
+    item.onClick?.(new MouseEvent('click'));
+
+    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/entry-types/7');
+  });
 
   it('posts a submit behavior with its params and redirect', () => {
     const post = vi.spyOn(router, 'post').mockImplementation(() => undefined);

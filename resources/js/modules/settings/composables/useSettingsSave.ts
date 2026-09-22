@@ -84,9 +84,9 @@ export function useSettingsSave<T extends object>(
   function save({
     redirect = true,
     data: extraData = {},
-    // Callers can opt out of state preservation — e.g. "save as new", which
-    // navigates to a different record and needs the form to re-initialize.
-    preserveState = true,
+    // Reset page state when this screen sends the user elsewhere, while saves
+    // that remain on the current screen keep their local state by default.
+    preserveState = !(redirect && redirectUrl.value),
     // An alternate form action ("Save as a new X", "Delete") posting the
     // same in-progress values to a different destination than this screen's
     // own default `submit` target.

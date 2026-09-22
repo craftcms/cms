@@ -54,6 +54,8 @@ function entryType(id: number, name: string, handle: string): EntryType {
     slugTranslationMethod: {name: 'Site', value: 'site'},
     slugTranslationKeyFormat: null,
     showStatusField: true,
+    showPostDateField: true,
+    showExpiryDateField: true,
     uid: `entry-type-${id}`,
     validateHandleUniqueness: true,
     group: null,

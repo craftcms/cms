@@ -7,9 +7,10 @@
     "check-prettier": "vp fmt --check ./resources",
     "fix-prettier": "vp fmt ./resources",
     "prepare": "vp config",
-    "prebuild": "pnpm run fix-prettier",
-    "build": "vp build",
-    "build:fe": "pnpm run build:ui && pnpm run build",
+    "prebuild:cms": "pnpm run fix-prettier",
+    "build:cms": "vp build",
+    "build": "pnpm run build:ui && pnpm run build:cms",
+    "build:fe": "pnpm run build",
     "predev": "node scripts/ensure-built.mjs",
     "dev": "run-p -l dev:vite dev:ui",
     "dev:vite": "vp dev",
@@ -32,7 +33,7 @@
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build",
     "storybook:ui": "pnpm --filter @craftcms/ui run storybook",
-    "build:all": "pnpm run build:garnish && pnpm run build:ui && pnpm run build:bundles && pnpm run build"
+    "build:all": "pnpm run build:garnish && pnpm run build:ui && pnpm run build:bundles && pnpm run build:cms"
   },
   "packageManager": "pnpm@11.25.0",
   "engines": {
@@ -91,6 +92,10 @@
     "@simplewebauthn/browser": "catalog:",
     "@tanstack/table-core": "^8.21.3",
     "@tanstack/vue-table": "^8.21.3",
+    "@uppy/aws-s3": "^6.1.0",
+    "@uppy/core": "^6.0.1",
+    "@uppy/drop-target": "^5.0.0",
+    "@uppy/tus": "^6.0.0",
     "@vueuse/core": "^14.3.0",
     "@vueuse/shared": "^14.3.0",
     "axios": "catalog:",

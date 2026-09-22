@@ -103,6 +103,15 @@ describe('iconSvg', function () {
 
         expect($json['iconSvg'])->toBeString();
     });
+
+    test('svg rejects icon names that could be used for path traversal', function (string $icon) {
+        get(action([IconController::class, 'svg'], ['icon' => $icon]))->assertBadRequest();
+    })->with([
+        '../../../../etc/passwd',
+        '@webroot/index.php',
+        'foo/bar',
+        'foo.svg',
+    ]);
 });
 
 describe('pickerOptions', function () {

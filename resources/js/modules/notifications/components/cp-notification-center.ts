@@ -42,6 +42,7 @@ class CpNotificationCenter extends LitElement {
     craft-popover::part(popup) {
       width: min(26rem, calc(100vw - 2rem));
       max-width: none;
+      max-height: none;
       overflow: hidden;
     }
 

@@ -31,11 +31,17 @@
         query
       ),
   };
+
+  const sourceHref = index.url({page: page.props.page ?? ''});
 </script>
 
 <template>
-  <ElementIndexPage :route="route">
-    <template #actions="{elementIndex}">
+  <ElementIndexPage
+    :route="route"
+    :source-href="sourceHref"
+    customizable-sources
+  >
+    <template #toolbar-actions="{elementIndex}">
       <NewEntryButton
         :sources="elementIndex.sources"
         :source="elementIndex.source ?? undefined"

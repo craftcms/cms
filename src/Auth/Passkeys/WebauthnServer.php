@@ -7,16 +7,9 @@ namespace CraftCms\Cms\Auth\Passkeys;
 use Cose\Algorithm\Manager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
 use Cose\Algorithm\Signature\ECDSA\ES256K;
-use Cose\Algorithm\Signature\ECDSA\ES384;
-use Cose\Algorithm\Signature\ECDSA\ES512;
 use Cose\Algorithm\Signature\EdDSA\Ed256;
-use Cose\Algorithm\Signature\EdDSA\Ed512;
 use Cose\Algorithm\Signature\RSA\PS256;
-use Cose\Algorithm\Signature\RSA\PS384;
-use Cose\Algorithm\Signature\RSA\PS512;
 use Cose\Algorithm\Signature\RSA\RS256;
-use Cose\Algorithm\Signature\RSA\RS384;
-use Cose\Algorithm\Signature\RSA\RS512;
 use Cose\Algorithms;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
@@ -111,19 +104,9 @@ class WebauthnServer
             ->add(
                 ES256::create(),
                 ES256K::create(),
-                ES384::create(),
-                ES512::create(),
-
                 RS256::create(),
-                RS384::create(),
-                RS512::create(),
-
                 PS256::create(),
-                PS384::create(),
-                PS512::create(),
-
-                Ed256::create(),
-                Ed512::create(),
+                Ed256::create(true), // removed as registration option; remove it in the next major release
             );
     }
 
@@ -161,7 +144,6 @@ class WebauthnServer
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_RS256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_PS256),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ED256),
         ];
     }
 

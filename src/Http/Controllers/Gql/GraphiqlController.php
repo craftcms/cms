@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -59,8 +60,8 @@ readonly class GraphiqlController extends GqlController
             ->title(t('Explore the GraphQL API'))
             ->selectedSubnavItem('explore')
             ->crumbs([
-                ['label' => 'GraphQL', 'href' => Url::cpUrl('graphql/explore')],
-                ['label' => 'GraphiQL'],
+                new ActionItem()->label('GraphQL')->href(Url::cpUrl('graphql/explore')),
+                new ActionItem()->label('GraphiQL'),
             ])
             ->inertiaPage('graphql/Explore', [
                 'endpoint' => Url::actionUrl('graphql/api'),

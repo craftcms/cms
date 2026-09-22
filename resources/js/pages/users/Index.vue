@@ -63,13 +63,12 @@
 
 <template>
   <ElementIndexPage :route="route">
-    <template #actions>
+    <template #toolbar-actions>
       <CpLink
         v-if="page.props.canRegisterUsers"
         :href="create().url"
         icon="plus"
         appearance="button"
-        variant="accent"
         >{{ page.props.newUserLabel }}</CpLink
       >
     </template>

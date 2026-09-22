@@ -57,6 +57,7 @@
 <style scoped lang="css">
   .resize-handle {
     position: absolute;
+    z-index: 10;
     inset-block: 0;
     inline-size: calc(12rem / 16);
     /* Set --resize-handle-display: none from the caller to drop the handle in
@@ -69,6 +70,7 @@
     /* Let the pointer, not the browser's scroll gesture, drive touch drags. */
     touch-action: none;
     border-radius: var(--c-radius-sm);
+    transform: translateX(-50%);
   }
 
   .resize-handle:focus-visible {
@@ -85,7 +87,7 @@
 
   .resize-handle:hover .resize-handle__grip,
   .resize-handle:focus-visible .resize-handle__grip {
-    background-color: var(--c-color-neutral-border-normal);
+    background-color: var(--c-color-accent-border-normal);
   }
 
   .resize-handle--active .resize-handle__grip {

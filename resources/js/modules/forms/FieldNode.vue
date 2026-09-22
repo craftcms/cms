@@ -19,6 +19,7 @@
     FormChangedPaths,
     FormModifiedGroups,
     formChangeFromEvent,
+    fieldId,
     pathsMatch,
     setValue as setPathValue,
     controlValueAt,
@@ -187,6 +188,7 @@
 
 <template>
   <craft-field
+    :id="fieldId(control.path)"
     :label="node.props.label ?? undefined"
     :label-sr-only="node.props.labelSrOnly || undefined"
     :help-text="

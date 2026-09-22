@@ -388,7 +388,7 @@ it('validates html sanitizer settings', function () {
 it('validates and applies asset selector volume settings', function () {
     $volume = Volume::factory()->create([
         'name' => 'Images',
-        'fs' => 'disk:test-disk',
+        'fs' => 'test-disk',
     ]);
     app()->forgetInstance(VolumesService::class);
 

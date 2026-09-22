@@ -25,7 +25,6 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
@@ -40,6 +39,7 @@ use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -769,64 +769,71 @@ class ImageTransformer
 
     private function transformDisk(Asset $asset, AssetTransformer $assetTransformer): FilesystemAdapter
     {
-        [$filesystem, $subpath] = $this->outputSettings($assetTransformer->settings);
+        [$diskReference, $subpath] = $this->outputSettings($assetTransformer->settings);
 
-        return Filesystems::disk(
-            $filesystem ?? $asset->getVolume()->getFsHandle(false),
-            $subpath,
-        );
+        if ($diskReference === null) {
+            return $asset->getVolume()->sourceDisk();
+        }
+
+        $diskName = $asset->getVolume()->resolveStorageTargetKey($diskReference);
+        if ($diskName === null) {
+            throw new FilesystemException('The configured Asset Transform output disk does not exist.');
+        }
+
+        if ($subpath === null) {
+            return Storage::disk($diskName);
+        }
+
+        $disk = Storage::build(['driver' => 'scoped', 'disk' => $diskName, 'prefix' => $subpath]);
+        if (! $disk instanceof FilesystemAdapter) {
+            throw new FilesystemException('Unable to create the scoped Asset Transform output disk.');
+        }
+
+        return $disk;
     }
 
     private function transformHasUrls(Asset $asset, AssetTransformer $assetTransformer): bool
     {
-        [$filesystem] = $this->outputSettings($assetTransformer->settings);
+        [$diskReference, , $hasUrls] = $this->outputSettings($assetTransformer->settings);
 
-        $filesystem = Filesystems::resolve(
-            $filesystem ?? $asset->getVolume()->getFsHandle(false),
-        );
-
-        if ($filesystem === null) {
-            throw new FilesystemException('The configured Asset Transform output filesystem does not exist.');
-        }
-
-        return $filesystem->getRootUrl() !== null;
+        return $diskReference === null ? $asset->getVolume()->sourceHasUrls() : $hasUrls;
     }
 
     /**
      * @param  array<string,mixed>  $settings
-     * @return array{string|null,string|null}
+     * @return array{string|null,string|null,bool}
      */
     private function outputSettings(array $settings): array
     {
-        $filesystem = $settings['filesystem'] ?? null;
+        $disk = $settings['disk'] ?? null;
         $subpath = $settings['subpath'] ?? '';
 
-        if ($filesystem !== null && ! is_string($filesystem)) {
-            throw new FilesystemException('The configured Asset Transform output filesystem is invalid.');
+        if ($disk !== null && ! is_string($disk)) {
+            throw new FilesystemException('The configured Asset Transform output disk is invalid.');
         }
 
         if (! is_string($subpath)) {
             throw new FilesystemException('The configured Asset Transform output subpath is invalid.');
         }
 
-        $rawFilesystem = $filesystem;
+        $rawDisk = $disk;
         $rawSubpath = $subpath;
-        $filesystem = Env::parse($filesystem);
+        $disk = Env::parse($disk);
         $subpath = Env::parse($subpath);
 
-        if ($rawFilesystem !== null && $rawFilesystem !== '' && $filesystem === null) {
-            throw new FilesystemException('The configured Asset Transform output filesystem could not be resolved.');
+        if ($rawDisk !== null && $rawDisk !== '' && $disk === null) {
+            throw new FilesystemException('The configured Asset Transform output disk could not be resolved.');
         }
 
         if ($rawSubpath !== '' && $subpath === null) {
             throw new FilesystemException('The configured Asset Transform output subpath could not be resolved.');
         }
 
-        $filesystem = $filesystem === '' ? null : $filesystem;
+        $disk = $disk === '' ? null : $disk;
         $subpath = trim(str_replace('\\', '/', $subpath ?? ''), '/');
         $subpath = $subpath === '' ? null : $subpath;
 
-        return [$filesystem, $subpath];
+        return [$disk, $subpath, ($settings['hasUrls'] ?? false) === true];
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void

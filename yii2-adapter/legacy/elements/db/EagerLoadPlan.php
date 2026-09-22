@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -13,6 +15,7 @@ use CraftCms\Cms\Support\Arr;
  * Class EagerLoadPlan
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Data\EagerLoadPlan} instead.
  */
@@ -29,7 +32,8 @@ class EagerLoadPlan extends \CraftCms\Cms\Element\Data\EagerLoadPlan
         $when = Arr::get($config, 'when');
         $nested = Arr::get($config, 'nested', []);
         $lazy = Arr::get($config, 'lazy', false);
+        $siteIds = Arr::get($config, 'siteIds');
 
-        parent::__construct($handle, $alias, $criteria, $all, $count, $when, $nested, $lazy);
+        parent::__construct($handle, $alias, $criteria, $all, $count, $when, $nested, $lazy, $siteIds);
     }
 }

@@ -77,13 +77,13 @@ The Control Panel app shell. Provides the same extension points as Craft 5's
 | \`contextMenu\` | \`context-menu\` slot |
 | \`block header\` | \`header\` slot |
 | \`block pageTitle\` / \`title\` | \`title\` slot / \`title\` prop |
-| \`#revision-indicators\` | \`title-badge\` slot |
-| \`toolbar\` | \`toolbar\` slot |
+| \`#revision-indicators\` / \`toolbar\` | \`content-toolbar-meta\` slot |
 | \`additionalButtons\` | \`additional-buttons\` slot |
-| \`actionButton\` | \`actions\` slot (full override) |
+| \`actionButton\` | \`content-actions\` slot, beside the title |
 | \`block submitButton\` | \`submit-button\` slot |
-| \`actionMenu\` / \`formActions\` | \`formActions\` / \`formAdditionalActions\` / \`defaultFormActions\` props |
-| \`contentNotice\` | \`content-notice\` slot |
+| \`actionMenu\` | \`content-toolbar-actions\` slot, or the \`formAdditionalActions\` prop to keep it beside Save |
+| \`formActions\` | \`formActions\` / \`defaultFormActions\` props |
+| \`contentNotice\` | \`content-notices\` slot |
 | \`tabs\` | \`tabs\` slot |
 | \`sidebar\` | \`sidebar\` slot — defaults to a secondary nav built from the \`subnav\` page prop, with a \`subnav-actions\` slot below it |
 | \`block content\` | default slot |
@@ -141,14 +141,9 @@ export const AllExtensionPoints: Story = {
             </SlotMarker>
           </template>
 
-          <template #title-badge>
-            <SlotMarker name="title-badge">
+          <template #content-toolbar-meta>
+            <SlotMarker name="content-toolbar-meta">
               <craft-chip>Draft</craft-chip>
-            </SlotMarker>
-          </template>
-
-          <template #toolbar>
-            <SlotMarker name="toolbar">
               <craft-button size="small" type="button">Filter</craft-button>
               <craft-button size="small" type="button">Search</craft-button>
             </SlotMarker>
@@ -160,20 +155,20 @@ export const AllExtensionPoints: Story = {
             </SlotMarker>
           </template>
 
-          <template #content-notice>
-            <SlotMarker name="content-notice">
+          <template #content-notices>
+            <SlotMarker name="content-notices">
               This entry was updated 5 minutes ago.
             </SlotMarker>
           </template>
 
-          <template #tabs>
+          <template #content-tabs>
             <SlotMarker name="tabs">
               <craft-button size="small" type="button">Content</craft-button>
               <craft-button size="small" type="button">SEO</craft-button>
             </SlotMarker>
           </template>
 
-          <template #sidebar>
+          <template #content-sidebar>
             <SlotMarker name="sidebar">
               Filters or secondary navigation
             </SlotMarker>
@@ -193,13 +188,13 @@ export const AllExtensionPoints: Story = {
             </SlotMarker>
           </template>
 
-          <template #details>
+          <template #content-details>
             <SlotMarker name="details">
               Details / metadata pane
             </SlotMarker>
           </template>
 
-          <template #footer>
+          <template #page-footer>
             <SlotMarker name="footer">
               Global footer
             </SlotMarker>
@@ -220,14 +215,15 @@ export const AllExtensionPoints: Story = {
  *
  * Three points are deliberately absent, because each one *replaces* a region
  * that the others live in, and using them would empty most of this story:
- * `main` (the whole main column), `header` (title through action buttons), and
- * `breadcrumbs` (the bar hosting `context-menu`). `actions` is out for the same
- * reason — it would swallow `additional-buttons` and `submit-button`, which are
- * shown here instead.
+ * `page-main` (the whole main column), `content-toolbar` (the bar holding
+ * `content-toolbar-meta` and `content-toolbar-actions`), and `breadcrumbs`
+ * (the bar hosting `context-menu`). `content-header` is left out too, since it would hide the
+ * title.
  *
- * The left column comes from the `subnav` page prop rather than the `sidebar`
- * slot: `subnav-actions` renders inside the default nav, so a screen can use
- * `sidebar` or `subnav-actions`, never both. A real entry editor wouldn't carry
+ * The left column comes from the `subnav` page prop rather than the
+ * `content-sidebar` slot: `subnav-actions` renders inside the default nav, so a
+ * screen can use `content-sidebar` or `subnav-actions`, never both. A real
+ * entry editor wouldn't carry
  * a secondary nav at all — it's here so the region is exercised.
  */
 export const AllExtensionPointsInContext: Story = {
@@ -266,12 +262,9 @@ export const AllExtensionPointsInContext: Story = {
           <h1 class="text-xl">Summer sale: up to 40% off</h1>
         </template>
 
-        <template #title-badge>
+        <template #content-toolbar-meta>
           <craft-status status="pending" label="Draft"></craft-status>
           <craft-chip>Draft 3</craft-chip>
-        </template>
-
-        <template #toolbar>
           <craft-button size="small" type="button" appearance="outline">
             Revisions
             <craft-icon name="angle-down" slot="suffix"></craft-icon>
@@ -295,14 +288,14 @@ export const AllExtensionPointsInContext: Story = {
           </div>
         </template>
 
-        <template #content-notice>
+        <template #content-notices>
           <craft-callout data-color="info" size="small">
             You're editing a draft. It won't be visible on the site until it's
             published.
           </craft-callout>
         </template>
 
-        <template #tabs>
+        <template #content-tabs>
           <craft-button-group role="tablist">
             <craft-button type="button" role="tab" appearance="outline" active="true" aria-selected="true">
               Content
@@ -357,7 +350,7 @@ export const AllExtensionPointsInContext: Story = {
           </craft-button>
         </template>
 
-        <template #details>
+        <template #content-details>
           <dl class="cp-metadata-list">
             <div class="cp-metadata-list__item">
               <dt class="font-bold text-xs">Status</dt>
@@ -386,7 +379,7 @@ export const AllExtensionPointsInContext: Story = {
           </dl>
         </template>
 
-        <template #footer>
+        <template #page-footer>
           <span>Craft Pro 6.0.0</span>
         </template>
       </AppLayout>
@@ -467,7 +460,8 @@ export const FormWithErrors: Story = {
 };
 
 /**
- * When the server provides a `subnav` page prop, the `sidebar` slot's default
+ * When the server provides a `subnav` page prop, the `content-sidebar` slot's
+ * default
  * content renders it as a secondary nav (like Craft 5's settings subnav).
  * The `subnav-actions` slot adds extra controls below the nav.
  */
@@ -502,8 +496,8 @@ export const SecondaryNavigation: Story = {
 };
 
 /**
- * Left `sidebar` and right `details` columns around the content, equivalent of
- * the `sidebar` and `details` blocks in Craft 5.
+ * Left `content-sidebar` and right `content-details` columns around the
+ * content, equivalent of the `sidebar` and `details` blocks in Craft 5.
  */
 export const SidebarAndDetails: Story = {
   render: (args) => ({
@@ -513,13 +507,13 @@ export const SidebarAndDetails: Story = {
       <div>
         <component is="style">${markerStyles}</component>
         <AppLayout v-bind="args">
-          <template #sidebar>
+          <template #content-sidebar>
             <SlotMarker name="sidebar">Source list</SlotMarker>
           </template>
 
           ${sampleContent}
 
-          <template #details>
+          <template #content-details>
             <SlotMarker name="details">Metadata</SlotMarker>
           </template>
         </AppLayout>
@@ -532,10 +526,10 @@ export const SidebarAndDetails: Story = {
 };
 
 /**
- * `contentNotice` and `tabs` render at the top of the content column, like the
- * content pane header in Craft 5.
+ * `content-notices` render at the top of the content column, above the page header, and
+ * `content-tabs` below it, like the content pane header in Craft 5.
  */
-export const ContentNoticeAndTabs: Story = {
+export const NoticesAndTabs: Story = {
   render: (args) => ({
     components: {AppLayout, SlotMarker},
     setup: () => ({args}),
@@ -543,13 +537,13 @@ export const ContentNoticeAndTabs: Story = {
       <div>
         <component is="style">${markerStyles}</component>
         <AppLayout v-bind="args">
-          <template #content-notice>
-            <SlotMarker name="content-notice">
+          <template #content-notices>
+            <SlotMarker name="content-notices">
               Showing the entry in its state on June 1, 2026.
             </SlotMarker>
           </template>
 
-          <template #tabs>
+          <template #content-tabs>
             <SlotMarker name="tabs">
               <craft-button size="small" type="button">Content</craft-button>
               <craft-button size="small" type="button">SEO</craft-button>
@@ -584,8 +578,8 @@ export const ContextMenuAndToolbar: Story = {
             </SlotMarker>
           </template>
 
-          <template #toolbar>
-            <SlotMarker name="toolbar">
+          <template #content-toolbar-meta>
+            <SlotMarker name="content-toolbar-meta">
               <craft-button size="small" type="button">Filter</craft-button>
             </SlotMarker>
           </template>
@@ -631,7 +625,8 @@ export const CustomSubmitButton: Story = {
 };
 
 /**
- * Equivalent of `showHeader: false` in Craft 5 — pass an empty `header` slot.
+ * Equivalent of `showHeader: false` in Craft 5 — pass an empty `content-header`
+ * slot.
  */
 export const HiddenHeader: Story = {
   render: (args) => ({
@@ -639,7 +634,7 @@ export const HiddenHeader: Story = {
     setup: () => ({args}),
     template: `
       <AppLayout v-bind="args">
-        <template #header><span></span></template>
+        <template #content-header><span></span></template>
         ${sampleContent}
       </AppLayout>
     `,
