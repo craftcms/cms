@@ -148,7 +148,7 @@
             size="small"
             variant="plain"
             :aria-label="t('Cancel')"
-            @click="settings = false"
+@click="closeSettings"
           ></craft-button>
           <WidgetSettings
             :widget="widget"
