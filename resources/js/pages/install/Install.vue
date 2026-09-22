@@ -119,7 +119,9 @@
 <template>
   <Head :title="t('Install Craft CMS')" />
 
-  <div class="install">
+  <main class="install">
+    <h1 class="sr-only">{{ t('Install Craft CMS') }}</h1>
+
     <template v-if="isCurrent('start')">
       <craft-button
         type="button"
@@ -264,7 +266,7 @@
         </form>
       </template>
     </Modal>
-  </div>
+  </main>
 </template>
 
 <style scoped lang="scss">
