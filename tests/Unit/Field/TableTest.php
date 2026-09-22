@@ -2,11 +2,42 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use Symfony\Component\DomCrawler\Crawler;
+
+it('uses configured default row values for newly added rows', function () {
+    $field = new Table([
+        'columns' => [
+            'label' => ['heading' => 'Label', 'handle' => 'label', 'type' => 'singleline'],
+            'enabled' => ['heading' => 'Enabled', 'handle' => 'enabled', 'type' => 'lightswitch'],
+        ],
+        'defaultRowValues' => [[
+            'label' => 'New row',
+            'enabled' => true,
+        ]],
+    ]);
+
+    $settings = app(FormResolver::class)->resolve($field->settingsForm(), new FormContext);
+    $defaultRowValues = $settings->nodes[1]->children[1];
+
+    expect($defaultRowValues->props['label'])->toBe('Default Row Values')
+        ->and($settings->values['defaultRowValues'])->toBe([[
+            'label' => 'New row',
+            'enabled' => true,
+        ]])
+        ->and($defaultRowValues->control->props)->toMatchArray([
+            'minRows' => 1,
+            'maxRows' => 1,
+        ])
+        ->and($field->formControl(new FieldContext('details'))->props()['defaultValues'])->toBe([
+            'label' => 'New row',
+            'enabled' => true,
+        ]);
+});
 
 it('configures single-line defaults for new columns', function () {
     $field = new Table(['name' => 'Details', 'handle' => 'details']);
