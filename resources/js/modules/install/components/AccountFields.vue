@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
-  import {useFocusField} from '@/common/composables/useFocusField';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import {usePage} from '@inertiajs/vue3';
@@ -52,8 +51,6 @@
       emit('update:modelValue', value);
     },
   });
-
-  useFocusField('username-input');
 </script>
 
 <template>
@@ -66,7 +63,6 @@
     :error="errors?.username"
     maxlength="255"
     required
-    autofocus
   />
   <CraftInput
     :label="t('Email')"
