@@ -101,7 +101,11 @@
           @ready="emit('resize')"
         >
           <template #header>
-            <div v-if="widget.title || widget.subtitle" slot="label">
+            <div
+              v-if="widget.title || widget.subtitle"
+              slot="label"
+              class="widget-heading"
+            >
               <h2
                 v-if="widget.title"
                 :id="`widget-heading-${widget.id}`"
@@ -115,6 +119,7 @@
               v-if="widget.settingsForm"
               ref="settingsButton"
               slot="actions"
+              class="widget-settings-button"
               type="button"
               icon="gear"
               size="small"
@@ -148,7 +153,7 @@
             size="small"
             variant="plain"
             :aria-label="t('Cancel')"
-@click="closeSettings"
+            @click="closeSettings"
           ></craft-button>
           <WidgetSettings
             :widget="widget"

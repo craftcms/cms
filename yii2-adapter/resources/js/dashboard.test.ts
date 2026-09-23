@@ -79,11 +79,15 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     app.mount(host);
 
     await vi.waitFor(() => expect(host.querySelector('button')?.textContent).toBe('Configure plugin'));
+    const api = legacyWindow.dashboard.widgets[1];
+    expect(api.$bodyContainer.find('button').text()).toBe('Configure plugin');
+    expect(api.$title.text()).toBe('Plugin widget');
+    expect(api.$settingsBtn.length).toBe(1);
     const configure = host.querySelector('button')!;
-    configure.addEventListener('click', () => legacyWindow.dashboard.widgets[1].showSettings());
+    configure.addEventListener('click', () => api.showSettings());
     configure.click();
 
-    await vi.waitFor(() => expect(host.querySelector('form h2')?.textContent).toBe('Example Settings'));
+    await vi.waitFor(() => expect(host.querySelector('.settings-face h2')?.textContent).toBe('Example Settings'));
 
     const cancel = Array.from(host.querySelectorAll('form craft-button')).find(button => button.textContent?.trim() === 'Cancel')!;
     cancel.dispatchEvent(new MouseEvent('click', {bubbles: true}));
@@ -92,7 +96,7 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     expect(configure.closest('[inert]')).toBeNull();
 
     host.querySelector('[aria-label="Widget settings"]')!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    await vi.waitFor(() => expect(host.querySelector('form h2')?.textContent).toBe('Example Settings'));
+    await vi.waitFor(() => expect(host.querySelector('.settings-face h2')?.textContent).toBe('Example Settings'));
     // Allow the legacy delayed flip to finish before cancelling.
     await new Promise(resolve => setTimeout(resolve, 150));
     Array.from(host.querySelectorAll('form craft-button')).find(button => button.textContent?.trim() === 'Cancel')!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
