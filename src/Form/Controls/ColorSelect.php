@@ -9,16 +9,7 @@ use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 
-/**
- * A named-palette color Control (red/orange/.../black — the same palette as
- * {@see \CraftCms\Cms\Shared\Enums\Color}), rendered as a swatch-decorated
- * rich select. Its canonical value is a color slug string, or null.
- *
- * This is the modern replacement for the legacy `colorSelectField` Twig
- * macro — narrow the offered colors to a specific enum's cases with
- * {@see self::colors()} when a caller's values aren't drawn from the full
- * shared palette.
- */
+/** A palette color control whose value is a color slug or null. */
 class ColorSelect extends Control
 {
     private bool $allowTransparent = false;
@@ -32,10 +23,7 @@ class ColorSelect extends Control
     {
         $allowTransparent = (bool) ($control->props['allowTransparent'] ?? false);
 
-        // The underlying <craft-select-color> uses this sentinel internally for its blank
-        // option's choiceValue; our own canonical "no color" value stays null/empty, matching
-        // every other select-like control in this Form system, so it's translated here rather
-        // than leaking out to the server.
+        // The web component uses __blank__ internally; the form value remains null or empty.
         $componentValue = match (true) {
             $value !== null && $value !== '' => (string) $value,
             $allowTransparent => '__blank__',
@@ -61,7 +49,6 @@ class ColorSelect extends Control
         return 'craft:color-select';
     }
 
-    /** Prepends a blank option, labelled "Transparent" unless {@see blankLabel()} overrides it. */
     public function allowTransparent(bool $allowTransparent = true): static
     {
         $this->allowTransparent = $allowTransparent;
@@ -69,7 +56,6 @@ class ColorSelect extends Control
         return $this;
     }
 
-    /** Overrides the blank option's label (default "Transparent"). */
     public function blankLabel(?string $blankLabel): static
     {
         $this->blankLabel = $blankLabel;
@@ -78,9 +64,6 @@ class ColorSelect extends Control
     }
 
     /**
-     * Restricts the offered colors. Omit to offer every color in the shared
-     * palette.
-     *
      * @param  list<string>|null  $colors
      */
     public function colors(?array $colors): static

@@ -167,8 +167,6 @@ it('renders as a plain element with no save flow when there is nothing to submit
   if (!layoutCall) throw new Error('Expected the layout registration.');
   expect(layoutCall[0].onSave).toBeUndefined();
 
-  // No `submit` means nothing to post to, so there's no `<form>` at all —
-  // just its contents, in a plain wrapper.
   expect(container.querySelector('form')).toBeNull();
 });
 

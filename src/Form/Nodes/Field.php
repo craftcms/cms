@@ -129,10 +129,7 @@ class Field implements Node
     }
 
     /**
-     * Supports the same markdown as `tip()`/`warning()` — including a raw
-     * inline tag like `<a href="...">` (preserved by the same
-     * {@see self::noticeHtml()} pass those use), unlike a plain-text field
-     * whose instructions never go through markdown parsing at all.
+     * Parses markdown and preserves inline HTML, like {@see tip()} and {@see warning()}.
      */
     public function instructions(?string $instructions): static
     {

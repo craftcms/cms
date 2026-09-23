@@ -50,34 +50,26 @@ export default class CraftSelectColor extends LitElement {
   allowTransparent = false;
 
   /**
-   * Overrides the blank option's label (default "Transparent"). Use this
-   * when the value being picked isn't a background/opacity concept — e.g.
-   * "No color" for a category swatch.
+   * Label for the blank option (default "Transparent").
    */
   @property({attribute: 'blank-label'})
   blankLabel: string | null = null;
 
   /**
-   * The colors offered, in order. Defaults to every color in the shared
-   * palette ({@link paletteColors}) — pass a subset to restrict the choices
-   * to whatever set a particular caller's values are actually drawn from.
+   * Offered colors, in order. Defaults to the shared palette.
    */
   @property({type: Array})
   colors: string[] = [...paletteColors];
 
-  /** Forwarded to the underlying rich select. */
   @property({type: Boolean, reflect: true})
   disabled = false;
 
-  /** Forwarded to the underlying rich select. */
   @property({type: Boolean, reflect: true, attribute: 'readonly'})
   readOnly = false;
 
-  /** Forwarded to the underlying rich select. */
   @property({type: Boolean, reflect: true})
   required = false;
 
-  /** Forwarded to the underlying rich select. */
   @property({attribute: false})
   validators: Validator[] = [];
 
@@ -101,8 +93,6 @@ export default class CraftSelectColor extends LitElement {
       'border-radius:var(--c-radius-full);' +
       'box-shadow:inset 0 0 0 1px rgb(0 0 0 / 15%);';
 
-    // Reuses the checkerboard treatment from input-color so the transparent
-    // option reads as "no color".
     const transparent =
       'background:' +
       'linear-gradient(45deg, var(--c-color-neutral-fill-quiet) 25%, transparent 25%),' +
@@ -153,14 +143,11 @@ export default class CraftSelectColor extends LitElement {
    * read the up-to-date `this.modelValue` off `event.target`.
    */
   protected _handleModelValueChanged(event: Event) {
-    // Don't let the inner (non-composed) event escape; we re-dispatch our own.
     event.stopPropagation();
 
     const inner = event.target as {modelValue?: string | null} | null;
     this.modelValue = inner?.modelValue ?? null;
 
-    // Re-dispatch from the host so it crosses the shadow boundary (composed)
-    // and Vue's `@model-value-changed` listener fires with the host as target.
     this.dispatchEvent(
       new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );

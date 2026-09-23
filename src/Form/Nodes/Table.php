@@ -12,17 +12,10 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Traits\Conditionable;
+
 use function CraftCms\Cms\t;
 
-/**
- * A listing of rows (e.g. product types, gateways) rendered as a Form Node, backed by the
- * `craft:admin-table` Vue component (`resources/js/modules/forms/AdminTableNode.vue`) on
- * the client.
- *
- * Unlike {@see Heading}/{@see Separator}, a table's rows represent other entities rather
- * than the form's own value at a path, so it deliberately never touches `FormContext`'s
- * values/mode — `props()` is the only channel it uses.
- */
+/** A listing of rows supplied through node props, not form values. */
 class Table implements Node
 {
     use Conditionable;
@@ -88,37 +81,18 @@ class Table implements Node
     }
 
     /**
-     * @param  list<array<string, mixed>>  $rows  Each row is keyed by column `key`, plus an `id`
-     *   entry identifying the row — required when {@see reorderable()} or {@see deletable()} are
-     *   used. A cell value may be a plain scalar; an array shaped `['label' => string, 'url' =>
-     *   ?string]` to render as a link (or plain text when `url` is null); a list of such arrays
-     *   to render several links in one cell; `['label' => string, 'items' => list<array{label:
-     *   string, url: ?string}>]` to render a dropdown menu of links; `['icon' => string, 'label' =>
-     *   ?string]` to render a single icon (`label` becomes its accessible name, and is what the
-     *   non-JS {@see renderHtml()} fallback shows in place of the icon); or `['html' => string]`
-     *   for markup none of the above can express (a styled `<code>` value, a compound badge, a
-     *   working custom element like `<craft-input-copy>` that needs its own real light-DOM
-     *   `<input>`). Unlike {@see TemplateContent}, `html` here is rendered completely unsanitized
-     *   — some index tables need cells that are more than static display (a real copy-to-clipboard
-     *   control, for instance), which a sanitizer that drops `input`/`button`/etc. as defense in
-     *   depth would break. That means the caller owns this trust boundary entirely: run untrusted
-     *   values through {@see Html::encode()} (or a sanitizer, if the value is itself meant to carry
-     *   markup) before interpolating them into the string, exactly as if writing directly to the
-     *   page. Prefer one of the structured shapes above when it fits; `html` exists for what
-     *   doesn't. A row may set `_deletable => false` to suppress its own delete action even when
-     *   the table as a whole is {@see deletable()} (e.g. a "primary" row that can't be removed).
-     *   A row may also set `_status` to get a colored status indicator dot before the *first*
-     *   column's own content — the same dot a Craft element index chip shows, for a row whose
-     *   underlying model isn't a real element (so an actual chip, and the `Statusable` status it'd
-     *   need, aren't available). `true`/`false` renders the plain enabled/disabled dot most rows
-     *   want; a string is resolved the same way {@see \CraftCms\Cms\Shared\Enums\Color::
-     *   tryFromStatus()} resolves one elsewhere (`'live'`, `'pending'`, `'expired'`, an arbitrary
-     *   custom status name, ...), for a row whose model has a richer status than a plain boolean.
-     *   When {@see searchable()} is on, a row may also set `_search` to the plain text its own
-     *   search box should match against — needed whenever anything worth searching isn't itself a
-     *   visible column (a discount's description, or its coupon codes, say — legacy's own search
-     *   matched both, neither ever a column here either). A row without `_search` falls back to
-     *   matching its declared columns' own rendered text.
+     * Rows are keyed by column `key`, with an `id` when reordering or deleting.
+     * Cells accept scalars, `['label' => string, 'url' => ?string]` links, lists of
+     * links, `['label' => string, 'items' => list<links>]` menus, `['icon' => string,
+     * 'label' => ?string]` icons, or `['html' => string]` markup. HTML is rendered
+     * without sanitization in both renderers. Encode untrusted content with
+     * {@see Html::encode()} before passing it.
+     *
+     * `_deletable => false` suppresses deletion of one row. `_status` accepts a
+     * boolean or status string and renders an indicator in the first column.
+     * `_search` overrides client-side search text; otherwise columns' text is used.
+     *
+     * @param  list<array<string, mixed>>  $rows
      */
     public function rows(array $rows): static
     {
@@ -129,11 +103,8 @@ class Table implements Node
     }
 
     /**
-     * Resolves `_status` the same way for a row whether it's handed to {@see rows()} directly
-     * (upfront mode) or built by a controller's own paginated `tableData()`-style action
-     * ({@see dataUrl()} mode, where that action's response bypasses `rows()` entirely) — call
-     * this on a page's worth of rows before returning them as JSON, so both modes resolve
-     * `_status` identically.
+     * Resolve `_status` on rows returned by a {@see dataUrl()} endpoint; {@see rows()}
+     * calls this automatically for upfront rows.
      *
      * @param  list<array<string, mixed>>  $rows
      * @return list<array<string, mixed>>
@@ -146,7 +117,7 @@ class Table implements Node
     /** @param array<string, mixed> $row */
     private static function resolveRowStatus(array $row): array
     {
-        if (!array_key_exists('_status', $row) || $row['_status'] === null) {
+        if (! array_key_exists('_status', $row) || $row['_status'] === null) {
             return $row;
         }
 
@@ -162,16 +133,10 @@ class Table implements Node
     }
 
     /**
-     * Alternative to {@see rows()} for a list too large to hand over upfront: the client fetches
-     * each page (and, when {@see searchable()} is also on, searches) from `$url` instead, posting
-     * `{page, per_page, search}` and expecting back `{data: <rows, same shape rows() documents>,
-     * pagination: {total, per_page, current_page, last_page, next_page_url, prev_page_url, from,
-     * to}}` — build that response the same way `CraftCms\Cms\Http\ViewModels\
-     * ContentIndexViewModel::pagination()` does (a plain `Illuminate\Pagination\
-     * LengthAwarePaginator` over an already-sliced array; no Eloquent query required), and run
-     * each page's rows through {@see prepareRows()} before responding.
-     *
-     * Mutually exclusive with {@see rows()} — calling one clears whichever the other set.
+     * Fetch rows by posting `{page, per_page, search}` to `$url`. The response must contain
+     * `{data: <rows>, pagination: {total, per_page, current_page, last_page, next_page_url,
+     * prev_page_url, from, to}}`. Pass the page's rows through {@see prepareRows()} first.
+     * Calling this clears {@see rows()}, and vice versa.
      */
     public function dataUrl(string $url, int $perPage = 100): static
     {
@@ -183,11 +148,8 @@ class Table implements Node
     }
 
     /**
-     * Only meaningful alongside {@see dataUrl()}: the endpoint a "Move to page…" control posts
-     * `{id, page}` to, for moving a row to a different page than the one it's currently on (the
-     * within-page drag-and-drop {@see reorderable()} already offers can't reach a page that
-     * isn't loaded). The endpoint owns computing the row's new absolute position from `page` and
-     * applying it — this Node has no opinion on how.
+     * In {@see dataUrl()} mode, posts `{id, page}` to `$url` to move a row across pages.
+     * The endpoint computes the new absolute position.
      */
     public function moveToPageUrl(string $url): static
     {
@@ -213,9 +175,7 @@ class Table implements Node
     }
 
     /**
-     * Like {@see createAction()}, but for when there's more than one place a new row could come
-     * from (e.g. one per store) — renders as a single button that opens a menu of links instead
-     * of linking straight to `$url`.
+     * Render a create button with a menu of links instead of one {@see createAction()} URL.
      *
      * @param  list<array{label: string, url: string}>  $items
      */
@@ -246,13 +206,8 @@ class Table implements Node
      * Adds a per-row delete action, posting `{id: <row id>}` to `$url`. Individual rows can
      * opt out via `_deletable => false` in {@see rows()}.
      *
-     * `$bulk` additionally renders a row-selection checkbox column and a "N selected" bar with
-     * its own bulk delete button, posting `{ids: <row ids>}` to the same `$url` — set it only
-     * when that action genuinely handles an `ids` array alongside a single `id` (mirroring the
-     * legacy dual `id`/`ids` contract some of these actions still carry). Leave it `false`
-     * (the default) for an action that only understands `id`; turning bulk selection on for
-     * one of those doesn't add a client-side capability so much as start sending it requests
-     * it will reject.
+     * `$bulk` enables row selection and posts `{ids: <row ids>}` to the same endpoint.
+     * Enable it only if the endpoint handles `ids` as well as `id`.
      */
     public function deletable(string $url, ?string $confirmMessage = null, bool $bulk = false): static
     {
@@ -264,35 +219,14 @@ class Table implements Node
     }
 
     /**
-     * Adds items to the selection footer's single "Actions" menu (shown once at least one
-     * row is selected, alongside "Clear selection") — matching the real Entries index's own
-     * selection-footer convention: one "Actions" menu holding every uncommon per-selection
-     * action (a "move to page…" control when {@see moveToPageUrl()} is set, a trailing
-     * destructive "Delete" when the table is {@see deletable()} with `bulk: true`, and every
-     * entry here), never a separate button per action or a disclosure control on each row.
-     * Every action posts `{ids: <selected row ids>, ...params}` to its own `url`; there's no
-     * client-side notion of what the action does beyond that; the endpoint owns applying it
-     * and returning a normal flash response.
+     * Adds items to the selection footer's "Actions" menu. Each action posts
+     * `{ids: <selected row ids>, ...params}` to its `url`.
      *
-     * Each entry in `$actions` is either:
-     * - a single action: `['label' => string, 'url' => string, 'params'? => array<string,
-     *   mixed>, 'allowMultiple'? => bool]` — `params` is merged into the posted body
-     *   alongside `ids`; `allowMultiple` (default `true`) disables the item whenever more
-     *   than one row is selected, for an action that only makes sense against one row at a
-     *   time (a UI nicety only — the endpoint still gets whatever `ids` a request carries,
-     *   and is responsible for enforcing that itself if it matters).
-     * - a labeled group of single actions in the same shape: `['label'? => string, 'items' =>
-     *   list<array{label: string, url: string, params?: array<string, mixed>, allowMultiple?:
-     *   bool}>]`, shown as a heading followed by its items within the same "Actions" menu.
-     *   Omitting `label` folds the items in unheaded, blended into the flat list — legacy's
-     *   own unlabeled gear-icon menu for a single, infrequently-needed item (e.g. shipping
-     *   categories' "Set Default Category") reads this way now that there's one shared
-     *   invoker rather than its own separate icon-only button; an `icon` alone no longer
-     *   produces a distinct invoker and is ignored.
-     *
-     * Reaches for a row-selection checkbox column the same way `deletable(..., bulk: true)`
-     * does — either one turns selection on; a table with both just contributes to the same
-     * footer's "Actions" menu.
+     * Entries may be `['label' => string, 'url' => string, 'params'? => array,
+     * 'allowMultiple'? => bool]` or groups with `['label'? => string, 'items' => list<actions>]`.
+     * An omitted group label leaves its items unheaded; `icon` is ignored. `allowMultiple`
+     * defaults to true and only disables the UI for multiple rows. Endpoints must enforce
+     * their own constraints.
      *
      * @param  list<array<string, mixed>>  $actions
      */
@@ -304,18 +238,8 @@ class Table implements Node
     }
 
     /**
-     * Adds a dedicated "Set status" button to the selection footer, kept separate from
-     * {@see bulkActions()}'s own "Actions" menu — matching the real Craft element index's own
-     * `BulkActionsBar.vue`, which always pulls its Set Status button out of the generic
-     * actions menu (it identifies it there by a well-known PHP action class key) specifically
-     * *because* it's the most-reached-for action, not because it's a different kind of thing.
-     * "Set status" is the button's own fixed label, not configurable here — `$items` is just
-     * its menu content, the same shape as a {@see bulkActions()} single action: `list<array{
-     * label: string, url: string, params?: array<string, mixed>, allowMultiple?: bool}>`
-     * (typically `Enabled`/`Disabled`, each posting a different `status` param to one `url`).
-     *
-     * Reaches for a row-selection checkbox column the same way `deletable(..., bulk: true)`/
-     * `bulkActions()` do — any of the three turns selection on.
+     * Adds a separate "Set status" menu to the selection footer. Items use the same
+     * shape as single {@see bulkActions()} entries; the button label is fixed.
      *
      * @param  list<array<string, mixed>>  $items
      */
@@ -327,14 +251,8 @@ class Table implements Node
     }
 
     /**
-     * Shows a text search box above the table. With {@see rows()} (the default), it filters
-     * entirely client-side — every row is already loaded. With {@see dataUrl()}, the query is
-     * instead sent as a `search` param to that endpoint (resetting to page 1), matching the
-     * legacy `Craft.VueAdminTable` screens this usually replaces, which searched server-side
-     * against a paginated result set — see {@see dataUrl()} for the exact request/response
-     * contract. See {@see rows()} for how a row controls what it matches against in the
-     * client-side case. Most tables don't need this — reach for it only where legacy actually
-     * had `search: true`.
+     * Search {@see rows()} locally, or send `search` to the {@see dataUrl()} endpoint
+     * and reset to page 1. See {@see rows()} for the `_search` override.
      */
     public function searchable(?string $placeholder = null): static
     {
@@ -344,7 +262,6 @@ class Table implements Node
         return $this;
     }
 
-    /** Toggles the table's own bordered/raised card chrome (off by default, matching an index's bare look; opt in when embedding a Table alongside other content). See `Form.vue` for the matching outer-pane behavior. */
     public function bordered(bool $bordered = true): static
     {
         $this->bordered = $bordered;
@@ -363,22 +280,15 @@ class Table implements Node
                 $node->props['createUrl'],
                 ['class' => ['btn', 'submit', 'add', 'icon']],
             ),
-            // No sensible JS-less dropdown-button equivalent — same reasoning renderCell()'s
-            // `items` shape gives for menu cells — so this renders the label followed by its
-            // items as plain inline links instead.
-            !empty($node->props['createMenuItems']) => Html::encode($node->props['createLabel'] ?? '').': '.implode(', ', array_map(
-                fn(array $item) => Html::a(Html::encode($item['label']), $item['url']),
+            ! empty($node->props['createMenuItems']) => Html::encode($node->props['createLabel'] ?? '').': '.implode(', ', array_map(
+                fn (array $item) => Html::a(Html::encode($item['label']), $item['url']),
                 $node->props['createMenuItems'],
             )),
             default => '',
         };
 
         if ($node->props['dataUrl'] !== null) {
-            // Same "no sensible non-JS equivalent" reasoning already applied to reorder/delete/
-            // bulk-actions/search: fetching and paginating rows client-side has no plain-HTML
-            // fallback, so this renders neither an empty table nor (potentially misleadingly)
-            // the table's own `emptyMessage`, which describes a genuinely empty table, not one
-            // this fallback simply can't populate.
+            // Without JavaScript, endpoint rows cannot be fetched or treated as an empty table.
             $table = Html::tag('p', Html::encode(t('This table requires JavaScript.')), [
                 'class' => ['zilch'],
             ]);
@@ -387,35 +297,25 @@ class Table implements Node
                 'class' => ['zilch'],
             ]);
         } else {
-            $renderLink = fn(array $link): string => $link['url'] !== null
+            $renderLink = fn (array $link): string => $link['url'] !== null
                 ? Html::a(Html::encode($link['label']), $link['url'])
                 : Html::encode($link['label']);
 
             $firstColumnKey = $columns[0]['key'] ?? null;
 
-            // Reordering, deleting, and bulk actions are inherently interactive (drag handles,
-            // confirmation dialogs, row selection, CSRF-protected requests) with no sensible
-            // plain-HTML equivalent, so this fallback renders a menu's links inline but
-            // otherwise omits those affordances — consistent with the rest of the CP treating
-            // this renderer as JS-less read access, not a full replacement for the Vue control.
-            $renderCell = function(array $column, array $row) use ($renderLink, $firstColumnKey): string {
+            $renderCell = function (array $column, array $row) use ($renderLink, $firstColumnKey): string {
                 $value = $row[$column['key']] ?? '';
 
                 $rendered = match (true) {
                     is_array($value) && array_key_exists('items', $value) => implode(', ', array_map($renderLink, $value['items'])),
                     is_array($value) && array_key_exists('icon', $value) => Html::encode($value['label'] ?? ''),
-                    // Not re-encoded — this is meant to be markup, and rows() no longer
-                    // sanitizes it (see its docblock); the caller owns that trust boundary.
                     is_array($value) && array_key_exists('html', $value) => $value['html'],
                     is_array($value) && array_is_list($value) => implode(', ', array_map($renderLink, $value)),
                     is_array($value) => $renderLink($value),
                     default => Html::encode((string) $value),
                 };
 
-                // The dot itself is inherently visual, so — same reasoning as the icon-cell
-                // case above — this fallback substitutes its resolved label as plain text
-                // instead, right before whatever the first column already rendered.
-                if ($column['key'] === $firstColumnKey && !empty($row['_status']['label'])) {
+                if ($column['key'] === $firstColumnKey && ! empty($row['_status']['label'])) {
                     $rendered = Html::encode($row['_status']['label']).': '.$rendered;
                 }
 
@@ -423,13 +323,13 @@ class Table implements Node
             };
 
             $head = Html::tag('tr', implode('', array_map(
-                fn(array $column) => Html::tag('th', Html::encode($column['label'])),
+                fn (array $column) => Html::tag('th', Html::encode($column['label'])),
                 $columns,
             )));
 
             $body = implode('', array_map(
-                fn(array $row) => Html::tag('tr', implode('', array_map(
-                    fn(array $column) => Html::tag('td', $renderCell($column, $row)),
+                fn (array $row) => Html::tag('tr', implode('', array_map(
+                    fn (array $column) => Html::tag('td', $renderCell($column, $row)),
                     $columns,
                 ))),
                 $rows,

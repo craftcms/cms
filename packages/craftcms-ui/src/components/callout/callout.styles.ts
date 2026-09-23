@@ -7,12 +7,6 @@ export default css`
 
   .callout {
     --_radius: var(--c-callout-radius, var(--c-radius-md));
-    /*
-      The two padding axes are declared separately because the callout's
-      default is asymmetric — a tight block edge, a roomier inline one. The
-      \`padding\` attribute writes both of these on this element when it's set,
-      so these fallbacks are what a callout with no \`padding\` renders with.
-    */
     --_callout-padding-block: var(
       --c-callout-padding-block,
       var(--c-spacing-sm)
@@ -28,18 +22,7 @@ export default css`
     align-items: start;
     padding: var(--_callout-padding-block) var(--_callout-padding-inline);
     border: 1px solid transparent;
-    /*
-      Spans the full width of a surrounding <craft-field-group> grid. A
-      block-level Form Node can rely on that grid's own \`craft-field-group >
-      *\` default (or a \`width-*\` class) for this, but \`:host\` here is
-      \`display: contents\` — grid placement given to the *host* has no box to
-      apply to, so the grid falls back to auto-placing this shadow-rendered
-      box on its own, one column wide, unless it claims its own span here.
-      Every current Callout usage is full-width (no narrower \`width-*\`
-      variant exists yet), so this is unconditional rather than keyed off a
-      host class. Harmless outside a grid parent — \`grid-column\` is simply
-      inert there.
-    */
+    /* The display: contents host cannot take a grid span, so its rendered box does. */
     grid-column: 1 / -1;
   }
 

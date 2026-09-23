@@ -68,15 +68,9 @@ class Combobox extends Control
     }
 
     /**
-     * @param  list<array<string, mixed>|ComboboxCreateOption>  $options
+     * Cast option values to strings so numeric IDs match the selected values.
      *
-     * Every option's `value` is cast to a string here, matching the client's own
-     * `ComboboxOption.value: string` contract. A caller passing a raw int id (e.g. an
-     * Eloquent/Active Record primary key) is easy to miss — for a single-select combobox it's
-     * harmless, but for a `multiple()` one it silently breaks the "is this option already
-     * selected" comparisons `#renderOptions()` does against `modelValue` (always strings), which
-     * renders the same option twice (once as a synthetic "selected" entry, once as a normal
-     * unselected one) and doubles up the resulting value.
+     * @param  list<array<string, mixed>|ComboboxCreateOption>  $options
      */
     public function options(array $options): static
     {

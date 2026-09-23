@@ -17,13 +17,7 @@
 
   const emit = defineEmits<{
     (event: 'update:value', value: ConditionConfig, kind: 'discrete'): void;
-    /**
-     * Never emitted — declared only to stop FieldNode's blanket `@change`
-     * listener from falling through onto `ConditionBuilder`'s own `change`
-     * (its current value, already handled below via `update:value`), which
-     * would otherwise hand `recordChange()` a `ConditionConfig` in place of a
-     * `FormChange` and crash on its missing `path`.
-     */
+    /** Prevents the inner change event reaching FieldNode's FormChange listener. */
     (event: 'change'): void;
   }>();
 

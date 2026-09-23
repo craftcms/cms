@@ -71,10 +71,6 @@ class Callout implements Node
         return $this;
     }
 
-    /**
-     * Spacing applied to the callout box — see `craft-callout`'s own `padding` attribute
-     * (`sm`/`md`/`lg`/`xl`, `0`/`none`, a unitless pixel number, or any CSS length).
-     */
     public function padding(string|int|null $padding): static
     {
         $this->padding = $padding;

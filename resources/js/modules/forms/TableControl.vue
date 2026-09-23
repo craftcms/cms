@@ -90,9 +90,6 @@
     const name = inputName(props.control.path);
     bodyElement.replaceChildren();
     rowEntries(rows).forEach(([rowId, row]) => {
-      // `hiddenRows` is a control *prop*, not part of the row's own value — see
-      // `Table::hiddenRows()` for why: props are freshly reapplied on every reactive
-      // refresh, unlike row values (only ever merged in where missing).
       const rowWithVisibility = props.control.props.hiddenRows?.includes(rowId)
         ? {...row, _hidden: true}
         : row;

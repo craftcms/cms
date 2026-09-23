@@ -588,12 +588,8 @@ export class EditableTable extends Base<EditableTableSettings> {
   ): any {
     void staticRows;
 
-    // `_hidden` is a reserved row key, not a declared column — same principle
-    // `HasVisibility` documents for whole Field/Group nodes: the row's own cells stay
-    // real inputs (still posting, still holding whatever was typed) rather than being
-    // omitted, so the caller can toggle it back without losing anything. Both the
-    // `hidden` attribute and the class are set, matching that same convention, since
-    // some hosts override the UA `[hidden]` rule.
+    // Keep hidden rows' inputs mounted so they retain and submit their values.
+    // Some hosts override the UA [hidden] rule, so the class is also needed.
     const $tr = $('<tr/>', {
       'data-id': rowId,
       ...(values._hidden ? {hidden: true, class: 'hidden'} : {}),
@@ -698,11 +694,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             break;
 
           case 'money': {
-            // A stored value is `{value, locale}` — the same shape the
-            // standalone `craft:money` Form Control posts and reads (see
-            // `MoneyControl.vue`) — but a brand-new row's `value` is often
-            // just `''` (from `defaultValues`), so only unwrap the shape when
-            // it's actually there.
+            // New rows may start with an empty string rather than {value, locale}.
             const moneyValue =
               value instanceof Object && !Array.isArray(value)
                 ? ((value as Record<string, unknown>).value ?? null)
@@ -717,8 +709,7 @@ export class EditableTable extends Base<EditableTableSettings> {
               'craft-input-money'
             ) as CraftInputMoney;
             money.name = `${name}[value]`;
-            money.modelValue =
-              moneyValue === null ? '' : String(moneyValue);
+            money.modelValue = moneyValue === null ? '' : String(moneyValue);
             money.currency = col.currency ?? 'USD';
             money.locale = String(moneyLocale);
             if (col.decimals !== undefined) money.decimals = col.decimals;
@@ -733,10 +724,6 @@ export class EditableTable extends Base<EditableTableSettings> {
             }
             if (col.clearable !== undefined) money.clearable = col.clearable;
             $cell.append(money);
-            // Posted alongside `${name}[value]`, exactly as `InputMoney::renderSlots()`
-            // does for the standalone control — `cellValue()`'s generic
-            // multi-entry fallback reassembles the two back into one
-            // `{value, locale}` cell value, no special-casing needed there.
             $('<input/>', {
               type: 'hidden',
               name: `${name}[locale]`,
@@ -790,10 +777,6 @@ export class EditableTable extends Base<EditableTableSettings> {
             combobox.options = Array.isArray(col.options)
               ? col.options.map(
                   (option): ComboboxItem =>
-                    // An <optgroup>-style entry (e.g. SelectOptions::getTemplateSuggestions())
-                    // nests its real options one level deeper — craft-combobox has native
-                    // optgroup support (ComboboxOptGroup), so pass the grouping through rather
-                    // than flattening it away.
                     isOptionGroup(option)
                       ? {
                           type: 'optgroup',
