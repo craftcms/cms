@@ -64,6 +64,17 @@
 ### Entries & Sections
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
 
+### Workflows
+- Added approval workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Changes to enabled entries in sections with a workflow are now saved as drafts, which must be submitted for review and approved by each workflow stage before they can be applied. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added the “User Review” workflow stage type, which supports per-group approval requirements, carried-over approvals, change requests, and email notifications for reviewers. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added a “Workflow” element details tab, for submitting drafts for review, reviewing them, and viewing workflow activity history. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface` and `CraftCms\Cms\Workflow\Stages\WorkflowStage`, for creating custom workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\WorkflowStageTypes`, for registering custom workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Contracts\WorkflowableInterface`, which element types can implement to support workflows. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Workflow\Workflows` and `CraftCms\Cms\Support\Facades\Workflows`. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added the `CraftCms\Cms\Workflow\Events\WorkflowTransitioning`, `WorkflowTransitioned`, and `WorkflowCommented` events. ([#19667](https://github.com/craftcms/cms/pull/19667))
+
 ### Elements
 - Added the `autoEagerLoadElements` general config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
