@@ -93,10 +93,3 @@
     </div>
   </div>
 </template>
-
-<style scoped lang="css">
-  .content-footer {
-    padding-inline: var(--cp-container-padding);
-    min-height: var(--cp-footer-height);
-  }
-</style>
