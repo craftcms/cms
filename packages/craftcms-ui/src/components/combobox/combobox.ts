@@ -641,15 +641,7 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
-  /**
-   * Commits a new set of selected values for a multi-select combobox — resets the free-text
-   * query, closes the listbox, re-renders options, syncs the hidden native inputs used for real
-   * form submission, and announces the change. `protected` (not `private`) so a subclass that
-   * needs to inject a value outside the normal option-click/keyboard paths (e.g.
-   * {@link CraftComboboxCreate} appending a freshly-created record's option) can reuse this
-   * exact path instead of re-deriving its side effects, which would drift out of sync over time.
-   */
-  protected changeValues(values: string[]) {
+  private changeValues(values: string[]) {
     if (this.inactive) {
       return;
     }
