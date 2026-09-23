@@ -25,6 +25,17 @@
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
+  type TopBarSection = 'start' | 'indicators' | 'end' | 'breadcrumbs';
+
+  // DOM order must match visual order per breakpoint for keyboard tab order —
+  // CSS Grid areas (below) place these sections independent of source order,
+  // so source order has to be made breakpoint-aware too.
+  const sectionOrder = computed<TopBarSection[]>(() =>
+    isLarge.value
+      ? ['breadcrumbs', 'indicators', 'end']
+      : ['start', 'indicators', 'end', 'breadcrumbs']
+  );
+
   const {toggle: toggleSidebar, toggleButton} = useGlobalSidebar();
 
   // The composable returns focus here when the floating sidebar closes, and it
@@ -51,72 +62,77 @@
 
 <template>
   <header class="cp-top-bar" data-theme="dark">
-    <div class="cp-top-bar__start" v-if="!isLarge">
-      <craft-button
-        :ref="registerToggle"
-        id="sidebar-toggle"
-        type="button"
-        size="small"
-        icon="bars"
-        :variant="ButtonVariant.Outline"
-        @click="toggleSidebar"
-        :aria-label="t('Toggle menu')"
-      >
-      </craft-button>
-    </div>
-
-    <div class="cp-top-bar__indicators">
-      <template v-if="devMode">
-        <craft-badge fill="warning">
-          <craft-icon name="code" slot="prefix"></craft-icon>
-          {{ t('Dev Mode') }}
-        </craft-badge>
-      </template>
-
-      <template v-if="maintenanceMode">
-        <CpLink :href="maintenanceModeUrl">
-          <craft-badge fill="warning">
-            <craft-icon name="person-digging" slot="prefix"></craft-icon>
-            {{ t('Maintenance mode') }}
-          </craft-badge>
-        </CpLink>
-      </template>
-    </div>
-
-    <div class="cp-top-bar__end">
-      <div class="flex gap-2 items-center">
+    <template v-for="section in sectionOrder" :key="section">
+      <div class="cp-top-bar__start" v-if="section === 'start'">
         <craft-button
-          icon
-          :variant="ButtonVariant.Plain"
+          :ref="registerToggle"
+          id="sidebar-toggle"
           type="button"
           size="small"
+          icon="bars"
+          :variant="ButtonVariant.Outline"
+          @click="toggleSidebar"
+          :aria-label="t('Toggle menu')"
         >
-          <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
-        <cp-notification-center
-          :notifications.prop="notifications"
-        ></cp-notification-center>
-        <UserMenu />
       </div>
-    </div>
 
-    <div class="cp-top-bar__breadcrumbs">
-      <div class="flex gap-2 items-center">
-        <SystemInfo v-if="isLarge" />
-        <div
-          class="py-1 flex flex-nowrap items-center gap-2"
-          v-show="crumbs || hasContextMenu"
-        >
-          <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
-          <Breadcrumbs v-if="crumbs" :items="crumbs" />
-          <div v-show="hasContextMenu" class="context-menu-container">
-            <LayoutSlotOutlet name="context-menu">
-              <slot name="context-menu"></slot>
-            </LayoutSlotOutlet>
+      <div class="cp-top-bar__indicators" v-else-if="section === 'indicators'">
+        <template v-if="devMode">
+          <craft-badge fill="warning">
+            <craft-icon name="code" slot="prefix"></craft-icon>
+            {{ t('Dev Mode') }}
+          </craft-badge>
+        </template>
+
+        <template v-if="maintenanceMode">
+          <CpLink :href="maintenanceModeUrl">
+            <craft-badge fill="warning">
+              <craft-icon name="person-digging" slot="prefix"></craft-icon>
+              {{ t('Maintenance mode') }}
+            </craft-badge>
+          </CpLink>
+        </template>
+      </div>
+
+      <div class="cp-top-bar__end" v-else-if="section === 'end'">
+        <div class="flex gap-2 items-center">
+          <craft-button
+            icon
+            :variant="ButtonVariant.Plain"
+            type="button"
+            size="small"
+          >
+            <craft-icon name="search" :label="t('Search')"></craft-icon>
+          </craft-button>
+          <cp-notification-center
+            :notifications.prop="notifications"
+          ></cp-notification-center>
+          <UserMenu />
+        </div>
+      </div>
+
+      <div
+        class="cp-top-bar__breadcrumbs"
+        v-else-if="section === 'breadcrumbs'"
+      >
+        <div class="flex gap-2 items-center">
+          <SystemInfo v-if="isLarge" />
+          <div
+            class="py-1 flex flex-nowrap items-center gap-2"
+            v-show="crumbs || hasContextMenu"
+          >
+            <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
+            <Breadcrumbs v-if="crumbs" :items="crumbs" />
+            <div v-show="hasContextMenu" class="context-menu-container">
+              <LayoutSlotOutlet name="context-menu">
+                <slot name="context-menu"></slot>
+              </LayoutSlotOutlet>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </header>
 </template>
 
