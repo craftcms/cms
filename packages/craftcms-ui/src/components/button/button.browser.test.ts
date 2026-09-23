@@ -250,17 +250,11 @@ describe('icon spacing', () => {
 });
 
 describe('[inherit]', () => {
-  /**
-   * A surface that sets its own text color without redefining the
-   * `--c-color-*` palette — the breadcrumbs bar, where the chevron has to
-   * read against a dark background.
-   */
   async function mountOnColoredSurface(
     attributes: string
   ): Promise<CraftButton> {
     const surface = document.createElement('div');
-    // Text color and palette deliberately disagree: without [inherit] the
-    // variant paints from the palette, with it from the text beside it.
+    // Text color and palette deliberately disagree, so the two paths differ.
     surface.style.color = 'rgb(255, 0, 0)';
     surface.style.setProperty('--c-color-neutral-on-quiet', 'rgb(0, 0, 255)');
     surface.innerHTML = `<craft-button variant="plain" icon="chevron-down" aria-label="Actions" ${attributes}></craft-button>`;
@@ -282,8 +276,6 @@ describe('[inherit]', () => {
   it('keeps it while hovered', async () => {
     const button = await mountOnColoredSurface('inherit');
 
-    // The variant's hover rule repaints from the palette, which on a surface
-    // like this would flip the button away from the text beside it.
     button.dispatchEvent(new MouseEvent('mouseover', {bubbles: true}));
     await button.updateComplete;
 
@@ -298,12 +290,6 @@ describe('[inherit]', () => {
 });
 
 describe('themed subtrees', () => {
-  /**
-   * The CP's top bar is a [data-theme="dark"] island inside a light page, so
-   * the tokens have to re-resolve there rather than inheriting the value the
-   * root computed. A var() is substituted where it is declared, which is what
-   * makes this easy to get wrong.
-   */
   async function loadTokens(): Promise<void> {
     await import('../../styles/shared/color-palette.css');
     await import('../../styles/shared/colorable.css');
@@ -324,9 +310,6 @@ describe('themed subtrees', () => {
     const neutral = resolved(dark, '--c-color-neutral-fill-quiet');
 
     expect(neutral).not.toBe('');
-    // The generic token has to follow the subtree's neutral palette. Left on
-    // :root alone it kept light mode's fill, and anything reading it — an
-    // [inherit] button's hover — came out light on the dark bar.
     expect(resolved(dark, '--c-color-fill-quiet')).toBe(neutral);
     expect(resolved(dark, '--c-color-on-quiet')).toBe(
       resolved(dark, '--c-color-neutral-on-quiet')

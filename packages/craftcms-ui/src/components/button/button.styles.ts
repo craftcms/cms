@@ -401,22 +401,8 @@ export default css`
     background-color: transparent;
   }
 
-  /*
-    A plain [inherit] button takes the surrounding text color, not just the
-    ambient palette.
-
-    Skipping the palette block at the top is enough under a colorable ancestor,
-    which redefines --c-color-*. It isn't enough on a surface that sets its own
-    text color without them — the breadcrumbs bar — where the variant's own
-    on-* token still wins and paints the button against the bar, not with it.
-
-    Only plain, which draws no background of its own. A filled variant's text
-    has to stay readable against its own fill, so it keeps its on-* token no
-    matter what the surrounding text is doing.
-
-    Last in the color rules, and repeated per state, so it beats the variant's
-    base, hover and active colors rather than relying on source order alone.
-  */
+  /* Skipping the palette block isn't enough on a surface that sets only its
+     text color; plain has no fill of its own, so it can follow that text. */
   :host([variant~='plain'][inherit]) {
     color: inherit;
   }

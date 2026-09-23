@@ -139,17 +139,8 @@
   --c-color-border-quiet-transparency: 60%;
 }
 
-/*
-  The generic tokens, pointing at the neutral palette.
-
-  On [data-theme] as well as :root, the same way `tokens.css` and
-  `colorable.css` declare theirs: a var() is substituted where it's declared,
-  so leaving these on :root alone resolved them against the root palette and
-  inherited that one value into a themed subtree. The dark top bar kept light
-  mode's fills and text, which showed up on anything reading the generic
-  tokens rather than re-mapping the neutral ones itself — a [inherit] button's
-  hover, for one.
-*/
+/* On [data-theme] too: a var() resolves where it's declared, so :root alone
+   would inherit the root palette's value into a themed subtree. */
 :root,
 [data-theme] {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
