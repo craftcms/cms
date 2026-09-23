@@ -28,15 +28,17 @@ readonly class StructuresController
         private Structures $structures,
         Elements $elements,
     ) {
-        [
-            'structureId' => $structureId,
-            'elementId' => $elementId,
-            'siteId' => $siteId,
-        ] = $request->validate([
+        $request->validate([
             'structureId' => ['required', 'integer'],
             'elementId' => ['required', 'integer'],
             'siteId' => ['required', 'integer'],
         ]);
+
+        // The `integer` rule accepts a numeric string and leaves it a string,
+        // so cast rather than passing it to an `int` parameter.
+        $structureId = $request->integer('structureId');
+        $elementId = $request->integer('elementId');
+        $siteId = $request->integer('siteId');
 
         $this->requireSessionAuthorization("editStructure:$structureId");
 

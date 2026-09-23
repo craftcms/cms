@@ -6,10 +6,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
@@ -29,6 +31,7 @@ use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -279,6 +282,185 @@ it('orders a structure source by its structure rather than a literal column', fu
             ->where('data.0.id', $c->id)
             ->where('data.1.id', $a->id)
             ->where('data.2.id', $b->id)
+        );
+});
+
+it('emits a level and descendant flag per row in structure mode', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $parent = EntryModel::factory()->forSection($section)->create();
+    $child = EntryModel::factory()->forSection($section)->create();
+
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $parent->id)
+            ->where('data.0.level', 1)
+            ->where('data.0.hasDescendants', true)
+            ->where('data.1.id', $child->id)
+            ->where('data.1.level', 2)
+            ->where('data.1.hasDescendants', false)
+            ->where('data.0.siteId', $parentElement->siteId)
+            ->where('data.0.label', $parentElement->getUiLabel())
+            ->where('structure.maxLevels', null)
+        );
+});
+
+it('authorizes structure moves once the structure index has loaded', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $a = EntryModel::factory()->forSection($section)->create();
+    $b = EntryModel::factory()->forSection($section)->create();
+
+    foreach ([$a, $b] as $entry) {
+        Structures::appendToRoot($structure->id, EntryElement::find()->id($entry->id)->one());
+    }
+
+    $moveRequest = [
+        'structureId' => $structure->id,
+        'elementId' => $a->id,
+        'siteId' => Sites::getPrimarySite()->id,
+        'prevId' => $b->id,
+    ];
+
+    postJson(action([StructuresController::class, 'moveElement']), $moveRequest)->assertForbidden();
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('structure.editable', true));
+
+    postJson(action([StructuresController::class, 'moveElement']), $moveRequest)->assertOk();
+
+    expect(EntryElement::find()->structureId($structure->id)->orderBy('lft')->ids())
+        ->toBe([$b->id, $a->id]);
+});
+
+it('drops the toggle from a parent once its visible children are gone', function (bool $collapsed) {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    [$parent, $child, $trashed] = EntryModel::factory()->forSection($section)->count(3)->create()->all();
+    $find = fn (EntryModel $entry) => EntryElement::find()->id($entry->id)->one();
+
+    Structures::appendToRoot($structure->id, $find($parent));
+    Structures::append($structure->id, $find($child), $find($parent));
+    Structures::append($structure->id, $find($trashed), $find($parent));
+
+    // Trashing leaves a gap in the parent's nested-set bounds, and moving the
+    // last visible child out leaves the parent with nothing to expand.
+    app(Elements::class)->deleteElement($find($trashed));
+    Structures::moveAfter($structure->id, $find($child), $find($parent));
+
+    $bounds = DB::table(Table::STRUCTUREELEMENTS)->where('elementId', $parent->id)->first();
+    expect($bounds->rgt - $bounds->lft)->toBeGreaterThan(1);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+        'collapsedElementIds' => $collapsed ? [$parent->id] : [],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $parent->id)
+            ->where('data.0.hasDescendants', false)
+        );
+})->with(['expanded' => false, 'collapsed' => true]);
+
+it('keeps the toggle on a collapsed parent with visible children', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    [$parent, $child] = EntryModel::factory()->forSection($section)->count(2)->create()->all();
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+        'collapsedElementIds' => [$parent->id],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('data', 1)
+            ->where('data.0.hasDescendants', true)
+        );
+});
+
+it('excludes the descendants of collapsed elements in structure mode', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $parent = EntryModel::factory()->forSection($section)->create();
+    $child = EntryModel::factory()->forSection($section)->create();
+
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'structure',
+        'collapsedElementIds' => [$parent->id],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('data', 1)
+            ->where('data.0.id', $parent->id)
+            ->where('pagination.total', 1)
+        );
+});
+
+it('keeps a flat table unfiltered when collapsed ids are sent outside structure mode', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+
+    $parent = EntryModel::factory()->forSection($section)->create();
+    $child = EntryModel::factory()->forSection($section)->create();
+
+    $parentElement = EntryElement::find()->id($parent->id)->one();
+    Structures::appendToRoot($structure->id, $parentElement);
+    Structures::append($structure->id, EntryElement::find()->id($child->id)->one(), $parentElement);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'viewMode' => 'cards',
+        'collapsedElementIds' => [$parent->id],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.total', 2)
         );
 });
 

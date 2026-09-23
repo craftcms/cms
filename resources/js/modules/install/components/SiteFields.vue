@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import {computed} from 'vue';
-  import {useFocusField} from '@/common/composables/useFocusField';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import Select from '@/common/form/Select.vue';
   import {usePage} from '@inertiajs/vue3';
@@ -33,8 +32,6 @@
       emit('update:modelValue', value);
     },
   });
-
-  useFocusField('site-name');
 </script>
 
 <template>
@@ -44,7 +41,6 @@
     id="site-name"
     v-model="model.name"
     maxlength="255"
-    ref="site-name"
     :error="errors?.name"
   />
 
