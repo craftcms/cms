@@ -19,6 +19,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Structure\Models\Structure;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -885,6 +886,15 @@ it('leads the crumbs with a shared site switcher on a multi-site install', funct
             // A crumb with a URL has its menu rebuilt from that URL's nav
             // level, which would swap these sites out for the main navigation.
             ->where('craft.siteCrumb.href', null)
+            // The client fetches `<name>.svg` straight from the icon assets
+            // with none of PHP's alias map, so the name has to be a real file
+            // — `world` is the Craft 5 alias and 404s in the browser.
+            ->where('craft.siteCrumb.icon', function (string $icon) {
+                expect($icon)->not->toBe('world');
+                expect(CmsAssets::resourcesPath("icons/solid/{$icon}.svg"))->toBeFile();
+
+                return true;
+            })
             // The index still names itself.
             ->where('crumbs.0.label', 'Entries')
         );

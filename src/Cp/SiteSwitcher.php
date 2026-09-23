@@ -63,7 +63,7 @@ readonly class SiteSwitcher
 
         return new ActionItem()
             ->id('site-crumb')
-            ->icon('world')
+            ->icon(Icons::earth())
             ->ariaLabel(t('Site'))
             ->label(t(($selected ?? $sites->first())->name, category: 'site'))
             ->items($this->items($sites, $selected));
