@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where an uninformative error message could be shown when saving a draft that no longer passed validation. ([#19674](https://github.com/craftcms/cms/issues/19674))
+- Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
 
 ## 5.11.3 - 2026-09-18
 
