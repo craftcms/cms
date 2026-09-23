@@ -1,154 +1,144 @@
 <script setup lang="ts">
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {h, ref} from 'vue';
-  import {t} from '@craftcms/ui/utilities/translate';
-  import DeleteSectionButton from '@/modules/sections/components/DeleteSectionButton.vue';
-  import {create, edit, index} from '@actions/Settings/SectionsController';
-  import {router} from '@inertiajs/vue3';
-  import CpLink from '@/common/components/CpLink.vue';
-  import useCraftData from '@/common/composables/useCraftData';
-  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
-  import type {PaginationData, SortItem} from '@/common/types';
-  import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
-  import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
+import { getCoreRowModel, useVueTable } from "@tanstack/vue-table";
+import AdminTable from "@/modules/admin-table/components/AdminTable.vue";
+import { h, ref } from "vue";
+import { t } from "@craftcms/ui/utilities/translate";
+import DeleteSectionButton from "@/modules/sections/components/DeleteSectionButton.vue";
+import { create, edit, index } from "@actions/Settings/SectionsController";
+import { router } from "@inertiajs/vue3";
+import CpLink from "@/common/components/CpLink.vue";
+import useCraftData from "@/common/composables/useCraftData";
+import CalloutReadOnly from "@/common/components/CalloutReadOnly.vue";
+import type { PaginationData, SortItem } from "@/common/types";
+import SearchForm from "@/modules/admin-table/components/SearchForm.vue";
+import { useServerPagination } from "@/modules/admin-table/composables/useServerPagination";
+import { useServerSort } from "@/modules/admin-table/composables/useServerSort";
+import { createCraftColumnHelper } from "@/modules/admin-table/helpers/createCraftColumnHelper";
+import { useAppLayout } from "@/common/composables/useAppLayout";
+import LayoutSlot from "@/common/components/LayoutSlot.vue";
+import CpContainer from "@/common/components/CpContainer.vue";
 
-  export interface SectionModel {
-    id: number;
-    title: string;
-    name: string;
-    url: string;
-    handle: string;
-    type: string;
-  }
+export interface SectionModel {
+  id: number;
+  title: string;
+  name: string;
+  url: string;
+  handle: string;
+  type: string;
+}
 
-  const props = defineProps<{
-    title: string;
-    data: Array<SectionModel>;
-    pagination: PaginationData;
-    sort: Array<SortItem>;
-    searchTerm?: string;
-    emptyMessage: string;
-  }>();
+const props = defineProps<{
+  title: string;
+  data: Array<SectionModel>;
+  pagination: PaginationData;
+  sort: Array<SortItem>;
+  searchTerm?: string;
+  emptyMessage: string;
+}>();
 
-  const {readOnly} = useCraftData();
-  const searchTerm = ref(props.searchTerm ?? '');
+const { readOnly } = useCraftData();
+const searchTerm = ref(props.searchTerm ?? "");
 
-  useAppLayout(() => ({title: props.title}));
-  const columnHelper = createCraftColumnHelper<SectionModel>();
-  const columns = ref([
-    columnHelper.link('name', {
-      header: t('Name'),
-      props: ({row}) => ({href: edit({section: row.original.id}).url}),
-    }),
-    columnHelper.accessor('handle', {
-      header: t('Handle'),
-      cell: ({getValue}) =>
-        h('craft-copy-attribute', {value: getValue()}, getValue()),
-    }),
-    columnHelper.accessor('type', {
-      header: t('Type'),
-    }),
-    columnHelper.actions(({row}) => [
-      h(DeleteSectionButton, {section: row.original}),
-    ]),
-  ]);
+useAppLayout(() => ({ title: props.title }));
+const columnHelper = createCraftColumnHelper<SectionModel>();
+const columns = ref([
+  columnHelper.link("name", {
+    header: t("Name"),
+    props: ({ row }) => ({ href: edit({ section: row.original.id }).url }),
+  }),
+  columnHelper.accessor("handle", {
+    header: t("Handle"),
+    cell: ({ getValue }) => h("craft-copy-attribute", { value: getValue() }, getValue()),
+  }),
+  columnHelper.accessor("type", {
+    header: t("Type"),
+  }),
+  columnHelper.actions(({ row }) => [h(DeleteSectionButton, { section: row.original })]),
+]);
 
-  const {paginationState, paginationConfig} = useServerPagination({
-    initialState: props.pagination,
-    onChange: ({query}) => {
-      router.visit(
-        index(
-          {},
-          {
-            query,
-          }
-        ),
+const { paginationState, paginationConfig } = useServerPagination({
+  initialState: props.pagination,
+  onChange: ({ query }) => {
+    router.visit(
+      index(
+        {},
         {
-          only: ['data', 'pagination'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
+          query,
+        },
+      ),
+      {
+        only: ["data", "pagination"],
+        preserveScroll: true,
+      },
+    );
+  },
+});
 
-  const {sortingState, sortingConfig} = useServerSort({
-    initialState: props.sort,
-    onChange: ({query}) => {
-      router.visit(
-        index(
-          {},
-          {
-            query,
-          }
-        ),
+const { sortingState, sortingConfig } = useServerSort({
+  initialState: props.sort,
+  onChange: ({ query }) => {
+    router.visit(
+      index(
+        {},
         {
-          only: ['data', 'sort'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
+          query,
+        },
+      ),
+      {
+        only: ["data", "sort"],
+        preserveScroll: true,
+      },
+    );
+  },
+});
 
-  const sectionTable = useVueTable({
-    get data() {
-      return props.data;
+const sectionTable = useVueTable({
+  get data() {
+    return props.data;
+  },
+  get columns() {
+    return columns.value;
+  },
+  getCoreRowModel: getCoreRowModel<SectionModel>(),
+  state: {
+    get pagination() {
+      return paginationState.value;
     },
-    get columns() {
-      return columns.value;
+    get sorting() {
+      return sortingState.value;
     },
-    getCoreRowModel: getCoreRowModel<SectionModel>(),
-    state: {
-      get pagination() {
-        return paginationState.value;
-      },
-      get sorting() {
-        return sortingState.value;
-      },
-      get columnVisibility() {
-        return {
-          actions: !readOnly.value,
-        };
-      },
+    get columnVisibility() {
+      return {
+        actions: !readOnly.value,
+      };
     },
-    ...paginationConfig,
-    ...sortingConfig,
-  });
+  },
+  ...paginationConfig,
+  ...sortingConfig,
+});
 </script>
 
 <template>
   <LayoutSlot name="content-actions">
-    <CpLink
-      as="craft-button"
-      variant="accent"
-      :href="create()"
-      v-if="!readOnly"
-    >
+    <CpLink as="craft-button" variant="accent" :href="create()" v-if="!readOnly">
       <craft-icon name="plus" slot="prefix"></craft-icon>
-      {{ t('New section') }}
+      {{ t("New section") }}
     </CpLink>
   </LayoutSlot>
 
   <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
 
-  <CpContainer>
-    <AdminTable
-      :title="title"
-      :table="sectionTable"
-      :reorderable="false"
-      :from="pagination.from"
-      :to="pagination.to"
-      :total="pagination.total"
-      :enable-adjust-page-size="true"
-    >
-      <template #table-header>
-        <SearchForm :action="index()" v-model="searchTerm" />
-      </template>
-    </AdminTable>
-  </CpContainer>
+  <AdminTable
+    :title="title"
+    :table="sectionTable"
+    :reorderable="false"
+    :from="pagination.from"
+    :to="pagination.to"
+    :total="pagination.total"
+    :enable-adjust-page-size="true"
+  >
+    <template #table-header>
+      <SearchForm :action="index()" v-model="searchTerm" />
+    </template>
+  </AdminTable>
 </template>
