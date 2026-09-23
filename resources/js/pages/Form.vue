@@ -24,29 +24,13 @@
 
   const props = defineProps<{
     form: FormPayload;
-    /**
-     * Omit for a screen with nothing to save as a whole — a listing, say,
-     * that may still hold ordinary Field controls (row-selection checkboxes
-     * and the like) driven by the same value tracking below. Those just need
-     * their own action button reading `currentValues()`/`setValue()` off
-     * this component's exposed API, rather than a single generic save. When
-     * omitted, no `<form>` element is rendered at all — see the template.
-     */
+    /** Omit for node-only screens with no form submission. */
     submit?: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
-    /**
-     * Server-described alternate form actions ("Save as a new X", "Delete") —
-     * see {@link FormAltAction}. Each resubmits the form's current values via
-     * this same component's own `save()`, just aimed at a different action.
-     */
     formActions?: FormAltAction[];
-    /**
-     * Server-rendered read-only metadata (e.g. Created at/Updated at) for the details
-     * column — the same {@see \CraftCms\Cms\Cp\Html\ContentHtml::metadataHtml()} markup
-     * the element editor's sidebar shows via its own `metadataHtml` payload prop.
-     */
+    /** Server-rendered markup for the details column. */
     metadataHtml?: string;
     /** Caps and centers the content column (default on) — see `UseAppLayoutOptions.contentMaxWidth`. Pass `false` for a full-width screen (an index, say). */
     contentMaxWidth?: boolean;
@@ -62,8 +46,6 @@
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
 
-  // Only wire up a save flow (and its cmd/ctrl + s shortcut) when there's
-  // somewhere to submit to — otherwise there's nothing for `save()` to post.
   const save = props.submit
     ? useSettingsSave(inertiaForm, () => props.submit!, {
         transform: () => renderer.value?.currentValues() ?? props.form.values,
@@ -99,12 +81,6 @@
       }).save
     : undefined;
 
-  // Each server-described alt action becomes a real `ActionItemButton`, whose
-  // `onClick` reuses this component's own `save()` — the only place that has
-  // both the in-progress values (`renderer.value?.currentValues()`, via
-  // `save`'s own `transform` above) and the confirm/redirect machinery
-  // already built for the primary Save button. This is the piece `formActions`
-  // itself can't carry: it's plain JSON from the server, not a closure.
   const translatedFormActions = computed<ActionItem[]>(
     () =>
       props.formActions?.map((altAction) => ({
@@ -125,7 +101,6 @@
       })) ?? []
   );
 
-  /** A `Form` whose sole node is an unbordered `Table` also skips this component's own outer pane — redundant chrome around a Table that already manages its own layout. */
   const isBareTable = computed(() => {
     const [node, ...rest] = props.form.nodes;
     return (
@@ -181,12 +156,6 @@
 </script>
 
 <template>
-  <!--
-    A node-only screen (no `submit`) renders as a plain `<div>` — there's
-    nothing to submit, so there's no reason to imply otherwise with a `<form>`
-    element. Value tracking below is all Vue-side state; it doesn't depend on
-    an actual `<form>` tag existing in the DOM either way.
-  -->
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
     <CpContainer>
       <component
