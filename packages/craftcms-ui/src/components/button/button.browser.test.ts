@@ -296,3 +296,50 @@ describe('[inherit]', () => {
     expect(getComputedStyle(button).color).toBe('rgb(0, 0, 255)');
   });
 });
+
+describe('themed subtrees', () => {
+  /**
+   * The CP's top bar is a [data-theme="dark"] island inside a light page, so
+   * the tokens have to re-resolve there rather than inheriting the value the
+   * root computed. A var() is substituted where it is declared, which is what
+   * makes this easy to get wrong.
+   */
+  async function loadTokens(): Promise<void> {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+  }
+
+  function resolved(element: Element, token: string): string {
+    return getComputedStyle(element).getPropertyValue(token).trim();
+  }
+
+  it('re-resolves the generic color tokens against the subtree’s palette', async () => {
+    await loadTokens();
+
+    const dark = document.createElement('div');
+    dark.setAttribute('data-theme', 'dark');
+    document.body.append(dark);
+
+    const neutral = resolved(dark, '--c-color-neutral-fill-quiet');
+
+    expect(neutral).not.toBe('');
+    // The generic token has to follow the subtree's neutral palette. Left on
+    // :root alone it kept light mode's fill, and anything reading it — an
+    // [inherit] button's hover — came out light on the dark bar.
+    expect(resolved(dark, '--c-color-fill-quiet')).toBe(neutral);
+    expect(resolved(dark, '--c-color-on-quiet')).toBe(
+      resolved(dark, '--c-color-neutral-on-quiet')
+    );
+  });
+
+  it('leaves the root palette alone', async () => {
+    await loadTokens();
+
+    const root = document.documentElement;
+
+    expect(resolved(root, '--c-color-fill-quiet')).toBe(
+      resolved(root, '--c-color-neutral-fill-quiet')
+    );
+  });
+});
