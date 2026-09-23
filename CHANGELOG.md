@@ -5,6 +5,18 @@
 - Added `craft\services\Users::destroyOtherSessions()`.
 - Setting up a two-step verification method now destroys the user’s other sessions.
 - Deleting a passkey now requires an elevated session.
+- Fixed a bug where an uninformative error message could be shown when saving a draft that no longer passed validation. ([#19674](https://github.com/craftcms/cms/issues/19674))
+- Fixed a bug where the Assets index page could display the wrong assets and subfolders after reloading the browser tab. ([#19689](https://github.com/craftcms/cms/issues/19689))
+- Fixed a bug where Matrix fields set to the “Cards”, “Card grid”, or “Index” view modes weren’t respecting `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`. ([#19685](https://github.com/craftcms/cms/pull/19685))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752, GHSA-j2r3-x468-c6j5)
+
+## 5.11.3 - 2026-09-18
+
+- Fixed an error that could occur when registering or logging in with a passkey. ([#19657](https://github.com/craftcms/cms/issues/19657), [#19660](https://github.com/craftcms/cms/pull/19660))
+
+## 5.11.2 - 2026-09-17
+
+>>>>>>> 5.x-internal
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
 - Added `craft\helpers\StringHelper::containsNewlines()`.
 - Added `craft\services\ElementSources::CONTEXT_RESTRICTED_MODAL`.
@@ -23,7 +35,7 @@
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-v25r-wr32-jfg7)
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-xpg7-m6gm-4xfh, GHSA-mp59-9rf5-93wr)
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-hvp5-pwxx-2752, GHSA-j2r3-x468-c6j5)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-5v62-pcq7-fxj9)
 
 ## 5.11.1 - 2026-09-02
@@ -90,10 +102,10 @@
 - Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
 - Fixed an error that could occur when upgrading to Craft 5. ([craftcms/commerce#4309](https://github.com/craftcms/commerce/pull/4309))
 - Fixed a bug where overridden entry type handles weren’t being prioritized when rendering partial templates. ([#18968](https://github.com/craftcms/cms/issues/18968))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5m2g-hhqr-84pc, GHSA-vfcw-xv8p-8rj2)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4wfw-q5w3-jh42)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-w5rh-mhxj-wr8r)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j5wg-m2pr-35qc)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. ([GHSA-5m2g-hhqr-84pc](https://github.com/craftcms/cms/security/advisories/GHSA-5m2g-hhqr-84pc), [GHSA-vfcw-xv8p-8rj2](https://github.com/craftcms/cms/security/advisories/GHSA-vfcw-xv8p-8rj2))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-4wfw-q5w3-jh42](https://github.com/craftcms/cms/security/advisories/GHSA-4wfw-q5w3-jh42))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-w5rh-mhxj-wr8r](https://github.com/craftcms/cms/security/advisories/GHSA-w5rh-mhxj-wr8r))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-j5wg-m2pr-35qc](https://github.com/craftcms/cms/security/advisories/GHSA-j5wg-m2pr-35qc))
 
 ## 5.10.13.2 - 2026-08-05
 

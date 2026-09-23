@@ -70,7 +70,7 @@
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.28.0",
     "voku/portable-ascii": "^2.0",
-    "web-auth/webauthn-lib": "~5.3.5",
+    "web-auth/webauthn-lib": "~5.3.9",
     "yiisoft/yii2": "~2.0.55.0",
     "yiisoft/yii2-debug": "~2.1.28.0",
     "yiisoft/yii2-queue": "~2.3.2",
