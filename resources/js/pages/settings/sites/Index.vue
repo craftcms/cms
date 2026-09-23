@@ -12,7 +12,6 @@
   import {create, edit, reorder} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import Badge from '@/common/components/Badge.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';

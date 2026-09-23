@@ -3,7 +3,6 @@
   import type {UrlMethodPair} from '@inertiajs/core';
   import {t, toEnvVar} from '@craftcms/ui';
   import {ref} from 'vue';
-  import Badge from '@/common/components/Badge.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import FormPage from '@/pages/Form.vue';
   import type {
@@ -59,9 +58,9 @@
 
 <template>
   <LayoutSlot name="content-toolbar-meta">
-    <Badge :variant="site.enabled ? 'success' : 'default'">
+    <craft-badge :fill="site.enabled ? 'success' : 'gray'">
       {{ site.enabled ? t('Enabled') : t('Disabled') }}
-    </Badge>
+    </craft-badge>
     <craft-callout v-if="site.primary" size="small" inline>
       <span>{{ t('Primary') }}</span>
     </craft-callout>
