@@ -2512,9 +2512,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$source.data('default-source-path');
 
       if (this.settings.context === 'index') {
-        const urlParams = Craft.getQueryParams();
-        urlParams.source = this.sourceKey;
-        Craft.setUrl(Craft.getUrl(Craft.path, urlParams));
+        // Use setQueryParam so that the current URL is used and not Craft.path that might be stale by now
+        Craft.setQueryParam('source', this.sourceKey);
       }
 
       this.updatePasteButton();
