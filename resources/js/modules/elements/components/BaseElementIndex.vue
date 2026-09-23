@@ -7,7 +7,8 @@
   import Select from '@/common/form/Select.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
-  import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import type {BulkAction, BulkActionItem} from '@/modules/elements/types/actions';
+  import PerformElementActionController from '@actions/Elements/PerformElementActionController';
   import VarDump from '@/common/components/VarDump.vue';
 
   const props = withDefaults(
@@ -21,7 +22,12 @@
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: Array<number>;
-      actions?: Array<BulkActionItem> | null;
+      /** The "Actions" menu's items — not element-specific, see `BulkActionsBar`. */
+      actions?: Array<BulkAction> | null;
+      /** A separate "Set status" menu; see `resolved` below. */
+      statuses?: Array<BulkAction> | null;
+      /** The body key the selection posts under, forwarded to `BulkActionsBar`. */
+      idsField?: string;
       elementType?: string;
       source?: string | null;
       context?: string;
@@ -42,6 +48,57 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
+  const SET_STATUS_KEY = 'CraftCms\\Cms\\Element\\Actions\\SetStatus';
+
+  function isSetStatusAction(item: BulkAction): item is BulkActionItem {
+    return 'key' in item && item.key === SET_STATUS_KEY;
+  }
+
+  function setStatusAction(status: string) {
+    return {
+      type: 'http' as const,
+      url: PerformElementActionController.url(),
+      body: {elementAction: SET_STATUS_KEY, status},
+    };
+  }
+
+  /** A real element index has no `statuses` prop — derives Enabled/Disabled from its `SetStatus` action instead, dropping it from `actions`. */
+  const resolved = computed(() => {
+    if (props.statuses) {
+      return {actions: props.actions ?? [], statuses: props.statuses};
+    }
+
+    const setStatus = (props.actions ?? []).find(isSetStatusAction);
+
+    return {
+      actions: (props.actions ?? []).filter((item) => item !== setStatus),
+      statuses: setStatus
+        ? [
+            {
+              key: `${SET_STATUS_KEY}:enabled`,
+              label: t('Enabled'),
+              fill: 'success',
+              disabled: setStatus.disabled,
+              action: setStatusAction('enabled'),
+            },
+            {
+              key: `${SET_STATUS_KEY}:disabled`,
+              label: t('Disabled'),
+              fill: 'danger',
+              disabled: setStatus.disabled,
+              action: setStatusAction('disabled'),
+            },
+          ]
+        : [],
+    };
+  });
+
+  const actionContext = computed(() => ({
+    elementType: props.elementType,
+    source: props.source,
+    context: props.context,
+  }));
+
   const {
     selection,
     selectedIds,
@@ -52,8 +109,13 @@
   } = useElementIndexSelection(() => props.table, {
     selectable: () => props.selectable,
     readOnly,
-    actions: () => props.actions,
+    actions: () => resolved.value.actions,
+    statuses: () => resolved.value.statuses,
   });
+
+  const showSelectionBar = computed(
+    () => showBulkActions.value && hasSelection.value
+  );
 
   function onActionPerformed() {
     clearSelection();
@@ -91,7 +153,7 @@
       showPagination.value ||
       showPageSize.value ||
       showDisplayedRows.value ||
-      (showBulkActions.value && hasSelection.value)
+      showSelectionBar.value
   );
 
   // --- ARIA live region ---
@@ -131,17 +193,18 @@
 
     <div class="element-index__footer" ref="indexFooter" v-if="showFooter">
       <BulkActionsBar
-        v-if="showBulkActions && hasSelection"
+        v-if="showSelectionBar"
         :selected-ids="selectedIds"
-        :actions="actions"
-        :element-type="elementType ?? ''"
-        :source="source"
-        :context="context"
+        :actions="resolved.actions"
+        :statuses="resolved.statuses"
+        :action-context="actionContext"
+        :ids-field="idsField"
+        :element-type="elementType"
         @performed="onActionPerformed"
         @clear="clearSelection"
       />
       <div
-        v-show="!(showBulkActions && hasSelection)"
+        v-show="!showSelectionBar"
         class="flex justify-between items-center w-full"
       >
         <div>

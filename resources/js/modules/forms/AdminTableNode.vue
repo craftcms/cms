@@ -12,20 +12,18 @@
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import Text from '@/common/components/Text.vue';
+  import type {ActionItemLink, PaginationData} from '@/common/types';
   import type {
-    ActionItemButton,
-    ActionItemLink,
-    ActionItems,
-    PaginationData,
-  } from '@/common/types';
+    BulkAction,
+    BulkActionItem,
+  } from '@/modules/elements/types/actions';
   import Empty from '@/common/components/Empty.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import MoveToPageButton from '@/modules/admin-table/components/MoveToPageButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import type {FormNodePayload} from './types';
+  import type {FormNodePayload, FormValues} from './types';
 
   interface TableColumn {
     key: string;
@@ -64,7 +62,7 @@
     items: BulkActionSingle[];
   }
 
-  type BulkAction = BulkActionSingle | BulkActionMenu;
+  type BulkActionDescriptor = BulkActionSingle | BulkActionMenu;
 
   type TableCellValue =
     | string
@@ -106,7 +104,7 @@
       deleteUrl: string | null;
       deleteConfirmMessage: string | null;
       bulkDeletable: boolean;
-      bulkActions: BulkAction[];
+      bulkActions: BulkActionDescriptor[];
       statusActions: BulkActionSingle[];
       searchable: boolean;
       searchPlaceholder: string | null;
@@ -240,7 +238,9 @@
     return !Array.isArray(value) && 'html' in value;
   }
 
-  function isBulkActionMenu(action: BulkAction): action is BulkActionMenu {
+  function isBulkActionMenu(
+    action: BulkActionDescriptor
+  ): action is BulkActionMenu {
     return 'items' in action;
   }
 
@@ -530,27 +530,19 @@
     refreshForm();
   }
 
-  async function performBulkAction(action: BulkActionSingle): Promise<void> {
-    const ids = selectedIds.value;
-
-    if (!ids.length) return;
-    if (action.allowMultiple === false && ids.length > 1) return;
-
-    await actionClient.post(action.url, {ids, ...action.params});
-    table.resetRowSelection();
-    refreshForm();
-  }
-
-  function bulkActionDisabled(action: BulkActionSingle): boolean {
-    return action.allowMultiple === false && selectedIds.value.length > 1;
-  }
-
-  function bulkActionToItem(action: BulkActionSingle): ActionItemButton {
+  // `BulkActionsBar` handles the request, per-row-vs-bulk disabling, and
+  // refresh itself once this is declarative — see its own `resolveItem()`.
+  function bulkActionToItem(action: BulkActionSingle): BulkActionItem {
     return {
-      type: 'button',
+      key: action.url,
       label: action.label,
-      disabled: bulkActionDisabled(action),
-      onClick: () => performBulkAction(action),
+      bulk: action.allowMultiple === false ? false : undefined,
+      action: {
+        type: 'http',
+        url: action.url,
+        // Server JSON, trusted to be FormValue-shaped at runtime.
+        body: action.params as FormValues | undefined,
+      },
     };
   }
 
@@ -573,15 +565,16 @@
     },
   });
 
-  const footerActionItems = computed((): ActionItems => {
-    const items: ActionItems = props.node.props.bulkActions.map((action) =>
-      isBulkActionMenu(action)
-        ? {
-            type: 'group',
-            heading: action.label,
-            items: action.items.map(bulkActionToItem),
-          }
-        : bulkActionToItem(action)
+  const footerActionItems = computed((): Array<BulkAction> => {
+    const items: Array<BulkAction> = props.node.props.bulkActions.map(
+      (action) =>
+        isBulkActionMenu(action)
+          ? {
+              type: 'group',
+              heading: action.label,
+              items: action.items.map(bulkActionToItem),
+            }
+          : bulkActionToItem(action)
     );
 
     if (showMoveToPage.value && selectedIds.value.length === 1) {
@@ -590,7 +583,7 @@
 
     if (props.node.props.deleteUrl && props.node.props.bulkDeletable) {
       items.push({
-        type: 'button',
+        key: 'delete',
         label: t('Delete'),
         variant: 'danger',
         onClick: deleteSelected,
@@ -600,7 +593,7 @@
     return items;
   });
 
-  const statusActionItems = computed((): ActionItemButton[] =>
+  const statusActionItems = computed((): Array<BulkAction> =>
     props.node.props.statusActions.map(bulkActionToItem)
   );
 
@@ -672,7 +665,11 @@
         :from="footerFrom"
         :to="footerTo"
         :total="footerTotal"
+        :actions="footerActionItems"
+        :statuses="statusActionItems"
+        ids-field="ids"
         @reorder="onReorder"
+        @action-performed="refreshForm"
       >
         <template #empty-row>
           <Empty
@@ -685,74 +682,6 @@
           />
         </template>
       </AdminTable>
-
-      <!-- Element actions require ElementQuery rows; this table uses its own selection footer. -->
-      <div v-if="selectedIds.length" class="admin-table-footer">
-        <Text
-          as="span"
-          class="admin-table-footer__count"
-          template="{count, plural, =1{# selected} other{# selected}}"
-          :params="{count: selectedIds.length}"
-        />
-        <craft-button
-          type="button"
-          variant="plain"
-          size="small"
-          @click="table.resetRowSelection()"
-          >{{ t('Clear selection') }}</craft-button
-        >
-        <div
-          v-if="statusActionItems.length || footerActionItems.length"
-          class="admin-table-footer__actions"
-        >
-          <ActionMenu
-            v-if="statusActionItems.length"
-            :actions="statusActionItems"
-            :label="t('Set status')"
-          >
-            <template #invoker="{attributes}">
-              <craft-button type="button" size="small" v-bind="attributes">
-                {{ t('Set status') }}
-                <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-              </craft-button>
-            </template>
-          </ActionMenu>
-          <ActionMenu
-            v-if="footerActionItems.length"
-            :actions="footerActionItems"
-            :label="t('Actions')"
-          >
-            <template #invoker="{attributes}">
-              <craft-button type="button" size="small" v-bind="attributes">
-                {{ t('Actions') }}
-                <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-              </craft-button>
-            </template>
-          </ActionMenu>
-        </div>
-      </div>
     </component>
   </div>
 </template>
-
-<style scoped lang="scss">
-  .admin-table-footer {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-    background-color: var(--c-color-neutral-fill-quiet);
-    padding: var(--c-spacing-md);
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .admin-table-footer__count {
-    font-weight: 600;
-  }
-
-  .admin-table-footer__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-    margin-inline-start: auto;
-  }
-</style>

@@ -129,6 +129,8 @@ export interface ActionItemButton {
   feedback?: ActionFeedback;
   keywords?: string;
   iconColor?: string;
+  /** A colored status dot before the label — `craft-indicator`'s own `fill` values. */
+  fill?: string;
   /**
    * Items that hang off this one — the nav's own children.
    *

@@ -1,6 +1,6 @@
 import {computed, type MaybeRefOrGetter, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
-import type {BulkActionItem} from '@/modules/elements/types/actions';
+import type {BulkAction} from '@/modules/elements/types/actions';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {
   type SelectableId,
@@ -10,7 +10,9 @@ import {
 export interface ElementIndexSelectionOptions {
   selectable: MaybeRefOrGetter<boolean>;
   readOnly: MaybeRefOrGetter<boolean>;
-  actions: MaybeRefOrGetter<Array<BulkActionItem> | null | undefined>;
+  actions: MaybeRefOrGetter<Array<BulkAction> | null | undefined>;
+  /** A separate `statuses` menu also counts as having bulk actions. */
+  statuses?: MaybeRefOrGetter<Array<BulkAction> | null | undefined>;
 }
 
 /**
@@ -54,7 +56,9 @@ export function useElementIndexSelection(
   const {anchorIndex, hasSelection, selectedIds} = selection;
 
   const hasBulkActions = computed(
-    () => (toValue(options.actions)?.length ?? 0) > 0
+    () =>
+      (toValue(options.actions)?.length ?? 0) > 0 ||
+      (toValue(options.statuses)?.length ?? 0) > 0
   );
   const showBulkActions = computed(
     () => selectable.value && hasBulkActions.value

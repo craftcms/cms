@@ -1,30 +1,38 @@
 <script setup lang="ts">
-  import {computed, onMounted, onUnmounted} from 'vue';
+  import {computed, onMounted, onUnmounted, ref} from 'vue';
   import {t} from '@craftcms/ui';
-  import type {BulkActionItem} from '@/modules/elements/types/actions';
-  import type {ActionItem} from '@/common/types';
+  import type {
+    BulkAction,
+    BulkActionItem,
+  } from '@/modules/elements/types/actions';
+  import type {
+    ActionItemButton,
+    ActionItemGroup,
+    ActionItems,
+  } from '@/common/types';
+  import type {FormValues} from '@/modules/forms/types';
   import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {useForm} from '@inertiajs/vue3';
-  import PerformElementActionController from '@actions/Elements/PerformElementActionController';
 
   const props = withDefaults(
     defineProps<{
-      /** The ids of the elements currently selected in the index. */
+      /** The ids of the rows currently selected. */
       selectedIds: ReadonlyArray<string | number>;
-      /** The serialized bulk action descriptors for the active source. */
-      actions?: Array<BulkActionItem> | null;
-      /** The element type class string, posted to the perform endpoint. */
-      elementType: string;
-      /** The active source key, posted so the server rebuilds the same query. */
-      source?: string | null;
-      /** The render context (e.g. `index`), posted to the perform endpoint. */
-      context?: string;
+      /** The "Actions" menu's items. Not element-specific — any `http`/`download` action posts to its own `url`. */
+      actions?: Array<BulkAction> | null;
+      /** A separate, pinned "Set status" menu, rendered before "Actions". */
+      statuses?: Array<BulkAction> | null;
+      /** Extra fields merged into every `http`/`download` action's body — an element index's `elementType`/`source`/`context`, say. */
+      actionContext?: FormValues;
+      /** The body key the selection posts under. */
+      idsField?: string;
+      /** Only used by the `craft:copy-elements` listener below; irrelevant outside an element index. */
+      elementType?: string;
     }>(),
     {
       actions: () => [],
-      source: null,
-      context: 'index',
+      statuses: () => [],
+      idsField: 'elementIds',
     }
   );
 
@@ -35,12 +43,9 @@
     (e: 'clear'): void;
   }>();
 
-  // Set Status gets its own button alongside the menu (it's the most-reached-for
-  // action), so it's pulled out of the menu list below.
-  const SET_STATUS_KEY = 'CraftCms\\Cms\\Element\\Actions\\SetStatus';
-
   const selectedCount = computed(() => props.selectedIds.length);
 
+  /** Only meaningful for a real element index, where a selection can mix elements and asset-folder rows. */
   const selectionType = computed<'elements' | 'folders' | 'mixed'>(() => {
     const folderCount = props.selectedIds.filter((id) =>
       String(id).startsWith('folder:')
@@ -53,96 +58,108 @@
     return folderCount === selectedCount.value ? 'folders' : 'mixed';
   });
 
-  const availableActions = computed(() =>
-    (props.actions ?? []).filter(
-      (item) => !item.appliesTo || item.appliesTo === selectionType.value
-    )
-  );
+  function itemApplies(item: BulkActionItem): boolean {
+    return !item.appliesTo || item.appliesTo === selectionType.value;
+  }
 
-  const setStatusAction = computed<BulkActionItem | undefined>(() =>
-    availableActions.value.find((item) => item.key === SET_STATUS_KEY)
-  );
+  // Merges the live selection (under `idsField`) and `actionContext` into the
+  // item's own `action`, so `runAction()` handles the request/confirm/feedback
+  // with no bespoke code here. `event` actions instead merge into the event
+  // detail for a client-side listener (e.g. `craft:copy-elements` below).
+  function resolveItem(item: BulkActionItem): ActionItemButton {
+    const variant = item.variant ?? (item.destructive ? 'danger' : undefined);
 
-  const menuItems = computed<Array<BulkActionItem>>(() =>
-    availableActions.value.filter((item) => item.key !== SET_STATUS_KEY)
-  );
-
-  const hasMenu = computed(() => menuItems.value.length > 0);
-
-  /**
-   * Map the server descriptors to `ActionItem`s for `ActionMenu` /
-   * `craft-action-item`. The server bakes the action class + its settings into
-   * `action.body`; we merge the live selection (`elementIds`) and index context
-   * (`elementType`, `source`, `context`) so the perform endpoint can rebuild the
-   * same query the index used. `runAction()` then handles the request, confirm,
-   * spinner, and feedback — no bespoke code here.
-   *
-   * `event` actions run client-side instead: the selection merges into the
-   * event detail, and a listener (e.g. `craft:copy-elements` below) handles it.
-   */
-  const menuActions = computed<Array<ActionItem>>(() =>
-    menuItems.value.map((item): ActionItem => {
-      const variant = item.variant ?? (item.destructive ? 'danger' : undefined);
-
-      // Disabled (e.g. not-yet-ported interactive, or non-bulk actions with
-      // more than one element selected) actions render inert.
-      if (
-        item.disabled ||
-        !item.action ||
-        (item.bulk === false && selectedCount.value > 1)
-      ) {
-        return {
-          type: 'button',
-          label: item.label,
-          variant,
-          disabled: true,
-        };
-      }
-
-      if (item.action.type === 'event') {
-        return {
-          type: 'button',
-          label: item.label,
-          variant,
-          action: {
-            ...item.action,
-            detail: {
-              ...item.action.detail,
-              elementType: props.elementType,
-              elementIds: props.selectedIds,
-            },
-          },
-        } satisfies ActionItem;
-      }
-
-      if (item.action.type === 'http' || item.action.type === 'download') {
-        return {
-          type: 'button',
-          label: item.label,
-          variant,
-          action: {
-            ...item.action,
-            body: {
-              ...item.action.body,
-              elementType: props.elementType,
-              source: props.source,
-              context: props.context,
-              elementIds: props.selectedIds,
-            },
-          },
-          feedback: {success: {message: t('Done')}},
-        } satisfies ActionItem;
-      }
-
+    // An imperative caller handles its own request/refresh; just wire the click.
+    if (item.onClick) {
       return {
         type: 'button',
         label: item.label,
         variant,
-        action: item.action,
+        fill: item.fill,
+        disabled: item.disabled,
+        onClick: item.onClick,
+      } satisfies ActionItemButton;
+    }
+
+    // Disabled (e.g. not-yet-ported interactive, or non-bulk actions with
+    // more than one row selected) actions render inert.
+    if (
+      item.disabled ||
+      !item.action ||
+      (item.bulk === false && selectedCount.value > 1)
+    ) {
+      return {type: 'button', label: item.label, variant, fill: item.fill, disabled: true};
+    }
+
+    if (item.action.type === 'event') {
+      return {
+        type: 'button',
+        label: item.label,
+        variant,
+        fill: item.fill,
+        action: {
+          ...item.action,
+          detail: {
+            ...item.action.detail,
+            elementType: props.elementType,
+            [props.idsField ?? 'elementIds']: props.selectedIds,
+          },
+        },
+      } satisfies ActionItemButton;
+    }
+
+    if (item.action.type === 'http' || item.action.type === 'download') {
+      return {
+        type: 'button',
+        label: item.label,
+        variant,
+        fill: item.fill,
+        action: {
+          ...item.action,
+          body: {
+            ...item.action.body,
+            ...props.actionContext,
+            [props.idsField ?? 'elementIds']: props.selectedIds,
+          },
+        },
         feedback: {success: {message: t('Done')}},
-      } satisfies ActionItem;
-    })
-  );
+      } satisfies ActionItemButton;
+    }
+
+    return {
+      type: 'button',
+      label: item.label,
+      variant,
+      fill: item.fill,
+      action: item.action,
+      feedback: {success: {message: t('Done')}},
+    } satisfies ActionItemButton;
+  }
+
+  function resolveList(list: Array<BulkAction> | null | undefined): ActionItems {
+    return (list ?? []).flatMap((entry): ActionItems => {
+      // A custom component (e.g. "Move to page…"), passed through as-is.
+      if (entry.type === 'display') {
+        return [entry];
+      }
+
+      if (entry.type === 'group') {
+        const items = entry.items.filter(itemApplies).map(resolveItem);
+
+        return items.length
+          ? [{type: 'group', heading: entry.heading, items} satisfies ActionItemGroup]
+          : [];
+      }
+
+      return itemApplies(entry) ? [resolveItem(entry)] : [];
+    });
+  }
+
+  const menuActions = computed<ActionItems>(() => resolveList(props.actions));
+  const hasMenu = computed(() => menuActions.value.length > 0);
+
+  const statusActions = computed<ActionItems>(() => resolveList(props.statuses));
+  const hasStatusMenu = computed(() => statusActions.value.length > 0);
 
   /**
    * Copy mirrors Craft 5: the selection is handed to the legacy
@@ -189,27 +206,20 @@
     }
   }
 
-  const action = useForm({
-    elementIds: props.selectedIds,
-    elementAction: SET_STATUS_KEY,
-    elementType: props.elementType,
-    context: props.context,
-    status: '',
-    source: props.source,
-  });
-
-  function setStatus(status: 'enabled' | 'disabled') {
-    action
-      .transform((data) => {
-        data.status = status;
-        data.elementIds = props.selectedIds;
-
-        return data;
-      })
-      .post(PerformElementActionController.url(), {
-        only: ['data', 'flash', 'pagination'],
-        preserveState: false,
-      });
+  // One shared spinner across "Set status"'s items; scoped to that menu only —
+  // `ActionMenu` has no declared emits, so an unscoped listener would also
+  // catch "Actions" items bubbling through the same bar.
+  const statusProcessing = ref(false);
+  function onStatusActionChangeState(event: Event) {
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+    const state = event.detail?.state;
+    if (state === 'loading') {
+      statusProcessing.value = true;
+    } else if (state === 'success' || state === 'error') {
+      statusProcessing.value = false;
+    }
   }
 </script>
 
@@ -237,31 +247,24 @@
     </div>
 
     <div class="bulk-actions-bar__actions">
-      <craft-action-menu
-        v-if="setStatusAction"
-        :disabled="setStatusAction.disabled"
+      <ActionMenu
+        v-if="hasStatusMenu"
+        :actions="statusActions"
+        :label="t('Set status')"
+        @action:change-state="onStatusActionChangeState"
       >
-        <craft-button
-          slot="invoker"
-          type="button"
-          size="small"
-          :loading="action.processing"
-        >
-          {{ setStatusAction.label }}
-          <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-        </craft-button>
-
-        <div slot="content">
-          <craft-action-item @click="setStatus('enabled')">
-            <craft-indicator fill="success"></craft-indicator>
-            {{ t('Enabled') }}
-          </craft-action-item>
-          <craft-action-item @click="setStatus('disabled')">
-            <craft-indicator fill="danger"></craft-indicator>
-            {{ t('Disabled') }}
-          </craft-action-item>
-        </div>
-      </craft-action-menu>
+        <template #invoker="{attributes}">
+          <craft-button
+            type="button"
+            size="small"
+            :loading="statusProcessing"
+            v-bind="attributes"
+          >
+            {{ t('Set status') }}
+            <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+          </craft-button>
+        </template>
+      </ActionMenu>
 
       <ActionMenu v-if="hasMenu" :actions="menuActions">
         <template #invoker="{attributes}">
