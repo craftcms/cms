@@ -9,7 +9,7 @@ afterEach(() => {
   teardown = undefined;
 });
 
-async function mount(props: Record<string, unknown>) {
+async function mount(props: InstanceType<typeof CpButtonLink>['$props']) {
   const container = document.createElement('div');
   document.body.append(container);
   const app = createApp({
