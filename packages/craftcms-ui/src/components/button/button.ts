@@ -142,6 +142,17 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
       this.syncLinkHostState();
     }
 
+    if (
+      changedProperties.has('disabled') ||
+      changedProperties.has('focusableWhenDisabled')
+    ) {
+      if (this.disabled) {
+        this.tabIndex = this.focusableWhenDisabled ? 0 : -1;
+      } else if (!this.isLink) {
+        this.tabIndex = 0;
+      }
+    }
+
     // The spinner is this button's rendering of the mixin's state. `loading`
     // stays public and settable on its own, for a caller showing one without
     // a declarative action behind it — so this follows transitions only.
@@ -338,6 +349,10 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
+
+  /** Keep the button in the tab order when disabled. */
+  @property({attribute: 'focusable-when-disabled', type: Boolean})
+  focusableWhenDisabled: boolean = false;
 
   /**
    * Pulls the button out by the space around its content, so its label or

@@ -19,7 +19,7 @@ export default class CraftFieldGroup extends LitElement {
         craft-field-group {
           display: grid;
           grid-template-columns: repeat(12, minmax(0, 1fr));
-          gap: var(--gap, var(--c-spacing-lg)) 0;
+          gap: var(--gap, var(--c-spacing-lg)) var(--c-spacing-sm);
           container-type: inline-size;
         }
 
@@ -28,7 +28,20 @@ export default class CraftFieldGroup extends LitElement {
           min-width: 0;
         }
 
+        craft-field-group.auto-widths > :not([class*='width-']) {
+          width: fit-content;
+        }
+
+        craft-field-group.auto-widths > :not([class*='width-']) craft-select {
+          width: max-content;
+          max-width: 100%;
+        }
+
         @container (min-width: 30rem) {
+          craft-field-group.auto-widths > :not([class*='width-']) {
+            grid-column: span 2;
+          }
+
           craft-field-group > .width-25 {
             grid-column: span 3;
           }
@@ -51,6 +64,15 @@ export default class CraftFieldGroup extends LitElement {
         }
 
         @container (min-width: 50rem) {
+          craft-field-group.auto-widths > :not([class*='width-']) {
+            grid-column: span 1;
+          }
+
+          craft-field-group.auto-widths
+            > :not([class*='width-']):has(craft-select) {
+            grid-column: span 2;
+          }
+
           craft-field-group > .width-25 {
             grid-column: span 3;
           }

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\Requests\NestedElementsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +22,8 @@ readonly class NestedElementsController
 
     public function __construct(
         private Elements $elements,
+        private Drafts $drafts,
+        private Workflows $workflows,
     ) {}
 
     public function reorder(NestedElementsRequest $request): Response
@@ -45,10 +49,13 @@ readonly class NestedElementsController
 
         // If the element primarily belongs to a different element, just delete the ownership
         if ($element->getPrimaryOwnerId() !== $request->owner()->id) {
-            DB::table(Table::ELEMENTS_OWNERS)
-                ->where('ownerId', $request->owner()->id)
-                ->where('elementId', $element->id)
-                ->delete();
+            $draftIds = $this->drafts->getDraftIdsForElement($request->owner());
+            $this->workflows->withContentChangeLock($draftIds, function () use ($element, $request): void {
+                DB::table(Table::ELEMENTS_OWNERS)
+                    ->where('ownerId', $request->owner()->id)
+                    ->where('elementId', $element->id)
+                    ->delete();
+            });
 
             $success = true;
         } else {

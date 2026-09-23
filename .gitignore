@@ -19,6 +19,7 @@ vendor/
 cpresources/*
 .ddev/
 test-results/
+tests/Browser/Screenshots/
 resources/hot
 
 # Test database(s)

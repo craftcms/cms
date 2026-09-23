@@ -44,6 +44,7 @@ use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Container\Attributes\Scoped;
@@ -97,6 +98,7 @@ class Sections
         private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
         private readonly ProjectConfig $projectConfig,
+        private readonly Workflows $workflows,
     ) {}
 
     /**
@@ -196,6 +198,7 @@ class Sections
             ->select([
                 'sections.id',
                 'sections.structureId',
+                'sections.workflowId',
                 'sections.name',
                 'sections.handle',
                 'sections.type',
@@ -595,6 +598,7 @@ class Sections
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
         ProjectConfigHelper::ensureAllEntryTypesProcessed();
+        ProjectConfigHelper::ensureAllWorkflowsProcessed();
 
         $sectionUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -607,11 +611,16 @@ class Sections
             // Basic data
             $sectionModel = $this->getSectionModel($sectionUid, true);
             $oldPropagationMethod = $sectionModel->propagationMethod;
+            $oldWorkflowId = $sectionModel->workflowId;
 
             $sectionModel->uid = $sectionUid;
             $sectionModel->name = $data['name'];
             $sectionModel->handle = $data['handle'];
             $sectionModel->type = $data['type'];
+            $workflowUid = $data['workflow'] ?? null;
+            $sectionModel->workflowId = $workflowUid === null
+                ? null
+                : DB::table(Table::WORKFLOWS)->idByUid($workflowUid);
             $sectionModel->enableVersioning = (bool) $data['enableVersioning'];
             $sectionModel->minAuthors = $data['minAuthors'] ?? null;
             $sectionModel->maxAuthors = $data['maxAuthors'] ?? null;
@@ -846,6 +855,10 @@ class Sections
 
         /** @var Section $section */
         $section = $this->getSectionById($sectionModel->id);
+
+        if (! $isNewSection && $oldWorkflowId !== $sectionModel->workflowId) {
+            $this->workflows->invalidateSectionRuns($sectionModel->id);
+        }
 
         // If this is a Single, ensure that the section has its one and only entry
         if (! $isNewSection && $section->type === SectionType::Single) {

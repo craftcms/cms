@@ -24,3 +24,48 @@ it('emits composed reorder events to list owners', async () => {
     detail: {direction: 'down'},
   });
 });
+
+it('only offers indent and outdent on nested buttons', async () => {
+  const button = document.createElement(
+    'craft-reorder-button'
+  ) as CraftReorderButton;
+  document.body.append(button);
+  await button.updateComplete;
+
+  expect(button.shadowRoot?.querySelector('[data-action="indent"]')).toBeNull();
+
+  const reordered = vi.fn();
+  button.addEventListener('craft-reorder', reordered);
+  button.nested = true;
+  button.canIndent = true;
+  await button.updateComplete;
+
+  button.shadowRoot
+    ?.querySelector<HTMLElement>('[data-action="indent"]')
+    ?.click();
+  button.shadowRoot
+    ?.querySelector<HTMLElement>('[data-action="outdent"]')
+    ?.click();
+
+  expect(reordered).toHaveBeenCalledOnce();
+  expect(reordered.mock.calls[0]![0].detail).toEqual({direction: 'indent'});
+});
+
+it('blocks both moves for an only child', async () => {
+  const button = document.createElement(
+    'craft-reorder-button'
+  ) as CraftReorderButton;
+  button.position = 'only';
+  const reordered = vi.fn();
+  button.addEventListener('craft-reorder', reordered);
+  document.body.append(button);
+  await button.updateComplete;
+
+  for (const action of ['moveUp', 'moveDown']) {
+    button.shadowRoot
+      ?.querySelector<HTMLElement>(`[data-action="${action}"]`)
+      ?.click();
+  }
+
+  expect(reordered).not.toHaveBeenCalled();
+});

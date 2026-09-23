@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -37,11 +38,12 @@ beforeEach(function () {
 
     $this->executor = new TestPropagateElementWrites(
         $this->elements,
+        Mockery::mock(Drafts::class),
         $this->uris,
         Mockery::mock(ElementCaches::class),
         Mockery::mock(Search::class),
         $this->sites,
-        Mockery::mock(ElementWriteActivity::class),
+        Mockery::mock(Workflows::class),
     );
 
     $this->primarySite = new Site([

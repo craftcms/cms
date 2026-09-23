@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
@@ -98,6 +99,7 @@ test('create can be loaded', function () {
                 $paths = collect($nodes)->pluck('control.path')->filter();
 
                 return $paths->contains(['entryTypes'])
+                    && $paths->contains(['workflowId'])
                     && $paths->contains(['sites'])
                     && $paths->contains(['previewTargets']);
             }));
@@ -197,8 +199,14 @@ function validSectionData(array $overrides = []): array
 
 it('can save a section', function () {
     expect(Section::count())->toBe(1);
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+    ]);
 
-    post(action([SectionsController::class, 'store']), validSectionData())
+    post(action([SectionsController::class, 'store']), validSectionData([
+        'workflowId' => $workflow->id,
+    ]))
         ->assertSessionDoesntHaveErrors()
         ->assertRedirectBack();
 
@@ -207,6 +215,8 @@ it('can save a section', function () {
     $section = $this->sections->getSectionByHandle('a_new_section');
     expect($section->name)->toBe('A new section');
     expect($section->type)->toBe(SectionType::Single);
+    expect($section->workflowId)->toBe($workflow->id);
+    expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$section->uid.'.workflow'))->toBe($workflow->uid);
     expect(Arr::first($section->getSiteSettings()))->toBeInstanceOf(SectionSiteSettingsData::class);
     expect(Arr::first($section->getSiteSettings())->template)->toBe('_foo');
 });

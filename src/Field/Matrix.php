@@ -1269,7 +1269,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         return match ($this->viewMode) {
             self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
-            default => Html::tag('div', $this->nestedElementManagerHtml($element, $static), [
+            default => Html::tag('div', $this->nestedElementManagerHtml($value, $element, $static), [
                 'id' => $this->getInputId(),
             ]),
         };
@@ -1403,9 +1403,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
-    private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
+    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
+    private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
     {
-        $entryTypes = $this->_entryTypes;
+        if (Event::hasListeners(EntryTypesForFieldResolving::class)) {
+            if ($owner?->hasEagerLoadedElements($this->handle)) {
+                $value = $owner->getEagerLoadedElements($this->handle);
+            }
+
+            if ($value instanceof ElementCollection) {
+                $value = $value->all();
+            } elseif ($value instanceof EntryQuery) {
+                $value = $value->getResultOverride() ?? (clone $value)
+                    ->status(null)
+                    ->limit(null)
+                    ->all();
+            }
+
+            /** @var Entry[]|null $value */
+            $entryTypes = $this->getEntryTypesForField($value ?? [], $owner);
+        } else {
+            $entryTypes = $this->_entryTypes;
+        }
+
         $config = [
             'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
             'prevalidate' => false,

@@ -25,6 +25,9 @@ const meta = {
     position: 'middle',
     variant: 'neutral',
     orientation: 'vertical',
+    nested: false,
+    canIndent: false,
+    canOutdent: false,
   },
   argTypes,
   parameters: {layout: 'centered'},
@@ -56,4 +59,9 @@ export const Horizontal: Story = {
 
 export const Disabled: Story = {
   args: {disabled: true},
+};
+
+export const Nested: Story = {
+  name: 'Nested (indent/outdent)',
+  args: {nested: true, canIndent: true, canOutdent: true},
 };

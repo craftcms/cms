@@ -130,6 +130,16 @@ describe('craft-button link semantics', () => {
     expect(element.getAttribute('role')).toBe('button');
   });
 
+  it('can remain focusable when disabled', async () => {
+    const element = await createButton({
+      disabled: '',
+      'focusable-when-disabled': '',
+    });
+
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+    expect(element.tabIndex).toBe(0);
+  });
+
   it('does not submit a form when a link-mode button is clicked', async () => {
     const form = document.createElement('form');
     const element = document.createElement('craft-button') as CraftButton;

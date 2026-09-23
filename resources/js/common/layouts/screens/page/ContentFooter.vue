@@ -19,6 +19,7 @@
         | 'formActions'
         | 'formAdditionalActions'
         | 'formAdditionalButtons'
+        | 'saveDisabled'
         | 'submitButtonLabel'
       > & {
         readOnly: boolean;
@@ -65,10 +66,8 @@
 </script>
 
 <template>
-  <CpContainer class="content-footer">
-    <div
-      class="flex gap-2 items-center justify-between border-t border-t-quiet py-md"
-    >
+  <div class="content-footer">
+    <div class="flex gap-2 items-center justify-between">
       <FormActions
         v-if="form"
         :form="form"
@@ -77,6 +76,7 @@
         :additional-buttons="formAdditionalButtons"
         :submit-label="submitButtonLabel"
         :read-only="readOnly"
+        :save-disabled="saveDisabled"
       >
         <template v-if="slots['submit-button']" #submit-button>
           <slot name="submit-button"></slot>
@@ -93,11 +93,12 @@
         <slot name="content-footer"></slot>
       </LayoutSlotOutlet>
     </div>
-  </CpContainer>
+  </div>
 </template>
 
 <style scoped lang="css">
   .content-footer {
+    padding-inline: var(--cp-container-padding);
     min-height: var(--cp-footer-height);
   }
 </style>

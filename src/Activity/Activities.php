@@ -23,9 +23,9 @@ class Activities
         private readonly ActivityEventRecorder $events,
     ) {}
 
-    public function record(ActivityEventTypeInterface $event): ActivityEvent
+    public function record(ActivityEventTypeInterface $event, ?int $rootEventId = null): ActivityEvent
     {
-        return $this->events->record($event);
+        return $this->events->record($event, $rootEventId);
     }
 
     /** @return Builder<ActivityEvent> */
