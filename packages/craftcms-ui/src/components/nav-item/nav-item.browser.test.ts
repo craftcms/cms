@@ -221,6 +221,40 @@ it("keeps a lent control's keyboard activation from reaching the row", async () 
   expect(reachedRow).toEqual(['keydown:Escape', 'keyup:Escape']);
 });
 
+// CpLink puts Inertia's Link handlers on the host, which visit on Enter's
+// keyup — so the chevron has to keep its own presses from reaching them.
+it('opens the flyout from its chevron instead of following the link', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const item = await railFixture();
+  const toggle = item.shadowRoot!.querySelector<HTMLElement>(
+    '.rail-toggle craft-button'
+  )!;
+  const reachedRow: string[] = [];
+  for (const type of pressEvents) {
+    item.addEventListener(type, (event) =>
+      reachedRow.push(
+        event instanceof KeyboardEvent ? `${type}:${event.key}` : type
+      )
+    );
+  }
+
+  // The hover intent is shared by every item, so earlier tests can leave it
+  // holding state that would delay the open.
+  flyoutHoverIntent.reset();
+
+  toggle.focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+
+  expect(item.flyoutOpen).toBe(true);
+
+  await userEvent.keyboard(' ');
+  await item.updateComplete;
+
+  expect(item.flyoutOpen).toBe(false);
+  expect(reachedRow).toEqual([]);
+});
+
 /** A rail holding the page itself, with no subnav, beside a branch it's in. */
 async function railPairFixture(): Promise<{
   leaf: CraftNavItem;
