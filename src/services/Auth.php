@@ -218,6 +218,7 @@ class Auth extends Component
     {
         $user = $this->getUser($sessionDuration);
         $method = $this->getMethod($methodClass, $user);
+        $wasActive = $method->isActive();
         $mutex = null;
         $lockName = null;
 
@@ -248,6 +249,13 @@ class Auth extends Component
                 }
 
                 $userSession->login($user, $sessionDuration);
+            } elseif (!$wasActive && $method->isActive()) {
+                // The method was just set up, raising the bar for accessing this account.
+                // Any other sessions were established before that, so they can’t be trusted anymore.
+                $identity = Craft::$app->getUser()->getIdentity();
+                if ($identity) {
+                    Craft::$app->getUsers()->destroyOtherSessions($identity);
+                }
             }
 
             return true;
