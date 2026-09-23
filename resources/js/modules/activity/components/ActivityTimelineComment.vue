@@ -10,7 +10,8 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
-  import ActivityTimelineActor from './ActivityTimelineActor.vue';
+  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import ActivityCommentCard from './ActivityCommentCard.vue';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import '../../markdown-field/markdown-field';
 
@@ -54,18 +55,6 @@
       : []),
   ]);
   const editorId = `activity-comment-${useId()}`;
-  const toolbarButtons = [
-    'bold',
-    'italic',
-    'code',
-    'h3',
-    'quote',
-    'unordered-list',
-    'ordered-list',
-    'check-list',
-    'link',
-  ];
-
   function requestData() {
     return {
       elementType: props.elementType,
@@ -85,12 +74,6 @@
       limit: 10,
     },
   ]);
-
-  function sentenceFragment(text: string | null): string {
-    return text === null
-      ? ''
-      : text.charAt(0).toLocaleLowerCase() + text.slice(1);
-  }
 
   function startEditing(): void {
     editing.value = true;
@@ -189,7 +172,7 @@
         :placeholder="creating ? t('Add a comment…') : undefined"
         sanitize-html
         show-toolbar
-        .toolbarButtons="toolbarButtons"
+        .toolbarButtons="commentToolbarButtons"
         .value="draft"
         @input="draft = ($event.target as HTMLTextAreaElement).value"
       />
@@ -223,49 +206,27 @@
     </div>
   </div>
 
-  <craft-card
+  <ActivityCommentCard
     v-else-if="event && comment && !comment.deleted"
     class="activity-timeline__comment"
     data-activity-comment
+    :actor="event.actor"
+    :impersonator="event.impersonator"
+    :description-html="event.description.html"
+    :description-text="event.description.text"
+    :html="comment.html"
+    :occurred-at="event.occurredAt"
+    :formatted-occurred-at="event.formattedOccurredAt"
+    :edited="comment.edited"
   >
-    <div slot="label" class="activity-timeline__comment-heading">
-      <ActivityTimelineActor
-        :actor="event.actor"
-        :impersonator="event.impersonator"
-      />
-      <span
-        v-if="event?.description.html"
-        class="activity-timeline__comment-description"
-        v-html="event.description.html"
-      />
-      <span v-else class="activity-timeline__comment-description">
-        {{ sentenceFragment(event?.description.text ?? null) }}
-      </span>
-    </div>
-
-    <ActionMenu
-      v-if="commentActions.length"
-      slot="actions"
-      :actions="commentActions"
-      :label="t('Comment actions')"
-    />
-
-    <div class="activity-timeline__comment-body" v-html="comment.html" />
+    <template v-if="commentActions.length" #actions>
+      <ActionMenu :actions="commentActions" :label="t('Comment actions')" />
+    </template>
 
     <p v-if="error" class="error" role="alert">
       {{ t('Couldn’t update comment.') }}
     </p>
-
-    <div v-if="event" slot="footer" class="activity-timeline__comment-footer">
-      <span v-if="comment.edited">{{ t('Edited') }}</span>
-      <time
-        :datetime="event.occurredAt"
-        :title="event.formattedOccurredAt.full"
-      >
-        {{ event.formattedOccurredAt.time }}
-      </time>
-    </div>
-  </craft-card>
+  </ActivityCommentCard>
 
   <ActivityTimelineEvent
     v-else-if="event"
@@ -278,29 +239,12 @@
 </template>
 
 <style scoped>
-  .activity-timeline__comment-description {
-    margin-inline-start: 0.25em;
-  }
-
-  .activity-timeline__comment-footer {
-    display: flex;
-    width: 100%;
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-xs);
-  }
-
-  .activity-timeline__comment-footer time {
-    margin-inline-start: auto;
-    white-space: nowrap;
-  }
-
   .activity-timeline__comment-actions {
     display: flex;
     align-items: center;
     gap: var(--c-spacing-xs);
   }
 
-  .activity-timeline__comment-body :deep(> :last-child),
   .activity-timeline__comment .error {
     margin: 0;
   }

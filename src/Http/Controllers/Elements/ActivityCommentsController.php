@@ -47,7 +47,7 @@ readonly class ActivityCommentsController
     {
         $subject = $request->subject();
         $element = $request->subjectElement();
-        $comment = $this->comment($subject, $element, $request->string('commentId')->toString());
+        $comment = $this->comment($subject, $element, $request->integer('commentId'));
         $user = $this->currentUser();
 
         abort_unless($comment->actorId === $user->id, 403, 'Only the comment author may edit it.');
@@ -66,7 +66,7 @@ readonly class ActivityCommentsController
     {
         $subject = $request->subject();
         $element = $request->subjectElement();
-        $comment = $this->comment($subject, $element, $request->string('commentId')->toString());
+        $comment = $this->comment($subject, $element, $request->integer('commentId'));
         $user = $this->currentUser();
 
         abort_unless(
@@ -85,7 +85,7 @@ readonly class ActivityCommentsController
     private function comment(
         ElementInterface $subject,
         ElementInterface $element,
-        string $commentId,
+        int $commentId,
     ): ActivityEvent {
         return $this->activities->query()
             ->subject(ActivitySubject::fromElement($subject))

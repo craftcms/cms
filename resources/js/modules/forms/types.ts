@@ -108,6 +108,7 @@ export type FormControlOverrideProps = {
   control: FormControlPayload;
   value: FormValue;
   values: FormPayload['values'];
+  errors: FormPayload['errors'];
   label?: string;
   editable: boolean;
   invalid: boolean;

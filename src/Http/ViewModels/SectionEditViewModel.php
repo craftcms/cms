@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -31,6 +32,7 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -83,6 +85,15 @@ class SectionEditViewModel extends ViewModel
                 t('Enable versioning for entries in this section'),
                 Lightswitch::make('enableVersioning'),
             ),
+            ...Edition::isAtLeast(Edition::Pro) ? [
+                Field::make(t('Workflow'), Choice::make('workflowId')
+                    ->placeholder(t('No workflow'))
+                    ->options(Workflow::query()->orderBy('name')->pluck('name', 'id')->map(fn (string $name, int $id): array => [
+                        'label' => $name,
+                        'value' => $id,
+                    ])->values()->all()))
+                    ->instructions(t('Drafts in this section must complete the selected workflow before they can be applied.')),
+            ] : [],
             $typeField,
             Separator::make('entry-types-separator'),
             Heading::make('entry-types-heading', t('Entry Types'))
@@ -233,6 +244,7 @@ class SectionEditViewModel extends ViewModel
                 fn ($entryType): int => (int) $entryType->id,
                 $this->section->entryTypes,
             ),
+            'workflowId' => $this->section->workflowId,
             'enableVersioning' => $this->section->enableVersioning,
             'minAuthors' => $this->section->minAuthors,
             'maxAuthors' => $this->section->maxAuthors ?? '',

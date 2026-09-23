@@ -197,6 +197,7 @@
       control: control.value,
       value: value.value,
       values: props.values,
+      errors: props.errors,
       label: resolvedNode.value.props.label ?? undefined,
       editable: editable.value,
       invalid: controlErrors.value.length > 0,

@@ -69,6 +69,12 @@ describe('craft-timeline-item', () => {
     ).toBeNull();
   });
 
+  it('keeps a heading and its metadata in separate grid columns', () => {
+    expect(styles.cssText).toContain(
+      'grid-template-columns: minmax(0, 1fr) auto'
+    );
+  });
+
   it('tracks optional content added after connection', async () => {
     const element = await createTimelineItem('<p>Content</p>');
     const heading = document.createElement('h2');

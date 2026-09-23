@@ -23,7 +23,9 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Workflows;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
@@ -755,17 +757,25 @@ class Elements
         $allIds = array_diff(array_keys($oldSortOrders), $elementIds);
         array_splice($allIds, $offset, 0, $elementIds);
 
-        // Update all the incorrect sort orders
+        $updates = [];
         foreach ($allIds as $i => $id) {
             $sortOrder = $i + 1;
             if (! isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
-                DB::table(Table::ELEMENTS_OWNERS)
-                    ->where('ownerId', $owner->id)
-                    ->where('elementId', $id)
-                    ->update([
-                        'sortOrder' => $sortOrder,
-                    ]);
+                $updates[(int) $id] = $sortOrder;
             }
+        }
+
+        if ($updates !== []) {
+            Workflows::withContentChangeLock(Drafts::getDraftIdsForElement($owner), function () use ($owner, $updates): void {
+                foreach ($updates as $id => $sortOrder) {
+                    DB::table(Table::ELEMENTS_OWNERS)
+                        ->where('ownerId', $owner->id)
+                        ->where('elementId', $id)
+                        ->update([
+                            'sortOrder' => $sortOrder,
+                        ]);
+                }
+            });
         }
 
         $this->elementCaches->invalidateForElement($owner);
