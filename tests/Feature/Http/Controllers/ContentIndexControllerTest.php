@@ -880,6 +880,9 @@ it('leads the crumbs with a site switcher on a multi-site install', function () 
                 $primary->name,
                 $other->name,
             ])
+            // A crumb with a URL has its menu rebuilt from that URL's nav
+            // level, which would swap these sites out for the main navigation.
+            ->where('crumbs.0.href', null)
             // The index's own crumb still follows it.
             ->where('crumbs.1.label', 'Entries')
         );

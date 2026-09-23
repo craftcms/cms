@@ -233,4 +233,21 @@ describe('withNavCrumbMenus', () => {
 
     expect(crumb!.items).toBe(items);
   });
+
+  it('keeps the menu of a crumb that isn’t a link', () => {
+    // The element index's site crumb: a switcher for something the nav has no
+    // level for. It carries no href precisely so its sites aren't replaced by
+    // whichever nav level its URL would have landed in.
+    const items = [
+      {type: 'link' as const, label: 'English', href: '/admin/content/entries'},
+      {
+        type: 'link' as const,
+        label: 'French',
+        href: '/admin/content/entries?site=fr',
+      },
+    ];
+    const [crumb] = withNavCrumbMenus([{label: 'English', items}], NAV);
+
+    expect(crumb!.items).toBe(items);
+  });
 });

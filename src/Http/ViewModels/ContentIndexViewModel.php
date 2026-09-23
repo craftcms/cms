@@ -462,6 +462,12 @@ abstract class ContentIndexViewModel extends ViewModel
      * switching sites is an ordinary navigation — the server then re-resolves
      * the sources, the selected source, and the query against the new site.
      *
+     * Deliberately not a link, matching the legacy index's `site-crumb`. It
+     * would only point at the page you're already on — and a crumb with a URL
+     * has its menu rebuilt from whichever nav level that URL sits in
+     * (`withNavCrumbMenus()`), which would replace these sites with the main
+     * navigation.
+     *
      * `null` when there's no site menu to show, or only one site to show in it.
      */
     private function siteCrumb(string $indexUrl): ?ActionItem
@@ -479,7 +485,6 @@ abstract class ContentIndexViewModel extends ViewModel
             ->icon('world')
             ->ariaLabel(t('Site'))
             ->label(t($this->site()->name, category: 'site'))
-            ->href($this->siteIndexUrl($indexUrl, $this->site()))
             ->items($sites
                 ->map(fn (Site $site): array => [
                     'type' => 'link',
