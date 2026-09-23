@@ -50,7 +50,7 @@
 </script>
 
 <template>
-  <div class="cp-top-bar" data-theme="dark">
+  <header class="cp-top-bar" data-theme="dark">
     <div class="cp-top-bar__start" v-if="!isLarge">
       <craft-button
         :ref="registerToggle"
@@ -117,7 +117,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </header>
 </template>
 
 <style scoped>
