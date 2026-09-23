@@ -98,36 +98,36 @@ abstract class Import extends Command implements PromptsForMissingInput
             'settings' => $settings,
         ];
 
-        $importConfig = ImportPlan::createImporter($config);
+        $importer = ImportPlan::createImporter($config);
 
-        if ($importConfig === null) {
+        if ($importer === null) {
             return self::FAILURE;
         }
 
         if ($matchCriteria) {
-            $importConfig->matchCriteria($matchCriteria);
+            $importer->matchCriteria($matchCriteria);
         }
 
         $this->components->info('Importing data into:');
 
         $list = [
-            "Import Type: `{$importConfig::targetClass()}`",
-            "File: `$importConfig->file`",
-            'Transformer: '.($importConfig->transformer ? "`{$importConfig->transformerAsString()}`" : 'NULL'),
-            'Match Criteria: '.($importConfig->matchCriteria ? json_encode($importConfig->matchCriteria) : 'NULL'),
+            "Import Type: `{$importer::targetClass()}`",
+            "File: `$importer->file`",
+            'Transformer: '.($importer->transformer ? "`{$importer->transformerAsString()}`" : 'NULL'),
+            'Match Criteria: '.($importer->matchCriteria ? json_encode($importer->matchCriteria) : 'NULL'),
         ];
         $this->components->bulletList($list);
 
         try {
-            // $importConfig->validateSettings();
-            $filePath = $importConfig::resolvedFilePath($importConfig->file);
-            $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importConfig);
+            // $importer->validateSettings();
+            $filePath = $importer::resolvedFilePath($importer->file);
+            $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
             $allData = ImportFacade::getFormattedData($filePath);
             $count = count($allData);
 
             foreach ($allData as $i => $item) {
                 $this->components->info('Importing item ('.($i + 1)."/{$count}) ...");
-                ImportFacade::importItem($importConfig, $item, $matchCriteria);
+                ImportFacade::importItem($importer, $item, $matchCriteria);
             }
         } catch (ValidationException $e) {
             foreach ($e->errors() as $attribute => $messages) {

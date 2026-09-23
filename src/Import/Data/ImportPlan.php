@@ -52,14 +52,14 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     public function __construct(array $config = [])
     {
-        $steps = [];
+        $importers = [];
         if (isset($config['steps']) && is_string($config['steps'])) {
-            $items = Json::decode($config['steps']);
-            foreach ($items as $item) {
-                $step = ImportPlanFacade::createImporter($item);
-                $steps[] = $step;
+            $steps = Json::decode($config['steps']);
+            foreach ($steps as $step) {
+                $importer = ImportPlanFacade::createImporter($step);
+                $importers[] = $importer;
             }
-            $config['steps'] = array_filter($steps);
+            $config['steps'] = array_filter($importers);
         }
 
         parent::__construct($config);
