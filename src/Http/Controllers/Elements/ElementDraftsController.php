@@ -162,6 +162,12 @@ class ElementDraftsController
 
                 DB::commit();
             }
+        } catch (InvalidElementException $e) {
+            DB::rollBack();
+
+            return new ElementResponse()->failure($e->element, mb_ucfirst(t('Couldn’t save {type}.', [
+                'type' => t('draft'),
+            ])));
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
