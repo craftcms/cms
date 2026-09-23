@@ -59,12 +59,12 @@
 
 <template>
   <LayoutSlot name="content-toolbar-meta">
-    <Badge :variant="site.enabled ? 'success' : 'default'">
+    <craft-badge :fill="site.enabled ? 'success' : 'default'">
       {{ site.enabled ? t('Enabled') : t('Disabled') }}
-    </Badge>
-    <craft-callout v-if="site.primary" size="small" inline>
+    </craft-badge>
+    <craft-badge v-if="site.primary" no-prefix fill="accent" inline>
       <span>{{ t('Primary') }}</span>
-    </craft-callout>
+    </craft-badge>
   </LayoutSlot>
 
   <FormPage

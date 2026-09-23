@@ -120,6 +120,7 @@
               [
                 h('craft-indicator', {
                   variant: row.original.enabled ? 'success' : 'empty',
+                  appearance: row.original.enabled ? 'outline-fill' : 'outline',
                 }),
                 h('span', getValue()),
               ]
@@ -253,6 +254,7 @@
       as="craft-button"
       :href="create({}, {query: {groupId: group?.id}}).url"
       icon="plus"
+      variant="primary"
     >
       {{ t('New Site') }}
     </CpLink>
@@ -276,7 +278,6 @@
             v-if="!readOnly"
             as="craft-button"
             :href="create({}, {query: {groupId: group?.id}}).url"
-            appearance="button"
           >
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ t('New Site') }}
