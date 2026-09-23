@@ -9,7 +9,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="lg">
+  <craft-card>
     <slot name="header" />
     <div class="body">
       <ul v-if="drafts.length" class="space-y-3" role="list">
@@ -22,5 +22,5 @@
         :label="t('You don’t have any active drafts.')"
       ></craft-empty>
     </div>
-  </craft-pane>
+  </craft-card>
 </template>
